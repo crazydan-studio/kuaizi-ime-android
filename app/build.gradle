@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'org.crazydan.studio.app.ime.kuaizi'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "org.crazydan.studio.app.ime.kuaizi"
+        minSdk 26
+        targetSdk 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    // https://jitpack.io/#Hexworks/Mixite/2020.1.0
+    // https://github.com/Hexworks/mixite
+    // Note: Java 版本的包名需添加后缀 -jvm
+    implementation 'com.github.Hexworks.Mixite:mixite.core-jvm:2020.1.0'
+    implementation 'androidx.preference:preference:1.2.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    // 在单元测试中引入真实的依赖包: 未引入依赖的接口均为 Mock 接口
+    testImplementation 'org.json:json:20230618'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
