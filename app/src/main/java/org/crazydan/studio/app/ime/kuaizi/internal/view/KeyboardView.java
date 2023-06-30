@@ -15,26 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
+package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
-import android.inputmethodservice.InputMethodService;
-import android.view.View;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+import android.content.Context;
+import android.widget.FrameLayout;
+import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
+ * {@link Keyboard 键盘}视图
+ * <p/>
+ * 负责显示各类键盘的按键布局，并提供事件监听等处理
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-29
+ * @date 2023-06-30
  */
-public class Service extends InputMethodService {
-    private KeyboardView inputView;
+public class KeyboardView extends FrameLayout {
 
-    @Override
-    public void onInitializeInterface() {
-        this.inputView = new KeyboardView(getApplicationContext());
-    }
-
-    @Override
-    public View onCreateInputView() {
-        return this.inputView;
+    public KeyboardView(@NonNull Context context) {
+        super(context);
     }
 }

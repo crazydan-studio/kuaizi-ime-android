@@ -15,26 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
+package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
-import android.inputmethodservice.InputMethodService;
+import android.content.Context;
 import android.view.View;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 
 /**
+ * 输入候选字/词视图
+ * <p/>
+ * 负责显示输入的可选字列表
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-29
+ * @date 2023-06-30
  */
-public class Service extends InputMethodService {
-    private KeyboardView inputView;
+public class InputCandidatesView extends View {
 
-    @Override
-    public void onInitializeInterface() {
-        this.inputView = new KeyboardView(getApplicationContext());
-    }
-
-    @Override
-    public View onCreateInputView() {
-        return this.inputView;
+    public InputCandidatesView(Context context) {
+        super(context);
     }
 }

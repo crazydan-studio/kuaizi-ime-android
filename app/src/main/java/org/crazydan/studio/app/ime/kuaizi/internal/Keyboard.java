@@ -15,26 +15,12 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
-
-import android.inputmethodservice.InputMethodService;
-import android.view.View;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
+ * 键盘
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-29
+ * @date 2023-06-30
  */
-public class Service extends InputMethodService {
-    private KeyboardView inputView;
-
-    @Override
-    public void onInitializeInterface() {
-        this.inputView = new KeyboardView(getApplicationContext());
-    }
-
-    @Override
-    public View onCreateInputView() {
-        return this.inputView;
-    }
-}
+public interface Keyboard {}
