@@ -18,9 +18,9 @@
 <resources>
     <string name="app_name">筷字输入法</string>
 
-    <string name="title_app_preferences">筷字输入法配置</string>
-    <string name="label_subtype_generic">%s</string>
-    <string name="label_subtype_zh_CN">中文 (中国)</string>
+    <string name="title_app_preferences">筷字输入法设置</string>
+    <string name="label_method_subtype_generic">%s</string>
+    <string name="label_method_subtype_zh_CN">中文（中国）</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

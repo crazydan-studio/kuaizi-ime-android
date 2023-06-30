@@ -19,8 +19,8 @@
     <string name="app_name">Kuaizi Input Method</string>
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
-    <string name="label_subtype_generic">%s</string>
-    <string name="label_subtype_zh_CN">Chinese (China)</string>
+    <string name="label_method_subtype_generic">%s</string>
+    <string name="label_method_subtype_zh_CN">Chinese (China)</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

@@ -18,15 +18,16 @@
 <input-method xmlns:android="http://schemas.android.com/apk/res/android"
         android:settingsActivity="org.crazydan.studio.app.ime.kuaizi.ui.Preferences"
         android:supportsSwitchingToNextInputMethod="true">
-    <subtype
-            android:icon="@drawable/ic_logo"
-            android:imeSubtypeLocale="en_US"
-            android:imeSubtypeMode="keyboard"
-            android:label="@string/label_subtype_generic" />
-
+    <!-- 支持中文输入 -->
     <subtype
             android:icon="@drawable/ic_logo"
             android:imeSubtypeLocale="zh_CN"
             android:imeSubtypeMode="keyboard"
-            android:label="@string/label_subtype_zh_CN" />
+            android:label="@string/label_method_subtype_zh_CN" />
+    <!-- 支持英文输入 -->
+    <subtype
+            android:icon="@drawable/ic_logo"
+            android:imeSubtypeLocale="en_US"
+            android:imeSubtypeMode="keyboard"
+            android:label="@string/label_method_subtype_generic" />
 </input-method>
