@@ -19,18 +19,18 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
 public class Service extends InputMethodService {
-    private KeyboardView inputView;
+    private ImeInputView inputView;
 
     @Override
     public void onInitializeInterface() {
-        this.inputView = new KeyboardView(getApplicationContext());
+        this.inputView = new ImeInputView(getApplicationContext());
     }
 
     @Override

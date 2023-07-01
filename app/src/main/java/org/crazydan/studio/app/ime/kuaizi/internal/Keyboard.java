@@ -23,4 +23,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public interface Keyboard {}
+public interface Keyboard {
+
+    /** 重置状态 */
+    void reset();
+}

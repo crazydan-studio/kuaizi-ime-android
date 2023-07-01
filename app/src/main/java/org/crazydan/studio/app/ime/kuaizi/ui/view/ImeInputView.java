@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
-import android.view.View;
+import android.widget.FrameLayout;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
- * 输入列表视图
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-01
  */
-public class InputListView extends View {
+public class ImeInputView extends FrameLayout {
 
-    public InputListView(Context context) {
+    public ImeInputView(Context context) {
         super(context);
+        inflate(context, R.layout.ime_input_view, this);
     }
 }

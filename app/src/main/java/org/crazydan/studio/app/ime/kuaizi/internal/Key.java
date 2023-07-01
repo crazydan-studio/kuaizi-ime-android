@@ -15,20 +15,12 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
-
-import android.content.Context;
-import android.view.View;
+package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
- * 输入列表视图
+ * {@link Keyboard 键盘}按键
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-01
  */
-public class InputListView extends View {
-
-    public InputListView(Context context) {
-        super(context);
-    }
-}
+public interface Key {}

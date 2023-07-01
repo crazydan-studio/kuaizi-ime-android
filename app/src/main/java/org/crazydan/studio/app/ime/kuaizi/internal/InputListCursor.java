@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
-
-import android.content.Context;
-import android.view.View;
+package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
- * 输入列表视图
+ * {@link InputList 输入列表}中的光标
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-06-28
  */
-public class InputListView extends View {
-
-    public InputListView(Context context) {
-        super(context);
-    }
+public class InputListCursor {
+    /** 光标位置已选中的输入 */
+    private Input selected;
+    /** 光标位置待插入的输入 */
+    private Input pending;
 }

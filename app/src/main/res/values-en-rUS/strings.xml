@@ -19,6 +19,8 @@
     <string name="app_name">Kuaizi Input Method</string>
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
+    <string name="title_app_demo">Kuaizi Input Method Demo</string>
+
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
 

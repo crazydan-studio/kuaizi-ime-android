@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.ui;
 
-import android.content.Context;
-import android.view.View;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
- * 输入列表视图
+ * 功能演示页面
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-01
  */
-public class InputListView extends View {
+public class Demo extends AppCompatActivity {
 
-    public InputListView(Context context) {
-        super(context);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.demo_activity);
     }
 }

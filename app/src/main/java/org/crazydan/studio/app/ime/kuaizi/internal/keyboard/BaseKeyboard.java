@@ -15,24 +15,40 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * {@link Keyboard 键盘}视图
- * <p/>
- * 负责显示各类键盘的按键布局，并提供事件监听等处理
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-06-28
  */
-public class KeyboardView extends RecyclerView {
+public abstract class BaseKeyboard implements Keyboard {
+    /** 左右手模式 */
+    private HandMode handMode = HandMode.Right;
 
-    public KeyboardView(@NonNull Context context) {
-        super(context);
+    /** 输入列表 */
+    private InputList inputList;
+
+    @Override
+    public void reset() {
+
+    }
+
+    public HandMode getHandMode() {
+        return handMode;
+    }
+
+    public void setHandMode(HandMode handMode) {
+        this.handMode = handMode;
+    }
+
+    public InputList getInputList() {
+        return inputList;
+    }
+
+    public void setInputList(InputList inputList) {
+        this.inputList = inputList;
     }
 }

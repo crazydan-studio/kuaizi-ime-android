@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import android.content.Context;
-import android.view.View;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * 输入列表视图
+ * {@link Keyboard 键盘}左右手模式
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-06-28
  */
-public class InputListView extends View {
-
-    public InputListView(Context context) {
-        super(context);
-    }
+public enum HandMode {
+    /** 左手模式 */
+    Left,
+    /** 右手模式 */
+    Right,
 }
