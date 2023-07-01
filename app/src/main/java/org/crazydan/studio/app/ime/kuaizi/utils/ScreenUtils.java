@@ -15,28 +15,21 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui;
+package org.crazydan.studio.app.ime.kuaizi.utils;
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import org.crazydan.studio.app.ime.kuaizi.R;
+import android.content.res.Resources;
 
 /**
- * 功能演示页面
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class Demo extends AppCompatActivity {
+public class ScreenUtils {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public static int pxToDp(int px) {
+        return (int) (px / Resources.getSystem().getDisplayMetrics().density);
+    }
 
-        // https://juejin.cn/post/7130482856878407694
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-
-        setContentView(R.layout.demo_activity);
+    public static int dpToPx(int dp) {
+        return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
     }
 }

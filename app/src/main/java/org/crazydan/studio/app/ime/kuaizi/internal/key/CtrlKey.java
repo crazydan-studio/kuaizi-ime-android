@@ -48,6 +48,11 @@ public class CtrlKey implements Key {
     public final Type type;
     public final int iconResId;
 
+    private CtrlKey(Type type, int iconResId) {
+        this.type = type;
+        this.iconResId = iconResId;
+    }
+
     public static CtrlKey space(int iconResId) {
         return new CtrlKey(Type.Space, iconResId);
     }
@@ -78,10 +83,5 @@ public class CtrlKey implements Key {
 
     public static CtrlKey switchToPunctuationKeyboard(int iconResId) {
         return new CtrlKey(Type.SwitchToPunctuationKeyboard, iconResId);
-    }
-
-    private CtrlKey(Type type, int iconResId) {
-        this.type = type;
-        this.iconResId = iconResId;
     }
 }

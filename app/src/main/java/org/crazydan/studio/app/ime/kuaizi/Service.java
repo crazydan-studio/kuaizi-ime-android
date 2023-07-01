@@ -17,8 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
+import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
+import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -27,6 +29,17 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  */
 public class Service extends InputMethodService {
     private ImeInputView inputView;
+
+    public Service() {
+        // https://juejin.cn/post/7130482856878407694
+        // https://developer.android.com/develop/ui/views/theming/darktheme
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
 
     @Override
     public void onInitializeInterface() {

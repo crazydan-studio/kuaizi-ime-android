@@ -15,28 +15,27 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import org.crazydan.studio.app.ime.kuaizi.R;
+import android.view.View;
+import android.widget.ImageView;
+import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * 功能演示页面
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-02
  */
-public class Demo extends AppCompatActivity {
+public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public CtrlKeyView(@NonNull View itemView) {
+        super(itemView);
+    }
 
-        // https://juejin.cn/post/7130482856878407694
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    public void bind(CtrlKey key, HexagonOrientation orientation) {
+        super.bind(key, orientation);
 
-        setContentView(R.layout.demo_activity);
+        this.fgView.setImageResource(key.iconResId);
     }
 }

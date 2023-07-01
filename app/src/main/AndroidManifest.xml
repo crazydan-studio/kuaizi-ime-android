@@ -24,7 +24,8 @@
         <service
                 android:name=".Service"
                 android:exported="false"
-                android:permission="android.permission.BIND_INPUT_METHOD">
+                android:permission="android.permission.BIND_INPUT_METHOD"
+                android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>
@@ -37,7 +38,8 @@
         <activity
                 android:name=".ui.Preferences"
                 android:exported="false"
-                android:label="@string/title_app_preferences">
+                android:label="@string/title_app_preferences"
+                android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
@@ -47,7 +49,7 @@
                 android:name=".ui.Demo"
                 android:exported="true"
                 android:label="@string/title_app_demo"
-                android:theme="@style/Theme.KuaiziIME">
+                android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

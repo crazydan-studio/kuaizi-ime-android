@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView {
+    private Keyboard keyboard;
 
     public KeyboardView(@NonNull Context context) {
         super(context);

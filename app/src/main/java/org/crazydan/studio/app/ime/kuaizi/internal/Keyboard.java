@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+
 /**
  * 键盘
  *
@@ -24,6 +26,14 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  * @date 2023-06-30
  */
 public interface Keyboard {
+
+    /**
+     * 获取二维矩阵{@link Key 按键}
+     * <p/>
+     * 元素不能为<code>null</code>，
+     * 可通过{@link CharKey#blank()}创建占位按键
+     */
+    Key[][] getKeys();
 
     /** 重置状态 */
     void reset();

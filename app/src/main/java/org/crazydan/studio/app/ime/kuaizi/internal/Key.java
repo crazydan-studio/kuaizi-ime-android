@@ -23,4 +23,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key {}
+public interface Key {
+
+    /** 获取背景色资源 id */
+    int getBgColorResId();
+}

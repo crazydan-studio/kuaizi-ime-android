@@ -69,7 +69,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             CtrlKey.enter(R.drawable.ic_enter_left),
             } //
             , new Key[] {
-            null,
+            CharKey.blank(),
             CharKey.punctuation("，"),
             CharKey.alphabet("r"),
             CharKey.alphabet("f"),
@@ -78,7 +78,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             CtrlKey.switchToAlphanumericKeyboard(R.drawable.ic_alphabet_number),
             } //
             , new Key[] {
-            null,
+            CharKey.blank(),
             CharKey.punctuation("。"),
             CharKey.alphabet("d"),
             CharKey.alphabet("b"),

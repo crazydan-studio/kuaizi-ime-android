@@ -27,6 +27,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class CharKey implements Key {
     public enum Type {
+        /** 空白按键，用于按键占位 */
+        Blank,
         /** 字母按键 */
         Alphabet,
         /** 数字按键 */
@@ -39,6 +41,15 @@ public class CharKey implements Key {
 
     public final Type type;
     public final String text;
+
+    private CharKey(Type type, String text) {
+        this.type = type;
+        this.text = text;
+    }
+
+    public static CharKey blank() {
+        return new CharKey(Type.Blank, null);
+    }
 
     public static CharKey alphabet(String text) {
         return new CharKey(Type.Alphabet, text);
@@ -54,10 +65,5 @@ public class CharKey implements Key {
 
     public static CharKey emotion(String text) {
         return new CharKey(Type.Emotion, text);
-    }
-
-    private CharKey(Type type, String text) {
-        this.type = type;
-        this.text = text;
     }
 }
