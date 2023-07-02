@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CtrlKey implements Key {
+public class CtrlKey extends BaseKey<CtrlKey> {
     public enum Type {
         /** 空格 */
         Space,
@@ -45,12 +45,22 @@ public class CtrlKey implements Key {
         SwitchToPunctuationKeyboard,
     }
 
-    public final Type type;
-    public final int iconResId;
+    private final Type type;
+    private final int iconResId;
 
     private CtrlKey(Type type, int iconResId) {
         this.type = type;
         this.iconResId = iconResId;
+    }
+
+    /** 按钮{@link Type 类型} */
+    public Type type() {
+        return this.type;
+    }
+
+    /** 图形资源 id */
+    public int iconResId() {
+        return this.iconResId;
     }
 
     public static CtrlKey space(int iconResId) {

@@ -21,10 +21,10 @@ import android.content.Context;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -61,7 +61,7 @@ public abstract class KeyView<K extends Key, V extends View> extends RecyclerVie
 
         KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
-        int bgColor = ContextCompat.getColor(getContext(), key.getBgColorResId());
+        int bgColor = ColorUtils.getByAttrId(getContext(), key.bgColorAttrId());
         drawable.setColor(bgColor);
 
         this.bgView.setImageDrawable(drawable);

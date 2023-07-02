@@ -18,6 +18,44 @@
 <resources>
 
     <style name="Theme.KuaiziIME" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- 键盘按键样式 -->
+        <item name="key_bg_color">@color/color_black</item>
+        <item name="key_fg_color">@color/color_white</item>
+        <item name="key_blank_bg_color">?attr/key_bg_color</item>
 
+        <item name="key_ctrl_switch_ime_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_ime_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_hand_mode_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_hand_mode_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_alphanumeric_keyboard_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_alphanumeric_keyboard_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_punctuation_keyboard_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
+
+        <item name="key_ctrl_backspace_bg_color">@color/color_red</item>
+        <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_locator_bg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_locator_point_fg_color">#939598</item>
+
+        <item name="key_char_punctuation_bg_color">#02aaf5</item>
+        <item name="key_char_punctuation_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_enter_bg_color">?attr/key_char_punctuation_bg_color</item>
+        <item name="key_ctrl_enter_fg_color">?attr/key_char_punctuation_fg_color</item>
+
+        <item name="key_char_initial_bg_color">#3730a3</item>
+        <item name="key_char_initial_fg_color">?attr/key_fg_color</item>
+        <item name="key_char_final_bg_color">#9d174d</item>
+        <item name="key_char_final_fg_color">?attr/key_fg_color</item>
+        <item name="key_char_initial_nl_bg_color">#9a3412</item>
+        <item name="key_char_initial_nl_fg_color">?attr/key_char_initial_fg_color</item>
+        <item name="key_char_initial_hgwk_bg_color">#86198f</item>
+        <item name="key_char_initial_hgwk_fg_color">?attr/key_char_initial_fg_color</item>
+        <item name="key_char_initial_jqx_bg_color">#5b21b6</item>
+        <item name="key_char_initial_jqx_fg_color">?attr/key_char_initial_fg_color</item>
+        <item name="key_char_initial_scz_bg_color">#155e75</item>
+        <item name="key_char_initial_scz_fg_color">?attr/key_char_initial_fg_color</item>
     </style>
 </resources>

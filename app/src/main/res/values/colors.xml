@@ -16,5 +16,7 @@
   -->
 
 <resources>
-
+    <color name="color_black">#393939</color>
+    <color name="color_white">#ececec</color>
+    <color name="color_red">#991b1b</color>
 </resources>

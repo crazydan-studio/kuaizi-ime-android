@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -44,7 +45,10 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
     public void bind(CharKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        this.fgView.setText(key.text);
+        this.fgView.setText(key.text());
+
+        int fgColor = ColorUtils.getByAttrId(getContext(), key.fgColorAttrId());
+        this.fgView.setTextColor(fgColor);
     }
 
     public void showTouchDown() {

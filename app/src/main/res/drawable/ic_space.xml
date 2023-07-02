@@ -6,5 +6,5 @@
     <!-- https://www.iconfinder.com/icons/8726384/space_key_icon -->
     <path
             android:pathData="m22.8,8.4a1.2,1.2 0,0 0,-1.2 1.2v3.6H2.4V9.6A1.2,1.2 0,0 0,0 9.6v4.8a1.2,1.2 0,0 0,1.2 1.2H22.8A1.2,1.2 0,0 0,24 14.4V9.6A1.2,1.2 0,0 0,22.8 8.4Z"
-            android:fillColor="#393939" />
+            android:fillColor="?attr/key_ctrl_space_fg_color" />
 </vector>

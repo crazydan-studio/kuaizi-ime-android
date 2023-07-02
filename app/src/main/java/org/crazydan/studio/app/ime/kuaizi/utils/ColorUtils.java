@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.utils;
+
+import android.content.Context;
+import android.util.TypedValue;
+import androidx.core.content.ContextCompat;
 
 /**
- * {@link Keyboard 键盘}按键
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-02
  */
-public interface Key {
+public class ColorUtils {
 
-    /** 获取背景色属性 id */
-    int bgColorAttrId();
+    /** 通过属性 id 获取颜色值 */
+    public static int getByAttrId(Context context, int attrId) {
+        TypedValue typedValue = new TypedValue();
+        context.getTheme().resolveAttribute(attrId, typedValue, true);
 
-    /** 设置背景色属性 id */
-    Key bgColorAttrId(int bgColorAttrId);
+        return ContextCompat.getColor(context, typedValue.resourceId);
+    }
 }

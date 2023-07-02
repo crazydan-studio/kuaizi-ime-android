@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CharKey implements Key {
+public class CharKey extends BaseKey<CharKey> {
     public enum Type {
         /** 空白按键，用于按键占位 */
         Blank,
@@ -39,12 +39,35 @@ public class CharKey implements Key {
         Emotion,
     }
 
-    public final Type type;
-    public final String text;
+    private final Type type;
+    private final String text;
+
+    private int fgColorAttrId;
 
     private CharKey(Type type, String text) {
         this.type = type;
         this.text = text;
+    }
+
+    /** 按键{@link Type 类型} */
+    public Type type() {
+        return this.type;
+    }
+
+    /** 按键文本内容 */
+    public String text() {
+        return this.text;
+    }
+
+    /** 获取前景色属性 id */
+    public int fgColorAttrId() {
+        return this.fgColorAttrId;
+    }
+
+    /** 设置前景色属性 id */
+    public CharKey fgColorAttrId(int fgColorAttrId) {
+        this.fgColorAttrId = fgColorAttrId;
+        return this;
     }
 
     public static CharKey blank() {

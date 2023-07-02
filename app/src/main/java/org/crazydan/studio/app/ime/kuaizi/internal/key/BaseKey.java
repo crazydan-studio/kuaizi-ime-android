@@ -15,19 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.key;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
- * {@link Keyboard 键盘}按键
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-02
  */
-public interface Key {
+public abstract class BaseKey<K extends BaseKey<?>> implements Key {
+    private int bgColorAttrId;
 
-    /** 获取背景色属性 id */
-    int bgColorAttrId();
+    @Override
+    public int bgColorAttrId() {
+        return this.bgColorAttrId;
+    }
 
-    /** 设置背景色属性 id */
-    Key bgColorAttrId(int bgColorAttrId);
+    @Override
+    public K bgColorAttrId(int bgColorAttrId) {
+        this.bgColorAttrId = bgColorAttrId;
+        return (K) this;
+    }
 }
