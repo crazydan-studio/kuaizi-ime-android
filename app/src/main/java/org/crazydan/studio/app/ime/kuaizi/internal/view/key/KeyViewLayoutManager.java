@@ -170,6 +170,7 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
             this.gridPaddingLeft = this.gridPaddingTop = 0;
         }
 
+        // TODO 1. 高度为 200dp 时，纵向按键显示不全；2. 纵向按键存在被截取的情况；
         // 相邻六边形中心间距的计算公式见: https://www.redblobgames.com/grids/hexagons/#spacing
         double distanceHalf = radius * cos_30 + spacing;
         HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>().setGridWidth(this.gridColumns)

@@ -63,6 +63,7 @@ public abstract class KeyView<K extends Key, V extends View> extends RecyclerVie
 
         int bgColor = ColorUtils.getByAttrId(getContext(), key.bgColorAttrId());
         drawable.setColor(bgColor);
+        drawable.setCornerRadius(10);
 
         this.bgView.setImageDrawable(drawable);
     }
