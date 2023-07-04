@@ -32,6 +32,7 @@
             android:inputType="" />
 
     <org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView
+            android:id="@+id/ime_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 </LinearLayout>

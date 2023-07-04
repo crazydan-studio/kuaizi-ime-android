@@ -26,6 +26,25 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  * @date 2023-06-30
  */
 public interface Keyboard {
+    /** 键盘类型 */
+    enum Type {
+        /** 汉语拼音键盘 */
+        Pinyin,
+        /** 英文（含字母和数字）键盘 */
+        English,
+        /** 数字键盘 */
+        Number,
+        /** 电话号码键盘 */
+        Phone
+    }
+
+    /** 键盘布局方向 */
+    enum Orientation {
+        /** 纵向 */
+        Portrait,
+        /** 横向 */
+        Landscape
+    }
 
     /**
      * 获取二维矩阵{@link Key 按键}
@@ -33,7 +52,7 @@ public interface Keyboard {
      * 元素不能为<code>null</code>，
      * 可通过{@link CharKey#blank()}创建占位按键
      */
-    Key[][] getKeys();
+    Key[][] getKeys(Orientation orientation);
 
     /** 重置状态 */
     void reset();

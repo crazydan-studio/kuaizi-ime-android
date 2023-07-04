@@ -18,7 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
+import androidx.annotation.Nullable;
 
 /**
  * 输入列表视图
@@ -29,6 +31,10 @@ import android.view.View;
 public class InputListView extends View {
 
     public InputListView(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public InputListView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
     }
 }

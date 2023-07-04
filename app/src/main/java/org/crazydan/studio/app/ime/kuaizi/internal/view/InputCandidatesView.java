@@ -18,7 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
+import androidx.annotation.Nullable;
 
 /**
  * 输入候选字/词视图
@@ -31,6 +33,10 @@ import android.view.View;
 public class InputCandidatesView extends View {
 
     public InputCandidatesView(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public InputCandidatesView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
     }
 }

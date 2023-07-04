@@ -16,8 +16,8 @@
   -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:padding="0dp">
 
     <ImageView
@@ -25,10 +25,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+    <!-- 控制图形设置为按键大小的 60% -->
     <ImageView
             android:id="@+id/fg_view"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_centerInParent="true" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:scaleX=".6"
+            android:scaleY=".6" />
 
 </RelativeLayout>

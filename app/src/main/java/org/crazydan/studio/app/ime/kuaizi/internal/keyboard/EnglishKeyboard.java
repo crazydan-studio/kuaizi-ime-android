@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.utils;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import android.content.Context;
-import android.util.TypedValue;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
+ * 英文{@link Keyboard 键盘}
+ * <p/>
+ * 含字母和数字
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-02
+ * @date 2023-07-04
  */
-public class ColorUtils {
-
-    /** 通过属性 id 获取颜色值 */
-    public static int getByAttrId(Context context, int attrId) {
-        // https://stackoverflow.com/questions/17277618/get-color-value-programmatically-when-its-a-reference-theme#answer-17277714
-        TypedValue typedValue = new TypedValue();
-        context.getTheme().resolveAttribute(attrId, typedValue, true);
-
-        return typedValue.data;
-    }
-}
+public class EnglishKeyboard {}

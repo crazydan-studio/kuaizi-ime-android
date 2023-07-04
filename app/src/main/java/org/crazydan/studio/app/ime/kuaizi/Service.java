@@ -19,8 +19,13 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
+import android.text.InputType;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 import androidx.appcompat.app.AppCompatDelegate;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -28,6 +33,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @date 2023-06-29
  */
 public class Service extends InputMethodService {
+    private InputMethodManager inputMethodManager;
+    private InputMethodSubtype inputMethodSubtype;
+
     private ImeInputView inputView;
 
     public Service() {
@@ -42,6 +50,12 @@ public class Service extends InputMethodService {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        this.inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+    }
+
+    @Override
     public void onInitializeInterface() {
         this.inputView = new ImeInputView(getApplicationContext());
     }
@@ -49,5 +63,46 @@ public class Service extends InputMethodService {
     @Override
     public View onCreateInputView() {
         return this.inputView;
+    }
+
+    @Override
+    public void onStartInputView(EditorInfo info, boolean restarting) {
+        InputMethodSubtype subtype = this.inputMethodManager.getCurrentInputMethodSubtype();
+        onCurrentInputMethodSubtypeChanged(subtype);
+    }
+
+    @Override
+    public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
+        this.inputMethodSubtype = subtype;
+    }
+
+    @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+
+        Keyboard.Type keyboardType = Keyboard.Type.Pinyin;
+        switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
+            case InputType.TYPE_CLASS_NUMBER:
+            case InputType.TYPE_CLASS_DATETIME:
+                keyboardType = Keyboard.Type.Number;
+                break;
+            case InputType.TYPE_CLASS_PHONE:
+                keyboardType = Keyboard.Type.Phone;
+                break;
+            default:
+                if (this.inputMethodSubtype != null //
+                    && "en_US".equals(this.inputMethodSubtype.getLanguageTag())) {
+                    keyboardType = Keyboard.Type.English;
+                }
+        }
+
+        this.inputView.keyboard.startInput(keyboardType);
+    }
+
+    @Override
+    public void onFinishInput() {
+        super.onFinishInput();
+
+        this.inputView.keyboard.finishInput();
     }
 }

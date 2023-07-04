@@ -43,8 +43,12 @@ public class KeyViewAdapter extends RecyclerView.Adapter<KeyView<?, ?>> {
     private final HexagonOrientation orientation;
     private final List<Key> keys = new ArrayList<>();
 
-    public KeyViewAdapter(Key[][] keys, HexagonOrientation orientation) {
+    public KeyViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
+    }
+
+    public void setKeys(Key[][] keys) {
+        this.keys.clear();
 
         for (Key[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
@@ -86,6 +90,10 @@ public class KeyViewAdapter extends RecyclerView.Adapter<KeyView<?, ?>> {
         } else {
             return new CharKeyView(inflateKeyView(parent, R.layout.char_key_view));
         }
+    }
+
+    public HexagonOrientation getOrientation() {
+        return this.orientation;
     }
 
     private View inflateKeyView(ViewGroup parent, int resId) {

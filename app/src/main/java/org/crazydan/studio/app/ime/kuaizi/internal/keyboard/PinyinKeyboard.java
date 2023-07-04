@@ -119,4 +119,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             CtrlKey.switchToPunctuationKeyboard(R.drawable.ic_punctuation).bgColorAttrId(R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color),
             },
             };
+
+    @Override
+    public Key[][] getKeys(Orientation orientation) {
+        return portrait_right_hand_keys;
+    }
 }

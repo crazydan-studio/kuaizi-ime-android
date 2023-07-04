@@ -17,10 +17,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.AttributeSet;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
+import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * {@link Keyboard 键盘}视图
@@ -31,9 +39,62 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView {
+    private final KeyViewAdapter adapter;
+    private final KeyViewLayoutManager layoutManager;
+    private HexagonOrientation keyViewOrientation;
+
     private Keyboard keyboard;
+    private Keyboard.Orientation keyboardOrientation;
 
     public KeyboardView(@NonNull Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+
+        this.keyViewOrientation = HexagonOrientation.POINTY_TOP;
+        this.keyboardOrientation = Keyboard.Orientation.Portrait;
+
+        this.adapter = new KeyViewAdapter(this.keyViewOrientation);
+        this.layoutManager = new KeyViewLayoutManager(this.keyViewOrientation);
+        setAdapter(this.adapter);
+        setLayoutManager(this.layoutManager);
+    }
+
+    public void startInput(Keyboard.Type type) {
+        changeKeyboardType(type);
+    }
+
+    public void finishInput() {
+        //
+    }
+
+    public void changeKeyboardType(Keyboard.Type type) {
+        Keyboard oldKeyboard = this.keyboard;
+
+        switch (type) {
+            default:
+                if (!(this.keyboard instanceof PinyinKeyboard)) {
+                    this.keyboard = new PinyinKeyboard();
+                }
+        }
+
+        if (oldKeyboard != this.keyboard) {
+            relayout();
+        } else {
+            this.keyboard.reset();
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void relayout() {
+        Key[][] keys = this.keyboard.getKeys(this.keyboardOrientation);
+        int columns = keys[0].length;
+        int rows = keys.length;
+        this.layoutManager.configGrid(columns, rows, 8);
+
+        this.adapter.setKeys(keys);
+        this.adapter.notifyDataSetChanged();
     }
 }

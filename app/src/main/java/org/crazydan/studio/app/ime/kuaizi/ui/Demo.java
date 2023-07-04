@@ -21,6 +21,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
  * 功能演示页面
@@ -29,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  * @date 2023-07-01
  */
 public class Demo extends AppCompatActivity {
+    private ImeInputView inputView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,5 +41,8 @@ public class Demo extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         setContentView(R.layout.demo_activity);
+
+        this.inputView = findViewById(R.id.ime_view);
+        this.inputView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
     }
 }
