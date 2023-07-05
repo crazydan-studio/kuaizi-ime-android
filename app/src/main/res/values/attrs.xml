@@ -18,6 +18,7 @@
 <resources>
     <declare-styleable name="keyboard_style">
         <attr name="keyboard_bg_color" format="color" />
+        <attr name="keyboard_divider_color" format="color" />
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />

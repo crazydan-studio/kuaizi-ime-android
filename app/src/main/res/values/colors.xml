@@ -20,4 +20,5 @@
     <color name="color_white">#ececec</color>
     <color name="color_red_800">#991b1b</color>
     <color name="color_gray_950">#030712</color>
+    <color name="color_gray_600">#4b5563</color>
 </resources>

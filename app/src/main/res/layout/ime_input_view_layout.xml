@@ -27,10 +27,22 @@
             android:layout_width="match_parent"
             android:layout_height="50dp" />
 
+    <View
+            android:id="@+id/divider_1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/keyboard_divider_color" />
+
     <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
             android:id="@+id/input_list"
             android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:layout_height="60dp" />
+
+    <View
+            android:id="@+id/divider_2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/keyboard_divider_color" />
 
     <org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView
             android:id="@+id/keyboard"
