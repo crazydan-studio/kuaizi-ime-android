@@ -37,7 +37,8 @@ public class Demo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // https://juejin.cn/post/7130482856878407694
+        // 启用暗黑主题: https://juejin.cn/post/7130482856878407694
+        // https://developer.android.com/develop/ui/views/theming/darktheme
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         setContentView(R.layout.demo_activity);

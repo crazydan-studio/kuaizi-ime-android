@@ -36,16 +36,12 @@ public class ImeInputView extends FrameLayout {
     public final InputListView inputList;
     public final InputCandidatesView inputCandidates;
 
-    public ImeInputView(Context context) {
-        this(context, null);
-    }
-
     public ImeInputView(
             @NonNull Context context, @Nullable AttributeSet attrs
     ) {
         super(context, attrs);
 
-        inflate(context, R.layout.ime_input_view, this);
+        inflate(context, R.layout.ime_input_view_layout, this);
 
         this.keyboard = findViewById(R.id.keyboard);
         this.inputList = findViewById(R.id.input_list);

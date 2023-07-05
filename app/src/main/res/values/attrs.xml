@@ -16,7 +16,9 @@
   -->
 
 <resources>
-    <declare-styleable name="KeyboardStyles">
+    <declare-styleable name="keyboard_style">
+        <attr name="keyboard_bg_color" format="color" />
+
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
         <attr name="key_blank_bg_color" format="color" />

@@ -15,26 +15,7 @@
   ~ limitations under the License.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:background="#030712">
-
-    <org.crazydan.studio.app.ime.kuaizi.internal.view.InputCandidatesView
-            android:id="@+id/input_candidates"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" />
-
-    <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
-            android:id="@+id/input_list"
-            android:layout_width="match_parent"
-            android:layout_height="80dp" />
-
-    <org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView
-            android:id="@+id/keyboard"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="4dp" />
-</LinearLayout>
+        android:layout_alignParentBottom="true" />

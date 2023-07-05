@@ -20,11 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
-import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -34,15 +35,10 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  */
 public class Service extends InputMethodService {
     private InputMethodManager inputMethodManager;
-    private InputMethodSubtype inputMethodSubtype;
 
+    private ContextThemeWrapper inputViewTheme;
     private ImeInputView inputView;
-
-    public Service() {
-        // https://juejin.cn/post/7130482856878407694
-        // https://developer.android.com/develop/ui/views/theming/darktheme
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-    }
+    private Keyboard.Type inputKeyboardType;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -53,15 +49,21 @@ public class Service extends InputMethodService {
     public void onCreate() {
         super.onCreate();
         this.inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        this.inputViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
     }
 
     @Override
     public void onInitializeInterface() {
-        this.inputView = new ImeInputView(getApplicationContext());
+
     }
 
     @Override
     public View onCreateInputView() {
+        // 只能通过 Context Theme 设置输入视图的暗黑模式，
+        // 而 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES) 方式无效
+        // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
+        this.inputView = (ImeInputView) LayoutInflater.from(this.inputViewTheme).inflate(R.layout.ime_input_view, null);
+
         return this.inputView;
     }
 
@@ -73,7 +75,14 @@ public class Service extends InputMethodService {
 
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        this.inputMethodSubtype = subtype;
+        Keyboard.Type keyboardType = this.inputKeyboardType;
+        if (keyboardType == Keyboard.Type.Pinyin //
+            && subtype != null //
+            && ("en_US".equals(subtype.getLocale()) //
+                || "en_US".equals(subtype.getLanguageTag()))) {
+            keyboardType = Keyboard.Type.English;
+        }
+        this.inputView.keyboard.startInput(keyboardType);
     }
 
     @Override
@@ -89,14 +98,9 @@ public class Service extends InputMethodService {
             case InputType.TYPE_CLASS_PHONE:
                 keyboardType = Keyboard.Type.Phone;
                 break;
-            default:
-                if (this.inputMethodSubtype != null //
-                    && "en_US".equals(this.inputMethodSubtype.getLanguageTag())) {
-                    keyboardType = Keyboard.Type.English;
-                }
         }
 
-        this.inputView.keyboard.startInput(keyboardType);
+        this.inputKeyboardType = keyboardType;
     }
 
     @Override

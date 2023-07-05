@@ -16,22 +16,25 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="?attr/keyboard_bg_color">
 
-    <EditText
-            android:id="@+id/text_input"
+    <org.crazydan.studio.app.ime.kuaizi.internal.view.InputCandidatesView
+            android:id="@+id/input_candidates"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:autofillHints=""
-            tools:ignore="LabelFor"
-            android:enabled="false"
-            android:inputType="" />
+            android:layout_height="50dp" />
 
-    <include
-            android:id="@+id/ime_view"
-            layout="@layout/ime_input_view" />
+    <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
+            android:id="@+id/input_list"
+            android:layout_width="match_parent"
+            android:layout_height="80dp" />
+
+    <org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView
+            android:id="@+id/keyboard"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_margin="4dp" />
 </LinearLayout>
