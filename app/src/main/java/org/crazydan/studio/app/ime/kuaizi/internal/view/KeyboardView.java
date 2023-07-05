@@ -20,14 +20,18 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewTouchListener;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -41,6 +45,8 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class KeyboardView extends RecyclerView {
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
+    private final KeyViewTouchListener touchListener;
+
     private HexagonOrientation keyViewOrientation;
 
     private Keyboard keyboard;
@@ -58,8 +64,11 @@ public class KeyboardView extends RecyclerView {
 
         this.adapter = new KeyViewAdapter(this.keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(this.keyViewOrientation);
+        this.touchListener = new KeyViewTouchListener();
+
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+        addOnItemTouchListener(this.touchListener);
     }
 
     public void startInput(Keyboard.Type type) {
@@ -96,5 +105,27 @@ public class KeyboardView extends RecyclerView {
 
         this.adapter.setKeys(keys);
         this.adapter.notifyDataSetChanged();
+    }
+
+    /** 找到事件坐标下可见的{@link  KeyView 按键视图} */
+    public KeyView<?, ?> findVisibleKeyViewUnder(MotionEvent e) {
+        View child = this.layoutManager.findChildViewUnder(e.getX(), e.getY());
+
+        KeyView<?, ?> keyView = child != null ? (KeyView<?, ?>) getChildViewHolder(child) : null;
+
+        return keyView != null && !keyView.isHidden() ? keyView : null;
+    }
+
+    public void onLongPress(KeyView<?, ?> keyView) {}
+
+    public void onLongPressEnd(KeyView<?, ?> keyView) {
+    }
+
+    public void onClick(KeyView<?, ?> keyView) {}
+
+    public void onMove(KeyView<?, ?> keyView) {
+    }
+
+    public void onMoveEnd(KeyView<?, ?> keyView) {
     }
 }

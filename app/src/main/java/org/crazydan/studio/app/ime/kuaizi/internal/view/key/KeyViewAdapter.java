@@ -28,11 +28,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
+ * {@link Keyboard 键盘}{@link Key 按键}的{@link RecyclerView}适配器
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
@@ -90,10 +93,6 @@ public class KeyViewAdapter extends RecyclerView.Adapter<KeyView<?, ?>> {
         } else {
             return new CharKeyView(inflateKeyView(parent, R.layout.char_key_view));
         }
-    }
-
-    public HexagonOrientation getOrientation() {
-        return this.orientation;
     }
 
     private View inflateKeyView(ViewGroup parent, int resId) {

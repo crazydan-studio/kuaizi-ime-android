@@ -20,10 +20,13 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
+ * {@link Keyboard 键盘}{@link CtrlKey 控制按键}的视图
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-02
  */

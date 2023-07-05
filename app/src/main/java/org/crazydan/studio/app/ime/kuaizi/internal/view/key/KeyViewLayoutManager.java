@@ -22,6 +22,8 @@ import java.util.List;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.Hexagon;
 import org.hexworks.mixite.core.api.HexagonOrientation;
@@ -32,6 +34,8 @@ import org.hexworks.mixite.core.api.Point;
 import org.hexworks.mixite.core.api.contract.SatelliteData;
 
 /**
+ * {@link Keyboard 键盘}{@link Key 按键}的{@link RecyclerView}布局器
+ * <p/>
  * 注意：<ul>
  * <li>通过按键布局视图的 margin 设置按键与父视图的间隙，
  * 从而降低通过 padding 设置间隙所造成的计算复杂度；</li>
@@ -42,7 +46,7 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
  */
 public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
     /** 按键正六边形方向 */
-    private final HexagonOrientation orientation;
+    private final HexagonOrientation gridItemOrientation;
 
     /** 按键正六边形半径 */
     private double gridItemRadius;
@@ -59,13 +63,29 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
 
     private HexagonalGrid<SatelliteData> grid;
 
-    public KeyViewLayoutManager(HexagonOrientation orientation) {
-        this.orientation = orientation;
+    public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
+        this.gridItemOrientation = gridItemOrientation;
     }
 
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
         return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    }
+
+    @Override
+    public boolean canScrollHorizontally() {
+        return false;
+    }
+
+    @Override
+    public boolean canScrollVertically() {
+        return false;
+    }
+
+    public void configGrid(int columns, int rows, int itemSpacing) {
+        this.gridColumns = columns;
+        this.gridRows = rows;
+        this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacing);
     }
 
     @Override
@@ -106,84 +126,8 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
         }
     }
 
-    @Override
-    public boolean canScrollHorizontally() {
-        return false;
-    }
-
-    @Override
-    public boolean canScrollVertically() {
-        return false;
-    }
-
-    public void configGrid(int gridColumns, int gridRows, int itemSpacing) {
-        this.gridColumns = gridColumns;
-        this.gridRows = gridRows;
-        this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacing);
-    }
-
-    private HexagonalGrid<SatelliteData> createGrid() {
-        double cos_30 = Math.cos(Math.toRadians(30));
-
-        // Note: 只有布局完成后，才能得到视图的宽高
-        // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
-        // - 这里按照按键紧挨的情况计算正六边形的半径，
-        //   再在绘制时按照按键间隔计算正六边形的实际绘制半径
-        // - 相邻六边形中心间距的计算公式见: https://www.redblobgames.com/grids/hexagons/#spacing
-        // - 横向半径（r1）与宽度（w）的关系: w = (2 * n + 1) * r1 * cos30
-        // - 纵向半径（r2）与高度（h）的关系: h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
-        // - 最终正六边形的半径: radius = Math.min(r1, r2)
-        // - 按键实际绘制半径: R = radius - spacing / (2 * cos30)
-        int w = this.orientation == HexagonOrientation.POINTY_TOP ? getWidth() : getHeight();
-        int h = this.orientation == HexagonOrientation.POINTY_TOP ? getHeight() : getWidth();
-        int n = this.orientation == HexagonOrientation.POINTY_TOP ? this.gridColumns : this.gridRows;
-        int m = this.orientation == HexagonOrientation.POINTY_TOP ? this.gridRows : this.gridColumns;
-        double r1 = w / ((2 * n + 1) * cos_30);
-        double r2 = h / (2 * ((m - 1) * cos_30 * cos_30 + 1));
-        double radius;
-        int compare = Double.compare(r1, r2);
-
-        // 计算左上角的空白偏移量
-        if (compare < 0) {
-            radius = r1;
-
-            double h_used = 2 * radius + (m - 1) * cos_30 * (2 * radius * cos_30);
-            double paddingY = (h - h_used) / 2;
-            if (this.orientation == HexagonOrientation.POINTY_TOP) {
-                this.gridPaddingLeft = 0;
-                this.gridPaddingTop = paddingY;
-            } else {
-                this.gridPaddingLeft = paddingY;
-                this.gridPaddingTop = 0;
-            }
-        } else if (compare > 0) {
-            radius = r2;
-
-            double w_used = (2 * n + 1) * radius * cos_30;
-            double paddingX = (w - w_used) / 2;
-            if (this.orientation == HexagonOrientation.POINTY_TOP) {
-                this.gridPaddingLeft = paddingX;
-                this.gridPaddingTop = 0;
-            } else {
-                this.gridPaddingLeft = 0;
-                this.gridPaddingTop = paddingX;
-            }
-        } else {
-            radius = r1;
-            this.gridPaddingLeft = this.gridPaddingTop = 0;
-        }
-
-        this.gridItemRadius = radius - this.gridItemSpacing / (2 * cos_30);
-
-        HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>().setGridWidth(this.gridColumns)
-                                                                                  .setGridHeight(this.gridRows)
-                                                                                  .setGridLayout(HexagonalGridLayout.RECTANGULAR)
-                                                                                  .setOrientation(this.orientation)
-                                                                                  .setRadius(radius);
-        return builder.build();
-    }
-
-    public View findChildViewUnder(float x, float y) {
+    /** 找出指定位置下的子视图 */
+    public View findChildViewUnder(double x, double y) {
         int itemCount = getItemCount();
 
         int i = 0;
@@ -202,6 +146,65 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
         }
 
         return null;
+    }
+
+    private HexagonalGrid<SatelliteData> createGrid() {
+        double cos_30 = Math.cos(Math.toRadians(30));
+
+        // Note: 只有布局完成后，才能得到视图的宽高
+        // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
+        // - 这里按照按键紧挨的情况计算正六边形的半径，
+        //   再在绘制时按照按键间隔计算正六边形的实际绘制半径
+        // - 相邻六边形中心间距的计算公式见: https://www.redblobgames.com/grids/hexagons/#spacing
+        // - 横向半径（r1）与宽度（w）的关系: w = (2 * n + 1) * r1 * cos30
+        // - 纵向半径（r2）与高度（h）的关系: h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
+        // - 最终正六边形的半径: radius = Math.min(r1, r2)
+        // - 按键实际绘制半径: R = radius - spacing / (2 * cos30)
+        int w = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? getWidth() : getHeight();
+        int h = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? getHeight() : getWidth();
+        int n = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? this.gridColumns : this.gridRows;
+        int m = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? this.gridRows : this.gridColumns;
+        double r1 = w / ((2 * n + 1) * cos_30);
+        double r2 = h / (2 * ((m - 1) * cos_30 * cos_30 + 1));
+        double radius;
+        int compare = Double.compare(r1, r2);
+
+        // 计算左上角的空白偏移量
+        this.gridPaddingLeft = this.gridPaddingTop = 0;
+        if (compare < 0) {
+            radius = r1;
+
+            double h_used = 2 * radius + (m - 1) * cos_30 * (2 * radius * cos_30);
+            double paddingY = (h - h_used) / 2;
+            if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
+                this.gridPaddingTop = paddingY;
+            } else {
+                this.gridPaddingLeft = paddingY;
+            }
+        } else if (compare > 0) {
+            radius = r2;
+
+            double w_used = (2 * n + 1) * radius * cos_30;
+            double paddingX = (w - w_used) / 2;
+            if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
+                this.gridPaddingLeft = paddingX;
+            } else {
+                this.gridPaddingTop = paddingX;
+            }
+        } else {
+            radius = r1;
+        }
+
+        this.gridItemRadius = radius - this.gridItemSpacing / (2 * cos_30);
+
+        HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>();
+        builder.setGridWidth(this.gridColumns)
+               .setGridHeight(this.gridRows)
+               .setGridLayout(HexagonalGridLayout.RECTANGULAR)
+               .setOrientation(this.gridItemOrientation)
+               .setRadius(radius);
+
+        return builder.build();
     }
 
     private boolean isInside(List<Point> points, Point point) {
