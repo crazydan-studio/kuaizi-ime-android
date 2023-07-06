@@ -15,38 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
 
 /**
- * {@link InputList 输入列表}中的光标
+ * {@link KeyMsg#FingerMove}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-28
+ * @date 2023-07-06
  */
-public class InputListCursor {
-    /** 光标位置已选中的输入 */
-    private Input selected;
-    /** 光标位置待插入的输入 */
-    private Input pending;
+public class FingerMoveMsgData extends KeyMsgData {
+    /** 靠近的按键 */
+    public final Key closed;
 
-    public void reset() {
-        this.selected = null;
-        this.pending = null;
-    }
-
-    public Input selected() {
-        return this.selected;
-    }
-
-    protected void selected(Input selected) {
-        this.selected = selected;
-    }
-
-    public Input pending() {
-        return this.pending;
-    }
-
-    protected void pending(Input pending) {
-        this.pending = pending;
+    public FingerMoveMsgData(Key target, Key closed) {
+        super(target);
+        this.closed = closed;
     }
 }

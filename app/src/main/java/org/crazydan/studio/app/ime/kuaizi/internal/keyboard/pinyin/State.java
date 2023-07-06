@@ -15,38 +15,33 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 
 /**
- * {@link InputList 输入列表}中的光标
+ * {@link PinyinKeyboard 汉语拼音键盘}的状态
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-28
+ * @date 2023-07-06
  */
-public class InputListCursor {
-    /** 光标位置已选中的输入 */
-    private Input selected;
-    /** 光标位置待插入的输入 */
-    private Input pending;
-
-    public void reset() {
-        this.selected = null;
-        this.pending = null;
-    }
-
-    public Input selected() {
-        return this.selected;
-    }
-
-    protected void selected(Input selected) {
-        this.selected = selected;
-    }
-
-    public Input pending() {
-        return this.pending;
-    }
-
-    protected void pending(Input pending) {
-        this.pending = pending;
-    }
+public enum State {
+    /** 初始 */
+    Init,
+    /** 待输入 */
+    InputWaiting,
+    /** 输入中 */
+    Inputting,
+    /** 输入组件光标定位 */
+    LocatingInputTargetCursor,
+    /** 输入组件光标已定位 */
+    LocatingInputTargetCursorDone,
+    /** 输入组件文本选择 */
+    SelectingInputTargetText,
+    /** 输入组件文本已选择 */
+    SelectingInputTargetTextDone,
+    /** 输入光标移动 */
+    MovingInputListCursor,
+    /** 候选字选择 */
+    SelectingInputCandidates,
 }

@@ -17,11 +17,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.R;
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerMoveMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 
 /**
  * 汉语拼音{@link Keyboard 键盘}
@@ -30,98 +41,82 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    /** 纵向 7 x 6 的按键矩阵 */
-    private static final Key[][] portrait_right_hand_keys = new Key[][] {
-            new Key[] {
-                    CtrlKey.switchIME(R.drawable.ic_keyboard).bgColorAttrId(R.attr.key_ctrl_switch_ime_bg_color),
-                    CharKey.punctuation("：")
-                           .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-                    CharKey.alphabet("i")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("a")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("e")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("o")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("u")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    } //
-            , new Key[] {
-            CharKey.punctuation("！")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.punctuation("？")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("j")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("q")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("s")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CharKey.alphabet("z")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CtrlKey.backspace(R.drawable.ic_backspace_left).bgColorAttrId(R.attr.key_ctrl_backspace_bg_color),
-            } //
-            , new Key[] {
-            CtrlKey.switchHandMode(R.drawable.ic_switch_to_left_hand).bgColorAttrId(R.attr.key_ctrl_switch_hand_mode_bg_color),
-            CharKey.alphabet("ü")
-                   .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-            CharKey.alphabet("h")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("g")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("x")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("c")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CtrlKey.space(R.drawable.ic_space).bgColorAttrId(R.attr.key_ctrl_space_bg_color),
-            } //
-            , new Key[] {
-            CharKey.punctuation("、")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("n")
-                   .fgColorAttrId(R.attr.key_char_initial_nl_fg_color).bgColorAttrId(R.attr.key_char_initial_nl_bg_color),
-            CharKey.alphabet("l")
-                   .fgColorAttrId(R.attr.key_char_initial_nl_fg_color).bgColorAttrId(R.attr.key_char_initial_nl_bg_color),
-            CtrlKey.locator(R.drawable.ic_left_hand_move).bgColorAttrId(R.attr.key_ctrl_locator_bg_color),
-            CharKey.alphabet("w")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("k")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CtrlKey.enter(R.drawable.ic_enter_left).bgColorAttrId(R.attr.key_ctrl_enter_bg_color),
-            } //
-            , new Key[] {
-            CharKey.blank().bgColorAttrId(R.attr.key_blank_bg_color),
-            CharKey.punctuation("，")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("r")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("f")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("m")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("p")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CtrlKey.switchToAlphanumericKeyboard(R.drawable.ic_alphabet_number).bgColorAttrId(R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color),
-            } //
-            , new Key[] {
-            CharKey.blank().bgColorAttrId(R.attr.key_blank_bg_color),
-            CharKey.punctuation("。")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("d")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("b")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("t")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("y")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CtrlKey.switchToPunctuationKeyboard(R.drawable.ic_punctuation).bgColorAttrId(R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color),
-            },
-            };
+    private final PinyinCharTree pinyinCharTree;
+    private State state = State.Init;
+    private boolean slidingInput;
+
+    public PinyinKeyboard(PinyinCharTree pinyinCharTree) {
+        this.pinyinCharTree = pinyinCharTree;
+    }
 
     @Override
-    public Key[][] getKeys(Orientation orientation) {
-        return portrait_right_hand_keys;
+    public void reset() {
+        this.state = State.Init;
+        super.reset();
+    }
+
+    @Override
+    public Key[][] keys(Orientation orientation) {
+        return KeyTable.keys(orientation, handMode());
+    }
+
+    @Override
+    public void onKeyMsg(KeyMsg msg, KeyMsgData data) {
+        if (data.target instanceof CharKey) {
+            onCharKeyMsg(msg, data);
+        } else if (data.target instanceof CtrlKey) {
+            onCtrlKeyMsg(msg, data);
+        }
+    }
+
+    private void onCharKeyMsg(KeyMsg msg, KeyMsgData data) {
+        CharKey key = (CharKey) data.target;
+        if (key.type() == CharKey.Type.Blank) {
+            return;
+        }
+
+        switch (msg) {
+            case KeyLongPress: {
+                this.state = State.Inputting;
+                this.slidingInput = true;
+                inputList().initPending();
+
+                CharInput input = (CharInput) inputList().cursor().pending();
+                input.append(key);
+
+                onInputtingChars(input, key, null);
+                break;
+            }
+            case FingerMove: {
+                if (this.state == State.Inputting && this.slidingInput) {
+                    CharInput input = (CharInput) inputList().cursor().pending();
+                    if (key != input.currentKey()) {
+                        input.append(key);
+
+                        Key closed = ((FingerMoveMsgData) data).closed;
+                        onInputtingChars(input, key, closed);
+                    }
+                }
+                break;
+            }
+            case KeyLongPressEnd: {
+                if (this.state == State.Inputting) {
+                    this.slidingInput = false;
+                    inputList().confirmPending();
+                    onInputMsg(InputMsg.InputtingCharsDone, null);
+                }
+                break;
+            }
+        }
+    }
+
+    private void onCtrlKeyMsg(KeyMsg msg, KeyMsgData data) {
+    }
+
+    private void onInputtingChars(CharInput input, CharKey currentKey, Key closedKey) {
+        List<String> nextChars = this.pinyinCharTree.findNextChars(input.chars());
+        InputMsgData data = new InputtingCharsMsgData(input.keys(), currentKey, closedKey, nextChars);
+
+        onInputMsg(InputMsg.InputtingChars, data);
     }
 }

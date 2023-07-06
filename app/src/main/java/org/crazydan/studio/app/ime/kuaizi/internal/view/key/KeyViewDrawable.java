@@ -100,7 +100,7 @@ public class KeyViewDrawable extends Drawable {
         double[] vertexY = new double[6];
         for (int i = 0; i < 6; i++) {
             int times = this.orientation == HexagonOrientation.FLAT_TOP ? 2 * i : 2 * i + 1;
-            double radians = (double) (Math.toRadians(30 * times));
+            double radians = Math.toRadians(30 * times);
 
             vertexX[i] = centerX + radius * Math.cos(radians);
             vertexY[i] = centerY + radius * Math.sin(radians);

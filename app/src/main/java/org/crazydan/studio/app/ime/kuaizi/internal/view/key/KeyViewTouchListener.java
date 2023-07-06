@@ -23,6 +23,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerMoveMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 
 /**
@@ -32,20 +35,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
  * @date 2023-07-06
  */
 public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
-    private static final long LONG_PRESS_TIMEOUT_MILLS = 1000;
-
-    private enum Status {
-        LongPressing,
-        Moving,
-        None,
-    }
-
-    private Status status = Status.None;
-
+    private static final long LONG_PRESS_TIMEOUT_MILLS = 600;
     // https://stackoverflow.com/questions/6519748/how-to-determine-a-long-touch-on-android/24050544#24050544
     private final Handler longPressListenerHandler = new Handler();
+    private boolean longPressing;
+    private boolean moving;
     private Runnable longPressListener;
-    private KeyView<?, ?> currentKeyView;
+    private KeyView<?, ?> longPressKeyView;
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -63,35 +59,43 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
         KeyView<?, ?> keyView = keyboardView.findVisibleKeyViewUnder(e);
 
         switch (e.getAction()) {
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: {
                 startLongPress(keyboardView, keyView);
                 break;
+            }
             case MotionEvent.ACTION_UP: {
-                if (this.status != Status.LongPressing) {
-                    if (this.currentKeyView == keyView) {
-                        onClick(keyboardView, keyView);
-                    }
+                if (!this.longPressing //
+                    && !this.moving) {
+                    onClick(keyboardView, keyView);
                 }
+                onTouchEnd(keyboardView, keyView);
+                break;
             }
-            break;
-            case MotionEvent.ACTION_MOVE:
-                onMove(keyboardView, keyView);
+            case MotionEvent.ACTION_MOVE: {
+                if (!this.longPressing) {
+                    cleanLongPress();
+                }
+
+                KeyView<?, ?> nearKeyView = keyboardView.findVisibleKeyViewNear(e, 8);
+                onMove(keyboardView, keyView, nearKeyView);
                 break;
-            case MotionEvent.ACTION_CANCEL:
+            }
+            case MotionEvent.ACTION_CANCEL: {
+                onTouchEnd(keyboardView, keyView);
                 break;
+            }
+        }
+    }
+
+    private void onTouchEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
+        if (this.longPressing) {
+            onLongPressEnd(keyboardView, keyView);
+        }
+        if (this.moving) {
+            onMoveEnd(keyboardView, keyView);
         }
 
-        this.currentKeyView = keyView;
-        if (e.getAction() == MotionEvent.ACTION_CANCEL //
-            || e.getAction() == MotionEvent.ACTION_UP) {
-            if (this.status == Status.LongPressing) {
-                onLongPressEnd(keyboardView, keyView);
-            } else if (this.status == Status.Moving) {
-                onMoveEnd(keyboardView, keyView);
-            }
-
-            cleanLongPress();
-        }
+        cleanLongPress();
     }
 
     private void startLongPress(KeyboardView keyboardView, KeyView<?, ?> keyView) {
@@ -106,28 +110,38 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
             this.longPressListenerHandler.removeCallbacks(this.longPressListener);
             this.longPressListener = null;
         }
-        this.status = Status.None;
+
+        this.longPressing = false;
+        this.longPressKeyView = null;
     }
 
     private void onLongPress(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        this.status = Status.LongPressing;
-        keyboardView.onLongPress(keyView);
+        this.longPressing = true;
+        this.longPressKeyView = keyView;
+
+        KeyMsgData data = new KeyMsgData(keyView.key());
+        keyboardView.onKeyMsg(KeyMsg.KeyLongPress, data);
     }
 
     private void onLongPressEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        keyboardView.onLongPressEnd(keyView);
+        KeyMsgData data = new KeyMsgData(this.longPressKeyView.key());
+        keyboardView.onKeyMsg(KeyMsg.KeyLongPressEnd, data);
     }
 
     private void onClick(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        keyboardView.onClick(keyView);
+        KeyMsgData data = new KeyMsgData(keyView != null ? keyView.key() : null);
+        keyboardView.onKeyMsg(KeyMsg.KeyClick, data);
     }
 
-    private void onMove(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        this.status = Status.Moving;
-        keyboardView.onMove(keyView);
+    private void onMove(KeyboardView keyboardView, KeyView<?, ?> keyView, KeyView<?, ?> nearKeyView) {
+        this.moving = true;
+
+        FingerMoveMsgData data = new FingerMoveMsgData(keyView != null ? keyView.key() : null,
+                                                       nearKeyView != null ? nearKeyView.key() : null);
+        keyboardView.onKeyMsg(KeyMsg.FingerMove, data);
     }
 
     private void onMoveEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        keyboardView.onMoveEnd(keyView);
+        this.moving = false;
     }
 }

@@ -29,7 +29,10 @@
             android:autofillHints=""
             tools:ignore="LabelFor"
             android:enabled="false"
-            android:inputType="" />
+            android:inputType=""
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:focusedByDefault="false" />
 
     <include
             layout="@layout/ime_input_view"

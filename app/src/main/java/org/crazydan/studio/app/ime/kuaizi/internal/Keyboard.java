@@ -18,6 +18,10 @@
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
 
 /**
  * 键盘
@@ -26,6 +30,29 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  * @date 2023-06-30
  */
 public interface Keyboard {
+    /**
+     * 获取二维矩阵{@link Key 按键}
+     * <p/>
+     * 元素不能为<code>null</code>，
+     * 可通过{@link CharKey#blank()}创建占位按键
+     */
+    Key[][] keys(Orientation orientation);
+
+    void inputList(InputList inputList);
+
+    /** 重置状态 */
+    void reset();
+
+    /** 处理按{@link KeyMsg 键消息} */
+    void onKeyMsg(KeyMsg msg, KeyMsgData data);
+
+    /**
+     * 添加{@link InputMsg 输入消息监听}
+     * <p/>
+     * 忽略重复加入的监听
+     */
+    void addInputMsgListener(InputMsgListener listener);
+
     /** 键盘类型 */
     enum Type {
         /** 汉语拼音键盘 */
@@ -45,15 +72,4 @@ public interface Keyboard {
         /** 横向 */
         Landscape
     }
-
-    /**
-     * 获取二维矩阵{@link Key 按键}
-     * <p/>
-     * 元素不能为<code>null</code>，
-     * 可通过{@link CharKey#blank()}创建占位按键
-     */
-    Key[][] getKeys(Orientation orientation);
-
-    /** 重置状态 */
-    void reset();
 }

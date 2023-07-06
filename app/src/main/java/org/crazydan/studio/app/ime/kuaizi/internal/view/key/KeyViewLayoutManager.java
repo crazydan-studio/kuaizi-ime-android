@@ -93,7 +93,7 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
         detachAndScrapAttachedViews(recycler);
 
         int itemCount = state.getItemCount();
-        if (itemCount <= 0) {
+        if (itemCount <= 0 || this.gridColumns <= 0 || this.gridRows <= 0) {
             return;
         }
 

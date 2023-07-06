@@ -47,8 +47,8 @@ public abstract class KeyView<K extends Key, V extends View> extends RecyclerVie
         this.fgView = itemView.findViewById(R.id.fg_view);
     }
 
-    public K getKey() {
-        return key;
+    public K key() {
+        return this.key;
     }
 
     public boolean isHidden() {

@@ -17,9 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
+import android.content.Context;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -29,6 +33,25 @@ import com.google.gson.reflect.TypeToken;
  * @date 2023-07-01
  */
 public class GsonUtils {
+
+    /** 从 raw 资源中读取对象数据 */
+    public static <T> T fromRawResourceJson(Context context, Class<T> cls, int rawResId) {
+        try (
+                InputStream input = context.getResources().openRawResource(rawResId);
+                BufferedReader bf = new BufferedReader(new InputStreamReader(input))
+        ) {
+            StringBuilder sb = new StringBuilder();
+            String line = bf.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = bf.readLine();
+            }
+
+            return fromJson(sb.toString(), cls);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * @param obj

@@ -17,14 +17,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
+    private final List<InputMsgListener> inputMsgListeners = new ArrayList<>();
+
     /** 左右手模式 */
     private HandMode handMode = HandMode.Right;
 
@@ -36,19 +44,31 @@ public abstract class BaseKeyboard implements Keyboard {
 
     }
 
-    public HandMode getHandMode() {
-        return handMode;
+    public HandMode handMode() {
+        return this.handMode;
     }
 
-    public void setHandMode(HandMode handMode) {
+    public void handMode(HandMode handMode) {
         this.handMode = handMode;
     }
 
-    public InputList getInputList() {
-        return inputList;
+    public InputList inputList() {
+        return this.inputList;
     }
 
-    public void setInputList(InputList inputList) {
+    @Override
+    public void inputList(InputList inputList) {
         this.inputList = inputList;
+    }
+
+    @Override
+    public void addInputMsgListener(InputMsgListener listener) {
+        if (!this.inputMsgListeners.contains(listener)) {
+            this.inputMsgListeners.add(listener);
+        }
+    }
+
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        this.inputMsgListeners.forEach(listener -> listener.onInputMsg(msg, data));
     }
 }

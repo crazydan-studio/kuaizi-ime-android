@@ -26,41 +26,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-06-28
  */
 public class CtrlKey extends BaseKey<CtrlKey> {
-    public enum Type {
-        /** 空格 */
-        Space,
-        /** 向前删除 */
-        Backspace,
-        /** 切换输入法 */
-        SwitchIME,
-        /** 切换左右手模式 */
-        SwitchHandMode,
-        /** 定位按钮 */
-        Locator,
-        /** 回车 */
-        Enter,
-        /** 切换至字母数字键盘 */
-        SwitchToAlphanumericKeyboard,
-        /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */
-        SwitchToPunctuationKeyboard,
-    }
-
     private final Type type;
     private final int iconResId;
-
     private CtrlKey(Type type, int iconResId) {
         this.type = type;
         this.iconResId = iconResId;
-    }
-
-    /** 按钮{@link Type 类型} */
-    public Type type() {
-        return this.type;
-    }
-
-    /** 图形资源 id */
-    public int iconResId() {
-        return this.iconResId;
     }
 
     public static CtrlKey space(int iconResId) {
@@ -93,5 +63,34 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
     public static CtrlKey switchToPunctuationKeyboard(int iconResId) {
         return new CtrlKey(Type.SwitchToPunctuationKeyboard, iconResId);
+    }
+
+    /** 按钮{@link Type 类型} */
+    public Type type() {
+        return this.type;
+    }
+
+    /** 图形资源 id */
+    public int iconResId() {
+        return this.iconResId;
+    }
+
+    public enum Type {
+        /** 空格 */
+        Space,
+        /** 向前删除 */
+        Backspace,
+        /** 切换输入法 */
+        SwitchIME,
+        /** 切换左右手模式 */
+        SwitchHandMode,
+        /** 定位按钮 */
+        Locator,
+        /** 回车 */
+        Enter,
+        /** 切换至字母数字键盘 */
+        SwitchToAlphanumericKeyboard,
+        /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */
+        SwitchToPunctuationKeyboard,
     }
 }

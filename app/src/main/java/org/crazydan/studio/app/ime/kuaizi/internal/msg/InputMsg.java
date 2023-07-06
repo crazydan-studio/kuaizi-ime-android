@@ -15,27 +15,12 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
-import java.util.List;
-
-/**
- * {@link Keyboard 键盘}输入对象，包含零个或多个字符
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-28
- */
-public interface Input {
-
-    /** 输入按键列表 */
-    List<Key> keys();
-
-    /** 当前按键 */
-    Key currentKey();
-
-    /** 追加输入按键 */
-    void append(Key key);
-
-    /** 获取输入字符列表 */
-    List<String> chars();
+/** 键盘输入消息 */
+public enum InputMsg {
+    /** 字符输入中 */
+    InputtingChars,
+    /** 字符已输入结束 */
+    InputtingCharsDone,
 }

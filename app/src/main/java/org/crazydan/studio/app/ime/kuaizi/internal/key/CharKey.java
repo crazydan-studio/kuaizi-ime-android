@@ -26,27 +26,33 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-06-28
  */
 public class CharKey extends BaseKey<CharKey> {
-    public enum Type {
-        /** 空白按键，用于按键占位 */
-        Blank,
-        /** 字母按键 */
-        Alphabet,
-        /** 数字按键 */
-        Number,
-        /** 标点符号按键 */
-        Punctuation,
-        /** 颜文字按键 */
-        Emotion,
-    }
-
     private final Type type;
     private final String text;
-
     private int fgColorAttrId;
 
     private CharKey(Type type, String text) {
         this.type = type;
         this.text = text;
+    }
+
+    public static CharKey blank() {
+        return new CharKey(Type.Blank, null);
+    }
+
+    public static CharKey alphabet(String text) {
+        return new CharKey(Type.Alphabet, text);
+    }
+
+    public static CharKey number(String text) {
+        return new CharKey(Type.Number, text);
+    }
+
+    public static CharKey punctuation(String text) {
+        return new CharKey(Type.Punctuation, text);
+    }
+
+    public static CharKey emotion(String text) {
+        return new CharKey(Type.Emotion, text);
     }
 
     /** 按键{@link Type 类型} */
@@ -70,23 +76,16 @@ public class CharKey extends BaseKey<CharKey> {
         return this;
     }
 
-    public static CharKey blank() {
-        return new CharKey(Type.Blank, null);
-    }
-
-    public static CharKey alphabet(String text) {
-        return new CharKey(Type.Alphabet, text);
-    }
-
-    public static CharKey number(String text) {
-        return new CharKey(Type.Number, text);
-    }
-
-    public static CharKey punctuation(String text) {
-        return new CharKey(Type.Punctuation, text);
-    }
-
-    public static CharKey emotion(String text) {
-        return new CharKey(Type.Emotion, text);
+    public enum Type {
+        /** 空白按键，用于按键占位 */
+        Blank,
+        /** 字母按键 */
+        Alphabet,
+        /** 数字按键 */
+        Number,
+        /** 标点符号按键 */
+        Punctuation,
+        /** 颜文字按键 */
+        Emotion,
     }
 }
