@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
  * @date 2023-07-06
  */
 public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
-    private static final long LONG_PRESS_TIMEOUT_MILLS = 600;
+    private static final long LONG_PRESS_TIMEOUT_MILLS = 500;
     // https://stackoverflow.com/questions/6519748/how-to-determine-a-long-touch-on-android/24050544#24050544
     private final Handler longPressListenerHandler = new Handler();
     private boolean longPressing;

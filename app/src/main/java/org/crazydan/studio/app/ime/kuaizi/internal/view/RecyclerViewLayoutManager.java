@@ -17,34 +17,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * 输入候选字/词视图
- * <p/>
- * 负责显示输入的可选字列表
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-07
  */
-public class InputCandidatesView extends View implements InputMsgListener {
+public abstract class RecyclerViewLayoutManager extends RecyclerView.LayoutManager {
 
-    public InputCandidatesView(Context context) {
-        this(context, null);
-    }
-
-    public InputCandidatesView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    @Override
+    public RecyclerView.LayoutParams generateDefaultLayoutParams() {
+        return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public boolean canScrollHorizontally() {
+        return false;
+    }
 
+    @Override
+    public boolean canScrollVertically() {
+        return false;
     }
 }

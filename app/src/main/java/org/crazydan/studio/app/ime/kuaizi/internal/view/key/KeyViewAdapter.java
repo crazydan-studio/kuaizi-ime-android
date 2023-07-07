@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -39,7 +38,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyViewAdapter extends RecyclerView.Adapter<KeyView<?, ?>> {
+public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_CHAR_KEY = 0;
     private static final int VIEW_TYPE_CTRL_KEY = 1;
 
@@ -89,13 +88,9 @@ public class KeyViewAdapter extends RecyclerView.Adapter<KeyView<?, ?>> {
     @Override
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
-            return new CtrlKeyView(inflateKeyView(parent, R.layout.ctrl_key_view));
+            return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
         } else {
-            return new CharKeyView(inflateKeyView(parent, R.layout.char_key_view));
+            return new CharKeyView(inflateHolderView(parent, R.layout.char_key_view));
         }
-    }
-
-    private View inflateKeyView(ViewGroup parent, int resId) {
-        return LayoutInflater.from(parent.getContext()).inflate(resId, parent, false);
     }
 }

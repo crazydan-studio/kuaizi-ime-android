@@ -22,8 +22,8 @@
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
-        <attr name="key_blank_bg_color" format="color" />
 
+        <attr name="key_ctrl_noop_bg_color" format="color" />
         <attr name="key_ctrl_switch_ime_bg_color" format="color" />
         <attr name="key_ctrl_switch_ime_fg_color" format="color" />
         <attr name="key_ctrl_switch_hand_mode_bg_color" format="color" />

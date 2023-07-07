@@ -18,33 +18,33 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
-import android.util.AttributeSet;
 import android.view.View;
-import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * 输入候选字/词视图
- * <p/>
- * 负责显示输入的可选字列表
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-07
  */
-public class InputCandidatesView extends View implements InputMsgListener {
+public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
-    public InputCandidatesView(Context context) {
-        this(context, null);
+    public RecyclerViewHolder(@NonNull View itemView) {
+        super(itemView);
     }
 
-    public InputCandidatesView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    public boolean isHidden() {
+        return this.itemView.getVisibility() == View.GONE;
     }
 
-    @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public final Context getContext() {
+        return this.itemView.getContext();
+    }
 
+    public void hide() {
+        this.itemView.setVisibility(View.GONE);
+    }
+
+    public void show() {
+        this.itemView.setVisibility(View.VISIBLE);
     }
 }

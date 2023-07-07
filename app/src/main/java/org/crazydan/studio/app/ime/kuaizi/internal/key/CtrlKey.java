@@ -28,9 +28,14 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class CtrlKey extends BaseKey<CtrlKey> {
     private final Type type;
     private final int iconResId;
+
     private CtrlKey(Type type, int iconResId) {
         this.type = type;
         this.iconResId = iconResId;
+    }
+
+    public static CtrlKey noop() {
+        return new CtrlKey(Type.NoOp, -1);
     }
 
     public static CtrlKey space(int iconResId) {
@@ -76,6 +81,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     }
 
     public enum Type {
+        /** 占位按键 */
+        NoOp,
         /** 空格 */
         Space,
         /** 向前删除 */

@@ -35,10 +35,6 @@ public class CharKey extends BaseKey<CharKey> {
         this.text = text;
     }
 
-    public static CharKey blank() {
-        return new CharKey(Type.Blank, null);
-    }
-
     public static CharKey alphabet(String text) {
         return new CharKey(Type.Alphabet, text);
     }
@@ -77,8 +73,6 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     public enum Type {
-        /** 空白按键，用于按键占位 */
-        Blank,
         /** 字母按键 */
         Alphabet,
         /** 数字按键 */

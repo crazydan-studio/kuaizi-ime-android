@@ -17,8 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    private final List<InputMsgListener> inputMsgListeners = new ArrayList<>();
+    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
     /** 左右手模式 */
     private HandMode handMode = HandMode.Right;
@@ -63,9 +63,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void addInputMsgListener(InputMsgListener listener) {
-        if (!this.inputMsgListeners.contains(listener)) {
-            this.inputMsgListeners.add(listener);
-        }
+        this.inputMsgListeners.add(listener);
     }
 
     public void onInputMsg(InputMsg msg, InputMsgData data) {

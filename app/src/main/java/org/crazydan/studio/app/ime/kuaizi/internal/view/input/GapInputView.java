@@ -15,32 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
-import org.hexworks.mixite.core.api.HexagonOrientation;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 
 /**
- * {@link Keyboard 键盘}{@link CtrlKey 控制按键}的视图
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-02
+ * @date 2023-07-07
  */
-public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
+public class GapInputView extends InputView<GapInput> {
+    private ImageView gapView;
 
-    public CtrlKeyView(@NonNull View itemView) {
+    public GapInputView(@NonNull View itemView) {
         super(itemView);
-    }
 
-    public void bind(CtrlKey key, HexagonOrientation orientation) {
-        super.bind(key, orientation);
-
-        if (key.iconResId() > 0) {
-            this.fgView.setImageResource(key.iconResId());
-        }
+        this.gapView = itemView.findViewById(R.id.gap_view);
     }
 }

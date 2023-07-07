@@ -17,14 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
-import android.content.Context;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -34,7 +33,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class KeyView<K extends Key, V extends View> extends RecyclerView.ViewHolder {
+public abstract class KeyView<K extends Key, V extends View> extends RecyclerViewHolder {
     protected final ImageView bgView;
     protected final V fgView;
 
@@ -51,14 +50,6 @@ public abstract class KeyView<K extends Key, V extends View> extends RecyclerVie
         return this.key;
     }
 
-    public boolean isHidden() {
-        return this.itemView.getVisibility() == View.GONE;
-    }
-
-    public final Context getContext() {
-        return this.itemView.getContext();
-    }
-
     public void bind(K key, HexagonOrientation orientation) {
         this.key = key;
 
@@ -69,13 +60,5 @@ public abstract class KeyView<K extends Key, V extends View> extends RecyclerVie
         drawable.setCornerRadius(10);
 
         this.bgView.setImageDrawable(drawable);
-    }
-
-    public void hide() {
-        this.itemView.setVisibility(View.GONE);
-    }
-
-    public void show() {
-        this.itemView.setVisibility(View.VISIBLE);
     }
 }

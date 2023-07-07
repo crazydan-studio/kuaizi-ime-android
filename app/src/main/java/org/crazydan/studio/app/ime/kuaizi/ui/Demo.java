@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @date 2023-07-01
  */
 public class Demo extends AppCompatActivity {
-    private ImeInputView inputView;
+    private ImeInputView imeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +43,7 @@ public class Demo extends AppCompatActivity {
 
         setContentView(R.layout.demo_activity);
 
-        this.inputView = findViewById(R.id.ime_view);
-        this.inputView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
+        this.imeView = findViewById(R.id.ime_view);
+        this.imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
     }
 }

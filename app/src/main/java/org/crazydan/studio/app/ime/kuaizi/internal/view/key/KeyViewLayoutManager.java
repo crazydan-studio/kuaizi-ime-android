@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.Hexagon;
 import org.hexworks.mixite.core.api.HexagonOrientation;
@@ -44,7 +45,7 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
+public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     /** 按键正六边形方向 */
     private final HexagonOrientation gridItemOrientation;
 
@@ -65,21 +66,6 @@ public class KeyViewLayoutManager extends RecyclerView.LayoutManager {
 
     public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
-    }
-
-    @Override
-    public RecyclerView.LayoutParams generateDefaultLayoutParams() {
-        return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    }
-
-    @Override
-    public boolean canScrollHorizontally() {
-        return false;
-    }
-
-    @Override
-    public boolean canScrollVertically() {
-        return false;
     }
 
     public void configGrid(int columns, int rows, int itemSpacing) {

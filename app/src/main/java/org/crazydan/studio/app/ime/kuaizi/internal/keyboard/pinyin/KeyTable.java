@@ -93,7 +93,7 @@ public class KeyTable {
             CtrlKey.enter(R.drawable.ic_enter_left).bgColorAttrId(R.attr.key_ctrl_enter_bg_color),
             } //
             , new Key[] {
-            CharKey.blank().bgColorAttrId(R.attr.key_blank_bg_color),
+            CtrlKey.noop().bgColorAttrId(R.attr.key_ctrl_noop_bg_color),
             CharKey.punctuation("，")
                    .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
             CharKey.alphabet("r")
@@ -107,7 +107,7 @@ public class KeyTable {
             CtrlKey.switchToAlphanumericKeyboard(R.drawable.ic_alphabet_number).bgColorAttrId(R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color),
             } //
             , new Key[] {
-            CharKey.blank().bgColorAttrId(R.attr.key_blank_bg_color),
+            CtrlKey.noop().bgColorAttrId(R.attr.key_ctrl_noop_bg_color),
             CharKey.punctuation("。")
                    .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
             CharKey.alphabet("d")

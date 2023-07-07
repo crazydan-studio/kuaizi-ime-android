@@ -36,9 +36,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 public class Service extends InputMethodService {
     private InputMethodManager inputMethodManager;
 
-    private ContextThemeWrapper inputViewTheme;
-    private ImeInputView inputView;
-    private Keyboard.Type inputKeyboardType;
+    private ContextThemeWrapper imeViewTheme;
+    private ImeInputView imeView;
+    private Keyboard.Type imeKeyboardType;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -49,7 +49,7 @@ public class Service extends InputMethodService {
     public void onCreate() {
         super.onCreate();
         this.inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        this.inputViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
+        this.imeViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
     }
 
     @Override
@@ -62,9 +62,9 @@ public class Service extends InputMethodService {
         // 只能通过 Context Theme 设置输入视图的暗黑模式，
         // 而 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES) 方式无效
         // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
-        this.inputView = (ImeInputView) LayoutInflater.from(this.inputViewTheme).inflate(R.layout.ime_input_view, null);
+        this.imeView = (ImeInputView) LayoutInflater.from(this.imeViewTheme).inflate(R.layout.ime_input_view, null);
 
-        return this.inputView;
+        return this.imeView;
     }
 
     @Override
@@ -75,14 +75,14 @@ public class Service extends InputMethodService {
 
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        Keyboard.Type keyboardType = this.inputKeyboardType;
+        Keyboard.Type keyboardType = this.imeKeyboardType;
         if (keyboardType == Keyboard.Type.Pinyin //
             && subtype != null //
             && ("en_US".equals(subtype.getLocale()) //
                 || "en_US".equals(subtype.getLanguageTag()))) {
             keyboardType = Keyboard.Type.English;
         }
-        this.inputView.keyboard.startInput(keyboardType);
+        this.imeView.keyboard.startInput(keyboardType);
     }
 
     @Override
@@ -100,13 +100,13 @@ public class Service extends InputMethodService {
                 break;
         }
 
-        this.inputKeyboardType = keyboardType;
+        this.imeKeyboardType = keyboardType;
     }
 
     @Override
     public void onFinishInput() {
         super.onFinishInput();
 
-        this.inputView.keyboard.finishInput();
+        this.imeView.keyboard.finishInput();
     }
 }

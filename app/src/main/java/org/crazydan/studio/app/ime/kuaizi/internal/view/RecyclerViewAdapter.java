@@ -17,34 +17,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
-import android.content.Context;
-import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
-import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * 输入候选字/词视图
- * <p/>
- * 负责显示输入的可选字列表
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2023-07-07
  */
-public class InputCandidatesView extends View implements InputMsgListener {
+public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<T> {
 
-    public InputCandidatesView(Context context) {
-        this(context, null);
-    }
-
-    public InputCandidatesView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-
+    protected View inflateHolderView(ViewGroup parent, int viewResId) {
+        return LayoutInflater.from(parent.getContext()).inflate(viewResId, parent, false);
     }
 }

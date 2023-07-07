@@ -18,7 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import android.annotation.SuppressLint;
@@ -60,6 +62,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final PinyinCharTree pinyinCharTree;
     private final InputList inputList;
+    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
@@ -75,6 +78,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
         this.inputList = new InputList();
         this.pinyinCharTree = GsonUtils.fromRawResourceJson(context, PinyinCharTree.class, R.raw.pinyin_char_tree);
+        this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
         this.keyboardOrientation = Keyboard.Orientation.Portrait;
@@ -85,6 +89,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
         addOnItemTouchListener(new KeyViewTouchListener());
+    }
+
+    public InputList getInputList() {
+        return this.inputList;
     }
 
     public void startInput(Keyboard.Type type) {
@@ -103,13 +111,22 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         }
 
         this.keyboard.inputList(this.inputList);
-        this.keyboard.addInputMsgListener(this);
+        this.inputMsgListeners.forEach(this.keyboard::addInputMsgListener);
 
         if (oldKeyboard != this.keyboard) {
             relayout();
         } else {
             this.keyboard.reset();
         }
+    }
+
+    /**
+     * 添加{@link InputMsg 输入消息监听}
+     * <p/>
+     * 忽略重复加入的监听，且执行顺序与添加顺序无关
+     */
+    public void addInputMsgListener(InputMsgListener listener) {
+        this.inputMsgListeners.add(listener);
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -133,7 +150,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     /** 找到事件坐标附近可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewNear(MotionEvent e, int deltaDp) {
+    public KeyView<?, ?> findVisibleKeyViewNear(MotionEvent e, int deltaInDp) {
         return null;
     }
 

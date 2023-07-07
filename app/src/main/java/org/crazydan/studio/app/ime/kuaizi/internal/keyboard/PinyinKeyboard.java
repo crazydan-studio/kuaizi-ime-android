@@ -71,9 +71,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCharKeyMsg(KeyMsg msg, KeyMsgData data) {
         CharKey key = (CharKey) data.target;
-        if (key.type() == CharKey.Type.Blank) {
-            return;
-        }
 
         switch (msg) {
             case KeyLongPress: {

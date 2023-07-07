@@ -19,8 +19,14 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutManager;
 
 /**
  * 输入列表视图
@@ -28,7 +34,9 @@ import androidx.annotation.Nullable;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListView extends View {
+public class InputListView extends RecyclerView implements InputMsgListener {
+    private final InputViewAdapter adapter;
+    private final InputViewLayoutManager layoutManager;
 
     public InputListView(Context context) {
         this(context, null);
@@ -36,5 +44,26 @@ public class InputListView extends View {
 
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        this.adapter = new InputViewAdapter();
+        this.layoutManager = new InputViewLayoutManager(context);
+
+        setAdapter(this.adapter);
+        setLayoutManager(this.layoutManager);
+    }
+
+    public void setInputList(InputList inputList) {
+        this.adapter.setInputList(inputList);
+    }
+
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        switch (msg) {
+            case InputtingChars:
+            case InputtingCharsDone:
+                this.adapter.notifyDataSetChanged();
+                smoothScrollToPosition(this.adapter.getItemCount() - 1);
+                break;
+        }
     }
 }

@@ -49,7 +49,7 @@ public interface Keyboard {
     /**
      * 添加{@link InputMsg 输入消息监听}
      * <p/>
-     * 忽略重复加入的监听
+     * 忽略重复加入的监听，且执行顺序与添加顺序无关
      */
     void addInputMsgListener(InputMsgListener listener);
 
