@@ -41,10 +41,18 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void hide() {
-        this.itemView.setVisibility(View.GONE);
+        hideView(this.itemView);
     }
 
     public void show() {
-        this.itemView.setVisibility(View.VISIBLE);
+        showView(this.itemView);
+    }
+
+    protected void hideView(View view) {
+        view.setVisibility(View.GONE);
+    }
+
+    protected void showView(View view) {
+        view.setVisibility(View.VISIBLE);
     }
 }

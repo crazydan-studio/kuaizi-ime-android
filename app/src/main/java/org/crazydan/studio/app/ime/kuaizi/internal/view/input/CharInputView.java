@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -39,14 +40,23 @@ public class CharInputView extends InputView<CharInput> {
         this.wordView = itemView.findViewById(R.id.word_view);
     }
 
-    public void bind(CharInput input, boolean needToAddMargin) {
-        super.bind(input);
+    public void bind(CharInput input, boolean selected, boolean needToAddMargin) {
+        super.bind(input, selected);
 
         int margin = 0;
         if (needToAddMargin) {
             margin = getContext().getResources().getDimensionPixelSize(R.dimen.gap_input_width);
         }
         ((RecyclerView.LayoutParams) this.itemView.getLayoutParams()).setMargins(margin, 0, margin, 0);
+
+        int fgColor;
+        if (selected) {
+            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_selection_fg_color);
+        } else {
+            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_fg_color);
+        }
+        this.notationView.setTextColor(fgColor);
+        this.wordView.setTextColor(fgColor);
 
         this.notationView.setText(String.join("", input.chars()));
         this.wordView.setText("汉");

@@ -17,8 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
+import android.animation.ValueAnimator;
 import android.view.View;
-import android.widget.ImageView;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
@@ -28,11 +31,45 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
  * @date 2023-07-07
  */
 public class GapInputView extends InputView<GapInput> {
-    private ImageView gapView;
+    private View cursorView;
 
     public GapInputView(@NonNull View itemView) {
         super(itemView);
 
-        this.gapView = itemView.findViewById(R.id.gap_view);
+        this.cursorView = itemView.findViewById(R.id.cursor_view);
+    }
+
+    public void bind(GapInput input, boolean selected) {
+        super.bind(input, false);
+
+        if (selected) {
+            startCursorBlink();
+            showView(this.cursorView);
+        } else {
+            stopCursorBlink();
+            hideView(this.cursorView);
+        }
+    }
+
+    public void stopCursorBlink() {
+        this.cursorView.clearAnimation();
+    }
+
+    public void startCursorBlink() {
+        // 图形扩散淡化消失的效果
+        // https://cloud.tencent.com/developer/article/1742156
+        AnimationSet animationSet = new AnimationSet(true);
+
+        Animation[] animations = new Animation[] {
+                new AlphaAnimation(0.5f, 0.1f),
+                };
+        for (Animation animation : animations) {
+            animation.setDuration(800);
+            animation.setRepeatCount(ValueAnimator.INFINITE);
+
+            animationSet.addAnimation(animation);
+        }
+
+        this.cursorView.startAnimation(animationSet);
     }
 }

@@ -44,6 +44,10 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         this.inputList = inputList;
     }
 
+    public int getInputCursorPosition() {
+        return this.inputList.cursorIndex();
+    }
+
     public Input getInputAt(int position) {
         Input input = this.inputList.inputs().get(position);
         Input selected = this.inputList.cursor().selected();
@@ -64,12 +68,14 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
         Input input = getInputAt(position);
-        Input pending = this.inputList.cursor().pending();
+        boolean selected = this.inputList.cursorIndex() == position;
 
         if (input instanceof CharInput) {
-            ((CharInputView) view).bind((CharInput) input, pending != null && pending == input);
+            boolean pending = this.inputList.cursor().pending() == input;
+
+            ((CharInputView) view).bind((CharInput) input, selected, pending);
         } else {
-            ((GapInputView) view).bind((GapInput) input);
+            ((GapInputView) view).bind((GapInput) input, selected);
         }
     }
 

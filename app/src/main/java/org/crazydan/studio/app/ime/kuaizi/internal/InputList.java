@@ -57,19 +57,19 @@ public class InputList {
         Input pending = cursor().pending();
         Input selected = cursor().selected();
 
-        int selectedIndex = inputs().indexOf(selected);
-        if (pending == null || selectedIndex < 0) {
+        int cursorIndex = cursorIndex();
+        if (pending == null || cursorIndex < 0) {
             return;
         }
 
         cursor().pending(null);
         if (selected instanceof CharInput) {
-            inputs().set(selectedIndex, pending);
+            inputs().set(cursorIndex, pending);
             cursor().selected(pending);
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input gap = new GapInput();
-            inputs().addAll(selectedIndex, Arrays.asList(gap, pending));
+            inputs().addAll(cursorIndex, Arrays.asList(gap, pending));
         }
     }
 
@@ -83,6 +83,12 @@ public class InputList {
         // 再创建新的待输入
         CharInput input = new CharInput();
         cursor().pending(input);
+    }
+
+    /** 获取光标位置 */
+    public int cursorIndex() {
+        Input selected = cursor().selected();
+        return inputs().indexOf(selected);
     }
 
     public List<Input> inputs() {

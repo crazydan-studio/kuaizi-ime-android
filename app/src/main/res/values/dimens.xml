@@ -16,5 +16,5 @@
   -->
 
 <resources>
-    <dimen name="gap_input_width">3dp</dimen>
+    <dimen name="gap_input_width">5dp</dimen>
 </resources>
