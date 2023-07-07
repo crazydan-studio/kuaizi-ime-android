@@ -28,22 +28,21 @@ import java.util.stream.Collectors;
 public class PinyinCharTree {
     /** 字母 */
     private final String value;
-    /** 该子树下的 字 的数量 */
-    private final int amount;
+    /** 该子树下的{@link Word 字} */
+    private final List<Word> words = new ArrayList<>();
 
     private final List<PinyinCharTree> children = new ArrayList<>();
 
-    public PinyinCharTree(String value, int amount) {
+    public PinyinCharTree(String value) {
         this.value = value;
-        this.amount = amount;
     }
 
     public String getValue() {
         return this.value;
     }
 
-    public int getAmount() {
-        return this.amount;
+    public List<Word> getWords() {
+        return this.words;
     }
 
     public List<PinyinCharTree> getChildren() {
@@ -75,6 +74,28 @@ public class PinyinCharTree {
         return list;
     }
 
+    /** 查找指定拼音的候选字 */
+    public List<Word> findCandidateWords(List<String> pinyinChars) {
+        List<Word> list = new ArrayList<>();
+
+        if (pinyinChars == null || pinyinChars.isEmpty()) {
+            return list;
+        }
+
+        PinyinCharTree tree = this;
+        for (String pinyinChar : pinyinChars) {
+            tree = tree.getChildByChar(pinyinChar);
+            if (tree == null) {
+                break;
+            }
+        }
+
+        if (tree != null) {
+            list.addAll(tree.getWords());
+        }
+        return list;
+    }
+
     public List<String> childChars() {
         return this.children.stream().map(PinyinCharTree::getValue).collect(Collectors.toList());
     }
@@ -86,5 +107,31 @@ public class PinyinCharTree {
             }
         }
         return null;
+    }
+
+    public static class Word {
+        private String value;
+        private String notation;
+
+        public Word(String value, String notation) {
+            this.value = value;
+            this.notation = notation;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getNotation() {
+            return this.notation;
+        }
+
+        public void setNotation(String notation) {
+            this.notation = notation;
+        }
     }
 }

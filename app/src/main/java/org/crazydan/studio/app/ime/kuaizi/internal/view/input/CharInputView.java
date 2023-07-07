@@ -22,6 +22,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
@@ -58,11 +59,13 @@ public class CharInputView extends InputView<CharInput> {
         this.notationView.setTextColor(fgColor);
         this.wordView.setTextColor(fgColor);
 
-        this.notationView.setText(String.join("", input.chars()));
-        this.wordView.setText("汉");
-
-//        this.notationView.setVisibility(View.GONE);
-//        this.wordView.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
-//        this.wordView.setText(String.join("", input.chars()));
+        PinyinCharTree.Word word = input.word();
+        if (word == null) {
+            this.notationView.setText("");
+            this.wordView.setText(String.join("", input.chars()));
+        } else {
+            this.notationView.setText(word.getNotation());
+            this.wordView.setText(word.getValue());
+        }
     }
 }

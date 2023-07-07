@@ -16,5 +16,8 @@
   -->
 
 <resources>
-    <dimen name="gap_input_width">5dp</dimen>
+    <dimen name="gap_input_width">2dp</dimen>
+    <dimen name="char_input_notation_text_size">12sp</dimen>
+    <dimen name="char_input_word_text_size">24sp</dimen>
+    <dimen name="char_key_text_size">28sp</dimen>
 </resources>

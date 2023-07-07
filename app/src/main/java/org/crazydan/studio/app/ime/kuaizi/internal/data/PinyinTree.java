@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -79,7 +80,7 @@ public class PinyinTree {
     }
 
     public PinyinCharTree charTree() {
-        PinyinCharTree root = new PinyinCharTree("", 0);
+        PinyinCharTree root = new PinyinCharTree("");
         mountCharTree(root);
 
         return root;
@@ -87,7 +88,12 @@ public class PinyinTree {
 
     private void mountCharTree(PinyinCharTree root) {
         this.tree.forEach((ch, child) -> {
-            PinyinCharTree childCharTree = new PinyinCharTree(ch, child.words.size());
+            PinyinCharTree childCharTree = new PinyinCharTree(ch);
+            List<PinyinCharTree.Word> words = child.words.stream()
+                                                         .map(w -> new PinyinCharTree.Word(w.getWord(), w.getPinyin()))
+                                                         .collect(Collectors.toList());
+            childCharTree.getWords().addAll(words);
+
             root.getChildren().add(childCharTree);
 
             child.mountCharTree(childCharTree);

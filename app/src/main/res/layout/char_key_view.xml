@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:textSize="28sp"
+            android:textSize="@dimen/char_key_text_size"
             android:textStyle="bold" />
 
 </RelativeLayout>

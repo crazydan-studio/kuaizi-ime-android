@@ -17,7 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
 
 /**
  * 字符{@link Input 输入}
@@ -27,4 +30,23 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class CharInput extends BaseInput {}
+public class CharInput extends BaseInput {
+    private PinyinCharTree.Word word;
+    private List<PinyinCharTree.Word> candidates;
+
+    public PinyinCharTree.Word word() {
+        return this.word;
+    }
+
+    public void word(PinyinCharTree.Word word) {
+        this.word = word;
+    }
+
+    public List<PinyinCharTree.Word> candidates() {
+        return this.candidates;
+    }
+
+    public void candidates(List<PinyinCharTree.Word> candidates) {
+        this.candidates = candidates;
+    }
+}

@@ -15,18 +15,26 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="@dimen/gap_input_width"
         android:layout_height="match_parent"
-        android:paddingTop="8dp"
-        android:paddingBottom="4dp"
-        android:background="?attr/input_bg_color">
+        android:background="?attr/input_bg_color"
+        android:orientation="vertical">
+
+    <!-- 顶部占位用，以便于光标与汉字的高度对齐 -->
+    <TextView
+            android:id="@+id/placeholder_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/char_input_notation_text_size"
+            android:text="" />
 
     <View
             android:id="@+id/cursor_view"
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:background="?attr/input_fg_color" />
 
-</RelativeLayout>
+</LinearLayout>

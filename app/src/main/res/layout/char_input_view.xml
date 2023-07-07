@@ -15,28 +15,31 @@
   ~ limitations under the License.
   -->
 
-<!-- 字符输入间的间隔通过 间隙输入 占位实现 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 字符输入间的间隔通过 GapInput 占位实现 -->
+<com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        app:flexWrap="nowrap"
+        app:flexDirection="column"
+        app:alignItems="center"
+        app:alignContent="stretch"
         android:background="?attr/input_bg_color">
 
     <TextView
             android:id="@+id/notation_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
+            android:textSize="@dimen/char_input_notation_text_size"
             android:gravity="center"
             android:textColor="?attr/input_fg_color" />
 
     <TextView
             android:id="@+id/word_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textSize="24sp"
+            app:layout_flexGrow="1"
+            android:textSize="@dimen/char_input_word_text_size"
             android:gravity="center"
             android:textColor="?attr/input_fg_color" />
-
-</LinearLayout>
+</com.google.android.flexbox.FlexboxLayout>

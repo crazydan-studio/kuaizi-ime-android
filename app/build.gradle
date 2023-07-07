@@ -37,6 +37,9 @@ dependencies {
     // Note: Java 版本的包名需添加后缀 -jvm
     implementation 'com.github.Hexworks.Mixite:mixite.core-jvm:2020.1.0'
     implementation 'androidx.preference:preference:1.2.0'
+    // https://github.com/google/flexbox-layout
+    // https://blog.csdn.net/weixin_39397471/article/details/90212231
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     testImplementation 'junit:junit:4.13.2'
     // 在单元测试中引入真实的依赖包: 未引入依赖的接口均为 Mock 接口

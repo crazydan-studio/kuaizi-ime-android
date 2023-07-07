@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -41,6 +43,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgDat
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
+    private final Random random = new Random(new Date().getTime());
+
     private final PinyinCharTree pinyinCharTree;
     private State state = State.Init;
     private boolean slidingInput;
@@ -111,6 +115,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingChars(CharInput input, CharKey currentKey, Key closedKey) {
+        List<PinyinCharTree.Word> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars());
+        input.word(candidateWords.isEmpty() ? null : candidateWords.get(this.random.nextInt(candidateWords.size())));
+        input.candidates(candidateWords);
+
         List<String> nextChars = this.pinyinCharTree.findNextChars(input.chars());
         InputMsgData data = new InputtingCharsMsgData(input.keys(), currentKey, closedKey, nextChars);
 
