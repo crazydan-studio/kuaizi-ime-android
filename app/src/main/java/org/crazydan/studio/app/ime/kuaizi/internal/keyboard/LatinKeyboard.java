@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * 字符{@link Input 输入}
+ * 英文{@link Keyboard 键盘}
  * <p/>
- * 任意可见字符的单次输入
+ * 含字母和数字
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-04
  */
-public class CharInput extends BaseInput {}
+public class LatinKeyboard {}

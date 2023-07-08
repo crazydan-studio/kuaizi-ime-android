@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 
@@ -32,6 +33,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  */
 public abstract class BaseInput implements Input {
     private final List<Key> keys = new ArrayList<>();
+
+    private InputWord word;
+    private List<InputWord> candidates;
 
     @Override
     public List<Key> keys() {
@@ -55,5 +59,23 @@ public abstract class BaseInput implements Input {
                         .map(k -> ((CharKey) k).text())
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
+    }
+
+    @Override
+    public InputWord word() {
+        return this.word;
+    }
+
+    public void word(InputWord candidate) {
+        this.word = candidate;
+    }
+
+    @Override
+    public List<InputWord> candidates() {
+        return this.candidates == null ? new ArrayList<>() : this.candidates;
+    }
+
+    public void candidates(List<InputWord> candidates) {
+        this.candidates = candidates;
     }
 }

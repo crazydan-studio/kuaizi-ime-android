@@ -25,6 +25,7 @@ import android.view.animation.AnimationSet;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -44,10 +45,10 @@ public class GapInputView extends InputView<GapInput> {
 
         if (selected) {
             startCursorBlink();
-            showView(this.cursorView);
+            ViewUtils.show(this.cursorView);
         } else {
             stopCursorBlink();
-            hideView(this.cursorView);
+            ViewUtils.hide(this.cursorView);
         }
     }
 

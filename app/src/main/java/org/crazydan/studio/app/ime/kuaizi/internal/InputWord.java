@@ -15,37 +15,36 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
-
-import android.content.Context;
-import android.view.View;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
+ * {@link Input 输入}候选字
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-07-08
  */
-public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
+public class InputWord {
+    private String value;
+    private String notation;
 
-    public RecyclerViewHolder(@NonNull View itemView) {
-        super(itemView);
+    public InputWord(String value, String notation) {
+        this.value = value;
+        this.notation = notation;
     }
 
-    public boolean isHidden() {
-        return this.itemView.getVisibility() == View.GONE;
+    public String getValue() {
+        return this.value;
     }
 
-    public final Context getContext() {
-        return this.itemView.getContext();
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void hide() {
-        ViewUtils.hide(this.itemView);
+    public String getNotation() {
+        return this.notation;
     }
 
-    public void show() {
-        ViewUtils.show(this.itemView);
+    public void setNotation(String notation) {
+        this.notation = notation;
     }
 }

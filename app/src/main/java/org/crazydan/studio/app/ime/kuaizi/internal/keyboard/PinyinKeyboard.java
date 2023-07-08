@@ -20,7 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
@@ -115,7 +117,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingChars(CharInput input, CharKey currentKey, Key closedKey) {
-        List<PinyinCharTree.Word> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars());
+        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars())
+                                                            .stream()
+                                                            .map(w -> new InputWord(w.getValue(), w.getNotation()))
+                                                            .collect(Collectors.toList());
         input.word(candidateWords.isEmpty() ? null : candidateWords.get(this.random.nextInt(candidateWords.size())));
         input.candidates(candidateWords);
 

@@ -20,52 +20,52 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
 /**
+ * {@link Keyboard 键盘}{@link InputWord 输入候选字}的视图
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-07-08
  */
-public class CharInputView extends InputView<CharInput> {
+public class InputCandidateView extends RecyclerViewHolder {
     private TextView notationView;
     private TextView wordView;
 
-    public CharInputView(@NonNull View itemView) {
+    private InputWord word;
+
+    public InputCandidateView(@NonNull View itemView) {
         super(itemView);
 
         this.notationView = itemView.findViewById(R.id.notation_view);
         this.wordView = itemView.findViewById(R.id.word_view);
     }
 
-    public void bind(CharInput input, boolean selected, boolean needToAddMargin) {
-        super.bind(input, selected);
+    public void bind(InputWord word, boolean selected) {
+        this.word = word;
 
-        int margin = 0;
-        if (needToAddMargin) {
-            margin = getContext().getResources().getDimensionPixelSize(R.dimen.gap_input_width);
+        int bgColor;
+        if (selected) {
+            bgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_candidates_selection_bg_color);
+        } else {
+            bgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_candidates_bg_color);
         }
-        ((RecyclerView.LayoutParams) this.itemView.getLayoutParams()).setMargins(margin, 0, margin, 0);
+        this.itemView.setBackgroundColor(bgColor);
 
         int fgColor;
         if (selected) {
-            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_selection_fg_color);
+            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_candidates_selection_fg_color);
         } else {
-            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_fg_color);
+            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_candidates_fg_color);
         }
         this.notationView.setTextColor(fgColor);
         this.wordView.setTextColor(fgColor);
 
-        InputWord word = input.word();
-        if (word == null) {
-            this.notationView.setText("");
-            this.wordView.setText(String.join("", input.chars()));
-        } else {
-            this.notationView.setText(word.getNotation());
-            this.wordView.setText(word.getValue());
-        }
+        this.notationView.setText(word.getNotation());
+        this.wordView.setText(word.getValue());
     }
 }

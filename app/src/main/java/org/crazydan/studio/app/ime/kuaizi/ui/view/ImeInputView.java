@@ -23,7 +23,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCandidatesView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 
@@ -34,7 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 public class ImeInputView extends FrameLayout {
     public final KeyboardView keyboard;
     public final InputListView inputList;
-    public final InputCandidatesView inputCandidates;
 
     public ImeInputView(
             @NonNull Context context, @Nullable AttributeSet attrs
@@ -45,11 +43,9 @@ public class ImeInputView extends FrameLayout {
 
         this.keyboard = findViewById(R.id.keyboard);
         this.inputList = findViewById(R.id.input_list);
-        this.inputCandidates = findViewById(R.id.input_candidates);
 
         this.inputList.setInputList(this.keyboard.getInputList());
 
         this.keyboard.addInputMsgListener(this.inputList);
-        this.keyboard.addInputMsgListener(this.inputCandidates);
     }
 }

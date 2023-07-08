@@ -22,16 +22,11 @@
         android:orientation="vertical"
         android:background="?attr/keyboard_bg_color">
 
-    <org.crazydan.studio.app.ime.kuaizi.internal.view.InputCandidatesView
-            android:id="@+id/input_candidates"
-            android:layout_width="match_parent"
-            android:layout_height="40dp" />
-
     <View
-            android:id="@+id/divider_1"
+            android:id="@+id/top_border"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="?attr/keyboard_divider_color" />
+            android:background="?attr/keyboard_border_color" />
 
     <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
             android:id="@+id/input_list"

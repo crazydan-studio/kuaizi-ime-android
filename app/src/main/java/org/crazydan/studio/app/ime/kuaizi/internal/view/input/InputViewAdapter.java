@@ -44,7 +44,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         this.inputList = inputList;
     }
 
-    public int getInputCursorPosition() {
+    public int getSelectedInputPosition() {
         return this.inputList.cursorIndex();
     }
 

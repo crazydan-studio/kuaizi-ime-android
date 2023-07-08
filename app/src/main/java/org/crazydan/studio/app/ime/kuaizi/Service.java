@@ -62,9 +62,14 @@ public class Service extends InputMethodService {
         // 只能通过 Context Theme 设置输入视图的暗黑模式，
         // 而 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES) 方式无效
         // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
-        this.imeView = (ImeInputView) LayoutInflater.from(this.imeViewTheme).inflate(R.layout.ime_input_view, null);
+        this.imeView = inflateView(R.layout.ime_input_view);
 
         return this.imeView;
+    }
+
+    @Override
+    public View onCreateCandidatesView() {
+        return null;
     }
 
     @Override
@@ -108,5 +113,9 @@ public class Service extends InputMethodService {
         super.onFinishInput();
 
         this.imeView.keyboard.finishInput();
+    }
+
+    private <T extends View> T inflateView(int resId) {
+        return (T) LayoutInflater.from(this.imeViewTheme).inflate(resId, null);
     }
 }

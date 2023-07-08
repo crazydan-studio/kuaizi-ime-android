@@ -17,13 +17,19 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputCandidateViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputCandidateViewLayoutManager;
 
 /**
  * 输入候选字/词视图
@@ -33,7 +39,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputCandidatesView extends View implements InputMsgListener {
+public class InputCandidatesView extends RecyclerView implements InputMsgListener {
+    private final Set<Listener> listeners = new HashSet<>();
+
+    private final InputCandidateViewAdapter adapter;
+    private final InputCandidateViewLayoutManager layoutManager;
 
     public InputCandidatesView(Context context) {
         this(context, null);
@@ -41,10 +51,40 @@ public class InputCandidatesView extends View implements InputMsgListener {
 
     public InputCandidatesView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        this.adapter = new InputCandidateViewAdapter();
+        this.layoutManager = new InputCandidateViewLayoutManager(context);
+
+        setAdapter(this.adapter);
+        setLayoutManager(this.layoutManager);
+    }
+
+    public void setInputList(InputList inputList) {
+        this.adapter.setInputList(inputList);
+    }
+
+    public void addListener(Listener listener) {
+        this.listeners.add(listener);
     }
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
+        switch (msg) {
+            case InputtingChars:
+            case InputtingCharsDone:
+                boolean shown = this.adapter.getItemCount() > 0;
+                this.listeners.forEach(l -> l.onShown(shown));
 
+                this.adapter.notifyDataSetChanged();
+                if (shown) {
+                    smoothScrollToPosition(this.adapter.getSelectedWordPosition());
+                }
+                break;
+        }
+    }
+
+    public interface Listener {
+
+        void onShown(boolean shown);
     }
 }

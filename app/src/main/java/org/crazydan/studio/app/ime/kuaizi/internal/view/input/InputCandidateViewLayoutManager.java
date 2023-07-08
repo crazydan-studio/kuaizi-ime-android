@@ -15,16 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
+import android.content.Context;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * 英文{@link Keyboard 键盘}
- * <p/>
- * 含字母和数字
+ * {@link Keyboard 键盘}{@link InputWord 输入候选字}的{@link RecyclerView}布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-04
+ * @date 2023-07-08
  */
-public class EnglishKeyboard {}
+public class InputCandidateViewLayoutManager extends LinearLayoutManager {
+
+    public InputCandidateViewLayoutManager(Context context) {
+        super(context, RecyclerView.HORIZONTAL, false);
+    }
+}

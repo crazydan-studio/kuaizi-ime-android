@@ -15,37 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.utils;
 
-import android.content.Context;
 import android.view.View;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-07-08
  */
-public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
+public class ViewUtils {
 
-    public RecyclerViewHolder(@NonNull View itemView) {
-        super(itemView);
+    public static void visible(View view, boolean shown) {
+        view.setVisibility(shown ? View.VISIBLE : View.GONE);
     }
 
-    public boolean isHidden() {
-        return this.itemView.getVisibility() == View.GONE;
+    public static void show(View view) {
+        visible(view, true);
     }
 
-    public final Context getContext() {
-        return this.itemView.getContext();
-    }
-
-    public void hide() {
-        ViewUtils.hide(this.itemView);
-    }
-
-    public void show() {
-        ViewUtils.show(this.itemView);
+    public static void hide(View view) {
+        visible(view, false);
     }
 }

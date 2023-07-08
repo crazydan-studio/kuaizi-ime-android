@@ -38,4 +38,18 @@ public interface Input {
 
     /** 获取输入字符列表 */
     List<String> chars();
+
+    /**
+     * 已选择候选字
+     *
+     * @return 若为<code>null</code>，则表示未选择
+     */
+    InputWord word();
+
+    /**
+     * 可选候选字列表
+     *
+     * @return 若无候选字，则返回空集合
+     */
+    List<InputWord> candidates();
 }
