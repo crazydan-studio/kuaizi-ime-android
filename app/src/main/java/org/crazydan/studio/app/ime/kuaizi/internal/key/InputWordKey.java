@@ -17,39 +17,39 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
 /**
+ * {@link InputWord 输入候选字}按键
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-02
+ * @date 2023-07-09
  */
-public abstract class BaseKey<K extends BaseKey<?>> implements Key {
-    private boolean hidden;
-    private int bgColorAttrId;
+public class InputWordKey extends BaseKey<InputWordKey> {
+    private final InputWord word;
 
-    @Override
-    public void hide() {
-        this.hidden = true;
+    private int fgColorAttrId;
+
+    public static InputWordKey word(InputWord word) {
+        return new InputWordKey(word);
     }
 
-    @Override
-    public void show() {
-        this.hidden = false;
+    private InputWordKey(InputWord word) {
+        this.word = word;
     }
 
-    @Override
-    public boolean isHidden() {
-        return this.hidden;
+    public InputWord word() {
+        return this.word;
     }
 
-    @Override
-    public int bgColorAttrId() {
-        return this.bgColorAttrId;
+    /** 获取前景色属性 id */
+    public int fgColorAttrId() {
+        return this.fgColorAttrId;
     }
 
-    @Override
-    public K bgColorAttrId(int bgColorAttrId) {
-        this.bgColorAttrId = bgColorAttrId;
-        return (K) this;
+    /** 设置前景色属性 id */
+    public InputWordKey fgColorAttrId(int fgColorAttrId) {
+        this.fgColorAttrId = fgColorAttrId;
+        return this;
     }
 }

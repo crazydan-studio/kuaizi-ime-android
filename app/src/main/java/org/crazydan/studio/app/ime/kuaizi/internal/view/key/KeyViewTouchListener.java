@@ -76,6 +76,7 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
                     cleanLongPress();
                 }
 
+                // TODO 增加移动方向以表明是进入按键还是离开按键
                 KeyView<?, ?> nearKeyView = keyboardView.findVisibleKeyViewNear(e, 8);
                 onMove(keyboardView, keyView, nearKeyView);
                 break;

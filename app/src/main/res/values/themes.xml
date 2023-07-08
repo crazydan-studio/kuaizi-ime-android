@@ -37,6 +37,9 @@
         <item name="key_bg_color">@color/color_black</item>
         <item name="key_fg_color">@color/color_white</item>
 
+        <item name="input_word_key_bg_color">?attr/key_bg_color</item>
+        <item name="input_word_key_fg_color">?attr/key_fg_color</item>
+
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_ime_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_ime_fg_color">?attr/key_fg_color</item>
@@ -91,6 +94,9 @@
         <!-- 键盘按键样式 -->
         <item name="key_bg_color">@color/color_black</item>
         <item name="key_fg_color">@color/color_white</item>
+
+        <item name="input_word_key_bg_color">?attr/key_bg_color</item>
+        <item name="input_word_key_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_ime_bg_color">?attr/key_bg_color</item>

@@ -15,28 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 
 /**
- * {@link Keyboard 键盘}按键
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-08
  */
-public interface Key {
+public class CommonInputMsgData implements InputMsgData {
+    private final Keyboard.KeyFactory keyFactory;
 
-    /** 隐藏按键 */
-    void hide();
+    public CommonInputMsgData(Keyboard.KeyFactory keyFactory) {
+        this.keyFactory = keyFactory;
+    }
 
-    /** 显示按键 */
-    void show();
-
-    /** 是否隐藏 */
-    boolean isHidden();
-
-    /** 获取背景色属性 id */
-    int bgColorAttrId();
-
-    /** 设置背景色属性 id */
-    Key bgColorAttrId(int bgColorAttrId);
+    @Override
+    public Keyboard.KeyFactory keyFactory() {
+        return this.keyFactory;
+    }
 }

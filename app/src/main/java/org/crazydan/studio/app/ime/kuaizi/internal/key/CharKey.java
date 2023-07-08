@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
@@ -70,6 +71,12 @@ public class CharKey extends BaseKey<CharKey> {
     public CharKey fgColorAttrId(int fgColorAttrId) {
         this.fgColorAttrId = fgColorAttrId;
         return this;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "CharKey(" + type() + " - " + text() + ')';
     }
 
     public enum Type {

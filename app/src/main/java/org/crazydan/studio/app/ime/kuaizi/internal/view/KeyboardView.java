@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -129,13 +130,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.inputMsgListeners.add(listener);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void relayout() {
-        Key[][] keys = this.keyboard.keys(this.keyboardOrientation);
+        Key[][] keys = createKeys(this.keyboard.keyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
         this.layoutManager.configGrid(columns, rows, 8);
 
+        relayoutKeys(keys);
+    }
+
+    private void relayoutKeys(Key[][] keys) {
         this.adapter.setKeys(keys);
         this.adapter.notifyDataSetChanged();
     }
@@ -171,13 +175,13 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
-        List<KeyView<?, ?>> nextKeyViews = getKeyViewByChars(data.nextChars);
-
-        hideAllKeyViewsExclude(nextKeyViews);
+        Key[][] keys = createKeys(data.keyFactory());
+        relayoutKeys(keys);
     }
 
     private void onInputtingCharsDoneMsg(InputMsgData data) {
-        showAllKeyViews();
+        Key[][] keys = createKeys(data.keyFactory());
+        relayoutKeys(keys);
     }
 
     private void hideAllKeyViewsExclude(List<KeyView<?, ?>> exclude) {
@@ -187,8 +191,19 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         }
     }
 
+    private void hideAllKeysExclude(List<Key> exclude) {
+        if (exclude != null) {
+            filterKeys(key -> exclude.isEmpty() || !exclude.contains(key)).forEach(Key::hide);
+            filterKeys(key -> !exclude.isEmpty() && exclude.contains(key)).forEach(Key::show);
+        }
+    }
+
     private void showAllKeyViews() {
         filterKeyViews(k -> true).forEach(KeyView::show);
+    }
+
+    private void showAllKeys() {
+        filterKeys(k -> true).forEach(Key::show);
     }
 
     private KeyView<?, ?> getKeyViewByKey(Key key) {
@@ -211,6 +226,17 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                                          && chars.contains(((CharKeyView) keyView).key().text()));
     }
 
+    private List<Key> getKeyByChars(List<String> chars) {
+        if (chars == null) {
+            return null;
+        } else if (chars.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return filterKeys(key -> key instanceof CharKey //
+                                 && chars.contains(((CharKey) key).text()));
+    }
+
     private List<KeyView<?, ?>> filterKeyViews(Predicate<KeyView<?, ?>> filter) {
         List<KeyView<?, ?>> list = new ArrayList<>();
 
@@ -223,5 +249,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             }
         }
         return list;
+    }
+
+    private List<Key> filterKeys(Predicate<Key> predicate) {
+        return this.adapter.keys().stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    private Key[][] createKeys(Keyboard.KeyFactory keyFactory) {
+        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
+        option.orientation = this.keyboardOrientation;
+
+        return keyFactory.create(option);
     }
 }

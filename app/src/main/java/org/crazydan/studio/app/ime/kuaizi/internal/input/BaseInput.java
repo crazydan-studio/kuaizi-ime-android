@@ -62,6 +62,11 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public boolean hasWord() {
+        return word() != null;
+    }
+
+    @Override
     public InputWord word() {
         return this.word;
     }

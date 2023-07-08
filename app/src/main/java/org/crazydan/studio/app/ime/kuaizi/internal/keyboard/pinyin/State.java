@@ -42,6 +42,6 @@ public enum State {
     SelectingInputTargetTextDone,
     /** 输入光标移动 */
     MovingInputListCursor,
-    /** 候选字选择 */
-    SelectingInputCandidates,
+    /** 输入候选字选择中 */
+    ChoosingInputCandidate,
 }

@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -41,16 +42,22 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_CHAR_KEY = 0;
     private static final int VIEW_TYPE_CTRL_KEY = 1;
+    private static final int VIEW_TYPE_NULL_KEY = 2;
+    private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
 
     private final HexagonOrientation orientation;
-    private final List<Key> keys = new ArrayList<>();
+    private List<Key> keys = new ArrayList<>();
 
     public KeyViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
     }
 
+    public List<Key> keys() {
+        return this.keys;
+    }
+
     public void setKeys(Key[][] keys) {
-        this.keys.clear();
+        this.keys = new ArrayList<>();
 
         for (Key[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
@@ -68,6 +75,10 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             ((CtrlKeyView) view).bind((CtrlKey) key, this.orientation);
+        } else if (key instanceof InputWordKey) {
+            ((InputWordKeyView) view).bind((InputWordKey) key, this.orientation);
+        } else if (key == null) {
+            ((NullKeyView) view).bind();
         } else {
             ((CharKeyView) view).bind((CharKey) key, this.orientation);
         }
@@ -79,6 +90,10 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             return VIEW_TYPE_CTRL_KEY;
+        } else if (key instanceof InputWordKey) {
+            return VIEW_TYPE_INPUT_WORD_KEY;
+        } else if (key == null) {
+            return VIEW_TYPE_NULL_KEY;
         } else {
             return VIEW_TYPE_CHAR_KEY;
         }
@@ -89,6 +104,10 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
+        } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
+            return new InputWordKeyView(inflateHolderView(parent, R.layout.input_word_key_view));
+        } else if (viewType == VIEW_TYPE_NULL_KEY) {
+            return new NullKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
         } else {
             return new CharKeyView(inflateHolderView(parent, R.layout.char_key_view));
         }

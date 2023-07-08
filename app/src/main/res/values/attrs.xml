@@ -33,6 +33,9 @@
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
 
+        <attr name="input_word_key_bg_color" format="color" />
+        <attr name="input_word_key_fg_color" format="color" />
+
         <attr name="key_ctrl_noop_bg_color" format="color" />
         <attr name="key_ctrl_switch_ime_bg_color" format="color" />
         <attr name="key_ctrl_switch_ime_fg_color" format="color" />

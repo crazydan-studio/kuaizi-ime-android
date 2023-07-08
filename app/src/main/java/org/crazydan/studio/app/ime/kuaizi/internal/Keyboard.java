@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
@@ -30,13 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
  * @date 2023-06-30
  */
 public interface Keyboard {
-    /**
-     * 获取二维矩阵{@link Key 按键}
-     * <p/>
-     * 元素不能为<code>null</code>，
-     * 可通过{@link CharKey#blank()}创建占位按键
-     */
-    Key[][] keys(Orientation orientation);
+
+    KeyFactory keyFactory();
 
     void inputList(InputList inputList);
 
@@ -71,5 +66,20 @@ public interface Keyboard {
         Portrait,
         /** 横向 */
         Landscape
+    }
+
+    /** 按键生成器 */
+    interface KeyFactory {
+        class Option {
+            public Orientation orientation;
+        }
+
+        /**
+         * 获取二维矩阵{@link Key 按键}
+         * <p/>
+         * 元素不能为<code>null</code>，
+         * 可通过{@link CtrlKey#noop()}创建占位按键
+         */
+        Key[][] create(Option option);
     }
 }

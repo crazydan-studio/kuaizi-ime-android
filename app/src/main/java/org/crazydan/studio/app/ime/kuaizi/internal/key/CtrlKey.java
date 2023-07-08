@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
@@ -54,6 +55,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(Type.Enter, iconResId);
     }
 
+    public static CtrlKey chooseWord(int iconResId) {
+        return new CtrlKey(Type.ChooseWord, iconResId);
+    }
+
     public static CtrlKey switchIME(int iconResId) {
         return new CtrlKey(Type.SwitchIME, iconResId);
     }
@@ -80,6 +85,12 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.iconResId;
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return "CtrlKey(" + type() + ')';
+    }
+
     public enum Type {
         /** 占位按键 */
         NoOp,
@@ -95,6 +106,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Locator,
         /** 回车 */
         Enter,
+        /** 选字 */
+        ChooseWord,
         /** 切换至字母数字键盘 */
         SwitchToAlphanumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */

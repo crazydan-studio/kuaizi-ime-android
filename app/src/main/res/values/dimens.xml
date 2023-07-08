@@ -20,4 +20,6 @@
     <dimen name="char_input_notation_text_size">12sp</dimen>
     <dimen name="char_input_word_text_size">24sp</dimen>
     <dimen name="char_key_text_size">28sp</dimen>
+    <dimen name="input_word_key_notation_text_size">12sp</dimen>
+    <dimen name="input_word_key_word_text_size">18sp</dimen>
 </resources>

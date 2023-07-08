@@ -20,8 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 
 /**
  * {@link InputMsg#InputtingChars}消息数据
@@ -29,20 +29,19 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class InputtingCharsMsgData implements InputMsgData {
+public class InputtingCharsMsgData extends CommonInputMsgData {
     /** 当前已输入字符列表 */
     public final List<Key> input;
     /** 当前字符 */
     public final Key current;
     /** 靠近的字符 */
     public final Key closed;
-    /** 后继字符列表 */
-    public final List<String> nextChars;
 
-    public InputtingCharsMsgData(List<Key> input, Key current, Key closed, List<String> nextChars) {
+    public InputtingCharsMsgData(List<Key> input, Key current, Key closed, Keyboard.KeyFactory keyFactory) {
+        super(keyFactory);
+
         this.input = input;
         this.current = current;
         this.closed = closed;
-        this.nextChars = nextChars;
     }
 }

@@ -39,6 +39,9 @@ public interface Input {
     /** 获取输入字符列表 */
     List<String> chars();
 
+    /** 是否有可输入字 */
+    boolean hasWord();
+
     /**
      * 已选择候选字
      *

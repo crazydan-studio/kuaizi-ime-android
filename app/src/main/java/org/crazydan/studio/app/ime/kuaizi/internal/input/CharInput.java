@@ -27,4 +27,15 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class CharInput extends BaseInput {}
+public class CharInput extends BaseInput {
+    public enum Type {
+        /** 拼音 */
+        Pinyin,
+        /** 字母、数字 */
+        Latin,
+        /** 标点符号 */
+        Punctuation,
+        /** 颜文字 */
+        Emotion,
+    }
+}

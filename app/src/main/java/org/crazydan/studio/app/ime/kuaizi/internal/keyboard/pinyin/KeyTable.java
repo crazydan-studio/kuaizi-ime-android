@@ -17,11 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.HandMode;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 
@@ -32,6 +37,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
  * @date 2023-07-06
  */
 public class KeyTable {
+    public static final CtrlKey ctrl_key_choose_word = CtrlKey.chooseWord(R.drawable.ic_choose_word)
+                                                              .bgColorAttrId(R.attr.key_ctrl_space_bg_color);
+
     /** 右手模式的纵向屏幕 7 x 6 的按键表 */
     private static final Key[][] portrait_right_hand = new Key[][] {
             new Key[] {
@@ -122,8 +130,53 @@ public class KeyTable {
             },
             };
 
-    public static Key[][] keys(Keyboard.Orientation orientation, HandMode handMode) {
+    public static Key[][] keys(Keyboard.KeyFactory.Option option, HandMode handMode) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
         return portrait_right_hand;
+    }
+
+    public static Key[][] inputCandidateKeys(
+            Keyboard.KeyFactory.Option option, HandMode handMode, List<InputWord> inputCandidates
+    ) {
+        // 可放置候选字按键的位置坐标
+        int[][] coords = new int[][] {
+                new int[] { 0, 6 },
+                new int[] { 0, 5 },
+                new int[] { 0, 4 },
+                new int[] { 0, 3 },
+                new int[] { 0, 2 },
+                new int[] { 0, 1 },
+                new int[] { 1, 0 },
+                new int[] { 2, 0 },
+                new int[] { 3, 0 },
+                new int[] { 4, 1 },
+                new int[] { 5, 1 },
+                };
+        Key[][] keys = new Key[6][7];
+
+        int count = Math.min(coords.length, inputCandidates.size());
+        for (int i = 0; i < count; i++) {
+            InputWord word = inputCandidates.get(i);
+            int[] coord = coords[i];
+
+            keys[coord[0]][coord[1]] = InputWordKey.word(word)
+                                                   .fgColorAttrId(R.attr.input_word_key_fg_color)
+                                                   .bgColorAttrId(R.attr.input_word_key_bg_color);
+        }
+
+        return keys;
+    }
+
+    public static Key[][] showKeys(Key[][] keys) {
+        traverseKeys(keys, Key::show);
+        return keys;
+    }
+
+    public static void traverseKeys(Key[][] keys, Consumer<Key> consumer) {
+        for (Key[] key : keys) {
+            for (Key k : key) {
+                consumer.accept(k);
+            }
+        }
     }
 }

@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
+
+import android.view.View;
+import android.widget.ImageView;
+import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
- * {@link Keyboard 键盘}按键
+ * {@link Keyboard 键盘}{@link CtrlKey 隐藏按键}的视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-09
  */
-public interface Key {
+public class NullKeyView extends KeyView<CtrlKey, ImageView> {
 
-    /** 隐藏按键 */
-    void hide();
+    public NullKeyView(@NonNull View itemView) {
+        super(itemView);
+    }
 
-    /** 显示按键 */
-    void show();
-
-    /** 是否隐藏 */
-    boolean isHidden();
-
-    /** 获取背景色属性 id */
-    int bgColorAttrId();
-
-    /** 设置背景色属性 id */
-    Key bgColorAttrId(int bgColorAttrId);
+    public void bind() {
+        ViewUtils.hide(this.itemView);
+    }
 }
