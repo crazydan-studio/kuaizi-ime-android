@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Handler;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
@@ -25,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerFlingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerMoveMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 
@@ -35,13 +39,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
  * @date 2023-07-06
  */
 public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
-    private static final long LONG_PRESS_TIMEOUT_MILLS = 500;
+    private static final long LONG_PRESS_TIMEOUT_MILLS = 300;
+    private static final long FLING_TIMEOUT_MILLS = 300;
+
     // https://stackoverflow.com/questions/6519748/how-to-determine-a-long-touch-on-android/24050544#24050544
     private final Handler longPressListenerHandler = new Handler();
     private boolean longPressing;
     private boolean moving;
     private Runnable longPressListener;
     private KeyView<?, ?> longPressKeyView;
+    private final List<MotionEvent> movingEvents = new ArrayList<>();
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -67,11 +74,14 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
                 if (!this.longPressing //
                     && !this.moving) {
                     onClick(keyboardView, keyView);
+                } else if (!this.longPressing && isFling()) {
+                    onFling(keyboardView);
                 }
                 onTouchEnd(keyboardView, keyView);
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
+                this.movingEvents.add(MotionEvent.obtain(e));
                 if (!this.longPressing) {
                     cleanLongPress();
                 }
@@ -96,6 +106,7 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
             onMoveEnd(keyboardView, keyView);
         }
 
+        this.movingEvents.clear();
         cleanLongPress();
     }
 
@@ -144,5 +155,30 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
 
     private void onMoveEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
         this.moving = false;
+    }
+
+    private void onFling(KeyboardView keyboardView) {
+        MotionEvent e1 = this.movingEvents.get(0);
+        MotionEvent e2 = this.movingEvents.get(this.movingEvents.size() - 1);
+        float dx = e2.getX() - e1.getX();
+        float dy = e2.getY() - e1.getY();
+        // 忽略水平方向滑动
+        if (Math.abs(dy) <= Math.abs(dx)) {
+            return;
+        }
+
+        boolean isUp = dy < 0;
+        FingerFlingMsgData data = new FingerFlingMsgData(isUp);
+        keyboardView.onKeyMsg(KeyMsg.FingerFling, data);
+    }
+
+    private boolean isFling() {
+        if (this.movingEvents.size() < 2) {
+            return false;
+        }
+
+        MotionEvent e1 = this.movingEvents.get(0);
+        MotionEvent e2 = this.movingEvents.get(this.movingEvents.size() - 1);
+        return e2.getEventTime() - e1.getEventTime() < FLING_TIMEOUT_MILLS;
     }
 }

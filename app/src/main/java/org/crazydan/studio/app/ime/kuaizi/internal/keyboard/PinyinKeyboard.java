@@ -30,11 +30,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.ChoosingInputCandidateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerFlingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerMoveMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 
@@ -46,7 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgDat
  */
 public class PinyinKeyboard extends BaseKeyboard {
     private final PinyinCharTree pinyinCharTree;
-    private State state = State.Init;
+    private State state = new State(State.Type.Init);
     private boolean slidingInput;
 
     public PinyinKeyboard(PinyinCharTree pinyinCharTree) {
@@ -55,7 +57,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void reset() {
-        this.state = State.Init;
+        this.state = new State(State.Type.Init);
         super.reset();
     }
 
@@ -68,7 +70,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onKeyMsg(KeyMsg msg, KeyMsgData data) {
         if (data.target instanceof CharKey) {
             onCharKeyMsg(msg, data);
-        } else if (data.target instanceof CtrlKey) {
+        } else if (data.target instanceof CtrlKey || msg == KeyMsg.FingerFling) {
             onCtrlKeyMsg(msg, data);
         } else if (data.target instanceof InputWordKey) {
             onInputWordKeyMsg(msg, data);
@@ -80,7 +82,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyLongPress: {
-                this.state = State.Inputting;
+                this.state = new State(State.Type.Inputting);
                 this.slidingInput = true;
                 inputList().initPending();
 
@@ -91,7 +93,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case FingerMove: {
-                if (this.state == State.Inputting && this.slidingInput) {
+                if (this.state.type == State.Type.Inputting && this.slidingInput) {
                     CharInput input = (CharInput) inputList().cursor().pending();
                     if (key != input.currentKey()) {
                         input.append(key);
@@ -103,14 +105,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyLongPressEnd: {
-                if (this.state == State.Inputting) {
+                if (this.state.type == State.Type.Inputting) {
                     this.slidingInput = false;
 
                     CharInput input = (CharInput) inputList().cursor().pending();
                     if (!input.hasExtraCandidates()) {
                         confirmInputPending();
                     } else {
-                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input);
+                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
                         InputMsgData idata = new InputtingCharsMsgData(input.keys(), key, null, keyFactory);
 
                         onInputMsg(InputMsg.InputtingChars, idata);
@@ -126,9 +128,21 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyClick: {
-                if (this.state == State.ChoosingInputCandidate //
+                if (this.state.type == State.Type.ChoosingInputCandidate //
                     && key.type() == CtrlKey.Type.Confirm) {
                     confirmInputPending();
+                }
+                break;
+            }
+            case FingerFling: {
+                if (this.state.type == State.Type.ChoosingInputCandidate) {
+                    CharInput input = (CharInput) inputList().cursor().pending();
+                    KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
+                                                                                     input,
+                                                                                     ((FingerFlingMsgData) data).up);
+                    InputMsgData idata = new InputtingCharsMsgData(input.keys(), key, null, keyFactory);
+
+                    onInputMsg(InputMsg.InputtingChars, idata);
                 }
                 break;
             }
@@ -140,7 +154,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyClick: {
-                if (this.state == State.ChoosingInputCandidate) {
+                if (this.state.type == State.Type.ChoosingInputCandidate) {
                     InputWord word = key.word();
                     CharInput input = (CharInput) inputList().cursor().pending();
                     input.word(word);
@@ -167,7 +181,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void confirmInputPending() {
-        this.state = State.Inputting;
+        this.state = new State(State.Type.Inputting);
 
         inputList().confirmPending();
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(keyFactory()));
@@ -189,16 +203,29 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             // 无后继字母，但有额外的候选字，则进入候选字模式
             else if (input.hasExtraCandidates()) {
-                keys = switchToChoosingInputCandidate(option, input);
+                keys = switchToChoosingInputCandidate(option, input, true);
             }
 
             return keys;
         };
     }
 
-    private Key<?>[][] switchToChoosingInputCandidate(Keyboard.KeyFactory.Option option, CharInput input) {
-        this.state = State.ChoosingInputCandidate;
+    private Key<?>[][] switchToChoosingInputCandidate(
+            Keyboard.KeyFactory.Option option, CharInput input, boolean pageUp
+    ) {
+        int startIndex = 0;
+        if (this.state.type == State.Type.ChoosingInputCandidate) {
+            int gridSize = 6 * 7 - 1;
+            ChoosingInputCandidateData data = (ChoosingInputCandidateData) this.state.data;
+            int newStartIndex = data.startIndex + (pageUp ? gridSize : -gridSize);
 
-        return KeyTable.inputCandidateKeys(option, handMode(), input.candidates());
+            startIndex = newStartIndex <= 0
+                         ? 0
+                         : newStartIndex >= input.candidates().size() ? data.startIndex : newStartIndex;
+        }
+
+        this.state = new State(State.Type.ChoosingInputCandidate, new ChoosingInputCandidateData(startIndex));
+
+        return KeyTable.inputCandidateKeys(option, handMode(), startIndex, input.candidates());
     }
 }

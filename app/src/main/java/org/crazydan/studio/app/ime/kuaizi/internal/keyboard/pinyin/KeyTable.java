@@ -140,7 +140,7 @@ public class KeyTable {
     }
 
     public static Key<?>[][] inputCandidateKeys(
-            Keyboard.KeyFactory.Option option, HandMode handMode, List<InputWord> inputCandidates
+            Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
         // 定位按键位置坐标
         int[] locatorCoord = new int[] { 3, 3 };
@@ -150,7 +150,7 @@ public class KeyTable {
             Key<?>[] keys = gridKeys[i];
 
             for (int j = 0; j < keys.length; j++) {
-                int wordIndex = i * keys.length + j;
+                int wordIndex = i * keys.length + j + startIndex;
 
                 if (i == locatorCoord[0] && j == locatorCoord[1]) {
                     gridKeys[i][j] = ctrl_key_confirm.show();

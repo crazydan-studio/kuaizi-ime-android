@@ -25,23 +25,39 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public enum State {
-    /** 初始 */
-    Init,
-    /** 待输入 */
-    InputWaiting,
-    /** 输入中 */
-    Inputting,
-    /** 输入组件光标定位 */
-    LocatingInputTargetCursor,
-    /** 输入组件光标已定位 */
-    LocatingInputTargetCursorDone,
-    /** 输入组件文本选择 */
-    SelectingInputTargetText,
-    /** 输入组件文本已选择 */
-    SelectingInputTargetTextDone,
-    /** 输入光标移动 */
-    MovingInputListCursor,
-    /** 输入候选字选择中 */
-    ChoosingInputCandidate,
+public class State {
+    public final Type type;
+    public final Data data;
+
+    public State(Type type) {
+        this(type, null);
+    }
+
+    public State(Type type, Data data) {
+        this.type = type;
+        this.data = data;
+    }
+
+    public enum Type {
+        /** 初始 */
+        Init,
+        /** 待输入 */
+        InputWaiting,
+        /** 输入中 */
+        Inputting,
+        /** 输入组件光标定位 */
+        LocatingInputTargetCursor,
+        /** 输入组件光标已定位 */
+        LocatingInputTargetCursorDone,
+        /** 输入组件文本选择 */
+        SelectingInputTargetText,
+        /** 输入组件文本已选择 */
+        SelectingInputTargetTextDone,
+        /** 输入光标移动 */
+        MovingInputListCursor,
+        /** 输入候选字选择中 */
+        ChoosingInputCandidate,
+    }
+
+    public interface Data {}
 }

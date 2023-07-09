@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state;
 
-/** 键盘按键消息 */
-public enum KeyMsg {
-    /** 长按按键 */
-    KeyLongPress,
-    /** 长按按键 */
-    KeyLongPressEnd,
-    /** 点击按键 */
-    KeyClick,
-    /** 手指移动 */
-    FingerMove,
-    /** 手指快速滑动 */
-    FingerFling,
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
+
+/**
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-07-10
+ */
+public class ChoosingInputCandidateData implements State.Data {
+    public final int startIndex;
+
+    public ChoosingInputCandidateData(int startIndex) {this.startIndex = startIndex;}
 }
