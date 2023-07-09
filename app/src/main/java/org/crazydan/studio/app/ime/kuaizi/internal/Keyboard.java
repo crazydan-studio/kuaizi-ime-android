@@ -80,6 +80,6 @@ public interface Keyboard {
          * 元素不能为<code>null</code>，
          * 可通过{@link CtrlKey#noop()}创建占位按键
          */
-        Key[][] create(Option option);
+        Key<?>[][] create(Option option);
     }
 }

@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.Objects;
+
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
@@ -55,6 +57,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(Type.Enter, iconResId);
     }
 
+    public static CtrlKey confirm(int iconResId) {
+        return new CtrlKey(Type.Confirm, iconResId);
+    }
+
     public static CtrlKey chooseWord(int iconResId) {
         return new CtrlKey(Type.ChooseWord, iconResId);
     }
@@ -85,6 +91,26 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.iconResId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        CtrlKey that = (CtrlKey) o;
+        return this.iconResId == that.iconResId && this.type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.type, this.iconResId);
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -106,6 +132,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Locator,
         /** 回车 */
         Enter,
+        /** 确认 */
+        Confirm,
         /** 选字 */
         ChooseWord,
         /** 切换至字母数字键盘 */

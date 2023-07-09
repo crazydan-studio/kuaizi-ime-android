@@ -17,24 +17,28 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.Objects;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-02
  */
-public abstract class BaseKey<K extends BaseKey<?>> implements Key {
+public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private boolean hidden;
     private int bgColorAttrId;
 
     @Override
-    public void hide() {
+    public K hide() {
         this.hidden = true;
+        return (K) this;
     }
 
     @Override
-    public void show() {
+    public K show() {
         this.hidden = false;
+        return (K) this;
     }
 
     @Override
@@ -51,5 +55,22 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key {
     public K bgColorAttrId(int bgColorAttrId) {
         this.bgColorAttrId = bgColorAttrId;
         return (K) this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BaseKey<?> that = (BaseKey<?>) o;
+        return this.hidden == that.hidden && this.bgColorAttrId == that.bgColorAttrId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.hidden, this.bgColorAttrId);
     }
 }

@@ -34,7 +34,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class KeyView<K extends Key, V extends View> extends RecyclerViewHolder {
+public abstract class KeyView<K extends Key<?>, V extends View> extends RecyclerViewHolder {
     protected final ImageView bgView;
     protected final V fgView;
 

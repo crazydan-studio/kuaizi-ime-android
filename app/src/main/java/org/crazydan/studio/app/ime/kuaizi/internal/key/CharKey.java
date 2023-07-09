@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.Objects;
+
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
@@ -71,6 +73,26 @@ public class CharKey extends BaseKey<CharKey> {
     public CharKey fgColorAttrId(int fgColorAttrId) {
         this.fgColorAttrId = fgColorAttrId;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        CharKey that = (CharKey) o;
+        return this.fgColorAttrId == that.fgColorAttrId && this.type == that.type && this.text.equals(that.text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.type, this.text, this.fgColorAttrId);
     }
 
     @NonNull

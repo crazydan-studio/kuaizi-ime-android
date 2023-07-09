@@ -23,13 +23,13 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key {
+public interface Key<K extends Key<?>> {
 
     /** 隐藏按键 */
-    void hide();
+    K hide();
 
     /** 显示按键 */
-    void show();
+    K show();
 
     /** 是否隐藏 */
     boolean isHidden();
@@ -38,5 +38,5 @@ public interface Key {
     int bgColorAttrId();
 
     /** 设置背景色属性 id */
-    Key bgColorAttrId(int bgColorAttrId);
+    K bgColorAttrId(int bgColorAttrId);
 }

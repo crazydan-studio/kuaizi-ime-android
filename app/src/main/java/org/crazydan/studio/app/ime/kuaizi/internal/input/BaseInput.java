@@ -32,23 +32,23 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  * @date 2023-07-06
  */
 public abstract class BaseInput implements Input {
-    private final List<Key> keys = new ArrayList<>();
+    private final List<Key<?>> keys = new ArrayList<>();
 
     private InputWord word;
     private List<InputWord> candidates;
 
     @Override
-    public List<Key> keys() {
+    public List<Key<?>> keys() {
         return this.keys;
     }
 
     @Override
-    public Key currentKey() {
+    public Key<?> currentKey() {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }
 
     @Override
-    public void append(Key key) {
+    public void append(Key<?> key) {
         this.keys.add(key);
     }
 
@@ -82,5 +82,10 @@ public abstract class BaseInput implements Input {
 
     public void candidates(List<InputWord> candidates) {
         this.candidates = candidates;
+    }
+
+    /** 是否有多余 1 个的候选字 */
+    public boolean hasExtraCandidates() {
+        return candidates().size() > 1;
     }
 }

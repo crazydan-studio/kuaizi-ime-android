@@ -28,13 +28,13 @@ import java.util.List;
 public interface Input {
 
     /** 输入按键列表 */
-    List<Key> keys();
+    List<Key<?>> keys();
 
     /** 当前按键 */
-    Key currentKey();
+    Key<?> currentKey();
 
     /** 追加输入按键 */
-    void append(Key key);
+    void append(Key<?> key);
 
     /** 获取输入字符列表 */
     List<String> chars();

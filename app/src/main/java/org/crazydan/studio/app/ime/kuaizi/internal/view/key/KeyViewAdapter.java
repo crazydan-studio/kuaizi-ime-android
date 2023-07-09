@@ -46,20 +46,20 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
 
     private final HexagonOrientation orientation;
-    private List<Key> keys = new ArrayList<>();
+    private List<Key<?>> keys = new ArrayList<>();
 
     public KeyViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
     }
 
-    public List<Key> keys() {
+    public List<Key<?>> keys() {
         return this.keys;
     }
 
-    public void setKeys(Key[][] keys) {
+    public void setKeys(Key<?>[][] keys) {
         this.keys = new ArrayList<>();
 
-        for (Key[] key : keys) {
+        for (Key<?>[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
         }
     }
@@ -71,7 +71,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
     @Override
     public void onBindViewHolder(@NonNull KeyView<?, ?> view, int position) {
-        Key key = this.keys.get(position);
+        Key<?> key = this.keys.get(position);
 
         if (key instanceof CtrlKey) {
             ((CtrlKeyView) view).bind((CtrlKey) key, this.orientation);
@@ -86,7 +86,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
     @Override
     public int getItemViewType(int position) {
-        Key key = this.keys.get(position);
+        Key<?> key = this.keys.get(position);
 
         if (key instanceof CtrlKey) {
             return VIEW_TYPE_CTRL_KEY;

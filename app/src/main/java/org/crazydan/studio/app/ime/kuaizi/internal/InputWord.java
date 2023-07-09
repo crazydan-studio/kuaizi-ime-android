@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
+import java.util.Objects;
+
 /**
  * {@link Input 输入}候选字
  *
@@ -46,5 +48,22 @@ public class InputWord {
 
     public void setNotation(String notation) {
         this.notation = notation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        InputWord that = (InputWord) o;
+        return this.value.equals(that.value) && this.notation.equals(that.notation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.value, this.notation);
     }
 }

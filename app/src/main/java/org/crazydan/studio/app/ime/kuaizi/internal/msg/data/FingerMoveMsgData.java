@@ -29,9 +29,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
  */
 public class FingerMoveMsgData extends KeyMsgData {
     /** 靠近的按键 */
-    public final Key closed;
+    public final Key<?> closed;
 
-    public FingerMoveMsgData(Key target, Key closed) {
+    public FingerMoveMsgData(Key<?> target, Key<?> closed) {
         super(target);
         this.closed = closed;
     }

@@ -34,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class GapInput extends BaseInput {
 
     @Override
-    public void append(Key key) {
+    public void append(Key<?> key) {
     }
 
     @Override

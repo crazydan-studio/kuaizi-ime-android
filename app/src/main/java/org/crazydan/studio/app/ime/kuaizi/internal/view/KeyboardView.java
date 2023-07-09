@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -36,7 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -44,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.CharKeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
@@ -131,7 +128,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void relayout() {
-        Key[][] keys = createKeys(this.keyboard.keyFactory());
+        Key<?>[][] keys = createKeys(this.keyboard.keyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
         this.layoutManager.configGrid(columns, rows, 8);
@@ -139,7 +136,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         relayoutKeys(keys);
     }
 
-    private void relayoutKeys(Key[][] keys) {
+    private void relayoutKeys(Key<?>[][] keys) {
         this.adapter.setKeys(keys);
         this.adapter.notifyDataSetChanged();
     }
@@ -175,66 +172,13 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
-        Key[][] keys = createKeys(data.keyFactory());
+        Key<?>[][] keys = createKeys(data.keyFactory());
         relayoutKeys(keys);
     }
 
     private void onInputtingCharsDoneMsg(InputMsgData data) {
-        Key[][] keys = createKeys(data.keyFactory());
+        Key<?>[][] keys = createKeys(data.keyFactory());
         relayoutKeys(keys);
-    }
-
-    private void hideAllKeyViewsExclude(List<KeyView<?, ?>> exclude) {
-        if (exclude != null) {
-            filterKeyViews(keyView -> exclude.isEmpty() || !exclude.contains(keyView)).forEach(KeyView::hide);
-            filterKeyViews(keyView -> !exclude.isEmpty() && exclude.contains(keyView)).forEach(KeyView::show);
-        }
-    }
-
-    private void hideAllKeysExclude(List<Key> exclude) {
-        if (exclude != null) {
-            filterKeys(key -> exclude.isEmpty() || !exclude.contains(key)).forEach(Key::hide);
-            filterKeys(key -> !exclude.isEmpty() && exclude.contains(key)).forEach(Key::show);
-        }
-    }
-
-    private void showAllKeyViews() {
-        filterKeyViews(k -> true).forEach(KeyView::show);
-    }
-
-    private void showAllKeys() {
-        filterKeys(k -> true).forEach(Key::show);
-    }
-
-    private KeyView<?, ?> getKeyViewByKey(Key key) {
-        if (key == null) {
-            return null;
-        }
-
-        List<KeyView<?, ?>> list = filterKeyViews(keyView -> keyView.key() == key);
-        return list.isEmpty() ? null : list.get(0);
-    }
-
-    private List<KeyView<?, ?>> getKeyViewByChars(List<String> chars) {
-        if (chars == null) {
-            return null;
-        } else if (chars.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return filterKeyViews(keyView -> keyView instanceof CharKeyView //
-                                         && chars.contains(((CharKeyView) keyView).key().text()));
-    }
-
-    private List<Key> getKeyByChars(List<String> chars) {
-        if (chars == null) {
-            return null;
-        } else if (chars.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return filterKeys(key -> key instanceof CharKey //
-                                 && chars.contains(((CharKey) key).text()));
     }
 
     private List<KeyView<?, ?>> filterKeyViews(Predicate<KeyView<?, ?>> filter) {
@@ -251,11 +195,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         return list;
     }
 
-    private List<Key> filterKeys(Predicate<Key> predicate) {
-        return this.adapter.keys().stream().filter(predicate).collect(Collectors.toList());
-    }
-
-    private Key[][] createKeys(Keyboard.KeyFactory keyFactory) {
+    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
         Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
         option.orientation = this.keyboardOrientation;
 

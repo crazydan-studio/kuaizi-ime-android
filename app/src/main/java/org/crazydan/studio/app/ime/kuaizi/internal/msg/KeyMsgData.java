@@ -27,9 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class KeyMsgData {
     /** 消息目标按键 */
-    public final Key target;
+    public final Key<?> target;
 
-    public KeyMsgData(Key target) {
+    public KeyMsgData(Key<?> target) {
         this.target = target;
     }
 }
