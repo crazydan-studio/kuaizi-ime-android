@@ -133,60 +133,65 @@ public class KeyTable {
             CtrlKey.switchToPunctuationKeyboard(R.drawable.ic_punctuation).bgColorAttrId(R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color),
             },
             };
+    /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
+    private static final int[][] grid_key_coords = new int[][] {
+            // level 1: 0~5
+            new int[] { 2, 3 },
+            new int[] { 2, 4 },
+            new int[] { 3, 4 },
+            new int[] { 4, 4 },
+            new int[] { 4, 3 },
+            new int[] { 3, 2 },
+            // level 2: 6~17
+            new int[] { 1, 2 },
+            new int[] { 1, 3 },
+            new int[] { 1, 4 },
+            new int[] { 2, 5 },
+            new int[] { 3, 5 },
+            new int[] { 4, 5 },
+            new int[] { 5, 4 },
+            new int[] { 5, 3 },
+            new int[] { 5, 2 },
+            new int[] { 4, 2 },
+            new int[] { 3, 1 },
+            new int[] { 2, 2 },
+            // level 3: 18~35
+            new int[] { 0, 2 },
+            new int[] { 0, 3 },
+            new int[] { 0, 4 },
+            new int[] { 0, 5 },
+            new int[] { 1, 5 },
+            new int[] { 2, 6 },
+            new int[] { 3, 6 },
+            new int[] { 4, 6 },
+            new int[] { 5, 5 },
+            new int[] { 5, 1 },
+            new int[] { 4, 1 },
+            new int[] { 3, 0 },
+            new int[] { 2, 1 },
+            new int[] { 1, 1 },
+            };
 
     public static Key<?>[][] keys(Keyboard.KeyFactory.Option option, HandMode handMode) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
         return portrait_right_hand;
     }
 
+    /** 候选字按键的分页大小 */
+    public static int inputCandidateKeysPageSize() {
+        return grid_key_coords.length;
+    }
+
     public static Key<?>[][] inputCandidateKeys(
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
-        // 以 定位按键 为中心的从内到外的环形布局
-        int[][] gridKeyCoords = new int[][] {
-                // level 1: 0~5
-                new int[] { 2, 3 },
-                new int[] { 2, 4 },
-                new int[] { 3, 4 },
-                new int[] { 4, 4 },
-                new int[] { 4, 3 },
-                new int[] { 3, 2 },
-                // level 2: 6~17
-                new int[] { 1, 2 },
-                new int[] { 1, 3 },
-                new int[] { 1, 4 },
-                new int[] { 2, 5 },
-                new int[] { 3, 5 },
-                new int[] { 4, 5 },
-                new int[] { 5, 4 },
-                new int[] { 5, 3 },
-                new int[] { 5, 2 },
-                new int[] { 4, 2 },
-                new int[] { 3, 1 },
-                new int[] { 2, 2 },
-                // level 3: 18~35
-                new int[] { 0, 2 },
-                new int[] { 0, 3 },
-                new int[] { 0, 4 },
-                new int[] { 0, 5 },
-                new int[] { 1, 5 },
-                new int[] { 2, 6 },
-                new int[] { 3, 6 },
-                new int[] { 4, 6 },
-                new int[] { 5, 5 },
-                new int[] { 5, 1 },
-                new int[] { 4, 1 },
-                new int[] { 3, 0 },
-                new int[] { 2, 1 },
-                new int[] { 1, 1 },
-                };
         Key<?>[][] gridKeys = new Key[6][7];
 
-        // 定位按键
+        // 候选字确认按键
         gridKeys[3][3] = ctrl_key_confirm.show();
 
-        for (int i = 0; i < gridKeyCoords.length; i++) {
-            int[] gridKeyCoord = gridKeyCoords[i];
+        for (int i = 0; i < grid_key_coords.length; i++) {
+            int[] gridKeyCoord = grid_key_coords[i];
             int x = gridKeyCoord[0];
             int y = gridKeyCoord[1];
 

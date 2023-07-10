@@ -185,7 +185,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.state = new State(State.Type.Inputting);
         this.slidingInput = false;
 
-        inputList().confirmPending();
+        CharInput input = (CharInput) inputList().cursor().pending();
+        if (input == null || !input.hasWord()) {
+            // 无有效拼音，则丢弃输入
+            inputList().dropPending();
+        } else {
+            inputList().confirmPending();
+        }
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(keyFactory()));
     }
 
@@ -215,19 +221,20 @@ public class PinyinKeyboard extends BaseKeyboard {
     private Key<?>[][] switchToChoosingInputCandidate(
             Keyboard.KeyFactory.Option option, CharInput input, boolean pageUp
     ) {
-        int startIndex = 0;
+        ChoosingInputCandidateData data;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
-            int gridSize = 6 * 7 - 1;
-            ChoosingInputCandidateData data = (ChoosingInputCandidateData) this.state.data;
-            int newStartIndex = data.startIndex + (pageUp ? gridSize : -gridSize);
+            data = (ChoosingInputCandidateData) this.state.data;
 
-            startIndex = newStartIndex <= 0
-                         ? 0
-                         : newStartIndex >= input.candidates().size() ? data.startIndex : newStartIndex;
+            if (pageUp) {
+                data.nextPage();
+            } else {
+                data.prevPage();
+            }
+        } else {
+            data = new ChoosingInputCandidateData(input.candidates().size(), KeyTable.inputCandidateKeysPageSize());
+            this.state = new State(State.Type.ChoosingInputCandidate, data);
         }
 
-        this.state = new State(State.Type.ChoosingInputCandidate, new ChoosingInputCandidateData(startIndex));
-
-        return KeyTable.inputCandidateKeys(option, handMode(), startIndex, input.candidates());
+        return KeyTable.inputCandidateKeys(option, handMode(), data.getPageStart(), input.candidates());
     }
 }

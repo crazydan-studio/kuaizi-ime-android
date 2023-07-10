@@ -48,6 +48,18 @@ public class InputList {
     }
 
     /**
+     * 初始化待输入
+     */
+    public void initPending() {
+        // 先确认当前的待输入
+        confirmPending();
+
+        // 再创建新的待输入
+        CharInput input = new CharInput();
+        cursor().pending(input);
+    }
+
+    /**
      * 确认待输入
      * <p/>
      * 原位置为字符输入时，直接原地替换；
@@ -73,16 +85,9 @@ public class InputList {
         }
     }
 
-    /**
-     * 初始化待输入
-     */
-    public void initPending() {
-        // 先确认当前的待输入
-        confirmPending();
-
-        // 再创建新的待输入
-        CharInput input = new CharInput();
-        cursor().pending(input);
+    /** 丢弃待输入 */
+    public void dropPending() {
+        cursor().pending(null);
     }
 
     /** 获取光标位置 */

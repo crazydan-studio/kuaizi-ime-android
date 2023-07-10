@@ -24,7 +24,34 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
  * @date 2023-07-10
  */
 public class ChoosingInputCandidateData implements State.Data {
-    public final int startIndex;
+    /** 数据总量 */
+    private final int dataSize;
 
-    public ChoosingInputCandidateData(int startIndex) {this.startIndex = startIndex;}
+    /** 分页开始序号 */
+    private int pageStart;
+    /** 分页大小 */
+    private final int pageSize;
+
+    public ChoosingInputCandidateData(int dataSize, int pageSize) {
+        this.dataSize = dataSize;
+        this.pageSize = pageSize;
+    }
+
+    public int getPageStart() {
+        return this.pageStart;
+    }
+
+    /** 下一页 */
+    public void nextPage() {
+        int start = this.pageStart + this.pageSize;
+        if (start < this.dataSize) {
+            this.pageStart = start;
+        }
+    }
+
+    /** 上一页 */
+    public void prevPage() {
+        int start = this.pageStart - this.pageSize;
+        this.pageStart = Math.max(start, 0);
+    }
 }
