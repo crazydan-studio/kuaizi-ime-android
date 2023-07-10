@@ -48,7 +48,7 @@ public class PinyinTree {
     }
 
     public void add(PinyinWord word) {
-        if (word.isInvalid()) {
+        if (!word.isValid()) {
             return;
         }
 
@@ -90,7 +90,7 @@ public class PinyinTree {
         this.tree.forEach((ch, child) -> {
             PinyinCharTree childCharTree = new PinyinCharTree(ch);
             List<PinyinCharTree.Word> words = child.words.stream()
-                                                         .map(w -> new PinyinCharTree.Word(w.getWord(), w.getPinyin()))
+                                                         .map(PinyinCharTree.Word::from)
                                                          .collect(Collectors.toList());
             childCharTree.getWords().addAll(words);
 

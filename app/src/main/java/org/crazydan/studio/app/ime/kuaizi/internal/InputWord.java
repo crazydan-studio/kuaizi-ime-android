@@ -19,15 +19,30 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+
 /**
  * {@link Input 输入}候选字
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public class InputWord {
+public class InputWord implements Comparable<InputWord> {
     private String value;
     private String notation;
+
+    private boolean traditional;
+    private int level;
+    private float weight;
+
+    public static InputWord from(PinyinCharTree.Word cw) {
+        InputWord iw = new InputWord(cw.getValue(), cw.getNotation());
+        iw.setTraditional(cw.isTraditional());
+        iw.setLevel(cw.getLevel());
+        iw.setWeight(cw.getWeight());
+
+        return iw;
+    }
 
     public InputWord(String value, String notation) {
         this.value = value;
@@ -48,6 +63,43 @@ public class InputWord {
 
     public void setNotation(String notation) {
         this.notation = notation;
+    }
+
+    public boolean isTraditional() {
+        return this.traditional;
+    }
+
+    public void setTraditional(boolean traditional) {
+        this.traditional = traditional;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public float getWeight() {
+        return this.weight;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
+    @Override
+    public int compareTo(InputWord that) {
+        return this.weight > that.weight //
+               ? -1 //
+               : this.weight < that.weight //
+                 ? 1 //
+                 : this.level == that.level //
+                   ? (this.traditional //
+                      ? (that.traditional ? 0 : 1) //
+                      : (that.traditional ? -1 : 0)) //
+                   : this.level - that.level;
     }
 
     @Override

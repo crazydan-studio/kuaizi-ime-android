@@ -169,7 +169,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onInputtingChars(CharInput input, CharKey currentKey, Key<?> closedKey) {
         List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars())
                                                             .stream()
-                                                            .map(w -> new InputWord(w.getValue(), w.getNotation()))
+                                                            .map(InputWord::from)
+                                                            .sorted()
                                                             .collect(Collectors.toList());
         input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
         input.candidates(candidateWords);

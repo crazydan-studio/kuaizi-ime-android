@@ -113,6 +113,19 @@ public class PinyinCharTree {
         private String value;
         private String notation;
 
+        private boolean traditional;
+        private int level;
+        private float weight;
+
+        public static Word from(PinyinWord pw) {
+            PinyinCharTree.Word cw = new PinyinCharTree.Word(pw.getWord(), pw.getPinyin());
+            cw.setTraditional(pw.isTraditional());
+            cw.setLevel(pw.getLevel());
+            cw.setWeight(pw.getWeight());
+
+            return cw;
+        }
+
         public Word(String value, String notation) {
             this.value = value;
             this.notation = notation;
@@ -132,6 +145,30 @@ public class PinyinCharTree {
 
         public void setNotation(String notation) {
             this.notation = notation;
+        }
+
+        public boolean isTraditional() {
+            return this.traditional;
+        }
+
+        public void setTraditional(boolean traditional) {
+            this.traditional = traditional;
+        }
+
+        public int getLevel() {
+            return this.level;
+        }
+
+        public void setLevel(int level) {
+            this.level = level;
+        }
+
+        public float getWeight() {
+            return this.weight;
+        }
+
+        public void setWeight(float weight) {
+            this.weight = weight;
         }
     }
 }
