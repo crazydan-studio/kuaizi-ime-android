@@ -183,6 +183,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void confirmInputPending() {
         this.state = new State(State.Type.Inputting);
+        this.slidingInput = false;
 
         inputList().confirmPending();
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(keyFactory()));

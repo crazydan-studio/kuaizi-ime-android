@@ -39,6 +39,9 @@
 
         <item name="input_word_key_bg_color">?attr/key_bg_color</item>
         <item name="input_word_key_fg_color">?attr/key_fg_color</item>
+        <item name="input_word_key_level_1_bg_color">#9d174d</item>
+        <item name="input_word_key_level_2_bg_color">#5b21b6</item>
+        <item name="input_word_key_level_3_bg_color">#155e75</item>
 
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_ime_bg_color">?attr/key_bg_color</item>
@@ -99,6 +102,9 @@
 
         <item name="input_word_key_bg_color">?attr/key_bg_color</item>
         <item name="input_word_key_fg_color">?attr/key_fg_color</item>
+        <item name="input_word_key_level_1_bg_color">#9d174d</item>
+        <item name="input_word_key_level_2_bg_color">#5b21b6</item>
+        <item name="input_word_key_level_3_bg_color">#155e75</item>
 
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_ime_bg_color">?attr/key_bg_color</item>

@@ -142,26 +142,70 @@ public class KeyTable {
     public static Key<?>[][] inputCandidateKeys(
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
-        // 定位按键位置坐标
-        int[] locatorCoord = new int[] { 3, 3 };
+        // 以 定位按键 为中心的从内到外的环形布局
+        int[][] gridKeyCoords = new int[][] {
+                // level 1: 0~5
+                new int[] { 2, 3 },
+                new int[] { 2, 4 },
+                new int[] { 3, 4 },
+                new int[] { 4, 4 },
+                new int[] { 4, 3 },
+                new int[] { 3, 2 },
+                // level 2: 6~17
+                new int[] { 1, 2 },
+                new int[] { 1, 3 },
+                new int[] { 1, 4 },
+                new int[] { 2, 5 },
+                new int[] { 3, 5 },
+                new int[] { 4, 5 },
+                new int[] { 5, 4 },
+                new int[] { 5, 3 },
+                new int[] { 5, 2 },
+                new int[] { 4, 2 },
+                new int[] { 3, 1 },
+                new int[] { 2, 2 },
+                // level 3: 18~35
+                new int[] { 0, 2 },
+                new int[] { 0, 3 },
+                new int[] { 0, 4 },
+                new int[] { 0, 5 },
+                new int[] { 1, 5 },
+                new int[] { 2, 6 },
+                new int[] { 3, 6 },
+                new int[] { 4, 6 },
+                new int[] { 5, 5 },
+                new int[] { 5, 1 },
+                new int[] { 4, 1 },
+                new int[] { 3, 0 },
+                new int[] { 2, 1 },
+                new int[] { 1, 1 },
+                };
         Key<?>[][] gridKeys = new Key[6][7];
 
-        for (int i = 0; i < gridKeys.length; i++) {
-            Key<?>[] keys = gridKeys[i];
+        // 定位按键
+        gridKeys[3][3] = ctrl_key_confirm.show();
 
-            for (int j = 0; j < keys.length; j++) {
-                int wordIndex = i * keys.length + j + startIndex;
+        for (int i = 0; i < gridKeyCoords.length; i++) {
+            int[] gridKeyCoord = gridKeyCoords[i];
+            int x = gridKeyCoord[0];
+            int y = gridKeyCoord[1];
 
-                if (i == locatorCoord[0] && j == locatorCoord[1]) {
-                    gridKeys[i][j] = ctrl_key_confirm.show();
-                } else if (wordIndex >= inputCandidates.size()) {
-                    gridKeys[i][j] = null;
-                } else {
-                    InputWord word = inputCandidates.get(wordIndex);
-                    gridKeys[i][j] = InputWordKey.word(word)
-                                                 .fgColorAttrId(R.attr.input_word_key_fg_color)
-                                                 .bgColorAttrId(R.attr.input_word_key_bg_color);
+            int wordIndex = i + startIndex;
+            if (wordIndex < inputCandidates.size()) {
+                InputWord word = inputCandidates.get(wordIndex);
+
+                int bgAttrId = R.attr.input_word_key_bg_color;
+                if (i < 6) {
+                    bgAttrId = R.attr.input_word_key_level_1_bg_color;
+                } else if (i < 18) {
+                    bgAttrId = R.attr.input_word_key_level_2_bg_color;
+                } else if (i < 36) {
+                    bgAttrId = R.attr.input_word_key_level_3_bg_color;
                 }
+
+                gridKeys[x][y] = InputWordKey.word(word)
+                                             .fgColorAttrId(R.attr.input_word_key_fg_color)
+                                             .bgColorAttrId(bgAttrId);
             }
         }
 
