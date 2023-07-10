@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 CharInput input = (CharInput) inputList().cursor().pending();
                 input.append(key);
 
-                onInputtingChars(input, key, null);
+                onInputtingChars(input, key, null, true);
                 break;
             }
             case FingerMove: {
@@ -99,7 +100,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         input.append(key);
 
                         Key<?> closed = ((FingerMoveMsgData) data).closed;
-                        onInputtingChars(input, key, closed);
+                        onInputtingChars(input, key, closed, true);
                     }
                 }
                 break;
@@ -118,6 +119,20 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onInputMsg(InputMsg.InputtingChars, idata);
                     }
                 }
+                break;
+            }
+            case KeyClick: {
+                if (this.state.type != State.Type.Inputting) {
+                    this.state = new State(State.Type.Inputting);
+                    inputList().initPending();
+                } else if (inputList().cursor().pending() == null) {
+                    inputList().initPending();
+                }
+
+                CharInput input = (CharInput) inputList().cursor().pending();
+                input.append(key);
+
+                onInputtingChars(input, key, null, false);
                 break;
             }
         }
@@ -166,16 +181,24 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void onInputtingChars(CharInput input, CharKey currentKey, Key<?> closedKey) {
-        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars())
-                                                            .stream()
-                                                            .map(InputWord::from)
-                                                            .sorted()
-                                                            .collect(Collectors.toList());
-        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-        input.candidates(candidateWords);
+    private void onInputtingChars(CharInput input, CharKey currentKey, Key<?> closedKey, boolean needToProcessPinyin) {
+        List<String> nextChars = new ArrayList<>();
+        if (needToProcessPinyin) {
+            nextChars = this.pinyinCharTree.findNextChars(input.chars());
 
-        KeyFactory keyFactory = createKeyFactoryByInput(input);
+            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars())
+                                                                .stream()
+                                                                .map(InputWord::from)
+                                                                .sorted()
+                                                                .collect(Collectors.toList());
+            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+            input.candidates(candidateWords);
+        } else {
+            input.word(null);
+            input.candidates(new ArrayList<>());
+        }
+
+        KeyFactory keyFactory = createKeyFactoryByInput(input, nextChars);
         InputMsgData data = new InputtingCharsMsgData(input.keys(), currentKey, closedKey, keyFactory);
 
         onInputMsg(InputMsg.InputtingChars, data);
@@ -195,9 +218,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(keyFactory()));
     }
 
-    private KeyFactory createKeyFactoryByInput(CharInput input) {
-        List<String> nextChars = this.pinyinCharTree.findNextChars(input.chars());
-
+    private KeyFactory createKeyFactoryByInput(CharInput input, List<String> nextChars) {
         return option -> {
             Key<?>[][] keys = keyFactory().create(option);
             // 有后继字母，则仅显示后继字母按键
