@@ -47,12 +47,12 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public int bgColorAttrId() {
+    public int getBgColorAttrId() {
         return this.bgColorAttrId;
     }
 
     @Override
-    public K bgColorAttrId(int bgColorAttrId) {
+    public K setBgColorAttrId(int bgColorAttrId) {
         this.bgColorAttrId = bgColorAttrId;
         return (K) this;
     }

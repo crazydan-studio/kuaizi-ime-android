@@ -46,8 +46,8 @@ public class InputCandidateViewAdapter extends RecyclerViewAdapter<InputCandidat
             return null;
         }
 
-        Input selected = this.inputList.cursor().selected();
-        Input pending = this.inputList.cursor().pending();
+        Input selected = this.inputList.getCursor().getSelected();
+        Input pending = this.inputList.getCursor().getPending();
 
         if (pending != null) {
             return pending;
@@ -61,9 +61,9 @@ public class InputCandidateViewAdapter extends RecyclerViewAdapter<InputCandidat
         Input input = getInput();
 
         if (input != null) {
-            InputWord word = input.word();
+            InputWord word = input.getWord();
 
-            return word == null || input.candidates().isEmpty() ? 0 : input.candidates().indexOf(word);
+            return word == null || input.getWordCandidates().isEmpty() ? 0 : input.getWordCandidates().indexOf(word);
         }
         return 0;
     }
@@ -71,7 +71,7 @@ public class InputCandidateViewAdapter extends RecyclerViewAdapter<InputCandidat
     @Override
     public int getItemCount() {
         Input input = getInput();
-        return input == null ? 0 : input.candidates().size();
+        return input == null ? 0 : input.getWordCandidates().size();
     }
 
     @Override
@@ -79,8 +79,8 @@ public class InputCandidateViewAdapter extends RecyclerViewAdapter<InputCandidat
         Input input = getInput();
 
         if (input != null) {
-            InputWord word = input.word();
-            InputWord candidate = input.candidates().get(position);
+            InputWord word = input.getWord();
+            InputWord candidate = input.getWordCandidates().get(position);
 
             view.bind(candidate, word == candidate);
         }

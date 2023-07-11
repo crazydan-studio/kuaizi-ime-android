@@ -34,19 +34,19 @@ public class InputListCursor {
         this.pending = null;
     }
 
-    public Input selected() {
+    public Input getSelected() {
         return this.selected;
     }
 
-    protected void selected(Input selected) {
+    protected void setSelected(Input selected) {
         this.selected = selected;
     }
 
-    public Input pending() {
+    public Input getPending() {
         return this.pending;
     }
 
-    protected void pending(Input pending) {
+    protected void setPending(Input pending) {
         this.pending = pending;
     }
 }

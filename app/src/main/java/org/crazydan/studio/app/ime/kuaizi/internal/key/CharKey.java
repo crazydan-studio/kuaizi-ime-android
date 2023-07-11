@@ -55,22 +55,22 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     /** 按键{@link Type 类型} */
-    public Type type() {
+    public Type getType() {
         return this.type;
     }
 
     /** 按键文本内容 */
-    public String text() {
+    public String getText() {
         return this.text;
     }
 
     /** 获取前景色属性 id */
-    public int fgColorAttrId() {
+    public int getFgColorAttrId() {
         return this.fgColorAttrId;
     }
 
     /** 设置前景色属性 id */
-    public CharKey fgColorAttrId(int fgColorAttrId) {
+    public CharKey setFgColorAttrId(int fgColorAttrId) {
         this.fgColorAttrId = fgColorAttrId;
         return this;
     }
@@ -98,7 +98,7 @@ public class CharKey extends BaseKey<CharKey> {
     @NonNull
     @Override
     public String toString() {
-        return "CharKey(" + type() + " - " + text() + ')';
+        return "CharKey(" + getType() + ": " + getText() + ')';
     }
 
     public enum Type {

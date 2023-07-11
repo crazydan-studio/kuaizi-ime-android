@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -52,15 +53,33 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         this.orientation = orientation;
     }
 
-    public List<Key<?>> keys() {
-        return this.keys;
-    }
+    /** 绑定新的按键，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
+    public void bindKeys(Key<?>[][] keys) {
+        List<Key<?>> oldKeys = this.keys;
 
-    public void setKeys(Key<?>[][] keys) {
         this.keys = new ArrayList<>();
-
         for (Key<?>[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
+        }
+
+        if (oldKeys.size() > this.keys.size()) {
+            for (int i = this.keys.size(); i < oldKeys.size(); i++) {
+                notifyItemRemoved(i);
+            }
+        } else if (oldKeys.size() < this.keys.size()) {
+            for (int i = oldKeys.size(); i < this.keys.size(); i++) {
+                notifyItemInserted(i);
+            }
+        }
+
+        int size = Math.min(oldKeys.size(), this.keys.size());
+        for (int i = 0; i < size; i++) {
+            Key<?> oldKey = oldKeys.get(i);
+            Key<?> newKey = this.keys.get(i);
+
+            if (!Objects.equals(oldKey, newKey)) {
+                notifyItemChanged(i);
+            }
         }
     }
 

@@ -59,10 +59,10 @@ public class CharInputView extends InputView<CharInput> {
         this.notationView.setTextColor(fgColor);
         this.wordView.setTextColor(fgColor);
 
-        InputWord word = input.word();
+        InputWord word = input.getWord();
         if (word == null) {
             this.notationView.setText("");
-            this.wordView.setText(String.join("", input.chars()));
+            this.wordView.setText(String.join("", input.getChars()));
         } else {
             this.notationView.setText(word.getNotation());
             this.wordView.setText(word.getValue());

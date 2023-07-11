@@ -32,7 +32,7 @@ public class CommonInputMsgData implements InputMsgData {
     }
 
     @Override
-    public Keyboard.KeyFactory keyFactory() {
+    public Keyboard.KeyFactory getKeyFactory() {
         return this.keyFactory;
     }
 }

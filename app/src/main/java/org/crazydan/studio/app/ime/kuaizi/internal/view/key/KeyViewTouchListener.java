@@ -131,25 +131,25 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
         this.longPressing = true;
         this.longPressKeyView = keyView;
 
-        KeyMsgData data = new KeyMsgData(keyView.key());
+        KeyMsgData data = new KeyMsgData(keyView.getKey());
         keyboardView.onKeyMsg(KeyMsg.KeyLongPress, data);
     }
 
     private void onLongPressEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        KeyMsgData data = new KeyMsgData(this.longPressKeyView.key());
+        KeyMsgData data = new KeyMsgData(this.longPressKeyView.getKey());
         keyboardView.onKeyMsg(KeyMsg.KeyLongPressEnd, data);
     }
 
     private void onClick(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        KeyMsgData data = new KeyMsgData(keyView != null ? keyView.key() : null);
+        KeyMsgData data = new KeyMsgData(keyView != null ? keyView.getKey() : null);
         keyboardView.onKeyMsg(KeyMsg.KeyClick, data);
     }
 
     private void onMove(KeyboardView keyboardView, KeyView<?, ?> keyView, KeyView<?, ?> nearKeyView) {
         this.moving = true;
 
-        FingerMoveMsgData data = new FingerMoveMsgData(keyView != null ? keyView.key() : null,
-                                                       nearKeyView != null ? nearKeyView.key() : null);
+        FingerMoveMsgData data = new FingerMoveMsgData(keyView != null ? keyView.getKey() : null,
+                                                       nearKeyView != null ? nearKeyView.getKey() : null);
         keyboardView.onKeyMsg(KeyMsg.FingerMove, data);
     }
 

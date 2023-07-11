@@ -41,53 +41,17 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(Type.NoOp, -1);
     }
 
-    public static CtrlKey space(int iconResId) {
-        return new CtrlKey(Type.Space, iconResId);
-    }
-
-    public static CtrlKey backspace(int iconResId) {
-        return new CtrlKey(Type.Backspace, iconResId);
-    }
-
-    public static CtrlKey locator(int iconResId) {
-        return new CtrlKey(Type.Locator, iconResId);
-    }
-
-    public static CtrlKey enter(int iconResId) {
-        return new CtrlKey(Type.Enter, iconResId);
-    }
-
-    public static CtrlKey confirm(int iconResId) {
-        return new CtrlKey(Type.Confirm, iconResId);
-    }
-
-    public static CtrlKey chooseWord(int iconResId) {
-        return new CtrlKey(Type.ChooseWord, iconResId);
-    }
-
-    public static CtrlKey switchIME(int iconResId) {
-        return new CtrlKey(Type.SwitchIME, iconResId);
-    }
-
-    public static CtrlKey switchHandMode(int iconResId) {
-        return new CtrlKey(Type.SwitchHandMode, iconResId);
-    }
-
-    public static CtrlKey switchToAlphanumericKeyboard(int iconResId) {
-        return new CtrlKey(Type.SwitchToAlphanumericKeyboard, iconResId);
-    }
-
-    public static CtrlKey switchToPunctuationKeyboard(int iconResId) {
-        return new CtrlKey(Type.SwitchToPunctuationKeyboard, iconResId);
+    public static CtrlKey create(Type type, int iconResId) {
+        return new CtrlKey(type, iconResId);
     }
 
     /** 按钮{@link Type 类型} */
-    public Type type() {
+    public Type getType() {
         return this.type;
     }
 
     /** 图形资源 id */
-    public int iconResId() {
+    public int getIconResId() {
         return this.iconResId;
     }
 
@@ -114,7 +78,7 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     @NonNull
     @Override
     public String toString() {
-        return "CtrlKey(" + type() + ')';
+        return "CtrlKey(" + getType() + ')';
     }
 
     public enum Type {

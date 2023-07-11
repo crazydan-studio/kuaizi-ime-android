@@ -54,10 +54,10 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
     public void bind(InputWordKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        this.wordView.setText(key.word().getValue());
-        this.notationView.setText(key.word().getNotation());
+        this.wordView.setText(key.getWord().getValue());
+        this.notationView.setText(key.getWord().getNotation());
 
-        int fgColor = ColorUtils.getByAttrId(getContext(), key.fgColorAttrId());
+        int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());
         this.wordView.setTextColor(fgColor);
         this.notationView.setTextColor(fgColor);
     }

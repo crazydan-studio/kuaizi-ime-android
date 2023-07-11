@@ -39,8 +39,8 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        if (key.iconResId() > 0) {
-            this.fgView.setImageResource(key.iconResId());
+        if (key.getIconResId() > 0) {
+            this.fgView.setImageResource(key.getIconResId());
         }
     }
 }

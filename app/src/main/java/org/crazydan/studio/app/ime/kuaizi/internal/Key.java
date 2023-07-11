@@ -35,8 +35,8 @@ public interface Key<K extends Key<?>> {
     boolean isHidden();
 
     /** 获取背景色属性 id */
-    int bgColorAttrId();
+    int getBgColorAttrId();
 
     /** 设置背景色属性 id */
-    K bgColorAttrId(int bgColorAttrId);
+    K setBgColorAttrId(int bgColorAttrId);
 }

@@ -63,8 +63,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public KeyFactory keyFactory() {
-        return option -> KeyTable.showKeys(KeyTable.keys(option, handMode()));
+    public KeyFactory getKeyFactory() {
+        return option -> KeyTable.getKeys(option, getHandMode());
     }
 
     @Override
@@ -85,19 +85,19 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyLongPress: {
                 this.state = new State(State.Type.Inputting);
                 this.slidingInput = true;
-                inputList().initPending();
+                getInputList().initPending();
 
-                CharInput input = (CharInput) inputList().cursor().pending();
-                input.append(key);
+                CharInput input = (CharInput) getInputList().getCursor().getPending();
+                input.appendKey(key);
 
                 onInputtingChars(input, key, null, true);
                 break;
             }
             case FingerMove: {
                 if (this.state.type == State.Type.Inputting && this.slidingInput) {
-                    CharInput input = (CharInput) inputList().cursor().pending();
-                    if (key != input.currentKey()) {
-                        input.append(key);
+                    CharInput input = (CharInput) getInputList().getCursor().getPending();
+                    if (key != input.getCurrentKey()) {
+                        input.appendKey(key);
 
                         Key<?> closed = ((FingerMoveMsgData) data).closed;
                         onInputtingChars(input, key, closed, true);
@@ -109,12 +109,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (this.state.type == State.Type.Inputting) {
                     this.slidingInput = false;
 
-                    CharInput input = (CharInput) inputList().cursor().pending();
+                    CharInput input = (CharInput) getInputList().getCursor().getPending();
                     if (!input.hasExtraCandidates()) {
                         confirmInputPending();
                     } else {
                         KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                        InputMsgData idata = new InputtingCharsMsgData(input.keys(), key, null, keyFactory);
+                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
 
                         onInputMsg(InputMsg.InputtingChars, idata);
                     }
@@ -124,13 +124,13 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyClick: {
                 if (this.state.type != State.Type.Inputting) {
                     this.state = new State(State.Type.Inputting);
-                    inputList().initPending();
-                } else if (inputList().cursor().pending() == null) {
-                    inputList().initPending();
+                    getInputList().initPending();
+                } else if (getInputList().getCursor().getPending() == null) {
+                    getInputList().initPending();
                 }
 
-                CharInput input = (CharInput) inputList().cursor().pending();
-                input.append(key);
+                CharInput input = (CharInput) getInputList().getCursor().getPending();
+                input.appendKey(key);
 
                 onInputtingChars(input, key, null, false);
                 break;
@@ -144,18 +144,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyClick: {
                 if (this.state.type == State.Type.ChoosingInputCandidate //
-                    && key.type() == CtrlKey.Type.Confirm) {
+                    && key.getType() == CtrlKey.Type.ChooseWord) {
                     confirmInputPending();
                 }
                 break;
             }
             case FingerFling: {
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    CharInput input = (CharInput) inputList().cursor().pending();
+                    CharInput input = (CharInput) getInputList().getCursor().getPending();
                     KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
                                                                                      input,
                                                                                      ((FingerFlingMsgData) data).up);
-                    InputMsgData idata = new InputtingCharsMsgData(input.keys(), key, null, keyFactory);
+                    InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
 
                     onInputMsg(InputMsg.InputtingChars, idata);
                 }
@@ -170,8 +170,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyClick: {
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    InputWord word = key.word();
-                    CharInput input = (CharInput) inputList().cursor().pending();
+                    InputWord word = key.getWord();
+                    CharInput input = (CharInput) getInputList().getCursor().getPending();
                     input.word(word);
 
                     confirmInputPending();
@@ -184,9 +184,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onInputtingChars(CharInput input, CharKey currentKey, Key<?> closedKey, boolean needToProcessPinyin) {
         List<String> nextChars = new ArrayList<>();
         if (needToProcessPinyin) {
-            nextChars = this.pinyinCharTree.findNextChars(input.chars());
+            nextChars = this.pinyinCharTree.findNextChars(input.getChars());
 
-            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.chars())
+            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
                                                                 .stream()
                                                                 .map(InputWord::from)
                                                                 .sorted()
@@ -199,7 +199,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         KeyFactory keyFactory = createKeyFactoryByInput(input, nextChars);
-        InputMsgData data = new InputtingCharsMsgData(input.keys(), currentKey, closedKey, keyFactory);
+        InputMsgData data = new InputtingCharsMsgData(input.getKeys(), currentKey, closedKey, keyFactory);
 
         onInputMsg(InputMsg.InputtingChars, data);
     }
@@ -208,24 +208,24 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.state = new State(State.Type.Inputting);
         this.slidingInput = false;
 
-        CharInput input = (CharInput) inputList().cursor().pending();
+        CharInput input = (CharInput) getInputList().getCursor().getPending();
         if (input == null || !input.hasWord()) {
             // 无有效拼音，则丢弃输入
-            inputList().dropPending();
+            getInputList().dropPending();
         } else {
-            inputList().confirmPending();
+            getInputList().confirmPending();
         }
-        onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(keyFactory()));
+        onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
     }
 
     private KeyFactory createKeyFactoryByInput(CharInput input, List<String> nextChars) {
         return option -> {
-            Key<?>[][] keys = keyFactory().create(option);
+            Key<?>[][] keys = getKeyFactory().create(option);
             // 有后继字母，则仅显示后继字母按键
             if (!nextChars.isEmpty()) {
                 KeyTable.traverseKeys(keys, key -> {
                     key.hide();
-                    if (key instanceof CharKey && nextChars.contains(((CharKey) key).text())) {
+                    if (key instanceof CharKey && nextChars.contains(((CharKey) key).getText())) {
                         key.show();
                     }
                 });
@@ -252,10 +252,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 data.prevPage();
             }
         } else {
-            data = new ChoosingInputCandidateData(input.candidates().size(), KeyTable.inputCandidateKeysPageSize());
+            data = new ChoosingInputCandidateData(input.getWordCandidates().size(),
+                                                  KeyTable.getInputCandidateKeysPageSize());
             this.state = new State(State.Type.ChoosingInputCandidate, data);
         }
 
-        return KeyTable.inputCandidateKeys(option, handMode(), data.getPageStart(), input.candidates());
+        return KeyTable.getInputCandidateKeys(option, getHandMode(), data.getPageStart(), input.getWordCandidates());
     }
 }

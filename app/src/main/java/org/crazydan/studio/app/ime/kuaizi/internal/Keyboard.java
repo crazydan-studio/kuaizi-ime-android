@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
  */
 public interface Keyboard {
 
-    KeyFactory keyFactory();
+    KeyFactory getKeyFactory();
 
-    void inputList(InputList inputList);
+    void setInputList(InputList inputList);
 
     /** 重置状态 */
     void reset();

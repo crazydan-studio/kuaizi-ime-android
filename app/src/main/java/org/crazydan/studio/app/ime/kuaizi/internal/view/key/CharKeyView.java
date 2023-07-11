@@ -48,9 +48,9 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
     public void bind(CharKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        this.fgView.setText(key.text());
+        this.fgView.setText(key.getText());
 
-        int fgColor = ColorUtils.getByAttrId(getContext(), key.fgColorAttrId());
+        int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());
         this.fgView.setTextColor(fgColor);
     }
 

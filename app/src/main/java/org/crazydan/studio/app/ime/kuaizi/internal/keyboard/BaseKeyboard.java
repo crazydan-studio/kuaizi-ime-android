@@ -44,20 +44,20 @@ public abstract class BaseKeyboard implements Keyboard {
 
     }
 
-    public HandMode handMode() {
+    public HandMode getHandMode() {
         return this.handMode;
     }
 
-    public void handMode(HandMode handMode) {
+    public void setHandMode(HandMode handMode) {
         this.handMode = handMode;
     }
 
-    public InputList inputList() {
+    public InputList getInputList() {
         return this.inputList;
     }
 
     @Override
-    public void inputList(InputList inputList) {
+    public void setInputList(InputList inputList) {
         this.inputList = inputList;
     }
 

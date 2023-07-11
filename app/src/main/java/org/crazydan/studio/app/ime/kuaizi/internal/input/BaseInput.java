@@ -38,36 +38,36 @@ public abstract class BaseInput implements Input {
     private List<InputWord> candidates;
 
     @Override
-    public List<Key<?>> keys() {
+    public List<Key<?>> getKeys() {
         return this.keys;
     }
 
     @Override
-    public Key<?> currentKey() {
+    public Key<?> getCurrentKey() {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }
 
     @Override
-    public void append(Key<?> key) {
+    public void appendKey(Key<?> key) {
         this.keys.add(key);
     }
 
     @Override
-    public List<String> chars() {
+    public List<String> getChars() {
         return this.keys.stream()
                         .filter(k -> k instanceof CharKey)
-                        .map(k -> ((CharKey) k).text())
+                        .map(k -> ((CharKey) k).getText())
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }
 
     @Override
     public boolean hasWord() {
-        return word() != null;
+        return getWord() != null;
     }
 
     @Override
-    public InputWord word() {
+    public InputWord getWord() {
         return this.word;
     }
 
@@ -76,7 +76,7 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public List<InputWord> candidates() {
+    public List<InputWord> getWordCandidates() {
         return this.candidates == null ? new ArrayList<>() : this.candidates;
     }
 
@@ -86,6 +86,6 @@ public abstract class BaseInput implements Input {
 
     /** 是否有多余 1 个的候选字 */
     public boolean hasExtraCandidates() {
-        return candidates().size() > 1;
+        return getWordCandidates().size() > 1;
     }
 }

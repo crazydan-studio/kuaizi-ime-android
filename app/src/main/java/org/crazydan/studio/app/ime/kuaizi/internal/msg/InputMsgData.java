@@ -28,5 +28,5 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 public interface InputMsgData {
 
     /** 获取按键生成器，以便于重新布局按键 */
-    Keyboard.KeyFactory keyFactory();
+    Keyboard.KeyFactory getKeyFactory();
 }

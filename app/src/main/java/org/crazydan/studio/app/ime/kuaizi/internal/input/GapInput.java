@@ -34,11 +34,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class GapInput extends BaseInput {
 
     @Override
-    public void append(Key<?> key) {
+    public void appendKey(Key<?> key) {
     }
 
     @Override
-    public List<String> chars() {
+    public List<String> getChars() {
         return new ArrayList<>();
     }
 }

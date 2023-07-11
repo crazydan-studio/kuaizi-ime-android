@@ -17,7 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -37,102 +40,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
  * @date 2023-07-06
  */
 public class KeyTable {
-    public static final CtrlKey ctrl_key_choose_word = CtrlKey.chooseWord(R.drawable.ic_choose_word)
-                                                              .bgColorAttrId(R.attr.key_ctrl_space_bg_color);
-    public static final CtrlKey ctrl_key_locator = CtrlKey.locator(R.drawable.ic_left_hand_move)
-                                                          .bgColorAttrId(R.attr.key_ctrl_locator_bg_color);
-    public static final CtrlKey ctrl_key_confirm = CtrlKey.confirm(R.drawable.ic_right_like)
-                                                          .bgColorAttrId(R.attr.key_ctrl_confirm_bg_color);
+    /** 字母按键调色板 */
+    private static final Map<List<String>, Integer[]> char_key_color_palette = new HashMap<>();
+    /** 控制按键样式：图标+背景色 */
+    private static final Map<CtrlKey.Type, Integer[]> ctrl_key_styles = new HashMap<>();
 
-    /** 右手模式的纵向屏幕 7 x 6 的按键表 */
-    private static final Key<?>[][] portrait_right_hand = new Key[][] {
-            new Key[] {
-                    CtrlKey.switchIME(R.drawable.ic_keyboard).bgColorAttrId(R.attr.key_ctrl_switch_ime_bg_color),
-                    CharKey.punctuation("：")
-                           .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-                    CharKey.alphabet("i")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("a")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("e")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("o")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    CharKey.alphabet("u")
-                           .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-                    } //
-            , new Key[] {
-            CharKey.punctuation("！")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.punctuation("？")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("j")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("q")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("s")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CharKey.alphabet("z")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CtrlKey.backspace(R.drawable.ic_backspace_left).bgColorAttrId(R.attr.key_ctrl_backspace_bg_color),
-            } //
-            , new Key[] {
-            CtrlKey.switchHandMode(R.drawable.ic_switch_to_left_hand).bgColorAttrId(R.attr.key_ctrl_switch_hand_mode_bg_color),
-            CharKey.alphabet("ü")
-                   .fgColorAttrId(R.attr.key_char_final_fg_color).bgColorAttrId(R.attr.key_char_final_bg_color),
-            CharKey.alphabet("h")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("g")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("x")
-                   .fgColorAttrId(R.attr.key_char_initial_jqx_fg_color).bgColorAttrId(R.attr.key_char_initial_jqx_bg_color),
-            CharKey.alphabet("c")
-                   .fgColorAttrId(R.attr.key_char_initial_scz_fg_color).bgColorAttrId(R.attr.key_char_initial_scz_bg_color),
-            CtrlKey.space(R.drawable.ic_space).bgColorAttrId(R.attr.key_ctrl_space_bg_color),
-            } //
-            , new Key[] {
-            CharKey.punctuation("、")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("n")
-                   .fgColorAttrId(R.attr.key_char_initial_nl_fg_color).bgColorAttrId(R.attr.key_char_initial_nl_bg_color),
-            CharKey.alphabet("l")
-                   .fgColorAttrId(R.attr.key_char_initial_nl_fg_color).bgColorAttrId(R.attr.key_char_initial_nl_bg_color),
-            ctrl_key_locator,
-            CharKey.alphabet("w")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CharKey.alphabet("k")
-                   .fgColorAttrId(R.attr.key_char_initial_hgwk_fg_color).bgColorAttrId(R.attr.key_char_initial_hgwk_bg_color),
-            CtrlKey.enter(R.drawable.ic_enter_left).bgColorAttrId(R.attr.key_ctrl_enter_bg_color),
-            } //
-            , new Key[] {
-            CtrlKey.noop().bgColorAttrId(R.attr.key_ctrl_noop_bg_color),
-            CharKey.punctuation("，")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("r")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("f")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("m")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("p")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CtrlKey.switchToAlphanumericKeyboard(R.drawable.ic_alphabet_number).bgColorAttrId(R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color),
-            } //
-            , new Key[] {
-            CtrlKey.noop().bgColorAttrId(R.attr.key_ctrl_noop_bg_color),
-            CharKey.punctuation("。")
-                   .fgColorAttrId(R.attr.key_char_punctuation_fg_color).bgColorAttrId(R.attr.key_char_punctuation_bg_color),
-            CharKey.alphabet("d")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("b")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("t")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CharKey.alphabet("y")
-                   .fgColorAttrId(R.attr.key_char_initial_fg_color).bgColorAttrId(R.attr.key_char_initial_bg_color),
-            CtrlKey.switchToPunctuationKeyboard(R.drawable.ic_punctuation).bgColorAttrId(R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color),
-            },
-            };
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
     private static final int[][] grid_key_coords = new int[][] {
             // level 1: 0~5
@@ -172,23 +84,124 @@ public class KeyTable {
             new int[] { 1, 1 },
             };
 
-    public static Key<?>[][] keys(Keyboard.KeyFactory.Option option, HandMode handMode) {
+    static {
+        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),
+                                   new Integer[] { R.attr.key_char_final_fg_color, R.attr.key_char_final_bg_color });
+        char_key_color_palette.put(Arrays.asList("r", "f", "m", "p", "d", "b", "t", "y"), new Integer[] {
+                R.attr.key_char_initial_fg_color, R.attr.key_char_initial_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("j", "q", "x"), new Integer[] {
+                R.attr.key_char_initial_jqx_fg_color, R.attr.key_char_initial_jqx_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("s", "c", "z"), new Integer[] {
+                R.attr.key_char_initial_scz_fg_color, R.attr.key_char_initial_scz_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("h", "g", "w", "k"), new Integer[] {
+                R.attr.key_char_initial_hgwk_fg_color, R.attr.key_char_initial_hgwk_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("n", "l"), new Integer[] {
+                R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("：", "！", "？", "、", "，", "。"), new Integer[] {
+                R.attr.key_char_punctuation_fg_color, R.attr.key_char_punctuation_bg_color
+        });
+
+        ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
+                            new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switch_ime_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Backspace,
+                            new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
+                R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.Space, new Integer[] { R.drawable.ic_space, R.attr.key_ctrl_space_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Enter,
+                            new Integer[] { R.drawable.ic_enter_left, R.attr.key_ctrl_enter_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToAlphanumericKeyboard, new Integer[] {
+                R.drawable.ic_alphabet_number, R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToPunctuationKeyboard, new Integer[] {
+                R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.ChooseWord,
+                            new Integer[] { R.drawable.ic_right_like, R.attr.key_ctrl_confirm_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Locator,
+                            new Integer[] { R.drawable.ic_left_hand_move, R.attr.key_ctrl_locator_bg_color });
+    }
+
+    public static Key<?>[][] getKeys(Keyboard.KeyFactory.Option option, HandMode handMode) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
-        return portrait_right_hand;
+
+        // 右手模式的纵向屏幕 7 x 6 的按键表
+        return new Key[][] {
+                new Key[] {
+                        ctrlKey(CtrlKey.Type.SwitchIME),
+                        charKey("："),
+                        charKey("i"),
+                        charKey("a"),
+                        charKey("e"),
+                        charKey("o"),
+                        charKey("u"),
+                        } //
+                , new Key[] {
+                charKey("！"),
+                charKey("？"),
+                charKey("j"),
+                charKey("q"),
+                charKey("s"),
+                charKey("z"),
+                ctrlKey(CtrlKey.Type.Backspace),
+                } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.SwitchHandMode),
+                charKey("ü"),
+                charKey("h"),
+                charKey("g"),
+                charKey("x"),
+                charKey("c"),
+                ctrlKey(CtrlKey.Type.Space),
+                } //
+                , new Key[] {
+                charKey("、"),
+                charKey("n"),
+                charKey("l"),
+                ctrlKey(CtrlKey.Type.Locator),
+                charKey("w"),
+                charKey("k"),
+                ctrlKey(CtrlKey.Type.Enter),
+                } //
+                , new Key[] {
+                noopCtrlKey(),
+                charKey("，"),
+                charKey("r"),
+                charKey("f"),
+                charKey("m"),
+                charKey("p"),
+                ctrlKey(CtrlKey.Type.SwitchToAlphanumericKeyboard),
+                } //
+                , new Key[] {
+                noopCtrlKey(),
+                charKey("。"),
+                charKey("d"),
+                charKey("b"),
+                charKey("t"),
+                charKey("y"),
+                ctrlKey(CtrlKey.Type.SwitchToPunctuationKeyboard),
+                },
+                };
     }
 
     /** 候选字按键的分页大小 */
-    public static int inputCandidateKeysPageSize() {
+    public static int getInputCandidateKeysPageSize() {
         return grid_key_coords.length;
     }
 
-    public static Key<?>[][] inputCandidateKeys(
+    public static Key<?>[][] getInputCandidateKeys(
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
         Key<?>[][] gridKeys = new Key[6][7];
 
         // 候选字确认按键
-        gridKeys[3][3] = ctrl_key_confirm.show();
+        gridKeys[3][3] = ctrlKey(CtrlKey.Type.ChooseWord);
 
         for (int i = 0; i < grid_key_coords.length; i++) {
             int[] gridKeyCoord = grid_key_coords[i];
@@ -209,17 +222,12 @@ public class KeyTable {
                 }
 
                 gridKeys[x][y] = InputWordKey.word(word)
-                                             .fgColorAttrId(R.attr.input_word_key_fg_color)
-                                             .bgColorAttrId(bgAttrId);
+                                             .setFgColorAttrId(R.attr.input_word_key_fg_color)
+                                             .setBgColorAttrId(bgAttrId);
             }
         }
 
         return gridKeys;
-    }
-
-    public static Key<?>[][] showKeys(Key<?>[][] keys) {
-        traverseKeys(keys, Key::show);
-        return keys;
     }
 
     public static void traverseKeys(Key<?>[][] keys, Consumer<Key<?>> consumer) {
@@ -228,5 +236,37 @@ public class KeyTable {
                 consumer.accept(k);
             }
         }
+    }
+
+    private static CtrlKey ctrlKey(CtrlKey.Type type) {
+        int iconResId = 0;
+        int bgAttrId = 0;
+        for (Map.Entry<CtrlKey.Type, Integer[]> entry : ctrl_key_styles.entrySet()) {
+            if (entry.getKey() == type) {
+                iconResId = entry.getValue()[0];
+                bgAttrId = entry.getValue()[1];
+                break;
+            }
+        }
+
+        return CtrlKey.create(type, iconResId).setBgColorAttrId(bgAttrId);
+    }
+
+    private static CtrlKey noopCtrlKey() {
+        return CtrlKey.noop().setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+    }
+
+    private static CharKey charKey(String text) {
+        int fgAttrId = 0;
+        int bgAttrId = 0;
+        for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {
+            if (entry.getKey().contains(text)) {
+                fgAttrId = entry.getValue()[0];
+                bgAttrId = entry.getValue()[1];
+                break;
+            }
+        }
+
+        return CharKey.alphabet(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
     }
 }

@@ -27,32 +27,32 @@ import java.util.List;
  */
 public interface Input {
 
-    /** 输入按键列表 */
-    List<Key<?>> keys();
+    /** 获取输入按键列表 */
+    List<Key<?>> getKeys();
 
-    /** 当前按键 */
-    Key<?> currentKey();
+    /** 获取当前按键 */
+    Key<?> getCurrentKey();
 
     /** 追加输入按键 */
-    void append(Key<?> key);
+    void appendKey(Key<?> key);
 
     /** 获取输入字符列表 */
-    List<String> chars();
+    List<String> getChars();
 
     /** 是否有可输入字 */
     boolean hasWord();
 
     /**
-     * 已选择候选字
+     * 获取已选择候选字
      *
      * @return 若为<code>null</code>，则表示未选择
      */
-    InputWord word();
+    InputWord getWord();
 
     /**
-     * 可选候选字列表
+     * 获取可选候选字列表
      *
      * @return 若无候选字，则返回空集合
      */
-    List<InputWord> candidates();
+    List<InputWord> getWordCandidates();
 }

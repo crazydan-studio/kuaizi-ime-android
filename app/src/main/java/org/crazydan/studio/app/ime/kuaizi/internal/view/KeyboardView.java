@@ -109,7 +109,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             this.keyboard = new PinyinKeyboard(this.pinyinCharTree);
         }
 
-        this.keyboard.inputList(this.inputList);
+        this.keyboard.setInputList(this.inputList);
         this.inputMsgListeners.forEach(this.keyboard::addInputMsgListener);
 
         if (oldKeyboard != this.keyboard) {
@@ -129,7 +129,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void relayout() {
-        Key<?>[][] keys = createKeys(this.keyboard.keyFactory());
+        Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
         this.layoutManager.configGrid(columns, rows, 8);
@@ -138,8 +138,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void relayoutKeys(Key<?>[][] keys) {
-        this.adapter.setKeys(keys);
-        this.adapter.notifyDataSetChanged();
+        this.adapter.bindKeys(keys);
     }
 
     /** 找到事件坐标下可见的{@link  KeyView 按键视图} */
@@ -173,12 +172,12 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
-        Key<?>[][] keys = createKeys(data.keyFactory());
+        Key<?>[][] keys = createKeys(data.getKeyFactory());
         relayoutKeys(keys);
     }
 
     private void onInputtingCharsDoneMsg(InputMsgData data) {
-        Key<?>[][] keys = createKeys(data.keyFactory());
+        Key<?>[][] keys = createKeys(data.getKeyFactory());
         relayoutKeys(keys);
     }
 

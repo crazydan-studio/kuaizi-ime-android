@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.Objects;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
 /**
@@ -38,18 +40,38 @@ public class InputWordKey extends BaseKey<InputWordKey> {
         this.word = word;
     }
 
-    public InputWord word() {
+    public InputWord getWord() {
         return this.word;
     }
 
     /** 获取前景色属性 id */
-    public int fgColorAttrId() {
+    public int getFgColorAttrId() {
         return this.fgColorAttrId;
     }
 
     /** 设置前景色属性 id */
-    public InputWordKey fgColorAttrId(int fgColorAttrId) {
+    public InputWordKey setFgColorAttrId(int fgColorAttrId) {
         this.fgColorAttrId = fgColorAttrId;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        InputWordKey that = (InputWordKey) o;
+        return this.fgColorAttrId == that.fgColorAttrId && this.word.equals(that.word);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.word, this.fgColorAttrId);
     }
 }

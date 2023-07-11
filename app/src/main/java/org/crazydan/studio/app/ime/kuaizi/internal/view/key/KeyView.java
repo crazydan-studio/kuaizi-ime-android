@@ -47,7 +47,7 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
         this.fgView = itemView.findViewById(R.id.fg_view);
     }
 
-    public K key() {
+    public K getKey() {
         return this.key;
     }
 
@@ -61,7 +61,7 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
 
             KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
-            int bgColor = ColorUtils.getByAttrId(getContext(), key.bgColorAttrId());
+            int bgColor = ColorUtils.getByAttrId(getContext(), key.getBgColorAttrId());
             drawable.setColor(bgColor);
             drawable.setCornerRadius(10);
 

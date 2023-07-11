@@ -45,13 +45,13 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     }
 
     public int getSelectedInputPosition() {
-        return this.inputList.cursorIndex();
+        return this.inputList.getCursorIndex();
     }
 
     public Input getInputAt(int position) {
-        Input input = this.inputList.inputs().get(position);
-        Input selected = this.inputList.cursor().selected();
-        Input pending = this.inputList.cursor().pending();
+        Input input = this.inputList.getInputs().get(position);
+        Input selected = this.inputList.getCursor().getSelected();
+        Input pending = this.inputList.getCursor().getPending();
 
         if (selected == input && pending != null) {
             return pending;
@@ -62,16 +62,16 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public int getItemCount() {
-        return this.inputList == null ? 0 : this.inputList.inputs().size();
+        return this.inputList == null ? 0 : this.inputList.getInputs().size();
     }
 
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
         Input input = getInputAt(position);
-        boolean selected = this.inputList.cursorIndex() == position;
+        boolean selected = this.inputList.getCursorIndex() == position;
 
         if (input instanceof CharInput) {
-            boolean pending = this.inputList.cursor().pending() == input;
+            boolean pending = this.inputList.getCursor().getPending() == input;
 
             ((CharInputView) view).bind((CharInput) input, selected, pending);
         } else {
