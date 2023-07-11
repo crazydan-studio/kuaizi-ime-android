@@ -41,6 +41,9 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
 
         if (key.getIconResId() > 0) {
             this.fgView.setImageResource(key.getIconResId());
+        } else {
+            // 存在复用的情况，故，需对其他情况对前景图片进行置空
+            this.fgView.setImageDrawable(null);
         }
     }
 }

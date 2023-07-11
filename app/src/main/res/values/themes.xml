@@ -53,6 +53,10 @@
         <item name="key_ctrl_switch_to_alphanumeric_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_toggle_input_tongue_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_toggle_input_tongue_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_toggle_input_rhyme_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_toggle_input_rhyme_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
@@ -117,6 +121,10 @@
         <item name="key_ctrl_switch_to_alphanumeric_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_toggle_input_tongue_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_toggle_input_tongue_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_toggle_input_rhyme_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_toggle_input_rhyme_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>

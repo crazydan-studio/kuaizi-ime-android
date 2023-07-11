@@ -1,0 +1,28 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/8664938/trash_can_delete_remove_icon -->
+    <path
+            android:fillColor="?attr/key_ctrl_backspace_fg_color"
+            android:pathData="M21.75,3.75L17.888,3.75L16.295,1.09C15.848,0.414 15.159,0 14.372,0L9.628,0C8.841,0 8.109,0.414 7.706,1.09L6.112,3.75L2.25,3.75C1.834,3.75 1.5,4.084 1.5,4.5L1.5,5.25C1.5,5.667 1.834,6 2.25,6L3,6v15c0,1.657 1.343,3 3,3h12c1.657,0 3,-1.343 3,-3L21,6h0.75C22.167,6 22.5,5.667 22.5,5.25L22.5,4.5C22.5,4.084 22.167,3.75 21.75,3.75ZM9.558,2.385C9.605,2.303 9.698,2.25 9.797,2.25h4.406c0.1,0 0.193,0.053 0.24,0.135L15.262,3.75L8.738,3.75ZM18,21.75L6,21.75C5.586,21.75 5.25,21.414 5.25,21L5.25,6h13.5v15c0,0.412 -0.338,0.75 -0.75,0.75zM12,19.5c0.415,0 0.75,-0.335 0.75,-0.75L12.75,9C12.75,8.585 12.415,8.25 12,8.25 11.585,8.25 11.25,8.587 11.25,9v9.75c0,0.412 0.338,0.75 0.75,0.75zM8.25,19.5C8.663,19.5 9,19.163 9,18.75L9,9C9,8.585 8.665,8.25 8.25,8.25 7.835,8.25 7.5,8.587 7.5,9v9.75c0,0.412 0.338,0.75 0.75,0.75zM15.75,19.5c0.415,0 0.75,-0.335 0.75,-0.75L16.5,9C16.5,8.585 16.165,8.25 15.75,8.25 15.335,8.25 15,8.587 15,9v9.75c0,0.412 0.338,0.75 0.75,0.75z"
+            android:strokeWidth="0.046875" />
+</vector>

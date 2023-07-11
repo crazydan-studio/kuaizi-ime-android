@@ -119,6 +119,14 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switch_ime_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.DropInput,
+                            new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputRhyme, new Integer[] {
+                R.drawable.ic_pinyin_en_to_eng, R.attr.key_ctrl_toggle_input_rhyme_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputTongue, new Integer[] {
+                R.drawable.ic_pinyin_s_to_sh, R.attr.key_ctrl_toggle_input_tongue_bg_color
+        });
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
                 R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
         });
@@ -206,6 +214,15 @@ public class KeyTable {
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
         Key<?>[][] gridKeys = new Key[6][7];
+        for (int i = 0; i < gridKeys.length; i++) {
+            for (int j = 0; j < gridKeys[i].length; j++) {
+                gridKeys[i][j] = noopCtrlKey();
+            }
+        }
+
+        gridKeys[0][6] = ctrlKey(CtrlKey.Type.DropInput);
+        gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme);
 
         for (int i = 0; i < grid_key_coords.length; i++) {
             int[] gridKeyCoord = grid_key_coords[i];
@@ -235,7 +252,7 @@ public class KeyTable {
         }
     }
 
-    private static CtrlKey ctrlKey(CtrlKey.Type type) {
+    public static CtrlKey ctrlKey(CtrlKey.Type type) {
         int iconResId = 0;
         int bgAttrId = 0;
         for (Map.Entry<CtrlKey.Type, Integer[]> entry : ctrl_key_styles.entrySet()) {
@@ -249,11 +266,11 @@ public class KeyTable {
         return CtrlKey.create(type, iconResId).setBgColorAttrId(bgAttrId);
     }
 
-    private static CtrlKey noopCtrlKey() {
+    public static CtrlKey noopCtrlKey() {
         return CtrlKey.noop().setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
     }
 
-    private static CharKey charKey(String text) {
+    public static CharKey charKey(String text) {
         int fgAttrId = 0;
         int bgAttrId = 0;
         for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {

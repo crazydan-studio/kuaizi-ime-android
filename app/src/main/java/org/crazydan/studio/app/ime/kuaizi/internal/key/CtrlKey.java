@@ -88,6 +88,12 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Space,
         /** 向前删除 */
         Backspace,
+        /** 在候选字状态下删除当前输入 */
+        DropInput,
+        /** 在候选字状态下切换当前输入的平舌和翘舌 */
+        ToggleInputTongue,
+        /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
+        ToggleInputRhyme,
         /** 切换输入法 */
         SwitchIME,
         /** 切换左右手模式 */

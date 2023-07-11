@@ -145,7 +145,59 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyClick: {
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
                     switch (key.getType()) {
+                        case DropInput: {
+                            getInputList().dropPending();
+                            confirmInputPending();
+                            break;
+                        }
+                        case ToggleInputTongue: {
+                            CharInput input = (CharInput) getInputList().getCursor().getPending();
+                            String s = String.join("", input.getChars());
+                            if (s.startsWith("sh") || s.startsWith("ch") || s.startsWith("zh")) {
+                                input.getKeys().remove(1);
+                            } else if (s.startsWith("s") || s.startsWith("c") || s.startsWith("z")) {
+                                input.getKeys().add(1, KeyTable.charKey("h"));
+                            }
 
+                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                                .stream()
+                                                                                .map(InputWord::from)
+                                                                                .sorted()
+                                                                                .collect(Collectors.toList());
+                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                            input.candidates(candidateWords);
+
+                            this.state = new State(State.Type.Init);
+                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+
+                            onInputMsg(InputMsg.InputtingChars, idata);
+                            break;
+                        }
+                        case ToggleInputRhyme: {
+                            CharInput input = (CharInput) getInputList().getCursor().getPending();
+                            String s = String.join("", input.getChars());
+                            if (s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang")) {
+                                input.getKeys().remove(input.getKeys().size() - 1);
+                            } else if (s.endsWith("en") || s.endsWith("in") || s.endsWith("an")) {
+                                input.getKeys().add(input.getKeys().size(), KeyTable.charKey("g"));
+                            }
+
+                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                                .stream()
+                                                                                .map(InputWord::from)
+                                                                                .sorted()
+                                                                                .collect(Collectors.toList());
+                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                            input.candidates(candidateWords);
+
+                            this.state = new State(State.Type.Init);
+                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+
+                            onInputMsg(InputMsg.InputtingChars, idata);
+                            break;
+                        }
                     }
                 }
                 break;
