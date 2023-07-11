@@ -310,6 +310,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             this.state = new State(State.Type.ChoosingInputCandidate, data);
         }
 
-        return KeyTable.getInputCandidateKeys(option, getHandMode(), data.getPageStart(), input.getWordCandidates());
+        return KeyTable.getInputCandidateKeys(option, getHandMode(), data.getPageStart(), input);
     }
 }

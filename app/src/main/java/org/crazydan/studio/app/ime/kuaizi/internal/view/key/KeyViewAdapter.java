@@ -45,6 +45,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
+    private static final int VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY = 4;
+    private static final int VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY = 5;
 
     private final HexagonOrientation orientation;
     private List<Key<?>> keys = new ArrayList<>();
@@ -93,7 +95,14 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         Key<?> key = this.keys.get(position);
 
         if (key instanceof CtrlKey) {
-            ((CtrlKeyView) view).bind((CtrlKey) key, this.orientation);
+            switch (((CtrlKey) key).getType()) {
+                case ToggleInputTongue:
+                case ToggleInputRhyme:
+                    ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
+                    break;
+                default:
+                    ((CtrlKeyView) view).bind((CtrlKey) key, this.orientation);
+            }
         } else if (key instanceof InputWordKey) {
             ((InputWordKeyView) view).bind((InputWordKey) key, this.orientation);
         } else if (key == null) {
@@ -108,7 +117,14 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         Key<?> key = this.keys.get(position);
 
         if (key instanceof CtrlKey) {
-            return VIEW_TYPE_CTRL_KEY;
+            switch (((CtrlKey) key).getType()) {
+                case ToggleInputTongue:
+                    return VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY;
+                case ToggleInputRhyme:
+                    return VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY;
+                default:
+                    return VIEW_TYPE_CTRL_KEY;
+            }
         } else if (key instanceof InputWordKey) {
             return VIEW_TYPE_INPUT_WORD_KEY;
         } else if (key == null) {
@@ -123,6 +139,12 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
+        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY) {
+            return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
+                                                                     R.layout.ctrl_key_toggle_input_spell_view));
+        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY) {
+            return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
+                                                                     R.layout.ctrl_key_toggle_input_spell_view));
         } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
             return new InputWordKeyView(inflateHolderView(parent, R.layout.input_word_key_view));
         } else if (viewType == VIEW_TYPE_NULL_KEY) {

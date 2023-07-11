@@ -57,6 +57,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(type, iconResId);
     }
 
+    public static CtrlKey create(Type type, String text) {
+        return new CtrlKey(type, text);
+    }
+
     /** 按钮{@link Type 类型} */
     public Type getType() {
         return this.type;

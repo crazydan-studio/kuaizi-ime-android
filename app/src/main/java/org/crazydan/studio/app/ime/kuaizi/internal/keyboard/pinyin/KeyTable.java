@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -122,10 +123,10 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputRhyme, new Integer[] {
-                R.drawable.ic_pinyin_en_to_eng, R.attr.key_ctrl_toggle_input_rhyme_bg_color
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputTongue, new Integer[] {
-                R.drawable.ic_pinyin_s_to_sh, R.attr.key_ctrl_toggle_input_tongue_bg_color
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
                 R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
@@ -211,23 +212,28 @@ public class KeyTable {
     }
 
     public static Key<?>[][] getInputCandidateKeys(
-            Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
+            Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, CharInput input
     ) {
+        List<InputWord> inputCandidates = input.getWordCandidates();
         int pageSize = grid_key_coords.length;
 
         Key<?>[][] gridKeys = new Key[6][7];
-        for (int i = 0; i < gridKeys.length; i++) {
-            for (int j = 0; j < gridKeys[i].length; j++) {
-                gridKeys[i][j] = noopCtrlKey();
-            }
-        }
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                      + "/" //
                                      + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
         gridKeys[0][6] = ctrlKey(CtrlKey.Type.DropInput);
-        gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue);
-        gridKeys[5][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme);
+
+        if (input.isPinyinTongue()) {
+            String s = input.getChars().get(0);
+            gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+        }
+        if (input.isPinyinRhyme()) {
+            String s = String.join("", input.getChars());
+            String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
+            gridKeys[5][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
+        }
 
         for (int i = 0; i < pageSize; i++) {
             int[] gridKeyCoord = grid_key_coords[i];
@@ -258,6 +264,10 @@ public class KeyTable {
     }
 
     public static CtrlKey ctrlKey(CtrlKey.Type type) {
+        return ctrlKey(type, null);
+    }
+
+    public static CtrlKey ctrlKey(CtrlKey.Type type, String text) {
         int iconResId = 0;
         int bgAttrId = 0;
         for (Map.Entry<CtrlKey.Type, Integer[]> entry : ctrl_key_styles.entrySet()) {
@@ -268,7 +278,8 @@ public class KeyTable {
             }
         }
 
-        return CtrlKey.create(type, iconResId).setBgColorAttrId(bgAttrId);
+        CtrlKey key = text != null ? CtrlKey.create(type, text) : CtrlKey.create(type, iconResId);
+        return key.setBgColorAttrId(bgAttrId);
     }
 
     public static CtrlKey noopCtrlKey() {

@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 
 /**
@@ -28,6 +30,26 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-06
  */
 public class CharInput extends BaseInput {
+
+    /** 是否为拼音 平/翘舌 */
+    public boolean isPinyinTongue() {
+        List<String> chars = getChars();
+        if (chars.isEmpty()) {
+            return false;
+        }
+
+        String ch = chars.get(0);
+        return ch.startsWith("s") || ch.startsWith("c") || ch.startsWith("z");
+    }
+
+    /** 是否为拼音 前/后鼻韵 */
+    public boolean isPinyinRhyme() {
+        String s = String.join("", getChars());
+
+        return s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang") //
+               || s.endsWith("en") || s.endsWith("in") || s.endsWith("an");
+    }
+
     public enum Type {
         /** 拼音 */
         Pinyin,
