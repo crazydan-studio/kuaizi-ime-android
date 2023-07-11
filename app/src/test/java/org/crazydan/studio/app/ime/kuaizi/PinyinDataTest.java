@@ -45,9 +45,33 @@ public class PinyinDataTest {
     @Test
     public void test_generate_pinyin_data() throws Exception {
         // 数据来源: https://github.com/mozillazg/pinyin-data
-        File pinyinDataFile = new File("../../data/pinyin-data/pinyin.txt");
+        PinyinDataSource[] pinyinDataSources = new PinyinDataSource[] {
+                // Note: 无繁体字
+                new PinyinDataSource(new File("../../data/pinyin-data/kTGHZ2013.txt"), "U+20164"),
+                // Note: 来源于《現代漢語頻率詞典》的拼音数据。一 仅有一个读音，不含 邓，含繁体字
+                new PinyinDataSource(new File("../../data/pinyin-data/kHanyuPinlu.txt"), "U+FEEEE"),
+                // Note: 来源于《漢語大字典》的拼音数据。一 仅有一个读音，邓 有多个读音，含繁体字
+                //new PinyinDataSource(new File("../../data/pinyin-data/kHanyuPinyin.txt"),"U+20000"),
+                // Note: 一 有多个读音，含繁体字
+                //new PinyinDataSource(new File("../../data/pinyin-data/kXHC1983.txt"),"U+20201"),
+                // Note: 没有多音字，仅标注常用读音，含繁体字
+                //new PinyinDataSource(new File("../../data/pinyin-data/kMandarin.txt"),"U+20000"),
+                // Note: 以上字典的合并数据
+                //new PinyinDataSource(new File("../../data/pinyin-data/pinyin.txt"),"U+E815"),
+        };
+        // 补充字
+        PinyinWord[] extraWords = new PinyinWord[] {
+                // https://github.com/mozillazg/pinyin-data/blob/master/nonCJKUI.txt
+                new PinyinWord("〇", "líng")
+        };
 
-        PinyinTree tree = readPinyinTree(pinyinDataFile);
+        PinyinTree tree = new PinyinTree();
+        for (PinyinDataSource pinyinDataSource : pinyinDataSources) {
+            readToPinyinTree(tree, pinyinDataSource.file, pinyinDataSource.ignoredCodeFrom);
+        }
+        for (PinyinWord extraWord : extraWords) {
+            tree.add(extraWord);
+        }
 
         // 生成字母连接线
         boolean undirected = false;
@@ -71,7 +95,7 @@ public class PinyinDataTest {
         write(pinyinFile, String.join("\n", pinYinList));
     }
 
-    private PinyinTree readPinyinTree(File file) throws IOException {
+    private void readToPinyinTree(PinyinTree tree, File file, String ignoredCodeFrom) throws IOException {
         File wordLevel1File = new File("../../data/hanzi-level-1.txt");
         File wordLevel2File = new File("../../data/hanzi-level-2.txt");
         File wordLevel3File = new File("../../data/hanzi-level-3.txt");
@@ -86,9 +110,12 @@ public class PinyinDataTest {
 
         List<String> lines = read(file);
 
-        PinyinTree tree = new PinyinTree();
         for (String line : lines) {
-            List<PinyinWord> pinyinWords = parse(line);
+            List<PinyinWord> pinyinWords = parse(line, ignoredCodeFrom);
+            // 打印多音字
+            if (pinyinWords.size() > 1) {
+                System.out.println(line);
+            }
 
             pinyinWords.forEach(word -> {
                 String w = word.getWord();
@@ -108,20 +135,16 @@ public class PinyinDataTest {
                 tree.add(word);
             });
         }
-
-        return tree;
     }
 
-    private List<PinyinWord> parse(String line) {
+    private List<PinyinWord> parse(String line, String ignoredCodeFrom) {
         if (line.startsWith("#")) {
             return new ArrayList<>();
         }
 
-        String code = line.replaceAll("^U\\+([^ ]+):.+", "$1");
-        int codeValue = Integer.parseInt(code, 16);
-        // 忽略 U+E815 及其之后的编码，其不是可显示文字
-        int ignoreCodeValue = Integer.parseInt("E815", 16);
-        if (codeValue >= ignoreCodeValue) {
+        int codeValue = Integer.parseInt(line.replaceAll("^U\\+([^ ]+):.+", "$1"), 16);
+        int ignoredCodeFromValue = Integer.parseInt(ignoredCodeFrom.replaceAll("^U\\+([^ ]+)", "$1"), 16);
+        if (codeValue >= ignoredCodeFromValue) {
             return new ArrayList<>();
         }
 
@@ -200,5 +223,15 @@ public class PinyinDataTest {
         FileWriter writer = new FileWriter(file);
         writer.write(content);
         writer.close();
+    }
+
+    private static class PinyinDataSource {
+        public final File file;
+        public final String ignoredCodeFrom;
+
+        private PinyinDataSource(File file, String ignoredCodeFrom) {
+            this.file = file;
+            this.ignoredCodeFrom = ignoredCodeFrom;
+        }
     }
 }

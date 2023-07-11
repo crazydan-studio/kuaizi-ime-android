@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -110,5 +111,22 @@ public class PinyinWord {
 
     public void setWeight(float weight) {
         this.weight = weight;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PinyinWord that = (PinyinWord) o;
+        return this.word.equals(that.word) && this.pinyin.equals(that.pinyin);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.word, this.pinyin);
     }
 }

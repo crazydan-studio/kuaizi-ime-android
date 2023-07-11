@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  * @date 2023-07-06
  */
 public class PinyinTree {
-    private final List<PinyinWord> words = new ArrayList<>();
+    private final Set<PinyinWord> words = new LinkedHashSet<>();
     private final Map<String, PinyinTree> tree = new HashMap<>();
 
     private Integer allWordSize;
