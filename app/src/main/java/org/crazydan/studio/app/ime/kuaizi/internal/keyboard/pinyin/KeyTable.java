@@ -213,6 +213,8 @@ public class KeyTable {
     public static Key<?>[][] getInputCandidateKeys(
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, List<InputWord> inputCandidates
     ) {
+        int pageSize = grid_key_coords.length;
+
         Key<?>[][] gridKeys = new Key[6][7];
         for (int i = 0; i < gridKeys.length; i++) {
             for (int j = 0; j < gridKeys[i].length; j++) {
@@ -220,11 +222,14 @@ public class KeyTable {
             }
         }
 
+        gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
+                                     + "/" //
+                                     + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
         gridKeys[0][6] = ctrlKey(CtrlKey.Type.DropInput);
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme);
 
-        for (int i = 0; i < grid_key_coords.length; i++) {
+        for (int i = 0; i < pageSize; i++) {
             int[] gridKeyCoord = grid_key_coords[i];
             int x = gridKeyCoord[0];
             int y = gridKeyCoord[1];
@@ -267,7 +272,11 @@ public class KeyTable {
     }
 
     public static CtrlKey noopCtrlKey() {
-        return CtrlKey.noop().setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+        return noopCtrlKey(null);
+    }
+
+    public static CtrlKey noopCtrlKey(String text) {
+        return CtrlKey.noop(text).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
     }
 
     public static CharKey charKey(String text) {

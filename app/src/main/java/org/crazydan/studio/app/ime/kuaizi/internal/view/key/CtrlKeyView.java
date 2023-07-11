@@ -19,9 +19,12 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -31,19 +34,27 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-07-02
  */
 public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
+    private final TextView fgTextView;
 
     public CtrlKeyView(@NonNull View itemView) {
         super(itemView);
+
+        this.fgTextView = itemView.findViewById(R.id.fg_text_view);
     }
 
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
         if (key.getIconResId() > 0) {
-            this.fgView.setImageResource(key.getIconResId());
+            ViewUtils.hide(this.fgTextView);
+            ViewUtils.show(this.fgView).setImageResource(key.getIconResId());
+        } else if (key.getText() != null) {
+            ViewUtils.hide(this.fgView);
+            ViewUtils.show(this.fgTextView).setText(key.getText());
         } else {
-            // 存在复用的情况，故，需对其他情况对前景图片进行置空
-            this.fgView.setImageDrawable(null);
+            // 存在复用的情况，故，需在其他情况对其进行重置
+            ViewUtils.hide(this.fgTextView);
+            ViewUtils.hide(this.fgView);
         }
     }
 }

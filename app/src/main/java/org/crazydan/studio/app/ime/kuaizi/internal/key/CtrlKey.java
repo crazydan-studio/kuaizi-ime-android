@@ -31,14 +31,26 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class CtrlKey extends BaseKey<CtrlKey> {
     private final Type type;
     private final int iconResId;
+    private final String text;
 
     private CtrlKey(Type type, int iconResId) {
         this.type = type;
         this.iconResId = iconResId;
+        this.text = null;
+    }
+
+    public CtrlKey(Type type, String text) {
+        this.type = type;
+        this.text = text;
+        this.iconResId = -1;
     }
 
     public static CtrlKey noop() {
-        return new CtrlKey(Type.NoOp, -1);
+        return noop(null);
+    }
+
+    public static CtrlKey noop(String text) {
+        return new CtrlKey(Type.NoOp, text);
     }
 
     public static CtrlKey create(Type type, int iconResId) {
@@ -55,6 +67,11 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.iconResId;
     }
 
+    /** 显示的文本 */
+    public String getText() {
+        return this.text;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -67,12 +84,13 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             return false;
         }
         CtrlKey that = (CtrlKey) o;
-        return this.iconResId == that.iconResId && this.type == that.type;
+        return this.iconResId == that.iconResId && this.type == that.type //
+               && Objects.equals(this.text, that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.type, this.iconResId);
+        return Objects.hash(super.hashCode(), this.type, this.iconResId, this.text);
     }
 
     @NonNull

@@ -29,11 +29,13 @@ public class ViewUtils {
         view.setVisibility(shown ? View.VISIBLE : View.GONE);
     }
 
-    public static void show(View view) {
+    public static <T extends View> T show(T view) {
         visible(view, true);
+        return view;
     }
 
-    public static void hide(View view) {
+    public static <T extends View> T hide(T view) {
         visible(view, false);
+        return view;
     }
 }

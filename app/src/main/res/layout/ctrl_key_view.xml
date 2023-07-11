@@ -33,5 +33,13 @@
             android:layout_centerInParent="true"
             android:scaleX=".5"
             android:scaleY=".5" />
+    <!-- 用于显示文本类型的控制按钮 -->
+    <TextView
+            android:id="@+id/fg_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textSize="@dimen/ctrl_key_text_size"
+            android:textStyle="bold" />
 
 </RelativeLayout>
