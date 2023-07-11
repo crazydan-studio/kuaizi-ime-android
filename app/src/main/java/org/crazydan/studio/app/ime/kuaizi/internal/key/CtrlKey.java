@@ -98,8 +98,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Enter,
         /** 确认 */
         Confirm,
-        /** 选字 */
-        ChooseWord,
         /** 切换至字母数字键盘 */
         SwitchToAlphanumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */

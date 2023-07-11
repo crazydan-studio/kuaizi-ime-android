@@ -44,17 +44,26 @@ public class KeyTable {
     private static final Map<List<String>, Integer[]> char_key_color_palette = new HashMap<>();
     /** 控制按键样式：图标+背景色 */
     private static final Map<CtrlKey.Type, Integer[]> ctrl_key_styles = new HashMap<>();
+    /** 输入候选字按键背景色 */
+    private static final int[] input_word_key_level_bg_colors = new int[] {
+            R.attr.input_word_key_level_0_bg_color,
+            R.attr.input_word_key_level_1_bg_color,
+            R.attr.input_word_key_level_2_bg_color,
+            R.attr.input_word_key_level_3_bg_color,
+            };
 
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
     private static final int[][] grid_key_coords = new int[][] {
-            // level 1: 0~5
+            // level 0
+            new int[] { 3, 3 },
+            // level 1: 1~6
             new int[] { 2, 3 },
             new int[] { 2, 4 },
             new int[] { 3, 4 },
             new int[] { 4, 4 },
             new int[] { 4, 3 },
             new int[] { 3, 2 },
-            // level 2: 6~17
+            // level 2: 7~18
             new int[] { 1, 2 },
             new int[] { 1, 3 },
             new int[] { 1, 4 },
@@ -67,7 +76,7 @@ public class KeyTable {
             new int[] { 4, 2 },
             new int[] { 3, 1 },
             new int[] { 2, 2 },
-            // level 3: 18~35
+            // level 3: 19~36
             new int[] { 0, 2 },
             new int[] { 0, 3 },
             new int[] { 0, 4 },
@@ -122,8 +131,6 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchToPunctuationKeyboard, new Integer[] {
                 R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.ChooseWord,
-                            new Integer[] { R.drawable.ic_right_like, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Locator,
                             new Integer[] { R.drawable.ic_left_hand_move, R.attr.key_ctrl_locator_bg_color });
     }
@@ -200,9 +207,6 @@ public class KeyTable {
     ) {
         Key<?>[][] gridKeys = new Key[6][7];
 
-        // 候选字确认按键
-        gridKeys[3][3] = ctrlKey(CtrlKey.Type.ChooseWord);
-
         for (int i = 0; i < grid_key_coords.length; i++) {
             int[] gridKeyCoord = grid_key_coords[i];
             int x = gridKeyCoord[0];
@@ -211,16 +215,9 @@ public class KeyTable {
             int wordIndex = i + startIndex;
             if (wordIndex < inputCandidates.size()) {
                 InputWord word = inputCandidates.get(wordIndex);
+                int level = i == 0 ? 0 : i <= 6 ? 1 : i <= 18 ? 2 : 3;
 
-                int bgAttrId = R.attr.input_word_key_bg_color;
-                if (i < 6) {
-                    bgAttrId = R.attr.input_word_key_level_1_bg_color;
-                } else if (i < 18) {
-                    bgAttrId = R.attr.input_word_key_level_2_bg_color;
-                } else if (i < 36) {
-                    bgAttrId = R.attr.input_word_key_level_3_bg_color;
-                }
-
+                int bgAttrId = input_word_key_level_bg_colors[level];
                 gridKeys[x][y] = InputWordKey.word(word)
                                              .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                              .setBgColorAttrId(bgAttrId);

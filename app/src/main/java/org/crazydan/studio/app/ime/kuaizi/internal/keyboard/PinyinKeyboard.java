@@ -143,9 +143,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyClick: {
-                if (this.state.type == State.Type.ChoosingInputCandidate //
-                    && key.getType() == CtrlKey.Type.ChooseWord) {
-                    confirmInputPending();
+                if (this.state.type == State.Type.ChoosingInputCandidate) {
+                    switch (key.getType()) {
+
+                    }
                 }
                 break;
             }
