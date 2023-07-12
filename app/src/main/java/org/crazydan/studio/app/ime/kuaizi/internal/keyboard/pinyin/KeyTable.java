@@ -163,7 +163,7 @@ public class KeyTable {
                         } //
                 , new Key[] {
                 charKey("！"),
-                charKey("？"),
+                charKey("ü"),
                 charKey("j"),
                 charKey("q"),
                 charKey("s"),
@@ -172,9 +172,9 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode),
-                charKey("ü"),
-                charKey("h"),
+                charKey("？"),
                 charKey("x"),
+                charKey("h"),
                 charKey("g"),
                 charKey("c"),
                 ctrlKey(CtrlKey.Type.Space),
