@@ -27,19 +27,22 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public class InputWord implements Comparable<InputWord> {
+public class InputWord {
     private String value;
     private String notation;
 
     private boolean traditional;
     private int level;
     private float weight;
+    /** 笔画数 */
+    private int strokes;
 
     public static InputWord from(PinyinCharTree.Word cw) {
         InputWord iw = new InputWord(cw.getValue(), cw.getNotation());
         iw.setTraditional(cw.isTraditional());
         iw.setLevel(cw.getLevel());
         iw.setWeight(cw.getWeight());
+        iw.setStrokes(cw.getStrokes());
 
         return iw;
     }
@@ -89,17 +92,12 @@ public class InputWord implements Comparable<InputWord> {
         this.weight = weight;
     }
 
-    @Override
-    public int compareTo(InputWord that) {
-        return this.weight > that.weight //
-               ? -1 //
-               : this.weight < that.weight //
-                 ? 1 //
-                 : this.level == that.level //
-                   ? (this.traditional //
-                      ? (that.traditional ? 0 : 1) //
-                      : (that.traditional ? -1 : 0)) //
-                   : this.level - that.level;
+    public int getStrokes() {
+        return this.strokes;
+    }
+
+    public void setStrokes(int strokes) {
+        this.strokes = strokes;
     }
 
     @Override

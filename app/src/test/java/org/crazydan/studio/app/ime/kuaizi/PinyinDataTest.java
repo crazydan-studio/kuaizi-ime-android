@@ -101,12 +101,14 @@ public class PinyinDataTest {
         File wordLevel3File = new File("../../data/hanzi-level-3.txt");
         File wordWeightFile = new File("../../data/hanzi-weight.txt");
         File wordSTFile = new File("../../data/hanzi-traditional-to-simple.txt");
+        File wordStrokeFile = new File("../../data/zi-dataset/zi-dataset.tsv");
 
         Map<String, Integer> wordLevel1Map = readWordLevel(wordLevel1File, 1);
         Map<String, Integer> wordLevel2Map = readWordLevel(wordLevel2File, 2);
         Map<String, Integer> wordLevel3Map = readWordLevel(wordLevel3File, 3);
         Map<String, Float> wordWeightMap = readWordWeight(wordWeightFile);
         Map<String, String> wordSTMap = readWordTraditionalToSimple(wordSTFile);
+        Map<String, PinyinWord> wordStrokeMap = readWordStroke(wordStrokeFile);
 
         List<String> lines = read(file);
 
@@ -122,6 +124,13 @@ public class PinyinDataTest {
 
                 word.setTraditional(wordSTMap.containsKey(w));
                 word.setWeight(wordWeightMap.getOrDefault(w, 0f));
+
+                if (wordStrokeMap.containsKey(w)) {
+                    PinyinWord pw = wordStrokeMap.get(w);
+                    word.setStrokes(pw.getStrokes());
+                } else {
+                    word.setStrokes(0);
+                }
 
                 for (Map<?, ?> map : (new Map[] {
                         wordLevel1Map, wordLevel2Map, wordLevel3Map
@@ -201,6 +210,33 @@ public class PinyinDataTest {
 
                 map.put(t, s);
             }
+        }
+        return map;
+    }
+
+    private Map<String, PinyinWord> readWordStroke(File file) throws IOException {
+        List<String> lines = read(file);
+        // 第一行为标题行
+        lines.remove(0);
+
+        Map<String, PinyinWord> map = new HashMap<>(lines.size());
+        for (String line : lines) {
+            String[] splits = line.split("\t");
+            String word = splits[0];
+            String stroke = splits[1].replace("画", "");
+
+            int strokeCount;
+            if (stroke.isEmpty()) {
+                stroke = splits[2].replaceAll("^.+(\\d+)$", "$1");
+                strokeCount = Integer.parseInt(stroke) + 1;
+            } else {
+                strokeCount = Integer.parseInt(stroke);
+            }
+
+            PinyinWord pw = new PinyinWord(word, null);
+            pw.setStrokes(strokeCount);
+
+            map.put(word, pw);
         }
         return map;
     }

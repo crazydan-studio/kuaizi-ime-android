@@ -53,6 +53,9 @@ public class PinyinWord {
     private boolean traditional;
     private int level;
     private float weight;
+    /** 笔画数 */
+    private int strokes;
+
     private String[] pinyinChars;
 
     public PinyinWord(String word, String pinyin) {
@@ -111,6 +114,14 @@ public class PinyinWord {
 
     public void setWeight(float weight) {
         this.weight = weight;
+    }
+
+    public int getStrokes() {
+        return this.strokes;
+    }
+
+    public void setStrokes(int strokes) {
+        this.strokes = strokes;
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -76,10 +77,8 @@ public class PinyinCharTree {
 
     /** 查找指定拼音的候选字 */
     public List<Word> findCandidateWords(List<String> pinyinChars) {
-        List<Word> list = new ArrayList<>();
-
         if (pinyinChars == null || pinyinChars.isEmpty()) {
-            return list;
+            return new ArrayList<>();
         }
 
         PinyinCharTree tree = this;
@@ -91,9 +90,9 @@ public class PinyinCharTree {
         }
 
         if (tree != null) {
-            list.addAll(tree.getWords());
+            return new ArrayList<>(tree.words);
         }
-        return list;
+        return new ArrayList<>();
     }
 
     public List<String> childChars() {
@@ -116,12 +115,15 @@ public class PinyinCharTree {
         private boolean traditional;
         private int level;
         private float weight;
+        /** 笔画数 */
+        private int strokes;
 
         public static Word from(PinyinWord pw) {
             PinyinCharTree.Word cw = new PinyinCharTree.Word(pw.getWord(), pw.getPinyin());
             cw.setTraditional(pw.isTraditional());
             cw.setLevel(pw.getLevel());
             cw.setWeight(pw.getWeight());
+            cw.setStrokes(pw.getStrokes());
 
             return cw;
         }
@@ -169,6 +171,31 @@ public class PinyinCharTree {
 
         public void setWeight(float weight) {
             this.weight = weight;
+        }
+
+        public int getStrokes() {
+            return this.strokes;
+        }
+
+        public void setStrokes(int strokes) {
+            this.strokes = strokes;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Word that = (Word) o;
+            return this.value.equals(that.value) && this.notation.equals(that.notation);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.value, this.notation);
         }
     }
 }

@@ -18,13 +18,14 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -90,9 +91,8 @@ public class PinyinTree {
     private void mountCharTree(PinyinCharTree root) {
         this.tree.forEach((ch, child) -> {
             PinyinCharTree childCharTree = new PinyinCharTree(ch);
-            List<PinyinCharTree.Word> words = child.words.stream()
-                                                         .map(PinyinCharTree.Word::from)
-                                                         .collect(Collectors.toList());
+
+            List<PinyinCharTree.Word> words = child.getCharTreeWords();
             childCharTree.getWords().addAll(words);
 
             root.getChildren().add(childCharTree);
@@ -122,5 +122,46 @@ public class PinyinTree {
         });
 
         return pinyinSet;
+    }
+
+    private List<PinyinCharTree.Word> getCharTreeWords() {
+        Map<Integer, List<PinyinCharTree.Word>> wordByStrokesMap = new TreeMap<>();
+        Map<String, List<PinyinCharTree.Word>> wordByValueMap = new HashMap<>();
+
+        List<PinyinCharTree.Word> traditionalWords = new ArrayList<>();
+        List<PinyinCharTree.Word> noStrokesWords = new ArrayList<>();
+        this.words.forEach(pinyinWord -> {
+            PinyinCharTree.Word charTreeWord = PinyinCharTree.Word.from(pinyinWord);
+
+            if (charTreeWord.isTraditional()) {
+                traditionalWords.add(charTreeWord);
+            } else if (charTreeWord.getStrokes() == 0) {
+                noStrokesWords.add(charTreeWord);
+            } else {
+                wordByValueMap.computeIfAbsent(charTreeWord.getValue(), (k) -> new ArrayList<>()).add(charTreeWord);
+                wordByStrokesMap.computeIfAbsent(charTreeWord.getStrokes(), (k) -> new ArrayList<>()).add(charTreeWord);
+            }
+        });
+
+        Set<PinyinCharTree.Word> set = new LinkedHashSet<>();
+        // 按笔画由少到多排序
+        wordByStrokesMap.forEach((s, list) -> {
+            list.forEach(charTreeWord -> {
+                set.add(charTreeWord);
+
+                // 将多音字放在一起
+                List<PinyinCharTree.Word> words = wordByValueMap.get(charTreeWord.getValue());
+                words.sort(Comparator.comparing(PinyinCharTree.Word::getNotation).reversed());
+                set.addAll(words);
+            });
+        });
+
+        set.addAll(noStrokesWords);
+        set.addAll(traditionalWords);
+
+        List<PinyinCharTree.Word> list = new ArrayList<>(set);
+        list.sort(Comparator.comparing(PinyinCharTree.Word::getWeight).reversed());
+
+        return list;
     }
 }

@@ -162,7 +162,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
                                                                                 .stream()
                                                                                 .map(InputWord::from)
-                                                                                .sorted()
                                                                                 .collect(Collectors.toList());
                             input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
                             input.candidates(candidateWords);
@@ -186,7 +185,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
                                                                                 .stream()
                                                                                 .map(InputWord::from)
-                                                                                .sorted()
                                                                                 .collect(Collectors.toList());
                             input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
                             input.candidates(candidateWords);
@@ -212,7 +210,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
                                                                                 .stream()
                                                                                 .map(InputWord::from)
-                                                                                .sorted()
                                                                                 .collect(Collectors.toList());
                             input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
                             input.candidates(candidateWords);
@@ -268,7 +265,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
                                                                 .stream()
                                                                 .map(InputWord::from)
-                                                                .sorted()
                                                                 .collect(Collectors.toList());
             input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
             input.candidates(candidateWords);
@@ -321,6 +317,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private Key<?>[][] switchToChoosingInputCandidate(
             Keyboard.KeyFactory.Option option, CharInput input, boolean pageUp
     ) {
+        // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
         ChoosingInputCandidateData data;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
             data = (ChoosingInputCandidateData) this.state.data;
