@@ -106,10 +106,10 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("s", "c", "z"), new Integer[] {
                 R.attr.key_char_initial_scz_fg_color, R.attr.key_char_initial_scz_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("h", "g", "w", "k"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("g", "w", "k"), new Integer[] {
                 R.attr.key_char_initial_hgwk_fg_color, R.attr.key_char_initial_hgwk_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("n", "l"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("h", "n", "l"), new Integer[] {
                 R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
         });
         char_key_color_palette.put(Arrays.asList("：", "！", "？", "、", "，", "。"), new Integer[] {
@@ -173,8 +173,8 @@ public class KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode),
                 charKey("？"),
+                charKey("l"),
                 charKey("x"),
-                charKey("h"),
                 charKey("g"),
                 charKey("c"),
                 ctrlKey(CtrlKey.Type.Space),
@@ -182,7 +182,7 @@ public class KeyTable {
                 , new Key[] {
                 charKey("、"),
                 charKey("n"),
-                charKey("l"),
+                charKey("h"),
                 ctrlKey(CtrlKey.Type.Locator),
                 charKey("w"),
                 charKey("k"),
