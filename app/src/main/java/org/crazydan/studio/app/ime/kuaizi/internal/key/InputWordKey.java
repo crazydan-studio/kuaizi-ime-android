@@ -41,6 +41,10 @@ public class InputWordKey extends BaseKey<InputWordKey> {
         this.word = word;
     }
 
+    public boolean hasWord() {
+        return this.word != null;
+    }
+
     public InputWord getWord() {
         return this.word;
     }
@@ -53,9 +57,8 @@ public class InputWordKey extends BaseKey<InputWordKey> {
         return this.charKey;
     }
 
-    public InputWordKey setCharKey(CharKey key) {
+    public void setCharKey(CharKey key) {
         this.charKey = key;
-        return this;
     }
 
     /** 获取前景色属性 id */
@@ -81,11 +84,13 @@ public class InputWordKey extends BaseKey<InputWordKey> {
             return false;
         }
         InputWordKey that = (InputWordKey) o;
-        return this.fgColorAttrId == that.fgColorAttrId && this.word.equals(that.word);
+        return this.fgColorAttrId == that.fgColorAttrId
+               && Objects.equals(this.word, that.word)
+               && Objects.equals(this.charKey, that.charKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.word, this.fgColorAttrId);
+        return Objects.hash(super.hashCode(), this.word, this.charKey, this.fgColorAttrId);
     }
 }

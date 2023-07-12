@@ -29,7 +29,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
@@ -56,10 +58,19 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
     public void bind(InputWordKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        this.wordView.setText(key.getWord().getValue());
-        this.notationView.setText(key.getWord().getNotation());
-        if (key.hasCharKey()) {
-            this.charKeyView.setText(key.getCharKey().getText());
+        InputWord inputWord = key.getWord();
+        CharKey charKey = key.getCharKey();
+
+        if (inputWord != null) {
+            this.wordView.setText(inputWord.getValue());
+            this.notationView.setText(inputWord.getNotation());
+        } else {
+            this.wordView.setText("");
+            this.notationView.setText("");
+        }
+
+        if (charKey != null) {
+            this.charKeyView.setText(charKey.getText());
         }
 
         int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());

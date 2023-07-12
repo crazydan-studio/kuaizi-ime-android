@@ -261,11 +261,15 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyClick: {
                 // 确认候选字
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    InputWord word = key.getWord();
-                    CharInput input = (CharInput) getInputList().getCursor().getPending();
-                    input.word(word);
+                    if (key.hasWord()) {
+                        InputWord word = key.getWord();
+                        CharInput input = (CharInput) getInputList().getCursor().getPending();
+                        input.word(word);
 
-                    confirmInputPending();
+                        confirmInputPending();
+                    } else if (key.hasCharKey()) {
+                        onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
+                    }
                 }
                 break;
             }

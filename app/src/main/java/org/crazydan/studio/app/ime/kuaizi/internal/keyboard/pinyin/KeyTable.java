@@ -223,7 +223,21 @@ public class KeyTable {
         int pageSize = getInputCandidateKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        for (int i = 0; i < gridKeys.length; i++) {
+            for (int j = 0; j < gridKeys[i].length; j++) {
+                Key<?> defaultKey = defaultKeys[i][j];
+
+                if (defaultKey instanceof CharKey //
+                    && ((CharKey) defaultKey).getType() == CharKey.Type.Alphabet) {
+                    InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+                    wordKey.setCharKey((CharKey) defaultKey);
+
+                    gridKeys[i][j] = wordKey;
+                } else {
+                    gridKeys[i][j] = noopCtrlKey();
+                }
+            }
+        }
 
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.DropInput);
         if (!inputCandidates.isEmpty()) {
@@ -249,7 +263,7 @@ public class KeyTable {
             int[] gridKeyCoord = grid_key_coords[i];
             int x = gridKeyCoord[0];
             int y = gridKeyCoord[1];
-            Key<?> defaultKey = defaultKeys[x][y];
+            Key<?> defaultKey = gridKeys[x][y];
 
             int wordIndex = i + startIndex;
             if (wordIndex < inputCandidates.size()) {
@@ -260,10 +274,10 @@ public class KeyTable {
                 InputWordKey wordKey = InputWordKey.word(word)
                                                    .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                                    .setBgColorAttrId(bgAttrId);
-                if (defaultKey instanceof CharKey //
-                    && ((CharKey) defaultKey).getType() == CharKey.Type.Alphabet) {
-                    wordKey.setCharKey((CharKey) defaultKey);
+                if (defaultKey instanceof InputWordKey) {
+                    wordKey.setCharKey(((InputWordKey) defaultKey).getCharKey());
                 }
+
                 gridKeys[x][y] = wordKey;
             }
         }
