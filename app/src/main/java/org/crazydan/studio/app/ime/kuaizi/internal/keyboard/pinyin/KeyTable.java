@@ -223,16 +223,16 @@ public class KeyTable {
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                      + "/" //
                                      + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
-        gridKeys[0][6] = ctrlKey(CtrlKey.Type.DropInput);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+            gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[5][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
+            gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
         }
 
         for (int i = 0; i < pageSize; i++) {

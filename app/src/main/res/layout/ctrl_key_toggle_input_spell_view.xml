@@ -38,7 +38,7 @@
 
         <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="wrap_content"
-                android:layout_height="14dp"
+                android:layout_height="18dp"
                 app:flexWrap="nowrap"
                 app:flexDirection="row"
                 app:alignItems="center"
@@ -48,14 +48,16 @@
                     android:id="@+id/source_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:translationY="-2.5dp"
                     android:textSize="@dimen/input_spell_toggle_key_text_size"
-                    android:textColor="?attr/key_ctrl_toggle_input_spell_fg_color" />
+                    android:textColor="?attr/key_ctrl_toggle_input_spell_fg_color"
+                    android:textStyle="bold" />
 
             <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_alignSelf="flex_end"
-                    app:srcCompat="@drawable/ic_pinyin_spell_switch"
+                    android:src="@drawable/ic_pinyin_spell_switch"
                     android:scaleX=".8"
                     android:scaleY=".6" />
         </com.google.android.flexbox.FlexboxLayout>
@@ -63,10 +65,12 @@
         <TextView
                 android:id="@+id/target_view"
                 android:layout_width="wrap_content"
-                android:layout_height="16dp"
+                android:layout_height="18dp"
+                android:translationY="-4dp"
                 app:layout_alignSelf="flex_end"
                 android:textSize="@dimen/input_spell_toggle_key_text_size"
-                android:textColor="?attr/key_ctrl_toggle_input_spell_fg_color" />
+                android:textColor="?attr/key_ctrl_toggle_input_spell_fg_color"
+                android:textStyle="bold" />
     </com.google.android.flexbox.FlexboxLayout>
 
 </RelativeLayout>
