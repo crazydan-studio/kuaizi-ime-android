@@ -154,56 +154,56 @@ public class KeyTable {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchIME),
-                        charKey("："),
-                        charKey("i"),
-                        charKey("a"),
-                        charKey("e"),
-                        charKey("o"),
-                        charKey("u"),
+                        punctuationKey("："),
+                        alphabetKey("i"),
+                        alphabetKey("a"),
+                        alphabetKey("e"),
+                        alphabetKey("o"),
+                        alphabetKey("u"),
                         } //
                 , new Key[] {
-                charKey("！"),
-                charKey("ü"),
-                charKey("j"),
-                charKey("q"),
-                charKey("s"),
-                charKey("z"),
+                punctuationKey("！"),
+                alphabetKey("ü"),
+                alphabetKey("j"),
+                alphabetKey("q"),
+                alphabetKey("s"),
+                alphabetKey("z"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode),
-                charKey("？"),
-                charKey("l"),
-                charKey("x"),
-                charKey("g"),
-                charKey("c"),
+                punctuationKey("？"),
+                alphabetKey("l"),
+                alphabetKey("x"),
+                alphabetKey("g"),
+                alphabetKey("c"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                charKey("、"),
-                charKey("n"),
-                charKey("h"),
+                punctuationKey("、"),
+                alphabetKey("n"),
+                alphabetKey("h"),
                 ctrlKey(CtrlKey.Type.Locator),
-                charKey("w"),
-                charKey("k"),
+                alphabetKey("w"),
+                alphabetKey("k"),
                 ctrlKey(CtrlKey.Type.Enter),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                charKey("，"),
-                charKey("r"),
-                charKey("f"),
-                charKey("m"),
-                charKey("p"),
+                punctuationKey("，"),
+                alphabetKey("r"),
+                alphabetKey("f"),
+                alphabetKey("m"),
+                alphabetKey("p"),
                 ctrlKey(CtrlKey.Type.SwitchToAlphanumericKeyboard),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                charKey("。"),
-                charKey("d"),
-                charKey("b"),
-                charKey("t"),
-                charKey("y"),
+                punctuationKey("。"),
+                alphabetKey("d"),
+                alphabetKey("b"),
+                alphabetKey("t"),
+                alphabetKey("y"),
                 ctrlKey(CtrlKey.Type.SwitchToPunctuationKeyboard),
                 },
                 };
@@ -217,6 +217,8 @@ public class KeyTable {
     public static Key<?>[][] getInputCandidateKeys(
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, CharInput input
     ) {
+        Key<?>[][] defaultKeys = getKeys(option, handMode);
+
         List<InputWord> inputCandidates = input.getWordCandidates();
         int pageSize = getInputCandidateKeysPageSize();
 
@@ -247,6 +249,7 @@ public class KeyTable {
             int[] gridKeyCoord = grid_key_coords[i];
             int x = gridKeyCoord[0];
             int y = gridKeyCoord[1];
+            Key<?> defaultKey = defaultKeys[x][y];
 
             int wordIndex = i + startIndex;
             if (wordIndex < inputCandidates.size()) {
@@ -254,9 +257,14 @@ public class KeyTable {
                 int level = i == 0 ? 0 : i <= 6 ? 1 : i <= 18 ? 2 : 3;
 
                 int bgAttrId = input_word_key_level_bg_colors[level];
-                gridKeys[x][y] = InputWordKey.word(word)
-                                             .setFgColorAttrId(R.attr.input_word_key_fg_color)
-                                             .setBgColorAttrId(bgAttrId);
+                InputWordKey wordKey = InputWordKey.word(word)
+                                                   .setFgColorAttrId(R.attr.input_word_key_fg_color)
+                                                   .setBgColorAttrId(bgAttrId);
+                if (defaultKey instanceof CharKey //
+                    && ((CharKey) defaultKey).getType() == CharKey.Type.Alphabet) {
+                    wordKey.setCharKey((CharKey) defaultKey);
+                }
+                gridKeys[x][y] = wordKey;
             }
         }
 
@@ -298,7 +306,15 @@ public class KeyTable {
         return CtrlKey.noop(text).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
     }
 
-    public static CharKey charKey(String text) {
+    public static CharKey alphabetKey(String text) {
+        return charKey(CharKey.Type.Alphabet, text);
+    }
+
+    public static CharKey punctuationKey(String text) {
+        return charKey(CharKey.Type.Punctuation, text);
+    }
+
+    private static CharKey charKey(CharKey.Type type, String text) {
         int fgAttrId = 0;
         int bgAttrId = 0;
         for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {
@@ -309,6 +325,6 @@ public class KeyTable {
             }
         }
 
-        return CharKey.alphabet(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+        return CharKey.create(type, text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
     }
 }

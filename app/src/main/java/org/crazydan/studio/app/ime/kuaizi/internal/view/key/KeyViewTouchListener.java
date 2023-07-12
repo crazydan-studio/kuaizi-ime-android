@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerFlingMsgData;
@@ -136,7 +137,12 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
     }
 
     private void onLongPressEnd(KeyboardView keyboardView, KeyView<?, ?> keyView) {
-        KeyMsgData data = new KeyMsgData(this.longPressKeyView.getKey());
+        Key<?> key = this.longPressKeyView.getKey();
+        if (key instanceof InputWordKey && ((InputWordKey) key).hasCharKey()) {
+            key = ((InputWordKey) key).getCharKey();
+        }
+
+        KeyMsgData data = new KeyMsgData(key);
         keyboardView.onKeyMsg(KeyMsg.KeyLongPressEnd, data);
     }
 

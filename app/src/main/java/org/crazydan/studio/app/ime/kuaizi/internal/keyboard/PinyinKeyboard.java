@@ -83,6 +83,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyLongPress: {
+                // 开始滑动输入
                 this.state = new State(State.Type.Inputting);
                 this.slidingInput = true;
                 getInputList().initPending();
@@ -94,6 +95,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case FingerMove: {
+                // 添加拼音后继字母
                 if (this.state.type == State.Type.Inputting && this.slidingInput) {
                     CharInput input = (CharInput) getInputList().getCursor().getPending();
                     if (key != input.getCurrentKey()) {
@@ -106,6 +108,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyLongPressEnd: {
+                // 选择候选字
                 if (this.state.type == State.Type.Inputting) {
                     this.slidingInput = false;
 
@@ -122,6 +125,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyClick: {
+                // 单字符输入
                 if (this.state.type != State.Type.Inputting) {
                     this.state = new State(State.Type.Inputting);
                     getInputList().initPending();
@@ -143,6 +147,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyClick: {
+                // 丢弃或变更拼音
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
                     switch (key.getType()) {
                         case DropInput: {
@@ -156,7 +161,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             if (s.startsWith("sh") || s.startsWith("ch") || s.startsWith("zh")) {
                                 input.getKeys().remove(1);
                             } else if (s.startsWith("s") || s.startsWith("c") || s.startsWith("z")) {
-                                input.getKeys().add(1, KeyTable.charKey("h"));
+                                input.getKeys().add(1, KeyTable.alphabetKey("h"));
                             }
 
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
@@ -179,7 +184,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             if (s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang")) {
                                 input.getKeys().remove(input.getKeys().size() - 1);
                             } else if (s.endsWith("en") || s.endsWith("in") || s.endsWith("an")) {
-                                input.getKeys().add(input.getKeys().size(), KeyTable.charKey("g"));
+                                input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
                             }
 
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
@@ -201,10 +206,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                             String s = String.join("", input.getChars());
                             if (s.startsWith("n")) {
                                 input.getKeys().remove(0);
-                                input.getKeys().add(0, KeyTable.charKey("l"));
+                                input.getKeys().add(0, KeyTable.alphabetKey("l"));
                             } else if (s.startsWith("l")) {
                                 input.getKeys().remove(0);
-                                input.getKeys().add(0, KeyTable.charKey("n"));
+                                input.getKeys().add(0, KeyTable.alphabetKey("n"));
                             }
 
                             List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
@@ -226,6 +231,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case FingerFling: {
+                // 候选字翻页
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
                     CharInput input = (CharInput) getInputList().getCursor().getPending();
                     KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
@@ -244,7 +250,16 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputWordKey key = (InputWordKey) data.target;
 
         switch (msg) {
+            case KeyLongPress: {
+                // 开始滑动输入
+                if (this.state.type == State.Type.ChoosingInputCandidate //
+                    && key.hasCharKey()) {
+                    onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
+                }
+                break;
+            }
             case KeyClick: {
+                // 确认候选字
                 if (this.state.type == State.Type.ChoosingInputCandidate) {
                     InputWord word = key.getWord();
                     CharInput input = (CharInput) getInputList().getCursor().getPending();

@@ -38,20 +38,8 @@ public class CharKey extends BaseKey<CharKey> {
         this.text = text;
     }
 
-    public static CharKey alphabet(String text) {
-        return new CharKey(Type.Alphabet, text);
-    }
-
-    public static CharKey number(String text) {
-        return new CharKey(Type.Number, text);
-    }
-
-    public static CharKey punctuation(String text) {
-        return new CharKey(Type.Punctuation, text);
-    }
-
-    public static CharKey emotion(String text) {
-        return new CharKey(Type.Emotion, text);
+    public static CharKey create(Type type, String text) {
+        return new CharKey(type, text);
     }
 
     /** 按键{@link Type 类型} */

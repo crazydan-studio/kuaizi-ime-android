@@ -30,6 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 public class InputWordKey extends BaseKey<InputWordKey> {
     private final InputWord word;
 
+    private CharKey charKey;
     private int fgColorAttrId;
 
     public static InputWordKey word(InputWord word) {
@@ -42,6 +43,19 @@ public class InputWordKey extends BaseKey<InputWordKey> {
 
     public InputWord getWord() {
         return this.word;
+    }
+
+    public boolean hasCharKey() {
+        return this.charKey != null;
+    }
+
+    public CharKey getCharKey() {
+        return this.charKey;
+    }
+
+    public InputWordKey setCharKey(CharKey key) {
+        this.charKey = key;
+        return this;
     }
 
     /** 获取前景色属性 id */

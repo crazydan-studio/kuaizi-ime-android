@@ -43,12 +43,14 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class InputWordKeyView extends KeyView<InputWordKey, View> {
     private TextView notationView;
     private TextView wordView;
+    private TextView charKeyView;
 
     public InputWordKeyView(@NonNull View itemView) {
         super(itemView);
 
         this.notationView = this.fgView.findViewById(R.id.notation_view);
         this.wordView = this.fgView.findViewById(R.id.word_view);
+        this.charKeyView = itemView.findViewById(R.id.char_key_view);
     }
 
     public void bind(InputWordKey key, HexagonOrientation orientation) {
@@ -56,6 +58,9 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         this.wordView.setText(key.getWord().getValue());
         this.notationView.setText(key.getWord().getNotation());
+        if (key.hasCharKey()) {
+            this.charKeyView.setText(key.getCharKey().getText());
+        }
 
         int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());
         this.wordView.setTextColor(fgColor);
