@@ -45,8 +45,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
-    private static final int VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY = 4;
-    private static final int VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY = 5;
+    private static final int VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY = 4;
 
     private final HexagonOrientation orientation;
     private List<Key<?>> keys = new ArrayList<>();
@@ -98,6 +97,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             switch (((CtrlKey) key).getType()) {
                 case ToggleInputTongue:
                 case ToggleInputRhyme:
+                case ToggleInputNL:
                     ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
                     break;
                 default:
@@ -119,9 +119,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case ToggleInputTongue:
-                    return VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY;
                 case ToggleInputRhyme:
-                    return VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY;
+                case ToggleInputNL:
+                    return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
                     return VIEW_TYPE_CTRL_KEY;
             }
@@ -139,10 +139,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
-        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_TONGUE_KEY) {
-            return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
-                                                                     R.layout.ctrl_key_toggle_input_spell_view));
-        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_RHYME_KEY) {
+        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
             return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
                                                                      R.layout.ctrl_key_toggle_input_spell_view));
         } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {

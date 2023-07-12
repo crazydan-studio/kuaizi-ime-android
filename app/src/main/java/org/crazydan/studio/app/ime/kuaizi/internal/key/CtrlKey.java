@@ -116,6 +116,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         ToggleInputTongue,
         /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
         ToggleInputRhyme,
+        /** 在候选字状态下切换当前输入的 n/l */
+        ToggleInputNL,
         /** 切换输入法 */
         SwitchIME,
         /** 切换左右手模式 */

@@ -128,6 +128,9 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputTongue, new Integer[] {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputNL, new Integer[] {
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+        });
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
                 R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
         });
@@ -171,8 +174,8 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.SwitchHandMode),
                 charKey("ü"),
                 charKey("h"),
-                charKey("g"),
                 charKey("x"),
+                charKey("g"),
                 charKey("c"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
@@ -215,24 +218,29 @@ public class KeyTable {
             Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, CharInput input
     ) {
         List<InputWord> inputCandidates = input.getWordCandidates();
-        int pageSize = grid_key_coords.length;
+        int pageSize = getInputCandidateKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
-                                     + "/" //
-                                     + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
-        gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
+        gridKeys[1][6] = ctrlKey(CtrlKey.Type.DropInput);
+        if (!inputCandidates.isEmpty()) {
+            gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
+                                         + "/" //
+                                         + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
+        }
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+            gridKeys[0][1] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
+            gridKeys[1][0] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
+        }
+        if (input.isPinyinNL()) {
+            gridKeys[2][0] = ctrlKey(CtrlKey.Type.ToggleInputNL, "n,l  ");
         }
 
         for (int i = 0; i < pageSize; i++) {

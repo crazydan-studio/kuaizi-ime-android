@@ -50,6 +50,17 @@ public class CharInput extends BaseInput {
                || s.endsWith("en") || s.endsWith("in") || s.endsWith("an");
     }
 
+    /** 是否为拼音 n/l */
+    public boolean isPinyinNL() {
+        List<String> chars = getChars();
+        if (chars.isEmpty()) {
+            return false;
+        }
+
+        String ch = chars.get(0);
+        return ch.startsWith("n") || ch.startsWith("l");
+    }
+
     public enum Type {
         /** 拼音 */
         Pinyin,

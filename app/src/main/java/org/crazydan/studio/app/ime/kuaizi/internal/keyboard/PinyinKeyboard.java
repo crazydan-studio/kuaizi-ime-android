@@ -198,6 +198,32 @@ public class PinyinKeyboard extends BaseKeyboard {
                             onInputMsg(InputMsg.InputtingChars, idata);
                             break;
                         }
+                        case ToggleInputNL: {
+                            CharInput input = (CharInput) getInputList().getCursor().getPending();
+                            String s = String.join("", input.getChars());
+                            if (s.startsWith("n")) {
+                                input.getKeys().remove(0);
+                                input.getKeys().add(0, KeyTable.charKey("l"));
+                            } else if (s.startsWith("l")) {
+                                input.getKeys().remove(0);
+                                input.getKeys().add(0, KeyTable.charKey("n"));
+                            }
+
+                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                                .stream()
+                                                                                .map(InputWord::from)
+                                                                                .sorted()
+                                                                                .collect(Collectors.toList());
+                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                            input.candidates(candidateWords);
+
+                            this.state = new State(State.Type.Init);
+                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+
+                            onInputMsg(InputMsg.InputtingChars, idata);
+                            break;
+                        }
                     }
                 }
                 break;
