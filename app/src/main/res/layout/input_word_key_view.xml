@@ -64,7 +64,8 @@
                         android:layout_centerHorizontal="true"
                         android:translationY="-2sp"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:alpha=".6" />
             </RelativeLayout>
 
             <TextView

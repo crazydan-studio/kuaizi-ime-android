@@ -229,6 +229,8 @@ public class KeyTable {
 
                 if (defaultKey instanceof CharKey) {
                     InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+
+                    defaultKey.setBgColorAttrId(R.attr.key_char_punctuation_bg_color);
                     wordKey.setCharKey((CharKey) defaultKey);
 
                     gridKeys[i][j] = wordKey;
