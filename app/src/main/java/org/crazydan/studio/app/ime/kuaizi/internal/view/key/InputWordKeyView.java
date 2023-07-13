@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -43,9 +43,10 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-07-09
  */
 public class InputWordKeyView extends KeyView<InputWordKey, View> {
-    private TextView notationView;
-    private TextView wordView;
-    private TextView charKeyView;
+    private final TextView notationView;
+    private final TextView wordView;
+    private final TextView charKeyView;
+    private final View charKeyBgView;
 
     public InputWordKeyView(@NonNull View itemView) {
         super(itemView);
@@ -53,6 +54,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         this.notationView = this.fgView.findViewById(R.id.notation_view);
         this.wordView = this.fgView.findViewById(R.id.word_view);
         this.charKeyView = itemView.findViewById(R.id.char_key_view);
+        this.charKeyBgView = itemView.findViewById(R.id.char_key_bg_view);
     }
 
     public void bind(InputWordKey key, HexagonOrientation orientation) {
@@ -63,8 +65,11 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         if (charKey != null) {
             this.charKeyView.setText(charKey.getText());
+            setTextColorByAttrId(this.charKeyView, charKey.getBgColorAttrId());
+            ViewUtils.show(this.charKeyBgView);
         } else {
             this.charKeyView.setText("");
+            ViewUtils.hide(this.charKeyBgView);
         }
 
         if (inputWord != null) {
@@ -75,9 +80,8 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
             this.notationView.setText("");
         }
 
-        int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());
-        this.wordView.setTextColor(fgColor);
-        this.notationView.setTextColor(fgColor);
+        setTextColorByAttrId(this.wordView, key.getFgColorAttrId());
+        setTextColorByAttrId(this.notationView, key.getFgColorAttrId());
     }
 
     public void showTouchDown() {

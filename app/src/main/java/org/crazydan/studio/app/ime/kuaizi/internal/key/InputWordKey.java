@@ -29,16 +29,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
  */
 public class InputWordKey extends BaseKey<InputWordKey> {
     private final InputWord word;
-
     private CharKey charKey;
-    private int fgColorAttrId;
 
-    public static InputWordKey word(InputWord word) {
-        return new InputWordKey(word);
-    }
+    private int fgColorAttrId;
 
     private InputWordKey(InputWord word) {
         this.word = word;
+    }
+
+    public static InputWordKey word(InputWord word) {
+        return new InputWordKey(word);
     }
 
     public boolean hasWord() {

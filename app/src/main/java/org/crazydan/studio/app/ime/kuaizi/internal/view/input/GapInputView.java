@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-07-07
  */
 public class GapInputView extends InputView<GapInput> {
-    private View cursorView;
+    private final View cursorView;
 
     public GapInputView(@NonNull View itemView) {
         super(itemView);

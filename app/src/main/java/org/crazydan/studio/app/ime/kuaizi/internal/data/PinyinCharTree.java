@@ -118,6 +118,11 @@ public class PinyinCharTree {
         /** 笔画数 */
         private int strokes;
 
+        public Word(String value, String notation) {
+            this.value = value;
+            this.notation = notation;
+        }
+
         public static Word from(PinyinWord pw) {
             PinyinCharTree.Word cw = new PinyinCharTree.Word(pw.getWord(), pw.getPinyin());
             cw.setTraditional(pw.isTraditional());
@@ -126,11 +131,6 @@ public class PinyinCharTree {
             cw.setStrokes(pw.getStrokes());
 
             return cw;
-        }
-
-        public Word(String value, String notation) {
-            this.value = value;
-            this.notation = notation;
         }
 
         public String getValue() {

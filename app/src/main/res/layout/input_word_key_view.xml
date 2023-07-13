@@ -26,19 +26,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    <TextView
-            android:id="@+id/char_key_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="6dp"
-            android:textSize="12sp"
-            android:textColor="#9ca3af"
-            android:textStyle="bold" />
-
     <com.google.android.flexbox.FlexboxLayout
             android:id="@+id/fg_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             app:flexWrap="nowrap"
@@ -52,11 +42,38 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_word_key_notation_text_size" />
 
-        <TextView
-                android:id="@+id/word_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/input_word_key_word_text_size" />
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <RelativeLayout
+                    android:id="@+id/char_key_bg_view"
+                    android:layout_width="@dimen/input_word_key_word_text_size"
+                    android:layout_height="@dimen/input_word_key_word_text_size"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:translationX="-2sp"
+                    android:translationY="4sp"
+                    android:background="@drawable/bg_input_word_char_key_view">
+
+                <TextView
+                        android:id="@+id/char_key_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_centerHorizontal="true"
+                        android:translationY="-2sp"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+            </RelativeLayout>
+
+            <TextView
+                    android:id="@+id/word_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:textSize="@dimen/input_word_key_word_text_size" />
+        </RelativeLayout>
     </com.google.android.flexbox.FlexboxLayout>
 
 </RelativeLayout>

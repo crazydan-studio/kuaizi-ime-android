@@ -88,6 +88,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         setLayoutManager(this.layoutManager);
 
         addOnItemTouchListener(new KeyViewTouchListener());
+//        (new RecyclerViewGestureDetector()).bind(this);
     }
 
     public InputList getInputList() {

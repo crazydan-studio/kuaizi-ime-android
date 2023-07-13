@@ -45,11 +45,11 @@ public class KeyViewTouchListener implements RecyclerView.OnItemTouchListener {
 
     // https://stackoverflow.com/questions/6519748/how-to-determine-a-long-touch-on-android/24050544#24050544
     private final Handler longPressListenerHandler = new Handler();
+    private final List<MotionEvent> movingEvents = new ArrayList<>();
     private boolean longPressing;
     private boolean moving;
     private Runnable longPressListener;
     private KeyView<?, ?> longPressKeyView;
-    private final List<MotionEvent> movingEvents = new ArrayList<>();
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {

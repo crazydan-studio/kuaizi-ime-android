@@ -37,6 +37,11 @@ public class InputWord {
     /** 笔画数 */
     private int strokes;
 
+    public InputWord(String value, String notation) {
+        this.value = value;
+        this.notation = notation;
+    }
+
     public static InputWord from(PinyinCharTree.Word cw) {
         InputWord iw = new InputWord(cw.getValue(), cw.getNotation());
         iw.setTraditional(cw.isTraditional());
@@ -45,11 +50,6 @@ public class InputWord {
         iw.setStrokes(cw.getStrokes());
 
         return iw;
-    }
-
-    public InputWord(String value, String notation) {
-        this.value = value;
-        this.notation = notation;
     }
 
     public String getValue() {

@@ -23,7 +23,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
 /**
  * {@link Keyboard 键盘}{@link Input 输入}的视图
@@ -41,12 +40,7 @@ public abstract class InputView<I extends Input> extends RecyclerViewHolder {
     public void bind(I input, boolean selected) {
         this.input = input;
 
-        int bgColor;
-        if (selected) {
-            bgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_selection_bg_color);
-        } else {
-            bgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_bg_color);
-        }
-        this.itemView.setBackgroundColor(bgColor);
+        int bgColor = selected ? R.attr.input_selection_bg_color : R.attr.input_bg_color;
+        setBackgroundColorByAttrId(this.itemView, bgColor);
     }
 }

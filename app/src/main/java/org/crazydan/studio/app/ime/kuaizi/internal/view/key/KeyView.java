@@ -24,7 +24,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -65,7 +64,7 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
 
             KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
-            int bgColor = ColorUtils.getByAttrId(getContext(), key.getBgColorAttrId());
+            int bgColor = getColorByAttrId(key.getBgColorAttrId());
             drawable.setColor(bgColor);
             drawable.setCornerRadius(10);
 

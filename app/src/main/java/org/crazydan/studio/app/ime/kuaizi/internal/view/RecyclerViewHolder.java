@@ -19,8 +19,10 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -47,5 +49,19 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     public void show() {
         ViewUtils.show(this.itemView);
+    }
+
+    public void setTextColorByAttrId(TextView text, int attrId) {
+        int color = getColorByAttrId(attrId);
+        text.setTextColor(color);
+    }
+
+    public void setBackgroundColorByAttrId(View view, int attrId) {
+        int color = getColorByAttrId(attrId);
+        view.setBackgroundColor(color);
+    }
+
+    public int getColorByAttrId(int attrId) {
+        return ColorUtils.getByAttrId(getContext(), attrId);
     }
 }

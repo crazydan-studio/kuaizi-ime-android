@@ -26,11 +26,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
 public class ChoosingInputCandidateData implements State.Data {
     /** 数据总量 */
     private final int dataSize;
-
-    /** 分页开始序号 */
-    private int pageStart;
     /** 分页大小 */
     private final int pageSize;
+    /** 分页开始序号 */
+    private int pageStart;
 
     public ChoosingInputCandidateData(int dataSize, int pageSize) {
         this.dataSize = dataSize;

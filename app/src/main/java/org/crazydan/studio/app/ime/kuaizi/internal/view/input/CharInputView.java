@@ -24,15 +24,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
 public class CharInputView extends InputView<CharInput> {
-    private TextView notationView;
-    private TextView wordView;
+    private final TextView notationView;
+    private final TextView wordView;
 
     public CharInputView(@NonNull View itemView) {
         super(itemView);
@@ -50,22 +49,17 @@ public class CharInputView extends InputView<CharInput> {
         }
         ((RecyclerView.LayoutParams) this.itemView.getLayoutParams()).setMargins(margin, 0, margin, 0);
 
-        int fgColor;
-        if (selected) {
-            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_selection_fg_color);
-        } else {
-            fgColor = ColorUtils.getByAttrId(getContext(), R.attr.input_fg_color);
-        }
-        this.notationView.setTextColor(fgColor);
-        this.wordView.setTextColor(fgColor);
+        int fgColor = selected ? R.attr.input_selection_fg_color : R.attr.input_fg_color;
+        setTextColorByAttrId(this.wordView, fgColor);
+        setTextColorByAttrId(this.notationView, fgColor);
 
         InputWord word = input.getWord();
         if (word == null) {
-            this.notationView.setText("");
             this.wordView.setText(String.join("", input.getChars()));
+            this.notationView.setText("");
         } else {
-            this.notationView.setText(word.getNotation());
             this.wordView.setText(word.getValue());
+            this.notationView.setText(word.getNotation());
         }
     }
 }

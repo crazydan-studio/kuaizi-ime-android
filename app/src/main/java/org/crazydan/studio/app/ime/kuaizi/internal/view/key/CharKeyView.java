@@ -30,7 +30,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -50,8 +49,7 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
 
         this.fgView.setText(key.getText());
 
-        int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());
-        this.fgView.setTextColor(fgColor);
+        setTextColorByAttrId(this.fgView, key.getFgColorAttrId());
     }
 
     public void showTouchDown() {

@@ -70,10 +70,6 @@ public interface Keyboard {
 
     /** 按键生成器 */
     interface KeyFactory {
-        class Option {
-            public Orientation orientation;
-        }
-
         /**
          * 获取二维矩阵{@link Key 按键}
          * <p/>
@@ -81,5 +77,9 @@ public interface Keyboard {
          * 可通过{@link CtrlKey#noop()}创建占位按键
          */
         Key<?>[][] create(Option option);
+
+        class Option {
+            public Orientation orientation;
+        }
     }
 }
