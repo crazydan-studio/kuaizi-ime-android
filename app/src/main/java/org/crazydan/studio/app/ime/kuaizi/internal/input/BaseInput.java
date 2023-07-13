@@ -26,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -54,9 +55,11 @@ public abstract class BaseInput implements Input {
 
     @Override
     public List<String> getChars() {
+        // TODO 确认输入到目标输入框时，需替换全角空格为半角空格
         return this.keys.stream()
-                        .filter(k -> k instanceof CharKey)
-                        .map(k -> ((CharKey) k).getText())
+                        .map(k -> k instanceof CharKey
+                                  ? ((CharKey) k).getText()
+                                  : k instanceof CtrlKey && ((CtrlKey) k).isSpace() ? " " : null)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }

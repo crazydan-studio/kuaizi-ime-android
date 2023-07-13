@@ -72,9 +72,19 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (data.target instanceof CharKey) {
             onCharKeyMsg(msg, data);
         } else if (data.target instanceof CtrlKey || msg == KeyMsg.FingerFling) {
-            onCtrlKeyMsg(msg, data);
+            switch (this.state.type) {
+                case ChoosingInputCandidate:
+                    onInputCandidatesCtrlKeyMsg(msg, data);
+                    break;
+                default:
+                    onCtrlKeyMsg(msg, data);
+            }
         } else if (data.target instanceof InputWordKey) {
-            onInputWordKeyMsg(msg, data);
+            switch (this.state.type) {
+                case ChoosingInputCandidate:
+                    onInputWordKeyMsg(msg, data);
+                    break;
+            }
         }
     }
 
@@ -129,14 +139,19 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (this.state.type != State.Type.Inputting) {
                     this.state = new State(State.Type.Inputting);
                     getInputList().initPending();
-                } else if (getInputList().getCursor().getPending() == null) {
+                } else if (!getInputList().hasPending() || key.isPunctuation()) {
                     getInputList().initPending();
                 }
 
                 CharInput input = (CharInput) getInputList().getCursor().getPending();
                 input.appendKey(key);
 
-                onInputtingChars(input, key, null, false);
+                // 若为标点，则直接确认输入，不支持连续输入其他字符或标点
+                if (key.isPunctuation()) {
+                    confirmInputPending();
+                } else {
+                    onInputtingChars(input, key, null, false);
+                }
                 break;
             }
         }
@@ -147,102 +162,128 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg) {
             case KeyClick: {
-                // 丢弃或变更拼音
-                if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    switch (key.getType()) {
-                        case DropInput: {
+                switch (key.getType()) {
+                    case Backspace: {
+                        if (getInputList().hasPending()) {
                             getInputList().dropPending();
                             confirmInputPending();
-                            break;
+                        } else {
+                            getInputList().backwardDelete();
+                            onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
                         }
-                        case ToggleInputTongue: {
-                            CharInput input = (CharInput) getInputList().getCursor().getPending();
-                            String s = String.join("", input.getChars());
-                            if (s.startsWith("sh") || s.startsWith("ch") || s.startsWith("zh")) {
-                                input.getKeys().remove(1);
-                            } else if (s.startsWith("s") || s.startsWith("c") || s.startsWith("z")) {
-                                input.getKeys().add(1, KeyTable.alphabetKey("h"));
-                            }
+                        break;
+                    }
+                    case Space: {
+                        getInputList().initPending();
 
-                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                                .stream()
-                                                                                .map(InputWord::from)
-                                                                                .collect(Collectors.toList());
-                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                            input.candidates(candidateWords);
+                        CharInput input = (CharInput) getInputList().getCursor().getPending();
+                        input.appendKey(key);
 
-                            this.state = new State(State.Type.Init);
-                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                        confirmInputPending();
+                    }
+                }
+                break;
+            }
+        }
+    }
 
-                            onInputMsg(InputMsg.InputtingChars, idata);
-                            break;
+    private void onInputCandidatesCtrlKeyMsg(KeyMsg msg, KeyMsgData data) {
+        CtrlKey key = (CtrlKey) data.target;
+
+        switch (msg) {
+            case KeyClick: {
+                // 丢弃或变更拼音
+                switch (key.getType()) {
+                    case DropInput: {
+                        getInputList().dropPending();
+                        confirmInputPending();
+                        break;
+                    }
+                    case ToggleInputTongue: {
+                        CharInput input = (CharInput) getInputList().getCursor().getPending();
+                        String s = String.join("", input.getChars());
+                        if (s.startsWith("sh") || s.startsWith("ch") || s.startsWith("zh")) {
+                            input.getKeys().remove(1);
+                        } else if (s.startsWith("s") || s.startsWith("c") || s.startsWith("z")) {
+                            input.getKeys().add(1, KeyTable.alphabetKey("h"));
                         }
-                        case ToggleInputRhyme: {
-                            CharInput input = (CharInput) getInputList().getCursor().getPending();
-                            String s = String.join("", input.getChars());
-                            if (s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang")) {
-                                input.getKeys().remove(input.getKeys().size() - 1);
-                            } else if (s.endsWith("en") || s.endsWith("in") || s.endsWith("an")) {
-                                input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
-                            }
 
-                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                                .stream()
-                                                                                .map(InputWord::from)
-                                                                                .collect(Collectors.toList());
-                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                            input.candidates(candidateWords);
+                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                            .stream()
+                                                                            .map(InputWord::from)
+                                                                            .collect(Collectors.toList());
+                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                        input.candidates(candidateWords);
 
-                            this.state = new State(State.Type.Init);
-                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                        this.state = new State(State.Type.Init);
+                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
 
-                            onInputMsg(InputMsg.InputtingChars, idata);
-                            break;
+                        onInputMsg(InputMsg.InputtingChars, idata);
+                        break;
+                    }
+                    case ToggleInputRhyme: {
+                        CharInput input = (CharInput) getInputList().getCursor().getPending();
+                        String s = String.join("", input.getChars());
+                        if (s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang")) {
+                            input.getKeys().remove(input.getKeys().size() - 1);
+                        } else if (s.endsWith("en") || s.endsWith("in") || s.endsWith("an")) {
+                            input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
                         }
-                        case ToggleInputNL: {
-                            CharInput input = (CharInput) getInputList().getCursor().getPending();
-                            String s = String.join("", input.getChars());
-                            if (s.startsWith("n")) {
-                                input.getKeys().remove(0);
-                                input.getKeys().add(0, KeyTable.alphabetKey("l"));
-                            } else if (s.startsWith("l")) {
-                                input.getKeys().remove(0);
-                                input.getKeys().add(0, KeyTable.alphabetKey("n"));
-                            }
 
-                            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                                .stream()
-                                                                                .map(InputWord::from)
-                                                                                .collect(Collectors.toList());
-                            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                            input.candidates(candidateWords);
+                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                            .stream()
+                                                                            .map(InputWord::from)
+                                                                            .collect(Collectors.toList());
+                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                        input.candidates(candidateWords);
 
-                            this.state = new State(State.Type.Init);
-                            KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                            InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                        this.state = new State(State.Type.Init);
+                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
 
-                            onInputMsg(InputMsg.InputtingChars, idata);
-                            break;
+                        onInputMsg(InputMsg.InputtingChars, idata);
+                        break;
+                    }
+                    case ToggleInputNL: {
+                        CharInput input = (CharInput) getInputList().getCursor().getPending();
+                        String s = String.join("", input.getChars());
+                        if (s.startsWith("n")) {
+                            input.getKeys().remove(0);
+                            input.getKeys().add(0, KeyTable.alphabetKey("l"));
+                        } else if (s.startsWith("l")) {
+                            input.getKeys().remove(0);
+                            input.getKeys().add(0, KeyTable.alphabetKey("n"));
                         }
+
+                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                                            .stream()
+                                                                            .map(InputWord::from)
+                                                                            .collect(Collectors.toList());
+                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
+                        input.candidates(candidateWords);
+
+                        this.state = new State(State.Type.Init);
+                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
+                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+
+                        onInputMsg(InputMsg.InputtingChars, idata);
+                        break;
                     }
                 }
                 break;
             }
             case FingerFling: {
                 // 候选字翻页
-                if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    CharInput input = (CharInput) getInputList().getCursor().getPending();
-                    KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
-                                                                                     input,
-                                                                                     ((FingerFlingMsgData) data).up);
-                    InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                CharInput input = (CharInput) getInputList().getCursor().getPending();
+                KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
+                                                                                 input,
+                                                                                 ((FingerFlingMsgData) data).up);
+                InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
 
-                    onInputMsg(InputMsg.InputtingChars, idata);
-                }
-                break;
+                onInputMsg(InputMsg.InputtingChars, idata);
             }
+            break;
         }
     }
 
@@ -252,31 +293,28 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyLongPress: {
                 // 开始滑动输入
-                if (this.state.type == State.Type.ChoosingInputCandidate //
-                    && key.hasCharKey()) {
+                if (key.hasCharKey()) {
                     onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
                 }
                 break;
             }
             case KeyClick: {
                 // 确认候选字
-                if (this.state.type == State.Type.ChoosingInputCandidate) {
-                    if (key.hasWord()) {
-                        InputWord word = key.getWord();
-                        CharInput input = (CharInput) getInputList().getCursor().getPending();
-                        input.word(word);
+                if (key.hasWord()) {
+                    InputWord word = key.getWord();
+                    CharInput input = (CharInput) getInputList().getCursor().getPending();
+                    input.word(word);
 
-                        confirmInputPending();
-                    } else if (key.hasCharKey()) {
-                        onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
-                    }
+                    confirmInputPending();
+                } else if (key.hasCharKey()) {
+                    onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
                 }
-                break;
             }
+            break;
         }
     }
 
-    private void onInputtingChars(CharInput input, CharKey currentKey, Key<?> closedKey, boolean needToProcessPinyin) {
+    private void onInputtingChars(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean needToProcessPinyin) {
         List<String> nextChars = new ArrayList<>();
         if (needToProcessPinyin) {
             nextChars = this.pinyinCharTree.findNextChars(input.getChars());

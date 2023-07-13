@@ -62,10 +62,11 @@ public class GapInputView extends InputView<GapInput> {
         AnimationSet animationSet = new AnimationSet(true);
 
         Animation[] animations = new Animation[] {
-                new AlphaAnimation(0.5f, 0.1f),
+                new AlphaAnimation(0.8f, 0.3f),
                 };
         for (Animation animation : animations) {
-            animation.setDuration(800);
+            // Note: 可以将闪动当作秒表
+            animation.setDuration(1000);
             animation.setRepeatCount(ValueAnimator.INFINITE);
 
             animationSet.addAnimation(animation);

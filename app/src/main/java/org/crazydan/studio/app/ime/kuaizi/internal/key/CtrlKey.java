@@ -76,6 +76,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.text;
     }
 
+    public boolean isSpace() {
+        return this.type == Type.Space;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -47,6 +47,11 @@ public class InputList {
         getCursor().setSelected(getInputs().get(0));
     }
 
+    /** 是否有待输入 */
+    public boolean hasPending() {
+        return getCursor().getPending() != null;
+    }
+
     /**
      * 初始化待输入
      */
@@ -94,6 +99,31 @@ public class InputList {
     public int getCursorIndex() {
         Input selected = getCursor().getSelected();
         return getInputs().indexOf(selected);
+    }
+
+    /** 删除光标左边的输入 */
+    public void backwardDelete() {
+        int cursorIndex = getCursorIndex();
+        if (cursorIndex < 0) {
+            return;
+        }
+
+        Input selected = getCursor().getSelected();
+        if (selected instanceof GapInput) {
+            if (cursorIndex > 0) {
+                // 删除当前光标之前的 输入和占位
+                getInputs().remove(cursorIndex - 1);
+                getInputs().remove(cursorIndex - 2);
+            }
+        } else if (selected instanceof CharInput) {
+            Input newSelected = getInputs().get(cursorIndex + 1);
+
+            // 删除当前选中的输入及其配对的占位
+            getInputs().remove(cursorIndex);
+            getInputs().remove(cursorIndex - 1);
+            // 再将当前光标后移
+            getCursor().setSelected(newSelected);
+        }
     }
 
     public List<Input> getInputs() {

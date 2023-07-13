@@ -52,6 +52,11 @@ public class CharKey extends BaseKey<CharKey> {
         return this.text;
     }
 
+    /** 是否为标点 */
+    public boolean isPunctuation() {
+        return this.type == Type.Punctuation;
+    }
+
     /** 获取前景色属性 id */
     public int getFgColorAttrId() {
         return this.fgColorAttrId;
