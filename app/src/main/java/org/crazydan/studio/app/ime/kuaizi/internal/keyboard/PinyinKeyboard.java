@@ -303,7 +303,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.slidingInput = false;
 
         CharInput input = (CharInput) getInputList().getCursor().getPending();
-        if (input == null || !input.hasWord()) {
+        if (input == null || (!input.hasWord() && !input.isPunctuation())) {
             // 无有效拼音，则丢弃输入
             getInputList().dropPending();
         } else {

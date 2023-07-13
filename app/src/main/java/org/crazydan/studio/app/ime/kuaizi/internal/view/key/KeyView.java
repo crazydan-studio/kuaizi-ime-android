@@ -30,6 +30,10 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * {@link Keyboard 键盘}{@link Key 按键}的视图
+ * <p/>
+ * 视图存在重复使用的情况，故在
+ * {@link #bind(Key, HexagonOrientation)}
+ * 内需先复位视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01

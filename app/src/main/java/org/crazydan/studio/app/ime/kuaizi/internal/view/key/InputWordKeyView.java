@@ -61,16 +61,18 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         InputWord inputWord = key.getWord();
         CharKey charKey = key.getCharKey();
 
+        if (charKey != null) {
+            this.charKeyView.setText(charKey.getText());
+        } else {
+            this.charKeyView.setText("");
+        }
+
         if (inputWord != null) {
             this.wordView.setText(inputWord.getValue());
             this.notationView.setText(inputWord.getNotation());
         } else {
             this.wordView.setText("");
             this.notationView.setText("");
-        }
-
-        if (charKey != null) {
-            this.charKeyView.setText(charKey.getText());
         }
 
         int fgColor = ColorUtils.getByAttrId(getContext(), key.getFgColorAttrId());

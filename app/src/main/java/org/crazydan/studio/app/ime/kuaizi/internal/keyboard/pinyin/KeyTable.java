@@ -227,8 +227,7 @@ public class KeyTable {
             for (int j = 0; j < gridKeys[i].length; j++) {
                 Key<?> defaultKey = defaultKeys[i][j];
 
-                if (defaultKey instanceof CharKey //
-                    && ((CharKey) defaultKey).getType() == CharKey.Type.Alphabet) {
+                if (defaultKey instanceof CharKey) {
                     InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
                     wordKey.setCharKey((CharKey) defaultKey);
 
@@ -248,15 +247,14 @@ public class KeyTable {
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[0][1] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+        } else if (input.isPinyinNL()) {
+            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputNL, "n,l  ");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[1][0] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
-        }
-        if (input.isPinyinNL()) {
-            gridKeys[2][0] = ctrlKey(CtrlKey.Type.ToggleInputNL, "n,l  ");
+            gridKeys[5][0] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
         }
 
         for (int i = 0; i < pageSize; i++) {
