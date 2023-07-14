@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
  */
 public class InputList {
     private final List<Input> inputs = new ArrayList<>();
-    private final InputListCursor cursor = new InputListCursor();
+    private final Cursor cursor = new Cursor();
 
     public InputList() {
         empty();
@@ -142,5 +142,33 @@ public class InputList {
 
     public List<Input> getInputs() {
         return this.inputs;
+    }
+
+    private static class Cursor {
+        /** 光标位置已选中的输入 */
+        private Input selected;
+        /** 光标位置待插入的输入 */
+        private CharInput pending;
+
+        public void reset() {
+            this.selected = null;
+            this.pending = null;
+        }
+
+        public Input getSelected() {
+            return this.selected;
+        }
+
+        protected void setSelected(Input selected) {
+            this.selected = selected;
+        }
+
+        public CharInput getPending() {
+            return this.pending;
+        }
+
+        protected void setPending(CharInput pending) {
+            this.pending = pending;
+        }
     }
 }
