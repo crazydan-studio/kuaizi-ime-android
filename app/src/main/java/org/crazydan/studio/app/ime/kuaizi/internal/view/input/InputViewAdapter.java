@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
+import java.util.List;
+
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,25 +41,25 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private static final int VIEW_TYPE_GAP_INPUT = 1;
 
     private InputList inputList;
+    private List<Input> oldInputs;
 
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
+//        this.oldInputs = new ArrayList<>(inputList.getInputs());
     }
 
     public int getSelectedInputPosition() {
         return this.inputList.getCursorIndex();
     }
 
-    public Input getInputAt(int position) {
-        Input input = this.inputList.getInputs().get(position);
-        Input selected = this.inputList.getCursor().getSelected();
-        Input pending = this.inputList.getCursor().getPending();
-
-        if (selected == input && pending != null) {
-            return pending;
-        } else {
-            return input;
-        }
+    public void updateItems() {
+//        List<Input> newInputs = this.inputList.getInputs();
+//
+//        updateItems(this.oldInputs, newInputs);
+//        notifyItemChanged(this.inputList.getCursorIndex());
+//
+//        this.oldInputs = new ArrayList<>(newInputs);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -71,7 +73,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         boolean selected = this.inputList.getCursorIndex() == position;
 
         if (input instanceof CharInput) {
-            boolean pending = this.inputList.getCursor().getPending() == input;
+            boolean pending = this.inputList.getPending() == input;
 
             ((CharInputView) view).bind((CharInput) input, selected, pending);
         } else {
@@ -97,6 +99,18 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
             return new CharInputView(inflateHolderView(parent, R.layout.char_input_view));
         } else {
             return new GapInputView(inflateHolderView(parent, R.layout.gap_input_view));
+        }
+    }
+
+    private Input getInputAt(int position) {
+        Input input = this.inputList.getInputs().get(position);
+        Input selected = this.inputList.getSelected();
+        Input pending = this.inputList.getPending();
+
+        if (selected == input && pending != null) {
+            return pending;
+        } else {
+            return input;
         }
     }
 }

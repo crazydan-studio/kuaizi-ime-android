@@ -31,16 +31,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
  */
 public class InputtingCharsMsgData extends CommonInputMsgData {
     /** 当前已输入字符列表 */
-    public final List<Key<?>> input;
+    public final List<Key<?>> inputs;
     /** 当前字符 */
     public final Key<?> current;
     /** 靠近的字符 */
     public final Key<?> closed;
 
-    public InputtingCharsMsgData(List<Key<?>> input, Key<?> current, Key<?> closed, Keyboard.KeyFactory keyFactory) {
+    public InputtingCharsMsgData(List<Key<?>> inputs, Key<?> current, Key<?> closed, Keyboard.KeyFactory keyFactory) {
         super(keyFactory);
 
-        this.input = input;
+        this.inputs = inputs;
         this.current = current;
         this.closed = closed;
     }

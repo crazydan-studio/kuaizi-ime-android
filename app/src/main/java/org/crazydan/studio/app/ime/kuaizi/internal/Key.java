@@ -25,14 +25,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  */
 public interface Key<K extends Key<?>> {
 
-    /** 隐藏按键 */
-    K hide();
-
-    /** 显示按键 */
-    K show();
-
-    /** 是否隐藏 */
-    boolean isHidden();
+    /** 是否与指定的按键相同：即实例不同但按键类型和符号相同 */
+    boolean isSameWith(Key<?> key);
 
     /** 获取背景色属性 id */
     int getBgColorAttrId();

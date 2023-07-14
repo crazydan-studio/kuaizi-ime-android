@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -122,13 +121,13 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputRhyme, new Integer[] {
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputTongue, new Integer[] {
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_zcs_h, new Integer[] {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputNL, new Integer[] {
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl, new Integer[] {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
@@ -147,7 +146,8 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_left_hand_move, R.attr.key_ctrl_locator_bg_color });
     }
 
-    public static Key<?>[][] getKeys(Keyboard.KeyFactory.Option option, HandMode handMode) {
+    /** 创建基础按键 */
+    public static Key<?>[][] createKeys(Keyboard.KeyFactory.Option option, HandMode handMode) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
 
         // 右手模式的纵向屏幕 7 x 6 的按键表
@@ -209,17 +209,47 @@ public class KeyTable {
                 };
     }
 
+    /**
+     * 创建后继字母按键
+     * <p/>
+     * 若 <code>nextChars</code> 为 <code>null</code>，则创建{@link #createKeys 基础按键}，
+     * 若其为空，则返回空白按键
+     */
+    public static Key<?>[][] createNextCharKeys(
+            Keyboard.KeyFactory.Option option, HandMode handMode, List<String> nextChars
+    ) {
+        Key<?>[][] keys = createKeys(option, handMode);
+
+        if (nextChars == null) {
+            return keys;
+        } else if (nextChars.isEmpty()) {
+            return new Key[6][7];
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            for (int j = 0; j < keys[i].length; j++) {
+                Key<?> key = keys[i][j];
+                if (!(key instanceof CharKey) //
+                    || !nextChars.contains(((CharKey) key).getText())) {
+                    keys[i][j] = null;
+                }
+            }
+        }
+        return keys;
+    }
+
     /** 候选字按键的分页大小 */
     public static int getInputCandidateKeysPageSize() {
         return grid_key_coords.length;
     }
 
-    public static Key<?>[][] getInputCandidateKeys(
-            Keyboard.KeyFactory.Option option, HandMode handMode, int startIndex, CharInput input
+    /** 创建输入候选字按键 */
+    public static Key<?>[][] createInputCandidateKeys(
+            Keyboard.KeyFactory.Option option, HandMode handMode, CharInput input, int startIndex
     ) {
-        Key<?>[][] defaultKeys = getKeys(option, handMode);
+        Key<?>[][] defaultKeys = createKeys(option, handMode);
 
-        List<InputWord> inputCandidates = input.getWordCandidates();
+        List<InputWord> inputWords = input.getCandidates();
         int pageSize = getInputCandidateKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
@@ -229,7 +259,8 @@ public class KeyTable {
 
                 if (defaultKey instanceof CharKey) {
                     CharKey charKey = (CharKey) defaultKey;
-                    InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+                    InputWordKey wordKey = InputWordKey.word(null)
+                                                       .setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
 
                     wordKey.setCharKey(charKey);
                     charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
@@ -242,22 +273,22 @@ public class KeyTable {
         }
 
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.DropInput);
-        if (!inputCandidates.isEmpty()) {
+        if (!inputWords.isEmpty()) {
             gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                          + "/" //
-                                         + ((int) Math.ceil(inputCandidates.size() / (pageSize * 1.0))));
+                                         + ((int) Math.ceil(inputWords.size() / (pageSize * 1.0))));
         }
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputTongue, s + "," + s + "h");
+            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
         } else if (input.isPinyinNL()) {
-            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputNL, "n,l  ");
+            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[5][0] = ctrlKey(CtrlKey.Type.ToggleInputRhyme, tail + "," + tail + "g");
+            gridKeys[5][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
         }
 
         for (int i = 0; i < pageSize; i++) {
@@ -267,8 +298,8 @@ public class KeyTable {
             Key<?> defaultKey = gridKeys[x][y];
 
             int wordIndex = i + startIndex;
-            if (wordIndex < inputCandidates.size()) {
-                InputWord word = inputCandidates.get(wordIndex);
+            if (wordIndex < inputWords.size()) {
+                InputWord word = inputWords.get(wordIndex);
                 int level = i == 0 ? 0 : i <= 6 ? 1 : i <= 18 ? 2 : 3;
 
                 int bgAttrId = input_word_key_level_bg_colors[level];
@@ -286,14 +317,6 @@ public class KeyTable {
         }
 
         return gridKeys;
-    }
-
-    public static void traverseKeys(Key<?>[][] keys, Consumer<Key<?>> consumer) {
-        for (Key<?>[] key : keys) {
-            for (Key<?> k : key) {
-                consumer.accept(k);
-            }
-        }
     }
 
     public static CtrlKey ctrlKey(CtrlKey.Type type) {

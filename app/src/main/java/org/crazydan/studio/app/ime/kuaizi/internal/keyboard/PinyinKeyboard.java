@@ -34,12 +34,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.ChoosingInputCandidateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerFlingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.FingerMoveMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
 
 /**
  * 汉语拼音{@link Keyboard 键盘}
@@ -49,8 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgDat
  */
 public class PinyinKeyboard extends BaseKeyboard {
     private final PinyinCharTree pinyinCharTree;
-    private State state = new State(State.Type.Init);
-    private boolean slidingInput;
+    private State state = new State(State.Type.InputWaiting);
 
     public PinyinKeyboard(PinyinCharTree pinyinCharTree) {
         this.pinyinCharTree = pinyinCharTree;
@@ -58,322 +57,302 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void reset() {
-        this.state = new State(State.Type.Init);
+        this.state = new State(State.Type.InputWaiting);
         super.reset();
     }
 
     @Override
     public KeyFactory getKeyFactory() {
-        return option -> KeyTable.getKeys(option, getHandMode());
+        return option -> KeyTable.createKeys(option, getHandMode());
     }
 
     @Override
-    public void onKeyMsg(KeyMsg msg, KeyMsgData data) {
-        if (data.target instanceof CharKey) {
-            onCharKeyMsg(msg, data);
-        } else if (data.target instanceof CtrlKey || msg == KeyMsg.FingerFling) {
-            switch (this.state.type) {
-                case ChoosingInputCandidate:
-                    onInputCandidatesCtrlKeyMsg(msg, data);
-                    break;
-                default:
-                    onCtrlKeyMsg(msg, data);
+    public void onUserMsg(UserMsg msg, UserMsgData data) {
+        Key<?> key = data.target;
+
+        if (key instanceof CharKey) {
+            onCharKeyMsg(msg, (CharKey) key, data);
+        } else if (key instanceof CtrlKey) {
+            if (this.state.type == State.Type.ChoosingInputCandidate) {
+                onInputCandidatesCtrlKeyMsg(msg, (CtrlKey) key, data);
+            } else {
+                onCtrlKeyMsg(msg, (CtrlKey) key, data);
             }
-        } else if (data.target instanceof InputWordKey) {
+        } else if (key instanceof InputWordKey) {
+            if (this.state.type == State.Type.ChoosingInputCandidate) {
+                onInputCandidateKeyMsg(msg, (InputWordKey) key, data);
+            }
+        } else if (key == null) {
             switch (this.state.type) {
+                case SlippingInput:
+                    // Note: 滑行输入过程中，消息体不一定带有 target 数据，故而单独执行响应
+                    onCharKeyMsg(msg, null, data);
+                    break;
                 case ChoosingInputCandidate:
-                    onInputWordKeyMsg(msg, data);
+                    // Note: 手指滑动消息一定不带 target 数据，故而单独处理一次
+                    if (msg == UserMsg.FingerSlipping) {
+                        onInputCandidatesCtrlKeyMsg(msg, null, data);
+                    }
                     break;
             }
         }
     }
 
-    private void onCharKeyMsg(KeyMsg msg, KeyMsgData data) {
-        CharKey key = (CharKey) data.target;
-
+    private void onCharKeyMsg(UserMsg msg, CharKey key, UserMsgData data) {
         switch (msg) {
-            case KeyLongPress: {
-                // 开始滑动输入
-                this.state = new State(State.Type.Inputting);
-                this.slidingInput = true;
-                getInputList().initPending();
+            case KeyLongPressStart: {
+                // 开始滑行输入
+                if (key != null && key.getType() == CharKey.Type.Alphabet) {
+                    this.state = new State(State.Type.SlippingInput);
 
-                CharInput input = (CharInput) getInputList().getCursor().getPending();
-                input.appendKey(key);
+                    CharInput input = getInputList().newPending();
+                    input.appendKey(key);
 
-                onInputtingChars(input, key, null, true);
-                break;
-            }
-            case FingerMove: {
-                // 添加拼音后继字母
-                if (this.state.type == State.Type.Inputting && this.slidingInput) {
-                    CharInput input = (CharInput) getInputList().getCursor().getPending();
-                    if (key != input.getCurrentKey()) {
-                        input.appendKey(key);
-
-                        Key<?> closed = ((FingerMoveMsgData) data).closed;
-                        onInputtingChars(input, key, closed, true);
-                    }
+                    onContinuousInput(input, key, null, true);
                 }
                 break;
             }
             case KeyLongPressEnd: {
                 // 选择候选字
-                if (this.state.type == State.Type.Inputting) {
-                    this.slidingInput = false;
+                if (this.state.type == State.Type.SlippingInput) {
+                    CharInput input = getInputList().getPending();
 
-                    CharInput input = (CharInput) getInputList().getCursor().getPending();
+                    // 若无额外候选字，则直接确认输入
                     if (!input.hasExtraCandidates()) {
-                        confirmInputPending();
+                        // 无候选字的输入，视为无效，直接丢弃
+                        if (!input.hasWord()) {
+                            getInputList().dropPending();
+                        } else {
+                            getInputList().confirmPending();
+                        }
+                        onInputtingCharsDone();
                     } else {
-                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
-
-                        onInputMsg(InputMsg.InputtingChars, idata);
+                        onChoosingInputCandidate(input, true);
                     }
                 }
                 break;
             }
-            case KeyClick: {
-                // 单字符输入
-                if (this.state.type != State.Type.Inputting) {
-                    this.state = new State(State.Type.Inputting);
-                    getInputList().initPending();
-                } else if (!getInputList().hasPending() || key.isPunctuation()) {
-                    getInputList().initPending();
+            case FingerMoving: {
+                // 添加拼音后继字母
+                if (this.state.type == State.Type.SlippingInput) {
+                    CharInput input = getInputList().getPending();
+                    Key<?> closedKey = ((UserFingerMovingMsgData) data).closed;
+
+                    // Note: 拼音不存在重复字母相邻的情况
+                    if (key != null && !key.isSameWith(input.getCurrentKey())) {
+                        input.appendKey(key);
+                    }
+
+                    if (key != null || closedKey != null) {
+                        onContinuousInput(input, key, closedKey, true);
+                    }
                 }
+                break;
+            }
+            case KeySingleTap: {
+                // 单字符输入
+                if (key != null) {
+                    if (!getInputList().hasPending()) {
+                        getInputList().newPending();
+                    }
 
-                CharInput input = (CharInput) getInputList().getCursor().getPending();
-                input.appendKey(key);
-
-                // 若为标点，则直接确认输入，不支持连续输入其他字符或标点
-                if (key.isPunctuation()) {
-                    confirmInputPending();
-                } else {
-                    onInputtingChars(input, key, null, false);
+                    CharInput input = getInputList().getPending();
+                    onSingleKeyInput(input, key);
                 }
                 break;
             }
         }
     }
 
-    private void onCtrlKeyMsg(KeyMsg msg, KeyMsgData data) {
-        CtrlKey key = (CtrlKey) data.target;
-
+    private void onCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
-            case KeyClick: {
+            case KeySingleTap: {
                 switch (key.getType()) {
                     case Backspace: {
                         if (getInputList().hasPending()) {
                             getInputList().dropPending();
-                            confirmInputPending();
                         } else {
                             getInputList().backwardDelete();
-                            onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
                         }
+                        onInputtingCharsDone();
                         break;
                     }
                     case Space: {
-                        getInputList().initPending();
+                        // 单独输入并确认空格
+                        getInputList().newPending().appendKey(key);
+                        getInputList().confirmPending();
 
-                        CharInput input = (CharInput) getInputList().getCursor().getPending();
-                        input.appendKey(key);
-
-                        confirmInputPending();
+                        onInputtingCharsDone();
                     }
                 }
                 break;
             }
+            case KeyLongPressStart:
+                // TODO 长按定位按钮
+                break;
         }
     }
 
-    private void onInputCandidatesCtrlKeyMsg(KeyMsg msg, KeyMsgData data) {
-        CtrlKey key = (CtrlKey) data.target;
-
+    private void onInputCandidatesCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
-            case KeyClick: {
+            case KeySingleTap: {
+                CharInput input = getInputList().getPending();
+                String joinedInputChars = String.join("", input.getChars());
+
                 // 丢弃或变更拼音
                 switch (key.getType()) {
                     case DropInput: {
                         getInputList().dropPending();
-                        confirmInputPending();
+                        onInputtingCharsDone();
                         break;
                     }
-                    case ToggleInputTongue: {
-                        CharInput input = (CharInput) getInputList().getCursor().getPending();
-                        String s = String.join("", input.getChars());
-                        if (s.startsWith("sh") || s.startsWith("ch") || s.startsWith("zh")) {
+                    case ToggleInputSpell_zcs_h: {
+                        if (joinedInputChars.startsWith("sh")
+                            || joinedInputChars.startsWith("ch")
+                            || joinedInputChars.startsWith("zh")) {
                             input.getKeys().remove(1);
-                        } else if (s.startsWith("s") || s.startsWith("c") || s.startsWith("z")) {
+                        } else if (joinedInputChars.startsWith("s")
+                                   || joinedInputChars.startsWith("c")
+                                   || joinedInputChars.startsWith("z")) {
                             input.getKeys().add(1, KeyTable.alphabetKey("h"));
                         }
 
-                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                            .stream()
-                                                                            .map(InputWord::from)
-                                                                            .collect(Collectors.toList());
-                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                        input.candidates(candidateWords);
+                        // 重置状态，以确保候选字列表能被更新
+                        this.state = new State(State.Type.InputWaiting);
+                        prepareInputCandidates(input);
 
-                        this.state = new State(State.Type.Init);
-                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
-
-                        onInputMsg(InputMsg.InputtingChars, idata);
+                        onChoosingInputCandidate(input, true);
                         break;
                     }
-                    case ToggleInputRhyme: {
-                        CharInput input = (CharInput) getInputList().getCursor().getPending();
-                        String s = String.join("", input.getChars());
-                        if (s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang")) {
-                            input.getKeys().remove(input.getKeys().size() - 1);
-                        } else if (s.endsWith("en") || s.endsWith("in") || s.endsWith("an")) {
-                            input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
-                        }
-
-                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                            .stream()
-                                                                            .map(InputWord::from)
-                                                                            .collect(Collectors.toList());
-                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                        input.candidates(candidateWords);
-
-                        this.state = new State(State.Type.Init);
-                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
-
-                        onInputMsg(InputMsg.InputtingChars, idata);
-                        break;
-                    }
-                    case ToggleInputNL: {
-                        CharInput input = (CharInput) getInputList().getCursor().getPending();
-                        String s = String.join("", input.getChars());
-                        if (s.startsWith("n")) {
+                    case ToggleInputSpell_nl: {
+                        if (joinedInputChars.startsWith("n")) {
                             input.getKeys().remove(0);
                             input.getKeys().add(0, KeyTable.alphabetKey("l"));
-                        } else if (s.startsWith("l")) {
+                        } else if (joinedInputChars.startsWith("l")) {
                             input.getKeys().remove(0);
                             input.getKeys().add(0, KeyTable.alphabetKey("n"));
                         }
 
-                        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                            .stream()
-                                                                            .map(InputWord::from)
-                                                                            .collect(Collectors.toList());
-                        input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-                        input.candidates(candidateWords);
+                        // 重置状态，以确保候选字列表能被更新
+                        this.state = new State(State.Type.InputWaiting);
+                        prepareInputCandidates(input);
 
-                        this.state = new State(State.Type.Init);
-                        KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option, input, true);
-                        InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                        onChoosingInputCandidate(input, true);
+                        break;
+                    }
+                    case ToggleInputSpell_ng: {
+                        if (joinedInputChars.endsWith("eng")
+                            || joinedInputChars.endsWith("ing")
+                            || joinedInputChars.endsWith("ang")) {
+                            input.getKeys().remove(input.getKeys().size() - 1);
+                        } else if (joinedInputChars.endsWith("en")
+                                   || joinedInputChars.endsWith("in")
+                                   || joinedInputChars.endsWith("an")) {
+                            input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
+                        }
 
-                        onInputMsg(InputMsg.InputtingChars, idata);
+                        // 重置状态，以确保候选字列表能被更新
+                        this.state = new State(State.Type.InputWaiting);
+                        prepareInputCandidates(input);
+
+                        onChoosingInputCandidate(input, true);
                         break;
                     }
                 }
                 break;
             }
-            case FingerFling: {
+            case FingerSlipping: {
                 // 候选字翻页
-                CharInput input = (CharInput) getInputList().getCursor().getPending();
-                KeyFactory keyFactory = option -> switchToChoosingInputCandidate(option,
-                                                                                 input,
-                                                                                 ((FingerFlingMsgData) data).up);
-                InputMsgData idata = new InputtingCharsMsgData(input.getKeys(), key, null, keyFactory);
+                boolean pageUp = ((UserFingerSlippingMsgData) data).upward;
+                CharInput input = getInputList().getPending();
 
-                onInputMsg(InputMsg.InputtingChars, idata);
+                onChoosingInputCandidate(input, pageUp);
             }
             break;
         }
     }
 
-    private void onInputWordKeyMsg(KeyMsg msg, KeyMsgData data) {
-        InputWordKey key = (InputWordKey) data.target;
+    private void onInputCandidateKeyMsg(UserMsg msg, InputWordKey key, UserMsgData data) {
+        CharKey charKey = key.getCharKey();
 
         switch (msg) {
-            case KeyLongPress: {
-                // 开始滑动输入
-                if (key.hasCharKey()) {
-                    onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
+            case KeyLongPressStart: {
+                if (charKey != null) {
+                    // 长按标点，则由单击响应处理
+                    if (charKey.isPunctuation()) {
+                        onCharKeyMsg(UserMsg.KeySingleTap, charKey, new UserMsgData(charKey));
+                    }
+                    // 开始滑行输入
+                    else {
+                        onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
+                    }
                 }
                 break;
             }
-            case KeyClick: {
+            case KeySingleTap: {
                 // 确认候选字
                 if (key.hasWord()) {
                     InputWord word = key.getWord();
-                    CharInput input = (CharInput) getInputList().getCursor().getPending();
-                    input.word(word);
+                    getInputList().getPending().setWord(word);
+                    getInputList().confirmPending();
 
-                    confirmInputPending();
-                } else if (key.hasCharKey()) {
-                    onCharKeyMsg(msg, new KeyMsgData(key.getCharKey()));
+                    onInputtingCharsDone();
+                }
+                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
+                else if (charKey != null && charKey.isPunctuation()) {
+                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
                 }
             }
             break;
         }
     }
 
-    private void onInputtingChars(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean needToProcessPinyin) {
-        List<String> nextChars = new ArrayList<>();
-        if (needToProcessPinyin) {
+    private void onSingleKeyInput(CharInput input, CharKey key) {
+        this.state = new State(State.Type.InputWaiting);
+
+        switch (key.getType()) {
+            // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
+            case Emotion:
+            case Punctuation:
+                getInputList().newPending().appendKey(key);
+                getInputList().confirmPending();
+
+                onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
+                break;
+            // 字母、数字可连续输入
+            case Number:
+            case Alphabet:
+                input.appendKey(key);
+                onContinuousInput(input, key, null, false);
+                break;
+        }
+    }
+
+    private void onContinuousInput(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean isPinyin) {
+        List<String> nextChars = null;
+        if (isPinyin) {
             nextChars = this.pinyinCharTree.findNextChars(input.getChars());
 
-            List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                                .stream()
-                                                                .map(InputWord::from)
-                                                                .collect(Collectors.toList());
-            input.word(candidateWords.isEmpty() ? null : candidateWords.get(0));
-            input.candidates(candidateWords);
+            prepareInputCandidates(input);
         } else {
-            input.word(null);
-            input.candidates(new ArrayList<>());
+            input.setWord(null);
+            input.setCandidates(new ArrayList<>());
         }
 
-        KeyFactory keyFactory = createKeyFactoryByInput(input, nextChars);
-        InputMsgData data = new InputtingCharsMsgData(input.getKeys(), currentKey, closedKey, keyFactory);
+        List<String> finalNextChars = nextChars;
+        KeyFactory keyFactory = option -> KeyTable.createNextCharKeys(option, getHandMode(), finalNextChars);
 
+        InputMsgData data = new InputtingCharsMsgData(input.getKeys(), currentKey, closedKey, keyFactory);
         onInputMsg(InputMsg.InputtingChars, data);
     }
 
-    private void confirmInputPending() {
-        this.state = new State(State.Type.Inputting);
-        this.slidingInput = false;
+    private void onInputtingCharsDone() {
+        this.state = new State(State.Type.InputWaiting);
 
-        CharInput input = (CharInput) getInputList().getCursor().getPending();
-        if (input == null || (!input.hasWord() && !input.isPunctuation())) {
-            // 无有效拼音，则丢弃输入
-            getInputList().dropPending();
-        } else {
-            getInputList().confirmPending();
-        }
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
     }
 
-    private KeyFactory createKeyFactoryByInput(CharInput input, List<String> nextChars) {
-        return option -> {
-            Key<?>[][] keys = getKeyFactory().create(option);
-            // 有后继字母，则仅显示后继字母按键
-            if (!nextChars.isEmpty()) {
-                KeyTable.traverseKeys(keys, key -> {
-                    key.hide();
-                    if (key instanceof CharKey && nextChars.contains(((CharKey) key).getText())) {
-                        key.show();
-                    }
-                });
-            }
-            // 无后继字母，但有额外的候选字，则进入候选字模式
-            else if (input.hasExtraCandidates()) {
-                keys = switchToChoosingInputCandidate(option, input, true);
-            }
-
-            return keys;
-        };
-    }
-
-    private Key<?>[][] switchToChoosingInputCandidate(
-            Keyboard.KeyFactory.Option option, CharInput input, boolean pageUp
-    ) {
+    private void onChoosingInputCandidate(CharInput input, boolean pageUp) {
         // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
         ChoosingInputCandidateData data;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
@@ -385,11 +364,26 @@ public class PinyinKeyboard extends BaseKeyboard {
                 data.prevPage();
             }
         } else {
-            data = new ChoosingInputCandidateData(input.getWordCandidates().size(),
+            data = new ChoosingInputCandidateData(input.getCandidates().size(),
                                                   KeyTable.getInputCandidateKeysPageSize());
             this.state = new State(State.Type.ChoosingInputCandidate, data);
         }
 
-        return KeyTable.getInputCandidateKeys(option, getHandMode(), data.getPageStart(), input);
+        KeyFactory keyFactory = option -> KeyTable.createInputCandidateKeys(option,
+                                                                            getHandMode(),
+                                                                            input,
+                                                                            data.getPageStart());
+        InputMsgData msg = new InputtingCharsMsgData(input.getKeys(), null, null, keyFactory);
+
+        onInputMsg(InputMsg.ChoosingInputCandidate, msg);
+    }
+
+    private void prepareInputCandidates(CharInput input) {
+        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
+                                                            .stream()
+                                                            .map(InputWord::from)
+                                                            .collect(Collectors.toList());
+        input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
+        input.setCandidates(candidateWords);
     }
 }

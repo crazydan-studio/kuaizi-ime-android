@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -63,25 +62,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             this.keys.addAll(Arrays.asList(key));
         }
 
-        if (oldKeys.size() > this.keys.size()) {
-            for (int i = this.keys.size(); i < oldKeys.size(); i++) {
-                notifyItemRemoved(i);
-            }
-        } else if (oldKeys.size() < this.keys.size()) {
-            for (int i = oldKeys.size(); i < this.keys.size(); i++) {
-                notifyItemInserted(i);
-            }
-        }
-
-        int size = Math.min(oldKeys.size(), this.keys.size());
-        for (int i = 0; i < size; i++) {
-            Key<?> oldKey = oldKeys.get(i);
-            Key<?> newKey = this.keys.get(i);
-
-            if (!Objects.equals(oldKey, newKey)) {
-                notifyItemChanged(i);
-            }
-        }
+        updateItems(oldKeys, this.keys);
     }
 
     @Override
@@ -95,9 +76,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case ToggleInputTongue:
-                case ToggleInputRhyme:
-                case ToggleInputNL:
+                case ToggleInputSpell_zcs_h:
+                case ToggleInputSpell_ng:
+                case ToggleInputSpell_nl:
                     ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
                     break;
                 default:
@@ -118,9 +99,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case ToggleInputTongue:
-                case ToggleInputRhyme:
-                case ToggleInputNL:
+                case ToggleInputSpell_zcs_h:
+                case ToggleInputSpell_ng:
+                case ToggleInputSpell_nl:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
                     return VIEW_TYPE_CTRL_KEY;

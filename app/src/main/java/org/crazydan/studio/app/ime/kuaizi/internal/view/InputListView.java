@@ -61,7 +61,8 @@ public class InputListView extends RecyclerView implements InputMsgListener {
         switch (msg) {
             case InputtingChars:
             case InputtingCharsDone:
-                this.adapter.notifyDataSetChanged();
+            case ChoosingInputCandidate:
+                this.adapter.updateItems();
                 smoothScrollToPosition(this.adapter.getSelectedInputPosition());
                 break;
         }

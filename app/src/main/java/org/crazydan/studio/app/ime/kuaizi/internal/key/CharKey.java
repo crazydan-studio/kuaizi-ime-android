@@ -69,6 +69,16 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     @Override
+    public boolean isSameWith(Key<?> key) {
+        if (!(key instanceof CharKey)) {
+            return false;
+        }
+
+        CharKey that = (CharKey) key;
+        return this.type == that.type && this.text.equals(that.text);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

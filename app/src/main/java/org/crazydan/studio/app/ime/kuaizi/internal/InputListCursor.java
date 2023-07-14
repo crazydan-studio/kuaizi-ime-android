@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+
 /**
  * {@link InputList 输入列表}中的光标
  *
@@ -27,7 +29,7 @@ public class InputListCursor {
     /** 光标位置已选中的输入 */
     private Input selected;
     /** 光标位置待插入的输入 */
-    private Input pending;
+    private CharInput pending;
 
     public void reset() {
         this.selected = null;
@@ -42,11 +44,11 @@ public class InputListCursor {
         this.selected = selected;
     }
 
-    public Input getPending() {
+    public CharInput getPending() {
         return this.pending;
     }
 
-    protected void setPending(Input pending) {
+    protected void setPending(CharInput pending) {
         this.pending = pending;
     }
 }

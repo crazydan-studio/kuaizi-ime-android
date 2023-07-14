@@ -55,11 +55,11 @@ public abstract class BaseInput implements Input {
 
     @Override
     public List<String> getChars() {
-        // TODO 确认输入到目标输入框时，需替换全角空格为半角空格
+        // TODO 确认输入到目标输入框时，需替换全角空格( )为半角空格
         return this.keys.stream()
                         .map(k -> k instanceof CharKey
                                   ? ((CharKey) k).getText()
-                                  : k instanceof CtrlKey && ((CtrlKey) k).isSpace() ? " " : null)
+                                  : k instanceof CtrlKey && ((CtrlKey) k).isSpace() ? "  " : null)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }
@@ -74,21 +74,38 @@ public abstract class BaseInput implements Input {
         return this.word;
     }
 
-    public void word(InputWord candidate) {
+    public void setWord(InputWord candidate) {
         this.word = candidate;
     }
 
     @Override
-    public List<InputWord> getWordCandidates() {
+    public List<InputWord> getCandidates() {
         return this.candidates == null ? new ArrayList<>() : this.candidates;
     }
 
-    public void candidates(List<InputWord> candidates) {
+    public void setCandidates(List<InputWord> candidates) {
         this.candidates = candidates;
     }
 
     /** 是否有多余 1 个的候选字 */
     public boolean hasExtraCandidates() {
-        return getWordCandidates().size() > 1;
+        return getCandidates().size() > 1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BaseInput that = (BaseInput) o;
+        return this.keys.equals(that.keys) && Objects.equals(this.word, that.word);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.keys, this.word);
     }
 }

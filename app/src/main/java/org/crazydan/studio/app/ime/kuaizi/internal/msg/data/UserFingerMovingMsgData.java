@@ -15,23 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 
 /**
- * {@link Keyboard 键盘}{@link InputWord 输入候选字}的{@link RecyclerView}布局器
+ * {@link UserMsg#FingerMoving}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-08
+ * @date 2023-07-06
  */
-public class InputCandidateViewLayoutManager extends LinearLayoutManager {
+public class UserFingerMovingMsgData extends UserMsgData {
+    /** 靠近的按键 */
+    public final Key<?> closed;
 
-    public InputCandidateViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public UserFingerMovingMsgData(Key<?> target, Key<?> closed) {
+        super(target);
+        this.closed = closed;
     }
 }

@@ -25,10 +25,6 @@
         <attr name="input_fg_color" format="color" />
         <attr name="input_selection_bg_color" format="color" />
         <attr name="input_selection_fg_color" format="color" />
-        <attr name="input_candidates_bg_color" format="color" />
-        <attr name="input_candidates_fg_color" format="color" />
-        <attr name="input_candidates_selection_bg_color" format="color" />
-        <attr name="input_candidates_selection_fg_color" format="color" />
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />

@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
+import java.util.List;
+import java.util.Objects;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,5 +33,27 @@ public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> ext
 
     protected View inflateHolderView(ViewGroup parent, int viewResId) {
         return LayoutInflater.from(parent.getContext()).inflate(viewResId, parent, false);
+    }
+
+    protected <I> void updateItems(List<I> oldItems, List<I> newItems) {
+        if (oldItems.size() > newItems.size()) {
+            for (int i = newItems.size(); i < oldItems.size(); i++) {
+                notifyItemRemoved(i);
+            }
+        } else if (oldItems.size() < newItems.size()) {
+            for (int i = oldItems.size(); i < newItems.size(); i++) {
+                notifyItemInserted(i);
+            }
+        }
+
+        int size = Math.min(oldItems.size(), newItems.size());
+        for (int i = 0; i < size; i++) {
+            I oldItem = oldItems.get(i);
+            I newItem = newItems.get(i);
+
+            if (!Objects.equals(oldItem, newItem)) {
+                notifyItemChanged(i);
+            }
+        }
     }
 }

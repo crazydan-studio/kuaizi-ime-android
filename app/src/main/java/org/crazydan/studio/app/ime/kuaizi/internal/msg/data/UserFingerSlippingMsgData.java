@@ -17,22 +17,20 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 
 /**
- * {@link KeyMsg#FingerMove}消息数据
+ * {@link UserMsg#FingerSlipping}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-09
  */
-public class FingerMoveMsgData extends KeyMsgData {
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class UserFingerSlippingMsgData extends UserMsgData {
+    public final boolean upward;
 
-    public FingerMoveMsgData(Key<?> target, Key<?> closed) {
-        super(target);
-        this.closed = closed;
+    public UserFingerSlippingMsgData(boolean upward) {
+        super(null);
+        this.upward = upward;
     }
 }

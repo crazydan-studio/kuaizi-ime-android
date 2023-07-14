@@ -41,27 +41,31 @@ public class InputList {
     /** 清空输入列表 */
     public void empty() {
         getInputs().clear();
-        getCursor().reset();
+        this.cursor.reset();
 
         getInputs().add(new GapInput());
-        getCursor().setSelected(getInputs().get(0));
+        this.cursor.setSelected(getInputs().get(0));
     }
 
     /** 是否有待输入 */
     public boolean hasPending() {
-        return getCursor().getPending() != null;
+        return this.cursor.getPending() != null;
     }
 
     /**
-     * 初始化待输入
+     * 新建待输入
+     * <p/>
+     * 自动确认当前的待输入
      */
-    public void initPending() {
+    public CharInput newPending() {
         // 先确认当前的待输入
         confirmPending();
 
         // 再创建新的待输入
         CharInput input = new CharInput();
-        getCursor().setPending(input);
+        this.cursor.setPending(input);
+
+        return input;
     }
 
     /**
@@ -71,18 +75,18 @@ public class InputList {
      * 原位置为间隙时，插入待输入，并将光标移到新输入的后面；
      */
     public void confirmPending() {
-        Input pending = getCursor().getPending();
-        Input selected = getCursor().getSelected();
+        CharInput pending = this.cursor.getPending();
+        Input selected = this.cursor.getSelected();
 
         int cursorIndex = getCursorIndex();
-        if (pending == null || cursorIndex < 0) {
+        if (pending == null || pending.isEmpty() || cursorIndex < 0) {
             return;
         }
 
-        getCursor().setPending(null);
+        this.cursor.setPending(null);
         if (selected instanceof CharInput) {
             getInputs().set(cursorIndex, pending);
-            getCursor().setSelected(pending);
+            this.cursor.setSelected(pending);
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input gap = new GapInput();
@@ -92,13 +96,23 @@ public class InputList {
 
     /** 丢弃待输入 */
     public void dropPending() {
-        getCursor().setPending(null);
+        this.cursor.setPending(null);
     }
 
     /** 获取光标位置 */
     public int getCursorIndex() {
-        Input selected = getCursor().getSelected();
+        Input selected = this.cursor.getSelected();
         return getInputs().indexOf(selected);
+    }
+
+    /** 获取待输入 */
+    public CharInput getPending() {
+        return this.cursor.getPending();
+    }
+
+    /** 获取以选中的输入 */
+    public Input getSelected() {
+        return this.cursor.getSelected();
     }
 
     /** 删除光标左边的输入 */
@@ -108,7 +122,7 @@ public class InputList {
             return;
         }
 
-        Input selected = getCursor().getSelected();
+        Input selected = this.cursor.getSelected();
         if (selected instanceof GapInput) {
             if (cursorIndex > 0) {
                 // 删除当前光标之前的 输入和占位
@@ -122,15 +136,11 @@ public class InputList {
             getInputs().remove(cursorIndex);
             getInputs().remove(cursorIndex - 1);
             // 再将当前光标后移
-            getCursor().setSelected(newSelected);
+            this.cursor.setSelected(newSelected);
         }
     }
 
     public List<Input> getInputs() {
         return this.inputs;
-    }
-
-    public InputListCursor getCursor() {
-        return this.cursor;
     }
 }

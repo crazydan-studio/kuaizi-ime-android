@@ -24,7 +24,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -57,18 +56,12 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
     public void bind(K key, HexagonOrientation orientation) {
         this.key = key;
 
-        if (key.isHidden()) {
-            ViewUtils.hide(this.itemView);
-        } else {
-            ViewUtils.show(this.itemView);
+        KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
-            KeyViewDrawable drawable = new KeyViewDrawable(orientation);
+        int bgColor = getColorByAttrId(key.getBgColorAttrId());
+        drawable.setColor(bgColor);
+        drawable.setCornerRadius(10);
 
-            int bgColor = getColorByAttrId(key.getBgColorAttrId());
-            drawable.setColor(bgColor);
-            drawable.setCornerRadius(10);
-
-            this.bgView.setImageDrawable(drawable);
-        }
+        this.bgView.setImageDrawable(drawable);
     }
 }

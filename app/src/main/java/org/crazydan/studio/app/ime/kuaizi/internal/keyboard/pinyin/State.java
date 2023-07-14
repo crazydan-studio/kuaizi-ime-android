@@ -39,12 +39,10 @@ public class State {
     }
 
     public enum Type {
-        /** 初始 */
-        Init,
         /** 待输入 */
         InputWaiting,
-        /** 输入中 */
-        Inputting,
+        /** 滑行输入中 */
+        SlippingInput,
         /** 输入组件光标定位 */
         LocatingInputTargetCursor,
         /** 输入组件光标已定位 */

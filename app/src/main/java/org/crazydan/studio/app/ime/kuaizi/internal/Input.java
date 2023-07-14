@@ -54,5 +54,5 @@ public interface Input {
      *
      * @return 若无候选字，则返回空集合
      */
-    List<InputWord> getWordCandidates();
+    List<InputWord> getCandidates();
 }

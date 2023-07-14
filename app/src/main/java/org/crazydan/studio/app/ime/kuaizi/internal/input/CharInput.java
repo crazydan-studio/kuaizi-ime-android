@@ -20,9 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 
 /**
  * 字符{@link Input 输入}
@@ -34,15 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
  */
 public class CharInput extends BaseInput {
 
-    /** 是否为标点 */
-    public boolean isPunctuation() {
-        for (Key<?> key : getKeys()) {
-            if ((key instanceof CharKey && !((CharKey) key).isPunctuation()) //
-                || (key instanceof CtrlKey && !((CtrlKey) key).isSpace())) {
-                return false;
-            }
-        }
-        return !getKeys().isEmpty();
+    /** 是否为空输入 */
+    public boolean isEmpty() {
+        return getKeys().isEmpty();
     }
 
     /** 是否为拼音 平/翘舌 */

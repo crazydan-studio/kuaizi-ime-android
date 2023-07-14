@@ -26,10 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}切换
- * {@link CtrlKey.Type#ToggleInputRhyme 前/后鼻韵}
- * 和{@link CtrlKey.Type#ToggleInputTongue 平/翘舌}
- * 的视图
+ * {@link Keyboard 键盘}切换输入拼写的{@link CtrlKey 控制按键}视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-11

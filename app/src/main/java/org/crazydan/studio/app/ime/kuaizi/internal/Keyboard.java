@@ -17,11 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 
 /**
  * 键盘
@@ -38,8 +37,8 @@ public interface Keyboard {
     /** 重置状态 */
     void reset();
 
-    /** 处理按{@link KeyMsg 键消息} */
-    void onKeyMsg(KeyMsg msg, KeyMsgData data);
+    /** 处理按{@link UserMsg 键消息} */
+    void onUserMsg(UserMsg msg, UserMsgData data);
 
     /**
      * 添加{@link InputMsg 输入消息监听}
@@ -71,10 +70,10 @@ public interface Keyboard {
     /** 按键生成器 */
     interface KeyFactory {
         /**
-         * 获取二维矩阵{@link Key 按键}
+         * 创建二维矩阵{@link Key 按键}
          * <p/>
-         * 元素不能为<code>null</code>，
-         * 可通过{@link CtrlKey#noop()}创建占位按键
+         * 元素可为<code>null</code>，
+         * 表示该位置不放置任何按键
          */
         Key<?>[][] create(Option option);
 

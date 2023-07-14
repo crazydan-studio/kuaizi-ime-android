@@ -81,6 +81,16 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     }
 
     @Override
+    public boolean isSameWith(Key<?> key) {
+        if (!(key instanceof CtrlKey)) {
+            return false;
+        }
+
+        CtrlKey that = (CtrlKey) key;
+        return this.type == that.type;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -117,11 +127,11 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 在候选字状态下删除当前输入 */
         DropInput,
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
-        ToggleInputTongue,
+        ToggleInputSpell_zcs_h,
         /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
-        ToggleInputRhyme,
+        ToggleInputSpell_ng,
         /** 在候选字状态下切换当前输入的 n/l */
-        ToggleInputNL,
+        ToggleInputSpell_nl,
         /** 切换输入法 */
         SwitchIME,
         /** 切换左右手模式 */

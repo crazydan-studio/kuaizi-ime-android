@@ -21,6 +21,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 public enum InputMsg {
     /** 字符输入中 */
     InputtingChars,
+    /** 选择输入候选字中 */
+    ChoosingInputCandidate,
     /** 字符已输入结束 */
     InputtingCharsDone,
 }

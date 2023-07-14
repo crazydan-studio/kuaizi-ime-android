@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,13 +38,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.KeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewTouchListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.GsonUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -87,8 +86,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
 
-        addOnItemTouchListener(new KeyViewTouchListener());
-//        (new RecyclerViewGestureDetector()).bind(this);
+        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
+        gesture.bind(this) //
+               .addListener(new KeyViewGestureListener(this));
     }
 
     public InputList getInputList() {
@@ -142,22 +142,22 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.adapter.bindKeys(keys);
     }
 
-    /** 找到事件坐标下可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewUnder(MotionEvent e) {
-        View child = this.layoutManager.findChildViewUnder(e.getX(), e.getY());
+    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
+    public KeyView<?, ?> findVisibleKeyViewUnder(float x, float y) {
+        View child = this.layoutManager.findChildViewUnder(x, y);
 
-        KeyView<?, ?> keyView = child != null ? (KeyView<?, ?>) getChildViewHolder(child) : null;
-
-        return keyView != null && !keyView.isHidden() ? keyView : null;
+        return getVisibleKeyView(child);
     }
 
-    /** 找到事件坐标附近可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewNear(MotionEvent e, int deltaInDp) {
-        return null;
+    /** 找到指定坐标附近可见的{@link  KeyView 按键视图} */
+    public KeyView<?, ?> findVisibleKeyViewNear(float x, float y) {
+        View child = this.layoutManager.findChildViewNear(x, y);
+
+        return getVisibleKeyView(child);
     }
 
-    public void onKeyMsg(KeyMsg msg, KeyMsgData data) {
-        this.keyboard.onKeyMsg(msg, data);
+    public void onUserMsg(UserMsg msg, UserMsgData data) {
+        this.keyboard.onUserMsg(msg, data);
     }
 
     @Override
@@ -169,6 +169,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case InputtingCharsDone:
                 onInputtingCharsDoneMsg(data);
                 break;
+            case ChoosingInputCandidate:
+                onChoosingInputCandidateMsg(data);
+                break;
         }
     }
 
@@ -178,6 +181,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void onInputtingCharsDoneMsg(InputMsgData data) {
+        Key<?>[][] keys = createKeys(data.getKeyFactory());
+        relayoutKeys(keys);
+    }
+
+    private void onChoosingInputCandidateMsg(InputMsgData data) {
         Key<?>[][] keys = createKeys(data.getKeyFactory());
         relayoutKeys(keys);
     }
@@ -201,5 +209,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         option.orientation = this.keyboardOrientation;
 
         return keyFactory.create(option);
+    }
+
+    private KeyView<?, ?> getVisibleKeyView(View view) {
+        KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
+
+        return keyView != null && !keyView.isHidden() ? keyView : null;
     }
 }

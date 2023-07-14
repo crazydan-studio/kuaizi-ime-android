@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
-import java.util.List;
+import java.util.function.Predicate;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,11 +46,17 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
  * @date 2023-07-01
  */
 public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
+    private static final double cos_30 = Math.cos(Math.toRadians(30));
+
     /** 按键正六边形方向 */
     private final HexagonOrientation gridItemOrientation;
 
-    /** 按键正六边形半径 */
+    /** 按键正六边形半径：可见范围内的半径 */
     private double gridItemRadius;
+    /** 按键正六边形内部边界半径：与可见边相交的圆 */
+    private double gridItemInnerRadius;
+    /** 按键正六边形外部边界半径：含按键间隔，并与顶点相交的圆 */
+    private double gridItemOuterRadius;
     /** 按键间隔 */
     private double gridItemSpacing;
     /** 按键列数 */
@@ -112,31 +118,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
     }
 
-    /** 找出指定位置下的子视图 */
-    public View findChildViewUnder(double x, double y) {
-        int itemCount = getItemCount();
-
-        int i = 0;
-        Point point = Point.fromPosition(x - this.gridPaddingLeft, y - this.gridPaddingTop);
-        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
-            if (i >= itemCount) {
-                break;
-            }
-
-            List<Point> points = hexagon.getPoints();
-            if (isInside(points, point)) {
-                return getChildAt(i);
-            }
-
-            i++;
-        }
-
-        return null;
-    }
-
     private HexagonalGrid<SatelliteData> createGrid() {
-        double cos_30 = Math.cos(Math.toRadians(30));
-
         // Note: 只有布局完成后，才能得到视图的宽高
         // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
         // - 这里按照按键紧挨的情况计算正六边形的半径，
@@ -182,6 +164,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
 
         this.gridItemRadius = radius - this.gridItemSpacing / (2 * cos_30);
+        this.gridItemOuterRadius = radius;
+        this.gridItemInnerRadius = this.gridItemRadius * cos_30;
 
         HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>();
         builder.setGridWidth(this.gridColumns)
@@ -193,33 +177,46 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         return builder.build();
     }
 
-    private boolean isInside(List<Point> points, Point point) {
-        // 通过射线法判断: https://xoyozo.net/Blog/Details/is-the-point-inside-the-polygon
-        int intersections = 0;
-        for (int i = 0; i < points.size(); i++) {
-            Point p1 = points.get(i);
-            Point p2 = points.get((i + 1) % points.size());
-            double px = point.getCoordinateX();
-            double py = point.getCoordinateY();
-            double p1x = p1.getCoordinateX();
-            double p1y = p1.getCoordinateY();
-            double p2x = p2.getCoordinateX();
-            double p2y = p2.getCoordinateY();
+    /**
+     * 找出指定坐标下的子视图
+     * <p/>
+     * 仅当坐标在正六边形的内圈中时才视为符合条件
+     */
+    public View findChildViewUnder(double x, double y) {
+        return filterChildViewByHexagonCenterDistance(x, y, distance -> distance < this.gridItemInnerRadius);
+    }
 
-            if (py > Math.min(p1y, p2y)
-                //
-                && py <= Math.max(p1y, p2y)
-                //
-                && px <= Math.max(p1x, p2x)
-                //
-                && p1y != p2y) {
-                double xIntersection = (py - p1y) * (p2x - p1x) / (p2y - p1y) + p1x;
+    /**
+     * 找出靠近指定坐标的子视图
+     * <p/>
+     * 仅当坐标在正六边形的外圈但不在内圈中时才视为符合条件
+     */
+    public View findChildViewNear(double x, double y) {
+        return filterChildViewByHexagonCenterDistance(x,
+                                                      y,
+                                                      distance -> distance > this.gridItemInnerRadius
+                                                                  && distance < this.gridItemOuterRadius);
+    }
 
-                if (p1x == p2x || px <= xIntersection) {
-                    intersections++;
-                }
+    private View filterChildViewByHexagonCenterDistance(double x, double y, Predicate<Double> predicate) {
+        int itemCount = getItemCount();
+
+        int i = 0;
+        Point point = Point.fromPosition(x - this.gridPaddingLeft, y - this.gridPaddingTop);
+        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
+            if (i >= itemCount) {
+                break;
             }
+
+            Point center = hexagon.getCenter();
+            double distance = center.distanceFrom(point);
+
+            if (predicate.test(distance)) {
+                return getChildAt(i);
+            }
+            i++;
         }
-        return intersections % 2 != 0;
+
+        return null;
     }
 }

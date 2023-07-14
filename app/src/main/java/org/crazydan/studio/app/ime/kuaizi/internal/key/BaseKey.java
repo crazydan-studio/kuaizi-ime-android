@@ -26,25 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-07-02
  */
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
-    private boolean hidden;
     private int bgColorAttrId;
-
-    @Override
-    public K hide() {
-        this.hidden = true;
-        return (K) this;
-    }
-
-    @Override
-    public K show() {
-        this.hidden = false;
-        return (K) this;
-    }
-
-    @Override
-    public boolean isHidden() {
-        return this.hidden;
-    }
 
     @Override
     public int getBgColorAttrId() {
@@ -66,11 +48,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
             return false;
         }
         BaseKey<?> that = (BaseKey<?>) o;
-        return this.hidden == that.hidden && this.bgColorAttrId == that.bgColorAttrId;
+        return this.bgColorAttrId == that.bgColorAttrId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.hidden, this.bgColorAttrId);
+        return Objects.hash(this.bgColorAttrId);
     }
 }

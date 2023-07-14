@@ -17,16 +17,19 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
-/** 键盘按键消息 */
-public enum KeyMsg {
-    /** 长按按键 */
-    KeyLongPress,
-    /** 长按按键 */
-    KeyLongPressEnd,
-    /** 点击按键 */
-    KeyClick,
-    /** 手指移动 */
-    FingerMove,
-    /** 手指快速滑动 */
-    FingerFling,
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+
+/**
+ * {@link UserMsg}携带的数据
+ *
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-07-06
+ */
+public class UserMsgData {
+    /** 消息目标按键 */
+    public final Key<?> target;
+
+    public UserMsgData(Key<?> target) {
+        this.target = target;
+    }
 }

@@ -29,10 +29,6 @@
         <item name="input_fg_color">?attr/key_fg_color</item>
         <item name="input_selection_bg_color">@color/color_slate_700</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
-        <item name="input_candidates_bg_color">?attr/keyboard_bg_color</item>
-        <item name="input_candidates_fg_color">?attr/key_fg_color</item>
-        <item name="input_candidates_selection_bg_color">@color/color_slate_700</item>
-        <item name="input_candidates_selection_fg_color">?attr/key_fg_color</item>
         <!-- 键盘按键样式 -->
         <item name="key_bg_color">@color/color_black</item>
         <item name="key_fg_color">@color/color_white</item>
@@ -95,10 +91,6 @@
         <item name="input_fg_color">?attr/key_fg_color</item>
         <item name="input_selection_bg_color">@color/color_slate_700</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
-        <item name="input_candidates_bg_color">?attr/keyboard_bg_color</item>
-        <item name="input_candidates_fg_color">?attr/key_fg_color</item>
-        <item name="input_candidates_selection_bg_color">@color/color_slate_700</item>
-        <item name="input_candidates_selection_fg_color">?attr/key_fg_color</item>
         <!-- 键盘按键样式 -->
         <item name="key_bg_color">@color/color_black</item>
         <item name="key_fg_color">@color/color_white</item>

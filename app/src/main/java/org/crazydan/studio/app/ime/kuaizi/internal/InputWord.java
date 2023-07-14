@@ -31,25 +31,13 @@ public class InputWord {
     private String value;
     private String notation;
 
-    private boolean traditional;
-    private int level;
-    private float weight;
-    /** 笔画数 */
-    private int strokes;
-
     public InputWord(String value, String notation) {
         this.value = value;
         this.notation = notation;
     }
 
     public static InputWord from(PinyinCharTree.Word cw) {
-        InputWord iw = new InputWord(cw.getValue(), cw.getNotation());
-        iw.setTraditional(cw.isTraditional());
-        iw.setLevel(cw.getLevel());
-        iw.setWeight(cw.getWeight());
-        iw.setStrokes(cw.getStrokes());
-
-        return iw;
+        return new InputWord(cw.getValue(), cw.getNotation());
     }
 
     public String getValue() {
@@ -66,38 +54,6 @@ public class InputWord {
 
     public void setNotation(String notation) {
         this.notation = notation;
-    }
-
-    public boolean isTraditional() {
-        return this.traditional;
-    }
-
-    public void setTraditional(boolean traditional) {
-        this.traditional = traditional;
-    }
-
-    public int getLevel() {
-        return this.level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public float getWeight() {
-        return this.weight;
-    }
-
-    public void setWeight(float weight) {
-        this.weight = weight;
-    }
-
-    public int getStrokes() {
-        return this.strokes;
-    }
-
-    public void setStrokes(int strokes) {
-        this.strokes = strokes;
     }
 
     @Override
