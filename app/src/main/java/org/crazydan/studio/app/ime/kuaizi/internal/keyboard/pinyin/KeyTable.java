@@ -228,10 +228,11 @@ public class KeyTable {
                 Key<?> defaultKey = defaultKeys[i][j];
 
                 if (defaultKey instanceof CharKey) {
+                    CharKey charKey = (CharKey) defaultKey;
                     InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
 
-                    defaultKey.setBgColorAttrId(R.attr.key_char_punctuation_bg_color);
-                    wordKey.setCharKey((CharKey) defaultKey);
+                    wordKey.setCharKey(charKey);
+                    charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
 
                     gridKeys[i][j] = wordKey;
                 } else {
@@ -275,7 +276,9 @@ public class KeyTable {
                                                    .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                                    .setBgColorAttrId(bgAttrId);
                 if (defaultKey instanceof InputWordKey) {
-                    wordKey.setCharKey(((InputWordKey) defaultKey).getCharKey());
+                    CharKey charKey = ((InputWordKey) defaultKey).getCharKey();
+                    wordKey.setCharKey(charKey);
+                    charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
                 }
 
                 gridKeys[x][y] = wordKey;
