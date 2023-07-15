@@ -28,6 +28,12 @@ public interface Key<K extends Key<?>> {
     /** 是否与指定的按键相同：即实例不同但按键类型和符号相同 */
     boolean isSameWith(Key<?> key);
 
+    /** 是否已禁用 */
+    boolean isDisabled();
+
+    /** 设置为禁用 */
+    K setDisabled(boolean disabled);
+
     /** 获取背景色属性 id */
     int getBgColorAttrId();
 

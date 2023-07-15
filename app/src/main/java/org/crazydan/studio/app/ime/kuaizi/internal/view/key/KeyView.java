@@ -56,6 +56,12 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
     public void bind(K key, HexagonOrientation orientation) {
         this.key = key;
 
+        if (key.isDisabled()) {
+            disable();
+        } else {
+            enable();
+        }
+
         KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
         int bgColor = getColorByAttrId(key.getBgColorAttrId());

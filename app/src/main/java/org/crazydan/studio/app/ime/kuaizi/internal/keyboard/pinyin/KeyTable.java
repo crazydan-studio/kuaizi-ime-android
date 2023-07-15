@@ -155,8 +155,7 @@ public class KeyTable {
         // 右手模式的纵向屏幕 7 x 6 的按键表
         return new Key[][] {
                 new Key[] {
-                        noopCtrlKey(),
-                        //ctrlKey(CtrlKey.Type.SwitchIME),
+                        ctrlKey(CtrlKey.Type.SwitchIME).setDisabled(true),
                         punctuationKey("："),
                         alphabetKey("i"),
                         alphabetKey("a"),
@@ -174,8 +173,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
-                //ctrlKey(CtrlKey.Type.SwitchHandMode),
+                ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
                 punctuationKey("？"),
                 alphabetKey("l"),
                 alphabetKey("x"),
@@ -199,9 +197,8 @@ public class KeyTable {
                 alphabetKey("f"),
                 alphabetKey("m"),
                 alphabetKey("p"),
-                noopCtrlKey(),
-                //ctrlKey(CtrlKey.Type.SwitchToAlphanumericKeyboard),
-        } //
+                ctrlKey(CtrlKey.Type.SwitchToAlphanumericKeyboard).setDisabled(true),
+                } //
                 , new Key[] {
                 noopCtrlKey(),
                 punctuationKey("。"),
@@ -209,9 +206,8 @@ public class KeyTable {
                 alphabetKey("b"),
                 alphabetKey("t"),
                 alphabetKey("y"),
-                noopCtrlKey(),
-                //ctrlKey(CtrlKey.Type.SwitchToPunctuationKeyboard),
-        },
+                ctrlKey(CtrlKey.Type.SwitchToPunctuationKeyboard).setDisabled(true),
+                },
                 };
     }
 

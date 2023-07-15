@@ -26,7 +26,19 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-07-02
  */
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
+    private boolean disabled;
     private int bgColorAttrId;
+
+    @Override
+    public boolean isDisabled() {
+        return this.disabled;
+    }
+
+    @Override
+    public K setDisabled(boolean disabled) {
+        this.disabled = disabled;
+        return (K) this;
+    }
 
     @Override
     public int getBgColorAttrId() {
@@ -48,11 +60,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
             return false;
         }
         BaseKey<?> that = (BaseKey<?>) o;
-        return this.bgColorAttrId == that.bgColorAttrId;
+        return this.disabled == that.disabled && this.bgColorAttrId == that.bgColorAttrId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.bgColorAttrId);
+        return Objects.hash(this.disabled, this.bgColorAttrId);
     }
 }

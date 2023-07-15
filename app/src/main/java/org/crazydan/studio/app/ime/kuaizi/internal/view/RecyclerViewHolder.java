@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 import android.content.Context;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -29,7 +30,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -50,12 +50,22 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
         return this.itemView.getContext();
     }
 
-    public void hide() {
-        ViewUtils.hide(this.itemView);
+    public void disable() {
+        // Note: RecyclerView 在显示子项目时，
+        // 会通过 DefaultItemAnimator 动画将 this.itemView 的透明度设置为 1，
+        // 故而，只能对 this.itemView 中的全部子视图修改透明度，从而实现对其的启用/禁用效果
+        // https://stackoverflow.com/questions/8395168/android-get-children-inside-a-view
+        for (int i = 0; i < ((ViewGroup) this.itemView).getChildCount(); i++) {
+            View child = ((ViewGroup) this.itemView).getChildAt(i);
+            child.setAlpha(0.5f);
+        }
     }
 
-    public void show() {
-        ViewUtils.show(this.itemView);
+    public void enable() {
+        for (int i = 0; i < ((ViewGroup) this.itemView).getChildCount(); i++) {
+            View child = ((ViewGroup) this.itemView).getChildAt(i);
+            child.setAlpha(1.0f);
+        }
     }
 
     public void setTextColorByAttrId(TextView text, int attrId) {

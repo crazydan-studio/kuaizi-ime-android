@@ -82,23 +82,15 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     }
 
     private void onPressStart(KeyView<?, ?> keyView) {
-        if (keyView == null //
-            || (keyView instanceof CtrlKeyView //
-                && ((CtrlKeyView) keyView).getKey().isNoOp())) {
-            return;
+        if (isAvailableKeyView(keyView)) {
+            keyView.touchDown();
         }
-
-        keyView.touchDown();
     }
 
     private void onPressEnd(KeyView<?, ?> keyView) {
-        if (keyView == null //
-            || (keyView instanceof CtrlKeyView //
-                && ((CtrlKeyView) keyView).getKey().isNoOp())) {
-            return;
+        if (isAvailableKeyView(keyView)) {
+            keyView.touchUp();
         }
-
-        keyView.touchUp();
     }
 
     private Key<?> getKey(KeyView<?, ?> keyView) {
@@ -140,5 +132,12 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         UserFingerSlippingMsgData msg = new UserFingerSlippingMsgData(upward);
 
         this.keyboardView.onUserMsg(UserMsg.FingerSlipping, msg);
+    }
+
+    private boolean isAvailableKeyView(KeyView<?, ?> keyView) {
+        return keyView != null //
+               && (!(keyView instanceof CtrlKeyView) //
+                   || !((CtrlKeyView) keyView).getKey().isNoOp()) //
+               && !keyView.getKey().isDisabled();
     }
 }
