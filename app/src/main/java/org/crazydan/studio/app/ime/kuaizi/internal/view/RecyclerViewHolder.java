@@ -18,7 +18,13 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-07-07
  */
 public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
+    private final Handler animationCallbackHandler = new Handler();
 
     public RecyclerViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -63,5 +70,62 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     public int getColorByAttrId(int attrId) {
         return ColorUtils.getByAttrId(getContext(), attrId);
+    }
+
+    public void touchDown() {
+        this.itemView.setAlpha(0.3f);
+    }
+
+    public void touchUp() {
+        this.itemView.setAlpha(1.0f);
+    }
+
+    public void fadeOut(Runnable cb) {
+        clearAnimation();
+        this.itemView.setAlpha(1.0f);
+
+        // 图形扩散淡化消失的效果
+        // https://cloud.tencent.com/developer/article/1742156
+        Animation[] animations = new Animation[] {
+                new ScaleAnimation(1.4f,
+                                   1.8f,
+                                   1.4f,
+                                   1.8f,
+                                   ScaleAnimation.RELATIVE_TO_SELF,
+                                   0.5f,
+                                   ScaleAnimation.RELATIVE_TO_SELF,
+                                   0.5f),
+                new AlphaAnimation(0.5f, 0.1f),
+                new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF,
+                                       0,
+                                       TranslateAnimation.RELATIVE_TO_SELF,
+                                       0,
+                                       TranslateAnimation.RELATIVE_TO_SELF,
+                                       0,
+                                       TranslateAnimation.RELATIVE_TO_SELF,
+                                       -0.5f)
+        };
+
+        startAnimation(cb, animations, 500, 0);
+    }
+
+    private void startAnimation(Runnable cb, Animation[] animations, long duration, int repeatCount) {
+        AnimationSet animationSet = new AnimationSet(true);
+        for (Animation animation : animations) {
+            animation.setDuration(duration);
+            animation.setRepeatCount(repeatCount);
+
+            animationSet.addAnimation(animation);
+        }
+
+        this.itemView.startAnimation(animationSet);
+
+        if (repeatCount >= 0) {
+            this.animationCallbackHandler.postDelayed(cb, (duration - 100) * (repeatCount + 1));
+        }
+    }
+
+    private void clearAnimation() {
+        this.itemView.clearAnimation();
     }
 }

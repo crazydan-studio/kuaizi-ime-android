@@ -17,15 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
-import android.animation.ValueAnimator;
-import android.graphics.PorterDuff;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -89,71 +81,5 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         setTextColorByAttrId(this.wordView, key.getFgColorAttrId());
         setTextColorByAttrId(this.notationView, key.getFgColorAttrId());
-    }
-
-    public void showTouchDown() {
-    }
-
-    public void showTouchUp() {
-    }
-
-    public void clearAnimation() {
-        this.itemView.clearAnimation();
-    }
-
-    public void startAnimation() {
-        // 图形扩散淡化消失的效果
-        // https://cloud.tencent.com/developer/article/1742156
-        AnimationSet animationSet = new AnimationSet(true);
-
-        Animation[] animations = new Animation[] {
-                new ScaleAnimation(1.4f,
-                                   1.8f,
-                                   1.4f,
-                                   1.8f,
-                                   ScaleAnimation.RELATIVE_TO_SELF,
-                                   0.5f,
-                                   ScaleAnimation.RELATIVE_TO_SELF,
-                                   0.5f),
-                new AlphaAnimation(0.5f, 0.1f),
-                new TranslateAnimation(TranslateAnimation.RELATIVE_TO_SELF,
-                                       0,
-                                       TranslateAnimation.RELATIVE_TO_SELF,
-                                       0,
-                                       TranslateAnimation.RELATIVE_TO_SELF,
-                                       0,
-                                       TranslateAnimation.RELATIVE_TO_SELF,
-                                       -0.5f)
-        };
-        for (Animation animation : animations) {
-            animation.setDuration(1000);
-            animation.setRepeatCount(ValueAnimator.INFINITE);
-
-            animationSet.addAnimation(animation);
-        }
-
-        this.itemView.startAnimation(animationSet);
-    }
-
-    private void touchDown(ImageView view) {
-        if (view == null || view.getDrawable() == null) {
-            return;
-        }
-
-        // https://stackoverflow.com/a/14483533
-        // overlay is black with transparency
-        view.getDrawable().setColorFilter(0x88000000, PorterDuff.Mode.SRC_ATOP);
-        view.invalidate();
-    }
-
-    private void touchUp(ImageView view) {
-        if (view == null || view.getDrawable() == null) {
-            return;
-        }
-
-        // https://stackoverflow.com/a/14483533
-        // clear the overlay
-        view.getDrawable().clearColorFilter();
-        view.invalidate();
     }
 }

@@ -190,6 +190,28 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         relayoutKeys(keys);
     }
 
+    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
+        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
+        option.orientation = this.keyboardOrientation;
+
+        return keyFactory.create(option);
+    }
+
+    private KeyView<?, ?> getVisibleKeyView(View view) {
+        KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
+
+        return keyView != null && !keyView.isHidden() ? keyView : null;
+    }
+
+    private KeyView<?, ?> getKeyViewByKey(Key<?> key) {
+        if (key == null) {
+            return null;
+        }
+
+        List<KeyView<?, ?>> list = filterKeyViews(keyView -> key.equals(keyView.getKey()));
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     private List<KeyView<?, ?>> filterKeyViews(Predicate<KeyView<?, ?>> filter) {
         List<KeyView<?, ?>> list = new ArrayList<>();
 
@@ -202,18 +224,5 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             }
         }
         return list;
-    }
-
-    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
-        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
-        option.orientation = this.keyboardOrientation;
-
-        return keyFactory.create(option);
-    }
-
-    private KeyView<?, ?> getVisibleKeyView(View view) {
-        KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
-
-        return keyView != null && !keyView.isHidden() ? keyView : null;
     }
 }

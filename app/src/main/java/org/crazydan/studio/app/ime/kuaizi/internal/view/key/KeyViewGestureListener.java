@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetec
  */
 public class KeyViewGestureListener implements RecyclerViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
+    private KeyView<?, ?> prevKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
         this.keyboardView = keyboardView;
@@ -43,7 +44,20 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
         KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnder(data.x, data.y);
 
+        if (this.prevKeyView != null && this.prevKeyView != keyView) {
+            onPressEnd(this.prevKeyView);
+        }
+        this.prevKeyView = keyView;
+
         switch (type) {
+            case PressStart: {
+                onPressStart(keyView);
+                break;
+            }
+            case PressEnd: {
+                onPressEnd(keyView);
+                break;
+            }
             case LongPressStart: {
                 onLongPressStart(keyView, data);
                 break;
@@ -65,6 +79,26 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 break;
             }
         }
+    }
+
+    private void onPressStart(KeyView<?, ?> keyView) {
+        if (keyView == null //
+            || (keyView instanceof CtrlKeyView //
+                && ((CtrlKeyView) keyView).getKey().isNoOp())) {
+            return;
+        }
+
+        keyView.touchDown();
+    }
+
+    private void onPressEnd(KeyView<?, ?> keyView) {
+        if (keyView == null //
+            || (keyView instanceof CtrlKeyView //
+                && ((CtrlKeyView) keyView).getKey().isNoOp())) {
+            return;
+        }
+
+        keyView.touchUp();
     }
 
     private Key<?> getKey(KeyView<?, ?> keyView) {

@@ -76,6 +76,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN: {
+                onPressStart(data);
                 startLongPress(data);
                 break;
             }
@@ -107,6 +108,8 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     private void onGestureEnd(GestureData data) {
+        onPressEnd(data);
+
         if (this.longPressing) {
             onLongPressEnd(data);
         }
@@ -115,6 +118,14 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
 
         stopLongPress();
+    }
+
+    private void onPressStart(GestureData data) {
+        triggerListeners(GestureType.PressStart, data);
+    }
+
+    private void onPressEnd(GestureData data) {
+        triggerListeners(GestureType.PressEnd, data);
     }
 
     private void startLongPress(GestureData data) {
@@ -196,6 +207,10 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     public enum GestureType {
+        /** 开始按压 */
+        PressStart,
+        /** 结束按压 */
+        PressEnd,
         /** 开始长按 */
         LongPressStart,
         /** 结束长按 */

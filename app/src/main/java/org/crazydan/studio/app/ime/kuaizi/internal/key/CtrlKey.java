@@ -80,6 +80,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.type == Type.Space;
     }
 
+    public boolean isNoOp() {
+        return this.type == Type.NoOp;
+    }
+
     @Override
     public boolean isSameWith(Key<?> key) {
         if (!(key instanceof CtrlKey)) {
