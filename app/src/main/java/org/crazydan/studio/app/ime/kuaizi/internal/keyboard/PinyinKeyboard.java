@@ -109,7 +109,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     this.state = new State(State.Type.SlippingInput);
 
                     CharInput input = getInputList().newPending();
-                    input.appendKey(key);
+                    input.setPinyin(true).appendKey(key);
 
                     onContinuousInput(input, key, null, true);
                 }
@@ -388,6 +388,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingCommit() {
+        getInputList().confirmPending();
+
         StringBuilder text = getInputList().getText();
         InputMsgData data = new InputCommittingMsgData(text);
 

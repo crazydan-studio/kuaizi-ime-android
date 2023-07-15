@@ -30,6 +30,28 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-06
  */
 public class CharInput extends BaseInput {
+    private boolean pinyin;
+    private boolean emotion;
+
+    @Override
+    public boolean isPinyin() {
+        return this.pinyin;
+    }
+
+    public CharInput setPinyin(boolean pinyin) {
+        this.pinyin = pinyin;
+        return this;
+    }
+
+    @Override
+    public boolean isEmotion() {
+        return this.emotion;
+    }
+
+    public CharInput setEmotion(boolean emotion) {
+        this.emotion = emotion;
+        return this;
+    }
 
     /** 是否为拼音 平/翘舌 */
     public boolean isPinyinTongue() {
@@ -59,16 +81,5 @@ public class CharInput extends BaseInput {
 
         String ch = chars.get(0);
         return ch.startsWith("n") || ch.startsWith("l");
-    }
-
-    public enum Type {
-        /** 拼音 */
-        Pinyin,
-        /** 字母、数字 */
-        Latin,
-        /** 标点符号 */
-        Punctuation,
-        /** 颜文字 */
-        Emotion,
     }
 }

@@ -39,6 +39,37 @@ public abstract class BaseInput implements Input {
     private List<InputWord> candidates;
 
     @Override
+    public boolean isLatin() {
+        if (isPinyin() || isEmotion() || isEmpty()) {
+            return false;
+        }
+
+        for (Key<?> key : this.keys) {
+            if (key instanceof CharKey) {
+                String text = ((CharKey) key).getText();
+                for (int i = 0; i < text.length(); i++) {
+                    if (!Character.isLetterOrDigit(text.charAt(i))) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isPinyin() {
+        return false;
+    }
+
+    @Override
+    public boolean isEmotion() {
+        return false;
+    }
+
+    @Override
     public boolean isEmpty() {
         return this.keys.isEmpty();
     }

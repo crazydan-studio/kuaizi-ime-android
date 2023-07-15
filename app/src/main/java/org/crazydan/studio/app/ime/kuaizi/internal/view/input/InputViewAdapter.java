@@ -75,7 +75,11 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         if (input instanceof CharInput) {
             boolean pending = this.inputList.getPending() == input;
 
-            ((CharInputView) view).bind((CharInput) input, selected, pending);
+            ((CharInputView) view).bind((CharInput) input,
+                                        selected,
+                                        pending,
+                                        this.inputList.needPrevSpace(position),
+                                        this.inputList.needPostSpace(position));
         } else {
             ((GapInputView) view).bind((GapInput) input, selected);
         }

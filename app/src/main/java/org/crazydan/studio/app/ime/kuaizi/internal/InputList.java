@@ -71,8 +71,11 @@ public class InputList {
     /**
      * 确认待输入
      * <p/>
-     * 原位置为字符输入时，直接原地替换；
-     * 原位置为间隙时，插入待输入，并将光标移到新输入的后面；
+     * <ul>
+     * <li>原位置为字符输入时，直接原地替换；</li>
+     * <li>原位置为间隙时，插入待输入，并将光标移到新输入的后面；</li>
+     * <li>无待输入或待输入为空时，不做处理；</li>
+     * </ul>
      */
     public void confirmPending() {
         CharInput pending = this.cursor.getPending();
@@ -155,18 +158,49 @@ public class InputList {
                 return false;
             }
         }
-        return true;
+        return !hasPending() || getPending().isEmpty();
     }
 
     /** 获取输入文本内容 */
     public StringBuilder getText() {
         StringBuilder sb = new StringBuilder();
 
-        for (Input input : this.inputs) {
-            // TODO 对于英文字符输入，需确保前后均添加空格
+        for (int i = 0; i < this.inputs.size(); i++) {
+            Input input = this.inputs.get(i);
+
+            if (needPrevSpace(i)) {
+                sb.append(" ");
+            }
+
             sb.append(input.getText());
+
+            if (needPostSpace(i)) {
+                sb.append(" ");
+            }
         }
         return sb;
+    }
+
+    /** 指定位置的输入是否需要前序空格 */
+    public boolean needPrevSpace(int i) {
+        Input input = this.inputs.get(i);
+        if (!(input instanceof CharInput) || !input.isLatin()) {
+            return false;
+        }
+
+        Input before = i > 1 ? this.inputs.get(i - 2) : null;
+        return before != null && (before.isPinyin() || before.isEmotion());
+    }
+
+    /** 指定位置的输入是否需要后续空格 */
+    public boolean needPostSpace(int i) {
+        Input input = this.inputs.get(i);
+        if (!(input instanceof CharInput) || !input.isLatin()) {
+            return false;
+        }
+
+        Input after = i < this.inputs.size() - 2 ? this.inputs.get(i + 2) : null;
+        return after != null && (after.isPinyin() || after.isEmotion());
     }
 
     private static class Cursor {

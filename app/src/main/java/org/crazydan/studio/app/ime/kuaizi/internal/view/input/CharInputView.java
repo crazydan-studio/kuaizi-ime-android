@@ -40,10 +40,14 @@ public class CharInputView extends InputView<CharInput> {
         this.wordView = itemView.findViewById(R.id.word_view);
     }
 
-    public void bind(CharInput input, boolean selected, boolean needToAddMargin) {
+    public void bind(
+            CharInput input, boolean selected, boolean needToAddMargin, //
+            boolean needToAddPrevSpace, boolean needToAddPostSpace
+    ) {
         super.bind(input, selected);
 
         int margin = 0;
+        // 预留一个 Gap 位
         if (needToAddMargin) {
             margin = getContext().getResources().getDimensionPixelSize(R.dimen.gap_input_width);
         }
@@ -55,7 +59,11 @@ public class CharInputView extends InputView<CharInput> {
 
         InputWord word = input.getWord();
         if (word == null) {
-            this.wordView.setText(String.join("", input.getChars()));
+            String text = (needToAddPrevSpace ? " " : "") //
+                          + String.join("", input.getChars()) //
+                          + (needToAddPostSpace ? " " : "");
+
+            this.wordView.setText(text);
             this.notationView.setText("");
         } else {
             this.wordView.setText(word.getValue());

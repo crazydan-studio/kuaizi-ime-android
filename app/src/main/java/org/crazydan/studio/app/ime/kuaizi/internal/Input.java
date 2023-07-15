@@ -27,6 +27,15 @@ import java.util.List;
  */
 public interface Input {
 
+    /** 是否为英文、数字或二者的组合输入 */
+    boolean isLatin();
+
+    /** 是否为拼音输入 */
+    boolean isPinyin();
+
+    /** 是否为颜文字输入 */
+    boolean isEmotion();
+
     /** 是否为空输入 */
     boolean isEmpty();
 
