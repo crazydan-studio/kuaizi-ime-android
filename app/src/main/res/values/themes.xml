@@ -56,7 +56,7 @@
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_locator_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
@@ -118,8 +118,8 @@
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_confirm_fg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>
+        <item name="key_ctrl_confirm_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_locator_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_locator_point_fg_color">#939598</item>

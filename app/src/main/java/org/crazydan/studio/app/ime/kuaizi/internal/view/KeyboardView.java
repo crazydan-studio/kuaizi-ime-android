@@ -100,7 +100,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     public void finishInput() {
-        //
+        this.keyboard.reset();
     }
 
     public void changeKeyboardType(Keyboard.Type type) {

@@ -15,16 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-/** 键盘输入消息 */
-public enum InputMsg {
-    /** 字符输入中 */
-    InputtingChars,
-    /** 选择输入候选字中 */
-    ChoosingInputCandidate,
-    /** 字符已输入结束 */
-    InputtingCharsDone,
-    /** 提交输入内容到输入目标 */
-    InputCommitting,
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+
+/**
+ * {@link InputMsg#InputCommitting}消息数据
+ *
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-07-15
+ */
+public class InputCommittingMsgData extends CommonInputMsgData {
+    public final StringBuilder text;
+
+    public InputCommittingMsgData(StringBuilder text) {
+        super(null);
+
+        this.text = text;
+    }
 }

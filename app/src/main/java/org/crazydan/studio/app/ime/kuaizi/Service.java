@@ -24,16 +24,21 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
-public class Service extends InputMethodService {
+public class Service extends InputMethodService implements InputMsgListener {
     private InputMethodManager inputMethodManager;
 
     private ContextThemeWrapper imeViewTheme;
@@ -64,6 +69,8 @@ public class Service extends InputMethodService {
         // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
         this.imeView = inflateView(R.layout.ime_input_view);
 
+        this.imeView.keyboard.addInputMsgListener(this);
+
         return this.imeView;
     }
 
@@ -87,6 +94,7 @@ public class Service extends InputMethodService {
                 || "en_US".equals(subtype.getLanguageTag()))) {
             keyboardType = Keyboard.Type.English;
         }
+
         this.imeView.keyboard.startInput(keyboardType);
     }
 
@@ -111,6 +119,28 @@ public class Service extends InputMethodService {
     @Override
     public void onFinishInput() {
         super.onFinishInput();
+
+        this.imeView.keyboard.finishInput();
+    }
+
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        switch (msg) {
+            case InputCommitting:
+                commitInputting(((InputCommittingMsgData) data).text);
+                break;
+        }
+    }
+
+    private void commitInputting(StringBuilder text) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        ic.beginBatchEdit();
+        ic.commitText(text, 0);
+        ic.endBatchEdit();
 
         this.imeView.keyboard.finishInput();
     }

@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
@@ -57,13 +58,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void reset() {
-        this.state = new State(State.Type.InputWaiting);
         super.reset();
+
+        this.state = new State(State.Type.InputWaiting);
+        onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
     }
 
     @Override
     public KeyFactory getKeyFactory() {
-        return option -> KeyTable.createKeys(option, getHandMode());
+        return option -> KeyTable.createKeys(option, createKeyTableConfigure());
     }
 
     @Override
@@ -168,6 +171,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeySingleTap: {
                 switch (key.getType()) {
+                    case CommitInput: {
+                        onInputtingCommit();
+                        break;
+                    }
                     case Backspace: {
                         if (getInputList().hasPending()) {
                             getInputList().dropPending();
@@ -340,7 +347,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         List<String> finalNextChars = nextChars;
-        KeyFactory keyFactory = option -> KeyTable.createNextCharKeys(option, getHandMode(), finalNextChars);
+        KeyFactory keyFactory = option -> KeyTable.createNextCharKeys(option,
+                                                                      createKeyTableConfigure(),
+                                                                      finalNextChars);
 
         InputMsgData data = new InputtingCharsMsgData(input.getKeys(), currentKey, closedKey, keyFactory);
         onInputMsg(InputMsg.InputtingChars, data);
@@ -354,28 +363,35 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onChoosingInputCandidate(CharInput input, boolean pageUp) {
         // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
-        ChoosingInputCandidateData data;
+        ChoosingInputCandidateData stateData;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
-            data = (ChoosingInputCandidateData) this.state.data;
+            stateData = (ChoosingInputCandidateData) this.state.data;
 
             if (pageUp) {
-                data.nextPage();
+                stateData.nextPage();
             } else {
-                data.prevPage();
+                stateData.prevPage();
             }
         } else {
-            data = new ChoosingInputCandidateData(input.getCandidates().size(),
-                                                  KeyTable.getInputCandidateKeysPageSize());
-            this.state = new State(State.Type.ChoosingInputCandidate, data);
+            stateData = new ChoosingInputCandidateData(input.getCandidates().size(),
+                                                       KeyTable.getInputCandidateKeysPageSize());
+            this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }
 
         KeyFactory keyFactory = option -> KeyTable.createInputCandidateKeys(option,
-                                                                            getHandMode(),
+                                                                            createKeyTableConfigure(),
                                                                             input,
-                                                                            data.getPageStart());
-        InputMsgData msg = new InputtingCharsMsgData(input.getKeys(), null, null, keyFactory);
+                                                                            stateData.getPageStart());
+        InputMsgData data = new InputtingCharsMsgData(input.getKeys(), null, null, keyFactory);
 
-        onInputMsg(InputMsg.ChoosingInputCandidate, msg);
+        onInputMsg(InputMsg.ChoosingInputCandidate, data);
+    }
+
+    private void onInputtingCommit() {
+        StringBuilder text = getInputList().getText();
+        InputMsgData data = new InputCommittingMsgData(text);
+
+        onInputMsg(InputMsg.InputCommitting, data);
     }
 
     private void prepareInputCandidates(CharInput input) {
@@ -385,5 +401,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                             .collect(Collectors.toList());
         input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
         input.setCandidates(candidateWords);
+    }
+
+    private KeyTable.Configure createKeyTableConfigure() {
+        return new KeyTable.Configure(getHandMode(), !getInputList().isEmpty());
     }
 }

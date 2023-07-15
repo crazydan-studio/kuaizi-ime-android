@@ -39,6 +39,11 @@ public abstract class BaseInput implements Input {
     private List<InputWord> candidates;
 
     @Override
+    public boolean isEmpty() {
+        return this.keys.isEmpty();
+    }
+
+    @Override
     public List<Key<?>> getKeys() {
         return this.keys;
     }
@@ -55,7 +60,6 @@ public abstract class BaseInput implements Input {
 
     @Override
     public List<String> getChars() {
-        // TODO 确认输入到目标输入框时，需替换全角空格( )为半角空格
         return this.keys.stream()
                         .map(k -> k instanceof CharKey
                                   ? ((CharKey) k).getText()
@@ -65,8 +69,20 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public StringBuilder getText() {
+        StringBuilder sb = new StringBuilder();
+
+        if (this.word != null) {
+            sb.append(this.word.getValue());
+        } else {
+            getChars().forEach(sb::append);
+        }
+        return sb;
+    }
+
+    @Override
     public boolean hasWord() {
-        return getWord() != null;
+        return this.word != null;
     }
 
     @Override

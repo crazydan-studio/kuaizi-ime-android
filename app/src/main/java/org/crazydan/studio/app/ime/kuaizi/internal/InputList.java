@@ -144,6 +144,31 @@ public class InputList {
         return this.inputs;
     }
 
+    /**
+     * 输入列表是否为空
+     * <p/>
+     * 包含有效的输入时，才不为空
+     */
+    public boolean isEmpty() {
+        for (Input input : this.inputs) {
+            if (input instanceof CharInput && !input.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** 获取输入文本内容 */
+    public StringBuilder getText() {
+        StringBuilder sb = new StringBuilder();
+
+        for (Input input : this.inputs) {
+            // TODO 对于英文字符输入，需确保前后均添加空格
+            sb.append(input.getText());
+        }
+        return sb;
+    }
+
     private static class Cursor {
         /** 光标位置已选中的输入 */
         private Input selected;

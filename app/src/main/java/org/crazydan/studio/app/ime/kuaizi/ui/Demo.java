@@ -18,10 +18,15 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
+import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -30,7 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class Demo extends AppCompatActivity {
+public class Demo extends AppCompatActivity implements InputMsgListener {
+    private EditText editText;
     private ImeInputView imeView;
 
     @Override
@@ -43,7 +49,26 @@ public class Demo extends AppCompatActivity {
 
         setContentView(R.layout.demo_activity);
 
+        this.editText = findViewById(R.id.text_input);
+
         this.imeView = findViewById(R.id.ime_view);
+
+        this.imeView.keyboard.addInputMsgListener(this);
         this.imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
+    }
+
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        switch (msg) {
+            case InputCommitting:
+                commitInputting(((InputCommittingMsgData) data).text);
+                break;
+        }
+    }
+
+    private void commitInputting(StringBuilder text) {
+        this.editText.getText().append(text);
+
+        this.imeView.keyboard.finishInput();
     }
 }

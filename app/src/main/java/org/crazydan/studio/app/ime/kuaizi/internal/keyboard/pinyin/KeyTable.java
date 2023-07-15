@@ -119,6 +119,8 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switch_ime_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.CommitInput,
+                            new Integer[] { R.drawable.ic_right_like, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
@@ -147,7 +149,7 @@ public class KeyTable {
     }
 
     /** 创建基础按键 */
-    public static Key<?>[][] createKeys(Keyboard.KeyFactory.Option option, HandMode handMode) {
+    public static Key<?>[][] createKeys(Keyboard.KeyFactory.Option option, Configure config) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
 
         // 右手模式的纵向屏幕 7 x 6 的按键表
@@ -186,7 +188,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Locator),
                 alphabetKey("w"),
                 alphabetKey("k"),
-                ctrlKey(CtrlKey.Type.Enter),
+                config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInput) : ctrlKey(CtrlKey.Type.Enter),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
@@ -216,9 +218,9 @@ public class KeyTable {
      * 若其为空，则返回空白按键
      */
     public static Key<?>[][] createNextCharKeys(
-            Keyboard.KeyFactory.Option option, HandMode handMode, List<String> nextChars
+            Keyboard.KeyFactory.Option option, Configure config, List<String> nextChars
     ) {
-        Key<?>[][] keys = createKeys(option, handMode);
+        Key<?>[][] keys = createKeys(option, config);
 
         if (nextChars == null) {
             return keys;
@@ -245,9 +247,9 @@ public class KeyTable {
 
     /** 创建输入候选字按键 */
     public static Key<?>[][] createInputCandidateKeys(
-            Keyboard.KeyFactory.Option option, HandMode handMode, CharInput input, int startIndex
+            Keyboard.KeyFactory.Option option, Configure config, CharInput input, int startIndex
     ) {
-        Key<?>[][] defaultKeys = createKeys(option, handMode);
+        Key<?>[][] defaultKeys = createKeys(option, config);
 
         List<InputWord> inputWords = input.getCandidates();
         int pageSize = getInputCandidateKeysPageSize();
@@ -259,8 +261,7 @@ public class KeyTable {
 
                 if (defaultKey instanceof CharKey) {
                     CharKey charKey = (CharKey) defaultKey;
-                    InputWordKey wordKey = InputWordKey.word(null)
-                                                       .setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+                    InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
 
                     wordKey.setCharKey(charKey);
                     charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
@@ -366,5 +367,15 @@ public class KeyTable {
         }
 
         return CharKey.create(type, text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+    }
+
+    public static class Configure {
+        private final HandMode handMode;
+        private final boolean hasInputs;
+
+        public Configure(HandMode handMode, boolean hasInputs) {
+            this.handMode = handMode;
+            this.hasInputs = hasInputs;
+        }
     }
 }

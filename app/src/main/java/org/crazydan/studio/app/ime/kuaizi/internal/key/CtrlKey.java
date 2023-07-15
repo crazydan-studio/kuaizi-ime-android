@@ -124,6 +124,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Space,
         /** 向前删除 */
         Backspace,
+        /** 提交输入 */
+        CommitInput,
         /** 在候选字状态下删除当前输入 */
         DropInput,
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
@@ -140,8 +142,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Locator,
         /** 回车 */
         Enter,
-        /** 确认 */
-        Confirm,
         /** 切换至字母数字键盘 */
         SwitchToAlphanumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */

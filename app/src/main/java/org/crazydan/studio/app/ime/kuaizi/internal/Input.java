@@ -27,6 +27,9 @@ import java.util.List;
  */
 public interface Input {
 
+    /** 是否为空输入 */
+    boolean isEmpty();
+
     /** 获取输入按键列表 */
     List<Key<?>> getKeys();
 
@@ -38,6 +41,9 @@ public interface Input {
 
     /** 获取输入字符列表 */
     List<String> getChars();
+
+    /** 获取输入文本内容 */
+    StringBuilder getText();
 
     /** 是否有可输入字 */
     boolean hasWord();

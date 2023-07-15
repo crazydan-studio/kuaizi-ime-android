@@ -27,6 +27,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:autofillHints=""
+            android:textColor="?attr/key_fg_color"
             tools:ignore="LabelFor"
             android:enabled="false"
             android:inputType=""

@@ -31,11 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  */
 public class CharInput extends BaseInput {
 
-    /** 是否为空输入 */
-    public boolean isEmpty() {
-        return getKeys().isEmpty();
-    }
-
     /** 是否为拼音 平/翘舌 */
     public boolean isPinyinTongue() {
         List<String> chars = getChars();

@@ -41,7 +41,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void reset() {
-
+        getInputList().empty();
     }
 
     public HandMode getHandMode() {
