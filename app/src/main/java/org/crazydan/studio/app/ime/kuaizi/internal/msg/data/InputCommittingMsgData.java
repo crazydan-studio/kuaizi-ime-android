@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
@@ -25,10 +26,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-15
  */
-public class InputCommittingMsgData extends TargetInputMsgData {
+public class InputCommittingMsgData extends CommonInputMsgData {
     public final StringBuilder text;
 
-    public InputCommittingMsgData(StringBuilder text) {
+    public InputCommittingMsgData(Keyboard.KeyFactory keyFactory, StringBuilder text) {
+        super(keyFactory);
         this.text = text;
     }
 }

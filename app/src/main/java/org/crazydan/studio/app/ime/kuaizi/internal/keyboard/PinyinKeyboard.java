@@ -39,7 +39,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.TargetInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
 
@@ -185,7 +184,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             }
                             onInputtingCharsDone();
                         } else {
-                            onInputMsg(InputMsg.InputBackwardDeleting, new TargetInputMsgData());
+                            onInputBackwardDeleting();
                         }
                         break;
                     }
@@ -327,8 +326,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onSingleKeyInput(CharInput input, CharKey key) {
-        this.state = new State(State.Type.InputWaiting);
-
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emotion:
@@ -338,7 +335,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 if (!isEmpty) {
                     getInputList().confirmPending();
-                    onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
+                    onInputtingCharsDone();
                 } else {
                     // 单个标点、表情则直接提交输入
                     onInputtingCommit();
@@ -348,6 +345,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             // 字母、数字可连续输入
             case Number:
             case Alphabet: {
+                this.state = new State(State.Type.InputWaiting);
+
                 input.appendKey(key);
                 onContinuousInput(input, key, null, false);
                 break;
@@ -411,12 +410,22 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingCommit() {
+        this.state = new State(State.Type.InputWaiting);
+
         getInputList().confirmPending();
 
         StringBuilder text = getInputList().getText();
-        InputMsgData data = new InputCommittingMsgData(text);
+        getInputList().empty();
+
+        InputMsgData data = new InputCommittingMsgData(getKeyFactory(), text);
 
         onInputMsg(InputMsg.InputCommitting, data);
+    }
+
+    private void onInputBackwardDeleting() {
+        this.state = new State(State.Type.InputWaiting);
+
+        onInputMsg(InputMsg.InputBackwardDeleting, new CommonInputMsgData(getKeyFactory()));
     }
 
     private void prepareInputCandidates(CharInput input) {

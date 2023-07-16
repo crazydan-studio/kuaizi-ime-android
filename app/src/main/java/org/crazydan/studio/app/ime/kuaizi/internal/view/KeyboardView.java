@@ -135,12 +135,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     public void onUserMsg(UserMsg msg, UserMsgData data) {
-//        if (msg == UserMsg.FingerMoving) {
-//            KeyView<?, ?> closedKeyView = getKeyViewByKey(((UserFingerMovingMsgData) data).closed);
-//            if (closedKeyView == null) {
-//                this.animator.cancelPrevClosedKeyViewAnimation();
-//            }
-//        }
         this.keyboard.onUserMsg(msg, data);
     }
 
@@ -151,22 +145,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                 onInputtingCharsMsg((InputtingCharsMsgData) data);
                 break;
             case InputtingCharsDone:
-//                // 取消前面的滑行靠近的动画
-//                this.animator.cancelPrevClosedKeyViewAnimation();
             case ChoosingInputCandidate:
-                relayoutKeysByInputMsg(data);
                 break;
         }
+
+        relayoutKeysByInputMsg(data);
     }
 
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
         // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
         this.animator.setFadeOutKey(data.current);
-
-        relayoutKeysByInputMsg(data);
-
-//        KeyView<?, ?> closedKeyView = getKeyViewByKey(data.closed);
-//        this.animator.startClosedKeyViewAnimation(closedKeyView);
     }
 
     private void relayout() {
@@ -178,13 +166,18 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         relayoutKeys(keys);
     }
 
-    private void relayoutKeys(Key<?>[][] keys) {
-        this.adapter.bindKeys(keys);
+    private void relayoutKeysByInputMsg(InputMsgData data) {
+        Keyboard.KeyFactory keyFactory = data.getKeyFactory();
+        if (keyFactory == null) {
+            return;
+        }
+
+        Key<?>[][] keys = createKeys(keyFactory);
+        relayoutKeys(keys);
     }
 
-    private void relayoutKeysByInputMsg(InputMsgData data) {
-        Key<?>[][] keys = createKeys(data.getKeyFactory());
-        relayoutKeys(keys);
+    private void relayoutKeys(Key<?>[][] keys) {
+        this.adapter.bindKeys(keys);
     }
 
     private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {

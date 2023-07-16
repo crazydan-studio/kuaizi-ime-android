@@ -78,8 +78,6 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
 
         this.editText.getText().replace(start, end, text);
-
-        this.imeView.keyboard.finishInput();
     }
 
     private void backwardDeleteInput() {

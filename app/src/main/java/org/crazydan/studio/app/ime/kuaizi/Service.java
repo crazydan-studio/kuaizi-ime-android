@@ -144,20 +144,33 @@ public class Service extends InputMethodService implements InputMsgListener {
             return;
         }
 
-        ic.beginBatchEdit();
-        ic.commitText(text, 0);
-        ic.endBatchEdit();
-
-        this.imeView.keyboard.finishInput();
+        if (text.length() == 1) {
+            // 回车、单个的数字等字符，需以事件形式发送，才能被所有组件识别
+            switch (text.charAt(0)) {
+                case ' ':
+                    sendKey(KeyEvent.KEYCODE_SPACE);
+                    break;
+                case '\n':
+                    sendKey(KeyEvent.KEYCODE_ENTER);
+                    break;
+                default:
+                    commitText(text);
+            }
+        } else {
+            commitText(text);
+        }
     }
 
     private void backwardDeleteInput() {
-        InputConnection ic = getCurrentInputConnection();
-        if (ic == null) {
-            return;
-        }
+        // 更通用方式：发送 del 按键事件，由组件处理删除
+        sendKey(KeyEvent.KEYCODE_DEL);
 
-        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
+//        InputConnection ic = getCurrentInputConnection();
+//        if (ic == null) {
+//            return;
+//        }
+//
+//        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
 //        CharSequence selectedText = ic.getSelectedText(0);
 //        // 无选中的文本，则删除当前光标前的 1 个字符
 //        if (TextUtils.isEmpty(selectedText)) {
@@ -167,10 +180,34 @@ public class Service extends InputMethodService implements InputMsgListener {
 //        else {
 //            ic.commitText("", 1);
 //        }
+    }
 
-        // 更通用方式：发送 del 按键事件，由组件处理删除
-        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+    private void commitText(StringBuilder text) {
+        if (text.length() == 0) {
+            return;
+        }
+
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        ic.beginBatchEdit();
+        // Note: 第二个参数必须为 1，
+        // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
+        // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
+        ic.commitText(text, 1);
+        ic.endBatchEdit();
+    }
+
+    private void sendKey(int code) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
     }
 
     private <T extends View> T inflateView(int resId) {

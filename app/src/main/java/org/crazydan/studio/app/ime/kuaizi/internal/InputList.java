@@ -40,16 +40,16 @@ public class InputList {
 
     /** 清空输入列表 */
     public void empty() {
-        getInputs().clear();
+        this.inputs.clear();
         this.cursor.reset();
 
-        getInputs().add(new GapInput());
-        this.cursor.setSelected(getInputs().get(0));
+        this.inputs.add(new GapInput());
+        this.cursor.selected = this.inputs.get(0);
     }
 
     /** 是否有待输入 */
     public boolean hasPending() {
-        return this.cursor.getPending() != null;
+        return this.cursor.pending != null;
     }
 
     /**
@@ -63,7 +63,7 @@ public class InputList {
 
         // 再创建新的待输入
         CharInput input = new CharInput();
-        this.cursor.setPending(input);
+        this.cursor.pending = input;
 
         return input;
     }
@@ -78,44 +78,44 @@ public class InputList {
      * </ul>
      */
     public void confirmPending() {
-        CharInput pending = this.cursor.getPending();
-        Input selected = this.cursor.getSelected();
+        CharInput pending = this.cursor.pending;
+        Input selected = this.cursor.selected;
 
         int cursorIndex = getCursorIndex();
         if (pending == null || pending.isEmpty() || cursorIndex < 0) {
             return;
         }
 
-        this.cursor.setPending(null);
+        this.cursor.pending = null;
         if (selected instanceof CharInput) {
-            getInputs().set(cursorIndex, pending);
-            this.cursor.setSelected(pending);
+            this.inputs.set(cursorIndex, pending);
+            this.cursor.selected = pending;
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input gap = new GapInput();
-            getInputs().addAll(cursorIndex, Arrays.asList(gap, pending));
+            this.inputs.addAll(cursorIndex, Arrays.asList(gap, pending));
         }
     }
 
     /** 丢弃待输入 */
     public void dropPending() {
-        this.cursor.setPending(null);
+        this.cursor.pending = null;
     }
 
     /** 获取光标位置 */
     public int getCursorIndex() {
-        Input selected = this.cursor.getSelected();
-        return getInputs().indexOf(selected);
+        Input selected = this.cursor.selected;
+        return this.inputs.indexOf(selected);
     }
 
     /** 获取待输入 */
     public CharInput getPending() {
-        return this.cursor.getPending();
+        return this.cursor.pending;
     }
 
     /** 获取以选中的输入 */
     public Input getSelected() {
-        return this.cursor.getSelected();
+        return this.cursor.selected;
     }
 
     /** 删除光标左边的输入 */
@@ -125,21 +125,21 @@ public class InputList {
             return;
         }
 
-        Input selected = this.cursor.getSelected();
+        Input selected = this.cursor.selected;
         if (selected instanceof GapInput) {
             if (cursorIndex > 0) {
                 // 删除当前光标之前的 输入和占位
-                getInputs().remove(cursorIndex - 1);
-                getInputs().remove(cursorIndex - 2);
+                this.inputs.remove(cursorIndex - 1);
+                this.inputs.remove(cursorIndex - 2);
             }
         } else if (selected instanceof CharInput) {
-            Input newSelected = getInputs().get(cursorIndex + 1);
+            Input newSelected = this.inputs.get(cursorIndex + 1);
 
             // 删除当前选中的输入及其配对的占位
-            getInputs().remove(cursorIndex);
-            getInputs().remove(cursorIndex - 1);
+            this.inputs.remove(cursorIndex);
+            this.inputs.remove(cursorIndex - 1);
             // 再将当前光标后移
-            this.cursor.setSelected(newSelected);
+            this.cursor.selected = newSelected;
         }
     }
 
@@ -212,22 +212,6 @@ public class InputList {
         public void reset() {
             this.selected = null;
             this.pending = null;
-        }
-
-        public Input getSelected() {
-            return this.selected;
-        }
-
-        protected void setSelected(Input selected) {
-            this.selected = selected;
-        }
-
-        public CharInput getPending() {
-            return this.pending;
-        }
-
-        protected void setPending(CharInput pending) {
-            this.pending = pending;
         }
     }
 }
