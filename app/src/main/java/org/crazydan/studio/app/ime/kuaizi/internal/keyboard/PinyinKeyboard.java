@@ -315,10 +315,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                     getInputList().confirmPending();
 
                     onInputtingCharsDone();
-                }
-                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
-                else if (charKey != null && charKey.isPunctuation()) {
-                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
+//                }
+//                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
+//                else if (charKey != null && charKey.isPunctuation()) {
+//                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
                 }
             }
             break;
@@ -378,6 +378,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingCharsDone() {
+        // 当前输入已完成，等待新的输入
         this.state = new State(State.Type.InputWaiting);
 
         onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
@@ -410,6 +411,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputtingCommit() {
+        // 输入已提交，等待新的输入
         this.state = new State(State.Type.InputWaiting);
 
         getInputList().confirmPending();
@@ -423,6 +425,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputBackwardDeleting() {
+        // 单次操作，直接重置为待输入状态
         this.state = new State(State.Type.InputWaiting);
 
         onInputMsg(InputMsg.InputBackwardDeleting, new CommonInputMsgData(getKeyFactory()));
