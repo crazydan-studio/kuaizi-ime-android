@@ -264,7 +264,7 @@ public class KeyTable {
                     InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
 
                     wordKey.setCharKey(charKey);
-                    charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
+                    charKey.setFgColorAttrId(charKey.getBgColorAttrId());
 
                     gridKeys[i][j] = wordKey;
                 } else {

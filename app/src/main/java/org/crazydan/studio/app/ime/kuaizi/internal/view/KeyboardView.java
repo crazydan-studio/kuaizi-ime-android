@@ -41,7 +41,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
@@ -136,13 +135,12 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     public void onUserMsg(UserMsg msg, UserMsgData data) {
-        if (msg == UserMsg.FingerMoving) {
-            KeyView<?, ?> closedKeyView = getKeyViewByKey(((UserFingerMovingMsgData) data).closed);
-            if (closedKeyView == null) {
-                this.animator.cancelPrevClosedKeyViewAnimation();
-            }
-        }
-
+//        if (msg == UserMsg.FingerMoving) {
+//            KeyView<?, ?> closedKeyView = getKeyViewByKey(((UserFingerMovingMsgData) data).closed);
+//            if (closedKeyView == null) {
+//                this.animator.cancelPrevClosedKeyViewAnimation();
+//            }
+//        }
         this.keyboard.onUserMsg(msg, data);
     }
 
@@ -153,8 +151,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                 onInputtingCharsMsg((InputtingCharsMsgData) data);
                 break;
             case InputtingCharsDone:
-                // 取消前面的滑行靠近的动画
-                this.animator.cancelPrevClosedKeyViewAnimation();
+//                // 取消前面的滑行靠近的动画
+//                this.animator.cancelPrevClosedKeyViewAnimation();
             case ChoosingInputCandidate:
                 relayoutKeysByInputMsg(data);
                 break;
@@ -167,8 +165,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
         relayoutKeysByInputMsg(data);
 
-        KeyView<?, ?> closedKeyView = getKeyViewByKey(data.closed);
-        this.animator.startClosedKeyViewAnimation(closedKeyView);
+//        KeyView<?, ?> closedKeyView = getKeyViewByKey(data.closed);
+//        this.animator.startClosedKeyViewAnimation(closedKeyView);
     }
 
     private void relayout() {

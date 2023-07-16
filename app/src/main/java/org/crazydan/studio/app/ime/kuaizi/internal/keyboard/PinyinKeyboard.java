@@ -340,6 +340,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (isPinyin) {
             nextChars = this.pinyinCharTree.findNextChars(input.getChars());
 
+            if (nextChars.size() == 1 && patchUniquePinyin(input)) {
+                nextChars = new ArrayList<>();
+            }
             prepareInputCandidates(input);
         } else {
             input.setWord(null);
@@ -403,6 +406,48 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                             .collect(Collectors.toList());
         input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
         input.setCandidates(candidateWords);
+    }
+
+    /**
+     * 若指定输入仅有唯一的可选拼音，
+     * 则直接补全该拼音，并返回 <code>true</code>，
+     * 否则，不做处理并直接返回 <code>false</code>
+     */
+    private boolean patchUniquePinyin(CharInput input) {
+        List<String> chars = new ArrayList<>(input.getChars());
+        List<String> patchedChars = new ArrayList<>();
+
+        do {
+            List<?> candidates = this.pinyinCharTree.findCandidateWords(chars);
+            List<String> nextChars = this.pinyinCharTree.findNextChars(chars);
+
+            if (nextChars.isEmpty()) {
+                // 无效拼音：无候选字
+                if (candidates.isEmpty()) {
+                    return false;
+                }
+                // 查找结束，有唯一拼音
+                else {
+                    break;
+                }
+            }
+            // 存在后继字母，且当前有后选字，则不存在唯一拼音，则不做处理
+            else if (!candidates.isEmpty() || nextChars.size() > 1) {
+                return false;
+            }
+            // 继续沿唯一的后继字母进行检查
+            else {
+                String ch = nextChars.get(0);
+                patchedChars.add(ch);
+                chars.add(ch);
+            }
+        } while (true);
+
+        for (String ch : patchedChars) {
+            input.appendKey(KeyTable.alphabetKey(ch));
+        }
+
+        return true;
     }
 
     private KeyTable.Configure createKeyTableConfigure() {
