@@ -200,6 +200,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             // 单个 空格/换行 则直接提交输入
                             onInputtingCommit();
                         }
+                        break;
                     }
                     case SwitchIME: {
                         onSwitchingIME();
