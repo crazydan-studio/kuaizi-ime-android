@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 import android.os.Bundle;
 import android.text.Editable;
 import android.widget.EditText;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -68,6 +69,10 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
             }
             case InputBackwardDeleting: {
                 backwardDeleteInput();
+                break;
+            }
+            case SwitchingIME: {
+                Toast.makeText(getApplicationContext(), "仅在输入法状态下才可切换系统输入法", Toast.LENGTH_LONG).show();
                 break;
             }
         }

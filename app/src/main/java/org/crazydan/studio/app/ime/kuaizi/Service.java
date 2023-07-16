@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
@@ -135,6 +136,10 @@ public class Service extends InputMethodService implements InputMsgListener {
                 backwardDeleteInput();
                 break;
             }
+            case SwitchingIME: {
+                switchIME();
+                break;
+            }
         }
     }
 
@@ -180,6 +185,15 @@ public class Service extends InputMethodService implements InputMsgListener {
 //        else {
 //            ic.commitText("", 1);
 //        }
+    }
+
+    private void switchIME() {
+        // https://stackoverflow.com/questions/16684482/android-switch-to-a-different-ime-programmatically#answer-16684491
+        InputMethodManager manager
+                = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (manager != null) {
+            manager.showInputMethodPicker();
+        }
     }
 
     private void commitText(StringBuilder text) {

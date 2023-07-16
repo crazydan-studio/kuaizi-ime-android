@@ -60,8 +60,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void reset() {
         super.reset();
 
-        this.state = new State(State.Type.InputWaiting);
-        onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
+        onInputtingCharsDone();
     }
 
     @Override
@@ -201,6 +200,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                             // 单个 空格/换行 则直接提交输入
                             onInputtingCommit();
                         }
+                    }
+                    case SwitchIME: {
+                        onSwitchingIME();
+                        break;
                     }
                 }
                 break;
@@ -429,6 +432,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.state = new State(State.Type.InputWaiting);
 
         onInputMsg(InputMsg.InputBackwardDeleting, new CommonInputMsgData(getKeyFactory()));
+    }
+
+    private void onSwitchingIME() {
+        // 单次操作，直接重置为待输入状态
+        reset();
+
+        onInputMsg(InputMsg.SwitchingIME, new CommonInputMsgData(null));
     }
 
     private void prepareInputCandidates(CharInput input) {

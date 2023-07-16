@@ -29,4 +29,6 @@ public enum InputMsg {
     InputCommitting,
     /** 向后删除输入目标中的输入内容 */
     InputBackwardDeleting,
+    /** 切换输入法 */
+    SwitchingIME,
 }

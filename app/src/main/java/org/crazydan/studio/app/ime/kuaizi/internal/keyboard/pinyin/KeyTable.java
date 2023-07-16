@@ -155,7 +155,7 @@ public class KeyTable {
         // 右手模式的纵向屏幕 7 x 6 的按键表
         return new Key[][] {
                 new Key[] {
-                        ctrlKey(CtrlKey.Type.SwitchIME).setDisabled(true),
+                        ctrlKey(CtrlKey.Type.SwitchIME),
                         punctuationKey("："),
                         alphabetKey("i"),
                         alphabetKey("a"),
