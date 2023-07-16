@@ -41,8 +41,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.utils.GsonUtils;
@@ -61,9 +63,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final InputList inputList;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
+    private final int keySpacing = 8;
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
     private final Keyboard.Orientation keyboardOrientation;
+    private final KeyViewAnimator animator;
     private Keyboard keyboard;
 
     public KeyboardView(@NonNull Context context) {
@@ -82,9 +86,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
         this.adapter = new KeyViewAdapter(keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
+        this.animator = new KeyViewAnimator();
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+        setItemAnimator(this.animator);
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
         gesture.bind(this) //
@@ -129,17 +135,72 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.inputMsgListeners.add(listener);
     }
 
+    public void onUserMsg(UserMsg msg, UserMsgData data) {
+        if (msg == UserMsg.FingerMoving) {
+            KeyView<?, ?> closedKeyView = getKeyViewByKey(((UserFingerMovingMsgData) data).closed);
+            if (closedKeyView == null) {
+                this.animator.cancelPrevClosedKeyViewAnimation();
+            }
+        }
+
+        this.keyboard.onUserMsg(msg, data);
+    }
+
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        switch (msg) {
+            case InputtingChars:
+                onInputtingCharsMsg((InputtingCharsMsgData) data);
+                break;
+            case InputtingCharsDone:
+                // 取消前面的滑行靠近的动画
+                this.animator.cancelPrevClosedKeyViewAnimation();
+            case ChoosingInputCandidate:
+                relayoutKeysByInputMsg(data);
+                break;
+        }
+    }
+
+    private void onInputtingCharsMsg(InputtingCharsMsgData data) {
+        // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
+        this.animator.setFadeOutKey(data.current);
+
+        relayoutKeysByInputMsg(data);
+
+        KeyView<?, ?> closedKeyView = getKeyViewByKey(data.closed);
+        this.animator.startClosedKeyViewAnimation(closedKeyView);
+    }
+
     private void relayout() {
         Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
-        this.layoutManager.configGrid(columns, rows, 8);
+        this.layoutManager.configGrid(columns, rows, this.keySpacing);
 
         relayoutKeys(keys);
     }
 
     private void relayoutKeys(Key<?>[][] keys) {
         this.adapter.bindKeys(keys);
+    }
+
+    private void relayoutKeysByInputMsg(InputMsgData data) {
+        Key<?>[][] keys = createKeys(data.getKeyFactory());
+        relayoutKeys(keys);
+    }
+
+    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
+        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
+        option.orientation = this.keyboardOrientation;
+
+        return keyFactory.create(option);
+    }
+
+    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
+    public KeyView<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
+        View child = this.layoutManager.findChildViewUnderLoose(x, y);
+
+        return getVisibleKeyView(child);
     }
 
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
@@ -151,50 +212,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     /** 找到指定坐标附近可见的{@link  KeyView 按键视图} */
     public KeyView<?, ?> findVisibleKeyViewNear(float x, float y) {
-        View child = this.layoutManager.findChildViewNear(x, y);
+        View child = this.layoutManager.findChildViewNear(x, y, this.keySpacing * 2);
 
         return getVisibleKeyView(child);
-    }
-
-    public void onUserMsg(UserMsg msg, UserMsgData data) {
-        this.keyboard.onUserMsg(msg, data);
-    }
-
-    @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-        switch (msg) {
-            case InputtingChars:
-                onInputtingCharsMsg((InputtingCharsMsgData) data);
-                break;
-            case InputtingCharsDone:
-                onInputtingCharsDoneMsg(data);
-                break;
-            case ChoosingInputCandidate:
-                onChoosingInputCandidateMsg(data);
-                break;
-        }
-    }
-
-    private void onInputtingCharsMsg(InputtingCharsMsgData data) {
-        Key<?>[][] keys = createKeys(data.getKeyFactory());
-        relayoutKeys(keys);
-    }
-
-    private void onInputtingCharsDoneMsg(InputMsgData data) {
-        Key<?>[][] keys = createKeys(data.getKeyFactory());
-        relayoutKeys(keys);
-    }
-
-    private void onChoosingInputCandidateMsg(InputMsgData data) {
-        Key<?>[][] keys = createKeys(data.getKeyFactory());
-        relayoutKeys(keys);
-    }
-
-    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
-        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
-        option.orientation = this.keyboardOrientation;
-
-        return keyFactory.create(option);
     }
 
     private KeyView<?, ?> getVisibleKeyView(View view) {

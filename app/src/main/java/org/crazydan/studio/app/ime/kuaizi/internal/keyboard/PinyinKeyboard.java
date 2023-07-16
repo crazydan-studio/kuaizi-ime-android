@@ -111,7 +111,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     CharInput input = getInputList().newPending();
                     input.setPinyin(true).appendKey(key);
 
-                    onContinuousInput(input, key, null, true);
+                    onContinuousInput(input, data.target, null, true);
                 }
                 break;
             }
@@ -291,7 +291,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     }
                     // 开始滑行输入
                     else {
-                        onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
+                        onCharKeyMsg(msg, charKey, new UserMsgData(key));
                     }
                 }
                 break;

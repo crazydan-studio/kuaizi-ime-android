@@ -74,10 +74,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         this.gridItemOrientation = gridItemOrientation;
     }
 
-    public void configGrid(int columns, int rows, int itemSpacing) {
+    public void configGrid(int columns, int rows, int itemSpacingInDp) {
         this.gridColumns = columns;
         this.gridRows = rows;
-        this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacing);
+        this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacingInDp);
     }
 
     @Override
@@ -180,6 +180,16 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     /**
      * 找出指定坐标下的子视图
      * <p/>
+     * 探测范围比 {@link #findChildViewUnder} 更大，
+     * 但比 {@link #findChildViewNear} 更小
+     */
+    public View findChildViewUnderLoose(double x, double y) {
+        return filterChildViewByHexagonCenterDistance(x, y, distance -> distance < this.gridItemRadius);
+    }
+
+    /**
+     * 找出指定坐标下的子视图
+     * <p/>
      * 仅当坐标在正六边形的内圈中时才视为符合条件
      */
     public View findChildViewUnder(double x, double y) {
@@ -191,11 +201,14 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
      * <p/>
      * 仅当坐标在正六边形的外圈但不在内圈中时才视为符合条件
      */
-    public View findChildViewNear(double x, double y) {
+    public View findChildViewNear(double x, double y, int deltaInDp) {
+        int delta = ScreenUtils.dpToPx(deltaInDp);
+        double outer = this.gridItemOuterRadius + delta;
+
         return filterChildViewByHexagonCenterDistance(x,
                                                       y,
                                                       distance -> distance > this.gridItemInnerRadius
-                                                                  && distance < this.gridItemOuterRadius);
+                                                                  && distance < outer);
     }
 
     private View filterChildViewByHexagonCenterDistance(double x, double y, Predicate<Double> predicate) {

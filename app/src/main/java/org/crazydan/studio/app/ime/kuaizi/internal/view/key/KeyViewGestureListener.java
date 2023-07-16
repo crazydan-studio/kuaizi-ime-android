@@ -42,7 +42,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
     @Override
     public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
-        KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnder(data.x, data.y);
+        KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
 
         if (this.prevKeyView != null && this.prevKeyView != keyView) {
             onPressEnd(this.prevKeyView);
@@ -71,6 +71,8 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 break;
             }
             case Moving: {
+                // Note: 靠近检查使用更靠近按键内部的探测方法，以降低拼音滑行输入的后继字母接触的灵敏度
+                keyView = this.keyboardView.findVisibleKeyViewUnder(data.x, data.y);
                 onMoving(keyView, data);
                 break;
             }

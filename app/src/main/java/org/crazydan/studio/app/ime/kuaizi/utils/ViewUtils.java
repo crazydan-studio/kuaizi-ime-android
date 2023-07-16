@@ -17,7 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import android.animation.ValueAnimator;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -37,5 +40,30 @@ public class ViewUtils {
     public static <T extends View> T hide(T view) {
         visible(view, false);
         return view;
+    }
+
+    public static void startAnimationOnce(View view, long duration, Animation... animations) {
+        startAnimation(view, duration, 0, animations);
+    }
+
+    public static void startAnimationInfinite(View view, long duration, Animation... animations) {
+        startAnimation(view, duration, ValueAnimator.INFINITE, animations);
+    }
+
+    public static void startAnimation(View view, long duration, int repeatCount, Animation... animations) {
+        AnimationSet set = new AnimationSet(true);
+
+        for (Animation animation : animations) {
+            animation.setDuration(duration);
+            animation.setRepeatCount(repeatCount);
+
+            set.addAnimation(animation);
+        }
+
+        view.startAnimation(set);
+    }
+
+    public static void stopAnimation(View view) {
+        view.clearAnimation();
     }
 }
