@@ -67,6 +67,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final KeyViewLayoutManager layoutManager;
     private final Keyboard.Orientation keyboardOrientation;
     private final KeyViewAnimator animator;
+    private final AudioPlayer tickPlayer;
     private Keyboard keyboard;
 
     public KeyboardView(@NonNull Context context) {
@@ -86,6 +87,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.adapter = new KeyViewAdapter(keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
         this.animator = new KeyViewAnimator();
+        this.tickPlayer = new AudioPlayer();
+
+        this.tickPlayer.load(context, R.raw.tick, R.raw.double_tick);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
@@ -155,6 +159,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
         // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
         this.animator.setFadeOutKey(data.current);
+
+        if (data.closed == null) {
+            playTick();
+        }
     }
 
     private void relayout() {
@@ -185,6 +193,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         option.orientation = this.keyboardOrientation;
 
         return keyFactory.create(option);
+    }
+
+    public void playTick() {
+        this.tickPlayer.play(R.raw.tick);
     }
 
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
