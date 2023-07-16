@@ -94,7 +94,7 @@ public abstract class BaseInput implements Input {
         return this.keys.stream()
                         .map(k -> k instanceof CharKey
                                   ? ((CharKey) k).getText()
-                                  : k instanceof CtrlKey && ((CtrlKey) k).isSpace() ? " " : null)
+                                  : k instanceof CtrlKey ? ((CtrlKey) k).toText() : null)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }

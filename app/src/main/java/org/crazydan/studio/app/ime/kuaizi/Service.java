@@ -21,6 +21,7 @@ import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -126,9 +127,14 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputCommitting:
+            case InputCommitting: {
                 commitInputting(((InputCommittingMsgData) data).text);
                 break;
+            }
+            case InputBackwardDeleting: {
+                backwardDeleteInput();
+                break;
+            }
         }
     }
 
@@ -143,6 +149,28 @@ public class Service extends InputMethodService implements InputMsgListener {
         ic.endBatchEdit();
 
         this.imeView.keyboard.finishInput();
+    }
+
+    private void backwardDeleteInput() {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
+//        CharSequence selectedText = ic.getSelectedText(0);
+//        // 无选中的文本，则删除当前光标前的 1 个字符
+//        if (TextUtils.isEmpty(selectedText)) {
+//            ic.deleteSurroundingText(1, 0);
+//        }
+//        // 否则，删除选中的文本
+//        else {
+//            ic.commitText("", 1);
+//        }
+
+        // 更通用方式：发送 del 按键事件，由组件处理删除
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
     }
 
     private <T extends View> T inflateView(int resId) {

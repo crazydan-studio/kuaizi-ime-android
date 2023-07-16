@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.TargetInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
 
@@ -176,20 +177,31 @@ public class PinyinKeyboard extends BaseKeyboard {
                         break;
                     }
                     case Backspace: {
-                        if (getInputList().hasPending()) {
-                            getInputList().dropPending();
+                        if (!getInputList().isEmpty()) {
+                            if (getInputList().hasPending()) {
+                                getInputList().dropPending();
+                            } else {
+                                getInputList().backwardDelete();
+                            }
+                            onInputtingCharsDone();
                         } else {
-                            getInputList().backwardDelete();
+                            onInputMsg(InputMsg.InputBackwardDeleting, new TargetInputMsgData());
                         }
-                        onInputtingCharsDone();
                         break;
                     }
-                    case Space: {
-                        // 单独输入并确认空格
+                    case Space:
+                    case Enter: {
+                        boolean isEmpty = getInputList().isEmpty();
+                        // 单独输入并确认 空格/换行
                         getInputList().newPending().appendKey(key);
-                        getInputList().confirmPending();
 
-                        onInputtingCharsDone();
+                        if (!isEmpty) {
+                            getInputList().confirmPending();
+                            onInputtingCharsDone();
+                        } else {
+                            // 单个 空格/换行 则直接提交输入
+                            onInputtingCommit();
+                        }
                     }
                 }
                 break;
@@ -320,18 +332,26 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emotion:
-            case Punctuation:
+            case Punctuation: {
+                boolean isEmpty = getInputList().isEmpty();
                 getInputList().newPending().appendKey(key);
-                getInputList().confirmPending();
 
-                onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
+                if (!isEmpty) {
+                    getInputList().confirmPending();
+                    onInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
+                } else {
+                    // 单个标点、表情则直接提交输入
+                    onInputtingCommit();
+                }
                 break;
+            }
             // 字母、数字可连续输入
             case Number:
-            case Alphabet:
+            case Alphabet: {
                 input.appendKey(key);
                 onContinuousInput(input, key, null, false);
                 break;
+            }
         }
     }
 

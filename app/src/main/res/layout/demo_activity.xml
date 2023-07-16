@@ -16,24 +16,17 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <EditText
+    <org.crazydan.studio.app.ime.kuaizi.ui.view.NoImeEditText
             android:id="@+id/text_input"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:autofillHints=""
-            android:textColor="?attr/key_fg_color"
-            tools:ignore="LabelFor"
-            android:enabled="false"
-            android:inputType=""
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:focusedByDefault="false" />
+            android:textColor="?attr/key_fg_color" />
 
     <include
             layout="@layout/ime_input_view"

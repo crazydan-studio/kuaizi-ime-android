@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -50,6 +51,7 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         setContentView(R.layout.demo_activity);
 
         this.editText = findViewById(R.id.text_input);
+        this.editText.setClickable(false);
 
         this.imeView = findViewById(R.id.ime_view);
 
@@ -60,15 +62,44 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputCommitting:
+            case InputCommitting: {
                 commitInputting(((InputCommittingMsgData) data).text);
                 break;
+            }
+            case InputBackwardDeleting: {
+                backwardDeleteInput();
+                break;
+            }
         }
     }
 
     private void commitInputting(StringBuilder text) {
-        this.editText.getText().append(text);
+        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+
+        this.editText.getText().replace(start, end, text);
 
         this.imeView.keyboard.finishInput();
+    }
+
+    private void backwardDeleteInput() {
+        Editable text = this.editText.getText();
+        int len = text.toString().length();
+        if (len == 0) {
+            return;
+        }
+
+        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+        // 删除光标前的
+        if (start == end) {
+            if (start > 0) {
+                text.delete(start - 1, end);
+            }
+        }
+        // 删除已选中的
+        else {
+            text.delete(start, end);
+        }
     }
 }

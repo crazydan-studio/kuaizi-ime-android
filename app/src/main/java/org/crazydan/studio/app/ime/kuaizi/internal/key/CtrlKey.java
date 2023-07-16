@@ -84,6 +84,22 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.type == Type.NoOp;
     }
 
+    /**
+     * 转换为文本字符
+     * <p/>
+     * 若其不对应任何字符，则返回 <code>null</code>
+     */
+    public String toText() {
+        switch (this.type) {
+            case Space:
+                return " ";
+            case Enter:
+                return "\n";
+            default:
+                return null;
+        }
+    }
+
     @Override
     public boolean isSameWith(Key<?> key) {
         if (!(key instanceof CtrlKey)) {

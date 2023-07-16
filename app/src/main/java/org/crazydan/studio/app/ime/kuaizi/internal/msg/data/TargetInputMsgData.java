@@ -17,18 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-
 /**
- * {@link InputMsg#InputCommitting}消息数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-15
+ * @date 2023-07-16
  */
-public class InputCommittingMsgData extends TargetInputMsgData {
-    public final StringBuilder text;
+public class TargetInputMsgData extends CommonInputMsgData {
 
-    public InputCommittingMsgData(StringBuilder text) {
-        this.text = text;
+    public TargetInputMsgData() {
+        super(null);
     }
 }
