@@ -20,22 +20,23 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#PlayingInputTick}消息数据
+ * {@link InputMsg#PlayingInputAudio}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-17
  */
-public class PlayingInputTickMsgData extends CommonInputMsgData {
-    public final TickType tickType;
+public class PlayingInputAudioMsgData extends CommonInputMsgData {
+    public final AudioType audioType;
 
-    public PlayingInputTickMsgData(TickType tickType) {
+    public PlayingInputAudioMsgData(AudioType audioType) {
         super(null);
 
-        this.tickType = tickType;
+        this.audioType = audioType;
     }
 
-    public enum TickType {
-        Single,
-        Double,
+    public enum AudioType {
+        SingleTick,
+        DoubleTick,
+        PageFlip,
     }
 }

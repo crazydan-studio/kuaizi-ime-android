@@ -41,7 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputTickMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
@@ -68,7 +68,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final KeyViewLayoutManager layoutManager;
     private final Keyboard.Orientation keyboardOrientation;
     private final KeyViewAnimator animator;
-    private final AudioPlayer tickPlayer;
+    private final AudioPlayer audioPlayer;
     private Keyboard keyboard;
 
     public KeyboardView(@NonNull Context context) {
@@ -88,9 +88,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.adapter = new KeyViewAdapter(keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
         this.animator = new KeyViewAnimator();
-        this.tickPlayer = new AudioPlayer();
+        this.audioPlayer = new AudioPlayer();
 
-        this.tickPlayer.load(context, R.raw.tick_single, R.raw.tick_double);
+        this.audioPlayer.load(context, R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
@@ -152,8 +152,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case InputtingCharsDone:
             case ChoosingInputCandidate:
                 break;
-            case PlayingInputTick: {
-                onPlayingInputTick((PlayingInputTickMsgData) data);
+            case PlayingInputAudio: {
+                onPlayingInputAudio((PlayingInputAudioMsgData) data);
                 break;
             }
         }
@@ -166,13 +166,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.animator.setFadeOutKey(data.current);
     }
 
-    private void onPlayingInputTick(PlayingInputTickMsgData data) {
-        switch (data.tickType) {
-            case Single:
-                this.tickPlayer.play(R.raw.tick_single);
+    private void onPlayingInputAudio(PlayingInputAudioMsgData data) {
+        switch (data.audioType) {
+            case SingleTick:
+                this.audioPlayer.play(R.raw.tick_single);
                 break;
-            case Double:
-                this.tickPlayer.play(R.raw.tick_double);
+            case DoubleTick:
+                this.audioPlayer.play(R.raw.tick_double);
+                break;
+            case PageFlip:
+                this.audioPlayer.play(R.raw.page_flip);
                 break;
         }
     }

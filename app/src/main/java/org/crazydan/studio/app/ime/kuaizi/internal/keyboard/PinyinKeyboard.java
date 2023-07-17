@@ -39,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputTickMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
 
@@ -106,10 +106,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCharKeyMsg(UserMsg msg, CharKey key, UserMsgData data) {
         switch (msg) {
-            case KeyPressStart: {
-                onPlayingInputTick_Single(key);
-                break;
-            }
             case KeyLongPressStart: {
                 // 开始滑行输入
                 if (key != null && key.getType() == CharKey.Type.Alphabet) {
@@ -118,8 +114,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     CharInput input = getInputList().newPending();
                     input.setPinyin(true).appendKey(key);
 
-                    // Note: 长按会触发两次 tick 音的播放，前一次为按下按键
-                    onPlayingInputTick_Single(key);
+                    onPlayingInputAudio_DoubleTick(key);
 
                     onContinuousInput(input, data.target, null, true);
                 }
@@ -155,7 +150,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     if (key != null && !key.isSameWith(input.getCurrentKey())) {
                         input.appendKey(key);
 
-                        onPlayingInputTick_Double(key);
+                        onPlayingInputAudio_DoubleTick(key);
                     }
 
                     if (key != null || closedKey != null) {
@@ -167,12 +162,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 // 单字符输入
                 if (key != null) {
-                    if (!getInputList().hasPending()) {
-                        getInputList().newPending();
-                    }
+                    onPlayingInputAudio_SingleTick(key);
 
-                    CharInput input = getInputList().getPending();
-                    onSingleKeyInput(input, key);
+                    doSingleKeyInput(key);
                 }
                 break;
             }
@@ -181,11 +173,11 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
-            case KeyPressStart: {
-                onPlayingInputTick_Single(key);
-                break;
-            }
             case KeySingleTap: {
+                if (key.getType() != CtrlKey.Type.Locator) {
+                    onPlayingInputAudio_SingleTick(key);
+                }
+
                 switch (key.getType()) {
                     case CommitInput: {
                         onInputtingCommit();
@@ -234,13 +226,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
-            case KeyPressStart: {
-                // Note: 在候选字模式下，翻页不会触发 tick 播放，
-                // 因为该方法仅处理控制按键，除非翻页开始时按下的是控制按键
-                onPlayingInputTick_Single(key);
-                break;
-            }
             case KeySingleTap: {
+                onPlayingInputAudio_SingleTick(key);
+
                 CharInput input = getInputList().getPending();
                 String joinedInputChars = String.join("", input.getChars());
 
@@ -311,6 +299,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 boolean pageUp = ((UserFingerSlippingMsgData) data).upward;
                 CharInput input = getInputList().getPending();
 
+                // Note: 在该函数中根据实际是否有上下翻页来确定是否播放翻页音效
                 onChoosingInputCandidate(input, pageUp);
             }
             break;
@@ -321,22 +310,17 @@ public class PinyinKeyboard extends BaseKeyboard {
         CharKey charKey = key.getCharKey();
 
         switch (msg) {
-            case KeyPressStart: {
-                onPlayingInputTick_Single(key);
-                break;
-            }
             case KeyLongPressStart: {
                 if (charKey != null) {
                     // 长按标点，则由单击响应处理
                     if (charKey.isPunctuation()) {
-                        // Note: 长按都统一两次 tick 播放
-                        onPlayingInputTick_Single(key);
+                        onPlayingInputAudio_DoubleTick(key);
 
-                        onCharKeyMsg(UserMsg.KeySingleTap, charKey, new UserMsgData(charKey));
+                        doSingleKeyInput(charKey);
                     }
                     // 开始滑行输入
                     else {
-                        // Note: 在 onCharKeyMsg 中会播放长按的 tick 音，
+                        // Note: 在 onCharKeyMsg 中会播放长按的按键音，
                         // 故而，这里不再播放
                         onCharKeyMsg(msg, charKey, new UserMsgData(key));
                     }
@@ -346,6 +330,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 // 确认候选字
                 if (key.hasWord()) {
+                    onPlayingInputAudio_SingleTick(key);
+
                     InputWord word = key.getWord();
                     getInputList().getPending().setWord(word);
                     getInputList().confirmPending();
@@ -359,6 +345,15 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             break;
         }
+    }
+
+    private void doSingleKeyInput(CharKey key) {
+        if (!getInputList().hasPending()) {
+            getInputList().newPending();
+        }
+
+        CharInput input = getInputList().getPending();
+        onSingleKeyInput(input, key);
     }
 
     private void onSingleKeyInput(CharInput input, CharKey key) {
@@ -426,10 +421,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (this.state.type == State.Type.ChoosingInputCandidate) {
             stateData = (ChoosingInputCandidateData) this.state.data;
 
+            boolean hasPage;
             if (pageUp) {
-                stateData.nextPage();
+                hasPage = stateData.nextPage();
             } else {
-                stateData.prevPage();
+                hasPage = stateData.prevPage();
+            }
+
+            if (hasPage) {
+                onPlayingInputAudio_PageFlip();
             }
         } else {
             stateData = new ChoosingInputCandidateData(input.getCandidates().size(),
@@ -446,24 +446,29 @@ public class PinyinKeyboard extends BaseKeyboard {
         onInputMsg(InputMsg.ChoosingInputCandidate, data);
     }
 
-    private void onPlayingInputTick_Single(Key<?> key) {
-        if (key instanceof CtrlKey && ((CtrlKey) key).isNoOp()) {
-            return;
-        }
-
-        InputMsgData data = new PlayingInputTickMsgData(PlayingInputTickMsgData.TickType.Single);
-
-        onInputMsg(InputMsg.PlayingInputTick, data);
+    private void onPlayingInputAudio_SingleTick(Key<?> key) {
+        onPlayingInputAudio(key, PlayingInputAudioMsgData.AudioType.SingleTick);
     }
 
-    private void onPlayingInputTick_Double(Key<?> key) {
-        if (key instanceof CtrlKey && ((CtrlKey) key).isNoOp()) {
+    private void onPlayingInputAudio_DoubleTick(Key<?> key) {
+        onPlayingInputAudio(key, PlayingInputAudioMsgData.AudioType.DoubleTick);
+    }
+
+    private void onPlayingInputAudio_PageFlip() {
+        InputMsgData data = new PlayingInputAudioMsgData(PlayingInputAudioMsgData.AudioType.PageFlip);
+
+        onInputMsg(InputMsg.PlayingInputAudio, data);
+    }
+
+    private void onPlayingInputAudio(Key<?> key, PlayingInputAudioMsgData.AudioType audioType) {
+        if (key == null //
+            || (key instanceof CtrlKey && ((CtrlKey) key).isNoOp())) {
             return;
         }
 
-        InputMsgData data = new PlayingInputTickMsgData(PlayingInputTickMsgData.TickType.Double);
+        InputMsgData data = new PlayingInputAudioMsgData(audioType);
 
-        onInputMsg(InputMsg.PlayingInputTick, data);
+        onInputMsg(InputMsg.PlayingInputAudio, data);
     }
 
     private void onInputtingCommit() {

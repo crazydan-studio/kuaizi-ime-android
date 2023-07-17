@@ -185,7 +185,7 @@ public class KeyTable {
                 punctuationKey("、"),
                 alphabetKey("n"),
                 alphabetKey("h"),
-                ctrlKey(CtrlKey.Type.Locator),
+                ctrlKey(CtrlKey.Type.Locator).setDisabled(true),
                 alphabetKey("w"),
                 alphabetKey("k"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInput) : ctrlKey(CtrlKey.Type.Enter),

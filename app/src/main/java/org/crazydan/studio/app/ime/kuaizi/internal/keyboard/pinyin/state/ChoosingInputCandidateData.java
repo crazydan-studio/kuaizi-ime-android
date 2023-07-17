@@ -40,17 +40,30 @@ public class ChoosingInputCandidateData implements State.Data {
         return this.pageStart;
     }
 
-    /** 下一页 */
-    public void nextPage() {
+    /**
+     * 下一页
+     *
+     * @return 若有翻页，则返回 <code>true</code>
+     */
+    public boolean nextPage() {
         int start = this.pageStart + this.pageSize;
+
         if (start < this.dataSize) {
             this.pageStart = start;
+            return true;
         }
+        return false;
     }
 
-    /** 上一页 */
-    public void prevPage() {
+    /**
+     * 上一页
+     *
+     * @return 若有翻页，则返回 <code>true</code>
+     */
+    public boolean prevPage() {
         int start = this.pageStart - this.pageSize;
         this.pageStart = Math.max(start, 0);
+
+        return start >= 0;
     }
 }

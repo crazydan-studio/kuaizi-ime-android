@@ -25,8 +25,8 @@ public enum InputMsg {
     InputtingCharsDone,
     /** 选择输入候选字 */
     ChoosingInputCandidate,
-    /** 播放按键声音 */
-    PlayingInputTick,
+    /** 播放输入音效 */
+    PlayingInputAudio,
 
     /** 提交输入内容到输入目标 */
     InputCommitting,
