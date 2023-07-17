@@ -50,47 +50,62 @@ public class KeyTable {
             R.attr.input_word_key_level_1_bg_color,
             R.attr.input_word_key_level_2_bg_color,
             R.attr.input_word_key_level_3_bg_color,
+            R.attr.input_word_key_level_4_bg_color,
             };
 
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
-    private static final int[][] grid_key_coords = new int[][] {
+    private static final int[][][] input_word_key_level_coords = new int[][][] {
             // level 0
-            new int[] { 3, 3 },
-            // level 1: 1~6
-            new int[] { 2, 3 },
-            new int[] { 2, 4 },
-            new int[] { 3, 4 },
-            new int[] { 4, 4 },
-            new int[] { 4, 3 },
-            new int[] { 3, 2 },
-            // level 2: 7~18
-            new int[] { 1, 2 },
-            new int[] { 1, 3 },
-            new int[] { 1, 4 },
-            new int[] { 2, 5 },
-            new int[] { 3, 5 },
-            new int[] { 4, 5 },
-            new int[] { 5, 4 },
-            new int[] { 5, 3 },
-            new int[] { 5, 2 },
-            new int[] { 4, 2 },
-            new int[] { 3, 1 },
-            new int[] { 2, 2 },
-            // level 3: 19~36
-            new int[] { 0, 2 },
-            new int[] { 0, 3 },
-            new int[] { 0, 4 },
-            new int[] { 0, 5 },
-            new int[] { 1, 5 },
-            new int[] { 2, 6 },
-            new int[] { 3, 6 },
-            new int[] { 4, 6 },
-            new int[] { 5, 5 },
-            new int[] { 5, 1 },
-            new int[] { 4, 1 },
-            new int[] { 3, 0 },
-            new int[] { 2, 1 },
-            new int[] { 1, 1 },
+            new int[][] { new int[] { 3, 3 }, },
+            // level 1
+            new int[][] {
+                    new int[] { 2, 3 },
+                    new int[] { 2, 4 },
+                    new int[] { 3, 4 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 3, 2 },
+                    },
+            // level 2
+            new int[][] {
+                    new int[] { 1, 2 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 4 },
+                    new int[] { 2, 5 },
+                    new int[] { 3, 5 },
+                    new int[] { 4, 5 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 3 },
+                    new int[] { 5, 2 },
+                    new int[] { 4, 2 },
+                    new int[] { 3, 1 },
+                    new int[] { 2, 2 },
+                    },
+            // level 3
+            new int[][] {
+                    new int[] { 0, 2 },
+                    new int[] { 0, 3 },
+                    new int[] { 0, 4 },
+                    new int[] { 0, 5 },
+                    new int[] { 1, 5 },
+                    new int[] { 4, 6 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 1 },
+                    new int[] { 4, 1 },
+                    new int[] { 3, 0 },
+                    new int[] { 2, 1 },
+                    new int[] { 1, 1 },
+                    },
+            // level 4
+            new int[][] {
+                    new int[] { 0, 6 },
+                    new int[] { 5, 6 },
+                    new int[] { 5, 0 },
+                    new int[] { 4, 0 },
+                    new int[] { 2, 0 },
+                    new int[] { 1, 0 },
+                    new int[] { 0, 1 },
+                    },
             };
 
     static {
@@ -242,7 +257,11 @@ public class KeyTable {
 
     /** 候选字按键的分页大小 */
     public static int getInputCandidateKeysPageSize() {
-        return grid_key_coords.length;
+        int size = 0;
+        for (int[][] level : input_word_key_level_coords) {
+            size += level.length;
+        }
+        return size;
     }
 
     /** 创建输入候选字按键 */
@@ -282,38 +301,44 @@ public class KeyTable {
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
+            gridKeys[2][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
         } else if (input.isPinyinNL()) {
-            gridKeys[4][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
+            gridKeys[2][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[5][0] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
+            gridKeys[3][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
         }
 
-        for (int i = 0; i < pageSize; i++) {
-            int[] gridKeyCoord = grid_key_coords[i];
-            int x = gridKeyCoord[0];
-            int y = gridKeyCoord[1];
-            Key<?> defaultKey = gridKeys[x][y];
+        int wordIndex = startIndex;
+        for (int level = 0; level < input_word_key_level_coords.length; level++) {
+            int[][] wordKeyCoords = input_word_key_level_coords[level];
 
-            int wordIndex = i + startIndex;
-            if (wordIndex < inputWords.size()) {
-                InputWord word = inputWords.get(wordIndex);
-                int level = i == 0 ? 0 : i <= 6 ? 1 : i <= 18 ? 2 : 3;
+            for (int[] wordKeyCoord : wordKeyCoords) {
+                int x = wordKeyCoord[0];
+                int y = wordKeyCoord[1];
+                Key<?> defaultKey = gridKeys[x][y];
 
-                int bgAttrId = input_word_key_level_bg_colors[level];
-                InputWordKey wordKey = InputWordKey.word(word)
-                                                   .setFgColorAttrId(R.attr.input_word_key_fg_color)
-                                                   .setBgColorAttrId(bgAttrId);
-                if (defaultKey instanceof InputWordKey) {
-                    CharKey charKey = ((InputWordKey) defaultKey).getCharKey();
-                    wordKey.setCharKey(charKey);
-                    charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
+                if (wordIndex < inputWords.size()) {
+                    InputWord word = inputWords.get(wordIndex);
+
+                    int bgAttrId = input_word_key_level_bg_colors[level];
+                    InputWordKey wordKey = InputWordKey.word(word)
+                                                       .setFgColorAttrId(R.attr.input_word_key_fg_color)
+                                                       .setBgColorAttrId(bgAttrId);
+                    if (defaultKey instanceof InputWordKey) {
+                        CharKey charKey = ((InputWordKey) defaultKey).getCharKey();
+                        wordKey.setCharKey(charKey);
+                        charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
+                    }
+
+                    gridKeys[x][y] = wordKey;
+                } else {
+                    break;
                 }
 
-                gridKeys[x][y] = wordKey;
+                wordIndex += 1;
             }
         }
 
