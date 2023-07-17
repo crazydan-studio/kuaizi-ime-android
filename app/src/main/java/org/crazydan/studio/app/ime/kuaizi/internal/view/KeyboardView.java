@@ -67,6 +67,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
     private final Keyboard.Orientation keyboardOrientation;
+    private final RecyclerViewGestureDetector gesture;
     private final KeyViewAnimator animator;
     private final AudioPlayer audioPlayer;
     private Keyboard keyboard;
@@ -88,17 +89,17 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.adapter = new KeyViewAdapter(keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
         this.animator = new KeyViewAnimator();
-        this.audioPlayer = new AudioPlayer();
-
-        this.audioPlayer.load(context, R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
         setItemAnimator(this.animator);
 
-        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
-        gesture.bind(this) //
-               .addListener(new KeyViewGestureListener(this));
+        this.audioPlayer = new AudioPlayer();
+        this.audioPlayer.load(context, R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
+
+        this.gesture = new RecyclerViewGestureDetector();
+        this.gesture.bind(this) //
+                    .addListener(new KeyViewGestureListener(this));
     }
 
     public InputList getInputList() {
@@ -106,6 +107,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     public void startInput(Keyboard.Type type) {
+        this.gesture.reset();
+
         changeKeyboardType(type);
     }
 

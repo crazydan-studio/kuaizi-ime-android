@@ -46,7 +46,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
     private final Set<Listener> listeners = new HashSet<>();
 
-    private final Handler gestureHandler = new GestureHandler();
+    private final GestureHandler gestureHandler = new GestureHandler();
     private final List<GestureData> movingTracker = new ArrayList<>();
 
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
@@ -61,6 +61,14 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     public RecyclerViewGestureDetector addListener(Listener listener) {
         this.listeners.add(listener);
         return this;
+    }
+
+    public void reset() {
+        this.longPressing.set(false);
+        this.moving = false;
+
+        this.gestureHandler.clear();
+        this.movingTracker.clear();
     }
 
     @Override
@@ -309,6 +317,11 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private class GestureHandler extends Handler {
         private static final int MSG_LONG_PRESS = 1;
         private static final int MSG_LONG_PRESS_TICK = 2;
+
+        public void clear() {
+            removeMessages(MSG_LONG_PRESS_TICK);
+            removeMessages(MSG_LONG_PRESS);
+        }
 
         @Override
         public void handleMessage(Message msg) {
