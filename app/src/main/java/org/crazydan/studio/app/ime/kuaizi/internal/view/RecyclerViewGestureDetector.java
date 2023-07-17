@@ -21,8 +21,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,17 +39,17 @@ import androidx.recyclerview.widget.RecyclerView;
 public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchListener {
     /** 确定长按的超时时间 */
     private static final long LONG_PRESS_TIMEOUT_MILLS = 200;
+    /** 确定长按 tick 的超时时间 */
+    private static final long LONG_PRESS_TICK_TIMEOUT_MILLS = 150;
     /** 确定滑动的超时时间 */
     private static final long SLIPPING_TIMEOUT_MILLS = 400;
 
     private final Set<Listener> listeners = new HashSet<>();
 
-    // https://stackoverflow.com/questions/6519748/how-to-determine-a-long-touch-on-android/24050544#24050544
-    private final Handler longPressListenerHandler = new Handler();
+    private final Handler gestureHandler = new GestureHandler();
     private final List<GestureData> movingTracker = new ArrayList<>();
 
-    private Runnable longPressListener;
-    private boolean longPressing;
+    private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
 
     /** 绑定到 {@link RecyclerView} 上 */
@@ -76,13 +79,15 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                onPressStart(data);
+                // Note: 优先触发长按监听，以确保其在指定的延时后能够及时执行，
+                // 而不会因为后续监听的执行导致其执行被延后
                 startLongPress(data);
+                onPressStart(data);
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 // Note: 移动开始时，可能还未触发长按监听，故，需显式取消长按监听
-                if (!this.longPressing) {
+                if (!this.longPressing.get()) {
                     stopLongPress();
                 }
 
@@ -90,10 +95,10 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
                 break;
             }
             case MotionEvent.ACTION_UP: {
-                if (!this.longPressing //
+                if (!this.longPressing.get() //
                     && !this.moving) {
                     onSingleTap(data);
-                } else if (!this.longPressing && isSlipping()) {
+                } else if (!this.longPressing.get() && isSlipping()) {
                     onSlipping(data);
                 }
 
@@ -108,16 +113,11 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     private void onGestureEnd(GestureData data) {
+        // Note: 先结束带定时任务的事件
+        onLongPressEnd(data);
+        onMovingEnd(data);
+
         onPressEnd(data);
-
-        if (this.longPressing) {
-            onLongPressEnd(data);
-        }
-        if (this.moving) {
-            onMovingEnd(data);
-        }
-
-        stopLongPress();
     }
 
     private void onPressStart(GestureData data) {
@@ -131,27 +131,55 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private void startLongPress(GestureData data) {
         stopLongPress();
 
-        this.longPressListener = () -> onLongPressStart(data);
-        this.longPressListenerHandler.postDelayed(this.longPressListener, LONG_PRESS_TIMEOUT_MILLS);
+        Message msg = this.gestureHandler.obtainMessage(GestureHandler.MSG_LONG_PRESS, data);
+        this.gestureHandler.sendMessageDelayed(msg, LONG_PRESS_TIMEOUT_MILLS);
+    }
+
+    private void startLongPressTick(LongPressTickGestureData data) {
+        long timeout = LONG_PRESS_TICK_TIMEOUT_MILLS;
+        LongPressTickGestureData newData = new LongPressTickGestureData(data, data.tick + 1, data.duration + timeout);
+
+        Message msg = this.gestureHandler.obtainMessage(GestureHandler.MSG_LONG_PRESS_TICK, newData);
+        this.gestureHandler.sendMessageDelayed(msg, timeout);
     }
 
     private void stopLongPress() {
-        if (this.longPressListener != null) {
-            this.longPressListenerHandler.removeCallbacks(this.longPressListener);
-            this.longPressListener = null;
-        }
-
-        this.longPressing = false;
+        this.longPressing.set(false);
+        this.gestureHandler.removeMessages(GestureHandler.MSG_LONG_PRESS_TICK);
+        this.gestureHandler.removeMessages(GestureHandler.MSG_LONG_PRESS);
     }
 
     private void onLongPressStart(GestureData data) {
-        this.longPressing = true;
-        triggerListeners(GestureType.LongPressStart, data);
+        this.longPressing.set(true);
+
+        GestureData newData = GestureData.newFrom(data);
+        triggerListeners(GestureType.LongPressStart, newData);
+
+        // 事件处理完后，再准备首次触发 tick
+        LongPressTickGestureData tickData = new LongPressTickGestureData(data, 0, 0);
+        startLongPressTick(tickData);
+    }
+
+    private void onLongPressTick(LongPressTickGestureData data) {
+        if (!this.longPressing.get()) {
+            return;
+        }
+
+        // 分发当前 tick 事件
+        LongPressTickGestureData newData = LongPressTickGestureData.newFrom(data);
+        triggerListeners(GestureType.LongPressTick, newData);
+
+        // 事件处理完后，再准备触发下一个 tick
+        startLongPressTick(data);
     }
 
     private void onLongPressEnd(GestureData data) {
-        this.longPressing = false;
-        triggerListeners(GestureType.LongPressEnd, data);
+        boolean hasLongPressing = this.longPressing.get();
+        stopLongPress();
+
+        if (hasLongPressing) {
+            triggerListeners(GestureType.LongPressEnd, data);
+        }
     }
 
     private void onSingleTap(GestureData data) {
@@ -213,6 +241,8 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         PressEnd,
         /** 开始长按 */
         LongPressStart,
+        /** 长按 tick */
+        LongPressTick,
         /** 结束长按 */
         LongPressEnd,
         /** 单击 */
@@ -241,6 +271,11 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
             this.timestamp = timestamp;
         }
 
+        /** 事件位置不变，仅修改时间戳为当前时间 */
+        public static GestureData newFrom(GestureData g) {
+            return new GestureData(g.x, g.y, SystemClock.uptimeMillis());
+        }
+
         public static GestureData from(MotionEvent e) {
             return new GestureData(e.getX(), e.getY(), e.getEventTime());
         }
@@ -252,6 +287,39 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         public SlippingGestureData(GestureData g, boolean upward) {
             super(g.x, g.y, g.timestamp);
             this.upward = upward;
+        }
+    }
+
+    public static class LongPressTickGestureData extends GestureData {
+        public final int tick;
+        public final long duration;
+
+        public LongPressTickGestureData(GestureData g, int tick, long duration) {
+            super(g.x, g.y, g.timestamp);
+            this.tick = tick;
+            this.duration = duration;
+        }
+
+        /** 事件位置、tick、duration 不变，仅修改时间戳为当前时间 */
+        public static LongPressTickGestureData newFrom(LongPressTickGestureData g) {
+            return new LongPressTickGestureData(GestureData.newFrom(g), g.tick, g.duration);
+        }
+    }
+
+    private class GestureHandler extends Handler {
+        private static final int MSG_LONG_PRESS = 1;
+        private static final int MSG_LONG_PRESS_TICK = 2;
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_LONG_PRESS:
+                    onLongPressStart((GestureData) msg.obj);
+                    break;
+                case MSG_LONG_PRESS_TICK:
+                    onLongPressTick((LongPressTickGestureData) msg.obj);
+                    break;
+            }
         }
     }
 }

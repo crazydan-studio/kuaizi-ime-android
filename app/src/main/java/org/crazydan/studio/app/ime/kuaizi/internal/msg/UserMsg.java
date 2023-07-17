@@ -26,6 +26,8 @@ public enum UserMsg {
 
     /** 按键长按开始 */
     KeyLongPressStart,
+    /** 按键长按 tick */
+    KeyLongPressTick,
     /** 按键长按结束 */
     KeyLongPressEnd,
 

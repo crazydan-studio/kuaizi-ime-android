@@ -218,9 +218,21 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case KeyLongPressStart:
+            case KeyLongPressStart: {
                 // TODO 长按定位按钮
                 break;
+            }
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Space:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        onCtrlKeyMsg(UserMsg.KeySingleTap, key, data);
+                        break;
+                }
+                break;
+            }
         }
     }
 

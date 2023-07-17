@@ -23,6 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
 
@@ -62,6 +63,10 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 onLongPressStart(keyView, data);
                 break;
             }
+            case LongPressTick: {
+                onLongPressTick(keyView, data);
+                break;
+            }
             case LongPressEnd: {
                 onLongPressEnd(keyView, data);
                 break;
@@ -89,10 +94,12 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         }
 
         Key<?> targetKey = getKey(keyView);
-        if (targetKey != null) {
-            UserMsgData msg = new UserMsgData(targetKey);
-            this.keyboardView.onUserMsg(UserMsg.KeyPressStart, msg);
+        if (targetKey == null) {
+            return;
         }
+
+        UserMsgData msg = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(UserMsg.KeyPressStart, msg);
     }
 
     private void onPressEnd(KeyView<?, ?> keyView) {
@@ -101,10 +108,12 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         }
 
         Key<?> targetKey = getKey(keyView);
-        if (targetKey != null) {
-            UserMsgData msg = new UserMsgData(targetKey);
-            this.keyboardView.onUserMsg(UserMsg.KeyPressEnd, msg);
+        if (targetKey == null) {
+            return;
         }
+
+        UserMsgData msg = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(UserMsg.KeyPressEnd, msg);
     }
 
     private Key<?> getKey(KeyView<?, ?> keyView) {
@@ -113,10 +122,25 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
     private void onLongPressStart(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         Key<?> targetKey = getKey(keyView);
-        if (targetKey != null) {
-            UserMsgData msg = new UserMsgData(targetKey);
-            this.keyboardView.onUserMsg(UserMsg.KeyLongPressStart, msg);
+        if (targetKey == null) {
+            return;
         }
+
+        UserMsgData msg = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(UserMsg.KeyLongPressStart, msg);
+    }
+
+    private void onLongPressTick(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
+        Key<?> targetKey = getKey(keyView);
+        if (targetKey == null) {
+            return;
+        }
+
+        RecyclerViewGestureDetector.LongPressTickGestureData tickData
+                = (RecyclerViewGestureDetector.LongPressTickGestureData) data;
+        UserLongPressTickMsgData msg = new UserLongPressTickMsgData(targetKey, tickData.tick, tickData.duration);
+
+        this.keyboardView.onUserMsg(UserMsg.KeyLongPressTick, msg);
     }
 
     private void onLongPressEnd(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
@@ -126,10 +150,12 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
     private void onSingleTap(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         Key<?> targetKey = getKey(keyView);
-        if (targetKey != null) {
-            UserMsgData msg = new UserMsgData(targetKey);
-            this.keyboardView.onUserMsg(UserMsg.KeySingleTap, msg);
+        if (targetKey == null) {
+            return;
         }
+
+        UserMsgData msg = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(UserMsg.KeySingleTap, msg);
     }
 
     private void onMoving(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
