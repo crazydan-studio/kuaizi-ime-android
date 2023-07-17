@@ -136,7 +136,7 @@ public class Service extends InputMethodService implements InputMsgListener {
                 backwardDeleteInput();
                 break;
             }
-            case SwitchingIME: {
+            case IMESwitching: {
                 switchIME();
                 break;
             }

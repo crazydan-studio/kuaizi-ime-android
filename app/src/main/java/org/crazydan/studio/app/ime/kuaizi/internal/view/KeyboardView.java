@@ -41,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
@@ -89,7 +90,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.animator = new KeyViewAnimator();
         this.tickPlayer = new AudioPlayer();
 
-        this.tickPlayer.load(context, R.raw.tick, R.raw.double_tick);
+        this.tickPlayer.load(context, R.raw.tick_single, R.raw.tick_double);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
@@ -151,6 +152,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case InputtingCharsDone:
             case ChoosingInputCandidate:
                 break;
+            case PlayingInputTick: {
+                onPlayingInputTick((PlayingInputTickMsgData) data);
+                break;
+            }
         }
 
         relayoutKeysByInputMsg(data);
@@ -159,9 +164,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
         // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
         this.animator.setFadeOutKey(data.current);
+    }
 
-        if (data.closed == null) {
-            playTick();
+    private void onPlayingInputTick(PlayingInputTickMsgData data) {
+        switch (data.tickType) {
+            case Single:
+                this.tickPlayer.play(R.raw.tick_single);
+                break;
+            case Double:
+                this.tickPlayer.play(R.raw.tick_double);
+                break;
         }
     }
 
@@ -193,10 +205,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         option.orientation = this.keyboardOrientation;
 
         return keyFactory.create(option);
-    }
-
-    public void playTick() {
-        this.tickPlayer.play(R.raw.tick);
     }
 
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */

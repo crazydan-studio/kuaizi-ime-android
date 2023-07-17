@@ -71,7 +71,7 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
                 backwardDeleteInput();
                 break;
             }
-            case SwitchingIME: {
+            case IMESwitching: {
                 Toast.makeText(getApplicationContext(), "仅在输入法状态下才可切换系统输入法", Toast.LENGTH_LONG).show();
                 break;
             }

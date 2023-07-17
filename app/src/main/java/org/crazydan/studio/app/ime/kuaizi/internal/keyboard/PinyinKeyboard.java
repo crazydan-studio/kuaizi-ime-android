@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingMsgData;
 
@@ -71,6 +72,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     @Override
     public void onUserMsg(UserMsg msg, UserMsgData data) {
         Key<?> key = data.target;
+        if (key != null && key.isDisabled()) {
+            return;
+        }
 
         if (key instanceof CharKey) {
             onCharKeyMsg(msg, (CharKey) key, data);
@@ -102,6 +106,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCharKeyMsg(UserMsg msg, CharKey key, UserMsgData data) {
         switch (msg) {
+            case KeyPressStart: {
+                onPlayingInputTick_Single(key);
+                break;
+            }
             case KeyLongPressStart: {
                 // 开始滑行输入
                 if (key != null && key.getType() == CharKey.Type.Alphabet) {
@@ -109,6 +117,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     CharInput input = getInputList().newPending();
                     input.setPinyin(true).appendKey(key);
+
+                    // Note: 长按会触发两次 tick 音的播放，前一次为按下按键
+                    onPlayingInputTick_Single(key);
 
                     onContinuousInput(input, data.target, null, true);
                 }
@@ -143,6 +154,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                     // Note: 拼音不存在重复字母相邻的情况
                     if (key != null && !key.isSameWith(input.getCurrentKey())) {
                         input.appendKey(key);
+
+                        onPlayingInputTick_Double(key);
                     }
 
                     if (key != null || closedKey != null) {
@@ -168,6 +181,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
+            case KeyPressStart: {
+                onPlayingInputTick_Single(key);
+                break;
+            }
             case KeySingleTap: {
                 switch (key.getType()) {
                     case CommitInput: {
@@ -217,6 +234,12 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
+            case KeyPressStart: {
+                // Note: 在候选字模式下，翻页不会触发 tick 播放，
+                // 因为该方法仅处理控制按键，除非翻页开始时按下的是控制按键
+                onPlayingInputTick_Single(key);
+                break;
+            }
             case KeySingleTap: {
                 CharInput input = getInputList().getPending();
                 String joinedInputChars = String.join("", input.getChars());
@@ -298,14 +321,23 @@ public class PinyinKeyboard extends BaseKeyboard {
         CharKey charKey = key.getCharKey();
 
         switch (msg) {
+            case KeyPressStart: {
+                onPlayingInputTick_Single(key);
+                break;
+            }
             case KeyLongPressStart: {
                 if (charKey != null) {
                     // 长按标点，则由单击响应处理
                     if (charKey.isPunctuation()) {
+                        // Note: 长按都统一两次 tick 播放
+                        onPlayingInputTick_Single(key);
+
                         onCharKeyMsg(UserMsg.KeySingleTap, charKey, new UserMsgData(charKey));
                     }
                     // 开始滑行输入
                     else {
+                        // Note: 在 onCharKeyMsg 中会播放长按的 tick 音，
+                        // 故而，这里不再播放
                         onCharKeyMsg(msg, charKey, new UserMsgData(key));
                     }
                 }
@@ -414,6 +446,26 @@ public class PinyinKeyboard extends BaseKeyboard {
         onInputMsg(InputMsg.ChoosingInputCandidate, data);
     }
 
+    private void onPlayingInputTick_Single(Key<?> key) {
+        if (key instanceof CtrlKey && ((CtrlKey) key).isNoOp()) {
+            return;
+        }
+
+        InputMsgData data = new PlayingInputTickMsgData(PlayingInputTickMsgData.TickType.Single);
+
+        onInputMsg(InputMsg.PlayingInputTick, data);
+    }
+
+    private void onPlayingInputTick_Double(Key<?> key) {
+        if (key instanceof CtrlKey && ((CtrlKey) key).isNoOp()) {
+            return;
+        }
+
+        InputMsgData data = new PlayingInputTickMsgData(PlayingInputTickMsgData.TickType.Double);
+
+        onInputMsg(InputMsg.PlayingInputTick, data);
+    }
+
     private void onInputtingCommit() {
         // 输入已提交，等待新的输入
         this.state = new State(State.Type.InputWaiting);
@@ -439,7 +491,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 单次操作，直接重置为待输入状态
         reset();
 
-        onInputMsg(InputMsg.SwitchingIME, new CommonInputMsgData(null));
+        onInputMsg(InputMsg.IMESwitching, new CommonInputMsgData(null));
     }
 
     private void prepareInputCandidates(CharInput input) {

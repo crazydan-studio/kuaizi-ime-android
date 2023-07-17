@@ -19,10 +19,16 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /** 用户操作消息 */
 public enum UserMsg {
+    /** 按键按压开始 */
+    KeyPressStart,
+    /** 按键按压结束 */
+    KeyPressEnd,
+
     /** 按键长按开始 */
     KeyLongPressStart,
     /** 按键长按结束 */
     KeyLongPressEnd,
+
     /** 单击按键 */
     KeySingleTap,
     /** 手指移动 */

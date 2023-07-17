@@ -86,13 +86,24 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     private void onPressStart(KeyView<?, ?> keyView) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchDown();
-            this.keyboardView.playTick();
+        }
+
+        Key<?> targetKey = getKey(keyView);
+        if (targetKey != null) {
+            UserMsgData msg = new UserMsgData(targetKey);
+            this.keyboardView.onUserMsg(UserMsg.KeyPressStart, msg);
         }
     }
 
     private void onPressEnd(KeyView<?, ?> keyView) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchUp();
+        }
+
+        Key<?> targetKey = getKey(keyView);
+        if (targetKey != null) {
+            UserMsgData msg = new UserMsgData(targetKey);
+            this.keyboardView.onUserMsg(UserMsg.KeyPressEnd, msg);
         }
     }
 
