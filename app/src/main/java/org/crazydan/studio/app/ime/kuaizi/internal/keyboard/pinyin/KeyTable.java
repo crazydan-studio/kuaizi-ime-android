@@ -135,7 +135,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInput,
-                            new Integer[] { R.drawable.ic_right_like, R.attr.key_ctrl_confirm_bg_color });
+                            new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
@@ -160,7 +160,7 @@ public class KeyTable {
                 R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.Locator,
-                            new Integer[] { R.drawable.ic_left_hand_move, R.attr.key_ctrl_locator_bg_color });
+                            new Integer[] { R.drawable.ic_right_hand_pointer, R.attr.key_ctrl_locator_bg_color });
     }
 
     /** 创建基础按键 */
@@ -200,7 +200,7 @@ public class KeyTable {
                 punctuationKey("、"),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
-                ctrlKey(CtrlKey.Type.Locator).setDisabled(true),
+                ctrlKey(CtrlKey.Type.Locator),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("k").withReplacements("K"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInput) : ctrlKey(CtrlKey.Type.Enter),
