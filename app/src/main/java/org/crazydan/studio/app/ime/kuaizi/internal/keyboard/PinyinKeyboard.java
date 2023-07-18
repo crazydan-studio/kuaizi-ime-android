@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -147,7 +148,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     Key<?> closedKey = ((UserFingerMovingMsgData) data).closed;
 
                     // Note: 拼音不存在重复字母相邻的情况
-                    if (key != null && !key.isSameWith(input.getCurrentKey())) {
+                    if (key != null && !key.isSameWith(input.getLatestKey())) {
                         input.appendKey(key);
 
                         onPlayingInputAudio_DoubleTick(key);
@@ -165,6 +166,16 @@ public class PinyinKeyboard extends BaseKeyboard {
                     onPlayingInputAudio_SingleTick(key);
 
                     doSingleKeyInput(key);
+                }
+                break;
+            }
+            case KeyDoubleTap: {
+                // 双击字符，则替换前一个相同的输入字符：
+                // 因为双击会先触发单击，而单击时会添加一次该字符
+                if (key != null) {
+                    onPlayingInputAudio_SingleTick(key);
+
+                    onReplacementKeyInput(key);
                 }
                 break;
             }
@@ -366,6 +377,37 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         CharInput input = getInputList().getPending();
         onSingleKeyInput(input, key);
+    }
+
+    private void onReplacementKeyInput(CharKey key) {
+        CharInput input;
+
+        if (!getInputList().hasPending()) {
+            // Note: 标点是单个输入的，故，需向后替换已输入的标点
+            Input preInput = getInputList().getInputBeforeSelected();
+            if (preInput != null && key.isPunctuation() && preInput.isPunctuation()) {
+                input = (CharInput) preInput;
+            } else {
+                return;
+            }
+        } else {
+            input = getInputList().getPending();
+        }
+
+        Key<?> latestKey = input.getLatestKey();
+        if (!key.canReplaceTheKey(latestKey)) {
+            return;
+        }
+
+        CharKey latestCharKey = (CharKey) latestKey;
+        // Note: 在 Input 中的 key 可能不携带 replacement 信息，只能通过当前按键做判断
+        String newKeyText = key.nextReplacement(latestCharKey.getText());
+
+        CharKey newKey = KeyTable.alphabetKey(newKeyText);
+        input.replaceLatestKey(latestCharKey, newKey);
+
+        this.state = new State(State.Type.InputWaiting);
+        onContinuousInput(input, key, null, false);
     }
 
     private void onSingleKeyInput(CharInput input, CharKey key) {

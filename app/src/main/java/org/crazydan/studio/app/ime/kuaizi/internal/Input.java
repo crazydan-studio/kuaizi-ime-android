@@ -33,6 +33,9 @@ public interface Input {
     /** 是否为拼音输入 */
     boolean isPinyin();
 
+    /** 是否为标点 */
+    boolean isPunctuation();
+
     /** 是否为颜文字输入 */
     boolean isEmotion();
 
@@ -43,10 +46,13 @@ public interface Input {
     List<Key<?>> getKeys();
 
     /** 获取当前按键 */
-    Key<?> getCurrentKey();
+    Key<?> getLatestKey();
 
     /** 追加输入按键 */
     void appendKey(Key<?> key);
+
+    /** 替换最新的输入按键 */
+    void replaceLatestKey(Key<?> oldKey, Key<?> newKey);
 
     /** 获取输入字符列表 */
     List<String> getChars();

@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
@@ -31,11 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class CharKey extends BaseKey<CharKey> {
     private final Type type;
     private final String text;
+    private final List<String> replacements;
     private int fgColorAttrId;
 
     private CharKey(Type type, String text) {
         this.type = type;
         this.text = text;
+        this.replacements = new ArrayList<>();
+
+        // Note: 当前字符也需加入替换列表，
+        // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
+        withReplacements(text);
     }
 
     public static CharKey create(Type type, String text) {
@@ -50,6 +58,37 @@ public class CharKey extends BaseKey<CharKey> {
     /** 按键文本内容 */
     public String getText() {
         return this.text;
+    }
+
+    /** 添加可替换内容，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等 */
+    public CharKey withReplacements(String... replacements) {
+        for (String s : replacements) {
+            if (s != null && !s.isEmpty()) {
+                this.replacements.add(s);
+            }
+        }
+        return this;
+    }
+
+    /** 获取指定内容之后的可替换内容，循环获取，包括按键字符本身 */
+    public String nextReplacement(String s) {
+        int index = this.replacements.indexOf(s);
+        return index < 0 || index >= this.replacements.size() - 1
+               ? this.replacements.get(0)
+               : this.replacements.get(index + 1);
+    }
+
+    /** 判断是否可替换指定的按键 */
+    public boolean canReplaceTheKey(Key<?> key) {
+        if (!(key instanceof CharKey)
+            // 只有自身，则不做替换
+            || this.replacements.size() <= 1) {
+            return false;
+        } else if (this.equals(key)) {
+            return true;
+        }
+
+        return this.replacements.contains(((CharKey) key).getText());
     }
 
     /** 是否为标点 */

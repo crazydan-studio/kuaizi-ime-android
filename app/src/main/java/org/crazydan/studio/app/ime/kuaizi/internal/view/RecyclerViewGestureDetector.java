@@ -41,6 +41,8 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private static final long LONG_PRESS_TIMEOUT_MILLS = 200;
     /** 确定长按 tick 的超时时间 */
     private static final long LONG_PRESS_TICK_TIMEOUT_MILLS = 150;
+    /** 确定双击的超时时间 */
+    private static final long DOUBLE_TAP_TIMEOUT_MILLS = 400;
     /** 确定滑动的超时时间 */
     private static final long SLIPPING_TIMEOUT_MILLS = 400;
 
@@ -51,6 +53,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
+    private GestureData latestSingleTap;
 
     /** 绑定到 {@link RecyclerView} 上 */
     public RecyclerViewGestureDetector bind(RecyclerView view) {
@@ -191,7 +194,15 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     private void onSingleTap(GestureData data) {
-        triggerListeners(GestureType.SingleTap, data);
+        GestureData latestData = this.latestSingleTap;
+        this.latestSingleTap = data;
+
+        if (latestData != null //
+            && data.timestamp - latestData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS) {
+            triggerListeners(GestureType.DoubleTap, data);
+        } else {
+            triggerListeners(GestureType.SingleTap, data);
+        }
     }
 
     private void onMoving(GestureData data) {

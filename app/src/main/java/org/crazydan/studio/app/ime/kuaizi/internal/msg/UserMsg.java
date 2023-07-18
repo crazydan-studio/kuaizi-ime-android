@@ -33,6 +33,9 @@ public enum UserMsg {
 
     /** 单击按键 */
     KeySingleTap,
+    /** 双击按键 */
+    KeyDoubleTap,
+
     /** 手指移动 */
     FingerMoving,
     /** 手指滑动 */

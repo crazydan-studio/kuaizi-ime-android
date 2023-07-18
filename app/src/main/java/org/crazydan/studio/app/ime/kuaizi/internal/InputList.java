@@ -113,7 +113,7 @@ public class InputList {
         return this.cursor.pending;
     }
 
-    /** 获取以选中的输入 */
+    /** 获取已选中的输入 */
     public Input getSelected() {
         return this.cursor.selected;
     }
@@ -145,6 +145,15 @@ public class InputList {
 
     public List<Input> getInputs() {
         return this.inputs;
+    }
+
+    /** 获取已选中输入之前的输入 */
+    public Input getInputBeforeSelected() {
+        int cursorIndex = getCursorIndex();
+        if (cursorIndex <= 0) {
+            return null;
+        }
+        return this.inputs.get(cursorIndex - 1);
     }
 
     /**

@@ -65,6 +65,17 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public boolean isPunctuation() {
+        for (Key<?> key : this.keys) {
+            if (!(key instanceof CharKey) //
+                || !((CharKey) key).isPunctuation()) {
+                return false;
+            }
+        }
+        return !isEmpty();
+    }
+
+    @Override
     public boolean isEmotion() {
         return false;
     }
@@ -80,13 +91,25 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public Key<?> getCurrentKey() {
+    public Key<?> getLatestKey() {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }
 
     @Override
     public void appendKey(Key<?> key) {
         this.keys.add(key);
+    }
+
+    @Override
+    public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {
+        if (oldKey == null || newKey == null) {
+            return;
+        }
+
+        int oldKeyIndex = this.keys.lastIndexOf(oldKey);
+        if (oldKeyIndex >= 0) {
+            this.keys.set(oldKeyIndex, newKey);
+        }
     }
 
     @Override
