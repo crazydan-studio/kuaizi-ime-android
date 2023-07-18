@@ -184,6 +184,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 if (key.getType() != CtrlKey.Type.Locator) {
                     onPlayingInputAudio_SingleTick(key);
@@ -249,6 +250,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 onPlayingInputAudio_SingleTick(key);
 
