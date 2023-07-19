@@ -44,11 +44,11 @@ public class State {
         /** 滑行输入中 */
         SlippingInput,
         /** 输入组件光标定位 */
-        LocatingInputTargetCursor,
+        LocatingInputCursor,
         /** 输入组件光标已定位 */
         LocatingInputTargetCursorDone,
         /** 输入组件文本选择 */
-        SelectingInputTargetText,
+        SelectingInputText,
         /** 输入组件文本已选择 */
         SelectingInputTargetTextDone,
         /** 输入光标移动 */

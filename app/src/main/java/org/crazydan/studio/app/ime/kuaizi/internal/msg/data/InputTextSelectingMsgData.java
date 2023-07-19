@@ -17,31 +17,34 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import java.util.List;
-
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
- * {@link InputMsg#InputtingChars}消息数据
+ * {@link InputMsg#SelectingInputText}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-19
  */
-public class InputtingCharsMsgData extends CommonInputMsgData {
-    /** 当前已输入按键列表 */
-    public final List<Key<?>> inputs;
-    /** 当前按键 */
-    public final Key<?> current;
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class InputTextSelectingMsgData extends CommonInputMsgData {
+    /** 1 号锚点信息 */
+    public final Motion anchor1;
+    /** 2 号锚点信息 */
+    public final Motion anchor2;
 
-    public InputtingCharsMsgData(List<Key<?>> inputs, Key<?> current, Key<?> closed, Keyboard.KeyFactory keyFactory) {
+    /** 触发消息的按键 */
+    public final Key<?> key;
+
+    public InputTextSelectingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor1, Motion anchor2) {
         super(keyFactory);
+        this.key = key;
+        this.anchor1 = anchor1;
+        this.anchor2 = anchor2;
+    }
 
-        this.inputs = inputs;
-        this.current = current;
-        this.closed = closed;
+    public InputTextSelectingMsgData(Key<?> key, Motion anchor1, Motion anchor2) {
+        this(null, key, anchor1, anchor2);
     }
 }

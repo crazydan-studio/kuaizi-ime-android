@@ -20,6 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
 
 /**
+ * {@link State.Type#ChoosingInputCandidate}的状态数据
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */

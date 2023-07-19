@@ -52,9 +52,13 @@
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_toggle_input_spell_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_input_selection_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_input_selection_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_exit_bg_color">@color/color_red_800</item>
+        <item name="key_ctrl_exit_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>
@@ -115,9 +119,13 @@
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_toggle_input_spell_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_input_selection_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_input_selection_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_exit_bg_color">@color/color_red_800</item>
+        <item name="key_ctrl_exit_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>

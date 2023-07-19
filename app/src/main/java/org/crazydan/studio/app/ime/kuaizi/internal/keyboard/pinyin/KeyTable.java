@@ -159,8 +159,17 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchToPunctuationKeyboard, new Integer[] {
                 R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.Locator,
+        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
                             new Integer[] { R.drawable.ic_right_hand_pointer, R.attr.key_ctrl_locator_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursorAnchor_1,
+                            new Integer[] { R.drawable.ic_map_location_pin_2, R.attr.key_ctrl_locator_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursorAnchor_2,
+                            new Integer[] { R.drawable.ic_map_location_pin_2, R.attr.key_ctrl_locator_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Exit,
+                            new Integer[] { R.drawable.ic_right_hand_exit, R.attr.key_ctrl_exit_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToInputSelection, new Integer[] {
+                R.drawable.ic_right_hand_selection, R.attr.key_ctrl_switch_to_input_selection_bg_color
+        });
     }
 
     /** 创建基础按键 */
@@ -200,7 +209,7 @@ public class KeyTable {
                 punctuationKey("、"),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
-                ctrlKey(CtrlKey.Type.Locator),
+                ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("k").withReplacements("K"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInput) : ctrlKey(CtrlKey.Type.Enter),
@@ -340,6 +349,23 @@ public class KeyTable {
 
                 wordIndex += 1;
             }
+        }
+
+        return gridKeys;
+    }
+
+    /** 创建定位按键 */
+    public static Key<?>[][] createLocatorKeys(Keyboard.KeyFactory.Option option, Configure config, int amount) {
+        Key<?>[][] gridKeys = new Key[6][7];
+
+        if (amount == 1) {
+            gridKeys[1][6] = ctrlKey(CtrlKey.Type.SwitchToInputSelection);
+            gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursorAnchor_1);
+            gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
+        } else if (amount == 2) {
+            gridKeys[3][1] = ctrlKey(CtrlKey.Type.LocateInputCursorAnchor_1);
+            gridKeys[3][5] = ctrlKey(CtrlKey.Type.LocateInputCursorAnchor_2);
+            gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
         }
 
         return gridKeys;

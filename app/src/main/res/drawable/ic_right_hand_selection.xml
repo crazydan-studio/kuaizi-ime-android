@@ -1,0 +1,36 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/7968864/adobe_illustrator_tool_direct_selection_selection_icon -->
+    <path
+            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:pathData="M22.509,16.754 L13.093,8.955c-0.564,-0.472 -1.351,-0.542 -1.991,-0.184 -0.645,0.358 -0.998,1.058 -0.9,1.79l1.595,11.9c0.098,0.716 0.613,1.296 1.307,1.481 0.146,0.038 0.298,0.06 0.45,0.06 0.559,0 1.09,-0.26 1.432,-0.727 1.508,-2.034 3.916,-3.292 6.443,-3.374 0.743,-0.022 1.378,-0.494 1.616,-1.199 0.249,-0.711 0.033,-1.47 -0.537,-1.947zM13.516,22.362c-0.092,-0.022 -0.103,-0.092 -0.103,-0.119L11.819,10.343c-0.005,-0.027 -0.016,-0.103 0.076,-0.152 0.027,-0.016 0.054,-0.022 0.076,-0.022 0.043,0 0.076,0.027 0.092,0.038L21.467,18.007c0.022,0.016 0.081,0.065 0.043,0.163 -0.033,0.098 -0.103,0.098 -0.136,0.098 -3.021,0.098 -5.901,1.605 -7.696,4.03 -0.038,0.065 -0.098,0.087 -0.163,0.065z" />
+    <path
+            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:pathData="M9.79,3.249l1.627,0l0,4.225l-1.627,0z" />
+    <path
+            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:pathData="M4.101,8.776l4.225,0l0,1.627l-4.225,0z" />
+    <path
+            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:pathData="m2.577,14.319c-0.054,0 -0.103,-0.043 -0.103,-0.103L2.474,1.725c0,-0.054 0.043,-0.103 0.103,-0.103l14.883,0c0.054,0 0.103,0.043 0.103,0.103l0,8.515l1.627,1.345L19.189,1.725C19.184,0.776 18.408,-0 17.459,-0L2.577,-0C1.627,-0 0.852,0.776 0.852,1.725L0.852,14.221C0.852,15.17 1.627,15.946 2.577,15.946l6.568,0l-0.217,-1.627z" />
+</vector>

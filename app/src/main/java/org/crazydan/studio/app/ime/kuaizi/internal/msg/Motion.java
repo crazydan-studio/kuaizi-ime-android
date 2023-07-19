@@ -15,28 +15,38 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
-
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /**
- * {@link UserMsg#FingerMoving}消息数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-19
  */
-public class UserFingerMovingMsgData extends UserMsgData {
-    /** 运动信息 */
-    public final Motion motion;
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class Motion {
+    /** 移动方向 */
+    public final Direction direction;
+    /** 移动距离 */
+    public final int distance;
+    public final long timestamp;
 
-    public UserFingerMovingMsgData(Key<?> target, Key<?> closed, Motion motion) {
-        super(target);
-        this.closed = closed;
-        this.motion = motion;
+    public Motion() {
+        this(Direction.none, 0, 0);
+    }
+
+    public Motion(Motion motion) {
+        this(motion.direction, motion.distance, motion.timestamp);
+    }
+
+    public Motion(Direction direction, int distance, long timestamp) {
+        this.direction = direction;
+        this.distance = distance;
+        this.timestamp = timestamp;
+    }
+
+    public enum Direction {
+        up,
+        down,
+        right,
+        left,
+        none,
     }
 }

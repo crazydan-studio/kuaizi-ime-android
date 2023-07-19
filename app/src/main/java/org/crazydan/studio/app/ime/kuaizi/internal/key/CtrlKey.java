@@ -158,10 +158,18 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         SwitchIME,
         /** 切换左右手模式 */
         SwitchHandMode,
-        /** 定位按钮 */
-        Locator,
+        /** 输入光标定位按钮 */
+        LocateInputCursor,
+        /** 1 号定位锚定按钮 */
+        LocateInputCursorAnchor_1,
+        /** 2 号定位锚定按钮 */
+        LocateInputCursorAnchor_2,
+        /** （从光标定位）切换至输入选择模式 */
+        SwitchToInputSelection,
         /** 回车 */
         Enter,
+        /** 退出 */
+        Exit,
         /** 切换至字母数字键盘 */
         SwitchToAlphanumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */

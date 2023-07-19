@@ -1,0 +1,28 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/6646407/door_essentials_exit_ui_icon -->
+    <path
+            android:fillColor="?attr/key_ctrl_exit_fg_color"
+            android:pathData="M23.925,9.943C23.839,9.857 23.839,9.771 23.754,9.686L20.325,6.257c-0.343,-0.343 -0.857,-0.343 -1.2,0 -0.343,0.343 -0.343,0.857 0,1.2l1.971,1.971h-4.8v-2.571,-6C16.296,0.343 15.954,0 15.439,0H0.868c0,0 0,0 0,0 -0.086,0 -0.257,0 -0.343,0.086 0,0 0,0 -0.086,0 0,0 -0.086,0 -0.086,0.086 0,0 -0.086,0.086 -0.086,0.086 0,0 0,0 0,0 -0.086,0.086 -0.171,0.171 -0.171,0.257 0,0 0,0 0,0.086 -0.086,0.086 -0.086,0.171 -0.086,0.257V19.714c0,0.343 0.171,0.686 0.514,0.771L8.239,23.914C8.325,24 8.496,24 8.582,24c0.171,0 0.343,-0.086 0.429,-0.171C9.268,23.657 9.439,23.4 9.439,23.143v-2.571h6c0.514,0 0.857,-0.343 0.857,-0.857v-8.571h4.8L19.125,13.114c-0.343,0.343 -0.343,0.857 0,1.2 0.171,0.171 0.429,0.257 0.6,0.257 0.171,0 0.429,-0.086 0.6,-0.257l3.429,-3.429C23.839,10.8 23.925,10.714 23.925,10.629c0.086,-0.257 0.086,-0.429 0,-0.686zM6.011,16.286c0,0.514 -0.343,0.857 -0.857,0.857 -0.514,0 -0.857,-0.343 -0.857,-0.857V12.857C4.296,12.343 4.639,12 5.154,12c0.514,0 0.857,0.343 0.857,0.857zM14.582,6.857V18.857H9.439V4.286C9.439,3.943 9.268,3.6 8.925,3.514l-4.029,-1.8h9.686z"
+            android:strokeWidth="0.857143" />
+</vector>

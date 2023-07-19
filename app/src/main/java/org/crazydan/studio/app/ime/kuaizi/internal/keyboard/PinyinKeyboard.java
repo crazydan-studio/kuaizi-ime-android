@@ -33,12 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.ChoosingInputCandidateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.LocatingInputCursorData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.SelectingInputTextData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
@@ -77,31 +82,33 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        if (key instanceof CharKey) {
-            onCharKeyMsg(msg, (CharKey) key, data);
-        } else if (key instanceof CtrlKey) {
-            if (this.state.type == State.Type.ChoosingInputCandidate) {
-                onInputCandidatesCtrlKeyMsg(msg, (CtrlKey) key, data);
-            } else {
-                onCtrlKeyMsg(msg, (CtrlKey) key, data);
-            }
-        } else if (key instanceof InputWordKey) {
-            if (this.state.type == State.Type.ChoosingInputCandidate) {
-                onInputCandidateKeyMsg(msg, (InputWordKey) key, data);
-            }
-        } else if (key == null) {
-            switch (this.state.type) {
-                case SlippingInput:
-                    // Note: 滑行输入过程中，消息体不一定带有 target 数据，故而单独执行响应
-                    onCharKeyMsg(msg, null, data);
-                    break;
-                case ChoosingInputCandidate:
-                    // Note: 手指滑动消息一定不带 target 数据，故而单独处理一次
-                    if (msg == UserMsg.FingerSlipping) {
-                        onInputCandidatesCtrlKeyMsg(msg, null, data);
-                    }
-                    break;
-            }
+        switch (this.state.type) {
+            case SlippingInput:
+                // Note: 滑动输入可能由候选字按键触发
+                if (key instanceof InputWordKey) {
+                    key = ((InputWordKey) key).getCharKey();
+                }
+                onSlippingInputCharKeyMsg(msg, (CharKey) key, data);
+                break;
+            case ChoosingInputCandidate:
+                if (key instanceof InputWordKey) {
+                    onInputCandidatesKeyMsg(msg, (InputWordKey) key, data);
+                } else if (key instanceof CtrlKey) {
+                    onInputCandidatesCtrlKeyMsg(msg, (CtrlKey) key, data);
+                } else {
+                    onInputCandidatesPageSlippingMsg(msg, key, data);
+                }
+                break;
+            case LocatingInputCursor:
+            case SelectingInputText:
+                onLocatingInputCursorCtrlKeyMsg(msg, (CtrlKey) key, data);
+                break;
+            default:
+                if (key instanceof CharKey) {
+                    onCharKeyMsg(msg, (CharKey) key, data);
+                } else if (key instanceof CtrlKey) {
+                    onCtrlKeyMsg(msg, (CtrlKey) key, data);
+                }
         }
     }
 
@@ -109,7 +116,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyLongPressStart: {
                 // 开始滑行输入
-                if (key != null && key.getType() == CharKey.Type.Alphabet) {
+                if (key.getType() == CharKey.Type.Alphabet) {
                     this.state = new State(State.Type.SlippingInput);
 
                     CharInput input = getInputList().newPending();
@@ -121,61 +128,58 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case KeyLongPressEnd: {
-                // 选择候选字
-                if (this.state.type == State.Type.SlippingInput) {
-                    CharInput input = getInputList().getPending();
-
-                    // 若无额外候选字，则直接确认输入
-                    if (!input.hasExtraCandidates()) {
-                        // 无候选字的输入，视为无效，直接丢弃
-                        if (!input.hasWord()) {
-                            getInputList().dropPending();
-                        } else {
-                            getInputList().confirmPending();
-                        }
-                        onInputtingCharsDone();
-                    } else {
-                        onChoosingInputCandidate(input, true);
-                    }
-                }
-                break;
-            }
-            case FingerMoving: {
-                // 添加拼音后继字母
-                if (this.state.type == State.Type.SlippingInput) {
-                    CharInput input = getInputList().getPending();
-                    Key<?> closedKey = ((UserFingerMovingMsgData) data).closed;
-
-                    // Note: 拼音不存在重复字母相邻的情况
-                    if (key != null && !key.isSameWith(input.getLatestKey())) {
-                        input.appendKey(key);
-
-                        onPlayingInputAudio_DoubleTick(key);
-                    }
-
-                    if (key != null || closedKey != null) {
-                        onContinuousInput(input, key, closedKey, true);
-                    }
-                }
-                break;
-            }
             case KeySingleTap: {
                 // 单字符输入
-                if (key != null) {
-                    onPlayingInputAudio_SingleTick(key);
+                onPlayingInputAudio_SingleTick(key);
 
-                    doSingleKeyInput(key);
-                }
+                doSingleKeyInput(key);
                 break;
             }
             case KeyDoubleTap: {
                 // 双击字符，则替换前一个相同的输入字符：
                 // 因为双击会先触发单击，而单击时会添加一次该字符
-                if (key != null) {
-                    onPlayingInputAudio_SingleTick(key);
+                onPlayingInputAudio_SingleTick(key);
 
-                    onReplacementKeyInput(key);
+                onReplacementKeyInput(key);
+                break;
+            }
+        }
+    }
+
+    private void onSlippingInputCharKeyMsg(UserMsg msg, CharKey key, UserMsgData data) {
+        switch (msg) {
+            case FingerMoving: {
+                // 添加拼音后继字母
+                CharInput input = getInputList().getPending();
+                Key<?> closedKey = ((UserFingerMovingMsgData) data).closed;
+
+                // Note: 拼音不存在重复字母相邻的情况
+                if (key != null && !key.isSameWith(input.getLatestKey())) {
+                    input.appendKey(key);
+
+                    onPlayingInputAudio_DoubleTick(key);
+                }
+
+                if (key != null || closedKey != null) {
+                    onContinuousInput(input, key, closedKey, true);
+                }
+                break;
+            }
+            case KeyLongPressEnd: {
+                // 选择候选字
+                CharInput input = getInputList().getPending();
+
+                // 若无额外候选字，则直接确认输入
+                if (!input.hasExtraCandidates()) {
+                    // 无候选字的输入，视为无效，直接丢弃
+                    if (!input.hasWord()) {
+                        getInputList().dropPending();
+                    } else {
+                        getInputList().confirmPending();
+                    }
+                    onInputtingCharsDone();
+                } else {
+                    onChoosingInputCandidate(input, true);
                 }
                 break;
             }
@@ -186,7 +190,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
-                if (key.getType() != CtrlKey.Type.Locator) {
+                if (key.getType() != CtrlKey.Type.LocateInputCursor) {
                     onPlayingInputAudio_SingleTick(key);
                 }
 
@@ -231,7 +235,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyLongPressStart: {
-                // TODO 长按定位按钮
+                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+                    onPlayingInputAudio_DoubleTick(key);
+
+                    onLocatingInputCursor(key, null);
+                }
                 break;
             }
             case KeyLongPressTick: {
@@ -248,8 +256,57 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    private void onInputCandidatesKeyMsg(UserMsg msg, InputWordKey key, UserMsgData data) {
+        CharKey charKey = key.getCharKey();
+
+        switch (msg) {
+            case FingerSlipping: {
+                onInputCandidatesPageSlippingMsg(msg, key, data);
+                break;
+            }
+            case KeyLongPressStart: {
+                if (charKey != null) {
+                    // 长按标点，则由单击响应处理
+                    if (charKey.isPunctuation()) {
+                        onPlayingInputAudio_DoubleTick(key);
+
+                        doSingleKeyInput(charKey);
+                    }
+                    // 开始滑行输入
+                    else {
+                        // Note: 在 onCharKeyMsg 中会播放长按的按键音，
+                        // 故而，这里不再播放
+                        onCharKeyMsg(msg, charKey, new UserMsgData(key));
+                    }
+                }
+                break;
+            }
+            case KeySingleTap: {
+                // 确认候选字
+                if (key.hasWord()) {
+                    onPlayingInputAudio_SingleTick(key);
+
+                    InputWord word = key.getWord();
+                    getInputList().getPending().setWord(word);
+                    getInputList().confirmPending();
+
+                    onInputtingCharsDone();
+//                }
+//                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
+//                else if (charKey != null && charKey.isPunctuation()) {
+//                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
+                }
+            }
+            break;
+        }
+    }
+
     private void onInputCandidatesCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
+            case FingerSlipping: {
+                onInputCandidatesPageSlippingMsg(msg, key, data);
+                break;
+            }
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 onPlayingInputAudio_SingleTick(key);
@@ -319,56 +376,21 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
+        }
+    }
+
+    private void onInputCandidatesPageSlippingMsg(UserMsg msg, Key<?> key, UserMsgData data) {
+        switch (msg) {
             case FingerSlipping: {
                 // 候选字翻页
-                boolean pageUp = ((UserFingerSlippingMsgData) data).upward;
+                Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
                 CharInput input = getInputList().getPending();
 
                 // Note: 在该函数中根据实际是否有上下翻页来确定是否播放翻页音效
                 onChoosingInputCandidate(input, pageUp);
-            }
-            break;
-        }
-    }
-
-    private void onInputCandidateKeyMsg(UserMsg msg, InputWordKey key, UserMsgData data) {
-        CharKey charKey = key.getCharKey();
-
-        switch (msg) {
-            case KeyLongPressStart: {
-                if (charKey != null) {
-                    // 长按标点，则由单击响应处理
-                    if (charKey.isPunctuation()) {
-                        onPlayingInputAudio_DoubleTick(key);
-
-                        doSingleKeyInput(charKey);
-                    }
-                    // 开始滑行输入
-                    else {
-                        // Note: 在 onCharKeyMsg 中会播放长按的按键音，
-                        // 故而，这里不再播放
-                        onCharKeyMsg(msg, charKey, new UserMsgData(key));
-                    }
-                }
                 break;
             }
-            case KeySingleTap: {
-                // 确认候选字
-                if (key.hasWord()) {
-                    onPlayingInputAudio_SingleTick(key);
-
-                    InputWord word = key.getWord();
-                    getInputList().getPending().setWord(word);
-                    getInputList().confirmPending();
-
-                    onInputtingCharsDone();
-//                }
-//                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
-//                else if (charKey != null && charKey.isPunctuation()) {
-//                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
-                }
-            }
-            break;
         }
     }
 
@@ -609,4 +631,111 @@ public class PinyinKeyboard extends BaseKeyboard {
     private KeyTable.Configure createKeyTableConfigure() {
         return new KeyTable.Configure(getHandMode(), !getInputList().isEmpty());
     }
+
+    // <<<<<< 输入定位逻辑
+    private void onLocatingInputCursor(CtrlKey key, Motion motion) {
+        KeyFactory keyFactory = null;
+        LocatingInputCursorData stateData;
+
+        if (this.state.type != State.Type.LocatingInputCursor) {
+            stateData = new LocatingInputCursorData();
+            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure(), 1);
+
+            this.state = new State(State.Type.LocatingInputCursor, stateData);
+        } else {
+            stateData = (LocatingInputCursorData) this.state.data;
+            stateData.updateAnchor(motion);
+        }
+
+        InputMsgData data = new InputCursorLocatingMsgData(keyFactory, key, stateData.getAnchor());
+        onInputMsg(InputMsg.LocatingInputCursor, data);
+    }
+
+    private void onSelectingInputText(CtrlKey key, Motion motion) {
+        KeyFactory keyFactory = null;
+        SelectingInputTextData stateData;
+        if (this.state.type != State.Type.SelectingInputText) {
+            stateData = new SelectingInputTextData();
+            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure(), 2);
+
+            this.state = new State(State.Type.SelectingInputText, stateData);
+        } else {
+            stateData = (SelectingInputTextData) this.state.data;
+
+            switch (key.getType()) {
+                case LocateInputCursorAnchor_1:
+                    stateData.updateAnchor1(motion);
+                    stateData.resetAnchor2(); // 表示 anchor #2 保持不动
+                    break;
+                case LocateInputCursorAnchor_2:
+                    stateData.resetAnchor1(); // 表示 anchor #1 保持不动
+                    stateData.updateAnchor2(motion);
+                    break;
+            }
+        }
+
+        InputMsgData data = new InputTextSelectingMsgData(keyFactory,
+                                                          key,
+                                                          stateData.getAnchor1(),
+                                                          stateData.getAnchor2());
+
+        onInputMsg(InputMsg.SelectingInputText, data);
+    }
+
+    private void onLocatingInputCursorCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
+        switch (msg) {
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    // 点击 退出 按钮，则退回到前一个状态
+                    case Exit:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        switch (this.state.type) {
+                            case LocatingInputCursor:
+                                onInputtingCharsDone();
+                                break;
+                            case SelectingInputText:
+                                onLocatingInputCursor(key, null);
+                                break;
+                        }
+                        break;
+                    // 点击 输入选择 按钮，则切换到输入选择模式
+                    case SwitchToInputSelection:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        if (this.state.type == State.Type.LocatingInputCursor) {
+                            onSelectingInputText(key, null);
+                        }
+                        break;
+                }
+                break;
+            }
+            case FingerSlipping:
+                // Note: 仅在按键上的滑动才有效
+                if (key != null) {
+                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                    switch (key.getType()) {
+                        case LocateInputCursorAnchor_1:
+                            onPlayingInputAudio_SingleTick(key);
+
+                            switch (this.state.type) {
+                                case LocatingInputCursor:
+                                    onLocatingInputCursor(key, motion);
+                                    break;
+                                case SelectingInputText:
+                                    onSelectingInputText(key, motion);
+                                    break;
+                            }
+                            break;
+                        case LocateInputCursorAnchor_2:
+                            onPlayingInputAudio_SingleTick(key);
+
+                            onSelectingInputText(key, motion);
+                            break;
+                    }
+                }
+                break;
+        }
+    }
+    // >>>>>>>>
 }

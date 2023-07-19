@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
@@ -147,25 +148,29 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         Key<?> targetKey = getKey(keyView);
         Key<?> closedKey = getKey(closedKeyView);
 
-        UserFingerMovingMsgData msg = new UserFingerMovingMsgData(targetKey, closedKey);
+        Motion motion = ((RecyclerViewGestureDetector.MovingGestureData) data).motion;
+        UserFingerMovingMsgData msg = new UserFingerMovingMsgData(targetKey, closedKey, motion);
+
         this.keyboardView.onUserMsg(UserMsg.FingerMoving, msg);
     }
 
     private void onSlipping(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
-        boolean upward = ((RecyclerViewGestureDetector.SlippingGestureData) data).upward;
-        UserFingerSlippingMsgData msg = new UserFingerSlippingMsgData(upward);
+        Key<?> targetKey = getKey(keyView);
+
+        Motion motion = ((RecyclerViewGestureDetector.SlippingGestureData) data).motion;
+        UserFingerSlippingMsgData msg = new UserFingerSlippingMsgData(targetKey, motion);
 
         this.keyboardView.onUserMsg(UserMsg.FingerSlipping, msg);
     }
 
-    private void onKeyUserMsg(UserMsg msg, KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData gData) {
+    private void onKeyUserMsg(UserMsg msg, KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         Key<?> targetKey = getKey(keyView);
         if (targetKey == null) {
             return;
         }
 
-        UserMsgData uData = new UserMsgData(targetKey);
-        this.keyboardView.onUserMsg(msg, uData);
+        UserMsgData userData = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(msg, userData);
     }
 
     private boolean isAvailableKeyView(KeyView<?, ?> keyView) {

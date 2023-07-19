@@ -40,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
@@ -149,14 +150,19 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputtingChars:
+            case PlayingInputAudio: {
+                onPlayingInputAudioMsg((PlayingInputAudioMsgData) data);
+                break;
+            }
+            case InputtingChars: {
                 onInputtingCharsMsg((InputtingCharsMsgData) data);
                 break;
+            }
             case InputtingCharsDone:
             case ChoosingInputCandidate:
                 break;
-            case PlayingInputAudio: {
-                onPlayingInputAudio((PlayingInputAudioMsgData) data);
+            case LocatingInputCursor: {
+                onLocatingInputTargetCursorMsg((InputCursorLocatingMsgData) data);
                 break;
             }
         }
@@ -169,7 +175,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.animator.setFadeOutKey(data.current);
     }
 
-    private void onPlayingInputAudio(PlayingInputAudioMsgData data) {
+    private void onPlayingInputAudioMsg(PlayingInputAudioMsgData data) {
         switch (data.audioType) {
             case SingleTick:
                 this.audioPlayer.play(R.raw.tick_single);
@@ -181,6 +187,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                 this.audioPlayer.play(R.raw.page_flip);
                 break;
         }
+    }
+
+    private void onLocatingInputTargetCursorMsg(InputCursorLocatingMsgData data) {
     }
 
     private void relayout() {

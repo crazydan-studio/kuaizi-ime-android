@@ -27,8 +27,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
  * {@link RecyclerView} 的手势检测器
@@ -54,6 +56,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
     private GestureData latestSingleTap;
+    private View prevView;
 
     /** 绑定到 {@link RecyclerView} 上 */
     public RecyclerViewGestureDetector bind(RecyclerView view) {
@@ -69,6 +72,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     public void reset() {
         this.longPressing.set(false);
         this.moving = false;
+        this.latestSingleTap = null;
 
         this.gestureHandler.clear();
         this.movingTracker.clear();
@@ -90,6 +94,13 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN: {
+                // 事件发生的视图做了切换，则需要重置事件监测
+                View view = rv.findChildViewUnder(e.getX(), e.getY());
+                if (this.prevView != view) {
+                    reset();
+                }
+                this.prevView = view;
+
                 // Note: 优先触发长按监听，以确保其在指定的延时后能够及时执行，
                 // 而不会因为后续监听的执行导致其执行被延后
                 startLongPress(data);
@@ -209,7 +220,14 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         this.moving = true;
         this.movingTracker.add(data);
 
-        triggerListeners(GestureType.Moving, data);
+        int size = this.movingTracker.size();
+        GestureData g1 = size > 1 ? this.movingTracker.get(0) : null;
+        GestureData g2 = this.movingTracker.get(size - 1);
+
+        Motion motion = createMotion(g2, g1);
+        GestureData newData = new MovingGestureData(data, motion);
+
+        triggerListeners(GestureType.Moving, newData);
     }
 
     private void onMovingEnd(GestureData data) {
@@ -220,17 +238,16 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private void onSlipping(GestureData data) {
         int size = this.movingTracker.size();
         GestureData g1 = this.movingTracker.get(0);
+        // Note: g2 应该始终与 data 相同
         GestureData g2 = this.movingTracker.get(size - 1);
 
-        float dx = g2.x - g1.x;
-        float dy = g2.y - g1.y;
-        // 忽略水平方向滑动
-        if (Math.abs(dy) <= Math.abs(dx)) {
+        Motion motion = createMotion(g2, g1);
+        if (motion.distance <= 0) {
             return;
         }
 
-        boolean upward = dy < 0;
-        GestureData newData = new SlippingGestureData(data, upward);
+        // Note: 坐标位置设置为事件初始发生位置
+        GestureData newData = new SlippingGestureData(g1, motion);
 
         triggerListeners(GestureType.Slipping, newData);
     }
@@ -251,6 +268,35 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         for (Listener listener : this.listeners) {
             listener.onGesture(type, data);
         }
+    }
+
+    private Motion createMotion(GestureData newData, GestureData oldData) {
+        if (oldData == null) {
+            return new Motion(Motion.Direction.none, 0, newData.timestamp);
+        }
+
+        long timestamp = newData.timestamp;
+
+        double dx = newData.x - oldData.x;
+        double dy = newData.y - oldData.y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        double angle = Math.toDegrees(Math.acos(dx / distance));
+
+        Motion.Direction direction;
+        // Note: 屏幕绘图坐标与空间坐标存在上下翻转关系
+        //  ----- x
+        //  |
+        //  |
+        //  y
+        if (angle >= 45 && angle < 45 + 90) {
+            direction = dy > 0 ? Motion.Direction.down : Motion.Direction.up;
+        } else if (angle >= 45 + 90 && angle <= 180) {
+            direction = Motion.Direction.left;
+        } else {
+            direction = Motion.Direction.right;
+        }
+
+        return new Motion(direction, (int) distance, timestamp);
     }
 
     public enum GestureType {
@@ -300,12 +346,21 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
     }
 
-    public static class SlippingGestureData extends GestureData {
-        public final boolean upward;
+    public static class MovingGestureData extends GestureData {
+        public final Motion motion;
 
-        public SlippingGestureData(GestureData g, boolean upward) {
+        public MovingGestureData(GestureData g, Motion motion) {
             super(g.x, g.y, g.timestamp);
-            this.upward = upward;
+            this.motion = motion;
+        }
+    }
+
+    public static class SlippingGestureData extends GestureData {
+        public final Motion motion;
+
+        public SlippingGestureData(GestureData g, Motion motion) {
+            super(g.x, g.y, g.timestamp);
+            this.motion = motion;
         }
     }
 

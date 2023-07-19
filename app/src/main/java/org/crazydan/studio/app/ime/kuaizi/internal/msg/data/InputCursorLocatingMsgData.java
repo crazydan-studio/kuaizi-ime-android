@@ -17,31 +17,31 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import java.util.List;
-
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
- * {@link InputMsg#InputtingChars}消息数据
+ * {@link InputMsg#LocatingInputCursor}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-18
  */
-public class InputtingCharsMsgData extends CommonInputMsgData {
-    /** 当前已输入按键列表 */
-    public final List<Key<?>> inputs;
-    /** 当前按键 */
-    public final Key<?> current;
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class InputCursorLocatingMsgData extends CommonInputMsgData {
+    /** 锚点信息 */
+    public final Motion anchor;
 
-    public InputtingCharsMsgData(List<Key<?>> inputs, Key<?> current, Key<?> closed, Keyboard.KeyFactory keyFactory) {
+    /** 触发消息的按键 */
+    public final Key<?> key;
+
+    public InputCursorLocatingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
         super(keyFactory);
+        this.key = key;
+        this.anchor = anchor;
+    }
 
-        this.inputs = inputs;
-        this.current = current;
-        this.closed = closed;
+    public InputCursorLocatingMsgData(Key<?> key, Motion anchor) {
+        this(null, key, anchor);
     }
 }

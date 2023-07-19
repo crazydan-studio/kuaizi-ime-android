@@ -28,7 +28,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -58,6 +61,8 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
 
         this.imeView.keyboard.addInputMsgListener(this);
         this.imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
+
+        this.editText.setText("这是一段测试文本\nThis is a text for testing\n欢迎使用筷字输入法\nThanks for using Kuaizi Input Method");
     }
 
     @Override
@@ -69,6 +74,14 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
             }
             case InputBackwardDeleting: {
                 backwardDeleteInput();
+                break;
+            }
+            case LocatingInputCursor: {
+                locateInputCursor((InputCursorLocatingMsgData) data);
+                break;
+            }
+            case SelectingInputText: {
+                selectInputText((InputTextSelectingMsgData) data);
                 break;
             }
             case IMESwitching: {
@@ -83,12 +96,14 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
 
         this.editText.getText().replace(start, end, text);
+        // 移动到替换后的文本内容之后
+        this.editText.setSelection(start + text.length());
     }
 
     private void backwardDeleteInput() {
         Editable text = this.editText.getText();
-        int len = text.toString().length();
-        if (len == 0) {
+        int length = text.toString().length();
+        if (length == 0) {
             return;
         }
 
@@ -104,5 +119,52 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         else {
             text.delete(start, end);
         }
+    }
+
+    private void locateInputCursor(InputCursorLocatingMsgData data) {
+        Motion anchor = data.anchor;
+        if (anchor == null || anchor.distance <= 0) {
+            return;
+        }
+
+        Editable text = this.editText.getText();
+        int length = text.toString().length();
+        if (length == 0) {
+            return;
+        }
+
+        int start = moveSelectionCursor(anchor, length, this.editText.getSelectionStart());
+        this.editText.setSelection(start);
+    }
+
+    private void selectInputText(InputTextSelectingMsgData data) {
+        Motion anchor1 = data.anchor1;
+        Motion anchor2 = data.anchor2;
+
+        Editable text = this.editText.getText();
+        int length = text.toString().length();
+        if (length == 0) {
+            return;
+        }
+
+        int start = moveSelectionCursor(anchor1, length, this.editText.getSelectionStart());
+        int end = moveSelectionCursor(anchor2, length, this.editText.getSelectionEnd());
+
+        this.editText.setSelection(start, end);
+    }
+
+    private int moveSelectionCursor(Motion anchor, int length, int current) {
+        switch (anchor.direction) {
+            case left:
+            case up:
+                current -= anchor.distance;
+                break;
+            case right:
+            case down:
+                current += anchor.distance;
+                break;
+        }
+
+        return Math.min(length, Math.max(0, current));
     }
 }

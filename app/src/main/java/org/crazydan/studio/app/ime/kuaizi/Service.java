@@ -21,11 +21,14 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedText;
+import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -33,7 +36,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -133,7 +139,19 @@ public class Service extends InputMethodService implements InputMsgListener {
                 break;
             }
             case InputBackwardDeleting: {
-                backwardDeleteInput();
+                // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
+                //backwardDeleteInput();
+                backwardDeleteInputByKeyEvent();
+                break;
+            }
+            case LocatingInputCursor: {
+                // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
+                //locateInputCursor((InputCursorLocatingMsgData) data);
+                locateInputCursorByKeyEvent((InputCursorLocatingMsgData) data);
+                break;
+            }
+            case SelectingInputText: {
+                selectInputText((InputTextSelectingMsgData) data);
                 break;
             }
             case IMESwitching: {
@@ -167,24 +185,25 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void backwardDeleteInput() {
-        // 更通用方式：发送 del 按键事件，由组件处理删除
-        sendKey(KeyEvent.KEYCODE_DEL);
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
 
-//        InputConnection ic = getCurrentInputConnection();
-//        if (ic == null) {
-//            return;
-//        }
-//
-//        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
-//        CharSequence selectedText = ic.getSelectedText(0);
-//        // 无选中的文本，则删除当前光标前的 1 个字符
-//        if (TextUtils.isEmpty(selectedText)) {
-//            ic.deleteSurroundingText(1, 0);
-//        }
-//        // 否则，删除选中的文本
-//        else {
-//            ic.commitText("", 1);
-//        }
+        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
+        CharSequence selectedText = ic.getSelectedText(0);
+        // 无选中的文本，则删除当前光标前的 1 个字符
+        if (TextUtils.isEmpty(selectedText)) {
+            ic.deleteSurroundingText(1, 0);
+        }
+        // 否则，删除选中的文本
+        else {
+            ic.commitText("", 1);
+        }
+    }
+
+    private void backwardDeleteInputByKeyEvent() {
+        sendKey(KeyEvent.KEYCODE_DEL);
     }
 
     private void switchIME() {
@@ -194,6 +213,65 @@ public class Service extends InputMethodService implements InputMsgListener {
         if (manager != null) {
             manager.showInputMethodPicker();
         }
+    }
+
+    private void locateInputCursor(InputCursorLocatingMsgData data) {
+        Motion anchor = data.anchor;
+        if (anchor == null || anchor.distance <= 0) {
+            return;
+        }
+
+        ExtractedText extractedText = getExtractedText();
+        if (extractedText == null) {
+            return;
+        }
+
+        int length = extractedText.text.length();
+        int start = moveSelectionCursor(anchor, length, extractedText.selectionStart);
+
+        InputConnection ic = getCurrentInputConnection();
+        ic.setSelection(start, start);
+    }
+
+    private void locateInputCursorByKeyEvent(InputCursorLocatingMsgData data) {
+        Motion anchor = data.anchor;
+        if (anchor == null || anchor.distance <= 0) {
+            return;
+        }
+
+        for (int i = 0; i < anchor.distance; i++) {
+            switch (anchor.direction) {
+                case up:
+                    sendKey(KeyEvent.KEYCODE_DPAD_UP);
+                    break;
+                case down:
+                    sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+                    break;
+                case left:
+                    sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+                    break;
+                case right:
+                    sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+                    break;
+            }
+        }
+    }
+
+    private void selectInputText(InputTextSelectingMsgData data) {
+        Motion anchor1 = data.anchor1;
+        Motion anchor2 = data.anchor2;
+
+        ExtractedText extractedText = getExtractedText();
+        if (extractedText == null) {
+            return;
+        }
+
+        int length = extractedText.text.length();
+        int start = moveSelectionCursor(anchor1, length, extractedText.selectionStart);
+        int end = moveSelectionCursor(anchor2, length, extractedText.selectionEnd);
+
+        InputConnection ic = getCurrentInputConnection();
+        ic.setSelection(start, end);
     }
 
     private void commitText(StringBuilder text) {
@@ -222,6 +300,35 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+    }
+
+    private ExtractedText getExtractedText() {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return null;
+        }
+
+        // https://stackoverflow.com/questions/40521324/selection-using-android-ime#answer-58778722
+        ExtractedText extractedText = ic.getExtractedText(new ExtractedTextRequest(), 0);
+        if (extractedText == null || extractedText.text == null || extractedText.text.length() == 0) {
+            return null;
+        }
+        return extractedText;
+    }
+
+    private int moveSelectionCursor(Motion anchor, int length, int current) {
+        switch (anchor.direction) {
+            case left:
+            case up:
+                current -= anchor.distance;
+                break;
+            case right:
+            case down:
+                current += anchor.distance;
+                break;
+        }
+
+        return Math.min(length, Math.max(0, current));
     }
 
     private <T extends View> T inflateView(int resId) {

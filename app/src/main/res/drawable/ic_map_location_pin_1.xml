@@ -1,0 +1,28 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/2205197/drop_locate_location_map_pin_icon -->
+    <path
+            android:pathData="M12,24C12,24 21,15.627 21,9 21,2.373 16.971,0 12,0 7.029,0 3,2.373 3,9c0,6.627 9,15 9,15zM7.5,7.5C7.5,5.015 9.514,3 12,3 14.486,3 16.5,5.015 16.5,7.5 16.5,9.986 14.486,12 12,12 9.514,12 7.5,9.986 7.5,7.5Z"
+            android:strokeWidth="1.5"
+            android:fillColor="#1d98ff" />
+</vector>

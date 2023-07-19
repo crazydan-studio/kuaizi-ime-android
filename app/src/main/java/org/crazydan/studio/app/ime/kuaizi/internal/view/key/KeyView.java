@@ -62,12 +62,16 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
             enable();
         }
 
-        KeyViewDrawable drawable = new KeyViewDrawable(orientation);
+        if (key.getBgColorAttrId() > 0) {
+            KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
-        int bgColor = getColorByAttrId(key.getBgColorAttrId());
-        drawable.setColor(bgColor);
-        drawable.setCornerRadius(10);
+            int bgColor = getColorByAttrId(key.getBgColorAttrId());
+            drawable.setColor(bgColor);
+            drawable.setCornerRadius(10);
 
-        this.bgView.setImageDrawable(drawable);
+            this.bgView.setImageDrawable(drawable);
+        } else {
+            this.bgView.setImageDrawable(null);
+        }
     }
 }

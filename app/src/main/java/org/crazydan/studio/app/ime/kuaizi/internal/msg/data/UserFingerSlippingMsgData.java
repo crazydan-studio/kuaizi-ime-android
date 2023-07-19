@@ -17,20 +17,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 
 /**
  * {@link UserMsg#FingerSlipping}消息数据
+ * <p/>
+ * 注：<ul>
+ * <li>{@link #target} 为滑动开始所按下的按键；</li>
+ * </ul>
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
 public class UserFingerSlippingMsgData extends UserMsgData {
-    public final boolean upward;
+    /** 运动信息 */
+    public final Motion motion;
 
-    public UserFingerSlippingMsgData(boolean upward) {
-        super(null);
-        this.upward = upward;
+    public UserFingerSlippingMsgData(Key<?> target, Motion motion) {
+        super(target);
+        this.motion = motion;
     }
 }
