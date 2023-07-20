@@ -123,14 +123,20 @@ public class PinyinCharTree {
             this.notation = notation;
         }
 
-        public static Word from(PinyinWord pw) {
-            PinyinCharTree.Word cw = new PinyinCharTree.Word(pw.getWord(), pw.getPinyin());
-            cw.setTraditional(pw.isTraditional());
-            cw.setLevel(pw.getLevel());
-            cw.setWeight(pw.getWeight());
-            cw.setStrokes(pw.getStrokes());
+        public static List<Word> from(PinyinWord pw) {
+            List<Word> list = new ArrayList<>();
 
-            return cw;
+            for (String pinyin : pw.getPinyins()) {
+                PinyinCharTree.Word cw = new PinyinCharTree.Word(pw.getWord(), pinyin);
+                cw.setTraditional(pw.isTraditional());
+                cw.setLevel(pw.getLevel());
+                cw.setWeight(pw.getWeight());
+                cw.setStrokes(pw.getStroke());
+
+                list.add(cw);
+            }
+
+            return list;
         }
 
         public String getValue() {

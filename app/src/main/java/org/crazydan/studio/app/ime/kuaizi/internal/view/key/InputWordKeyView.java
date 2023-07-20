@@ -56,6 +56,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         InputWord inputWord = key.getWord();
         CharKey charKey = key.getCharKey();
 
+        // TODO 给繁体字打个标签
         if (charKey != null) {
             this.charKeyView.setText(charKey.getText());
             // Note: 汉语标点符号右侧的空白较多，需向右移动以抵消空白

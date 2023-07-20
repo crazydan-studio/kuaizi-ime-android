@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +33,29 @@ import java.util.TreeMap;
  * @date 2023-07-06
  */
 public class PinyinTree {
+    public static final Map<String, String> pinyinReplacements = new LinkedHashMap<>();
+
+    static {
+        String[][] pairs = new String[][] {
+                new String[] { "a", "ā", "á", "ǎ", "à" },
+                new String[] { "o", "ō", "ó", "ǒ", "ò" },
+                new String[] { "e", "ē", "é", "ě", "è", "ê" },
+                new String[] { "i", "ī", "í", "ǐ", "ì" },
+                new String[] { "u", "ū", "ú", "ǔ", "ù" },
+                new String[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
+                new String[] { "n", "ń", "ň", "ǹ" },
+                new String[] { "m", "m̄", "m̀" },
+                new String[] { "e", "ê̄", "ê̌" },
+                };
+        for (String[] pair : pairs) {
+            for (int i = 1; i < pair.length; i++) {
+                pinyinReplacements.put(pair[i], pair[0]);
+            }
+        }
+    }
+
     private final Set<PinyinWord> words = new LinkedHashSet<>();
     private final Map<String, PinyinTree> tree = new HashMap<>();
-
-    private Integer allWordSize;
-
-    public int allWordSize() {
-        if (this.allWordSize == null) {
-            this.allWordSize = this.words.size();
-            this.tree.forEach((c, t) -> this.allWordSize += t.allWordSize());
-        }
-        return this.allWordSize;
-    }
 
     public boolean isLeaf() {
         return this.tree.isEmpty();
@@ -54,12 +66,13 @@ public class PinyinTree {
             return;
         }
 
-        PinyinTree next = this;
-        for (String ch : word.getPinyinChars()) {
-            next = next.tree.computeIfAbsent(ch, (key) -> new PinyinTree());
+        for (String pinyin : word.getPinyins()) {
+            PinyinTree next = this;
+            for (String ch : parsePinyinChars(pinyin)) {
+                next = next.tree.computeIfAbsent(ch, (key) -> new PinyinTree());
+            }
+            next.words.add(word);
         }
-
-        next.words.add(word);
     }
 
     public List<PinyinCharLink> charLinks(boolean undirected) {
@@ -131,15 +144,18 @@ public class PinyinTree {
         List<PinyinCharTree.Word> traditionalWords = new ArrayList<>();
         List<PinyinCharTree.Word> noStrokesWords = new ArrayList<>();
         this.words.forEach(pinyinWord -> {
-            PinyinCharTree.Word charTreeWord = PinyinCharTree.Word.from(pinyinWord);
+            List<PinyinCharTree.Word> charTreeWords = PinyinCharTree.Word.from(pinyinWord);
 
-            if (charTreeWord.isTraditional()) {
-                traditionalWords.add(charTreeWord);
-            } else if (charTreeWord.getStrokes() == 0) {
-                noStrokesWords.add(charTreeWord);
-            } else {
-                wordByValueMap.computeIfAbsent(charTreeWord.getValue(), (k) -> new ArrayList<>()).add(charTreeWord);
-                wordByStrokesMap.computeIfAbsent(charTreeWord.getStrokes(), (k) -> new ArrayList<>()).add(charTreeWord);
+            for (PinyinCharTree.Word charTreeWord : charTreeWords) {
+                if (charTreeWord.isTraditional()) {
+                    traditionalWords.add(charTreeWord);
+                } else if (charTreeWord.getStrokes() == 0) {
+                    noStrokesWords.add(charTreeWord);
+                } else {
+                    wordByValueMap.computeIfAbsent(charTreeWord.getValue(), (k) -> new ArrayList<>()).add(charTreeWord);
+                    wordByStrokesMap.computeIfAbsent(charTreeWord.getStrokes(), (k) -> new ArrayList<>())
+                                    .add(charTreeWord);
+                }
             }
         });
 
@@ -163,5 +179,20 @@ public class PinyinTree {
         list.sort(Comparator.comparing(PinyinCharTree.Word::getWeight).reversed());
 
         return list;
+    }
+
+    private static String[] parsePinyinChars(String pinyin) {
+        if ("m̀".equals(pinyin) || "m̄".equals(pinyin) //
+            || "ê̄".equals(pinyin) || "ê̌".equals(pinyin)) {
+            return new String[] { pinyinReplacements.get(pinyin) };
+        } else {
+            String[] chars = new String[pinyin.length()];
+
+            for (int i = 0; i < pinyin.length(); i++) {
+                String ch = pinyin.charAt(i) + "";
+                chars[i] = pinyinReplacements.getOrDefault(ch, ch);
+            }
+            return chars;
+        }
     }
 }

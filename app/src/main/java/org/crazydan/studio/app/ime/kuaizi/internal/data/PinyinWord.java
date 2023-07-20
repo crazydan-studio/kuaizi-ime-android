@@ -17,79 +17,52 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
 public class PinyinWord {
-    private static final Map<String, String> replacements = new HashMap<>();
-
-    static {
-        String[][] pairs = new String[][] {
-                new String[] { "a", "ā", "á", "ǎ", "à" },
-                new String[] { "o", "ō", "ó", "ǒ", "ò" },
-                new String[] { "e", "ē", "é", "ě", "è", "ê" },
-                new String[] { "i", "ī", "í", "ǐ", "ì" },
-                new String[] { "u", "ū", "ú", "ǔ", "ù" },
-                new String[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
-                new String[] { "n", "ń", "ň", "ǹ" },
-                new String[] { "m", "m̄", "m̀" },
-                new String[] { "e", "ê̄", "ê̌" },
-                };
-        for (String[] pair : pairs) {
-            for (int i = 1; i < pair.length; i++) {
-                replacements.put(pair[i], pair[0]);
-            }
-        }
-    }
-
     private final String word;
-    private final String pinyin;
+    private final Set<String> pinyins = new HashSet<>();
 
     private boolean traditional;
+    private final Set<String> variants = new HashSet<>();
+
     private int level;
     private float weight;
     /** 笔画数 */
-    private int strokes;
+    private int stroke;
+    /** 笔顺 */
+    private String strokeOrder;
+    /** 部首 */
+    private final Set<String> radicals = new HashSet<>();
+    /** 字型结构 */
+    private String struct;
 
-    private String[] pinyinChars;
-
-    public PinyinWord(String word, String pinyin) {
+    public PinyinWord(String word) {
         this.word = word;
-        this.pinyin = pinyin;
     }
 
     public String getWord() {
         return this.word;
     }
 
-    public String getPinyin() {
-        return this.pinyin;
+    public PinyinWord addPinyin(String... pinyins) {
+        this.pinyins.addAll(Arrays.asList(pinyins));
+        return this;
+    }
+
+    public Set<String> getPinyins() {
+        return this.pinyins;
     }
 
     public boolean isValid() {
-        return true;
-    }
-
-    public String[] getPinyinChars() {
-        if (this.pinyinChars == null) {
-            if ("m̀".equals(getPinyin()) || "m̄".equals(getPinyin()) //
-                || "ê̄".equals(getPinyin()) || "ê̌".equals(getPinyin())) {
-                this.pinyinChars = new String[] { replacements.getOrDefault(getPinyin(), getPinyin()) };
-            } else {
-                this.pinyinChars = new String[getPinyin().length()];
-
-                for (int i = 0; i < getPinyin().length(); i++) {
-                    String ch = getPinyin().charAt(i) + "";
-                    this.pinyinChars[i] = replacements.getOrDefault(ch, ch);
-                }
-            }
-        }
-        return this.pinyinChars;
+        return !this.word.isEmpty() && !this.pinyins.isEmpty();
     }
 
     public boolean isTraditional() {
@@ -98,6 +71,14 @@ public class PinyinWord {
 
     public void setTraditional(boolean traditional) {
         this.traditional = traditional;
+    }
+
+    public void addVariant(String... variants) {
+        this.variants.addAll(Arrays.asList(variants));
+    }
+
+    public Set<String> getVariants() {
+        return this.variants;
     }
 
     public int getLevel() {
@@ -116,12 +97,36 @@ public class PinyinWord {
         this.weight = weight;
     }
 
-    public int getStrokes() {
-        return this.strokes;
+    public int getStroke() {
+        return this.stroke;
     }
 
-    public void setStrokes(int strokes) {
-        this.strokes = strokes;
+    public void setStroke(int stroke) {
+        this.stroke = stroke;
+    }
+
+    public String getStrokeOrder() {
+        return this.strokeOrder;
+    }
+
+    public void setStrokeOrder(String strokeOrder) {
+        this.strokeOrder = strokeOrder;
+    }
+
+    public void addRadical(String... radicals) {
+        this.radicals.addAll(Arrays.asList(radicals));
+    }
+
+    public Set<String> getRadicals() {
+        return this.radicals;
+    }
+
+    public String getStruct() {
+        return this.struct;
+    }
+
+    public void setStruct(String struct) {
+        this.struct = struct;
     }
 
     @Override
@@ -133,11 +138,11 @@ public class PinyinWord {
             return false;
         }
         PinyinWord that = (PinyinWord) o;
-        return this.word.equals(that.word) && this.pinyin.equals(that.pinyin);
+        return this.word.equals(that.word) && this.pinyins.equals(that.pinyins);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.word, this.pinyin);
+        return Objects.hash(this.word, this.pinyins);
     }
 }
