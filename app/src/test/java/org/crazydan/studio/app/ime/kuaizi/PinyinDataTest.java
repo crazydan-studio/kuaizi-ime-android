@@ -52,6 +52,8 @@ public class PinyinDataTest {
         PinyinWordDataset wordDataset = createWordDataset();
         analyzeWordDataset(wordDataset);
 
+        Map<String, List<String[]>> phraseMap = readPhraseFromPhrasePinyinData();
+
         PinyinTree tree = createPinyinTree(wordDataset);
 
         // 生成字母连接线
@@ -240,14 +242,14 @@ public class PinyinDataTest {
     }
 
     private PinyinWordDataset createWordDataset() throws IOException {
-        Map<String, PinyinWord> wordInPinyinDataMap = readWordsFromPinyinData();
-        Map<String, PinyinWord> wordInCnCharMap = readWordsFromCnChar();
-        Map<String, PinyinWord> wordInZiDatasetMap = readWordsFromZiDataset();
+        Map<String, PinyinWord> wordInPinyinDataMap = readWordFromPinyinData();
+        Map<String, PinyinWord> wordInCnCharMap = readWordFromCnChar();
+        Map<String, PinyinWord> wordInZiDatasetMap = readWordFromZiDataset();
 
         return new PinyinWordDataset(wordInPinyinDataMap, wordInCnCharMap, wordInZiDatasetMap);
     }
 
-    private Map<String, PinyinWord> readWordsFromPinyinData() throws IOException {
+    private Map<String, PinyinWord> readWordFromPinyinData() throws IOException {
         File traditionalAndSimpleFile = new File("../../data/hanzi-traditional-to-simple.txt");
         Map<String, String> traditionalAndSimpleMap = readWordTraditionalToSimple(traditionalAndSimpleFile);
         Map<String, List<String>> simpleAndTraditionalMap = new HashMap<>();
@@ -308,7 +310,27 @@ public class PinyinDataTest {
         return resultMap;
     }
 
-    private Map<String, PinyinWord> readWordsFromZiDataset() throws IOException {
+    private Map<String, List<String[]>> readPhraseFromPhrasePinyinData() throws IOException {
+        File file = new File("../../data/phrase-pinyin-data/large_pinyin.txt");
+        List<String> lines = read(file);
+
+        Map<String, List<String[]>> resultMap = new HashMap<>();
+        for (String line : lines) {
+            line = line.replaceAll("\\s*#.*$", "");
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            String phrase = line.replaceAll("^([^:]+):.+", "$1");
+            String[] pinyins = line.replaceAll("^.+:\\s+(.+)$", "$1").split("\\s+");
+
+            resultMap.computeIfAbsent(phrase, (k) -> new ArrayList<>()).add(pinyins);
+        }
+
+        return resultMap;
+    }
+
+    private Map<String, PinyinWord> readWordFromZiDataset() throws IOException {
         // https://github.com/crazydan-studio/zi-dataset
         File file = new File("../../data/zi-dataset/zi-dataset.tsv");
         List<String> lines = read(file);
@@ -351,7 +373,7 @@ public class PinyinDataTest {
         return resultMap;
     }
 
-    private Map<String, PinyinWord> readWordsFromCnChar() throws IOException {
+    private Map<String, PinyinWord> readWordFromCnChar() throws IOException {
         File simpleWordStrokeFile = new File("../../data/cnchar/src/cnchar/main/dict/stroke-count-jian.json");
         File simpleWordStrokeOrderFile = new File(
                 "../../data/cnchar/src/cnchar/plugin/order/dict/stroke-order-jian.json");
