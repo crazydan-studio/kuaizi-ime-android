@@ -626,32 +626,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     // <<<<<< 输入定位逻辑
-    private void onLocatingInputCursor(CtrlKey key, Motion motion) {
-        KeyFactory keyFactory = null;
-        LocatingInputCursorStateData stateData;
-
-        if (this.state.type != State.Type.LocatingInputCursor) {
-            stateData = new LocatingInputCursorStateData();
-            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
-
-            this.state = new State(State.Type.LocatingInputCursor, stateData);
-        } else {
-            stateData = (LocatingInputCursorStateData) this.state.data;
-            stateData.updateLocator(motion);
-        }
-
-        InputMsgData data = new InputCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
-        onInputMsg(InputMsg.LocatingInputCursor, data);
-    }
-
-    private void onSelectingInputText(CtrlKey key, Motion motion) {
-        LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
-        stateData.updateSelector(motion);
-
-        InputMsgData data = new InputCursorLocatingMsgData(null, key, stateData.getSelector());
-        onInputMsg(InputMsg.SelectingInputText, data);
-    }
-
     private void onLocatingInputCursorCtrlKeyMsg(UserMsg msg, CtrlKey key, UserMsgData data) {
         switch (msg) {
             case KeySingleTap: {
@@ -684,6 +658,32 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
         }
+    }
+
+    private void onLocatingInputCursor(CtrlKey key, Motion motion) {
+        KeyFactory keyFactory = null;
+        LocatingInputCursorStateData stateData;
+
+        if (this.state.type != State.Type.LocatingInputCursor) {
+            stateData = new LocatingInputCursorStateData();
+            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
+
+            this.state = new State(State.Type.LocatingInputCursor, stateData);
+        } else {
+            stateData = (LocatingInputCursorStateData) this.state.data;
+            stateData.updateLocator(motion);
+        }
+
+        InputMsgData data = new InputCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
+        onInputMsg(InputMsg.LocatingInputCursor, data);
+    }
+
+    private void onSelectingInputText(CtrlKey key, Motion motion) {
+        LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
+        stateData.updateSelector(motion);
+
+        InputMsgData data = new InputCursorLocatingMsgData(null, key, stateData.getSelector());
+        onInputMsg(InputMsg.SelectingInputText, data);
     }
     // >>>>>>>>
 }
