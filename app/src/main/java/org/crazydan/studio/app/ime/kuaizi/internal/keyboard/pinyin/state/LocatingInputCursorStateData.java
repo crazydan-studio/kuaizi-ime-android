@@ -19,38 +19,38 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 
 /**
- * {@link State.Type#SelectingInputText}的状态数据
+ * {@link State.Type#LocatingInputCursor}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-19
  */
-public class SelectingInputTextData implements State.Data {
-    private Motion anchor1 = new Motion();
-    private Motion anchor2 = new Motion();
+public class LocatingInputCursorStateData implements State.Data {
+    private Motion locator = new Motion();
+    private Motion selector = new Motion();
 
-    public Motion getAnchor1() {
-        return this.anchor1;
+    public Motion getLocator() {
+        return this.locator;
     }
 
-    public Motion getAnchor2() {
-        return this.anchor2;
+    public Motion getSelector() {
+        return this.selector;
     }
 
-    public void updateAnchor1(Motion motion) {
-        this.anchor1 = LocatingInputCursorData.createAnchor(motion);
+    public void updateLocator(Motion motion) {
+        this.locator = createAnchor(motion);
     }
 
-    public void updateAnchor2(Motion motion) {
-        this.anchor2 = LocatingInputCursorData.createAnchor(motion);
+    public void updateSelector(Motion motion) {
+        this.selector = createAnchor(motion);
     }
 
-    public void resetAnchor1() {
-        this.anchor1 = new Motion();
-    }
+    public static Motion createAnchor(Motion motion) {
+        // 根据屏幕移动距离得出光标移动字符数
+        int distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16)) : 0;
 
-    public void resetAnchor2() {
-        this.anchor2 = new Motion();
+        return new Motion(motion.direction, distance, motion.timestamp);
     }
 }

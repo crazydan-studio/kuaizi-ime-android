@@ -24,5 +24,5 @@
     <path
             android:pathData="M12,24C12,24 21,15.627 21,9 21,2.373 16.971,0 12,0 7.029,0 3,2.373 3,9c0,6.627 9,15 9,15zM7.5,7.5C7.5,5.015 9.514,3 12,3 14.486,3 16.5,5.015 16.5,7.5 16.5,9.986 14.486,12 12,12 9.514,12 7.5,9.986 7.5,7.5Z"
             android:strokeWidth="1.5"
-            android:fillColor="#1d98ff" />
+            android:fillColor="?attr/key_ctrl_locator_fg_color" />
 </vector>

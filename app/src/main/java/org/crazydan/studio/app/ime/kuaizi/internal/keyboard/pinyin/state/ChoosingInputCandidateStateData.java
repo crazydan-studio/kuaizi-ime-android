@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class ChoosingInputCandidateData implements State.Data {
+public class ChoosingInputCandidateStateData implements State.Data {
     /** 数据总量 */
     private final int dataSize;
     /** 分页大小 */
@@ -33,7 +33,7 @@ public class ChoosingInputCandidateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingInputCandidateData(int dataSize, int pageSize) {
+    public ChoosingInputCandidateStateData(int dataSize, int pageSize) {
         this.dataSize = dataSize;
         this.pageSize = pageSize;
     }

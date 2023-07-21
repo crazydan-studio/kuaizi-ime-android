@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -39,7 +38,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -139,19 +137,15 @@ public class Service extends InputMethodService implements InputMsgListener {
                 break;
             }
             case InputBackwardDeleting: {
-                // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
-                //backwardDeleteInput();
-                backwardDeleteInputByKeyEvent();
+                backwardDeleteInput();
                 break;
             }
             case LocatingInputCursor: {
-                // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
-                //locateInputCursor((InputCursorLocatingMsgData) data);
-                locateInputCursorByKeyEvent((InputCursorLocatingMsgData) data);
+                locateInputCursor((InputCursorLocatingMsgData) data);
                 break;
             }
             case SelectingInputText: {
-                selectInputText((InputTextSelectingMsgData) data);
+                selectInputText((InputCursorLocatingMsgData) data);
                 break;
             }
             case IMESwitching: {
@@ -185,24 +179,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void backwardDeleteInput() {
-        InputConnection ic = getCurrentInputConnection();
-        if (ic == null) {
-            return;
-        }
-
-        // https://stackoverflow.com/questions/24493293/input-connection-how-to-delete-selected-text#answer-45182401
-        CharSequence selectedText = ic.getSelectedText(0);
-        // 无选中的文本，则删除当前光标前的 1 个字符
-        if (TextUtils.isEmpty(selectedText)) {
-            ic.deleteSurroundingText(1, 0);
-        }
-        // 否则，删除选中的文本
-        else {
-            ic.commitText("", 1);
-        }
-    }
-
-    private void backwardDeleteInputByKeyEvent() {
+        // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
         sendKey(KeyEvent.KEYCODE_DEL);
     }
 
@@ -221,24 +198,7 @@ public class Service extends InputMethodService implements InputMsgListener {
             return;
         }
 
-        ExtractedText extractedText = getExtractedText();
-        if (extractedText == null) {
-            return;
-        }
-
-        int length = extractedText.text.length();
-        int start = moveSelectionCursor(anchor, length, extractedText.selectionStart);
-
-        InputConnection ic = getCurrentInputConnection();
-        ic.setSelection(start, start);
-    }
-
-    private void locateInputCursorByKeyEvent(InputCursorLocatingMsgData data) {
-        Motion anchor = data.anchor;
-        if (anchor == null || anchor.distance <= 0) {
-            return;
-        }
-
+        // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
         for (int i = 0; i < anchor.distance; i++) {
             switch (anchor.direction) {
                 case up:
@@ -257,21 +217,16 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void selectInputText(InputTextSelectingMsgData data) {
-        Motion anchor1 = data.anchor1;
-        Motion anchor2 = data.anchor2;
-
-        ExtractedText extractedText = getExtractedText();
-        if (extractedText == null) {
+    private void selectInputText(InputCursorLocatingMsgData data) {
+        Motion anchor = data.anchor;
+        if (anchor == null || anchor.distance <= 0) {
             return;
         }
 
-        int length = extractedText.text.length();
-        int start = moveSelectionCursor(anchor1, length, extractedText.selectionStart);
-        int end = moveSelectionCursor(anchor2, length, extractedText.selectionEnd);
-
-        InputConnection ic = getCurrentInputConnection();
-        ic.setSelection(start, end);
+        // Note: 通过 shift + 方向键 的方式进行文本选择
+        sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
+        locateInputCursor(data);
+        sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
     private void commitText(StringBuilder text) {
@@ -293,13 +248,22 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void sendKey(int code) {
-        InputConnection ic = getCurrentInputConnection();
-        if (ic == null) {
-            return;
-        }
+        sendKeyDown(code);
+        sendKeyUp(code);
+    }
 
-        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
-        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+    private void sendKeyDown(int code) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic != null) {
+            ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
+        }
+    }
+
+    private void sendKeyUp(int code) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic != null) {
+            ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+        }
     }
 
     private ExtractedText getExtractedText() {
@@ -314,21 +278,6 @@ public class Service extends InputMethodService implements InputMsgListener {
             return null;
         }
         return extractedText;
-    }
-
-    private int moveSelectionCursor(Motion anchor, int length, int current) {
-        switch (anchor.direction) {
-            case left:
-            case up:
-                current -= anchor.distance;
-                break;
-            case right:
-            case down:
-                current += anchor.distance;
-                break;
-        }
-
-        return Math.min(length, Math.max(0, current));
     }
 
     private <T extends View> T inflateView(int resId) {

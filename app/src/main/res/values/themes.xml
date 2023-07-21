@@ -52,8 +52,6 @@
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_toggle_input_spell_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_switch_to_input_selection_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switch_to_input_selection_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
@@ -64,8 +62,7 @@
         <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_locator_bg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_locator_point_fg_color">#939598</item>
+        <item name="key_ctrl_locator_fg_color">#1d98ff</item>
 
         <item name="key_char_punctuation_bg_color">#02aaf5</item>
         <item name="key_char_punctuation_fg_color">?attr/key_fg_color</item>
@@ -119,8 +116,6 @@
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_toggle_input_spell_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_switch_to_input_selection_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switch_to_input_selection_fg_color">?attr/key_fg_color</item>
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
@@ -131,8 +126,7 @@
         <item name="key_ctrl_confirm_bg_color">@color/color_emerald_600</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_locator_bg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_locator_point_fg_color">#939598</item>
+        <item name="key_ctrl_locator_fg_color">#1d98ff</item>
 
         <item name="key_char_punctuation_bg_color">#02aaf5</item>
         <item name="key_char_punctuation_fg_color">?attr/key_fg_color</item>

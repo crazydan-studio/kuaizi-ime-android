@@ -160,12 +160,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         SwitchHandMode,
         /** 输入光标定位按钮 */
         LocateInputCursor,
-        /** 1 号定位锚定按钮 */
-        LocateInputCursorAnchor_1,
-        /** 2 号定位锚定按钮 */
-        LocateInputCursorAnchor_2,
-        /** （从光标定位）切换至输入选择模式 */
-        SwitchToInputSelection,
+        /** 输入光标定位按钮 - 定位 */
+        LocateInputCursor_Locator,
+        /** 输入光标定位按钮 - 选择 */
+        LocateInputCursor_Selector,
         /** 回车 */
         Enter,
         /** 退出 */

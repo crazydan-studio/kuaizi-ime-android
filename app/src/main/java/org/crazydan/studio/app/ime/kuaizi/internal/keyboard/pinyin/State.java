@@ -43,14 +43,10 @@ public class State {
         InputWaiting,
         /** 滑行输入中 */
         SlippingInput,
-        /** 输入组件光标定位 */
+
+        /** 输入组件光标定位：含移动光标和文本选择 */
         LocatingInputCursor,
-        /** 输入组件光标已定位 */
-        LocatingInputTargetCursorDone,
-        /** 输入组件文本选择 */
-        SelectingInputText,
-        /** 输入组件文本已选择 */
-        SelectingInputTargetTextDone,
+
         /** 输入光标移动 */
         MovingInputListCursor,
         /** 输入候选字选择中 */

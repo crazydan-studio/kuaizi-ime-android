@@ -18,7 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
-import android.text.Editable;
+import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -77,11 +76,11 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
                 break;
             }
             case LocatingInputCursor: {
-                locateInputCursor((InputCursorLocatingMsgData) data);
+                locateInputCursor(((InputCursorLocatingMsgData) data).anchor);
                 break;
             }
             case SelectingInputText: {
-                selectInputText((InputTextSelectingMsgData) data);
+                selectInputText(((InputCursorLocatingMsgData) data).anchor);
                 break;
             }
             case IMESwitching: {
@@ -101,70 +100,54 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
     }
 
     private void backwardDeleteInput() {
-        Editable text = this.editText.getText();
-        int length = text.toString().length();
-        if (length == 0) {
-            return;
-        }
-
-        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-        // 删除光标前的
-        if (start == end) {
-            if (start > 0) {
-                text.delete(start - 1, end);
-            }
-        }
-        // 删除已选中的
-        else {
-            text.delete(start, end);
-        }
+        sendKey(KeyEvent.KEYCODE_DEL);
     }
 
-    private void locateInputCursor(InputCursorLocatingMsgData data) {
-        Motion anchor = data.anchor;
+    private void locateInputCursor(Motion anchor) {
         if (anchor == null || anchor.distance <= 0) {
             return;
         }
 
-        Editable text = this.editText.getText();
-        int length = text.toString().length();
-        if (length == 0) {
+        // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
+        for (int i = 0; i < anchor.distance; i++) {
+            switch (anchor.direction) {
+                case up:
+                    sendKey(KeyEvent.KEYCODE_DPAD_UP);
+                    break;
+                case down:
+                    sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+                    break;
+                case left:
+                    sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+                    break;
+                case right:
+                    sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+                    break;
+            }
+        }
+    }
+
+    private void selectInputText(Motion anchor) {
+        if (anchor == null || anchor.distance <= 0) {
             return;
         }
 
-        int start = moveSelectionCursor(anchor, length, this.editText.getSelectionStart());
-        this.editText.setSelection(start);
+        // Note: 通过 shift + 方向键 的方式进行文本选择
+        sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
+        locateInputCursor(anchor);
+        sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void selectInputText(InputTextSelectingMsgData data) {
-        Motion anchor1 = data.anchor1;
-        Motion anchor2 = data.anchor2;
-
-        Editable text = this.editText.getText();
-        int length = text.toString().length();
-        if (length == 0) {
-            return;
-        }
-
-        int start = moveSelectionCursor(anchor1, length, this.editText.getSelectionStart());
-        int end = moveSelectionCursor(anchor2, length, this.editText.getSelectionEnd());
-
-        this.editText.setSelection(start, end);
+    private void sendKey(int code) {
+        sendKeyDown(code);
+        sendKeyUp(code);
     }
 
-    private int moveSelectionCursor(Motion anchor, int length, int current) {
-        switch (anchor.direction) {
-            case left:
-            case up:
-                current -= anchor.distance;
-                break;
-            case right:
-            case down:
-                current += anchor.distance;
-                break;
-        }
+    private void sendKeyDown(int code) {
+        this.editText.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
+    }
 
-        return Math.min(length, Math.max(0, current));
+    private void sendKeyUp(int code) {
+        this.editText.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
     }
 }

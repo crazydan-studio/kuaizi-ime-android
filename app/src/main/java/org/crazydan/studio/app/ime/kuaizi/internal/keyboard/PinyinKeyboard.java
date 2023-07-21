@@ -32,9 +32,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.ChoosingInputCandidateData;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.LocatingInputCursorData;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.SelectingInputTextData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.ChoosingInputCandidateStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
@@ -43,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputTextSelectingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingMsgData;
@@ -100,7 +98,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             case LocatingInputCursor:
-            case SelectingInputText:
                 onLocatingInputCursorCtrlKeyMsg(msg, (CtrlKey) key, data);
                 break;
             default:
@@ -491,9 +488,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onChoosingInputCandidate(CharInput input, boolean pageUp) {
         // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
-        ChoosingInputCandidateData stateData;
+        ChoosingInputCandidateStateData stateData;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
-            stateData = (ChoosingInputCandidateData) this.state.data;
+            stateData = (ChoosingInputCandidateStateData) this.state.data;
 
             boolean hasPage;
             if (pageUp) {
@@ -506,8 +503,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                 onPlayingInputAudio_PageFlip();
             }
         } else {
-            stateData = new ChoosingInputCandidateData(input.getCandidates().size(),
-                                                       KeyTable.getInputCandidateKeysPageSize());
+            stateData = new ChoosingInputCandidateStateData(input.getCandidates().size(),
+                                                            KeyTable.getInputCandidateKeysPageSize());
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }
 
@@ -631,50 +628,27 @@ public class PinyinKeyboard extends BaseKeyboard {
     // <<<<<< 输入定位逻辑
     private void onLocatingInputCursor(CtrlKey key, Motion motion) {
         KeyFactory keyFactory = null;
-        LocatingInputCursorData stateData;
+        LocatingInputCursorStateData stateData;
 
         if (this.state.type != State.Type.LocatingInputCursor) {
-            stateData = new LocatingInputCursorData();
-            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure(), 1);
+            stateData = new LocatingInputCursorStateData();
+            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
 
             this.state = new State(State.Type.LocatingInputCursor, stateData);
         } else {
-            stateData = (LocatingInputCursorData) this.state.data;
-            stateData.updateAnchor(motion);
+            stateData = (LocatingInputCursorStateData) this.state.data;
+            stateData.updateLocator(motion);
         }
 
-        InputMsgData data = new InputCursorLocatingMsgData(keyFactory, key, stateData.getAnchor());
+        InputMsgData data = new InputCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
         onInputMsg(InputMsg.LocatingInputCursor, data);
     }
 
     private void onSelectingInputText(CtrlKey key, Motion motion) {
-        KeyFactory keyFactory = null;
-        SelectingInputTextData stateData;
-        if (this.state.type != State.Type.SelectingInputText) {
-            stateData = new SelectingInputTextData();
-            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure(), 2);
+        LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
+        stateData.updateSelector(motion);
 
-            this.state = new State(State.Type.SelectingInputText, stateData);
-        } else {
-            stateData = (SelectingInputTextData) this.state.data;
-
-            switch (key.getType()) {
-                case LocateInputCursorAnchor_1:
-                    stateData.updateAnchor1(motion);
-                    stateData.resetAnchor2(); // 表示 anchor #2 保持不动
-                    break;
-                case LocateInputCursorAnchor_2:
-                    stateData.resetAnchor1(); // 表示 anchor #1 保持不动
-                    stateData.updateAnchor2(motion);
-                    break;
-            }
-        }
-
-        InputMsgData data = new InputTextSelectingMsgData(keyFactory,
-                                                          key,
-                                                          stateData.getAnchor1(),
-                                                          stateData.getAnchor2());
-
+        InputMsgData data = new InputCursorLocatingMsgData(null, key, stateData.getSelector());
         onInputMsg(InputMsg.SelectingInputText, data);
     }
 
@@ -682,48 +656,26 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeySingleTap: {
                 switch (key.getType()) {
-                    // 点击 退出 按钮，则退回到前一个状态
+                    // 点击 退出 按钮，则退回到输入状态
                     case Exit:
                         onPlayingInputAudio_SingleTick(key);
 
-                        switch (this.state.type) {
-                            case LocatingInputCursor:
-                                onInputtingCharsDone();
-                                break;
-                            case SelectingInputText:
-                                onLocatingInputCursor(key, null);
-                                break;
-                        }
-                        break;
-                    // 点击 输入选择 按钮，则切换到输入选择模式
-                    case SwitchToInputSelection:
-                        onPlayingInputAudio_SingleTick(key);
-
-                        if (this.state.type == State.Type.LocatingInputCursor) {
-                            onSelectingInputText(key, null);
-                        }
+                        onInputtingCharsDone();
                         break;
                 }
                 break;
             }
             case FingerSlipping:
-                // Note: 仅在按键上的滑动才有效
+                // Note: 仅在 按键 上的滑动才有效
                 if (key != null) {
                     Motion motion = ((UserFingerSlippingMsgData) data).motion;
                     switch (key.getType()) {
-                        case LocateInputCursorAnchor_1:
+                        case LocateInputCursor_Locator:
                             onPlayingInputAudio_SingleTick(key);
 
-                            switch (this.state.type) {
-                                case LocatingInputCursor:
-                                    onLocatingInputCursor(key, motion);
-                                    break;
-                                case SelectingInputText:
-                                    onSelectingInputText(key, motion);
-                                    break;
-                            }
+                            onLocatingInputCursor(key, motion);
                             break;
-                        case LocateInputCursorAnchor_2:
+                        case LocateInputCursor_Selector:
                             onPlayingInputAudio_SingleTick(key);
 
                             onSelectingInputText(key, motion);

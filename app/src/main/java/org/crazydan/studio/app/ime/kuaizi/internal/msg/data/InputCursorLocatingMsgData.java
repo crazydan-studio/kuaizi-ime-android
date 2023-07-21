@@ -40,8 +40,4 @@ public class InputCursorLocatingMsgData extends CommonInputMsgData {
         this.key = key;
         this.anchor = anchor;
     }
-
-    public InputCursorLocatingMsgData(Key<?> key, Motion anchor) {
-        this(null, key, anchor);
-    }
 }

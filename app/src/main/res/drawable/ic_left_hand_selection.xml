@@ -22,15 +22,15 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/7968864/adobe_illustrator_tool_direct_selection_selection_icon -->
     <path
-            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
             android:pathData="M1.491,16.754 L10.907,8.955c0.564,-0.472 1.351,-0.542 1.991,-0.184 0.645,0.358 0.998,1.058 0.9,1.79l-1.595,11.9c-0.098,0.716 -0.613,1.296 -1.307,1.481 -0.146,0.038 -0.298,0.06 -0.45,0.06 -0.559,0 -1.09,-0.26 -1.432,-0.727 -1.508,-2.034 -3.916,-3.292 -6.443,-3.374 -0.743,-0.022 -1.378,-0.494 -1.616,-1.199 -0.249,-0.711 -0.033,-1.47 0.537,-1.947zM10.484,22.362c0.092,-0.022 0.103,-0.092 0.103,-0.119L12.181,10.343c0.005,-0.027 0.016,-0.103 -0.076,-0.152 -0.027,-0.016 -0.054,-0.022 -0.076,-0.022 -0.043,0 -0.076,0.027 -0.092,0.038L2.533,18.007c-0.022,0.016 -0.081,0.065 -0.043,0.163 0.033,0.098 0.103,0.098 0.136,0.098 3.021,0.098 5.901,1.605 7.696,4.03 0.038,0.065 0.098,0.087 0.163,0.065z" />
     <path
-            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
             android:pathData="M14.21,3.249l-1.627,0l-0,4.225l1.627,0z" />
     <path
-            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
             android:pathData="M19.899,8.776l-4.225,0l-0,1.627l4.225,0z" />
     <path
-            android:fillColor="?attr/key_ctrl_switch_to_input_selection_fg_color"
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
             android:pathData="m21.423,14.319c0.054,0 0.103,-0.043 0.103,-0.103L21.526,1.725c-0,-0.054 -0.043,-0.103 -0.103,-0.103l-14.883,0c-0.054,0 -0.103,0.043 -0.103,0.103l-0,8.515l-1.627,1.345L4.811,1.725C4.816,0.776 5.592,-0 6.541,-0L21.423,-0C22.373,-0 23.148,0.776 23.148,1.725L23.148,14.221C23.148,15.17 22.373,15.946 21.423,15.946l-6.568,0l0.217,-1.627z" />
 </vector>
