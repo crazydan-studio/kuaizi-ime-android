@@ -80,10 +80,18 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 onDoubleTap(keyView, data);
                 break;
             }
+            case MovingStart: {
+                onMovingStart(keyView, data);
+                break;
+            }
             case Moving: {
                 // Note: 靠近检查使用更靠近按键内部的探测方法，以降低拼音滑行输入的后继字母接触的灵敏度
                 keyView = this.keyboardView.findVisibleKeyViewUnder(data.x, data.y);
                 onMoving(keyView, data);
+                break;
+            }
+            case MovingEnd: {
+                onMovingEnd(keyView, data);
                 break;
             }
             case Slipping: {
@@ -125,14 +133,14 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
         RecyclerViewGestureDetector.LongPressTickGestureData tickData
                 = (RecyclerViewGestureDetector.LongPressTickGestureData) data;
-        UserLongPressTickMsgData msg = new UserLongPressTickMsgData(targetKey, tickData.tick, tickData.duration);
+        UserLongPressTickMsgData msgData = new UserLongPressTickMsgData(targetKey, tickData.tick, tickData.duration);
 
-        this.keyboardView.onUserMsg(UserMsg.KeyLongPressTick, msg);
+        this.keyboardView.onUserMsg(UserMsg.KeyLongPressTick, msgData);
     }
 
     private void onLongPressEnd(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
-        UserMsgData msg = new UserMsgData(null);
-        this.keyboardView.onUserMsg(UserMsg.KeyLongPressEnd, msg);
+        UserMsgData msgData = new UserMsgData(null);
+        this.keyboardView.onUserMsg(UserMsg.KeyLongPressEnd, msgData);
     }
 
     private void onSingleTap(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
@@ -149,18 +157,29 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         Key<?> closedKey = getKey(closedKeyView);
 
         Motion motion = ((RecyclerViewGestureDetector.MovingGestureData) data).motion;
-        UserFingerMovingMsgData msg = new UserFingerMovingMsgData(targetKey, closedKey, motion);
+        UserFingerMovingMsgData msgData = new UserFingerMovingMsgData(targetKey, closedKey, motion);
 
-        this.keyboardView.onUserMsg(UserMsg.FingerMoving, msg);
+        this.keyboardView.onUserMsg(UserMsg.FingerMoving, msgData);
+    }
+
+    private void onMovingStart(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
+        onKeyUserMsg(UserMsg.FingerMovingStart, keyView, data);
+    }
+
+    private void onMovingEnd(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
+        Key<?> targetKey = getKey(keyView);
+
+        UserMsgData msgData = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(UserMsg.FingerMovingEnd, msgData);
     }
 
     private void onSlipping(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         Key<?> targetKey = getKey(keyView);
 
         Motion motion = ((RecyclerViewGestureDetector.SlippingGestureData) data).motion;
-        UserFingerSlippingMsgData msg = new UserFingerSlippingMsgData(targetKey, motion);
+        UserFingerSlippingMsgData msgData = new UserFingerSlippingMsgData(targetKey, motion);
 
-        this.keyboardView.onUserMsg(UserMsg.FingerSlipping, msg);
+        this.keyboardView.onUserMsg(UserMsg.FingerSlipping, msgData);
     }
 
     private void onKeyUserMsg(UserMsg msg, KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
@@ -169,8 +188,8 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
             return;
         }
 
-        UserMsgData userData = new UserMsgData(targetKey);
-        this.keyboardView.onUserMsg(msg, userData);
+        UserMsgData msgData = new UserMsgData(targetKey);
+        this.keyboardView.onUserMsg(msg, msgData);
     }
 
     private boolean isAvailableKeyView(KeyView<?, ?> keyView) {

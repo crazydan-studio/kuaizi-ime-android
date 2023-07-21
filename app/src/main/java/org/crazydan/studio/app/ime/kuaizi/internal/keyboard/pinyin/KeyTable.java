@@ -88,6 +88,8 @@ public class KeyTable {
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
+                    new int[] { 2, 6 },
+                    new int[] { 3, 6 },
                     new int[] { 4, 6 },
                     new int[] { 5, 5 },
                     new int[] { 5, 1 },
@@ -98,12 +100,10 @@ public class KeyTable {
                     },
             // level 4
             new int[][] {
-                    new int[] { 0, 6 },
-                    new int[] { 5, 6 },
-                    new int[] { 5, 0 },
-                    new int[] { 4, 0 },
-                    new int[] { 2, 0 },
-                    new int[] { 1, 0 },
+                    new int[] { 5, 0 }, //
+                    new int[] { 4, 0 }, //
+                    new int[] { 2, 0 }, //
+                    new int[] { 1, 0 }, //
                     new int[] { 0, 1 },
                     },
             };
@@ -301,7 +301,7 @@ public class KeyTable {
             }
         }
 
-        gridKeys[1][6] = ctrlKey(CtrlKey.Type.DropInput);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
         if (!inputWords.isEmpty()) {
             gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                          + "/" //
@@ -310,14 +310,14 @@ public class KeyTable {
 
         if (input.isPinyinTongue()) {
             String s = input.getChars().get(0);
-            gridKeys[2][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
+            gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
         } else if (input.isPinyinNL()) {
-            gridKeys[2][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
+            gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
         }
         if (input.isPinyinRhyme()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
-            gridKeys[3][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
+            gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
         }
 
         int wordIndex = startIndex;

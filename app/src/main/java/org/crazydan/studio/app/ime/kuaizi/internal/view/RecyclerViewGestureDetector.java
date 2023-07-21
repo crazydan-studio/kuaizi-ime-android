@@ -227,12 +227,21 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         Motion motion = createMotion(g2, g1);
         GestureData newData = new MovingGestureData(data, motion);
 
-        triggerListeners(GestureType.Moving, newData);
+        if (size == 1) {
+            triggerListeners(GestureType.MovingStart, data);
+        } else {
+            triggerListeners(GestureType.Moving, newData);
+        }
     }
 
     private void onMovingEnd(GestureData data) {
+        boolean hasMoving = this.moving;
         this.moving = false;
         this.movingTracker.clear();
+
+        if (hasMoving) {
+            triggerListeners(GestureType.MovingEnd, data);
+        }
     }
 
     private void onSlipping(GestureData data) {
@@ -314,8 +323,12 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         SingleTap,
         /** 双击 */
         DoubleTap,
+        /** 开始移动 */
+        MovingStart,
         /** 移动: 手指在屏幕上移动 */
         Moving,
+        /** 结束移动 */
+        MovingEnd,
         /** 滑动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
         Slipping,
     }

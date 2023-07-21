@@ -114,7 +114,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCharKeyMsg(UserMsg msg, CharKey key, UserMsgData data) {
         switch (msg) {
-            case KeyLongPressStart: {
+            case FingerMovingStart: {
                 // 开始滑行输入
                 if (key.getType() == CharKey.Type.Alphabet) {
                     this.state = new State(State.Type.SlippingInput);
@@ -161,26 +161,21 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
 
                 if (key != null || closedKey != null) {
-                    onContinuousInput(input, key, closedKey, true);
+                    // Note: 第二个参数传事件触发的实际 key，而不是当前的 charkey
+                    onContinuousInput(input, data.target, closedKey, true);
                 }
                 break;
             }
-            case KeyLongPressEnd: {
-                // 选择候选字
+            case FingerMovingEnd: {
                 CharInput input = getInputList().getPending();
 
-                // 若无额外候选字，则直接确认输入
-                if (!input.hasExtraCandidates()) {
-                    // 无候选字的输入，视为无效，直接丢弃
-                    if (!input.hasWord()) {
-                        getInputList().dropPending();
-                    } else {
-                        getInputList().confirmPending();
-                    }
-                    onInputtingCharsDone();
+                // 无候选字的输入，视为无效输入，直接丢弃
+                if (!input.hasWord()) {
+                    getInputList().dropPending();
                 } else {
-                    onChoosingInputCandidate(input, true);
+                    getInputList().confirmPending();
                 }
+                onInputtingCharsDone();
                 break;
             }
         }
@@ -265,19 +260,20 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyLongPressStart: {
-                if (charKey != null) {
-                    // 长按标点，则由单击响应处理
-                    if (charKey.isPunctuation()) {
-                        onPlayingInputAudio_DoubleTick(key);
+                // 长按标点，则由单击响应处理
+                if (charKey != null && charKey.isPunctuation()) {
+                    onPlayingInputAudio_DoubleTick(key);
 
-                        doSingleKeyInput(charKey);
-                    }
-                    // 开始滑行输入
-                    else {
-                        // Note: 在 onCharKeyMsg 中会播放长按的按键音，
-                        // 故而，这里不再播放
-                        onCharKeyMsg(msg, charKey, new UserMsgData(key));
-                    }
+                    doSingleKeyInput(charKey);
+                }
+                break;
+            }
+            case FingerMovingStart: {
+                // 开始滑行输入
+                if (charKey != null) {
+                    // Note: 在 onCharKeyMsg 中会播放长按的按键音，
+                    // 故而，这里不再播放
+                    onCharKeyMsg(msg, charKey, new UserMsgData(key));
                 }
                 break;
             }

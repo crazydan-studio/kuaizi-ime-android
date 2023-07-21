@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.AlphaAnimation;
@@ -35,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-07-16
  */
 public class KeyViewAnimator extends DefaultItemAnimator {
-    private Key<?> fadeOutKey;
+    private final Set<Key<?>> fadeOutKeys = new HashSet<>();
     private KeyView<?, ?> closedKeyView;
 
     @Override
@@ -58,7 +61,7 @@ public class KeyViewAnimator extends DefaultItemAnimator {
     @Override
     public void onChangeFinished(RecyclerView.ViewHolder holder, boolean oldHolder) {
         if (oldHolder && needToFadeOut(holder)) {
-            this.fadeOutKey = null;
+            this.fadeOutKeys.remove(((KeyView<?, ?>) holder).getKey());
 
             // 复位
             View view = holder.itemView;
@@ -107,14 +110,15 @@ public class KeyViewAnimator extends DefaultItemAnimator {
         this.closedKeyView = null;
     }
 
-    public void setFadeOutKey(Key<?> fadeOutKey) {
-        this.fadeOutKey = fadeOutKey;
+    public void addFadeOutKey(Key<?> fadeOutKey) {
+        if (fadeOutKey != null) {
+            this.fadeOutKeys.add(fadeOutKey);
+        }
     }
 
     private boolean needToFadeOut(RecyclerView.ViewHolder holder) {
-        return this.fadeOutKey != null
-               && holder instanceof KeyView
-               && this.fadeOutKey.equals(((KeyView<?, ?>) holder).getKey());
+        return holder instanceof KeyView //
+               && this.fadeOutKeys.contains(((KeyView<?, ?>) holder).getKey());
     }
 
     private void resetViewScale(View view) {

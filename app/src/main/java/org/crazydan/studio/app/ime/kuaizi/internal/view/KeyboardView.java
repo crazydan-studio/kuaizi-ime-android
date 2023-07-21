@@ -172,7 +172,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     private void onInputtingCharsMsg(InputtingCharsMsgData data) {
         // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
-        this.animator.setFadeOutKey(data.current);
+        this.animator.addFadeOutKey(data.current);
     }
 
     private void onPlayingInputAudioMsg(PlayingInputAudioMsgData data) {
