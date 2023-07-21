@@ -15,28 +15,17 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 
 /**
- * {@link UserMsg#FingerMoving}消息数据
+ * 用户{@link Input 输入内容}消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-21
  */
-public class UserFingerMovingMsgData extends UserMsgData {
-    /** 运动信息 */
-    public final Motion motion;
-    /** 靠近的按键 */
-    public final Key<?> closed;
-
-    public UserFingerMovingMsgData(Key<?> target, Key<?> closed, Motion motion) {
-        super(target);
-        this.closed = closed;
-        this.motion = motion;
-    }
+public enum UserInputMsg {
+    /** 单击输入 */
+    InputSingleTap,
 }

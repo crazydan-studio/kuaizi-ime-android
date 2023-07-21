@@ -15,29 +15,21 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
 
 /**
- * {@link UserMsg#FingerSlipping}消息数据
- * <p/>
- * 注：<ul>
- * <li>{@link #target} 为滑动开始所按下的按键；</li>
- * </ul>
+ * {@link UserKeyMsg} 携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-09
+ * @date 2023-07-06
  */
-public class UserFingerSlippingMsgData extends UserMsgData {
-    /** 运动信息 */
-    public final Motion motion;
+public class UserKeyMsgData {
+    /** 消息目标按键 */
+    public final Key<?> target;
 
-    public UserFingerSlippingMsgData(Key<?> target, Motion motion) {
-        super(target);
-        this.motion = motion;
+    public UserKeyMsgData(Key<?> target) {
+        this.target = target;
     }
 }

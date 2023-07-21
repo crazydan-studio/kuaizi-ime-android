@@ -23,6 +23,11 @@ import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgTrigger;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputChoosingMsgData;
 
 /**
  * {@link Keyboard 键盘}输入列表，含零个或多个{@link Input 输入对象}
@@ -30,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class InputList {
+public class InputList extends InputMsgTrigger {
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
@@ -116,6 +121,15 @@ public class InputList {
     /** 获取已选中的输入 */
     public Input getSelected() {
         return this.cursor.selected;
+    }
+
+    /** 切换待输入到指定输入 */
+    public void newPendingOn(Input input) {
+        // 先确认当前的待输入
+        confirmPending();
+
+        this.cursor.selected = input;
+        this.cursor.pending = (CharInput) input;
     }
 
     /** 删除光标左边的输入 */
@@ -210,6 +224,16 @@ public class InputList {
 
         Input after = i < this.inputs.size() - 2 ? this.inputs.get(i + 2) : null;
         return after != null && (after.isPinyin() || after.isEmotion());
+    }
+
+    /** 处理{@link UserInputMsg 输入}消息 */
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (msg) {
+            case InputSingleTap:
+                InputChoosingMsgData msgData = new InputChoosingMsgData(data.target);
+                fireInputMsg(InputMsg.ChoosingInput, msgData);
+                break;
+        }
     }
 
     private static class Cursor {

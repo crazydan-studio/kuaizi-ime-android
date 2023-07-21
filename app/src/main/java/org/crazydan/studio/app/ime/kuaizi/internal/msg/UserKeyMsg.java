@@ -19,17 +19,31 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
-/**
- * {@link UserMsg}携带的数据
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
- */
-public class UserMsgData {
-    /** 消息目标按键 */
-    public final Key<?> target;
+/** 用户{@link Key 按键}操作消息 */
+public enum UserKeyMsg {
+    /** 按键按压开始 */
+    KeyPressStart,
+    /** 按键按压结束 */
+    KeyPressEnd,
 
-    public UserMsgData(Key<?> target) {
-        this.target = target;
-    }
+    /** 按键长按开始 */
+    KeyLongPressStart,
+    /** 按键长按 tick */
+    KeyLongPressTick,
+    /** 按键长按结束 */
+    KeyLongPressEnd,
+
+    /** 单击按键 */
+    KeySingleTap,
+    /** 双击按键 */
+    KeyDoubleTap,
+
+    /** 手指移动开始 */
+    FingerMovingStart,
+    /** 手指移动 */
+    FingerMoving,
+    /** 手指移动结束 */
+    FingerMovingEnd,
+    /** 手指滑动 */
+    FingerSlipping,
 }

@@ -38,8 +38,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
@@ -143,8 +143,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.inputMsgListeners.add(listener);
     }
 
-    public void onUserMsg(UserMsg msg, UserMsgData data) {
-        this.keyboard.onUserMsg(msg, data);
+    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        this.keyboard.onUserKeyMsg(msg, data);
     }
 
     @Override

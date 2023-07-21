@@ -37,6 +37,10 @@ public abstract class InputView<I extends Input> extends RecyclerViewHolder {
         super(itemView);
     }
 
+    public I getInput() {
+        return this.input;
+    }
+
     public void bind(I input, boolean selected) {
         this.input = input;
 

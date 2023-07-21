@@ -17,22 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgTrigger;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public abstract class BaseKeyboard implements Keyboard {
-    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
-
+public abstract class BaseKeyboard extends InputMsgTrigger implements Keyboard, InputMsgListener {
     /** 左右手模式 */
     private HandMode handMode = HandMode.Right;
 
@@ -59,14 +53,6 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
-    }
-
-    @Override
-    public void addInputMsgListener(InputMsgListener listener) {
-        this.inputMsgListeners.add(listener);
-    }
-
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-        this.inputMsgListeners.forEach(listener -> listener.onInputMsg(msg, data));
+        this.inputList.addInputMsgListener(this);
     }
 }

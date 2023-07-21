@@ -19,8 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
  * 键盘
@@ -37,8 +37,8 @@ public interface Keyboard {
     /** 重置状态 */
     void reset();
 
-    /** 处理按{@link UserMsg 键消息} */
-    void onUserMsg(UserMsg msg, UserMsgData data);
+    /** 处理{@link UserKeyMsg 按键消息} */
+    void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
 
     /**
      * 添加{@link InputMsg 输入消息监听}

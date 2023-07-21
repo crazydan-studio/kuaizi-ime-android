@@ -18,22 +18,26 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link UserMsg#KeyLongPressTick}消息数据
+ * {@link UserKeyMsg#FingerSlipping}消息数据
+ * <p/>
+ * 注：<ul>
+ * <li>{@link #target} 为滑动开始所按下的按键；</li>
+ * </ul>
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-17
+ * @date 2023-07-09
  */
-public class UserLongPressTickMsgData extends UserMsgData {
-    public final int tick;
-    public final long duration;
+public class UserFingerSlippingKeyMsgData extends UserKeyMsgData {
+    /** 运动信息 */
+    public final Motion motion;
 
-    public UserLongPressTickMsgData(Key<?> target, int tick, long duration) {
+    public UserFingerSlippingKeyMsgData(Key<?> target, Motion motion) {
         super(target);
-        this.tick = tick;
-        this.duration = duration;
+        this.motion = motion;
     }
 }

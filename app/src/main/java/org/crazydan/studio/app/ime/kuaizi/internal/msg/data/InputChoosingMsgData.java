@@ -15,31 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-/** 输入消息 */
-public enum InputMsg {
-    /** 字符输入中 */
-    InputtingChars,
-    /** 字符输入已结束 */
-    InputtingCharsDone,
-    /** 选择输入候选字 */
-    ChoosingInputCandidate,
-    /** 播放输入音效 */
-    PlayingInputAudio,
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
-    ChoosingInput,
+/**
+ * {@link InputMsg#ChoosingInput}消息数据
+ *
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-07-21
+ */
+public class InputChoosingMsgData extends CommonInputMsgData {
+    public final Input target;
 
-    /** 提交输入内容到输入目标 */
-    InputCommitting,
-    /** 向后删除输入目标中的输入内容 */
-    InputBackwardDeleting,
-
-    /** 定位输入目标的光标 */
-    LocatingInputCursor,
-    /** 选择输入目标的文本 */
-    SelectingInputText,
-
-    /** 输入法切换中 */
-    IMESwitching,
+    public InputChoosingMsgData(Input target) {
+        super(null);
+        this.target = target;
+    }
 }

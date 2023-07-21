@@ -17,31 +17,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
 
-import java.util.List;
-
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link InputMsg#InputtingChars}消息数据
+ * {@link UserKeyMsg#KeyLongPressTick}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-17
  */
-public class InputtingCharsMsgData extends CommonInputMsgData {
-    /** 当前已输入按键列表 */
-    public final List<Key<?>> inputs;
-    /** 当前按键 */
-    public final Key<?> current;
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class UserLongPressTickKeyMsgData extends UserKeyMsgData {
+    public final int tick;
+    public final long duration;
 
-    public InputtingCharsMsgData(Keyboard.KeyFactory keyFactory, List<Key<?>> inputs, Key<?> current, Key<?> closed) {
-        super(keyFactory);
-
-        this.inputs = inputs;
-        this.current = current;
-        this.closed = closed;
+    public UserLongPressTickKeyMsgData(Key<?> target, int tick, long duration) {
+        super(target);
+        this.tick = tick;
+        this.duration = duration;
     }
 }

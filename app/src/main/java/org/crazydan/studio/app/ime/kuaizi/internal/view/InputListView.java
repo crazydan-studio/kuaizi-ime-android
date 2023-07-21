@@ -19,13 +19,18 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutManager;
 
 /**
@@ -37,6 +42,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutMan
 public class InputListView extends RecyclerView implements InputMsgListener {
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
+    private final RecyclerViewGestureDetector gesture;
+
+    private InputList inputList;
 
     public InputListView(Context context) {
         this(context, null);
@@ -50,10 +58,19 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+
+        this.gesture = new RecyclerViewGestureDetector();
+        this.gesture.bind(this) //
+                    .addListener(new InputViewGestureListener(this));
     }
 
     public void setInputList(InputList inputList) {
+        this.inputList = inputList;
         this.adapter.setInputList(inputList);
+    }
+
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        this.inputList.onUserInputMsg(msg, data);
     }
 
     @Override
@@ -67,5 +84,12 @@ public class InputListView extends RecyclerView implements InputMsgListener {
                 smoothScrollToPosition(this.adapter.getSelectedInputPosition());
                 break;
         }
+    }
+
+    /** 找到指定坐标下可见的{@link  InputView 输入视图} */
+    public InputView<?> findVisibleKeyViewUnder(float x, float y) {
+        View child = findChildViewUnder(x, y);
+
+        return child != null ? (InputView<?>) getChildViewHolder(child) : null;
     }
 }
