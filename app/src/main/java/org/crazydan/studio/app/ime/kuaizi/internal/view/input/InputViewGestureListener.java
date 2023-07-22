@@ -18,14 +18,14 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
 
 /**
- * {@link Keyboard 键盘}{@link Input 输入}的手势监听器
+ * {@link InputList 输入列表}的手势监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
@@ -55,7 +55,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
         }
 
         UserInputMsgData msgData = new UserInputMsgData(input);
-        this.inputListView.onUserInputMsg(UserInputMsg.InputSingleTap, msgData);
+        this.inputListView.onUserInputMsg(UserInputMsg.ChoosingInput, msgData);
     }
 
     private Input getInput(InputView<?> inputView) {

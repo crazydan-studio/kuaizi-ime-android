@@ -30,17 +30,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-06
  */
 public class CharInput extends BaseInput {
-    private boolean pinyin;
     private boolean emotion;
 
-    @Override
-    public boolean isPinyin() {
-        return this.pinyin;
-    }
+    public CharInput copy() {
+        CharInput input = new CharInput();
+        getKeys().forEach(input::appendKey);
 
-    public CharInput setPinyin(boolean pinyin) {
-        this.pinyin = pinyin;
-        return this;
+        input.emotion = this.emotion;
+        input.setWord(getWord());
+
+        return input;
     }
 
     @Override

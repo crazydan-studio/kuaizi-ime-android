@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
-/** 用户{@link Key 按键}操作消息 */
+/** 用户对{@link Key 按键}操作的消息 */
 public enum UserKeyMsg {
     /** 按键按压开始 */
     KeyPressStart,

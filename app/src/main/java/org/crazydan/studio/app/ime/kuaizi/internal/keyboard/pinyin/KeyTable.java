@@ -136,8 +136,6 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInput,
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
-        ctrl_key_styles.put(CtrlKey.Type.DropInput,
-                            new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
@@ -274,31 +272,12 @@ public class KeyTable {
     public static Key<?>[][] createInputCandidateKeys(
             Keyboard.KeyFactory.Option option, Configure config, CharInput input, int startIndex
     ) {
-        Key<?>[][] defaultKeys = createKeys(option, config);
-
         List<InputWord> inputWords = input.getCandidates();
         int pageSize = getInputCandidateKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
-        for (int i = 0; i < gridKeys.length; i++) {
-            for (int j = 0; j < gridKeys[i].length; j++) {
-                Key<?> defaultKey = defaultKeys[i][j];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-                if (defaultKey instanceof CharKey) {
-                    CharKey charKey = (CharKey) defaultKey;
-                    InputWordKey wordKey = InputWordKey.word(null).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
-
-                    wordKey.setCharKey(charKey);
-                    charKey.setFgColorAttrId(charKey.getBgColorAttrId());
-
-                    gridKeys[i][j] = wordKey;
-                } else {
-                    gridKeys[i][j] = noopCtrlKey();
-                }
-            }
-        }
-
-        gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
         if (!inputWords.isEmpty()) {
             gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                          + "/" //
@@ -324,7 +303,6 @@ public class KeyTable {
             for (int[] wordKeyCoord : wordKeyCoords) {
                 int x = wordKeyCoord[0];
                 int y = wordKeyCoord[1];
-                Key<?> defaultKey = gridKeys[x][y];
 
                 if (wordIndex < inputWords.size()) {
                     InputWord word = inputWords.get(wordIndex);
@@ -333,11 +311,6 @@ public class KeyTable {
                     InputWordKey wordKey = InputWordKey.word(word)
                                                        .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                                        .setBgColorAttrId(bgAttrId);
-                    if (defaultKey instanceof InputWordKey) {
-                        CharKey charKey = ((InputWordKey) defaultKey).getCharKey();
-                        wordKey.setCharKey(charKey);
-                        charKey.setFgColorAttrId(wordKey.getBgColorAttrId());
-                    }
 
                     gridKeys[x][y] = wordKey;
                 } else {

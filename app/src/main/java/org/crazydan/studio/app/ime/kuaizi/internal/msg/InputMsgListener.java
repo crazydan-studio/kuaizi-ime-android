@@ -18,6 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /**
+ * {@link InputMsg} 监听
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */

@@ -18,11 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 
 /**
@@ -30,44 +27,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
  * @date 2023-07-07
  */
 public class CharInputView extends InputView<CharInput> {
-    private final TextView notationView;
-    private final TextView wordView;
 
     public CharInputView(@NonNull View itemView) {
         super(itemView);
-
-        this.notationView = itemView.findViewById(R.id.notation_view);
-        this.wordView = itemView.findViewById(R.id.word_view);
     }
 
     public void bind(
-            CharInput input, boolean selected, boolean needToAddMargin, //
+            CharInput input, CharInput pending, boolean selected, //
             boolean needToAddPrevSpace, boolean needToAddPostSpace
     ) {
-        super.bind(input, selected);
+        super.bind(input, pending);
 
-        int margin = 0;
-        // 预留一个 Gap 位
-        if (needToAddMargin) {
-            margin = getContext().getResources().getDimensionPixelSize(R.dimen.gap_input_width);
-        }
-        ((RecyclerView.LayoutParams) this.itemView.getLayoutParams()).setMargins(margin, 0, margin, 0);
-
-        int fgColor = selected ? R.attr.input_selection_fg_color : R.attr.input_fg_color;
-        setTextColorByAttrId(this.wordView, fgColor);
-        setTextColorByAttrId(this.notationView, fgColor);
-
-        InputWord word = input.getWord();
-        if (word == null) {
-            String text = (needToAddPrevSpace ? " " : "") //
-                          + String.join("", input.getChars()) //
-                          + (needToAddPostSpace ? " " : "");
-
-            this.wordView.setText(text);
-            this.notationView.setText("");
-        } else {
-            this.wordView.setText(word.getValue());
-            this.notationView.setText(word.getNotation());
-        }
+        showWord(pending != null ? pending : input, selected, needToAddPrevSpace, needToAddPostSpace);
+        setSelectedBgColor(this.itemView, selected);
     }
 }

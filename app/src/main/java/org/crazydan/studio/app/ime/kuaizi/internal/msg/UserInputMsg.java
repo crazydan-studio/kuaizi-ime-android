@@ -20,12 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 
 /**
- * 用户{@link Input 输入内容}消息
+ * 用户对{@link Input 输入}的操作消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
 public enum UserInputMsg {
-    /** 单击输入 */
-    InputSingleTap,
+    /** 选择输入 */
+    ChoosingInput,
 }

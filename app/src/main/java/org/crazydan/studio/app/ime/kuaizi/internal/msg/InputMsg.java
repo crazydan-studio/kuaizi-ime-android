@@ -28,8 +28,6 @@ public enum InputMsg {
     /** 播放输入音效 */
     PlayingInputAudio,
 
-    ChoosingInput,
-
     /** 提交输入内容到输入目标 */
     InputCommitting,
     /** 向后删除输入目标中的输入内容 */

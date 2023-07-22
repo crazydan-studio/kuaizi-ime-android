@@ -49,7 +49,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     }
 
     public int getSelectedInputPosition() {
-        return this.inputList.getCursorIndex();
+        return this.inputList.getSelectedIndex();
     }
 
     public void updateItems() {
@@ -69,25 +69,24 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
-        Input input = getInputAt(position);
-        boolean selected = this.inputList.getCursorIndex() == position;
+        Input input = this.inputList.getInputs().get(position);
+        CharInput pending = this.inputList.getPendingOn(input);
+        boolean selected = this.inputList.isSelected(input);
 
         if (input instanceof CharInput) {
-            boolean pending = this.inputList.getPending() == input;
-
             ((CharInputView) view).bind((CharInput) input,
-                                        selected,
                                         pending,
+                                        selected,
                                         this.inputList.needPrevSpace(position),
                                         this.inputList.needPostSpace(position));
         } else {
-            ((GapInputView) view).bind((GapInput) input, selected);
+            ((GapInputView) view).bind((GapInput) input, pending, selected);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        Input input = getInputAt(position);
+        Input input = this.inputList.getInputs().get(position);
 
         if (input instanceof CharInput) {
             return VIEW_TYPE_CHAR_INPUT;
@@ -103,18 +102,6 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
             return new CharInputView(inflateHolderView(parent, R.layout.char_input_view));
         } else {
             return new GapInputView(inflateHolderView(parent, R.layout.gap_input_view));
-        }
-    }
-
-    private Input getInputAt(int position) {
-        Input input = this.inputList.getInputs().get(position);
-        Input selected = this.inputList.getSelected();
-        Input pending = this.inputList.getPending();
-
-        if (selected == input && pending != null) {
-            return pending;
-        } else {
-            return input;
         }
     }
 }

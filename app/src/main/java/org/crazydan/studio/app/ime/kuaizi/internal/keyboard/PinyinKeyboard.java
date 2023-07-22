@@ -37,10 +37,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state.Locatin
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.CommonInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
@@ -75,16 +76,13 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-        // 仅处理与 InputList 相关的消息
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case InputWaiting:
             case ChoosingInputCandidate:
                 switch (msg) {
                     case ChoosingInput:
-                        Input input = ((InputChoosingMsgData) data).target;
-                        getInputList().newPendingOn(input);
-                        onRechoosingInputCandidate((CharInput) input);
+                        onChoosingInputMsg(msg, data.target, data);
                         break;
                 }
                 break;
@@ -100,10 +98,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (this.state.type) {
             case SlippingInput:
-                // Note: 滑动输入可能由候选字按键触发
-                if (key instanceof InputWordKey) {
-                    key = ((InputWordKey) key).getCharKey();
-                }
                 onSlippingInputCharKeyMsg(msg, (CharKey) key, data);
                 break;
             case ChoosingInputCandidate:
@@ -135,7 +129,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     this.state = new State(State.Type.SlippingInput);
 
                     CharInput input = getInputList().newPending();
-                    input.setPinyin(true).appendKey(key);
+                    input.appendKey(key);
 
                     onPlayingInputAudio_DoubleTick(key);
 
@@ -267,29 +261,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputCandidatesKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
-        CharKey charKey = key.getCharKey();
-
         switch (msg) {
             case FingerSlipping: {
                 onInputCandidatesPageSlippingMsg(msg, key, data);
-                break;
-            }
-            case KeyLongPressStart: {
-                // 长按标点，则由单击响应处理
-                if (charKey != null && charKey.isPunctuation()) {
-                    onPlayingInputAudio_DoubleTick(key);
-
-                    doSingleKeyInput(charKey);
-                }
-                break;
-            }
-            case FingerMovingStart: {
-                // 开始滑行输入
-                if (charKey != null) {
-                    // Note: 在 onCharKeyMsg 中会播放长按的按键音，
-                    // 故而，这里不再播放
-                    onCharKeyMsg(msg, charKey, new UserKeyMsgData(key));
-                }
                 break;
             }
             case KeySingleTap: {
@@ -302,10 +276,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     getInputList().confirmPending();
 
                     onInputtingCharsDone();
-//                }
-//                // 仅标点可在无候选字的按钮上单击，否则，仅长按才可输入该符号
-//                else if (charKey != null && charKey.isPunctuation()) {
-//                    onCharKeyMsg(msg, charKey, new UserMsgData(charKey));
                 }
             }
             break;
@@ -318,7 +288,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 onInputCandidatesPageSlippingMsg(msg, key, data);
                 break;
             }
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
+            case KeyDoubleTap: // 双击继续触发第二次单击操作，以便于支持连续点击并执行对应操作
             case KeySingleTap: {
                 onPlayingInputAudio_SingleTick(key);
 
@@ -327,11 +297,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 // 丢弃或变更拼音
                 switch (key.getType()) {
-                    case DropInput: {
-                        getInputList().dropPending();
-                        onInputtingCharsDone();
-                        break;
-                    }
                     case ToggleInputSpell_zcs_h: {
                         if (joinedInputChars.startsWith("sh")
                             || joinedInputChars.startsWith("ch")
@@ -343,7 +308,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             input.getKeys().add(1, KeyTable.alphabetKey("h"));
                         }
 
-                        onRechoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input);
                         break;
                     }
                     case ToggleInputSpell_nl: {
@@ -355,7 +320,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             input.getKeys().add(0, KeyTable.alphabetKey("n"));
                         }
 
-                        onRechoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input);
                         break;
                     }
                     case ToggleInputSpell_ng: {
@@ -369,7 +334,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
                         }
 
-                        onRechoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input);
                         break;
                     }
                 }
@@ -485,15 +450,16 @@ public class PinyinKeyboard extends BaseKeyboard {
         fireInputMsg(InputMsg.InputtingChars, data);
     }
 
+    /** 当前输入已完成，等待新的输入 */
     private void onInputtingCharsDone() {
-        // 当前输入已完成，等待新的输入
         this.state = new State(State.Type.InputWaiting);
 
         fireInputMsg(InputMsg.InputtingCharsDone, new CommonInputMsgData(getKeyFactory()));
     }
 
-    /** 重置状态，以确保候选字列表能被更新 */
-    private void onRechoosingInputCandidate(CharInput input) {
+    /** 重新进入候选字状态 */
+    private void onNewChoosingInputCandidate(CharInput input) {
+        // Note: 复位状态，以便于做新状态的初始化，而不是利用原状态
         this.state = new State(State.Type.InputWaiting);
         prepareInputCandidates(input);
 
@@ -589,7 +555,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                             .stream()
                                                             .map(InputWord::from)
                                                             .collect(Collectors.toList());
-        input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
+        // Note: 在拼音未改变的情况下，保留原来的已选字
+        if (!candidateWords.contains(input.getWord())) {
+            input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
+        }
         input.setCandidates(candidateWords);
     }
 
@@ -700,4 +669,20 @@ public class PinyinKeyboard extends BaseKeyboard {
         fireInputMsg(InputMsg.SelectingInputText, data);
     }
     // >>>>>>>>
+
+    // <<<<<<<<< 对输入列表的操作
+    private void onChoosingInputMsg(UserInputMsg msg, Input input, UserInputMsgData data) {
+        getInputList().newPendingOn(input);
+
+        CharInput pending = getInputList().getPending();
+        // 仅当待输入为拼音时才进入候选字模式：输入过程中操作和处理的都是待输入
+        if (pending.isPinyin()) {
+            onNewChoosingInputCandidate(pending);
+        }
+        // 其余情况都是直接替换该输入
+        else {
+            onInputtingCharsDone();
+        }
+    }
+    // >>>>>>>>>
 }

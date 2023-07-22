@@ -19,15 +19,15 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgTrigger;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputChoosingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
 
 /**
  * {@link Keyboard 键盘}输入列表，含零个或多个{@link Input 输入对象}
@@ -35,12 +35,28 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputChoosingMsgData
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class InputList extends InputMsgTrigger {
+public class InputList {
+    private final Set<UserInputMsgListener> listeners = new HashSet<>();
+
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
     public InputList() {
         empty();
+    }
+
+    /**
+     * 添加 {@link UserInputMsg} 消息监听
+     * <p/>
+     * 忽略重复加入的监听，且执行顺序与添加顺序无关
+     */
+    public void addUserInputMsgListener(UserInputMsgListener listener) {
+        this.listeners.add(listener);
+    }
+
+    /** 处理{@link UserInputMsg 输入}消息 */
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        this.listeners.forEach(listener -> listener.onUserInputMsg(msg, data));
     }
 
     /** 清空输入列表 */
@@ -74,6 +90,35 @@ public class InputList extends InputMsgTrigger {
     }
 
     /**
+     * 在指定输入上新建待输入
+     * <p/>
+     * 注：<ul>
+     * <li>若指定输入已选中且其待输入未确认，则不做处理；</li>
+     * <li>自动确认当前的待输入；</li>
+     * </ul>
+     */
+    public void newPendingOn(Input input) {
+        if (indexOf(input) < 0 //
+            || (this.cursor.selected == input //
+                && this.cursor.pending != null)) {
+            return;
+        }
+
+        if (input instanceof GapInput) {
+            // 在间隙位置，需要新建待输入，以插入新的输入
+            newPending();
+            this.cursor.selected = input;
+        } else {
+            // 先确认当前的待输入，再将原输入复制一份做为待输入，
+            // 从而可以对其进行输入替换，或做候选字修改
+            confirmPending();
+
+            this.cursor.selected = input;
+            this.cursor.pending = ((CharInput) input).copy();
+        }
+    }
+
+    /**
      * 确认待输入
      * <p/>
      * <ul>
@@ -86,19 +131,19 @@ public class InputList extends InputMsgTrigger {
         CharInput pending = this.cursor.pending;
         Input selected = this.cursor.selected;
 
-        int cursorIndex = getCursorIndex();
-        if (pending == null || pending.isEmpty() || cursorIndex < 0) {
+        int selectedIndex = getSelectedIndex();
+        if (pending == null || pending.isEmpty() || selectedIndex < 0) {
             return;
         }
 
         this.cursor.pending = null;
         if (selected instanceof CharInput) {
-            this.inputs.set(cursorIndex, pending);
+            this.inputs.set(selectedIndex, pending);
             this.cursor.selected = pending;
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input gap = new GapInput();
-            this.inputs.addAll(cursorIndex, Arrays.asList(gap, pending));
+            this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         }
     }
 
@@ -107,10 +152,10 @@ public class InputList extends InputMsgTrigger {
         this.cursor.pending = null;
     }
 
-    /** 获取光标位置 */
-    public int getCursorIndex() {
+    /** 获取已选中输入的位置 */
+    public int getSelectedIndex() {
         Input selected = this.cursor.selected;
-        return this.inputs.indexOf(selected);
+        return indexOf(selected);
     }
 
     /** 获取待输入 */
@@ -118,40 +163,41 @@ public class InputList extends InputMsgTrigger {
         return this.cursor.pending;
     }
 
+    /** 获取指定输入上的待输入 */
+    public CharInput getPendingOn(Input input) {
+        return this.cursor.selected == input ? this.cursor.pending : null;
+    }
+
     /** 获取已选中的输入 */
     public Input getSelected() {
         return this.cursor.selected;
     }
 
-    /** 切换待输入到指定输入 */
-    public void newPendingOn(Input input) {
-        // 先确认当前的待输入
-        confirmPending();
-
-        this.cursor.selected = input;
-        this.cursor.pending = (CharInput) input;
+    /** 指定输入是否已选中 */
+    public boolean isSelected(Input input) {
+        return getSelected() == input;
     }
 
     /** 删除光标左边的输入 */
     public void backwardDelete() {
-        int cursorIndex = getCursorIndex();
-        if (cursorIndex < 0) {
+        int selectedIndex = getSelectedIndex();
+        if (selectedIndex < 0) {
             return;
         }
 
         Input selected = this.cursor.selected;
         if (selected instanceof GapInput) {
-            if (cursorIndex > 0) {
+            if (selectedIndex > 0) {
                 // 删除当前光标之前的 输入和占位
-                this.inputs.remove(cursorIndex - 1);
-                this.inputs.remove(cursorIndex - 2);
+                this.inputs.remove(selectedIndex - 1);
+                this.inputs.remove(selectedIndex - 2);
             }
         } else if (selected instanceof CharInput) {
-            Input newSelected = this.inputs.get(cursorIndex + 1);
+            Input newSelected = this.inputs.get(selectedIndex + 1);
 
             // 删除当前选中的输入及其配对的占位
-            this.inputs.remove(cursorIndex);
-            this.inputs.remove(cursorIndex - 1);
+            this.inputs.remove(selectedIndex);
+            this.inputs.remove(selectedIndex - 1);
             // 再将当前光标后移
             this.cursor.selected = newSelected;
         }
@@ -163,11 +209,11 @@ public class InputList extends InputMsgTrigger {
 
     /** 获取已选中输入之前的输入 */
     public Input getInputBeforeSelected() {
-        int cursorIndex = getCursorIndex();
-        if (cursorIndex <= 0) {
+        int selectedIndex = getSelectedIndex();
+        if (selectedIndex <= 0) {
             return null;
         }
-        return this.inputs.get(cursorIndex - 1);
+        return this.inputs.get(selectedIndex - 1);
     }
 
     /**
@@ -226,14 +272,16 @@ public class InputList extends InputMsgTrigger {
         return after != null && (after.isPinyin() || after.isEmotion());
     }
 
-    /** 处理{@link UserInputMsg 输入}消息 */
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        switch (msg) {
-            case InputSingleTap:
-                InputChoosingMsgData msgData = new InputChoosingMsgData(data.target);
-                fireInputMsg(InputMsg.ChoosingInput, msgData);
-                break;
+    /** 获取指定输入的位置 */
+    public int indexOf(Input input) {
+        // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
+        for (int i = 0; i < this.inputs.size(); i++) {
+            Input ipt = this.inputs.get(i);
+            if (ipt == input) {
+                return i;
+            }
         }
+        return -1;
     }
 
     private static class Cursor {

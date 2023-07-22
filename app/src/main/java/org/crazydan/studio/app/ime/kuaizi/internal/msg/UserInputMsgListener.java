@@ -15,22 +15,15 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
-
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /**
- * {@link InputMsg#ChoosingInput}消息数据
+ * {@link UserInputMsg} 消息监听
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public class InputChoosingMsgData extends CommonInputMsgData {
-    public final Input target;
+public interface UserInputMsgListener {
 
-    public InputChoosingMsgData(Input target) {
-        super(null);
-        this.target = target;
-    }
+    void onUserInputMsg(UserInputMsg msg, UserInputMsgData data);
 }

@@ -61,7 +61,7 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isPinyin() {
-        return false;
+        return hasWord();
     }
 
     @Override
@@ -155,11 +155,6 @@ public abstract class BaseInput implements Input {
 
     public void setCandidates(List<InputWord> candidates) {
         this.candidates = candidates;
-    }
-
-    /** 是否有多余 1 个的候选字 */
-    public boolean hasExtraCandidates() {
-        return getCandidates().size() > 1;
     }
 
     @Override

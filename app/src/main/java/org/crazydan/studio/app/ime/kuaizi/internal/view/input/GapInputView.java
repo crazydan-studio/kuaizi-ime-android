@@ -24,6 +24,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
@@ -33,27 +34,43 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  */
 public class GapInputView extends InputView<GapInput> {
     private final View cursorView;
+    private final View pendingView;
+    private final View blinkView;
 
     public GapInputView(@NonNull View itemView) {
         super(itemView);
 
         this.cursorView = itemView.findViewById(R.id.cursor_view);
+        this.pendingView = itemView.findViewById(R.id.pending_view);
+        this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
-    public void bind(GapInput input, boolean selected) {
-        super.bind(input, false);
+    public void bind(GapInput input, CharInput pending, boolean selected) {
+        super.bind(input, pending);
 
-        if (selected) {
-            startCursorBlink();
-            ViewUtils.show(this.cursorView);
-        } else {
-            stopCursorBlink();
+        boolean hasPending = pending != null && !pending.isEmpty();
+        if (hasPending) {
             ViewUtils.hide(this.cursorView);
+            ViewUtils.show(this.pendingView);
+
+            showWord(pending, selected, false, false);
+            setSelectedBgColor(this.pendingView, selected);
+        } else {
+            ViewUtils.show(this.cursorView);
+            ViewUtils.hide(this.pendingView);
+        }
+
+        if (selected && !hasPending) {
+            ViewUtils.show(this.blinkView);
+            startCursorBlink();
+        } else {
+            ViewUtils.hide(this.blinkView);
+            stopCursorBlink();
         }
     }
 
     public void stopCursorBlink() {
-        this.cursorView.clearAnimation();
+        this.blinkView.clearAnimation();
     }
 
     public void startCursorBlink() {
@@ -72,6 +89,6 @@ public class GapInputView extends InputView<GapInput> {
             animationSet.addAnimation(animation);
         }
 
-        this.cursorView.startAnimation(animationSet);
+        this.blinkView.startAnimation(animationSet);
     }
 }
