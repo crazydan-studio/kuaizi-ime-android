@@ -284,6 +284,10 @@ public class InputList {
         return -1;
     }
 
+    public Input getLastInput() {
+        return this.inputs.size() > 0 ? this.inputs.get(this.inputs.size() - 1) : null;
+    }
+
     private static class Cursor {
         /** 光标位置已选中的输入 */
         private Input selected;

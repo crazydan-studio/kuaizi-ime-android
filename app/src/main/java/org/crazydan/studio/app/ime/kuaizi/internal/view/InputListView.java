@@ -22,16 +22,19 @@ import android.util.AttributeSet;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 
 /**
  * 输入列表视图
@@ -87,9 +90,33 @@ public class InputListView extends RecyclerView implements InputMsgListener {
     }
 
     /** 找到指定坐标下可见的{@link  InputView 输入视图} */
-    public InputView<?> findVisibleKeyViewUnder(float x, float y) {
-        View child = findChildViewUnder(x, y);
+    public InputView<?> findVisibleInputViewUnder(float x, float y) {
+        View view = findChildViewUnder(x, y);
+        InputView<?> inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
 
-        return child != null ? (InputView<?>) getChildViewHolder(child) : null;
+        // 若点击位置更靠近输入之间的 Gap 位置，则返回该 Gap
+        if (inputView instanceof CharInputView) {
+            int gap = ScreenUtils.dpToPx(4);
+            int position = getChildAdapterPosition(view);
+            float left = view.getLeft();
+            float right = view.getRight();
+
+            // 取当前输入左边的 Gap
+            if (x < left - gap) {
+                view = getChildAt(position - 1);
+                inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
+            }
+            // 取当前输入右边的 Gap
+            else if (x > right - gap) {
+                view = getChildAt(position + 1);
+                inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
+            }
+        }
+
+        return inputView;
+    }
+
+    public Input getLastInput() {
+        return this.inputList.getLastInput();
     }
 }

@@ -80,8 +80,12 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-        // 启用对触屏事件的拦截支持
-        return true;
+        // Note: onTouchEvent 默认只在该函数返回 true 时才执行，
+        // 故，在该函数始终返回 false 时，只能在该函数中执行手势检测处理
+        onTouchEvent(rv, e);
+
+        // 始终返回 false 以避免禁用 RecyclerView 的滚动功能
+        return false;
     }
 
     @Override

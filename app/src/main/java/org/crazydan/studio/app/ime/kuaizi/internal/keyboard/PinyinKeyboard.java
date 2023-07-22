@@ -679,8 +679,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (pending.isPinyin()) {
             onNewChoosingInputCandidate(pending);
         }
-        // 其余情况都是直接替换该输入
+        // 其余情况都是直接做替换输入
         else {
+            getInputList().confirmPending();
             onInputtingCharsDone();
         }
     }

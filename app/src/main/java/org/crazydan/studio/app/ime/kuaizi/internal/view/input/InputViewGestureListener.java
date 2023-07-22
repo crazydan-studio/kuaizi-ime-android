@@ -39,7 +39,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
 
     @Override
     public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
-        InputView<?> inputView = this.inputListView.findVisibleKeyViewUnder(data.x, data.y);
+        InputView<?> inputView = this.inputListView.findVisibleInputViewUnder(data.x, data.y);
 
         switch (type) {
             case SingleTap:
@@ -50,6 +50,10 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
 
     private void onSingleTap(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {
         Input input = getInput(inputView);
+        if (input == null) {
+            input = this.inputListView.getLastInput();
+        }
+
         if (input == null) {
             return;
         }
