@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -60,7 +60,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final PinyinCharTree pinyinCharTree;
+    private final PinyinDict pinyinDict;
     private final InputList inputList;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
@@ -81,7 +81,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         super(context, attrs);
 
         this.inputList = new InputList();
-        this.pinyinCharTree = GsonUtils.fromRawResourceJson(context, PinyinCharTree.class, R.raw.pinyin_char_tree);
+        this.pinyinDict = GsonUtils.fromRawResourceJson(context, PinyinDict.class, R.raw.pinyin_dict);
         this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
@@ -121,7 +121,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         Keyboard oldKeyboard = this.keyboard;
 
         if (!(this.keyboard instanceof PinyinKeyboard)) {
-            this.keyboard = new PinyinKeyboard(this.pinyinCharTree);
+            this.keyboard = new PinyinKeyboard(this.pinyinDict);
         }
 
         this.keyboard.setInputList(this.inputList);

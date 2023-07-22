@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinWord;
 
 /**
  * {@link Input 输入}候选字
@@ -28,32 +28,31 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
  * @date 2023-07-08
  */
 public class InputWord {
-    private String value;
-    private String notation;
+    private final String value;
+    private final String notation;
+    /** 是否繁体 */
+    private final boolean traditional;
 
-    public InputWord(String value, String notation) {
+    public InputWord(String value, String notation, boolean traditional) {
         this.value = value;
         this.notation = notation;
+        this.traditional = traditional;
     }
 
-    public static InputWord from(PinyinCharTree.Word cw) {
-        return new InputWord(cw.getValue(), cw.getNotation());
+    public static InputWord from(PinyinWord word) {
+        return new InputWord(word.getValue(), word.getPinyin(), word.isTraditional());
     }
 
     public String getValue() {
         return this.value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     public String getNotation() {
         return this.notation;
     }
 
-    public void setNotation(String notation) {
-        this.notation = notation;
+    public boolean isTraditional() {
+        return this.traditional;
     }
 
     @Override

@@ -33,9 +33,8 @@ import java.util.stream.Collectors;
 
 import com.google.gson.reflect.TypeToken;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharLink;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinTree;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.GsonUtils;
 import org.junit.Test;
 
@@ -54,31 +53,26 @@ public class PinyinDataTest {
 
         Map<String, List<String[]>> phraseMap = readPhraseFromPhrasePinyinData();
 
-        PinyinTree tree = createPinyinTree(wordDataset);
+        PinyinDict dict = createPinyinDict(wordDataset);
+
+        // 拼音字典写入 Android 资源
+        String dictJson = GsonUtils.toJson(dict);
+        File dictResFile = new File("./src/main/res/raw/pinyin_dict.json");
+        write(dictResFile, dictJson);
 
         // 生成字母连接线
-        boolean undirected = false;
         File linksFile = new File("../../analyze/files/char-links.json");
-        List<PinyinCharLink> links = tree.charLinks(undirected);
+        List<PinyinCharLink> links = dict.getTree().createPinyinCharLinks();
         String linksJson = GsonUtils.toJson(links, null, new String[] { "undirected" });
         write(linksFile, linksJson);
 
-        // 生成拼音字母组合树
-        File treeFile = new File("../../analyze/files/char-tree.json");
-        PinyinCharTree charTree = tree.charTree();
-        String charJson = GsonUtils.toJson(charTree);
-        write(treeFile, charJson);
-        // 拼音字母组合树写入 Android 资源
-        File treeResFile = new File("./src/main/res/raw/pinyin_char_tree.json");
-        write(treeResFile, charJson);
-
         // 生成拼音列表
         File pinyinFile = new File("../../analyze/files/pinyin.txt");
-        List<String> pinYinList = tree.getPinyinList();
+        List<String> pinYinList = dict.getTree().createPinyinCharsList();
         write(pinyinFile, String.join("\n", pinYinList));
     }
 
-    private PinyinTree createPinyinTree(PinyinWordDataset wordDataset) throws IOException {
+    private PinyinDict createPinyinDict(PinyinWordDataset wordDataset) throws IOException {
         File wordLevel1File = new File("../../data/hanzi-level-1.txt");
         File wordLevel2File = new File("../../data/hanzi-level-2.txt");
         File wordLevel3File = new File("../../data/hanzi-level-3.txt");
@@ -89,27 +83,40 @@ public class PinyinDataTest {
         Map<String, Integer> wordLevel3Map = readWordLevel(wordLevel3File, 3);
         Map<String, Float> wordWeightMap = readWordWeight(wordWeightFile);
 
-        Map<String, PinyinWord> mergedWordMap = mergeWordDataset(wordDataset);
+        Map<String, PinyinWord> pinyinWordMap = mergeWordDataset(wordDataset);
 
-        PinyinTree tree = new PinyinTree();
-        mergedWordMap.forEach((word, mergedWord) -> {
+        PinyinDict dict = new PinyinDict();
+        pinyinWordMap.forEach((word, pinyinWord) -> {
             float weight = wordWeightMap.getOrDefault(word, 0f);
-            mergedWord.setWeight(weight);
+            pinyinWord.setWeight(weight);
 
             for (Map<?, ?> map : (new Map[] {
                     wordLevel1Map, wordLevel2Map, wordLevel3Map
             })) {
                 if (map.containsKey(word)) {
-                    mergedWord.setLevel((Integer) map.get(word));
+                    pinyinWord.setLevel((Integer) map.get(word));
                     break;
                 }
             }
 
-            tree.add(mergedWord);
+            PinyinDict.Word dictWord = new PinyinDict.Word();
+            dictWord.setStrokeCount(pinyinWord.getStroke());
+            dictWord.setStrokeOrder(pinyinWord.getStrokeOrder());
+
+            if (pinyinWord.isTraditional() && !pinyinWord.getVariants().isEmpty()) {
+                dictWord.setSimple(pinyinWord.getVariants().iterator().next());
+            }
+
+            List<String> pinyins = new ArrayList<>(pinyinWord.getPinyins());
+            for (int i = 0; i < pinyins.size(); i++) {
+                String pinyin = pinyins.get(i);
+
+                dict.add(word, pinyin, dictWord, i == 0 ? weight : 0);
+            }
         });
         System.out.println("===========================================");
 
-        return tree;
+        return dict;
     }
 
     private void analyzeWordDataset(PinyinWordDataset wordDataset) {
@@ -558,7 +565,7 @@ public class PinyinDataTest {
                                                          new TypeToken<HashMap<String, String>>() {});
 
         Map<String, List<String>> pinyinToneMap = new HashMap<>();
-        for (Map.Entry<String, String> entry : PinyinTree.pinyinReplacements.entrySet()) {
+        for (Map.Entry<String, String> entry : PinyinTree.pinyinCharReplacements.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 

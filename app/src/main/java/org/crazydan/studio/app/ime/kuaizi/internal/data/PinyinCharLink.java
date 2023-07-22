@@ -26,12 +26,10 @@ import androidx.annotation.NonNull;
  * @date 2023-07-06
  */
 public class PinyinCharLink {
-    private final boolean undirected;
     private final String source;
     private final String target;
 
-    public PinyinCharLink(boolean undirected, String source, String target) {
-        this.undirected = undirected;
+    public PinyinCharLink(String source, String target) {
         this.source = source;
         this.target = target;
     }
@@ -59,15 +57,11 @@ public class PinyinCharLink {
             return false;
         }
         PinyinCharLink that = (PinyinCharLink) o;
-        return (this.source.equals(that.source) && this.target.equals(that.target))
-               //
-               || (this.undirected && this.source.equals(that.target) && this.target.equals(that.source));
+        return (this.source.equals(that.source) && this.target.equals(that.target));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.source, this.target)
-               //
-               + (this.undirected ? Objects.hash(this.target, this.source) : 0);
+        return Objects.hash(this.source, this.target);
     }
 }

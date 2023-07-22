@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharTree;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -56,11 +56,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingKe
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    private final PinyinCharTree pinyinCharTree;
+    private final PinyinDict pinyinDict;
     private State state = new State(State.Type.InputWaiting);
 
-    public PinyinKeyboard(PinyinCharTree pinyinCharTree) {
-        this.pinyinCharTree = pinyinCharTree;
+    public PinyinKeyboard(PinyinDict pinyinDict) {
+        this.pinyinDict = pinyinDict;
     }
 
     @Override
@@ -433,7 +433,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onContinuousInput(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean isPinyin) {
         List<String> nextChars = null;
         if (isPinyin) {
-            nextChars = this.pinyinCharTree.findNextChars(input.getChars());
+            nextChars = this.pinyinDict.findNextPinyinChar(input.getChars());
 
 //            if (nextChars.size() == 1 && patchUniquePinyin(input)) {
 //                nextChars = new ArrayList<>();
@@ -554,10 +554,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void prepareInputCandidates(CharInput input) {
-        List<InputWord> candidateWords = this.pinyinCharTree.findCandidateWords(input.getChars())
-                                                            .stream()
-                                                            .map(InputWord::from)
-                                                            .collect(Collectors.toList());
+        List<InputWord> candidateWords = this.pinyinDict.findCandidateWords(input.getChars())
+                                                        .stream()
+                                                        .map(InputWord::from)
+                                                        .collect(Collectors.toList());
         // Note: 在拼音未改变的情况下，保留原来的已选字
         if (!candidateWords.contains(input.getWord())) {
             input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
@@ -575,8 +575,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<String> patchedChars = new ArrayList<>();
 
         do {
-            List<?> candidates = this.pinyinCharTree.findCandidateWords(chars);
-            List<String> nextChars = this.pinyinCharTree.findNextChars(chars);
+            List<?> candidates = this.pinyinDict.findCandidateWords(chars);
+            List<String> nextChars = this.pinyinDict.findNextPinyinChar(chars);
 
             if (nextChars.isEmpty()) {
                 // 无效拼音：无候选字
