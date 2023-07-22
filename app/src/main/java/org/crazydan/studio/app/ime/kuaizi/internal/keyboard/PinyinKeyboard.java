@@ -435,9 +435,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (isPinyin) {
             nextChars = this.pinyinCharTree.findNextChars(input.getChars());
 
-            if (nextChars.size() == 1 && patchUniquePinyin(input)) {
-                nextChars = new ArrayList<>();
-            }
+//            if (nextChars.size() == 1 && patchUniquePinyin(input)) {
+//                nextChars = new ArrayList<>();
+//            }
             prepareInputCandidates(input);
         } else {
             input.setWord(null);
