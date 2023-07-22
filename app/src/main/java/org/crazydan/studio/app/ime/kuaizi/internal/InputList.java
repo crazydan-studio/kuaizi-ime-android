@@ -68,9 +68,9 @@ public class InputList {
         this.cursor.selected = this.inputs.get(0);
     }
 
-    /** 是否有待输入 */
-    public boolean hasPending() {
-        return this.cursor.pending != null;
+    /** 是否有空的待输入 */
+    public boolean hasEmptyPending() {
+        return this.cursor.pending == null || this.cursor.pending.isEmpty();
     }
 
     /**
@@ -227,7 +227,7 @@ public class InputList {
                 return false;
             }
         }
-        return !hasPending() || getPending().isEmpty();
+        return hasEmptyPending();
     }
 
     /** 获取输入文本内容 */

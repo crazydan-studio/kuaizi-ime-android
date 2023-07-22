@@ -146,7 +146,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case KeyDoubleTap: {
                 // 双击字符，则替换前一个相同的输入字符：
-                // 因为双击会先触发单击，而单击时会添加一次该字符
+                // 因为双击会先触发单击，而单击时已添加了一次该双击的字符
                 onPlayingInputAudio_SingleTick(key);
 
                 onReplacementKeyInput(key);
@@ -205,7 +205,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     }
                     case Backspace: {
                         if (!getInputList().isEmpty()) {
-                            if (getInputList().hasPending()) {
+                            if (!getInputList().hasEmptyPending()) {
                                 getInputList().dropPending();
                             } else {
                                 getInputList().backwardDelete();
@@ -359,7 +359,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void doSingleKeyInput(CharKey key) {
-        if (!getInputList().hasPending()) {
+        if (getInputList().hasEmptyPending()) {
             getInputList().newPending();
         }
 
@@ -370,9 +370,12 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onReplacementKeyInput(CharKey key) {
         CharInput input;
 
-        if (!getInputList().hasPending()) {
-            // Note: 标点是单个输入的，故，需向后替换已输入的标点
-            Input preInput = getInputList().getInputBeforeSelected();
+        if (getInputList().hasEmptyPending()) {
+            Input selected = getInputList().getSelected();
+            // Note: 标点是单个输入的，故，需向前替换已输入的标点。
+            // 若当前选中的是标点，则也支持双击切换标点
+            Input preInput = selected.isPunctuation() ? selected : getInputList().getInputBeforeSelected();
+
             if (preInput != null && key.isPunctuation() && preInput.isPunctuation()) {
                 input = (CharInput) preInput;
             } else {
