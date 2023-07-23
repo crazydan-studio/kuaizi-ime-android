@@ -147,14 +147,19 @@ public class InputList {
         }
     }
 
-    /** 光标向右移动 */
-    public void selectForward() {
+    /** 移动到下一个输入位置或尾部 */
+    public void moveToNextCharInput() {
         int index = getSelectedIndex();
-        if (index >= this.inputs.size() - 1) {
+        int lastIndex = this.inputs.size() - 1;
+        if (index >= lastIndex) {
             return;
         }
 
-        Input next = this.inputs.get(index + 1);
+        int nextIndex = index + 1;
+        Input next = this.inputs.get(nextIndex);
+        if (next instanceof GapInput && nextIndex < lastIndex) {
+            next = this.inputs.get(nextIndex + 1);
+        }
         this.cursor.selected = next;
         this.cursor.pending = null;
     }

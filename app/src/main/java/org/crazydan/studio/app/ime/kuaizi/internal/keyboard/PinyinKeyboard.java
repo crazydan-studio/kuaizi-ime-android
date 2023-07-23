@@ -274,10 +274,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                     InputWord word = key.getWord();
                     getInputList().getPending().setWord(word);
                     getInputList().confirmPending();
-                    // 光标移动到下一个位置
-                    getInputList().selectForward();
 
-                    onInputtingCharsDone();
+                    // 继续选择下一个输入的候选字
+                    getInputList().moveToNextCharInput();
+                    Input selected = getInputList().getSelected();
+                    onChoosingInputMsg(null, selected, null);
                 }
             }
             break;
