@@ -111,7 +111,7 @@ public class KeyTable {
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),
                                    new Integer[] { R.attr.key_char_final_fg_color, R.attr.key_char_final_bg_color });
-        char_key_color_palette.put(Arrays.asList("f", "m", "p", "d", "b", "t", "y"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("r", "f", "m", "p", "d", "b", "t", "y"), new Integer[] {
                 R.attr.key_char_initial_fg_color, R.attr.key_char_initial_bg_color
         });
         char_key_color_palette.put(Arrays.asList("j", "q", "x"), new Integer[] {
@@ -123,7 +123,7 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("g", "w", "k"), new Integer[] {
                 R.attr.key_char_initial_hgwk_fg_color, R.attr.key_char_initial_hgwk_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("r", "h", "n", "l"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("h", "n", "l"), new Integer[] {
                 R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
         });
         char_key_color_palette.put(Arrays.asList("：", "！", "？", "、", "，", "。"), new Integer[] {
@@ -205,8 +205,8 @@ public class KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
                 punctuationKey("？").withReplacements("?"),
-                alphabetKey("l").withReplacements("L"),
                 alphabetKey("x").withReplacements("X"),
+                alphabetKey("l").withReplacements("L"),
                 alphabetKey("g").withReplacements("G"),
                 alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.Space),

@@ -44,8 +44,8 @@ public class PinyinTree {
                 new String[] { "u", "ū", "ú", "ǔ", "ù" },
                 new String[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 new String[] { "n", "ń", "ň", "ǹ" },
-                new String[] { "m", "m̄", "m̀" },
-                new String[] { "e", "ê̄", "ê̌" },
+                new String[] { "m", "m̄", "ḿ", "m̀" },
+                new String[] { "e", "ê̄", "ế", "ê̌", "ề" },
                 };
         for (String[] pair : pairs) {
             for (int i = 1; i < pair.length; i++) {
@@ -171,8 +171,9 @@ public class PinyinTree {
     }
 
     private static String[] parsePinyinChars(String pinyin) {
-        if ("m̀".equals(pinyin) || "m̄".equals(pinyin) //
-            || "ê̄".equals(pinyin) || "ê̌".equals(pinyin)) {
+        if ("m̀".equals(pinyin) || "ḿ".equals(pinyin) || "m̄".equals(pinyin) //
+            || "ê̄".equals(pinyin) || "ế".equals(pinyin) //
+            || "ê̌".equals(pinyin) || "ề".equals(pinyin)) {
             return new String[] { pinyinCharReplacements.get(pinyin) };
         } else {
             String[] chars = new String[pinyin.length()];
