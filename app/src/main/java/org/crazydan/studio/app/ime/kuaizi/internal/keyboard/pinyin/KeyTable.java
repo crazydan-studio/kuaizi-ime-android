@@ -284,13 +284,13 @@ public class KeyTable {
                                          + ((int) Math.ceil(inputWords.size() / (pageSize * 1.0))));
         }
 
-        if (input.isPinyinTongue()) {
+        if (input.isPinyinStartsWithSCZ()) {
             String s = input.getChars().get(0);
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
-        } else if (input.isPinyinNL()) {
+        } else if (input.isPinyinStartsWithNL()) {
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
         }
-        if (input.isPinyinRhyme()) {
+        if (input.isPinyinEndsWithNG()) {
             String s = String.join("", input.getChars());
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
             gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");

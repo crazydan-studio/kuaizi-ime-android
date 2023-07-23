@@ -52,8 +52,8 @@ public class CharInput extends BaseInput {
         return this;
     }
 
-    /** 是否为拼音 平/翘舌 */
-    public boolean isPinyinTongue() {
+    /** 是否为拼音 平/翘舌 开头 */
+    public boolean isPinyinStartsWithSCZ() {
         List<String> chars = getChars();
         if (chars.isEmpty()) {
             return false;
@@ -64,15 +64,15 @@ public class CharInput extends BaseInput {
     }
 
     /** 是否为拼音 前/后鼻韵 */
-    public boolean isPinyinRhyme() {
+    public boolean isPinyinEndsWithNG() {
         String s = String.join("", getChars());
 
         return s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang") //
                || s.endsWith("en") || s.endsWith("in") || s.endsWith("an");
     }
 
-    /** 是否为拼音 n/l */
-    public boolean isPinyinNL() {
+    /** 是否为拼音 n/l 开头 */
+    public boolean isPinyinStartsWithNL() {
         List<String> chars = getChars();
         if (chars.isEmpty()) {
             return false;
