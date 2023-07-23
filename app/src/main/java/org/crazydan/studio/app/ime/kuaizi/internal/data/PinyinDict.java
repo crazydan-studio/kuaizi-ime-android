@@ -45,11 +45,13 @@ public class PinyinDict {
     public void add(String word, String pinyin, Word wordInfo, float weight) {
         this.words.putIfAbsent(word, wordInfo);
 
-        weight *= 1000;
+        weight *= 3000;
 
         // Note: 确保笔画少的更靠前，且笔画相同的能够更靠近在一起，繁体靠最后，字型相近的能挨在一起
         if (wordInfo.hasSimple()) {
-            weight -= 100;
+            weight -= 200;
+        } else {
+            weight += 100;
         }
 
         if (wordInfo.strokeOrder != null && !wordInfo.strokeOrder.isEmpty()) {
@@ -58,8 +60,13 @@ public class PinyinDict {
                 weight -= ch;
             }
         } else if (wordInfo.strokeCount > 0) {
-            weight -= wordInfo.strokeCount * 2;
+            weight -= wordInfo.strokeCount * 10;
+        } else {
+            weight += 50;
         }
+
+        // 保留 3 位小数
+        weight = Math.round(weight * 1000) / 1000.0f;
 
         this.tree.add(pinyin, word, weight);
     }
