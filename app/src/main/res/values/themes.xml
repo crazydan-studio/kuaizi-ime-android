@@ -46,8 +46,8 @@
         <item name="key_ctrl_switch_ime_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_hand_mode_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_hand_mode_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_switch_to_alphanumeric_keyboard_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switch_to_alphanumeric_keyboard_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_numeric_keyboard_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_numeric_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>
@@ -110,8 +110,8 @@
         <item name="key_ctrl_switch_ime_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_hand_mode_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_hand_mode_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_switch_to_alphanumeric_keyboard_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switch_to_alphanumeric_keyboard_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_switch_to_numeric_keyboard_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_switch_to_numeric_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_switch_to_punctuation_keyboard_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_toggle_input_spell_bg_color">?attr/key_bg_color</item>

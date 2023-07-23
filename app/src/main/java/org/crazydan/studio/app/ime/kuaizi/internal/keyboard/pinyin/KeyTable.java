@@ -133,7 +133,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
                             new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switch_ime_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
-                            new Integer[] { R.drawable.ic_backspace_left, R.attr.key_ctrl_backspace_bg_color });
+                            new Integer[] { R.drawable.ic_left_hand_backspace, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInput,
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
@@ -151,8 +151,8 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Space, new Integer[] { R.drawable.ic_space, R.attr.key_ctrl_space_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             new Integer[] { R.drawable.ic_left_hand_enter, R.attr.key_ctrl_enter_bg_color });
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToAlphanumericKeyboard, new Integer[] {
-                R.drawable.ic_alphabet_number, R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToNumericKeyboard, new Integer[] {
+                R.drawable.ic_abacus, R.attr.key_ctrl_switch_to_numeric_keyboard_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToPunctuationKeyboard, new Integer[] {
                 R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
@@ -227,7 +227,7 @@ public class KeyTable {
                 alphabetKey("f").withReplacements("F"),
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("p").withReplacements("P"),
-                ctrlKey(CtrlKey.Type.SwitchToAlphanumericKeyboard).setDisabled(true),
+                ctrlKey(CtrlKey.Type.SwitchToNumericKeyboard).setDisabled(true),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
