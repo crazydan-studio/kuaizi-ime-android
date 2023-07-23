@@ -633,6 +633,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     // <<<<<< 输入定位逻辑
     private void onLocatingInputCursorCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
                     // 点击 退出 按钮，则退回到输入状态
@@ -640,6 +641,52 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onPlayingInputAudio_SingleTick(key);
 
                         onInputtingCharsDone();
+                        break;
+                    case Backspace:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        fireInputMsg(InputMsg.InputBackwardDeleting, new CommonInputMsgData(null));
+                        break;
+                    case Enter:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        InputMsgData msgData = new InputCommittingMsgData(null, "\n");
+                        fireInputMsg(InputMsg.InputCommitting, msgData);
+                        break;
+                    case Redo:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        onRedoingInputChange();
+                        break;
+                    case Undo:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        onUndoingInputChange();
+                        break;
+                    case Cut:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        onCuttingInputText();
+                        break;
+                    case Paste:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        onPastingInputText();
+                        break;
+                    case Copy:
+                        onPlayingInputAudio_SingleTick(key);
+
+                        onCopyingInputText();
+                        break;
+                }
+                break;
+            }
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        onLocatingInputCursorCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
                         break;
                 }
                 break;
@@ -689,6 +736,31 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         InputMsgData data = new InputCursorLocatingMsgData(null, key, stateData.getSelector());
         fireInputMsg(InputMsg.SelectingInputText, data);
+    }
+
+    private void onCopyingInputText() {
+        InputMsgData data = new CommonInputMsgData(null);
+        fireInputMsg(InputMsg.CopyingInputText, data);
+    }
+
+    private void onPastingInputText() {
+        InputMsgData data = new CommonInputMsgData(null);
+        fireInputMsg(InputMsg.PastingInputText, data);
+    }
+
+    private void onCuttingInputText() {
+        InputMsgData data = new CommonInputMsgData(null);
+        fireInputMsg(InputMsg.CuttingInputText, data);
+    }
+
+    private void onUndoingInputChange() {
+        InputMsgData data = new CommonInputMsgData(null);
+        fireInputMsg(InputMsg.UndoingInputChange, data);
+    }
+
+    private void onRedoingInputChange() {
+        InputMsgData data = new CommonInputMsgData(null);
+        fireInputMsg(InputMsg.RedoingInputChange, data);
     }
     // >>>>>>>>
 

@@ -37,6 +37,16 @@ public enum InputMsg {
     LocatingInputCursor,
     /** 选择输入目标的文本 */
     SelectingInputText,
+    /** 复制输入目标的文本 */
+    CopyingInputText,
+    /** 粘贴文本到输入目标 */
+    PastingInputText,
+    /** 剪切输入目标的文本 */
+    CuttingInputText,
+    /** 撤销对输入目标的变更 */
+    UndoingInputChange,
+    /** 重做对输入目标的变更 */
+    RedoingInputChange,
 
     /** 输入法切换中 */
     IMESwitching,

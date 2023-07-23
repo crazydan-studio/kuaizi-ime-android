@@ -27,9 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
  * @date 2023-07-15
  */
 public class InputCommittingMsgData extends CommonInputMsgData {
-    public final StringBuilder text;
+    public final CharSequence text;
 
-    public InputCommittingMsgData(Keyboard.KeyFactory keyFactory, StringBuilder text) {
+    public InputCommittingMsgData(Keyboard.KeyFactory keyFactory, CharSequence text) {
         super(keyFactory);
         this.text = text;
     }

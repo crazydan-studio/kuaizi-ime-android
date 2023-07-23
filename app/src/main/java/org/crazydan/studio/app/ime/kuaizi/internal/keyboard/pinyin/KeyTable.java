@@ -150,7 +150,7 @@ public class KeyTable {
         });
         ctrl_key_styles.put(CtrlKey.Type.Space, new Integer[] { R.drawable.ic_space, R.attr.key_ctrl_space_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Enter,
-                            new Integer[] { R.drawable.ic_enter_left, R.attr.key_ctrl_enter_bg_color });
+                            new Integer[] { R.drawable.ic_left_hand_enter, R.attr.key_ctrl_enter_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToAlphanumericKeyboard, new Integer[] {
                 R.drawable.ic_alphabet_number, R.attr.key_ctrl_switch_to_alphanumeric_keyboard_bg_color
         });
@@ -165,6 +165,17 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_right_hand_selection, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Exit,
                             new Integer[] { R.drawable.ic_right_hand_exit, R.attr.key_ctrl_exit_bg_color });
+
+        ctrl_key_styles.put(CtrlKey.Type.Undo,
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Redo,
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Cut,
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Paste,
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Copy,
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
     }
 
     /** 创建基础按键 */
@@ -327,10 +338,20 @@ public class KeyTable {
     /** 创建定位按键 */
     public static Key<?>[][] createLocatorKeys(Keyboard.KeyFactory.Option option, Configure config) {
         Key<?>[][] gridKeys = new Key[6][7];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[3][1] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
-        gridKeys[3][5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
+        gridKeys[3][4] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
+
+        gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[3][6] = ctrlKey(CtrlKey.Type.Enter);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
+
+        gridKeys[4][3] = ctrlKey(CtrlKey.Type.Cut, "剪切");
+        gridKeys[5][1] = ctrlKey(CtrlKey.Type.Redo, "重做");
+        gridKeys[5][2] = ctrlKey(CtrlKey.Type.Undo, "撤销");
+        gridKeys[5][3] = ctrlKey(CtrlKey.Type.Paste, "粘贴");
+        gridKeys[5][4] = ctrlKey(CtrlKey.Type.Copy, "复制");
 
         return gridKeys;
     }
@@ -342,16 +363,19 @@ public class KeyTable {
     public static CtrlKey ctrlKey(CtrlKey.Type type, String text) {
         int iconResId = 0;
         int bgAttrId = 0;
+        int fgAttrId = 0;
         for (Map.Entry<CtrlKey.Type, Integer[]> entry : ctrl_key_styles.entrySet()) {
+            Integer[] configs = entry.getValue();
             if (entry.getKey() == type) {
-                iconResId = entry.getValue()[0];
-                bgAttrId = entry.getValue()[1];
+                iconResId = configs[0];
+                bgAttrId = configs[1];
+                fgAttrId = configs.length > 2 ? configs[2] : 0;
                 break;
             }
         }
 
         CtrlKey key = text != null ? CtrlKey.create(type, text) : CtrlKey.create(type, iconResId);
-        return key.setBgColorAttrId(bgAttrId);
+        return key.setBgColorAttrId(bgAttrId).setFgColorAttrId(fgAttrId);
     }
 
     public static CtrlKey noopCtrlKey() {
@@ -374,9 +398,10 @@ public class KeyTable {
         int fgAttrId = 0;
         int bgAttrId = 0;
         for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {
+            Integer[] configs = entry.getValue();
             if (entry.getKey().contains(text)) {
-                fgAttrId = entry.getValue()[0];
-                bgAttrId = entry.getValue()[1];
+                fgAttrId = configs[0];
+                bgAttrId = configs[1];
                 break;
             }
         }

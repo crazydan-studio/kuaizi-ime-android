@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private boolean disabled;
+    private int fgColorAttrId;
     private int bgColorAttrId;
 
     @Override
@@ -37,6 +38,19 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     @Override
     public K setDisabled(boolean disabled) {
         this.disabled = disabled;
+        return (K) this;
+    }
+
+    /** 获取前景色属性 id */
+    @Override
+    public int getFgColorAttrId() {
+        return this.fgColorAttrId;
+    }
+
+    /** 设置前景色属性 id */
+    @Override
+    public K setFgColorAttrId(int fgColorAttrId) {
+        this.fgColorAttrId = fgColorAttrId;
         return (K) this;
     }
 
@@ -60,11 +74,13 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
             return false;
         }
         BaseKey<?> that = (BaseKey<?>) o;
-        return this.disabled == that.disabled && this.bgColorAttrId == that.bgColorAttrId;
+        return this.disabled == that.disabled
+               && this.fgColorAttrId == that.fgColorAttrId
+               && this.bgColorAttrId == that.bgColorAttrId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.disabled, this.bgColorAttrId);
+        return Objects.hash(this.disabled, this.fgColorAttrId, this.bgColorAttrId);
     }
 }

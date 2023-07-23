@@ -148,6 +148,26 @@ public class Service extends InputMethodService implements InputMsgListener {
                 selectInputText((InputCursorLocatingMsgData) data);
                 break;
             }
+            case CopyingInputText: {
+                copyInputText();
+                break;
+            }
+            case PastingInputText: {
+                pasteInputText();
+                break;
+            }
+            case CuttingInputText: {
+                cutInputText();
+                break;
+            }
+            case UndoingInputChange: {
+                undoInputChange();
+                break;
+            }
+            case RedoingInputChange: {
+                redoInputChange();
+                break;
+            }
             case IMESwitching: {
                 switchIME();
                 break;
@@ -155,7 +175,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void commitInputting(StringBuilder text) {
+    private void commitInputting(CharSequence text) {
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
             return;
@@ -229,7 +249,27 @@ public class Service extends InputMethodService implements InputMsgListener {
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void commitText(StringBuilder text) {
+    private void copyInputText() {
+        super.onExtractTextContextMenuItem(android.R.id.copy);
+    }
+
+    private void pasteInputText() {
+        super.onExtractTextContextMenuItem(android.R.id.paste);
+    }
+
+    private void cutInputText() {
+        super.onExtractTextContextMenuItem(android.R.id.cut);
+    }
+
+    private void undoInputChange() {
+        super.onExtractTextContextMenuItem(android.R.id.undo);
+    }
+
+    private void redoInputChange() {
+        super.onExtractTextContextMenuItem(android.R.id.redo);
+    }
+
+    private void commitText(CharSequence text) {
         if (text.length() == 0) {
             return;
         }

@@ -34,7 +34,6 @@ public class CharKey extends BaseKey<CharKey> {
     private final Type type;
     private final String text;
     private final List<String> replacements;
-    private int fgColorAttrId;
 
     private CharKey(Type type, String text) {
         this.type = type;
@@ -96,17 +95,6 @@ public class CharKey extends BaseKey<CharKey> {
         return this.type == Type.Punctuation;
     }
 
-    /** 获取前景色属性 id */
-    public int getFgColorAttrId() {
-        return this.fgColorAttrId;
-    }
-
-    /** 设置前景色属性 id */
-    public CharKey setFgColorAttrId(int fgColorAttrId) {
-        this.fgColorAttrId = fgColorAttrId;
-        return this;
-    }
-
     @Override
     public boolean isSameWith(Key<?> key) {
         if (!(key instanceof CharKey)) {
@@ -129,12 +117,12 @@ public class CharKey extends BaseKey<CharKey> {
             return false;
         }
         CharKey that = (CharKey) o;
-        return this.fgColorAttrId == that.fgColorAttrId && this.type == that.type && this.text.equals(that.text);
+        return this.type == that.type && this.text.equals(that.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.type, this.text, this.fgColorAttrId);
+        return Objects.hash(super.hashCode(), this.type, this.text);
     }
 
     @NonNull

@@ -18,31 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
- * {@link Keyboard 键盘}按键
+ * 键盘配置
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-01
+ * @date 2023-07-23
  */
-public interface Key<K extends Key<?>> {
-
-    /** 是否与指定的按键相同：即实例不同但按键类型和符号相同 */
-    boolean isSameWith(Key<?> key);
-
-    /** 是否已禁用 */
-    boolean isDisabled();
-
-    /** 设置为禁用 */
-    K setDisabled(boolean disabled);
-
-    /** 获取前景色属性 id */
-    int getFgColorAttrId();
-
-    /** 设置前景色属性 id */
-    K setFgColorAttrId(int fgColorAttrId);
-
-    /** 获取背景色属性 id */
-    int getBgColorAttrId();
-
-    /** 设置背景色属性 id */
-    K setBgColorAttrId(int bgColorAttrId);
-}
+public class Configure {}

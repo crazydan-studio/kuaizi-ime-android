@@ -83,6 +83,26 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
                 selectInputText(((InputCursorLocatingMsgData) data).anchor);
                 break;
             }
+            case CopyingInputText: {
+                copyInputText();
+                break;
+            }
+            case PastingInputText: {
+                pasteInputText();
+                break;
+            }
+            case CuttingInputText: {
+                cutInputText();
+                break;
+            }
+            case UndoingInputChange: {
+                undoInputChange();
+                break;
+            }
+            case RedoingInputChange: {
+                redoInputChange();
+                break;
+            }
             case IMESwitching: {
                 Toast.makeText(getApplicationContext(), "仅在输入法状态下才可切换系统输入法", Toast.LENGTH_LONG).show();
                 break;
@@ -90,7 +110,7 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         }
     }
 
-    private void commitInputting(StringBuilder text) {
+    private void commitInputting(CharSequence text) {
         int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
         int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
 
@@ -125,6 +145,26 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
                     break;
             }
         }
+    }
+
+    private void copyInputText() {
+        this.editText.onTextContextMenuItem(android.R.id.copy);
+    }
+
+    private void pasteInputText() {
+        this.editText.onTextContextMenuItem(android.R.id.paste);
+    }
+
+    private void cutInputText() {
+        this.editText.onTextContextMenuItem(android.R.id.cut);
+    }
+
+    private void undoInputChange() {
+        this.editText.onTextContextMenuItem(android.R.id.undo);
+    }
+
+    private void redoInputChange() {
+        this.editText.onTextContextMenuItem(android.R.id.redo);
     }
 
     private void selectInputText(Motion anchor) {

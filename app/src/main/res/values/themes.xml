@@ -55,7 +55,7 @@
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_exit_bg_color">@color/color_red_800</item>
+        <item name="key_ctrl_exit_bg_color">@color/color_emerald_600</item>
         <item name="key_ctrl_exit_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>
@@ -119,7 +119,7 @@
 
         <item name="key_ctrl_backspace_bg_color">@color/color_red_800</item>
         <item name="key_ctrl_backspace_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_exit_bg_color">@color/color_red_800</item>
+        <item name="key_ctrl_exit_bg_color">@color/color_emerald_600</item>
         <item name="key_ctrl_exit_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_bg_color</item>

@@ -51,6 +51,8 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
         } else if (key.getText() != null) {
             ViewUtils.hide(this.fgView);
             ViewUtils.show(this.fgTextView).setText(key.getText());
+
+            setTextColorByAttrId(this.fgTextView, key.getFgColorAttrId());
         } else {
             // 存在复用的情况，故，需在其他情况对其进行重置
             ViewUtils.hide(this.fgTextView);

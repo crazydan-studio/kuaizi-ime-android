@@ -52,13 +52,17 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setTextColorByAttrId(TextView text, int attrId) {
-        int color = getColorByAttrId(attrId);
-        text.setTextColor(color);
+        if (attrId > 0) {
+            int color = getColorByAttrId(attrId);
+            text.setTextColor(color);
+        }
     }
 
     public void setBackgroundColorByAttrId(View view, int attrId) {
-        int color = getColorByAttrId(attrId);
-        view.setBackgroundColor(color);
+        if (attrId > 0) {
+            int color = getColorByAttrId(attrId);
+            view.setBackgroundColor(color);
+        }
     }
 
     public int getColorByAttrId(int attrId) {
