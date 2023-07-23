@@ -147,6 +147,18 @@ public class InputList {
         }
     }
 
+    /** 光标向右移动 */
+    public void selectForward() {
+        int index = getSelectedIndex();
+        if (index >= this.inputs.size() - 1) {
+            return;
+        }
+
+        Input next = this.inputs.get(index + 1);
+        this.cursor.selected = next;
+        this.cursor.pending = null;
+    }
+
     /** 丢弃待输入 */
     public void dropPending() {
         this.cursor.pending = null;
