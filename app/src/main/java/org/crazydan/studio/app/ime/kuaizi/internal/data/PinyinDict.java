@@ -47,19 +47,18 @@ public class PinyinDict {
 
         weight *= 1000;
 
-        // Note: 字的笔画数扩大 2 倍，再用最高笔画数的 2 倍减去该值，
-        // 从而确保笔画少的更靠前，且笔画相同的能够更靠近在一起
-        if (wordInfo.strokeCount > 0) {
-            weight += 80 * 2 - wordInfo.strokeCount * 2;
-        }
+        // Note: 确保笔画少的更靠前，且笔画相同的能够更靠近在一起，繁体靠最后，字型相近的能挨在一起
         if (wordInfo.hasSimple()) {
-            weight -= 50;
+            weight -= 100;
         }
+
         if (wordInfo.strokeOrder != null && !wordInfo.strokeOrder.isEmpty()) {
             for (int i = 0; i < wordInfo.strokeOrder.length(); i++) {
                 char ch = wordInfo.strokeOrder.charAt(i);
                 weight -= ch;
             }
+        } else if (wordInfo.strokeCount > 0) {
+            weight -= wordInfo.strokeCount * 2;
         }
 
         this.tree.add(pinyin, word, weight);

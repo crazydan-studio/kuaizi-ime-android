@@ -49,7 +49,7 @@ public class PinyinDataTest {
     @Test
     public void test_generate_pinyin_data() throws Exception {
         PinyinWordDataset wordDataset = createWordDataset();
-        analyzeWordDataset(wordDataset);
+        //analyzeWordDataset(wordDataset);
 
         Map<String, List<String[]>> phraseMap = readPhraseFromPhrasePinyinData();
 
@@ -84,6 +84,7 @@ public class PinyinDataTest {
         Map<String, Float> wordWeightMap = readWordWeight(wordWeightFile);
 
         Map<String, PinyinWord> pinyinWordMap = mergeWordDataset(wordDataset);
+        analyzeMergedWords(pinyinWordMap);
 
         PinyinDict dict = new PinyinDict();
         pinyinWordMap.forEach((word, pinyinWord) -> {
@@ -117,6 +118,45 @@ public class PinyinDataTest {
         System.out.println("===========================================");
 
         return dict;
+    }
+
+    private void analyzeMergedWords(Map<String, PinyinWord> pinyinWordMap) {
+        Set<String> notExistWords = pinyinWordMap.entrySet()
+                                                 .stream()
+                                                 .filter(entry -> entry.getValue().getStroke() == 0)
+                                                 .map(Map.Entry::getKey)
+                                                 .collect(Collectors.toSet());
+        System.out.printf("合并后没有笔画数的汉字列表(%d)：%s\n",
+                          notExistWords.size(),
+                          String.join(", ", notExistWords));
+
+        notExistWords = pinyinWordMap.entrySet()
+                                     .stream()
+                                     .filter(entry -> entry.getValue().getStrokeOrder() == null)
+                                     .map(Map.Entry::getKey)
+                                     .collect(Collectors.toSet());
+        System.out.printf("合并后没有笔顺的汉字列表(%d)：%s\n", notExistWords.size(), String.join(", ", notExistWords));
+
+        notExistWords = pinyinWordMap.entrySet()
+                                     .stream()
+                                     .filter(entry -> entry.getValue().getPinyins().isEmpty())
+                                     .map(Map.Entry::getKey)
+                                     .collect(Collectors.toSet());
+        System.out.printf("合并后没有拼音的汉字列表(%d)：%s\n", notExistWords.size(), String.join(", ", notExistWords));
+
+        notExistWords = pinyinWordMap.entrySet()
+                                     .stream()
+                                     .filter(entry -> entry.getValue().getRadicals().isEmpty())
+                                     .map(Map.Entry::getKey)
+                                     .collect(Collectors.toSet());
+        System.out.printf("合并后没有部首的汉字列表(%d)：%s\n", notExistWords.size(), String.join(", ", notExistWords));
+
+        notExistWords = pinyinWordMap.entrySet()
+                                     .stream()
+                                     .filter(entry -> entry.getValue().isTraditional())
+                                     .map(Map.Entry::getKey)
+                                     .collect(Collectors.toSet());
+        System.out.printf("合并后的繁体字列表(%d)：%s\n", notExistWords.size(), String.join(", ", notExistWords));
     }
 
     private void analyzeWordDataset(PinyinWordDataset wordDataset) {
@@ -172,6 +212,14 @@ public class PinyinDataTest {
                           String.join(", ", notExistWords));
         notExistWords = wordInCnCharMap.entrySet()
                                        .stream()
+                                       .filter(entry -> entry.getValue().getStroke() == 0)
+                                       .map(Map.Entry::getKey)
+                                       .collect(Collectors.toSet());
+        System.out.printf("cnchar 中没有笔画数的汉字列表(%d)：%s\n",
+                          notExistWords.size(),
+                          String.join(", ", notExistWords));
+        notExistWords = wordInCnCharMap.entrySet()
+                                       .stream()
                                        .filter(entry -> entry.getValue().getRadicals().isEmpty())
                                        .map(Map.Entry::getKey)
                                        .collect(Collectors.toSet());
@@ -200,49 +248,55 @@ public class PinyinDataTest {
                 return;
             }
 
-            PinyinWord wordInZiDataset = wordInZiDatasetMap.get(word);
-            if (wordInZiDataset == null) {
-                System.out.printf("cnchar 中在 zi-dataset 中不存在的字：%s\n", word);
-                return;
-            } else {
-                // cnchar 的繁体拼音设置为其对应简体的拼音
-                if (wordInCnChar.getPinyins().isEmpty() && !wordInCnChar.getVariants().isEmpty()) {
-                    for (String variant : wordInCnChar.getVariants()) {
-                        PinyinWord pw = wordInPinyinDataMap.get(variant);
-                        if (pw == null) {
-                            pw = wordInCnCharMap.get(variant);
-                        }
-
-                        wordInCnChar.getPinyins().addAll(pw.getPinyins());
+            // cnchar 的繁体拼音设置为其对应简体的拼音
+            if (wordInCnChar.getPinyins().isEmpty() && !wordInCnChar.getVariants().isEmpty()) {
+                for (String variant : wordInCnChar.getVariants()) {
+                    PinyinWord pw = wordInPinyinDataMap.get(variant);
+                    if (pw == null) {
+                        pw = wordInCnCharMap.get(variant);
                     }
+
+                    wordInCnChar.getPinyins().addAll(pw.getPinyins());
                 }
+            }
+
+            resultMap.put(word, wordInCnChar);
+        });
+
+        resultMap.forEach((word, mergedWord) -> {
+            PinyinWord wordInZiDataset = wordInZiDatasetMap.get(word);
+
+            if (wordInZiDataset == null) {
+                System.out.printf("合并后在 zi-dataset 中不存在的字：%s\n", word);
+            } else {
                 // 从 zi-dataset 中补齐缺失信息
-                if (wordInCnChar.getRadicals().isEmpty()) {
-                    wordInCnChar.getRadicals().addAll(wordInZiDataset.getRadicals());
+                if (mergedWord.getStroke() == 0) {
+                    mergedWord.setStroke(wordInZiDataset.getStroke());
                 }
-                if (wordInCnChar.getPinyins().isEmpty()) {
-                    wordInCnChar.getPinyins().addAll(wordInZiDataset.getPinyins());
+                if (mergedWord.getRadicals().isEmpty()) {
+                    mergedWord.getRadicals().addAll(wordInZiDataset.getRadicals());
                 }
-                if (wordInCnChar.getVariants().isEmpty()) {
-                    wordInCnChar.getVariants().addAll(wordInZiDataset.getVariants());
+                if (mergedWord.getPinyins().isEmpty()) {
+                    mergedWord.getPinyins().addAll(wordInZiDataset.getPinyins());
+                }
+                if (mergedWord.getVariants().isEmpty()) {
+                    mergedWord.getVariants().addAll(wordInZiDataset.getVariants());
                 }
 
-                System.out.printf("cnchar 从 zi-dataset 中取的字：%s: %s;%s;%s;%d;%s;%s -> %s;%s;%s;%d;%s\n",
+                System.out.printf("从 zi-dataset 中合并的字：%s: %s;%s;%s;%d;%s;%s -> %s;%s;%s;%d;%s\n",
                                   word,
-                                  String.join(", ", wordInCnChar.getPinyins()),
-                                  String.join(", ", wordInCnChar.getRadicals()),
-                                  String.join(", ", wordInCnChar.getVariants()),
-                                  wordInCnChar.getStroke(),
-                                  wordInCnChar.getStrokeOrder(),
-                                  wordInCnChar.isTraditional(),
+                                  String.join(", ", mergedWord.getPinyins()),
+                                  String.join(", ", mergedWord.getRadicals()),
+                                  String.join(", ", mergedWord.getVariants()),
+                                  mergedWord.getStroke(),
+                                  mergedWord.getStrokeOrder(),
+                                  mergedWord.isTraditional(),
                                   String.join(", ", wordInZiDataset.getPinyins()),
                                   String.join(", ", wordInZiDataset.getRadicals()),
                                   String.join(", ", wordInZiDataset.getVariants()),
                                   wordInZiDataset.getStroke(),
                                   wordInZiDataset.getStrokeOrder());
             }
-
-            resultMap.put(word, wordInCnChar);
         });
 
         return resultMap;
