@@ -46,7 +46,7 @@ public class KeyTable {
     private static final Map<CtrlKey.Type, Integer[]> ctrl_key_styles = new HashMap<>();
     /** 输入候选字按键背景色 */
     private static final int[] input_word_key_level_bg_colors = new int[] {
-            R.attr.input_word_key_level_0_bg_color,
+            //R.attr.input_word_key_level_0_bg_color,
             R.attr.input_word_key_level_1_bg_color,
             R.attr.input_word_key_level_2_bg_color,
             R.attr.input_word_key_level_3_bg_color,
@@ -55,8 +55,8 @@ public class KeyTable {
 
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
     private static final int[][][] input_word_key_level_coords = new int[][][] {
-            // level 0
-            new int[][] { new int[] { 3, 3 }, },
+            //// level 0
+            //new int[][] { new int[] { 3, 3 }, },
             // level 1
             new int[][] {
                     new int[] { 2, 3 },
@@ -98,15 +98,15 @@ public class KeyTable {
                     new int[] { 2, 1 },
                     new int[] { 1, 1 },
                     },
-            // level 4
-            new int[][] {
-                    new int[] { 5, 0 }, //
-                    new int[] { 4, 0 }, //
-                    new int[] { 2, 0 }, //
-                    new int[] { 1, 0 }, //
-                    new int[] { 0, 1 },
-                    },
-            };
+//            // level 4
+//            new int[][] {
+//                    new int[] { 5, 0 }, //
+//                    new int[] { 4, 0 }, //
+//                    new int[] { 2, 0 }, //
+//                    new int[] { 1, 0 }, //
+//                    new int[] { 0, 1 },
+//                    },
+    };
 
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),

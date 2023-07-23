@@ -40,6 +40,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
     private final TextView wordView;
     private final TextView charKeyView;
     private final View charKeyBgView;
+    private final View traditionalMarkView;
 
     public InputWordKeyView(@NonNull View itemView) {
         super(itemView);
@@ -48,6 +49,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         this.wordView = this.fgView.findViewById(R.id.word_view);
         this.charKeyView = itemView.findViewById(R.id.char_key_view);
         this.charKeyBgView = itemView.findViewById(R.id.char_key_bg_view);
+        this.traditionalMarkView = itemView.findViewById(R.id.traditional_mark_view);
     }
 
     public void bind(InputWordKey key, HexagonOrientation orientation) {
@@ -56,7 +58,6 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         InputWord inputWord = key.getWord();
         CharKey charKey = key.getCharKey();
 
-        // TODO 给繁体字打个标签
         if (charKey != null) {
             this.charKeyView.setText(charKey.getText());
             // Note: 汉语标点符号右侧的空白较多，需向右移动以抵消空白
@@ -78,6 +79,18 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         } else {
             this.wordView.setText("");
             this.notationView.setText("");
+        }
+
+        if (inputWord != null && inputWord.isTraditional()) {
+            ViewUtils.show(this.traditionalMarkView);
+        } else {
+            ViewUtils.hide(this.traditionalMarkView);
+        }
+
+        if (inputWord != null && inputWord.isSelected()) {
+            disable();
+        } else {
+            enable();
         }
 
         setTextColorByAttrId(this.wordView, key.getFgColorAttrId());

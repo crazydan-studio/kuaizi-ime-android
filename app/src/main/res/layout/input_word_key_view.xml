@@ -76,6 +76,26 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:textSize="@dimen/input_word_key_word_text_size" />
+
+            <RelativeLayout
+                    android:id="@+id/traditional_mark_view"
+                    android:layout_width="10sp"
+                    android:layout_height="10sp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:translationX="-4sp"
+                    android:translationY="6sp"
+                    android:background="@drawable/bg_input_word_char_key_view">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:textSize="6sp"
+                        android:textStyle="bold"
+                        android:text="繁"
+                        android:textColor="?attr/key_bg_color" />
+            </RelativeLayout>
         </RelativeLayout>
     </com.google.android.flexbox.FlexboxLayout>
 

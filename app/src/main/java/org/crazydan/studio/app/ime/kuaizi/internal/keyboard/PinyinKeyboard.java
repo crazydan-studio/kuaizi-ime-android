@@ -470,7 +470,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onChoosingInputCandidate(CharInput input, boolean pageUp) {
-        // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
         ChoosingInputCandidateStateData stateData;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
             stateData = (ChoosingInputCandidateStateData) this.state.data;
@@ -486,8 +485,23 @@ public class PinyinKeyboard extends BaseKeyboard {
                 onPlayingInputAudio_PageFlip();
             }
         } else {
-            stateData = new ChoosingInputCandidateStateData(input.getCandidates().size(),
-                                                            KeyTable.getInputCandidateKeysPageSize());
+            // 翻到当前已选中候选字所在的页
+            int dataSize = input.getCandidates().size();
+            int pageSize = KeyTable.getInputCandidateKeysPageSize();
+            int wordIndex = input.getCandidates().indexOf(input.getWord());
+
+            stateData = new ChoosingInputCandidateStateData(dataSize, pageSize);
+            // Note: 初始状态分页一定是从 0 开始的
+            int pageStart = stateData.getPageStart();
+            while (wordIndex >= pageStart + pageSize) {
+                stateData.nextPage();
+                pageStart = stateData.getPageStart();
+            }
+            // 标记候选字已被选中
+            if (wordIndex >= 0) {
+                input.getCandidates().get(wordIndex).setSelected(true);
+            }
+
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }
 
@@ -558,11 +572,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                         .stream()
                                                         .map(InputWord::from)
                                                         .collect(Collectors.toList());
+        input.setCandidates(candidateWords);
+
+        // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
         // Note: 在拼音未改变的情况下，保留原来的已选字
         if (!candidateWords.contains(input.getWord())) {
             input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
         }
-        input.setCandidates(candidateWords);
     }
 
     /**

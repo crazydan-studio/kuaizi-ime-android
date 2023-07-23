@@ -33,6 +33,9 @@ public class InputWord {
     /** 是否繁体 */
     private final boolean traditional;
 
+    /** 是否已被选中 */
+    private boolean selected;
+
     public InputWord(String value, String notation, boolean traditional) {
         this.value = value;
         this.notation = notation;
@@ -55,6 +58,14 @@ public class InputWord {
         return this.traditional;
     }
 
+    public boolean isSelected() {
+        return this.selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -63,6 +74,7 @@ public class InputWord {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        // Note: 不处理与视图更细相关的变更判断，如有必要则在视图对象中处理
         InputWord that = (InputWord) o;
         return this.value.equals(that.value) && this.notation.equals(that.notation);
     }
