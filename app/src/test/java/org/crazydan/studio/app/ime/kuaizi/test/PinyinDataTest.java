@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
+package org.crazydan.studio.app.ime.kuaizi.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,8 +23,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +37,7 @@ import com.google.gson.reflect.TypeToken;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinCharLink;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinTree;
-import org.crazydan.studio.app.ime.kuaizi.utils.GsonUtils;
+import org.crazydan.studio.app.ime.kuaizi.test.utils.GsonUtils;
 import org.junit.Test;
 
 /**
@@ -55,21 +57,46 @@ public class PinyinDataTest {
 
         PinyinDict dict = createPinyinDict(wordDataset);
 
-        // 拼音字典写入 Android 资源
-        String dictJson = GsonUtils.toJson(dict);
-        File dictResFile = new File("./src/main/res/raw/pinyin_dict.json");
-        write(dictResFile, dictJson);
+//        // 拼音字典写入 Android 资源
+//        String dictJson = GsonUtils.toJson(dict, null, new String[] { "id" });
+//        File dictResFile = new File("./src/main/res/raw/pinyin_dict.json");
+//        write(dictResFile, dictJson);
+        // 拼音字典数据更新至 SQLite 数据库
+        File sqliteFile = new File("./src/main/res/raw/pinyin_dict.db");
+        writePinyinDictToSQLite(dict, sqliteFile);
 
         // 生成字母连接线
         File linksFile = new File("../../analyze/files/char-links.json");
         List<PinyinCharLink> links = dict.getTree().createPinyinCharLinks();
-        String linksJson = GsonUtils.toJson(links, null, new String[] { "undirected" });
+        String linksJson = GsonUtils.toJson(links);
         write(linksFile, linksJson);
 
         // 生成拼音列表
         File pinyinFile = new File("../../analyze/files/pinyin.txt");
         List<String> pinYinList = dict.getTree().createPinyinCharsList();
         write(pinyinFile, String.join("\n", pinYinList));
+    }
+
+    private void writePinyinDictToSQLite(PinyinDict dict, File file) throws Exception {
+        PinyinDataSQLite dictDB = new PinyinDataSQLite();
+        dictDB.open(file);
+
+        Map<String, PinyinDict.Word> traditionalWordMap = new HashMap<>();
+
+        // 先添加简体字
+        dictDB.withBatch(() -> dict.getWords().forEach((s, word) -> {
+            if (word.isTraditional()) {
+                traditionalWordMap.put(word.getValue(), word);
+            } else {
+                dictDB.saveWord(word);
+            }
+        }));
+        // 再添加繁体字，从而确保繁体对应的简体能够正确关联上
+        dictDB.withBatch(() -> traditionalWordMap.forEach((w, word) -> dictDB.saveWord(word)));
+
+        dictDB.withBatch(() -> dict.getTree().traverse(dictDB::savePinyin));
+
+        dictDB.close();
     }
 
     private PinyinDict createPinyinDict(PinyinWordDataset wordDataset) throws IOException {
@@ -101,21 +128,21 @@ public class PinyinDataTest {
             }
 
             PinyinDict.Word dictWord = new PinyinDict.Word();
+            dictWord.setValue(word);
             dictWord.setStrokeCount(pinyinWord.getStroke());
             dictWord.setStrokeOrder(pinyinWord.getStrokeOrder());
 
             if (pinyinWord.isTraditional() && !pinyinWord.getVariants().isEmpty()) {
-                dictWord.setSimple(pinyinWord.getVariants().iterator().next());
+                dictWord.setSimpleWord(pinyinWord.getVariants().iterator().next());
             }
 
             List<String> pinyins = new ArrayList<>(pinyinWord.getPinyins());
             for (int i = 0; i < pinyins.size(); i++) {
                 String pinyin = pinyins.get(i);
 
-                dict.add(word, pinyin, dictWord, i == 0 ? weight : 0);
+                dict.add(pinyin, dictWord, i == 0 ? weight : 0);
             }
         });
-        System.out.println("===========================================");
 
         return dict;
     }
@@ -770,6 +797,127 @@ public class PinyinDataTest {
             this.fromPinyinData = fromPinyinData;
             this.fromCnChar = fromCnChar;
             this.fromZiDataset = fromZiDataset;
+        }
+    }
+
+    public static class PinyinWord {
+        private final String word;
+        private final Set<String> pinyins = new LinkedHashSet<>();
+
+        private boolean traditional;
+        private final Set<String> variants = new LinkedHashSet<>();
+
+        private int level;
+        private float weight;
+        /** 笔画数 */
+        private int stroke;
+        /** 笔顺 */
+        private String strokeOrder;
+        /** 部首 */
+        private final Set<String> radicals = new LinkedHashSet<>();
+        /** 字型结构 */
+        private String struct;
+
+        public PinyinWord(String word) {
+            this.word = word;
+        }
+
+        public String getWord() {
+            return this.word;
+        }
+
+        public PinyinWord addPinyin(String... pinyins) {
+            this.pinyins.addAll(Arrays.asList(pinyins));
+            return this;
+        }
+
+        public Set<String> getPinyins() {
+            return this.pinyins;
+        }
+
+        public boolean isValid() {
+            return !this.word.isEmpty() && !this.pinyins.isEmpty();
+        }
+
+        public boolean isTraditional() {
+            return this.traditional;
+        }
+
+        public void setTraditional(boolean traditional) {
+            this.traditional = traditional;
+        }
+
+        public void addVariant(String... variants) {
+            this.variants.addAll(Arrays.asList(variants));
+        }
+
+        public Set<String> getVariants() {
+            return this.variants;
+        }
+
+        public int getLevel() {
+            return this.level;
+        }
+
+        public void setLevel(int level) {
+            this.level = level;
+        }
+
+        public float getWeight() {
+            return this.weight;
+        }
+
+        public void setWeight(float weight) {
+            this.weight = weight;
+        }
+
+        public int getStroke() {
+            return this.stroke;
+        }
+
+        public void setStroke(int stroke) {
+            this.stroke = stroke;
+        }
+
+        public String getStrokeOrder() {
+            return this.strokeOrder;
+        }
+
+        public void setStrokeOrder(String strokeOrder) {
+            this.strokeOrder = strokeOrder;
+        }
+
+        public void addRadical(String... radicals) {
+            this.radicals.addAll(Arrays.asList(radicals));
+        }
+
+        public Set<String> getRadicals() {
+            return this.radicals;
+        }
+
+        public String getStruct() {
+            return this.struct;
+        }
+
+        public void setStruct(String struct) {
+            this.struct = struct;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            PinyinWord that = (PinyinWord) o;
+            return this.word.equals(that.word) && this.pinyins.equals(that.pinyins);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.word, this.pinyins);
         }
     }
 }

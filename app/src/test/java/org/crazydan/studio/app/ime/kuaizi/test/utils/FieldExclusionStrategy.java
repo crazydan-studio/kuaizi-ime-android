@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.utils;
+package org.crazydan.studio.app.ime.kuaizi.test.utils;
 
 import java.util.Arrays;
 import java.util.HashSet;

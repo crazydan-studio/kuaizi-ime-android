@@ -59,6 +59,22 @@ public class PinyinTree {
     /** 当前拼音的后继字母组成的子树 */
     private final Map<String, PinyinTree> children = new HashMap<>();
 
+    private static String[] parsePinyinChars(String pinyin) {
+        if ("m̀".equals(pinyin) || "ḿ".equals(pinyin) || "m̄".equals(pinyin) //
+            || "ê̄".equals(pinyin) || "ế".equals(pinyin) //
+            || "ê̌".equals(pinyin) || "ề".equals(pinyin)) {
+            return new String[] { pinyinCharReplacements.get(pinyin) };
+        } else {
+            String[] chars = new String[pinyin.length()];
+
+            for (int i = 0; i < pinyin.length(); i++) {
+                String ch = pinyin.charAt(i) + "";
+                chars[i] = pinyinCharReplacements.getOrDefault(ch, ch);
+            }
+            return chars;
+        }
+    }
+
     public List<Pinyin> getPinyins() {
         return this.pinyins;
     }
@@ -79,7 +95,10 @@ public class PinyinTree {
             next = next.children.computeIfAbsent(ch, (key) -> new PinyinTree());
         }
 
-        Pinyin pending = new Pinyin(pinyin, word);
+        Pinyin pending = new Pinyin();
+        pending.setValue(pinyin);
+        pending.setChars(String.join("", chars));
+        pending.setWord(word);
         pending.setWeight(weight);
 
         if (next.pinyins.isEmpty()) {
@@ -143,6 +162,12 @@ public class PinyinTree {
         return new ArrayList<>(this.children.keySet());
     }
 
+    /** 遍历拼音树 */
+    public void traverse(Traveler traveler) {
+        this.pinyins.forEach(traveler::access);
+        this.children.forEach((ch, child) -> child.traverse(traveler));
+    }
+
     private PinyinTree getChildByPinyinChar(String ch) {
         for (Map.Entry<String, PinyinTree> entry : this.children.entrySet()) {
             String key = entry.getKey();
@@ -170,30 +195,22 @@ public class PinyinTree {
         return pinyinSet;
     }
 
-    private static String[] parsePinyinChars(String pinyin) {
-        if ("m̀".equals(pinyin) || "ḿ".equals(pinyin) || "m̄".equals(pinyin) //
-            || "ê̄".equals(pinyin) || "ế".equals(pinyin) //
-            || "ê̌".equals(pinyin) || "ề".equals(pinyin)) {
-            return new String[] { pinyinCharReplacements.get(pinyin) };
-        } else {
-            String[] chars = new String[pinyin.length()];
+    public interface Traveler {
 
-            for (int i = 0; i < pinyin.length(); i++) {
-                String ch = pinyin.charAt(i) + "";
-                chars[i] = pinyinCharReplacements.getOrDefault(ch, ch);
-            }
-            return chars;
-        }
+        void access(Pinyin pinyin);
     }
 
     public static class Pinyin {
-        /** 拼音（含音调） */
-        private final String value;
-        /** 字 */
-        private final String word;
+        private int id;
+        /** 拼音：含声调 */
+        private String value;
+        /** 拼音的字母：无声调 */
+        private String chars;
+        /** 关联的{@link PinyinDict.Word#value 字} */
+        private String word;
 
         /**
-         * 优先权重：使用频率、组合频率等
+         * 候选字权重：使用频率、组合频率等
          * <p/>
          * 仅初始字典的权重决定在输入法中的候选字排序，
          * 而用户使用过程中赋予的权重仅用于判断是否做为最优候选字，
@@ -201,17 +218,36 @@ public class PinyinTree {
          */
         private float weight;
 
-        public Pinyin(String value, String word) {
-            this.value = value;
-            this.word = word;
+        public int getId() {
+            return this.id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
         }
 
         public String getValue() {
             return this.value;
         }
 
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getChars() {
+            return this.chars;
+        }
+
+        public void setChars(String chars) {
+            this.chars = chars;
+        }
+
         public String getWord() {
             return this.word;
+        }
+
+        public void setWord(String word) {
+            this.word = word;
         }
 
         public float getWeight() {

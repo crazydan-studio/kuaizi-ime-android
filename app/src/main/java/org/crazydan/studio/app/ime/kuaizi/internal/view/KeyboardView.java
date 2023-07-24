@@ -48,7 +48,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.utils.GsonUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -81,7 +80,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         super(context, attrs);
 
         this.inputList = new InputList();
-        this.pinyinDict = GsonUtils.fromRawResourceJson(context, PinyinDict.class, R.raw.pinyin_dict);
+        this.pinyinDict = new PinyinDict();
         this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;

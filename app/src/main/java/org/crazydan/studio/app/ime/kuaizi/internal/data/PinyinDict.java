@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 拼音字典
+ * 拼音字典（内存版）
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-22
@@ -42,33 +42,30 @@ public class PinyinDict {
         return this.tree;
     }
 
-    public void add(String word, String pinyin, Word wordInfo, float weight) {
-        this.words.putIfAbsent(word, wordInfo);
+    public void add(String pinyin, Word word, float weight) {
+        this.words.putIfAbsent(word.value, word);
 
         weight *= 3000;
 
         // Note: 确保笔画少的更靠前，且笔画相同的能够更靠近在一起，繁体靠最后，字型相近的能挨在一起
-        if (wordInfo.hasSimple()) {
+        if (word.isTraditional()) {
             weight -= 200;
         } else {
             weight += 100;
         }
 
-        if (wordInfo.strokeOrder != null && !wordInfo.strokeOrder.isEmpty()) {
-            for (int i = 0; i < wordInfo.strokeOrder.length(); i++) {
-                char ch = wordInfo.strokeOrder.charAt(i);
+        if (word.strokeOrder != null && !word.strokeOrder.isEmpty()) {
+            for (int i = 0; i < word.strokeOrder.length(); i++) {
+                char ch = word.strokeOrder.charAt(i);
                 weight -= ch;
             }
-        } else if (wordInfo.strokeCount > 0) {
-            weight -= wordInfo.strokeCount * 10;
+        } else if (word.strokeCount > 0) {
+            weight -= word.strokeCount * 10;
         } else {
             weight += 50;
         }
 
-        // 保留 3 位小数
-        weight = Math.round(weight * 1000) / 1000.0f;
-
-        this.tree.add(pinyin, word, weight);
+        this.tree.add(pinyin, word.value, weight);
     }
 
     /**
@@ -104,31 +101,41 @@ public class PinyinDict {
                 String w = pinyin.getWord();
                 Word word = this.words.get(w);
 
-                return new PinyinWord(w, p, word.hasSimple());
+                return new PinyinWord(w, p, word.isTraditional());
             }).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
 
     public static class Word {
-        /** 繁体字对应的简体，存在该值的均为繁体 */
-        private String simple;
-
+        private int id;
+        /** 字 */
+        private String value;
         /** 笔画数 */
         private int strokeCount;
-        /** 笔顺 */
+        /** 笔画顺序 */
         private String strokeOrder;
+        /** 简体字：仅针对当前字为繁体字的情况 */
+        private String simpleWord;
 
-        public boolean hasSimple() {
-            return this.simple != null;
+        public boolean isTraditional() {
+            return this.simpleWord != null;
         }
 
-        public String getSimple() {
-            return this.simple;
+        public int getId() {
+            return this.id;
         }
 
-        public void setSimple(String simple) {
-            this.simple = simple;
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public int getStrokeCount() {
@@ -145,6 +152,14 @@ public class PinyinDict {
 
         public void setStrokeOrder(String strokeOrder) {
             this.strokeOrder = strokeOrder;
+        }
+
+        public String getSimpleWord() {
+            return this.simpleWord;
+        }
+
+        public void setSimpleWord(String simpleWord) {
+            this.simpleWord = simpleWord;
         }
     }
 }

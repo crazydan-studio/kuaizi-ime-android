@@ -31,6 +31,13 @@ public class LocatingInputCursorStateData implements State.Data {
     private Motion locator = new Motion();
     private Motion selector = new Motion();
 
+    public static Motion createAnchor(Motion motion) {
+        // 根据屏幕移动距离得出光标移动字符数
+        int distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16)) : 0;
+
+        return new Motion(motion.direction, distance, motion.timestamp);
+    }
+
     public Motion getLocator() {
         return this.locator;
     }
@@ -45,12 +52,5 @@ public class LocatingInputCursorStateData implements State.Data {
 
     public void updateSelector(Motion motion) {
         this.selector = createAnchor(motion);
-    }
-
-    public static Motion createAnchor(Motion motion) {
-        // 根据屏幕移动距离得出光标移动字符数
-        int distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16)) : 0;
-
-        return new Motion(motion.direction, distance, motion.timestamp);
     }
 }

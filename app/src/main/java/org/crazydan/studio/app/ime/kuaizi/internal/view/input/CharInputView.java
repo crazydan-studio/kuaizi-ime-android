@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 
 /**
