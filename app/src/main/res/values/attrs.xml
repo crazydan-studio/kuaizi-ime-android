@@ -44,8 +44,8 @@
         <attr name="key_ctrl_switch_hand_mode_fg_color" format="color" />
         <attr name="key_ctrl_switch_to_numeric_keyboard_bg_color" format="color" />
         <attr name="key_ctrl_switch_to_numeric_keyboard_fg_color" format="color" />
-        <attr name="key_ctrl_switch_to_punctuation_keyboard_bg_color" format="color" />
-        <attr name="key_ctrl_switch_to_punctuation_keyboard_fg_color" format="color" />
+        <attr name="key_ctrl_switch_to_symbol_keyboard_bg_color" format="color" />
+        <attr name="key_ctrl_switch_to_symbol_keyboard_fg_color" format="color" />
         <attr name="key_ctrl_toggle_input_spell_bg_color" format="color" />
         <attr name="key_ctrl_toggle_input_spell_fg_color" format="color" />
 
@@ -60,8 +60,8 @@
         <attr name="key_ctrl_locator_bg_color" format="color" />
         <attr name="key_ctrl_locator_fg_color" format="color" />
 
-        <attr name="key_char_punctuation_bg_color" format="color" />
-        <attr name="key_char_punctuation_fg_color" format="color" />
+        <attr name="key_char_symbol_bg_color" format="color" />
+        <attr name="key_char_symbol_fg_color" format="color" />
         <attr name="key_ctrl_enter_bg_color" format="color" />
         <attr name="key_ctrl_enter_fg_color" format="color" />
 

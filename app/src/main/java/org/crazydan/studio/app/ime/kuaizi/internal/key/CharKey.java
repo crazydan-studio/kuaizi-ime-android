@@ -91,8 +91,8 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     /** 是否为标点 */
-    public boolean isPunctuation() {
-        return this.type == Type.Punctuation;
+    public boolean isSymbol() {
+        return this.type == Type.Symbol;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class CharKey extends BaseKey<CharKey> {
         /** 数字按键 */
         Number,
         /** 标点符号按键 */
-        Punctuation,
+        Symbol,
         /** 颜文字按键 */
         Emotion,
     }

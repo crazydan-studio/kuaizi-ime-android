@@ -33,8 +33,8 @@ public interface Input {
     /** 是否为拼音输入 */
     boolean isPinyin();
 
-    /** 是否为标点 */
-    boolean isPunctuation();
+    /** 是否为标点符号 */
+    boolean isSymbol();
 
     /** 是否为颜文字输入 */
     boolean isEmotion();

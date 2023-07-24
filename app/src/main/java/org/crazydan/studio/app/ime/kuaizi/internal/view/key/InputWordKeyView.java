@@ -61,7 +61,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         if (charKey != null) {
             this.charKeyView.setText(charKey.getText());
             // Note: 汉语标点符号右侧的空白较多，需向右移动以抵消空白
-            if (charKey.isPunctuation()) {
+            if (charKey.isSymbol()) {
                 this.charKeyView.setTranslationX(ScreenUtils.dpToPx(4));
                 this.charKeyView.setTranslationY(ScreenUtils.dpToPx(2));
             }

@@ -377,9 +377,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             Input selected = getInputList().getSelected();
             // Note: 标点是单个输入的，故，需向前替换已输入的标点。
             // 若当前选中的是标点，则也支持双击切换标点
-            Input preInput = selected.isPunctuation() ? selected : getInputList().getInputBeforeSelected();
+            Input preInput = selected.isSymbol() ? selected : getInputList().getInputBeforeSelected();
 
-            if (preInput != null && key.isPunctuation() && preInput.isPunctuation()) {
+            if (preInput != null && key.isSymbol() && preInput.isSymbol()) {
                 input = (CharInput) preInput;
             } else {
                 return;
@@ -408,7 +408,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emotion:
-            case Punctuation: {
+            case Symbol: {
                 boolean isEmpty = getInputList().isEmpty();
                 getInputList().newPending().appendKey(key);
 

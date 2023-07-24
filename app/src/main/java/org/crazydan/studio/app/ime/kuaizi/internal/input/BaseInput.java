@@ -65,10 +65,10 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public boolean isPunctuation() {
+    public boolean isSymbol() {
         for (Key<?> key : this.keys) {
             if (!(key instanceof CharKey) //
-                || !((CharKey) key).isPunctuation()) {
+                || !((CharKey) key).isSymbol()) {
                 return false;
             }
         }

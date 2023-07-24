@@ -179,6 +179,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 切换至数字键盘 */
         SwitchToNumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */
-        SwitchToPunctuationKeyboard,
+        SwitchToSymbolKeyboard,
     }
 }

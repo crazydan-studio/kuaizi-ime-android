@@ -127,7 +127,7 @@ public class KeyTable {
                 R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
         });
         char_key_color_palette.put(Arrays.asList("：", "！", "？", "、", "，", "。"), new Integer[] {
-                R.attr.key_char_punctuation_fg_color, R.attr.key_char_punctuation_bg_color
+                R.attr.key_char_symbol_fg_color, R.attr.key_char_symbol_bg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
@@ -154,13 +154,13 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchToNumericKeyboard, new Integer[] {
                 R.drawable.ic_abacus, R.attr.key_ctrl_switch_to_numeric_keyboard_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToPunctuationKeyboard, new Integer[] {
-                R.drawable.ic_punctuation, R.attr.key_ctrl_switch_to_punctuation_keyboard_bg_color
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard, new Integer[] {
+                R.drawable.ic_symbol, R.attr.key_ctrl_switch_to_symbol_keyboard_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
                             new Integer[] { R.drawable.ic_right_hand_pointer, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Locator,
-                            new Integer[] { R.drawable.ic_map_location_pin_2, R.attr.key_ctrl_locator_bg_color });
+                            new Integer[] { R.drawable.ic_map_location_pin, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Selector,
                             new Integer[] { R.drawable.ic_right_hand_selection, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Exit,
@@ -186,7 +186,7 @@ public class KeyTable {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchIME),
-                        punctuationKey("：").withReplacements(":"),
+                        symbolKey("：").withReplacements(":"),
                         alphabetKey("i").withReplacements("I"),
                         alphabetKey("a").withReplacements("A"),
                         alphabetKey("e").withReplacements("E"),
@@ -194,7 +194,7 @@ public class KeyTable {
                         alphabetKey("u").withReplacements("U"),
                         } //
                 , new Key[] {
-                punctuationKey("！").withReplacements("!"),
+                symbolKey("！").withReplacements("!"),
                 alphabetKey("ü").withReplacements("v", "V"),
                 alphabetKey("j").withReplacements("J"),
                 alphabetKey("q").withReplacements("Q"),
@@ -204,7 +204,7 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
-                punctuationKey("？").withReplacements("?"),
+                symbolKey("？").withReplacements("?"),
                 alphabetKey("x").withReplacements("X"),
                 alphabetKey("l").withReplacements("L"),
                 alphabetKey("g").withReplacements("G"),
@@ -212,7 +212,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                punctuationKey("、"),
+                symbolKey("、"),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -222,7 +222,7 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                punctuationKey("，").withReplacements(","),
+                symbolKey("，").withReplacements(","),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("f").withReplacements("F"),
                 alphabetKey("m").withReplacements("M"),
@@ -231,12 +231,12 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                punctuationKey("。").withReplacements("."),
+                symbolKey("。").withReplacements("."),
                 alphabetKey("d").withReplacements("D"),
                 alphabetKey("b").withReplacements("B"),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("y").withReplacements("Y"),
-                ctrlKey(CtrlKey.Type.SwitchToPunctuationKeyboard).setDisabled(true),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard).setDisabled(true),
                 },
                 };
     }
@@ -390,8 +390,8 @@ public class KeyTable {
         return charKey(CharKey.Type.Alphabet, text);
     }
 
-    public static CharKey punctuationKey(String text) {
-        return charKey(CharKey.Type.Punctuation, text);
+    public static CharKey symbolKey(String text) {
+        return charKey(CharKey.Type.Symbol, text);
     }
 
     private static CharKey charKey(CharKey.Type type, String text) {
