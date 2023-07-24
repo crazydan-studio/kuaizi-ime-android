@@ -87,7 +87,7 @@ public class PinyinTree {
         return this.children.isEmpty();
     }
 
-    public void add(String pinyin, String word, float weight) {
+    public void add(String pinyin, String word, int weight) {
         String[] chars = parsePinyinChars(pinyin);
 
         PinyinTree next = this;
@@ -116,7 +116,7 @@ public class PinyinTree {
         }
     }
 
-    /** 得到全部拼音的字母组合列表 */
+    /** 得到全部拼音的字母列表 */
     public List<String> createPinyinCharsList() {
         Set<String> set = combinePinyinChars("");
 
@@ -216,7 +216,7 @@ public class PinyinTree {
          * 而用户使用过程中赋予的权重仅用于判断是否做为最优候选字，
          * 而其在候选字分页中的位置是固定的
          */
-        private float weight;
+        private int weight;
 
         public int getId() {
             return this.id;
@@ -250,11 +250,11 @@ public class PinyinTree {
             this.word = word;
         }
 
-        public float getWeight() {
+        public int getWeight() {
             return this.weight;
         }
 
-        public void setWeight(float weight) {
+        public void setWeight(int weight) {
             this.weight = weight;
         }
 

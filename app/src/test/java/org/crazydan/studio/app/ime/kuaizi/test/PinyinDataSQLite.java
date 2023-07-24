@@ -26,7 +26,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,20 +43,26 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinTree;
  */
 public class PinyinDataSQLite {
     private final static String[] word_meta_columns = new String[] {
-            "value_", "stroke_count_", "stroke_order_", "simple_word_id_"
+            "value_", "simple_word_id_"
     };
     private final static String[] pinyin_meta_columns = new String[] {
-            "value_", "chars_", "weight_", "word_id_"
+            "value_", "chars_id_", "weight_", "word_id_"
+    };
+    private final static String[] chars_meta_columns = new String[] {
+            "value_"
     };
 
     private final Map<String, PinyinDict.Word> existWordMap = new HashMap<>();
     private final Map<String, PinyinTree.Pinyin> existPinyinMap = new HashMap<>();
+    private final Map<String, Chars> existCharsMap = new HashMap<>();
 
     private Connection connection;
     private PreparedStatement wordInsertStatement;
     private PreparedStatement wordUpdateStatement;
     private PreparedStatement pinyinInsertStatement;
     private PreparedStatement pinyinUpdateStatement;
+    private PreparedStatement charsInsertStatement;
+    private PreparedStatement charsUpdateStatement;
 
     public void open(File file) throws Exception {
         this.connection = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
@@ -80,32 +85,42 @@ public class PinyinDataSQLite {
     }
 
     private void startBatch() throws Exception {
-        Date start = new Date();
         queryAllWords().forEach(word -> {
             this.existWordMap.put(word.getValue(), word);
         });
         queryAllPinyins().forEach(pinyin -> {
             this.existPinyinMap.put(pinyin.getValue() + ":" + pinyin.getWord(), pinyin);
         });
+        queryAllChars().forEach(chars -> {
+            this.existCharsMap.put(chars.getValue(), chars);
+        });
 
-        Date end = new Date();
-        System.out.println("Reloading consumes: " + (end.getTime() - start.getTime()) + "ms");
-
+        String[] columns = word_meta_columns;
         this.wordInsertStatement = this.connection.prepareStatement(String.format(
                 "insert into pinyin_word_meta (%s) values (%s)",
-                String.join(", ", word_meta_columns),
-                Arrays.stream(word_meta_columns).map(c -> "?").collect(Collectors.joining(", "))));
+                String.join(", ", columns),
+                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
         this.wordUpdateStatement = this.connection.prepareStatement(String.format(
                 "update pinyin_word_meta set %s where id_ = ?",
-                Arrays.stream(word_meta_columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
 
+        columns = pinyin_meta_columns;
         this.pinyinInsertStatement = this.connection.prepareStatement(String.format(
                 "insert into pinyin_pinyin_meta (%s) values (%s)",
-                String.join(", ", pinyin_meta_columns),
-                Arrays.stream(pinyin_meta_columns).map(c -> "?").collect(Collectors.joining(", "))));
+                String.join(", ", columns),
+                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
         this.pinyinUpdateStatement = this.connection.prepareStatement(String.format(
                 "update pinyin_pinyin_meta set %s where id_ = ?",
-                Arrays.stream(pinyin_meta_columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+
+        columns = chars_meta_columns;
+        this.charsInsertStatement = this.connection.prepareStatement(String.format(
+                "insert into pinyin_chars_meta (%s) values (%s)",
+                String.join(", ", columns),
+                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
+        this.charsUpdateStatement = this.connection.prepareStatement(String.format(
+                "update pinyin_chars_meta set %s where id_ = ?",
+                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
     }
 
     private void endBatch() throws Exception {
@@ -116,43 +131,59 @@ public class PinyinDataSQLite {
         executeStatement(this.wordUpdateStatement);
         executeStatement(this.pinyinInsertStatement);
         executeStatement(this.pinyinUpdateStatement);
+        executeStatement(this.charsInsertStatement);
+        executeStatement(this.charsUpdateStatement);
 
         this.wordInsertStatement = null;
         this.wordUpdateStatement = null;
         this.pinyinInsertStatement = null;
         this.pinyinUpdateStatement = null;
+        this.charsInsertStatement = null;
+        this.charsUpdateStatement = null;
     }
 
-    /** 新增或更新{@link PinyinDict.Word 字}，返回带 id 的字信息 */
-    public void saveWord(PinyinDict.Word word) {
-        PinyinDict.Word savedWord = this.existWordMap.get(word.getValue());
+    /** 新增或更新{@link PinyinDict.Word 字} */
+    public void saveWord(PinyinDict.Word data) {
+        PinyinDict.Word savedData = this.existWordMap.get(data.getValue());
 
-        if (savedWord != null) {
-            savedWord.setStrokeCount(word.getStrokeCount());
-            savedWord.setStrokeOrder(word.getStrokeOrder());
-            savedWord.setSimpleWord(word.getSimpleWord());
+        if (savedData != null) {
+            savedData.setStrokeCount(data.getStrokeCount());
+            savedData.setStrokeOrder(data.getStrokeOrder());
+            savedData.setSimpleWord(data.getSimpleWord());
 
-            System.out.println("Update word: " + word.getValue());
-            updateWord(savedWord);
+            updateWord(savedData);
         } else {
-            System.out.println("Add word: " + word.getValue());
-            insertWord(word);
+            insertWord(data);
         }
     }
 
-    /** 新增或更新{@link PinyinTree.Pinyin 拼音}，返回带 id 的拼音信息 */
-    public void savePinyin(PinyinTree.Pinyin pinyin) {
-        PinyinTree.Pinyin savedPinyin = this.existPinyinMap.get(pinyin.getValue() + ":" + pinyin.getWord());
+    /** 新增或更新{@link PinyinTree.Pinyin 拼音} */
+    public void savePinyin(PinyinTree.Pinyin data) {
+        PinyinTree.Pinyin savedData = this.existPinyinMap.get(data.getValue() + ":" + data.getWord());
 
-        if (savedPinyin != null) {
-            savedPinyin.setChars(pinyin.getChars());
-            savedPinyin.setWeight(pinyin.getWeight());
+        if (savedData != null) {
+            savedData.setChars(data.getChars());
+            savedData.setWeight(data.getWeight());
 
-            System.out.println("Update pinyin: " + pinyin.getValue() + " + " + pinyin.getWord());
-            updatePinyin(savedPinyin);
+            updatePinyin(savedData);
         } else {
-            System.out.println("Add pinyin: " + pinyin.getValue() + " + " + pinyin.getWord());
-            insertPinyin(pinyin);
+            insertPinyin(data);
+        }
+    }
+
+    /** 新增或更新{@link PinyinTree.Pinyin#chars 拼音字母} */
+    public void saveChars(String data) {
+        Chars savedData = this.existCharsMap.get(data);
+
+        if (savedData != null) {
+            savedData.setValue(data);
+
+            updateChars(savedData);
+        } else {
+            savedData = new Chars();
+            savedData.setValue(data);
+
+            insertChars(savedData);
         }
     }
 
@@ -180,16 +211,26 @@ public class PinyinDataSQLite {
         fillBatchStatement(this.pinyinInsertStatement, pinyin_meta_columns, dataMap);
     }
 
+    private void updateChars(Chars data) {
+        Map<String, Object> dataMap = createDataMap(data);
+
+        setStatementParameter(this.charsUpdateStatement, chars_meta_columns.length + 1, data.getId());
+        fillBatchStatement(this.charsUpdateStatement, chars_meta_columns, dataMap);
+    }
+
+    private void insertChars(Chars data) {
+        Map<String, Object> dataMap = createDataMap(data);
+        fillBatchStatement(this.charsInsertStatement, chars_meta_columns, dataMap);
+    }
+
     private List<PinyinDict.Word> queryAllWords() {
         return doAllQuery("pinyin_word", new String[] {
-                "id_", "value_", "stroke_count_", "stroke_order_", "simple_word_"
+                "id_", "value_", "simple_word_"
         }, (result) -> {
             PinyinDict.Word data = new PinyinDict.Word();
             data.setId(result.getInt(1));
             data.setValue(result.getString(2));
-            data.setStrokeCount(result.getInt(3));
-            data.setStrokeOrder(result.getString(4));
-            data.setSimpleWord(result.getString(5));
+            data.setSimpleWord(result.getString(3));
 
             return data;
         });
@@ -203,8 +244,20 @@ public class PinyinDataSQLite {
             data.setId(result.getInt(1));
             data.setValue(result.getString(2));
             data.setChars(result.getString(3));
-            data.setWeight(result.getFloat(4));
+            data.setWeight(result.getInt(4));
             data.setWord(result.getString(5));
+
+            return data;
+        });
+    }
+
+    private List<Chars> queryAllChars() {
+        return doAllQuery("pinyin_chars_meta", new String[] {
+                "id_", "value_"
+        }, (result) -> {
+            Chars data = new Chars();
+            data.setId(result.getInt(1));
+            data.setValue(result.getString(2));
 
             return data;
         });
@@ -213,8 +266,6 @@ public class PinyinDataSQLite {
     private Map<String, Object> createDataMap(PinyinDict.Word data) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value_", data.getValue());
-        map.put("stroke_count_", data.getStrokeCount());
-        map.put("stroke_order_", data.getStrokeOrder());
         map.put("simple_word_id_", null);
 
         if (data.isTraditional()) {
@@ -230,11 +281,20 @@ public class PinyinDataSQLite {
     private Map<String, Object> createDataMap(PinyinTree.Pinyin data) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value_", data.getValue());
-        map.put("chars_", data.getChars());
         map.put("weight_", data.getWeight());
+
+        Chars chars = this.existCharsMap.get(data.getChars());
+        map.put("chars_id_", chars.getId());
 
         PinyinDict.Word word = this.existWordMap.get(data.getWord());
         map.put("word_id_", word.getId());
+
+        return map;
+    }
+
+    private Map<String, Object> createDataMap(Chars data) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("value_", data.getValue());
 
         return map;
     }
@@ -249,56 +309,48 @@ public class PinyinDataSQLite {
                 + "    IF NOT EXISTS pinyin_word_meta (\n"
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
                 + "        value_ TEXT NOT NULL,\n"
-                + "        stroke_count_ INTEGER DEFAULT 0,\n"
-                + "        stroke_order_ TEXT DEFAULT '',\n"
                 + "        simple_word_id_ INTEGER DEFAULT NUll,\n"
                 + "        UNIQUE (value_),\n"
-                + "        FOREIGN KEY (simple_word_id_) REFERENCES pinyin_word_meta (id_) ON DELETE SET NULL\n"
+                + "        FOREIGN KEY (simple_word_id_) REFERENCES pinyin_word_meta (id_)\n"
+                + "    );",
+                "CREATE TABLE\n"
+                + "    IF NOT EXISTS pinyin_chars_meta (\n"
+                + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
+                + "        value_ TEXT NOT NULL,\n"
+                + "        UNIQUE (value_)\n"
                 + "    );",
                 "CREATE TABLE\n"
                 + "    IF NOT EXISTS pinyin_pinyin_meta (\n"
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
                 + "        value_ TEXT NOT NULL,\n"
-                + "        chars_ TEXT NOT NULL,\n"
+                + "        chars_id_ INTEGER NOT NULL,\n"
                 + "        word_id_ INTEGER NOT NUll,\n"
-                + "        weight_ REAL DEFAULT 0,\n"
+                + "        weight_ INTEGER DEFAULT 0,\n"
                 + "        UNIQUE (value_, word_id_),\n"
-                + "        FOREIGN KEY (word_id_) REFERENCES pinyin_word_meta (id_) ON DELETE CASCADE\n"
+                + "        FOREIGN KEY (word_id_) REFERENCES pinyin_word_meta (id_),\n"
+                + "        FOREIGN KEY (chars_id_) REFERENCES pinyin_chars_meta (id_)\n"
                 + "    );",
                 // 视图
                 "CREATE VIEW\n"
-                + "    IF NOT EXISTS pinyin_word (\n"
-                + "        id_,\n"
-                + "        value_,\n"
-                + "        stroke_count_,\n"
-                + "        stroke_order_,\n"
-                + "        simple_word_\n"
-                + "    ) AS\n"
+                + "    IF NOT EXISTS pinyin_word (id_, value_, simple_word_) AS\n"
                 + "SELECT\n"
                 + "    w_.id_,\n"
                 + "    w_.value_,\n"
-                + "    w_.stroke_count_,\n"
-                + "    w_.stroke_order_,\n"
                 + "    sw_.value_\n"
                 + "FROM\n"
                 + "    pinyin_word_meta w_\n"
                 + "    LEFT JOIN pinyin_word_meta sw_ ON sw_.id_ = w_.simple_word_id_;",
                 "CREATE VIEW\n"
-                + "    IF NOT EXISTS pinyin_pinyin (\n"
-                + "        id_,\n"
-                + "        value_,\n"
-                + "        chars_,\n"
-                + "        weight_,\n"
-                + "        word_\n"
-                + "    ) AS\n"
+                + "    IF NOT EXISTS pinyin_pinyin (id_, value_, chars_, weight_, word_) AS\n"
                 + "SELECT\n"
                 + "    py_.id_,\n"
                 + "    py_.value_,\n"
-                + "    py_.chars_,\n"
+                + "    ch_.value_,\n"
                 + "    py_.weight_,\n"
                 + "    w_.value_\n"
                 + "FROM\n"
                 + "    pinyin_pinyin_meta py_\n"
+                + "    INNER JOIN pinyin_chars_meta ch_ ON ch_.id_ = py_.chars_id_\n"
                 + "    LEFT JOIN pinyin_word_meta w_ ON w_.id_ = py_.word_id_;",
                 // 提升批量写入性能: https://avi.im/blag/2021/fast-sqlite-inserts/
                 "PRAGMA journal_mode = OFF;",
@@ -385,5 +437,26 @@ public class PinyinDataSQLite {
     public interface BatchCaller {
 
         void call() throws Exception;
+    }
+
+    private static class Chars {
+        private int id;
+        private String value;
+
+        public int getId() {
+            return this.id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 }

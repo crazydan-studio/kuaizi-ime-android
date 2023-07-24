@@ -94,6 +94,9 @@ public class PinyinDataTest {
         // 再添加繁体字，从而确保繁体对应的简体能够正确关联上
         dictDB.withBatch(() -> traditionalWordMap.forEach((w, word) -> dictDB.saveWord(word)));
 
+        // 拼音的字母与拼音采用外键关联，故，需先保存拼音字母
+        dictDB.withBatch(() -> dict.getTree().createPinyinCharsList().forEach(dictDB::saveChars));
+        // 在保存拼音信息
         dictDB.withBatch(() -> dict.getTree().traverse(dictDB::savePinyin));
 
         dictDB.close();
