@@ -19,8 +19,10 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -32,17 +34,25 @@ import java.util.stream.Collectors;
 public class PinyinDict {
     /** 字典内的所有 字与{@link Word 字信息} 的映射集合 */
     private final Map<String, Word> words = new HashMap<>();
+    /** 词组/短语 */
+    private final Set<PinyinTree.Phrase> phrases = new HashSet<>();
+
+    /** 拼音树 */
     private final PinyinTree tree = new PinyinTree();
 
     public Map<String, Word> getWords() {
         return this.words;
     }
 
+    public Set<PinyinTree.Phrase> getPhrases() {
+        return this.phrases;
+    }
+
     public PinyinTree getTree() {
         return this.tree;
     }
 
-    public void add(String pinyin, Word word, float weight) {
+    public void addWord(String pinyin, Word word, float weight) {
         this.words.putIfAbsent(word.value, word);
 
         weight *= 1000;
@@ -65,7 +75,11 @@ public class PinyinDict {
             weight += 50;
         }
 
-        this.tree.add(pinyin, word.value, (int) weight);
+        this.tree.addPinyin(pinyin, word.value, (int) weight);
+    }
+
+    public void addPhrase(PinyinTree.Phrase phrase) {
+        this.phrases.add(phrase);
     }
 
     /**

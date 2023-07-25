@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 /**
  * 按拼音字母组合构成的数
@@ -87,7 +90,7 @@ public class PinyinTree {
         return this.children.isEmpty();
     }
 
-    public void add(String pinyin, String word, int weight) {
+    public void addPinyin(String pinyin, String word, int weight) {
         String[] chars = parsePinyinChars(pinyin);
 
         PinyinTree next = this;
@@ -97,9 +100,13 @@ public class PinyinTree {
 
         Pinyin pending = new Pinyin();
         pending.setValue(pinyin);
-        pending.setChars(String.join("", chars));
         pending.setWord(word);
+        pending.setChars(String.join("", chars));
         pending.setWeight(weight);
+
+        if (next.pinyins.contains(pending)) {
+            return;
+        }
 
         if (next.pinyins.isEmpty()) {
             next.pinyins.add(pending);
@@ -226,6 +233,10 @@ public class PinyinTree {
             this.id = id;
         }
 
+        public String getCode() {
+            return this.value + ":" + this.word;
+        }
+
         public String getValue() {
             return this.value;
         }
@@ -258,6 +269,12 @@ public class PinyinTree {
             this.weight = weight;
         }
 
+        @NonNull
+        @Override
+        public String toString() {
+            return "Pinyin{" + this.value + ":" + this.word + '}';
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -273,6 +290,56 @@ public class PinyinTree {
         @Override
         public int hashCode() {
             return Objects.hash(this.value, this.word);
+        }
+    }
+
+    public static class Phrase {
+        private List<Pinyin> pinyins = new ArrayList<>();
+        private int weight;
+
+        public List<Pinyin> getPinyins() {
+            return this.pinyins;
+        }
+
+        public void setPinyins(List<Pinyin> pinyins) {
+            this.pinyins = pinyins;
+        }
+
+        public void addPinyin(Pinyin pinyin) {
+            this.pinyins.add(pinyin);
+        }
+
+        public int getWeight() {
+            return this.weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "Phrase{" + this.pinyins.stream()
+                                           .map(p -> p.getWord() + "(" + p.getValue() + ")")
+                                           .collect(Collectors.joining()) + '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Phrase phrase = (Phrase) o;
+            return this.pinyins.equals(phrase.pinyins);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.pinyins);
         }
     }
 }

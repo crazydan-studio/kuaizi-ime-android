@@ -47,13 +47,12 @@ import org.junit.Test;
  * @date 2023-07-10
  */
 public class PinyinDataTest {
+    private static final List<String> exclude_words = Arrays.asList("𡒄", "𫶕", "𢙐", "𨰿", "𥆧");
 
     @Test
     public void test_generate_pinyin_data() throws Exception {
         PinyinWordDataset wordDataset = createWordDataset();
         //analyzeWordDataset(wordDataset);
-
-        Map<String, List<String[]>> phraseMap = readPhraseFromPhrasePinyinData();
 
         PinyinDict dict = createPinyinDict(wordDataset);
 
@@ -96,8 +95,11 @@ public class PinyinDataTest {
 
         // 拼音的字母与拼音采用外键关联，故，需先保存拼音字母
         dictDB.withBatch(() -> dict.getTree().createPinyinCharsList().forEach(dictDB::saveChars));
-        // 在保存拼音信息
+        // 再保存拼音信息
         dictDB.withBatch(() -> dict.getTree().traverse(dictDB::savePinyin));
+
+        // 保存短语
+        dictDB.withBatch(() -> dictDB.savePhrases(dict.getPhrases()));
 
         dictDB.close();
     }
@@ -107,17 +109,24 @@ public class PinyinDataTest {
         File wordLevel2File = new File("../../data/hanzi-level-2.txt");
         File wordLevel3File = new File("../../data/hanzi-level-3.txt");
         File wordWeightFile = new File("../../data/hanzi-weight.txt");
+        File wordCiYuWeightFile = new File("../../data/hanzi-weight.ciyu.txt");
 
         Map<String, Integer> wordLevel1Map = readWordLevel(wordLevel1File, 1);
         Map<String, Integer> wordLevel2Map = readWordLevel(wordLevel2File, 2);
         Map<String, Integer> wordLevel3Map = readWordLevel(wordLevel3File, 3);
         Map<String, Float> wordWeightMap = readWordWeight(wordWeightFile);
+        Map<String, Float> wordCiYuWeightMap = readWordCiYuWeight(wordCiYuWeightFile);
 
         Map<String, PinyinWord> pinyinWordMap = mergeWordDataset(wordDataset);
         analyzeMergedWords(pinyinWordMap);
 
         PinyinDict dict = new PinyinDict();
+        Map<String, String> wordWithFirstPinyinMap = new HashMap<>();
         pinyinWordMap.forEach((word, pinyinWord) -> {
+            if (exclude_words.contains(word)) {
+                return;
+            }
+
             float weight = wordWeightMap.getOrDefault(word, 0f);
             pinyinWord.setWeight(weight);
 
@@ -143,8 +152,33 @@ public class PinyinDataTest {
             for (int i = 0; i < pinyins.size(); i++) {
                 String pinyin = pinyins.get(i);
 
-                dict.add(pinyin, dictWord, i == 0 ? weight : 0);
+                if (i == 0) {
+                    wordWithFirstPinyinMap.put(word, pinyin);
+                }
+                dict.addWord(pinyin, dictWord, i == 0 ? weight : 0);
             }
+        });
+
+        wordCiYuWeightMap.forEach((w, weight) -> {
+            PinyinTree.Phrase phrase = new PinyinTree.Phrase();
+            phrase.setWeight((int) (weight * 1000));
+
+            for (int i = 0; i < w.length(); i++) {
+                String word = w.charAt(i) + "";
+                String pinyin = wordWithFirstPinyinMap.get(word);
+
+                if (pinyin == null) {
+                    System.out.printf("词频表中缺失拼音的字：%s\n", word);
+                } else {
+                    PinyinTree.Pinyin py = new PinyinTree.Pinyin();
+                    py.setValue(pinyin);
+                    py.setWord(word);
+
+                    phrase.addPinyin(py);
+                }
+            }
+
+            dict.addPhrase(phrase);
         });
 
         return dict;
@@ -271,17 +305,21 @@ public class PinyinDataTest {
         Map<String, PinyinWord> wordInPinyinDataMap = wordDataset.fromPinyinData;
         Map<String, PinyinWord> wordInCnCharMap = wordDataset.fromCnChar;
         Map<String, PinyinWord> wordInZiDatasetMap = wordDataset.fromZiDataset;
+        Map<String, PinyinWord> wordInPhrasePinyinDataMap = wordDataset.fromPhrasePinyinData;
 
         Map<String, PinyinWord> resultMap = new HashMap<>(wordInPinyinDataMap);
         wordInCnCharMap.forEach((word, wordInCnChar) -> {
-            if (wordInPinyinDataMap.containsKey(word)) {
+            // 对已存在字补充额外的拼音
+            if (resultMap.containsKey(word)) {
+                PinyinWord pw = resultMap.get(word);
+                wordInCnChar.getPinyins().forEach(pw::addPinyin);
                 return;
             }
 
             // cnchar 的繁体拼音设置为其对应简体的拼音
             if (wordInCnChar.getPinyins().isEmpty() && !wordInCnChar.getVariants().isEmpty()) {
                 for (String variant : wordInCnChar.getVariants()) {
-                    PinyinWord pw = wordInPinyinDataMap.get(variant);
+                    PinyinWord pw = resultMap.get(variant);
                     if (pw == null) {
                         pw = wordInCnCharMap.get(variant);
                     }
@@ -293,11 +331,27 @@ public class PinyinDataTest {
             resultMap.put(word, wordInCnChar);
         });
 
+        wordInPhrasePinyinDataMap.forEach((word, wordInPhrase) -> {
+            // 对已存在字补充额外的拼音
+            if (resultMap.containsKey(word)) {
+                PinyinWord pw = resultMap.get(word);
+                wordInPhrase.getPinyins().forEach(pw::addPinyin);
+            } else {
+                PinyinWord wordInZiDataset = wordInZiDatasetMap.get(word);
+                if (wordInZiDataset != null && !wordInZiDataset.getVariants().isEmpty()) {
+                    System.out.printf("phrase-pinyin-data 中被视为繁体的字：%s\n", word);
+                    wordInPhrase.setTraditional(true);
+                }
+
+                resultMap.put(word, wordInPhrase);
+            }
+        });
+
         resultMap.forEach((word, mergedWord) -> {
             PinyinWord wordInZiDataset = wordInZiDatasetMap.get(word);
 
             if (wordInZiDataset == null) {
-                System.out.printf("合并后在 zi-dataset 中不存在的字：%s\n", word);
+//                System.out.printf("合并后在 zi-dataset 中不存在的字：%s\n", word);
             } else {
                 // 从 zi-dataset 中补齐缺失信息
                 if (mergedWord.getStroke() == 0) {
@@ -313,19 +367,19 @@ public class PinyinDataTest {
                     mergedWord.getVariants().addAll(wordInZiDataset.getVariants());
                 }
 
-                System.out.printf("从 zi-dataset 中合并的字：%s: %s;%s;%s;%d;%s;%s -> %s;%s;%s;%d;%s\n",
-                                  word,
-                                  String.join(", ", mergedWord.getPinyins()),
-                                  String.join(", ", mergedWord.getRadicals()),
-                                  String.join(", ", mergedWord.getVariants()),
-                                  mergedWord.getStroke(),
-                                  mergedWord.getStrokeOrder(),
-                                  mergedWord.isTraditional(),
-                                  String.join(", ", wordInZiDataset.getPinyins()),
-                                  String.join(", ", wordInZiDataset.getRadicals()),
-                                  String.join(", ", wordInZiDataset.getVariants()),
-                                  wordInZiDataset.getStroke(),
-                                  wordInZiDataset.getStrokeOrder());
+//                System.out.printf("从 zi-dataset 中合并的字：%s: %s;%s;%s;%d;%s;%s -> %s;%s;%s;%d;%s\n",
+//                                  word,
+//                                  String.join(", ", mergedWord.getPinyins()),
+//                                  String.join(", ", mergedWord.getRadicals()),
+//                                  String.join(", ", mergedWord.getVariants()),
+//                                  mergedWord.getStroke(),
+//                                  mergedWord.getStrokeOrder(),
+//                                  mergedWord.isTraditional(),
+//                                  String.join(", ", wordInZiDataset.getPinyins()),
+//                                  String.join(", ", wordInZiDataset.getRadicals()),
+//                                  String.join(", ", wordInZiDataset.getVariants()),
+//                                  wordInZiDataset.getStroke(),
+//                                  wordInZiDataset.getStrokeOrder());
             }
         });
 
@@ -337,7 +391,15 @@ public class PinyinDataTest {
         Map<String, PinyinWord> wordInCnCharMap = readWordFromCnChar();
         Map<String, PinyinWord> wordInZiDatasetMap = readWordFromZiDataset();
 
-        return new PinyinWordDataset(wordInPinyinDataMap, wordInCnCharMap, wordInZiDatasetMap);
+        Set<PinyinTree.Phrase> phraseSet = readPhraseFromPhrasePinyinData();
+        Map<String, PinyinWord> fromPhrasePinyinData = new HashMap<>();
+        phraseSet.forEach(phrase -> {
+            phrase.getPinyins().forEach(pinyin -> {
+                fromPhrasePinyinData.computeIfAbsent(pinyin.getWord(), PinyinWord::new).addPinyin(pinyin.getValue());
+            });
+        });
+
+        return new PinyinWordDataset(wordInPinyinDataMap, wordInCnCharMap, wordInZiDatasetMap, fromPhrasePinyinData);
     }
 
     private Map<String, PinyinWord> readWordFromPinyinData() throws IOException {
@@ -401,24 +463,36 @@ public class PinyinDataTest {
         return resultMap;
     }
 
-    private Map<String, List<String[]>> readPhraseFromPhrasePinyinData() throws IOException {
+    private Set<PinyinTree.Phrase> readPhraseFromPhrasePinyinData() throws IOException {
         File file = new File("../../data/phrase-pinyin-data/large_pinyin.txt");
         List<String> lines = read(file);
 
-        Map<String, List<String[]>> resultMap = new HashMap<>();
+        Set<PinyinTree.Phrase> result = new HashSet<>();
         for (String line : lines) {
             line = line.replaceAll("\\s*#.*$", "");
             if (line.isEmpty()) {
                 continue;
             }
 
-            String phrase = line.replaceAll("^([^:]+):.+", "$1");
+            String[] words = getChars(line.replaceAll("^([^:]+):.+", "$1"));
             String[] pinyins = line.replaceAll("^.+:\\s+(.+)$", "$1").split("\\s+");
 
-            resultMap.computeIfAbsent(phrase, (k) -> new ArrayList<>()).add(pinyins);
+            PinyinTree.Phrase phrase = new PinyinTree.Phrase();
+            for (int i = 0; i < words.length; i++) {
+                String word = words[i];
+                String pinyin = pinyins[i];
+
+                PinyinTree.Pinyin py = new PinyinTree.Pinyin();
+                py.setValue(pinyin);
+                py.setWord(word);
+
+                phrase.addPinyin(py);
+            }
+
+            result.add(phrase);
         }
 
-        return resultMap;
+        return result;
     }
 
     private Map<String, PinyinWord> readWordFromZiDataset() throws IOException {
@@ -595,7 +669,7 @@ public class PinyinDataTest {
         String trads = dataMap.get("trad");
         String simples = dataMap.get("simple");
         if (trads.length() != simples.length()) {
-            System.out.printf("在 cnchar 中繁简字隐射数量不一致：S%d != T%d\n", simples.length(), trads.length());
+            System.out.printf("在 cnchar 中繁简字映射数量不一致：S%d != T%d\n", simples.length(), trads.length());
         }
 
         for (int i = 0; i < trads.length(); i++) {
@@ -671,6 +745,12 @@ public class PinyinDataTest {
                 // Note: 仅音调不同的多音字会在同一键内出现多次并在原音调上加 5
                 tone = tone > 4 ? tone - 5 : tone;
 
+                // "quxu": "3:戌1", -> "xu": "1:戌1",
+                if (spell.equals("quxu")) {
+                    spell = "xu";
+                    toneIndex = 1;
+                }
+
                 StringBuilder sb = new StringBuilder(spell);
                 if (tone > 0) {
                     String toneChar = spell.charAt(toneIndex) + "";
@@ -742,6 +822,25 @@ public class PinyinDataTest {
         return map;
     }
 
+    private Map<String, Float> readWordCiYuWeight(File file) throws IOException {
+        List<String> lines = read(file);
+
+        Map<String, Float> map = new HashMap<>(lines.size());
+        for (String line : lines) {
+            if (!line.startsWith("#")) {
+                String[] segments = line.split(",");
+                String word = segments[0];
+                float weight = Float.parseFloat(segments[1]);
+
+                // Note: 忽略单字
+                if (word.length() > 1) {
+                    map.put(word, weight);
+                }
+            }
+        }
+        return map;
+    }
+
     private Map<String, String> readWordTraditionalToSimple(File file) throws IOException {
         List<String> lines = read(file);
 
@@ -778,6 +877,24 @@ public class PinyinDataTest {
         writer.close();
     }
 
+    /** 部分中文占用的字节数不同，需要单独处理 */
+    private String[] getChars(String s) {
+        List<String> chars = new ArrayList<>();
+
+        // https://stackoverflow.com/questions/26357938/detect-chinese-character-in-java#answer-26358371
+        // https://stackoverflow.com/questions/28761385/single-chinese-character-determined-as-length-2-in-java-scala-string#answer-28771484
+        for (int i = 0; i < s.length(); ) {
+            int codepoint = s.codePointAt(i);
+            int charCount = Character.charCount(codepoint);
+
+            String ch = s.substring(i, i + charCount);
+            chars.add(ch);
+
+            i += charCount;
+        }
+        return chars.toArray(new String[0]);
+    }
+
     private static class PinyinDataSource {
         public final File file;
         public final String ignoredCodeFrom;
@@ -792,14 +909,16 @@ public class PinyinDataTest {
         private final Map<String, PinyinWord> fromPinyinData;
         private final Map<String, PinyinWord> fromCnChar;
         private final Map<String, PinyinWord> fromZiDataset;
+        private final Map<String, PinyinWord> fromPhrasePinyinData;
 
         public PinyinWordDataset(
                 Map<String, PinyinWord> fromPinyinData, Map<String, PinyinWord> fromCnChar,
-                Map<String, PinyinWord> fromZiDataset
+                Map<String, PinyinWord> fromZiDataset, Map<String, PinyinWord> fromPhrasePinyinData
         ) {
             this.fromPinyinData = fromPinyinData;
             this.fromCnChar = fromCnChar;
             this.fromZiDataset = fromZiDataset;
+            this.fromPhrasePinyinData = fromPhrasePinyinData;
         }
     }
 
@@ -831,6 +950,9 @@ public class PinyinDataTest {
 
         public PinyinWord addPinyin(String... pinyins) {
             this.pinyins.addAll(Arrays.asList(pinyins));
+            if (this.pinyins.contains("quxū")) {
+                getPinyins();
+            }
             return this;
         }
 

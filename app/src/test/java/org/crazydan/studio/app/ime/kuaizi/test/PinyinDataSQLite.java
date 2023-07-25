@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
@@ -51,18 +53,20 @@ public class PinyinDataSQLite {
     private final static String[] chars_meta_columns = new String[] {
             "value_"
     };
+    private final static String[] phrase_meta_columns = new String[] {
+            "pre_pinyin_id_", "post_pinyin_id_", "weight_"
+    };
 
     private final Map<String, PinyinDict.Word> existWordMap = new HashMap<>();
     private final Map<String, PinyinTree.Pinyin> existPinyinMap = new HashMap<>();
     private final Map<String, Chars> existCharsMap = new HashMap<>();
+    private final Map<String, Phrase> existPhraseMap = new HashMap<>();
 
     private Connection connection;
-    private PreparedStatement wordInsertStatement;
-    private PreparedStatement wordUpdateStatement;
-    private PreparedStatement pinyinInsertStatement;
-    private PreparedStatement pinyinUpdateStatement;
-    private PreparedStatement charsInsertStatement;
-    private PreparedStatement charsUpdateStatement;
+    private BatchStatement wordBatchStatement;
+    private BatchStatement pinyinBatchStatement;
+    private BatchStatement charsBatchStatement;
+    private BatchStatement phraseBatchStatement;
 
     public void open(File file) throws Exception {
         this.connection = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
@@ -85,61 +89,46 @@ public class PinyinDataSQLite {
     }
 
     private void startBatch() throws Exception {
-        queryAllWords().forEach(word -> {
-            this.existWordMap.put(word.getValue(), word);
+        queryAllWords().forEach(data -> {
+            this.existWordMap.put(data.getValue(), data);
         });
-        queryAllPinyins().forEach(pinyin -> {
-            this.existPinyinMap.put(pinyin.getValue() + ":" + pinyin.getWord(), pinyin);
+        queryAllPinyins().forEach(data -> {
+            this.existPinyinMap.put(data.getCode(), data);
         });
-        queryAllChars().forEach(chars -> {
-            this.existCharsMap.put(chars.getValue(), chars);
+        queryAllChars().forEach(data -> {
+            this.existCharsMap.put(data.getValue(), data);
+        });
+        queryAllPhrases().forEach(data -> {
+            this.existPhraseMap.put(data.getCode(), data);
         });
 
         String[] columns = word_meta_columns;
-        this.wordInsertStatement = this.connection.prepareStatement(String.format(
-                "insert into pinyin_word_meta (%s) values (%s)",
-                String.join(", ", columns),
-                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
-        this.wordUpdateStatement = this.connection.prepareStatement(String.format(
-                "update pinyin_word_meta set %s where id_ = ?",
-                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+        this.wordBatchStatement = new BatchStatement("pinyin_word_meta", columns);
+        this.wordBatchStatement.prepare(this.connection);
 
         columns = pinyin_meta_columns;
-        this.pinyinInsertStatement = this.connection.prepareStatement(String.format(
-                "insert into pinyin_pinyin_meta (%s) values (%s)",
-                String.join(", ", columns),
-                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
-        this.pinyinUpdateStatement = this.connection.prepareStatement(String.format(
-                "update pinyin_pinyin_meta set %s where id_ = ?",
-                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+        this.pinyinBatchStatement = new BatchStatement("pinyin_pinyin_meta", columns);
+        this.pinyinBatchStatement.prepare(this.connection);
 
         columns = chars_meta_columns;
-        this.charsInsertStatement = this.connection.prepareStatement(String.format(
-                "insert into pinyin_chars_meta (%s) values (%s)",
-                String.join(", ", columns),
-                Arrays.stream(columns).map(c -> "?").collect(Collectors.joining(", "))));
-        this.charsUpdateStatement = this.connection.prepareStatement(String.format(
-                "update pinyin_chars_meta set %s where id_ = ?",
-                Arrays.stream(columns).map(c -> c + " = ?").collect(Collectors.joining(", "))));
+        this.charsBatchStatement = new BatchStatement("pinyin_chars_meta", columns);
+        this.charsBatchStatement.prepare(this.connection);
+
+        columns = phrase_meta_columns;
+        this.phraseBatchStatement = new BatchStatement("pinyin_phrase_meta", columns);
+        this.phraseBatchStatement.prepare(this.connection);
     }
 
     private void endBatch() throws Exception {
         this.existWordMap.clear();
         this.existPinyinMap.clear();
+        this.existCharsMap.clear();
+        this.existPhraseMap.clear();
 
-        executeStatement(this.wordInsertStatement);
-        executeStatement(this.wordUpdateStatement);
-        executeStatement(this.pinyinInsertStatement);
-        executeStatement(this.pinyinUpdateStatement);
-        executeStatement(this.charsInsertStatement);
-        executeStatement(this.charsUpdateStatement);
-
-        this.wordInsertStatement = null;
-        this.wordUpdateStatement = null;
-        this.pinyinInsertStatement = null;
-        this.pinyinUpdateStatement = null;
-        this.charsInsertStatement = null;
-        this.charsUpdateStatement = null;
+        this.wordBatchStatement.submit();
+        this.pinyinBatchStatement.submit();
+        this.charsBatchStatement.submit();
+        this.phraseBatchStatement.submit();
     }
 
     /** 新增或更新{@link PinyinDict.Word 字} */
@@ -151,23 +140,23 @@ public class PinyinDataSQLite {
             savedData.setStrokeOrder(data.getStrokeOrder());
             savedData.setSimpleWord(data.getSimpleWord());
 
-            updateWord(savedData);
+            this.wordBatchStatement.update(createDataMap(savedData), savedData::getId);
         } else {
-            insertWord(data);
+            this.wordBatchStatement.insert(createDataMap(data));
         }
     }
 
     /** 新增或更新{@link PinyinTree.Pinyin 拼音} */
     public void savePinyin(PinyinTree.Pinyin data) {
-        PinyinTree.Pinyin savedData = this.existPinyinMap.get(data.getValue() + ":" + data.getWord());
+        PinyinTree.Pinyin savedData = this.existPinyinMap.get(data.getCode());
 
         if (savedData != null) {
             savedData.setChars(data.getChars());
             savedData.setWeight(data.getWeight());
 
-            updatePinyin(savedData);
+            this.pinyinBatchStatement.update(createDataMap(savedData), savedData::getId);
         } else {
-            insertPinyin(data);
+            this.pinyinBatchStatement.insert(createDataMap(data));
         }
     }
 
@@ -178,49 +167,60 @@ public class PinyinDataSQLite {
         if (savedData != null) {
             savedData.setValue(data);
 
-            updateChars(savedData);
+            this.charsBatchStatement.update(createDataMap(savedData), savedData::getId);
         } else {
             savedData = new Chars();
             savedData.setValue(data);
 
-            insertChars(savedData);
+            this.charsBatchStatement.insert(createDataMap(savedData));
         }
     }
 
-    private void updateWord(PinyinDict.Word data) {
-        Map<String, Object> dataMap = createDataMap(data);
+    public void savePhrases(Set<PinyinTree.Phrase> phrases) {
+        Map<String, Phrase> dataMap = new HashMap<>();
+        phrases.forEach(phrase -> {
+            PinyinTree.Pinyin pre = phrase.getPinyins().get(0);
+            for (int i = 1; i < phrase.getPinyins().size(); i++) {
+                PinyinTree.Pinyin post = phrase.getPinyins().get(i);
 
-        setStatementParameter(this.wordUpdateStatement, word_meta_columns.length + 1, data.getId());
-        fillBatchStatement(this.wordUpdateStatement, word_meta_columns, dataMap);
-    }
+                if (!this.existPinyinMap.containsKey(pre.getCode())) {
+                    System.out.printf("短语 %s 中不存在字 %s\n", phrase, pre.getCode());
+                    continue;
+                }
+                if (!this.existPinyinMap.containsKey(post.getCode())) {
+                    System.out.printf("短语 %s 中不存在字 %s\n", phrase, post.getCode());
+                    continue;
+                }
 
-    private void insertWord(PinyinDict.Word data) {
-        Map<String, Object> dataMap = createDataMap(data);
-        fillBatchStatement(this.wordInsertStatement, word_meta_columns, dataMap);
-    }
+                int preId = this.existPinyinMap.get(pre.getCode()).getId();
+                int postId = this.existPinyinMap.get(post.getCode()).getId();
 
-    private void updatePinyin(PinyinTree.Pinyin data) {
-        Map<String, Object> dataMap = createDataMap(data);
+                Phrase data = new Phrase();
+                data.setPrePinyinId(preId);
+                data.setPostPinyinId(postId);
+                data.setWeight(phrase.getWeight());
 
-        setStatementParameter(this.pinyinUpdateStatement, pinyin_meta_columns.length + 1, data.getId());
-        fillBatchStatement(this.pinyinUpdateStatement, pinyin_meta_columns, dataMap);
-    }
+                Phrase exist = dataMap.get(data.getCode());
+                if (exist != null) {
+                    exist.setWeight(exist.getWeight() + 1);
+                } else {
+                    dataMap.put(data.getCode(), data);
+                }
 
-    private void insertPinyin(PinyinTree.Pinyin data) {
-        Map<String, Object> dataMap = createDataMap(data);
-        fillBatchStatement(this.pinyinInsertStatement, pinyin_meta_columns, dataMap);
-    }
+                pre = post;
+            }
+        });
 
-    private void updateChars(Chars data) {
-        Map<String, Object> dataMap = createDataMap(data);
+        dataMap.forEach((code, data) -> {
+            Phrase savedData = this.existPhraseMap.get(data.getCode());
+            if (savedData != null) {
+                savedData.setWeight(data.getWeight());
 
-        setStatementParameter(this.charsUpdateStatement, chars_meta_columns.length + 1, data.getId());
-        fillBatchStatement(this.charsUpdateStatement, chars_meta_columns, dataMap);
-    }
-
-    private void insertChars(Chars data) {
-        Map<String, Object> dataMap = createDataMap(data);
-        fillBatchStatement(this.charsInsertStatement, chars_meta_columns, dataMap);
+                this.phraseBatchStatement.update(createDataMap(savedData), savedData::getId);
+            } else {
+                this.phraseBatchStatement.insert(createDataMap(data));
+            }
+        });
     }
 
     private List<PinyinDict.Word> queryAllWords() {
@@ -263,6 +263,19 @@ public class PinyinDataSQLite {
         });
     }
 
+    private List<Phrase> queryAllPhrases() {
+        return doAllQuery("pinyin_phrase_meta", new String[] {
+                "id_", "pre_pinyin_id_", "post_pinyin_id_"
+        }, (result) -> {
+            Phrase data = new Phrase();
+            data.setId(result.getInt(1));
+            data.setPrePinyinId(result.getInt(2));
+            data.setPostPinyinId(result.getInt(3));
+
+            return data;
+        });
+    }
+
     private Map<String, Object> createDataMap(PinyinDict.Word data) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value_", data.getValue());
@@ -299,6 +312,15 @@ public class PinyinDataSQLite {
         return map;
     }
 
+    private Map<String, Object> createDataMap(Phrase phrase) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("pre_pinyin_id_", phrase.getPrePinyinId());
+        map.put("post_pinyin_id_", phrase.getPostPinyinId());
+        map.put("weight_", phrase.getWeight());
+
+        return map;
+    }
+
     private void prepareSQLite() throws Exception {
         // https://www.sqlitetutorial.net/sqlite-create-table/
         // https://www.sqlitetutorial.net/sqlite-primary-key/
@@ -330,6 +352,16 @@ public class PinyinDataSQLite {
                 + "        FOREIGN KEY (word_id_) REFERENCES pinyin_word_meta (id_),\n"
                 + "        FOREIGN KEY (chars_id_) REFERENCES pinyin_chars_meta (id_)\n"
                 + "    );",
+                "CREATE TABLE\n"
+                + "    IF NOT EXISTS pinyin_phrase_meta (\n"
+                + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
+                + "        pre_pinyin_id_ INTEGER NOT NULL,\n"
+                + "        post_pinyin_id_ INTEGER NOT NUll,\n"
+                + "        weight_ INTEGER DEFAULT 0,\n"
+                + "        UNIQUE (pre_pinyin_id_, post_pinyin_id_),\n"
+                + "        FOREIGN KEY (pre_pinyin_id_) REFERENCES pinyin_pinyin_meta (id_),\n"
+                + "        FOREIGN KEY (post_pinyin_id_) REFERENCES pinyin_pinyin_meta (id_)\n"
+                + "    );",
                 // 视图
                 "CREATE VIEW\n"
                 + "    IF NOT EXISTS pinyin_word (id_, value_, simple_word_) AS\n"
@@ -352,6 +384,30 @@ public class PinyinDataSQLite {
                 + "    pinyin_pinyin_meta py_\n"
                 + "    INNER JOIN pinyin_chars_meta ch_ ON ch_.id_ = py_.chars_id_\n"
                 + "    LEFT JOIN pinyin_word_meta w_ ON w_.id_ = py_.word_id_;",
+                "CREATE VIEW\n"
+                + "    IF NOT EXISTS pinyin_phrase (\n"
+                + "        id_,\n"
+                + "        weight_,\n"
+                + "        pre_pinyin_,\n"
+                + "        pre_chars_,\n"
+                + "        pre_word_,\n"
+                + "        post_pinyin_,\n"
+                + "        post_chars_,\n"
+                + "        post_word_\n"
+                + "    ) AS\n"
+                + "SELECT\n"
+                + "    ph_.id_,\n"
+                + "    ph_.weight_,\n"
+                + "    pre_.value_,\n"
+                + "    pre_.chars_,\n"
+                + "    pre_.word_,\n"
+                + "    post_.value_,\n"
+                + "    post_.chars_,\n"
+                + "    post_.word_\n"
+                + "FROM\n"
+                + "    pinyin_phrase_meta ph_\n"
+                + "    INNER JOIN pinyin_pinyin pre_ ON pre_.id_ = ph_.pre_pinyin_id_\n"
+                + "    INNER JOIN pinyin_pinyin post_ ON post_.id_ = ph_.post_pinyin_id_;",
                 // 提升批量写入性能: https://avi.im/blag/2021/fast-sqlite-inserts/
                 "PRAGMA journal_mode = OFF;",
                 "PRAGMA synchronous = 0;",
@@ -388,47 +444,6 @@ public class PinyinDataSQLite {
         }
     }
 
-    private void fillBatchStatement(PreparedStatement statement, String[] columns, Map<String, Object> data) {
-        for (int i = 0; i < columns.length; i++) {
-            int index = i + 1;
-            String column = columns[i];
-            Object value = data.get(column);
-
-            setStatementParameter(statement, index, value);
-        }
-
-        try {
-            statement.addBatch();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void setStatementParameter(PreparedStatement statement, int index, Object value) {
-        try {
-            if (value == null) {
-                statement.setNull(index, Types.NULL);
-            } else if (value instanceof Float) {
-                statement.setFloat(index, (Float) value);
-            } else if (value instanceof Integer) {
-                statement.setInt(index, (Integer) value);
-            } else if (value instanceof String) {
-                statement.setString(index, value.toString());
-            } else {
-                throw new IllegalStateException("Unknown data type: " + value.getClass().getName());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void executeStatement(Statement statement) throws Exception {
-        if (statement != null) {
-            statement.executeBatch();
-            statement.close();
-        }
-    }
-
     private interface ResultSetParser<T> {
 
         T parse(ResultSet resultSet) throws Exception;
@@ -437,6 +452,91 @@ public class PinyinDataSQLite {
     public interface BatchCaller {
 
         void call() throws Exception;
+    }
+
+    private static class BatchStatement {
+        private final String table;
+        private final String[] columns;
+
+        private PreparedStatement insert;
+        private PreparedStatement update;
+
+        public BatchStatement(String table, String[] columns) {
+            this.table = table;
+            this.columns = columns;
+        }
+
+        public void prepare(Connection connection) throws Exception {
+            this.insert = connection.prepareStatement(String.format("insert into %s (%s) values (%s)",
+                                                                    this.table,
+                                                                    String.join(", ", this.columns),
+                                                                    Arrays.stream(this.columns)
+                                                                          .map(c -> "?")
+                                                                          .collect(Collectors.joining(", "))));
+            this.update = connection.prepareStatement(String.format("update %s set %s where id_ = ?",
+                                                                    this.table,
+                                                                    Arrays.stream(this.columns)
+                                                                          .map(c -> c + " = ?")
+                                                                          .collect(Collectors.joining(", "))));
+        }
+
+        public void insert(Map<String, Object> data) {
+            fillStatement(this.insert, this.columns, data);
+        }
+
+        public void update(Map<String, Object> data, Supplier<Integer> id) {
+            setStatementParameter(this.update, this.columns.length + 1, id.get());
+            fillStatement(this.update, this.columns, data);
+        }
+
+        public void submit() throws Exception {
+            executeStatement(this.insert);
+            executeStatement(this.update);
+
+            this.insert = null;
+            this.update = null;
+        }
+
+        private void executeStatement(Statement statement) throws Exception {
+            if (statement != null) {
+                statement.executeBatch();
+                statement.close();
+            }
+        }
+
+        private void fillStatement(PreparedStatement statement, String[] columns, Map<String, Object> data) {
+            for (int i = 0; i < columns.length; i++) {
+                int index = i + 1;
+                String column = columns[i];
+                Object value = data.get(column);
+
+                setStatementParameter(statement, index, value);
+            }
+
+            try {
+                statement.addBatch();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void setStatementParameter(PreparedStatement statement, int index, Object value) {
+            try {
+                if (value == null) {
+                    statement.setNull(index, Types.NULL);
+                } else if (value instanceof Float) {
+                    statement.setFloat(index, (Float) value);
+                } else if (value instanceof Integer) {
+                    statement.setInt(index, (Integer) value);
+                } else if (value instanceof String) {
+                    statement.setString(index, value.toString());
+                } else {
+                    throw new IllegalStateException("Unknown data type: " + value.getClass().getName());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static class Chars {
@@ -457,6 +557,49 @@ public class PinyinDataSQLite {
 
         public void setValue(String value) {
             this.value = value;
+        }
+    }
+
+    private static class Phrase {
+        private int id;
+        private int prePinyinId;
+        private int postPinyinId;
+        private int weight;
+
+        public int getId() {
+            return this.id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getCode() {
+            return this.prePinyinId + ":" + this.postPinyinId;
+        }
+
+        public int getPrePinyinId() {
+            return this.prePinyinId;
+        }
+
+        public void setPrePinyinId(int prePinyinId) {
+            this.prePinyinId = prePinyinId;
+        }
+
+        public int getPostPinyinId() {
+            return this.postPinyinId;
+        }
+
+        public void setPostPinyinId(int postPinyinId) {
+            this.postPinyinId = postPinyinId;
+        }
+
+        public int getWeight() {
+            return this.weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
         }
     }
 }
