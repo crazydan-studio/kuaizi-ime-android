@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -56,10 +57,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingKe
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    private final PinyinDict pinyinDict;
+    private final PinyinDictDB pinyinDict;
     private State state = new State(State.Type.InputWaiting);
 
-    public PinyinKeyboard(PinyinDict pinyinDict) {
+    public PinyinKeyboard(PinyinDictDB pinyinDict) {
         this.pinyinDict = pinyinDict;
     }
 
@@ -434,7 +435,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onContinuousInput(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean isPinyin) {
-        List<String> nextChars = null;
+        Collection<String> nextChars = null;
         if (isPinyin) {
             nextChars = this.pinyinDict.findNextPinyinChar(input.getChars());
 
@@ -448,7 +449,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         // Note: 连续输入过程中不处理候选字，故而，直接置空该输入的候选字列表，避免浪费内存
         input.setCandidates(new ArrayList<>());
 
-        List<String> finalNextChars = nextChars;
+        Collection<String> finalNextChars = nextChars;
         KeyFactory keyFactory = option -> KeyTable.createNextCharKeys(option,
                                                                       createKeyTableConfigure(),
                                                                       finalNextChars);
@@ -596,7 +597,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         do {
             List<?> candidates = this.pinyinDict.findCandidateWords(chars);
-            List<String> nextChars = this.pinyinDict.findNextPinyinChar(chars);
+            Collection<String> nextChars = this.pinyinDict.findNextPinyinChar(chars);
 
             if (nextChars.isEmpty()) {
                 // 无效拼音：无候选字
@@ -614,7 +615,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             // 继续沿唯一的后继字母进行检查
             else {
-                String ch = nextChars.get(0);
+                String ch = nextChars.iterator().next();
                 patchedChars.add(ch);
                 chars.add(ch);
             }

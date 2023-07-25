@@ -387,17 +387,18 @@ public class PinyinDataSQLite {
                 + "    pinyin_word_meta w_\n"
                 + "    LEFT JOIN pinyin_word_meta sw_ ON sw_.id_ = w_.simple_word_id_;",
                 "CREATE VIEW\n"
-                + "    IF NOT EXISTS pinyin_pinyin (id_, value_, chars_, weight_, word_) AS\n"
+                + "    IF NOT EXISTS pinyin_pinyin (id_, value_, chars_, weight_, word_, simple_word_) AS\n"
                 + "SELECT\n"
                 + "    py_.id_,\n"
                 + "    py_.value_,\n"
                 + "    ch_.value_,\n"
                 + "    py_.weight_,\n"
-                + "    w_.value_\n"
+                + "    w_.value_,\n"
+                + "    w_.simple_word_\n"
                 + "FROM\n"
                 + "    pinyin_pinyin_meta py_\n"
                 + "    INNER JOIN pinyin_chars_meta ch_ ON ch_.id_ = py_.chars_id_\n"
-                + "    LEFT JOIN pinyin_word_meta w_ ON w_.id_ = py_.word_id_;",
+                + "    LEFT JOIN pinyin_word w_ ON w_.id_ = py_.word_id_;",
                 "CREATE VIEW\n"
                 + "    IF NOT EXISTS pinyin_phrase (\n"
                 + "        id_,\n"

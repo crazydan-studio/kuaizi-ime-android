@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -59,7 +59,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final PinyinDict pinyinDict;
+    private final PinyinDictDB pinyinDict;
     private final InputList inputList;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
@@ -80,7 +80,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         super(context, attrs);
 
         this.inputList = new InputList();
-        this.pinyinDict = new PinyinDict();
+        this.pinyinDict = PinyinDictDB.create(context);
         this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;

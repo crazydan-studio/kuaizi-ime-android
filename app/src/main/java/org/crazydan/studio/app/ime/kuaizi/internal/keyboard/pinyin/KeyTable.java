@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -248,7 +249,7 @@ public class KeyTable {
      * 若其为空，则返回空白按键
      */
     public static Key<?>[][] createNextCharKeys(
-            Keyboard.KeyFactory.Option option, Configure config, List<String> nextChars
+            Keyboard.KeyFactory.Option option, Configure config, Collection<String> nextChars
     ) {
         Key<?>[][] keys = createKeys(option, config);
 
