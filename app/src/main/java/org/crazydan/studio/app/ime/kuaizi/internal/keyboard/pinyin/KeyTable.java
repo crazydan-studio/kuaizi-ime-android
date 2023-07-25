@@ -324,6 +324,11 @@ public class KeyTable {
                                                        .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                                        .setBgColorAttrId(bgAttrId);
 
+                    // 禁用已被选中的候选字按键
+                    if (word.equals(input.getWord())) {
+                        wordKey.setDisabled(true);
+                    }
+
                     gridKeys[x][y] = wordKey;
                 } else {
                     break;

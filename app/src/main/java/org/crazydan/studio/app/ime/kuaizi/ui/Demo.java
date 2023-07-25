@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -41,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  */
 public class Demo extends AppCompatActivity implements InputMsgListener {
     private EditText editText;
-    private ImeInputView imeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +55,19 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
 
         this.editText = findViewById(R.id.text_input);
         this.editText.setClickable(false);
-
-        this.imeView = findViewById(R.id.ime_view);
-
-        this.imeView.keyboard.addInputMsgListener(this);
-        this.imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
-
         this.editText.setText("这是一段测试文本\nThis is a text for testing\n欢迎使用筷字输入法\nThanks for using Kuaizi Input Method");
+
+        ImeInputView imeView = findViewById(R.id.ime_view);
+        imeView.keyboard.addInputMsgListener(this);
+        imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // 确保拼音字典库能够被及时关闭
+        PinyinDictDB.getInstance().close();
     }
 
     @Override

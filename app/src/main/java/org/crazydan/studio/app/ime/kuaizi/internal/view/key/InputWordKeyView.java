@@ -87,12 +87,6 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
             ViewUtils.hide(this.traditionalMarkView);
         }
 
-        if (inputWord != null && inputWord.isSelected()) {
-            disable();
-        } else {
-            enable();
-        }
-
         setTextColorByAttrId(this.wordView, key.getFgColorAttrId());
         setTextColorByAttrId(this.notationView, key.getFgColorAttrId());
     }

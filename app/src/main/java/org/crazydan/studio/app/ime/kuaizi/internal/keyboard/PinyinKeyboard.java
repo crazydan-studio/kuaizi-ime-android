@@ -57,12 +57,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingKe
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    private final PinyinDictDB pinyinDict;
-    private State state = new State(State.Type.InputWaiting);
+    private final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
 
-    public PinyinKeyboard(PinyinDictDB pinyinDict) {
-        this.pinyinDict = pinyinDict;
-    }
+    private State state = new State(State.Type.InputWaiting);
 
     @Override
     public void reset() {
@@ -276,9 +273,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                     getInputList().getPending().setWord(word);
                     getInputList().confirmPending();
 
-                    // 继续选择下一个输入的候选字
-                    getInputList().moveToNextCharInput();
-                    Input selected = getInputList().getSelected();
+                    // 继续选择下一个拼音输入的候选字
+                    Input selected;
+                    do {
+                        getInputList().moveToNextCharInput();
+                        selected = getInputList().getSelected();
+                    } while (selected != null && !selected.isPinyin() && selected != getInputList().getLastInput());
+
                     onChoosingInputMsg(null, selected, null);
                 }
             }
@@ -501,10 +502,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             while (wordIndex >= pageStart + pageSize) {
                 stateData.nextPage();
                 pageStart = stateData.getPageStart();
-            }
-            // 标记候选字已被选中
-            if (wordIndex >= 0) {
-                input.getCandidates().get(wordIndex).setSelected(true);
             }
 
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);

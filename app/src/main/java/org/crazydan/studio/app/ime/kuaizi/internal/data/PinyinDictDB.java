@@ -38,6 +38,9 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  * 拼音字典（数据库版）
  * <p/>
  * 应用内置的拼音字典数据库的表结构和数据生成见单元测试用例 PinyinDataTest#writePinyinDictToSQLite
+ * <p/>
+ * 采用单例方式读写数据，以确保可以支持在 Demo 和 InputMethodService 中进行数据库的开启和关闭，
+ * 且在两者同时启动时，不会重复开关数据库
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-24
@@ -46,31 +49,65 @@ public class PinyinDictDB {
     private static final String file_app_dict_db = "pinyin_app_dict.db";
     private static final String file_user_dict_db = "pinyin_user_dict.db";
 
+    private static final PinyinDictDB instance = new PinyinDictDB();
+
+    private boolean inited = false;
+    private boolean closed = true;
+
+    private File appDBFile;
+    private File userDBFile;
     /** 内置字典数据库 */
-    private final SQLiteDatabase appDB;
+    private SQLiteDatabase appDB;
     /** 用户字典数据库 */
-    private final SQLiteDatabase userDB;
+    private SQLiteDatabase userDB;
 
-    public static PinyinDictDB create(Context context) {
-        File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
-        File userDBFile = new File(context.getFilesDir(), file_user_dict_db);
-
-        copySQLite(context, appDBFile, R.raw.pinyin_dict);
-
-        SQLiteDatabase appDB = openSQLite(appDBFile, true);
-        SQLiteDatabase userDB = openSQLite(userDBFile, false);
-
-        return new PinyinDictDB(appDB, userDB);
+    public static PinyinDictDB getInstance() {
+        return instance;
     }
 
-    private PinyinDictDB(SQLiteDatabase appDB, SQLiteDatabase userDB) {
-        this.appDB = appDB;
-        this.userDB = userDB;
+    private PinyinDictDB() {
     }
 
+    /**
+     * 仅在确定的某个地方初始化一次
+     * <p/>
+     * 仅第一次调用起作用，后续调用均会被忽略
+     */
+    public synchronized void init(Context context) {
+        if (this.inited) {
+            return;
+        }
+
+        this.appDBFile = new File(context.getFilesDir(), file_app_dict_db);
+        this.userDBFile = new File(context.getFilesDir(), file_user_dict_db);
+
+        copySQLite(context, this.appDBFile, R.raw.pinyin_dict);
+
+        this.inited = true;
+    }
+
+    /** 在任意存在完全退出的情况下调用该关闭接口 */
     public synchronized void close() {
+        if (this.closed) {
+            return;
+        }
+
         closeSQLite(this.appDB);
         closeSQLite(this.userDB);
+
+        this.closed = true;
+    }
+
+    /** 读写字典前需先确保数据库已被打开 */
+    private synchronized void makeSureItIsOpen() {
+        if (!this.closed) {
+            return;
+        }
+
+        this.appDB = openSQLite(this.appDBFile, true);
+        this.userDB = openSQLite(this.userDBFile, false);
+
+        this.closed = false;
     }
 
     /**
@@ -82,6 +119,7 @@ public class PinyinDictDB {
         if (pinyin == null || pinyin.isEmpty()) {
             return null;
         }
+        makeSureItIsOpen();
 
         String chars = String.join("", pinyin);
         List<String> list = doSQLiteQuery(this.appDB, "pinyin_pinyin", new String[] {
@@ -102,6 +140,7 @@ public class PinyinDictDB {
         if (pinyin == null || pinyin.isEmpty()) {
             return new ArrayList<>();
         }
+        makeSureItIsOpen();
 
         String chars = String.join("", pinyin);
 
@@ -236,7 +275,7 @@ public class PinyinDictDB {
         }
     }
 
-    private <T> List<T> doSQLiteQuery(
+    private static <T> List<T> doSQLiteQuery(
             SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
             Function<Cursor, T> creator
     ) {

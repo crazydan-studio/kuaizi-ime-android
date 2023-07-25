@@ -42,7 +42,7 @@ public abstract class BaseKeyboard implements Keyboard, UserInputMsgListener {
 
     @Override
     public void reset() {
-        getInputList().empty();
+//        getInputList().empty();
     }
 
     public HandMode getHandMode() {

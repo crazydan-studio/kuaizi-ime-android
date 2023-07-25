@@ -59,7 +59,6 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final PinyinDictDB pinyinDict;
     private final InputList inputList;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
@@ -78,9 +77,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        PinyinDictDB.getInstance().init(getContext());
 
         this.inputList = new InputList();
-        this.pinyinDict = PinyinDictDB.create(context);
         this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
@@ -120,7 +119,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         Keyboard oldKeyboard = this.keyboard;
 
         if (!(this.keyboard instanceof PinyinKeyboard)) {
-            this.keyboard = new PinyinKeyboard(this.pinyinDict);
+            this.keyboard = new PinyinKeyboard();
         }
 
         this.keyboard.setInputList(this.inputList);

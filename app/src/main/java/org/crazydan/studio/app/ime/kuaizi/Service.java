@@ -32,6 +32,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -59,15 +60,21 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onCreate() {
         super.onCreate();
+
         this.inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         this.imeViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
     }
 
+    /** 切换到其他系统输入法时调用 */
     @Override
-    public void onInitializeInterface() {
+    public void onDestroy() {
+        super.onDestroy();
 
+        // 确保拼音字典库能够被及时关闭
+        PinyinDictDB.getInstance().close();
     }
 
+    /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
         // 只能通过 Context Theme 设置输入视图的暗黑模式，
@@ -80,30 +87,10 @@ public class Service extends InputMethodService implements InputMsgListener {
         return this.imeView;
     }
 
-    @Override
-    public View onCreateCandidatesView() {
-        return null;
-    }
-
-    @Override
-    public void onStartInputView(EditorInfo info, boolean restarting) {
-        InputMethodSubtype subtype = this.inputMethodManager.getCurrentInputMethodSubtype();
-        onCurrentInputMethodSubtypeChanged(subtype);
-    }
-
-    @Override
-    public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        Keyboard.Type keyboardType = this.imeKeyboardType;
-        if (keyboardType == Keyboard.Type.Pinyin //
-            && subtype != null //
-            && ("en_US".equals(subtype.getLocale()) //
-                || "en_US".equals(subtype.getLanguageTag()))) {
-            keyboardType = Keyboard.Type.English;
-        }
-
-        this.imeView.keyboard.startInput(keyboardType);
-    }
-
+    /**
+     * 开始启动输入，先于 {@link #onStartInputView(EditorInfo, boolean)} 调用，
+     * 可用于记录弹出键盘的需设置的模式等信息
+     */
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
@@ -122,6 +109,28 @@ public class Service extends InputMethodService implements InputMsgListener {
         this.imeKeyboardType = keyboardType;
     }
 
+    /** 每次弹出键盘时调用 */
+    @Override
+    public void onStartInputView(EditorInfo info, boolean restarting) {
+        InputMethodSubtype subtype = this.inputMethodManager.getCurrentInputMethodSubtype();
+        onCurrentInputMethodSubtypeChanged(subtype);
+    }
+
+    /** 响应对子键盘类型的修改 */
+    @Override
+    public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
+        Keyboard.Type keyboardType = this.imeKeyboardType;
+        if (keyboardType == Keyboard.Type.Pinyin //
+            && subtype != null //
+            && ("en_US".equals(subtype.getLocale()) //
+                || "en_US".equals(subtype.getLanguageTag()))) {
+            keyboardType = Keyboard.Type.English;
+        }
+
+        this.imeView.keyboard.startInput(keyboardType);
+    }
+
+    /** 输入结束隐藏键盘 */
     @Override
     public void onFinishInput() {
         super.onFinishInput();

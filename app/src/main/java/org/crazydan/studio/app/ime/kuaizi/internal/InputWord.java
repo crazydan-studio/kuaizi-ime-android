@@ -33,9 +33,6 @@ public class InputWord {
     /** 是否繁体 */
     private final boolean traditional;
 
-    /** 是否已被选中 */
-    private boolean selected;
-
     public InputWord(String value, String notation, boolean traditional) {
         this.value = value;
         this.notation = notation;
@@ -56,14 +53,6 @@ public class InputWord {
 
     public boolean isTraditional() {
         return this.traditional;
-    }
-
-    public boolean isSelected() {
-        return this.selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
     }
 
     @Override
