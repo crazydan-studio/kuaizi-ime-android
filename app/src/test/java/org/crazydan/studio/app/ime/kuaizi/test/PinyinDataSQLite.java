@@ -30,7 +30,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -136,11 +138,12 @@ public class PinyinDataSQLite {
         PinyinDict.Word savedData = this.existWordMap.get(data.getValue());
 
         if (savedData != null) {
-            savedData.setStrokeCount(data.getStrokeCount());
-            savedData.setStrokeOrder(data.getStrokeOrder());
-            savedData.setSimpleWord(data.getSimpleWord());
+            boolean changed = false;
+            changed = changed || doSet(savedData::getSimpleWord, savedData::setSimpleWord, data::getSimpleWord);
 
-            this.wordBatchStatement.update(createDataMap(savedData), savedData::getId);
+            if (changed) {
+                this.wordBatchStatement.update(createDataMap(savedData), savedData::getId);
+            }
         } else {
             this.wordBatchStatement.insert(createDataMap(data));
         }
@@ -151,23 +154,29 @@ public class PinyinDataSQLite {
         PinyinTree.Pinyin savedData = this.existPinyinMap.get(data.getCode());
 
         if (savedData != null) {
-            savedData.setChars(data.getChars());
-            savedData.setWeight(data.getWeight());
+            boolean changed = false;
+            changed = changed || doSet(savedData::getChars, savedData::setChars, data::getChars);
+            changed = changed || doSet(savedData::getWeight, savedData::setWeight, data::getWeight);
 
-            this.pinyinBatchStatement.update(createDataMap(savedData), savedData::getId);
+            if (changed) {
+                this.pinyinBatchStatement.update(createDataMap(savedData), savedData::getId);
+            }
         } else {
             this.pinyinBatchStatement.insert(createDataMap(data));
         }
     }
 
     /** 新增或更新{@link PinyinTree.Pinyin#chars 拼音字母} */
-    public void saveChars(String data) {
+    public void savePinyinChars(String data) {
         Chars savedData = this.existCharsMap.get(data);
 
         if (savedData != null) {
-            savedData.setValue(data);
+            boolean changed = false;
+            changed = changed || doSet(savedData::getValue, savedData::setValue, () -> data);
 
-            this.charsBatchStatement.update(createDataMap(savedData), savedData::getId);
+            if (changed) {
+                this.charsBatchStatement.update(createDataMap(savedData), savedData::getId);
+            }
         } else {
             savedData = new Chars();
             savedData.setValue(data);
@@ -213,10 +222,14 @@ public class PinyinDataSQLite {
 
         dataMap.forEach((code, data) -> {
             Phrase savedData = this.existPhraseMap.get(data.getCode());
-            if (savedData != null) {
-                savedData.setWeight(data.getWeight());
 
-                this.phraseBatchStatement.update(createDataMap(savedData), savedData::getId);
+            if (savedData != null) {
+                boolean changed = false;
+                changed = changed || doSet(savedData::getWeight, savedData::setWeight, data::getWeight);
+
+                if (changed) {
+                    this.phraseBatchStatement.update(createDataMap(savedData), savedData::getId);
+                }
             } else {
                 this.phraseBatchStatement.insert(createDataMap(data));
             }
@@ -265,12 +278,13 @@ public class PinyinDataSQLite {
 
     private List<Phrase> queryAllPhrases() {
         return doAllQuery("pinyin_phrase_meta", new String[] {
-                "id_", "pre_pinyin_id_", "post_pinyin_id_"
+                "id_", "pre_pinyin_id_", "post_pinyin_id_", "weight_"
         }, (result) -> {
             Phrase data = new Phrase();
             data.setId(result.getInt(1));
             data.setPrePinyinId(result.getInt(2));
             data.setPostPinyinId(result.getInt(3));
+            data.setWeight(result.getInt(4));
 
             return data;
         });
@@ -442,6 +456,15 @@ public class PinyinDataSQLite {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private <T> boolean doSet(Supplier<T> targetGetter, Consumer<T> targetSetter, Supplier<T> sourceGetter) {
+        if (Objects.equals(targetGetter.get(), sourceGetter.get())) {
+            return false;
+        }
+
+        targetSetter.accept(sourceGetter.get());
+        return true;
     }
 
     private interface ResultSetParser<T> {
