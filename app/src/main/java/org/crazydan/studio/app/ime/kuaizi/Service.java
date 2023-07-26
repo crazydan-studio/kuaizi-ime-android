@@ -93,6 +93,9 @@ public class Service extends InputMethodService implements InputMsgListener {
      */
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
+        // 确保拼音字典库保持就绪状态
+        PinyinDictDB.getInstance().open(getApplicationContext());
+
         super.onStartInput(attribute, restarting);
 
         Keyboard.Type keyboardType = Keyboard.Type.Pinyin;

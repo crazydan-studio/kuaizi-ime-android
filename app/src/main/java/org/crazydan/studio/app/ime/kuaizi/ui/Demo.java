@@ -63,6 +63,14 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        // 确保拼音字典库保持就绪状态
+        PinyinDictDB.getInstance().open(getApplicationContext());
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 

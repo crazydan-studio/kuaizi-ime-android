@@ -17,13 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 拼音字典（内存版）
@@ -59,9 +56,9 @@ public class PinyinDict {
 
         // Note: 确保笔画少的更靠前，且笔画相同的能够更靠近在一起，繁体靠最后，字型相近的能挨在一起
         if (word.isTraditional()) {
-            weight -= 500;
+            weight -= 800;
         } else {
-            weight += 500;
+            weight += 100;
         }
 
         if (word.strokeOrder != null && !word.strokeOrder.isEmpty()) {
@@ -72,7 +69,7 @@ public class PinyinDict {
         } else if (word.strokeCount > 0) {
             weight -= word.strokeCount * 10;
         } else {
-            weight += 50;
+            weight -= 100;
         }
 
         this.tree.addPinyin(pinyin, word.value, (int) weight);
@@ -80,45 +77,6 @@ public class PinyinDict {
 
     public void addPhrase(PinyinTree.Phrase phrase) {
         this.phrases.add(phrase);
-    }
-
-    /**
-     * 查找指定拼音的后继字母
-     *
-     * @return 参数为<code>null</code>或为空时，返回<code>null</code>
-     */
-    public List<String> findNextPinyinChar(List<String> chars) {
-        if (chars == null || chars.isEmpty()) {
-            return null;
-        }
-
-        PinyinTree tree = this.tree.getChildByPinyin(chars);
-
-        List<String> list = new ArrayList<>();
-        if (tree != null) {
-            list.addAll(tree.childPinyinChar());
-        }
-        return list;
-    }
-
-    /** 查找指定拼音的候选字 */
-    public List<PinyinWord> findCandidateWords(List<String> chars) {
-        if (chars == null || chars.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        PinyinTree tree = this.tree.getChildByPinyin(chars);
-
-        if (tree != null) {
-            return tree.getPinyins().stream().map((pinyin) -> {
-                String p = pinyin.getValue();
-                String w = pinyin.getWord();
-                Word word = this.words.get(w);
-
-                return new PinyinWord(w, p, word.isTraditional());
-            }).collect(Collectors.toList());
-        }
-        return new ArrayList<>();
     }
 
     public static class Word {

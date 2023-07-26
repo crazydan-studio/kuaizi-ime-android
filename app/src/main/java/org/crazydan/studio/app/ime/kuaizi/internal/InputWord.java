@@ -19,8 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinWord;
-
 /**
  * {@link Input 输入}候选字
  *
@@ -28,19 +26,23 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinWord;
  * @date 2023-07-08
  */
 public class InputWord {
+    /** 对应的持久化对象 id */
+    private final String oid;
+
     private final String value;
     private final String notation;
     /** 是否繁体 */
     private final boolean traditional;
 
-    public InputWord(String value, String notation, boolean traditional) {
+    public InputWord(String oid, String value, String notation, boolean traditional) {
+        this.oid = oid;
         this.value = value;
         this.notation = notation;
         this.traditional = traditional;
     }
 
-    public static InputWord from(PinyinWord word) {
-        return new InputWord(word.getValue(), word.getPinyin(), word.isTraditional());
+    public String getOid() {
+        return this.oid;
     }
 
     public String getValue() {

@@ -550,6 +550,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         StringBuilder text = getInputList().getText();
         getInputList().empty();
 
+        // TODO 本地更新用户选字频率
+
         InputMsgData data = new InputCommittingMsgData(getKeyFactory(), text);
 
         fireInputMsg(InputMsg.InputCommitting, data);
@@ -570,17 +572,20 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void prepareInputCandidates(CharInput input) {
-        List<InputWord> candidateWords = this.pinyinDict.findCandidateWords(input.getChars())
-                                                        .stream()
-                                                        .map(InputWord::from)
-                                                        .collect(Collectors.toList());
+        List<String> pinyinChars = input.getChars();
+        List<InputWord> candidateWords = this.pinyinDict.getCandidateWords(pinyinChars);
         input.setCandidates(candidateWords);
 
-        // TODO 按本地常用字等信息，确定最佳候选字，并切换到该候选字所在的分页
-        // Note: 在拼音未改变的情况下，保留原来的已选字
-        if (!candidateWords.contains(input.getWord())) {
-            input.setWord(candidateWords.isEmpty() ? null : candidateWords.get(0));
-        }
+        // 根据当前位置之前的输入确定当前位置的最佳候选字
+        List<InputWord> preInputWords = getInputList().getInputs()
+                                                      .subList(0, getInputList().getSelectedIndex())
+                                                      .stream()
+                                                      .filter(ipt -> ipt.isPinyin() && ipt.hasWord())
+                                                      .map(Input::getWord)
+                                                      .collect(Collectors.toList());
+
+        InputWord bestCandidate = this.pinyinDict.findBestCandidateWord(candidateWords, preInputWords);
+        input.setWord(bestCandidate);
     }
 
     /**
@@ -593,7 +598,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<String> patchedChars = new ArrayList<>();
 
         do {
-            List<?> candidates = this.pinyinDict.findCandidateWords(chars);
+            List<?> candidates = this.pinyinDict.getCandidateWords(chars);
             Collection<String> nextChars = this.pinyinDict.findNextPinyinChar(chars);
 
             if (nextChars.isEmpty()) {

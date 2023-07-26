@@ -24,7 +24,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
 /**
  * 拼音字典（数据库版）
@@ -54,12 +59,14 @@ public class PinyinDictDB {
     private boolean inited = false;
     private boolean closed = true;
 
-    private File appDBFile;
-    private File userDBFile;
     /** 内置字典数据库 */
     private SQLiteDatabase appDB;
     /** 用户字典数据库 */
     private SQLiteDatabase userDB;
+
+    // <<<<<<<<<<<<< 缓存常量数据
+    private Map<String, Integer> pinyinCharsAndIdCache;
+    // >>>>>>>>>>>>>
 
     public static PinyinDictDB getInstance() {
         return instance;
@@ -78,12 +85,39 @@ public class PinyinDictDB {
             return;
         }
 
-        this.appDBFile = new File(context.getFilesDir(), file_app_dict_db);
-        this.userDBFile = new File(context.getFilesDir(), file_user_dict_db);
-
-        copySQLite(context, this.appDBFile, R.raw.pinyin_dict);
+        File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
+        copySQLite(context, appDBFile, R.raw.pinyin_dict);
 
         this.inited = true;
+    }
+
+    /** 在任意需要启用输入法的情况下调用该开启接口 */
+    public synchronized void open(Context context) {
+        if (!this.closed) {
+            return;
+        }
+
+        File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
+        File userDBFile = new File(context.getFilesDir(), file_user_dict_db);
+
+        this.appDB = openSQLite(appDBFile, true);
+        this.userDB = openSQLite(userDBFile, false);
+
+        configSQLite(this.appDB);
+        configSQLite(this.userDB);
+
+        this.pinyinCharsAndIdCache = new HashMap<>(600);
+        doSQLiteQuery(this.appDB, "pinyin_chars_meta", new String[] {
+                              "id_", "value_"
+                      }, //
+                      null, null, null, //
+                      (cursor) -> {
+                          // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
+                          this.pinyinCharsAndIdCache.put(cursor.getString(1), cursor.getInt(0));
+                          return null;
+                      });
+
+        this.closed = false;
     }
 
     /** 在任意存在完全退出的情况下调用该关闭接口 */
@@ -98,18 +132,6 @@ public class PinyinDictDB {
         this.closed = true;
     }
 
-    /** 读写字典前需先确保数据库已被打开 */
-    private synchronized void makeSureItIsOpen() {
-        if (!this.closed) {
-            return;
-        }
-
-        this.appDB = openSQLite(this.appDBFile, true);
-        this.userDB = openSQLite(this.userDBFile, false);
-
-        this.closed = false;
-    }
-
     /**
      * 查找指定拼音的后继字母
      *
@@ -119,103 +141,131 @@ public class PinyinDictDB {
         if (pinyin == null || pinyin.isEmpty()) {
             return null;
         }
-        makeSureItIsOpen();
 
-        String chars = String.join("", pinyin);
-        List<String> list = doSQLiteQuery(this.appDB, "pinyin_pinyin", new String[] {
-                                                  "chars_"
-                                          }, //
-                                          "chars_ like ? and chars_ != ?", //
-                                          new String[] { chars + "%", chars }, //
-                                          null, //
-                                          (cursor) ->
-                                                  // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
-                                                  cursor.getString(0));
-
-        return list.stream().map(s -> s.substring(chars.length(), chars.length() + 1)).collect(Collectors.toSet());
+        String pinyinChars = String.join("", pinyin);
+        return this.pinyinCharsAndIdCache.keySet()
+                                         .stream()
+                                         .filter(chars -> //
+                                                         chars.length() > pinyinChars.length() //
+                                                         && chars.startsWith(pinyinChars))
+                                         .map(chars -> chars.substring(pinyinChars.length(), pinyinChars.length() + 1))
+                                         .collect(Collectors.toList());
     }
 
-    /** 查找指定拼音的候选字 */
-    public List<PinyinWord> findCandidateWords(List<String> pinyin) {
+    /** 获取指定拼音的候选字 */
+    public List<InputWord> getCandidateWords(List<String> pinyin) {
         if (pinyin == null || pinyin.isEmpty()) {
             return new ArrayList<>();
         }
-        makeSureItIsOpen();
 
-        String chars = String.join("", pinyin);
+        String pinyinChars = String.join("", pinyin);
+        Integer pinyinCharsId = this.pinyinCharsAndIdCache.get(pinyinChars);
+        if (pinyinCharsId == null) {
+            return new ArrayList<>();
+        }
 
-        return doSQLiteQuery(this.appDB, "pinyin_pinyin", new String[] {
-                                     "value_", "word_", "simple_word_"
-                             }, //
-                             "chars_ = ?", //
-                             new String[] { chars }, //
-                             "weight_ desc", //
-                             (cursor) -> {
-                                 // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
-                                 String py = cursor.getString(0);
-                                 String word = cursor.getString(1);
-                                 boolean traditional = cursor.getString(2) != null;
+        Map<String, String[]> pinyinWordIdMap = new LinkedHashMap<>(1000);
+        doSQLiteQuery(this.appDB, "pinyin_pinyin_meta", new String[] {
+                              "id_", "value_", "word_id_"
+                      }, //
+                      "chars_id_ = ?", //
+                      new String[] { String.valueOf(pinyinCharsId) }, //
+                      "weight_ desc", //
+                      (cursor) -> {
+                          pinyinWordIdMap.put(cursor.getString(0),
+                                              new String[] { cursor.getString(1), cursor.getString(2) });
 
-                                 return new PinyinWord(word, py, traditional);
-                             });
-    }
+                          return null;
+                      });
+        if (pinyinWordIdMap.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-    private PinyinDict.Word queryWordByValue(SQLiteDatabase db, String value) {
-        List<PinyinDict.Word> list = queryWord(db, "value_ = ?", new String[] { value }, null);
-        return list.isEmpty() ? null : list.get(0);
-    }
+        Set<String> wordIdSet = pinyinWordIdMap.values().stream().map(tuple -> tuple[1]).collect(Collectors.toSet());
+        Map<String, String[]> wordMap = new HashMap<>(wordIdSet.size());
+        doSQLiteQuery(this.appDB, "pinyin_word_meta", new String[] {
+                              "id_", "value_", "simple_word_id_"
+                      }, //
+                      "id_ in (" + wordIdSet.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")", //
+                      wordIdSet.toArray(new String[0]), //
+                      null, //
+                      (cursor) -> {
+                          wordMap.put(cursor.getString(0), new String[] { cursor.getString(1), cursor.getString(2) });
 
-    private List<PinyinDict.Word> queryWord(SQLiteDatabase db, String where, String[] params, String orderBy) {
-        return doSQLiteQuery(db, "pinyin_word", new String[] {
-                "id_", "value_", "stroke_count_", "stroke_order_", "simple_word_"
-        }, where, params, orderBy, (cursor) -> {
-            PinyinDict.Word data = new PinyinDict.Word();
-            data.setId(cursor.getInt(0));
-            data.setValue(cursor.getString(1));
-            data.setStrokeCount(cursor.getInt(2));
-            data.setStrokeOrder(cursor.getString(3));
-            data.setSimpleWord(cursor.getString(4));
+                          return null;
+                      });
 
-            return data;
+        List<InputWord> result = new ArrayList<>(pinyinWordIdMap.size());
+        pinyinWordIdMap.forEach((id, pinyinTuple) -> {
+            String[] wordTuple = wordMap.get(pinyinTuple[1]);
+            InputWord pw = new InputWord(id, wordTuple[0], pinyinTuple[0], wordTuple[1] != null);
+
+            result.add(pw);
         });
+
+        return result;
     }
 
-    private PinyinTree.Pinyin queryPinyinByValue(SQLiteDatabase db, String value, String word) {
-        List<PinyinTree.Pinyin> list = queryPinyin(db, "value_ = ? and word_ = ?", new String[] { value, word }, null);
-        return list.isEmpty() ? null : list.get(0);
-    }
+    /** 根据当前候选字列表和前序拼音，分析得出最佳候选字 */
+    public InputWord findBestCandidateWord(List<InputWord> candidateWords, List<InputWord> prePhraseWords) {
+        if (candidateWords == null || candidateWords.isEmpty()) {
+            return null;
+        }
 
-    private List<PinyinTree.Pinyin> queryPinyin(SQLiteDatabase db, String where, String[] params, String orderBy) {
-        return doSQLiteQuery(db, "pinyin_pinyin", new String[] {
-                "id_", "value_", "chars_", "weight_", "word_"
-        }, where, params, orderBy, (cursor) -> {
-            PinyinTree.Pinyin data = new PinyinTree.Pinyin();
-            data.setId(cursor.getInt(0));
-            data.setValue(cursor.getString(1));
-            data.setChars(cursor.getString(2));
-            data.setWeight(cursor.getInt(3));
-            data.setWord(cursor.getString(4));
+        List<String> candidatePinyinIds = candidateWords.stream().map(InputWord::getOid).collect(Collectors.toList());
+        List<String> prePhrasePinyinIds = prePhraseWords.stream().map(InputWord::getOid).collect(Collectors.toList());
 
-            return data;
-        });
-    }
+        List<InputWord> candidates = candidateWords;
+        // 查找内置字典的适配短语
+        if (!prePhrasePinyinIds.isEmpty()) {
+            List<String> params = new ArrayList<>(candidatePinyinIds);
+            params.add(prePhrasePinyinIds.get(prePhrasePinyinIds.size() - 1));
 
-    private ContentValues createContentValues(SQLiteDatabase db, PinyinDict.Word data) {
-        ContentValues values = new ContentValues();
-        values.put("value_", data.getValue());
-        values.put("stroke_count_", data.getStrokeCount());
-        values.put("stroke_order_", data.getStrokeOrder());
-        values.put("simple_word_id_", (Integer) null);
-
-        if (data.isTraditional()) {
-            // Note: 需在繁体之前插入简体字，以确保繁体字的简体在之前已插入
-            PinyinDict.Word simple = queryWordByValue(db, data.getSimpleWord());
-            if (simple != null) {
-                values.put("simple_word_id_", simple.getId());
+            List<String> postPinyinIds = doSQLiteQuery(this.appDB, "pinyin_phrase_meta", new String[] {
+                                                               "pre_pinyin_id_", "post_pinyin_id_"
+                                                       }, //
+                                                       "post_pinyin_id_ in ("
+                                                       + candidatePinyinIds.stream()
+                                                                           .map(id -> "?")
+                                                                           .collect(Collectors.joining(", "))
+                                                       + ") and pre_pinyin_id_ = ?", //
+                                                       params.toArray(new String[0]), //
+                                                       "weight_ desc", //
+                                                       (cursor) -> cursor.getString(1));
+            if (!postPinyinIds.isEmpty()) {
+                String besetPinyinId = postPinyinIds.get(0);
+                candidates = candidateWords.stream()
+                                           .filter(w -> w.getOid().equals(besetPinyinId))
+                                           .collect(Collectors.toList());
             }
         }
 
-        return values;
+        // 前面的方法没有找到最佳候选字
+        if (candidates == candidateWords) {
+            // 则尝试从短语中找以其开头的高频字
+            List<String> prePinyinIds = doSQLiteQuery(this.appDB, "pinyin_phrase_meta", new String[] {
+                                                              "pre_pinyin_id_"
+                                                      },
+                                                      //
+                                                      "pre_pinyin_id_ in (" //
+                                                      + candidatePinyinIds.stream()
+                                                                          .map(id -> "?")
+                                                                          .collect(Collectors.joining(", ")) + ")",
+                                                      //
+                                                      candidatePinyinIds.toArray(new String[0]),
+                                                      //
+                                                      "weight_ desc",
+                                                      //
+                                                      (cursor) -> cursor.getString(0));
+            if (!prePinyinIds.isEmpty()) {
+                String besetPinyinId = prePinyinIds.get(0);
+                candidates = candidateWords.stream()
+                                           .filter(w -> w.getOid().equals(besetPinyinId))
+                                           .collect(Collectors.toList());
+            }
+        }
+
+        return candidates.isEmpty() ? null : candidates.get(0);
     }
 
     private ContentValues createContentValues(SQLiteDatabase db, PinyinTree.Pinyin data) {
@@ -223,9 +273,6 @@ public class PinyinDictDB {
         values.put("value_", data.getValue());
         values.put("chars_", data.getChars());
         values.put("weight_", data.getWeight());
-
-        PinyinDict.Word word = queryWordByValue(db, data.getWord());
-        values.put("word_id_", word.getId());
 
         return values;
     }
@@ -282,19 +329,26 @@ public class PinyinDictDB {
         try (
                 Cursor cursor = db.query(table, columns, where, params, null, null, orderBy)
         ) {
-            if (cursor == null || cursor.getCount() == 0) {
+            if (cursor == null) {
                 return new ArrayList<>();
             }
 
             List<T> list = new ArrayList<>(cursor.getCount());
-            if (cursor.moveToFirst()) {
-                do {
-                    T data = creator.apply(cursor);
-                    list.add(data);
-                } while (cursor.moveToNext());
+            while (cursor.moveToNext()) {
+                T data = creator.apply(cursor);
+                list.add(data);
             }
 
             return list;
+        }
+    }
+
+    private void configSQLite(SQLiteDatabase db) {
+        String[] clauses = new String[] {
+                "PRAGMA cache_size = 50000;", "PRAGMA temp_store = MEMORY;",
+                };
+        for (String clause : clauses) {
+            db.execSQL(clause);
         }
     }
 }
