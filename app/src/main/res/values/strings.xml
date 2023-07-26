@@ -19,10 +19,11 @@
     <string name="app_name">筷字输入法</string>
 
     <string name="title_app_preferences">筷字输入法设置</string>
-    <string name="title_app_demo">筷字输入法功能演示</string>
+    <string name="title_app_guide">筷字使用指南</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
+    <string name="label_input_word_key_trad_mark">繁</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

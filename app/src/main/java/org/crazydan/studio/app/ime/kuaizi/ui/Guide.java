@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class Demo extends AppCompatActivity implements InputMsgListener {
+public class Guide extends AppCompatActivity implements InputMsgListener {
     private EditText editText;
 
     @Override
@@ -51,7 +51,7 @@ public class Demo extends AppCompatActivity implements InputMsgListener {
         // https://developer.android.com/develop/ui/views/theming/darktheme
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
-        setContentView(R.layout.demo_activity);
+        setContentView(R.layout.guide_activity);
 
         this.editText = findViewById(R.id.text_input);
         this.editText.setClickable(false);

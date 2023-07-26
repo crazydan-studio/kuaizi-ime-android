@@ -19,10 +19,11 @@
     <string name="app_name">Kuaizi Input Method</string>
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
-    <string name="title_app_demo">Kuaizi Input Method Demo</string>
+    <string name="title_app_guide">Kuaizi Guide</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
+    <string name="label_input_word_key_trad_mark">繁</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

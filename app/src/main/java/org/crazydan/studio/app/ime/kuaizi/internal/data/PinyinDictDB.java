@@ -240,31 +240,6 @@ public class PinyinDictDB {
             }
         }
 
-        // 前面的方法没有找到最佳候选字
-        if (candidates == candidateWords) {
-            // 则尝试从短语中找以其开头的高频字
-            List<String> prePinyinIds = doSQLiteQuery(this.appDB, "pinyin_phrase_meta", new String[] {
-                                                              "pre_pinyin_id_"
-                                                      },
-                                                      //
-                                                      "pre_pinyin_id_ in (" //
-                                                      + candidatePinyinIds.stream()
-                                                                          .map(id -> "?")
-                                                                          .collect(Collectors.joining(", ")) + ")",
-                                                      //
-                                                      candidatePinyinIds.toArray(new String[0]),
-                                                      //
-                                                      "weight_ desc",
-                                                      //
-                                                      (cursor) -> cursor.getString(0));
-            if (!prePinyinIds.isEmpty()) {
-                String besetPinyinId = prePinyinIds.get(0);
-                candidates = candidateWords.stream()
-                                           .filter(w -> w.getOid().equals(besetPinyinId))
-                                           .collect(Collectors.toList());
-            }
-        }
-
         return candidates.isEmpty() ? null : candidates.get(0);
     }
 
