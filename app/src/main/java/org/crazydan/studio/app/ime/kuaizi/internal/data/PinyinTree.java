@@ -272,7 +272,7 @@ public class PinyinTree {
         @NonNull
         @Override
         public String toString() {
-            return "Pinyin{" + this.value + ":" + this.word + '}';
+            return this.value + ":" + this.word;
         }
 
         @Override
@@ -320,9 +320,7 @@ public class PinyinTree {
         @NonNull
         @Override
         public String toString() {
-            return "Phrase{" + this.pinyins.stream()
-                                           .map(p -> p.getWord() + "(" + p.getValue() + ")")
-                                           .collect(Collectors.joining()) + '}';
+            return this.pinyins.stream().map(p -> p.getWord() + "(" + p.getValue() + ")").collect(Collectors.joining());
         }
 
         @Override

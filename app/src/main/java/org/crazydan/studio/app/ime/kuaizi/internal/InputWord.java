@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+
 /**
  * {@link Input 输入}候选字
  *
@@ -55,6 +57,12 @@ public class InputWord {
 
     public boolean isTraditional() {
         return this.traditional;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.value + '(' + this.notation + ')';
     }
 
     @Override

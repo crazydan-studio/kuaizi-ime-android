@@ -224,6 +224,31 @@ public class InputList {
         return this.inputs;
     }
 
+    /** 获取全部拼音输入组成的短语或词组 */
+    public List<List<InputWord>> getPinyinPhrases(boolean untilToSelected) {
+        List<Input> inputs = untilToSelected ? this.inputs.subList(0, getSelectedIndex()) : this.inputs;
+
+        List<List<InputWord>> list = new ArrayList<>();
+
+        List<InputWord> phrase = new ArrayList<>();
+        for (Input input : inputs) {
+            if (input.isPinyin() && input.hasWord()) {
+                phrase.add(input.getWord());
+            } else if (!(input instanceof GapInput)) {
+                if (!phrase.isEmpty()) {
+                    list.add(phrase);
+                }
+                phrase = new ArrayList<>();
+            }
+        }
+
+        if (!phrase.isEmpty()) {
+            list.add(phrase);
+        }
+
+        return list;
+    }
+
     /** 获取已选中输入之前的输入 */
     public Input getInputBeforeSelected() {
         int selectedIndex = getSelectedIndex();

@@ -366,7 +366,7 @@ public class PinyinDataSQLite {
                 + "        FOREIGN KEY (word_id_) REFERENCES pinyin_word_meta (id_),\n"
                 + "        FOREIGN KEY (chars_id_) REFERENCES pinyin_chars_meta (id_)\n"
                 + "    );",
-                "CREATE INDEX idx_py_meta_chars ON pinyin_pinyin_meta (chars_id_);",
+                "CREATE INDEX IF NOT EXISTS idx_py_meta_chars ON pinyin_pinyin_meta (chars_id_);",
                 "CREATE TABLE\n"
                 + "    IF NOT EXISTS pinyin_phrase_meta (\n"
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
@@ -377,7 +377,7 @@ public class PinyinDataSQLite {
                 + "        FOREIGN KEY (pre_pinyin_id_) REFERENCES pinyin_pinyin_meta (id_),\n"
                 + "        FOREIGN KEY (post_pinyin_id_) REFERENCES pinyin_pinyin_meta (id_)\n"
                 + "    );",
-                "CREATE INDEX idx_ph_meta_py_id ON pinyin_phrase_meta (pre_pinyin_id_, post_pinyin_id_);",
+                "CREATE INDEX IF NOT EXISTS idx_ph_meta_py_id ON pinyin_phrase_meta (pre_pinyin_id_, post_pinyin_id_);",
                 // 视图
                 "CREATE VIEW\n"
                 + "    IF NOT EXISTS pinyin_word (id_, value_, simple_word_) AS\n"

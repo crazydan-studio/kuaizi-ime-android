@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -49,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgDat
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerMovingKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.UserFingerSlippingKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * 汉语拼音{@link Keyboard 键盘}
@@ -438,7 +438,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onContinuousInput(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean isPinyin) {
         Collection<String> nextChars = null;
         if (isPinyin) {
-            nextChars = this.pinyinDict.findNextPinyinChar(input.getChars());
+            nextChars = this.pinyinDict.findNextChar(input.getChars());
 
 //            if (nextChars.size() == 1 && patchUniquePinyin(input)) {
 //                nextChars = new ArrayList<>();
@@ -547,10 +547,12 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         getInputList().confirmPending();
 
+        // 本地更新用户选字频率
+        List<List<InputWord>> phrases = getInputList().getPinyinPhrases(false);
+        this.pinyinDict.saveUsedPhrases(phrases);
+
         StringBuilder text = getInputList().getText();
         getInputList().empty();
-
-        // TODO 本地更新用户选字频率
 
         InputMsgData data = new InputCommittingMsgData(getKeyFactory(), text);
 
@@ -577,12 +579,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         input.setCandidates(candidateWords);
 
         // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> preInputWords = getInputList().getInputs()
-                                                      .subList(0, getInputList().getSelectedIndex())
-                                                      .stream()
-                                                      .filter(ipt -> ipt.isPinyin() && ipt.hasWord())
-                                                      .map(Input::getWord)
-                                                      .collect(Collectors.toList());
+        List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
 
         InputWord bestCandidate = this.pinyinDict.findBestCandidateWord(candidateWords, preInputWords);
         input.setWord(bestCandidate);
@@ -599,7 +596,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         do {
             List<?> candidates = this.pinyinDict.getCandidateWords(chars);
-            Collection<String> nextChars = this.pinyinDict.findNextPinyinChar(chars);
+            Collection<String> nextChars = this.pinyinDict.findNextChar(chars);
 
             if (nextChars.isEmpty()) {
                 // 无效拼音：无候选字
