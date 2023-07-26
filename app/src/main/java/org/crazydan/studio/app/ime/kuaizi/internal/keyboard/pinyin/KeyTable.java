@@ -137,15 +137,7 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_left_hand_backspace, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInput,
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
-        });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_zcs_h, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
-        });
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
-        });
+
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
                 R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
         });
@@ -158,6 +150,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard, new Integer[] {
                 R.drawable.ic_symbol, R.attr.key_ctrl_switch_to_symbol_keyboard_bg_color
         });
+
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
                             new Integer[] { R.drawable.ic_right_hand_pointer, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Locator,
@@ -166,6 +159,20 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_right_hand_selection, R.attr.key_ctrl_locator_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Exit,
                             new Integer[] { R.drawable.ic_right_hand_exit, R.attr.key_ctrl_exit_bg_color });
+
+        ctrl_key_styles.put(CtrlKey.Type.DropInput,
+                            new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
+                            new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_zcs_h, new Integer[] {
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl, new Integer[] {
+                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+        });
 
         ctrl_key_styles.put(CtrlKey.Type.Undo,
                             new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
@@ -289,6 +296,9 @@ public class KeyTable {
 
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        gridKeys[3][3] = ctrlKey(CtrlKey.Type.ConfirmInput);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
 
         if (!inputWords.isEmpty()) {
             gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //

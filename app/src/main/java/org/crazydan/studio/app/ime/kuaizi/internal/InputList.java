@@ -195,8 +195,18 @@ public class InputList {
         return getSelected() == input;
     }
 
+    /** 删除当前选中的输入：光标位置仅删除正在输入的内容 */
+    public void deleteSelected() {
+        Input selected = this.cursor.selected;
+        if (selected instanceof CharInput) {
+            deleteBackward();
+        }
+
+        this.cursor.pending = null;
+    }
+
     /** 删除光标左边的输入 */
-    public void backwardDelete() {
+    public void deleteBackward() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {
             return;

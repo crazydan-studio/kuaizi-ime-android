@@ -146,6 +146,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Backspace,
         /** 提交输入 */
         CommitInput,
+        /** 在候选字状态下删除当前输入 */
+        DropInput,
+        /** 在候选字状态下确认当前输入 */
+        ConfirmInput,
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
         ToggleInputSpell_zcs_h,
         /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */

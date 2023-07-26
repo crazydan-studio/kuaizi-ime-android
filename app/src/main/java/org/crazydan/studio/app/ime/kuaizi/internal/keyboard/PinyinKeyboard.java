@@ -206,7 +206,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             if (!getInputList().hasEmptyPending()) {
                                 getInputList().dropPending();
                             } else {
-                                getInputList().backwardDelete();
+                                getInputList().deleteBackward();
                             }
                             onInputtingCharsDone();
                         } else {
@@ -271,16 +271,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     InputWord word = key.getWord();
                     getInputList().getPending().setWord(word);
-                    getInputList().confirmPending();
 
-                    // 继续选择下一个拼音输入的候选字
-                    Input selected;
-                    do {
-                        getInputList().moveToNextCharInput();
-                        selected = getInputList().getSelected();
-                    } while (selected != null && !selected.isPinyin() && selected != getInputList().getLastInput());
-
-                    onChoosingInputMsg(null, selected, null);
+                    onConfirmSelectedInputCandidate();
                 }
             }
             break;
@@ -302,6 +294,16 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 // 丢弃或变更拼音
                 switch (key.getType()) {
+                    case DropInput: {
+                        getInputList().deleteSelected();
+
+                        onInputtingCharsDone();
+                        break;
+                    }
+                    case ConfirmInput: {
+                        onConfirmSelectedInputCandidate();
+                        break;
+                    }
                     case ToggleInputSpell_zcs_h: {
                         if (joinedInputChars.startsWith("sh")
                             || joinedInputChars.startsWith("ch")
@@ -516,6 +518,19 @@ public class PinyinKeyboard extends BaseKeyboard {
         fireInputMsg(InputMsg.ChoosingInputCandidate, data);
     }
 
+    private void onConfirmSelectedInputCandidate() {
+        getInputList().confirmPending();
+
+        // 继续选择下一个拼音输入的候选字
+        Input selected;
+        do {
+            getInputList().moveToNextCharInput();
+            selected = getInputList().getSelected();
+        } while (selected != null && !selected.isPinyin() && selected != getInputList().getLastInput());
+
+        onChoosingInputMsg(null, selected, null);
+    }
+
     private void onPlayingInputAudio_SingleTick(Key<?> key) {
         onPlayingInputAudio(key, PlayingInputAudioMsgData.AudioType.SingleTick);
     }
@@ -578,11 +593,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> candidateWords = this.pinyinDict.getCandidateWords(pinyinChars);
         input.setCandidates(candidateWords);
 
-        // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
+        if (!candidateWords.contains(input.getWord())) {
+            // 根据当前位置之前的输入确定当前位置的最佳候选字
+            List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
 
-        InputWord bestCandidate = this.pinyinDict.findBestCandidateWord(candidateWords, preInputWords);
-        input.setWord(bestCandidate);
+            InputWord bestCandidate = this.pinyinDict.findBestCandidateWord(candidateWords, preInputWords);
+            input.setWord(bestCandidate);
+        }
     }
 
     /**
