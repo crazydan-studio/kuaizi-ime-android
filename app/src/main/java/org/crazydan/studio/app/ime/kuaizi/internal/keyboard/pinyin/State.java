@@ -47,8 +47,6 @@ public class State {
         /** 输入组件光标定位：含移动光标和文本选择 */
         LocatingInputCursor,
 
-        /** 输入光标移动 */
-        MovingInputListCursor,
         /** 输入候选字选择中 */
         ChoosingInputCandidate,
     }

@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import android.content.Context;
 import android.content.res.Resources;
 
 /**
@@ -31,5 +32,10 @@ public class ScreenUtils {
 
     public static int dpToPx(int dp) {
         return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
+    }
+
+    public static float pxFromDimension(Context context, int dimenId) {
+        // https://stackoverflow.com/questions/14540293/how-to-set-text-size-using-dimension-from-xml-at-runtime-programmatically#answer-16718062
+        return context.getResources().getDimension(dimenId);
     }
 }

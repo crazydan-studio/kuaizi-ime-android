@@ -92,7 +92,12 @@ public class CharKey extends BaseKey<CharKey> {
 
     /** 是否为标点 */
     public boolean isSymbol() {
-        return this.type == Type.Symbol;
+        return this.type == Type.Symbol || isDoubleSymbol();
+    }
+
+    /** 是否为双标点 */
+    public boolean isDoubleSymbol() {
+        return this.type == Type.DoubleSymbol;
     }
 
     @Override
@@ -138,6 +143,8 @@ public class CharKey extends BaseKey<CharKey> {
         Number,
         /** 标点符号按键 */
         Symbol,
+        /** 双标点符号按键：括号、引号等配对标点 */
+        DoubleSymbol,
         /** 颜文字按键 */
         Emotion,
     }

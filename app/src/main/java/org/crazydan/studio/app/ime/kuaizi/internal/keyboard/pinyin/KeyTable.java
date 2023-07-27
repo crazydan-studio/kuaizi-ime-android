@@ -33,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.HandMode;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.Symbol;
 
 /**
  * {@link PinyinKeyboard 汉语拼音键盘}的按键表
@@ -52,6 +53,72 @@ public class KeyTable {
             R.attr.input_word_key_level_2_bg_color,
             R.attr.input_word_key_level_3_bg_color,
             R.attr.input_word_key_level_4_bg_color,
+            };
+    /** 英文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
+    public static final Symbol[] latin_symbols = new Symbol[] {
+            symbol(",").withReplacements("，"),
+            symbol(".").withReplacements("。"),
+            symbol("?").withReplacements("？"),
+            symbol("!").withReplacements("！"),
+            symbol(":").withReplacements("："),
+            symbol(";").withReplacements("；"),
+            symbol("@"),
+            symbol("`"),
+            doubleSymbol("''").withReplacements("‘’"),
+            doubleSymbol("\"\"").withReplacements("“”"),
+            doubleSymbol("()").withReplacements("（）"),
+            doubleSymbol("[]").withReplacements("［］"),
+            doubleSymbol("{}"),
+            doubleSymbol("<>").withReplacements("〈〉"),
+            symbol("/"),
+            symbol("\\"),
+            symbol("|"),
+            symbol("~"),
+            symbol("#"),
+            symbol("$"),
+            symbol("%"),
+            symbol("^"),
+            symbol("&"),
+            symbol("*"),
+            symbol("-"),
+            symbol("+"),
+            symbol("="),
+            symbol("–"),
+            symbol("—"),
+            };
+    /** 中文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
+    public static final Symbol[] chinese_symbols = new Symbol[] {
+            symbol("，").withReplacements(","),
+            symbol("。").withReplacements("."),
+            symbol("？").withReplacements("?"),
+            symbol("！").withReplacements("!"),
+            symbol("：").withReplacements(":"),
+            symbol("；").withReplacements(";"),
+            symbol("、"),
+            doubleSymbol("‘’").withReplacements("''"),
+            doubleSymbol("“”").withReplacements("\"\""),
+            doubleSymbol("﹁﹂"),
+            doubleSymbol("﹃﹄"),
+            doubleSymbol("「」"),
+            doubleSymbol("『』"),
+            doubleSymbol("（）").withReplacements("()"),
+            doubleSymbol("〔〕"),
+            doubleSymbol("〈〉").withReplacements("<>"),
+            doubleSymbol("《》"),
+            doubleSymbol("［］").withReplacements("[]"),
+            doubleSymbol("【】"),
+            symbol("-"),
+            symbol("－"),
+            symbol("——"),
+            symbol("＿＿"),
+            symbol("～"),
+            symbol("﹏﹏"),
+            symbol("·"),
+            symbol("……"),
+            symbol("﹁"),
+            symbol("﹂"),
+            symbol("﹃"),
+            symbol("﹄"),
             };
 
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
@@ -127,7 +194,7 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("h", "n", "l"), new Integer[] {
                 R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("：", "！", "？", "、", "，", "。"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("：", "！", "？", "；", "，", "。"), new Integer[] {
                 R.attr.key_char_symbol_fg_color, R.attr.key_char_symbol_bg_color
         });
 
@@ -220,7 +287,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                symbolKey("、"),
+                symbolKey("；").withReplacements(";"),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -244,7 +311,7 @@ public class KeyTable {
                 alphabetKey("b").withReplacements("B"),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("y").withReplacements("Y"),
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard).setDisabled(true),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 },
                 };
     }
@@ -320,26 +387,26 @@ public class KeyTable {
 
         int wordIndex = startIndex;
         for (int level = 0; level < input_word_key_level_coords.length; level++) {
-            int[][] wordKeyCoords = input_word_key_level_coords[level];
+            int[][] keyCoords = input_word_key_level_coords[level];
 
-            for (int[] wordKeyCoord : wordKeyCoords) {
-                int x = wordKeyCoord[0];
-                int y = wordKeyCoord[1];
+            for (int[] keyCoord : keyCoords) {
+                int x = keyCoord[0];
+                int y = keyCoord[1];
 
                 if (wordIndex < inputWords.size()) {
                     InputWord word = inputWords.get(wordIndex);
 
                     int bgAttrId = input_word_key_level_bg_colors[level];
-                    InputWordKey wordKey = InputWordKey.word(word)
-                                                       .setFgColorAttrId(R.attr.input_word_key_fg_color)
-                                                       .setBgColorAttrId(bgAttrId);
+                    InputWordKey key = InputWordKey.word(word)
+                                                   .setFgColorAttrId(R.attr.input_word_key_fg_color)
+                                                   .setBgColorAttrId(bgAttrId);
 
                     // 禁用已被选中的候选字按键
                     if (word.equals(input.getWord())) {
-                        wordKey.setDisabled(true);
+                        key.setDisabled(true);
                     }
 
-                    gridKeys[x][y] = wordKey;
+                    gridKeys[x][y] = key;
                 } else {
                     break;
                 }
@@ -368,6 +435,48 @@ public class KeyTable {
         gridKeys[5][2] = ctrlKey(CtrlKey.Type.Undo, "撤销");
         gridKeys[5][3] = ctrlKey(CtrlKey.Type.Paste, "粘贴");
         gridKeys[5][4] = ctrlKey(CtrlKey.Type.Copy, "复制");
+
+        return gridKeys;
+    }
+
+    /** 创建标点符号按键 */
+    public static Key<?>[][] createSymbolKeys(
+            Keyboard.KeyFactory.Option option, Configure config, int startIndex, Symbol[] symbols
+    ) {
+        int pageSize = getInputCandidateKeysPageSize();
+
+        Key<?>[][] gridKeys = new Key[6][7];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
+                                     + "/" //
+                                     + ((int) Math.ceil(symbols.length / (pageSize * 1.0))));
+
+        int symbolIndex = startIndex;
+        for (int level = 0; level < input_word_key_level_coords.length; level++) {
+            int[][] keyCoords = input_word_key_level_coords[level];
+
+            for (int[] keyCoord : keyCoords) {
+                int x = keyCoord[0];
+                int y = keyCoord[1];
+
+                if (symbolIndex < symbols.length) {
+                    Symbol symbol = symbols[symbolIndex];
+
+                    int bgAttrId = input_word_key_level_bg_colors[level];
+                    CharKey key = symbol.isDoubled() ? doubleSymbolKey(symbol.getText()) : symbolKey(symbol.getText());
+
+                    key.setFgColorAttrId(R.attr.input_word_key_fg_color).setBgColorAttrId(bgAttrId);
+                    symbol.getReplacements().forEach(key::withReplacements);
+
+                    gridKeys[x][y] = key;
+                } else {
+                    break;
+                }
+
+                symbolIndex += 1;
+            }
+        }
 
         return gridKeys;
     }
@@ -408,6 +517,18 @@ public class KeyTable {
 
     public static CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text);
+    }
+
+    public static CharKey doubleSymbolKey(String text) {
+        return charKey(CharKey.Type.DoubleSymbol, text);
+    }
+
+    public static Symbol symbol(String text) {
+        return new Symbol(text, false);
+    }
+
+    public static Symbol doubleSymbol(String text) {
+        return new Symbol(text, true);
     }
 
     private static CharKey charKey(CharKey.Type type, String text) {

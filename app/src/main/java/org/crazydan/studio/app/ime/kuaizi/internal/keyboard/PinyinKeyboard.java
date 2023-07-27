@@ -233,6 +233,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onSwitchingIME();
                         break;
                     }
+                    case SwitchToSymbolKeyboard: {
+                        onSwitchToSymbolKeyboard(KeyTable.chinese_symbols);
+                        break;
+                    }
                 }
                 break;
             }
@@ -424,6 +428,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emotion:
+            case DoubleSymbol:
             case Symbol: {
                 boolean isEmpty = getInputList().isEmpty();
                 getInputList().newPending().appendKey(key);
@@ -599,6 +604,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         reset();
 
         fireInputMsg(InputMsg.IMESwitching, new CommonInputMsgData(null));
+    }
+
+    private void onSwitchToSymbolKeyboard(Symbol[] symbols) {
+        this.state = new State(State.Type.InputWaiting);
+
+        KeyFactory keyFactory = option -> KeyTable.createSymbolKeys(option, createKeyTableConfigure(), 0, symbols);
+        fireInputMsg(InputMsg.InputtingSymbol, new CommonInputMsgData(keyFactory));
     }
 
     private void prepareInputCandidates(CharInput input) {

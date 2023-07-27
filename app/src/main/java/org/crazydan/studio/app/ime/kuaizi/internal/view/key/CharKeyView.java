@@ -17,11 +17,14 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -39,7 +42,14 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
     public void bind(CharKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        this.fgView.setText(key.getText());
+        String text = key.isDoubleSymbol() ? key.getText().replaceAll("^(.)", "$1 ") : key.getText();
+        this.fgView.setText(text);
+
+        float textSize = ScreenUtils.pxFromDimension(getContext(),
+                                                     key.isSymbol()
+                                                     ? R.dimen.char_symbol_key_text_size
+                                                     : R.dimen.char_key_text_size);
+        this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
         setTextColorByAttrId(this.fgView, key.getFgColorAttrId());
     }

@@ -50,4 +50,6 @@ public enum InputMsg {
 
     /** 输入法切换中 */
     IMESwitching,
+
+    InputtingSymbol,
 }
