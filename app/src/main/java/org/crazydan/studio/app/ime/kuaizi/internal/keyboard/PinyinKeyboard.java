@@ -255,6 +255,18 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
+            case FingerSlipping: {
+                // 在定位切换按钮上滑动也可以移动光标
+                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+                    Motion motion = ((UserFingerSlippingKeyMsgData) data).motion;
+                    onPlayingInputAudio_SingleTick(key);
+
+                    Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
+                    InputMsgData idata = new InputCursorLocatingMsgData(null, key, anchor);
+                    fireInputMsg(InputMsg.LocatingInputCursor, idata);
+                }
+                break;
+            }
         }
     }
 
@@ -519,6 +531,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onConfirmSelectedInputCandidate() {
+        getInputList().getPending().getWord().setConfirmed(true);
         getInputList().confirmPending();
 
         // 继续选择下一个拼音输入的候选字
@@ -593,7 +606,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> candidateWords = this.pinyinDict.getCandidateWords(pinyinChars);
         input.setCandidates(candidateWords);
 
-        if (!candidateWords.contains(input.getWord())) {
+        if (!candidateWords.contains(input.getWord()) || !input.getWord().isConfirmed()) {
             // 根据当前位置之前的输入确定当前位置的最佳候选字
             List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
 

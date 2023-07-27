@@ -30,6 +30,8 @@ import androidx.annotation.NonNull;
 public class InputWord {
     /** 对应的持久化对象 id */
     private final String oid;
+    /** 是否已确认 */
+    private boolean confirmed;
 
     private final String value;
     private final String notation;
@@ -45,6 +47,14 @@ public class InputWord {
 
     public String getOid() {
         return this.oid;
+    }
+
+    public boolean isConfirmed() {
+        return this.confirmed;
+    }
+
+    public void setConfirmed(boolean confirmed) {
+        this.confirmed = confirmed;
     }
 
     public String getValue() {
