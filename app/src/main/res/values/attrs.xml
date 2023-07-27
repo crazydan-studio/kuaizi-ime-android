@@ -29,13 +29,13 @@
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
 
-        <attr name="input_word_key_bg_color" format="color" />
-        <attr name="input_word_key_fg_color" format="color" />
-        <attr name="input_word_key_level_0_bg_color" format="color" />
-        <attr name="input_word_key_level_1_bg_color" format="color" />
-        <attr name="input_word_key_level_2_bg_color" format="color" />
-        <attr name="input_word_key_level_3_bg_color" format="color" />
-        <attr name="input_word_key_level_4_bg_color" format="color" />
+        <attr name="key_char_around_bg_color" format="color" />
+        <attr name="key_char_around_fg_color" format="color" />
+        <attr name="key_char_around_level_0_bg_color" format="color" />
+        <attr name="key_char_around_level_1_bg_color" format="color" />
+        <attr name="key_char_around_level_2_bg_color" format="color" />
+        <attr name="key_char_around_level_3_bg_color" format="color" />
+        <attr name="key_char_around_level_4_bg_color" format="color" />
 
         <attr name="key_ctrl_noop_bg_color" format="color" />
         <attr name="key_ctrl_switch_ime_bg_color" format="color" />

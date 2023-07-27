@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
@@ -28,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public interface Keyboard {
+public interface Keyboard extends UserInputMsgListener {
 
     KeyFactory getKeyFactory();
 
@@ -46,6 +47,9 @@ public interface Keyboard {
      * 忽略重复加入的监听，且执行顺序与添加顺序无关
      */
     void addInputMsgListener(InputMsgListener listener);
+
+    /** 移除{@link InputMsg 输入消息监听} */
+    void removeInputMsgListener(InputMsgListener listener);
 
     /** 键盘类型 */
     enum Type {

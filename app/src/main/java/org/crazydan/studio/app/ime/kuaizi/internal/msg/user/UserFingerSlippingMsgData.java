@@ -15,24 +15,29 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
+ * {@link UserKeyMsg#FingerSlipping}消息数据
+ * <p/>
+ * 注：<ul>
+ * <li>{@link #target} 为滑动开始所按下的按键；</li>
+ * </ul>
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-08
+ * @date 2023-07-09
  */
-public class CommonInputMsgData implements InputMsgData {
-    private final Keyboard.KeyFactory keyFactory;
+public class UserFingerSlippingMsgData extends UserKeyMsgData {
+    /** 运动信息 */
+    public final Motion motion;
 
-    public CommonInputMsgData(Keyboard.KeyFactory keyFactory) {
-        this.keyFactory = keyFactory;
-    }
-
-    @Override
-    public Keyboard.KeyFactory getKeyFactory() {
-        return this.keyFactory;
+    public UserFingerSlippingMsgData(Key<?> target, Motion motion) {
+        super(target);
+        this.motion = motion;
     }
 }

@@ -37,8 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -144,43 +144,43 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputCommitting: {
-                commitInputting(((InputCommittingMsgData) data).text);
+            case InputList_Committing: {
+                commitInputting(((InputListCommittingMsgData) data).text);
                 break;
             }
-            case InputBackwardDeleting: {
+            case InputTarget_Backspacing: {
                 backwardDeleteInput();
                 break;
             }
-            case LocatingInputCursor: {
-                locateInputCursor((InputCursorLocatingMsgData) data);
+            case InputTarget_Cursor_Locating: {
+                locateInputCursor((InputTargetCursorLocatingMsgData) data);
                 break;
             }
-            case SelectingInputText: {
-                selectInputText((InputCursorLocatingMsgData) data);
+            case InputTarget_Selecting: {
+                selectInputText((InputTargetCursorLocatingMsgData) data);
                 break;
             }
-            case CopyingInputText: {
+            case InputTarget_Copying: {
                 copyInputText();
                 break;
             }
-            case PastingInputText: {
+            case InputTarget_Pasting: {
                 pasteInputText();
                 break;
             }
-            case CuttingInputText: {
+            case InputTarget_Cutting: {
                 cutInputText();
                 break;
             }
-            case UndoingInputChange: {
+            case InputTarget_Undoing: {
                 undoInputChange();
                 break;
             }
-            case RedoingInputChange: {
+            case InputTarget_Redoing: {
                 redoInputChange();
                 break;
             }
-            case IMESwitching: {
+            case IME_Switching: {
                 switchIME();
                 break;
             }
@@ -224,7 +224,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void locateInputCursor(InputCursorLocatingMsgData data) {
+    private void locateInputCursor(InputTargetCursorLocatingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -249,7 +249,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void selectInputText(InputCursorLocatingMsgData data) {
+    private void selectInputText(InputTargetCursorLocatingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;

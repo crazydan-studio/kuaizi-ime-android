@@ -54,9 +54,16 @@ public class InputList {
         this.listeners.add(listener);
     }
 
+    /** 移除 {@link UserInputMsg} 消息监听 */
+    public void removeUserInputMsgListener(UserInputMsgListener listener) {
+        this.listeners.remove(listener);
+    }
+
     /** 处理{@link UserInputMsg 输入}消息 */
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        this.listeners.forEach(listener -> listener.onUserInputMsg(msg, data));
+        // Note: 存在在监听未执行完毕便移除监听的情况，故，在监听列表的副本中执行监听
+        Set<UserInputMsgListener> listeners = new HashSet<>(this.listeners);
+        listeners.forEach(listener -> listener.onUserInputMsg(msg, data));
     }
 
     /** 清空输入列表 */
@@ -95,10 +102,11 @@ public class InputList {
      * 注：<ul>
      * <li>若指定输入已选中且其待输入未确认，则不做处理；</li>
      * <li>自动确认当前的待输入；</li>
+     * <li>选中该指定的输入；</li>
      * </ul>
      */
     public void newPendingOn(Input input) {
-        if (indexOf(input) < 0 //
+        if (input == null || indexOf(input) < 0 //
             || (this.cursor.selected == input //
                 && this.cursor.pending != null)) {
             return;
@@ -116,6 +124,24 @@ public class InputList {
             this.cursor.selected = input;
             this.cursor.pending = ((CharInput) input).copy();
         }
+    }
+
+    /**
+     * 在指定输入上新建待输入
+     * <p/>
+     * 注：<ul>
+     * <li>若指定输入已选中且其待输入未确认，则不做处理；</li>
+     * <li>自动确认当前的待输入；</li>
+     * <li>选中该指定的输入；</li>
+     * </ul>
+     */
+    public void newPendingOn(int inputIndex) {
+        if (inputIndex < 0 || inputIndex >= this.inputs.size()) {
+            return;
+        }
+
+        Input input = this.inputs.get(inputIndex);
+        newPendingOn(input);
     }
 
     /**
@@ -205,7 +231,7 @@ public class InputList {
         this.cursor.pending = null;
     }
 
-    /** 删除光标左边的输入 */
+    /** 回删输入 */
     public void deleteBackward() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {

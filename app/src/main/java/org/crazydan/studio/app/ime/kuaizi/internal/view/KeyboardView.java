@@ -35,14 +35,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputtingCharsMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.PlayingInputAudioMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
@@ -118,15 +120,28 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     public void changeKeyboardType(Keyboard.Type type) {
         Keyboard oldKeyboard = this.keyboard;
 
-        if (!(this.keyboard instanceof PinyinKeyboard)) {
-            this.keyboard = new PinyinKeyboard();
+        switch (type) {
+            case Symbol:
+                if (!(this.keyboard instanceof SymbolKeyboard)) {
+                    this.keyboard = new SymbolKeyboard();
+                }
+                break;
+            default:
+                if (!(this.keyboard instanceof PinyinKeyboard)) {
+                    this.keyboard = new PinyinKeyboard();
+                }
         }
 
-        this.keyboard.setInputList(this.inputList);
-        this.inputMsgListeners.forEach(this.keyboard::addInputMsgListener);
-
         if (oldKeyboard != this.keyboard) {
-            relayout();
+            if (oldKeyboard != null) {
+                this.inputList.removeUserInputMsgListener(oldKeyboard);
+                this.inputMsgListeners.forEach(oldKeyboard::removeInputMsgListener);
+            }
+
+            this.keyboard.setInputList(this.inputList);
+            this.inputMsgListeners.forEach(this.keyboard::addInputMsgListener);
+
+            doRelayout();
         } else {
             this.keyboard.reset();
         }
@@ -142,25 +157,35 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        Key<?> key = data.target;
+        if (key != null && key.isDisabled()) {
+            return;
+        }
+
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case PlayingInputAudio: {
-                onPlayingInputAudioMsg((PlayingInputAudioMsgData) data);
+            case Keyboard_Switching: {
+                Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
+                changeKeyboardType(type);
                 break;
             }
-            case InputtingChars: {
-                onInputtingCharsMsg((InputtingCharsMsgData) data);
+            case InputAudio_Playing: {
+                onPlayingInputAudioMsg((InputAudioPlayingMsgData) data);
                 break;
             }
-            case InputtingCharsDone:
-            case ChoosingInputCandidate:
+            case InputChars_Inputting: {
+                onInputtingCharsMsg((InputCharsInputtingMsgData) data);
                 break;
-            case LocatingInputCursor: {
-                onLocatingInputTargetCursorMsg((InputCursorLocatingMsgData) data);
+            }
+            case InputChars_InputtingEnd:
+            case InputCandidate_Choosing:
+                break;
+            case InputTarget_Cursor_Locating: {
+                onLocatingInputTargetCursorMsg((InputTargetCursorLocatingMsgData) data);
                 break;
             }
         }
@@ -168,12 +193,12 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         relayoutKeysByInputMsg(data);
     }
 
-    private void onInputtingCharsMsg(InputtingCharsMsgData data) {
+    private void onInputtingCharsMsg(InputCharsInputtingMsgData data) {
         // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
         this.animator.addFadeOutKey(data.current);
     }
 
-    private void onPlayingInputAudioMsg(PlayingInputAudioMsgData data) {
+    private void onPlayingInputAudioMsg(InputAudioPlayingMsgData data) {
         switch (data.audioType) {
             case SingleTick:
                 this.audioPlayer.play(R.raw.tick_single);
@@ -187,16 +212,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         }
     }
 
-    private void onLocatingInputTargetCursorMsg(InputCursorLocatingMsgData data) {
+    private void onLocatingInputTargetCursorMsg(InputTargetCursorLocatingMsgData data) {
     }
 
-    private void relayout() {
+    private void doRelayout() {
         Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
         this.layoutManager.configGrid(columns, rows, this.keySpacing);
 
-        relayoutKeys(keys);
+        doRelayoutKeys(keys);
     }
 
     private void relayoutKeysByInputMsg(InputMsgData data) {
@@ -206,10 +231,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         }
 
         Key<?>[][] keys = createKeys(keyFactory);
-        relayoutKeys(keys);
+        doRelayoutKeys(keys);
     }
 
-    private void relayoutKeys(Key<?>[][] keys) {
+    private void doRelayoutKeys(Key<?>[][] keys) {
         this.adapter.bindKeys(keys);
     }
 

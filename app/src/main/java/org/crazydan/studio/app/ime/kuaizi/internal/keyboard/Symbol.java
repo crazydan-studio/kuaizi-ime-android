@@ -29,6 +29,14 @@ public class Symbol {
     private final boolean doubled;
     private final List<String> replacements;
 
+    public static Symbol single(String text) {
+        return new Symbol(text, false);
+    }
+
+    public static Symbol doubled(String text) {
+        return new Symbol(text, true);
+    }
+
     public Symbol(String text, boolean doubled) {
         this.text = text;
         this.doubled = doubled;

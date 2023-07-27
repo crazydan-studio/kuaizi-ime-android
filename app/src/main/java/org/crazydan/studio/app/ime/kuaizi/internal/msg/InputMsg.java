@@ -19,37 +19,38 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /** 输入消息 */
 public enum InputMsg {
-    /** 字符输入中 */
-    InputtingChars,
+    /** 字符输入进行中 */
+    InputChars_Inputting,
     /** 字符输入已结束 */
-    InputtingCharsDone,
-    /** 选择输入候选字 */
-    ChoosingInputCandidate,
-    /** 播放输入音效 */
-    PlayingInputAudio,
+    InputChars_InputtingEnd,
 
-    /** 提交输入内容到输入目标 */
-    InputCommitting,
-    /** 向后删除输入目标中的输入内容 */
-    InputBackwardDeleting,
+    /** 输入候选字选择中 */
+    InputCandidate_Choosing,
+    /** 输入音效播放中 */
+    InputAudio_Playing,
+
+    /** 输入列表提交中：录入到目标输入组件中 */
+    InputList_Committing,
 
     /** 定位输入目标的光标 */
-    LocatingInputCursor,
-    /** 选择输入目标的文本 */
-    SelectingInputText,
-    /** 复制输入目标的文本 */
-    CopyingInputText,
-    /** 粘贴文本到输入目标 */
-    PastingInputText,
-    /** 剪切输入目标的文本 */
-    CuttingInputText,
+    InputTarget_Cursor_Locating,
+    /** 回删输入目标中的内容 */
+    InputTarget_Backspacing,
+    /** 选择输入目标的内容 */
+    InputTarget_Selecting,
+    /** 复制输入目标的内容 */
+    InputTarget_Copying,
+    /** 粘贴内容到输入目标 */
+    InputTarget_Pasting,
+    /** 剪切输入目标的内容 */
+    InputTarget_Cutting,
     /** 撤销对输入目标的变更 */
-    UndoingInputChange,
+    InputTarget_Undoing,
     /** 重做对输入目标的变更 */
-    RedoingInputChange,
+    InputTarget_Redoing,
 
     /** 输入法切换中 */
-    IMESwitching,
-
-    InputtingSymbol,
+    IME_Switching,
+    /** 键盘切换中 */
+    Keyboard_Switching,
 }

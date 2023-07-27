@@ -109,14 +109,16 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         NoOp,
         /** 空格 */
         Space,
-        /** 向前删除 */
+        /** 回删 */
         Backspace,
-        /** 提交输入 */
-        CommitInput,
-        /** 在候选字状态下删除当前输入 */
+
+        /** 提交输入列表 */
+        CommitInputList,
+        /** 丢弃当前输入 */
         DropInput,
-        /** 在候选字状态下确认当前输入 */
+        /** 确认当前输入 */
         ConfirmInput,
+
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
         ToggleInputSpell_zcs_h,
         /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
@@ -133,9 +135,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         LocateInputCursor_Locator,
         /** 输入光标定位按钮 - 选择 */
         LocateInputCursor_Selector,
+
         /** 回车 */
         Enter,
-        /** 退出 */
+        /** 退出当前键盘 */
         Exit,
         /** 复制 */
         Copy,
@@ -147,6 +150,7 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Undo,
         /** 重做 */
         Redo,
+
         /** 切换至数字键盘 */
         SwitchToNumericKeyboard,
         /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */

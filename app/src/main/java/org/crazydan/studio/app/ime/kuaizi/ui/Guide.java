@@ -30,8 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.data.InputCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -81,43 +81,43 @@ public class Guide extends AppCompatActivity implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputCommitting: {
-                commitInputting(((InputCommittingMsgData) data).text);
+            case InputList_Committing: {
+                commitInputting(((InputListCommittingMsgData) data).text);
                 break;
             }
-            case InputBackwardDeleting: {
+            case InputTarget_Backspacing: {
                 backwardDeleteInput();
                 break;
             }
-            case LocatingInputCursor: {
-                locateInputCursor(((InputCursorLocatingMsgData) data).anchor);
+            case InputTarget_Cursor_Locating: {
+                locateInputCursor(((InputTargetCursorLocatingMsgData) data).anchor);
                 break;
             }
-            case SelectingInputText: {
-                selectInputText(((InputCursorLocatingMsgData) data).anchor);
+            case InputTarget_Selecting: {
+                selectInputText(((InputTargetCursorLocatingMsgData) data).anchor);
                 break;
             }
-            case CopyingInputText: {
+            case InputTarget_Copying: {
                 copyInputText();
                 break;
             }
-            case PastingInputText: {
+            case InputTarget_Pasting: {
                 pasteInputText();
                 break;
             }
-            case CuttingInputText: {
+            case InputTarget_Cutting: {
                 cutInputText();
                 break;
             }
-            case UndoingInputChange: {
+            case InputTarget_Undoing: {
                 undoInputChange();
                 break;
             }
-            case RedoingInputChange: {
+            case InputTarget_Redoing: {
                 redoInputChange();
                 break;
             }
-            case IMESwitching: {
+            case IME_Switching: {
                 Toast.makeText(getApplicationContext(), "仅在输入法状态下才可切换系统输入法", Toast.LENGTH_LONG).show();
                 break;
             }

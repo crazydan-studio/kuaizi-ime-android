@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link InputMsg#PlayingInputAudio}消息数据
+ * {@link UserKeyMsg#FingerMoving}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-17
+ * @date 2023-07-06
  */
-public class PlayingInputAudioMsgData extends CommonInputMsgData {
-    public final AudioType audioType;
+public class UserFingerMovingMsgData extends UserKeyMsgData {
+    /** 运动信息 */
+    public final Motion motion;
+    /** 靠近的按键 */
+    public final Key<?> closed;
 
-    public PlayingInputAudioMsgData(AudioType audioType) {
-        super(null);
-
-        this.audioType = audioType;
-    }
-
-    public enum AudioType {
-        SingleTick,
-        DoubleTick,
-        PageFlip,
+    public UserFingerMovingMsgData(Key<?> target, Key<?> closed, Motion motion) {
+        super(target);
+        this.closed = closed;
+        this.motion = motion;
     }
 }

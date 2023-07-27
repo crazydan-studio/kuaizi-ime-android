@@ -15,25 +15,41 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * {@link UserKeyMsg#KeyLongPressTick}消息数据
+ * {@link Keyboard 键盘}所处的状态
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-17
+ * @date 2023-07-06
  */
-public class UserLongPressTickKeyMsgData extends UserKeyMsgData {
-    public final int tick;
-    public final long duration;
+public class State {
+    public final Type type;
+    public final Data data;
 
-    public UserLongPressTickKeyMsgData(Key<?> target, int tick, long duration) {
-        super(target);
-        this.tick = tick;
-        this.duration = duration;
+    public State(Type type) {
+        this(type, null);
     }
+
+    public State(Type type, Data data) {
+        this.type = type;
+        this.data = data;
+    }
+
+    public enum Type {
+        /** 待输入 */
+        Input_Waiting,
+        /** 滑行输入中 */
+        SlippingInput,
+
+        /** 输入组件光标定位：含移动光标和文本选择 */
+        LocatingInputCursor,
+
+        /** 输入候选字选择中 */
+        ChoosingInputCandidate,
+    }
+
+    public interface Data {}
 }

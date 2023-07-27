@@ -15,29 +15,24 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 
 /**
- * {@link InputMsg#LocatingInputCursor}消息数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-18
+ * @date 2023-07-08
  */
-public class InputCursorLocatingMsgData extends CommonInputMsgData {
-    /** 锚点信息 */
-    public final Motion anchor;
+public class InputCommonMsgData implements InputMsgData {
+    private final Keyboard.KeyFactory keyFactory;
 
-    /** 触发消息的按键 */
-    public final Key<?> key;
+    public InputCommonMsgData(Keyboard.KeyFactory keyFactory) {
+        this.keyFactory = keyFactory;
+    }
 
-    public InputCursorLocatingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
-        super(keyFactory);
-        this.key = key;
-        this.anchor = anchor;
+    @Override
+    public Keyboard.KeyFactory getKeyFactory() {
+        return this.keyFactory;
     }
 }

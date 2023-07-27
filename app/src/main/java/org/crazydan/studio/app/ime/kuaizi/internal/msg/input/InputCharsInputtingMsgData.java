@@ -15,29 +15,35 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
+
+import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link UserKeyMsg#FingerSlipping}消息数据
- * <p/>
- * 注：<ul>
- * <li>{@link #target} 为滑动开始所按下的按键；</li>
- * </ul>
+ * {@link InputMsg#InputChars_Inputting}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-09
+ * @date 2023-07-06
  */
-public class UserFingerSlippingKeyMsgData extends UserKeyMsgData {
-    /** 运动信息 */
-    public final Motion motion;
+public class InputCharsInputtingMsgData extends InputCommonMsgData {
+    /** 当前已输入按键列表 */
+    public final List<Key<?>> inputs;
+    /** 当前按键 */
+    public final Key<?> current;
+    /** 靠近的按键 */
+    public final Key<?> closed;
 
-    public UserFingerSlippingKeyMsgData(Key<?> target, Motion motion) {
-        super(target);
-        this.motion = motion;
+    public InputCharsInputtingMsgData(
+            Keyboard.KeyFactory keyFactory, List<Key<?>> inputs, Key<?> current, Key<?> closed
+    ) {
+        super(keyFactory);
+
+        this.inputs = inputs;
+        this.current = current;
+        this.closed = closed;
     }
 }

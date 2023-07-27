@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.state;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.pinyin.State;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
  * {@link State.Type#ChoosingInputCandidate}的状态数据

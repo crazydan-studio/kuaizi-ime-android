@@ -15,28 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link UserKeyMsg#FingerMoving}消息数据
+ * {@link InputMsg#Keyboard_Switching}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-27
  */
-public class UserFingerMovingKeyMsgData extends UserKeyMsgData {
-    /** 运动信息 */
-    public final Motion motion;
-    /** 靠近的按键 */
-    public final Key<?> closed;
+public class KeyboardSwitchingMsgData extends InputCommonMsgData {
+    public final Keyboard.Type type;
 
-    public UserFingerMovingKeyMsgData(Key<?> target, Key<?> closed, Motion motion) {
-        super(target);
-        this.closed = closed;
-        this.motion = motion;
+    public KeyboardSwitchingMsgData(Keyboard.Type type) {
+        super(null);
+        this.type = type;
     }
 }
