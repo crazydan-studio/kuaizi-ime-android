@@ -51,12 +51,16 @@ public interface Keyboard {
     enum Type {
         /** 汉语拼音键盘 */
         Pinyin,
-        /** 英文（含字母和数字）键盘 */
-        English,
-        /** 数字键盘 */
+        /** 拉丁文（含字母和数字）键盘：支持数字计算 */
+        Latin,
+        /** 数字键盘：纯数字 */
         Number,
-        /** 电话号码键盘 */
-        Phone
+        /** 电话号码键盘：纯数字加 #、* 等 */
+        Phone,
+        /** 标点符号键盘：可中英文符号切换 */
+        Symbol,
+        /** 表情符号键盘 */
+        Emotion,
     }
 
     /** 键盘布局方向 */
@@ -64,7 +68,7 @@ public interface Keyboard {
         /** 纵向 */
         Portrait,
         /** 横向 */
-        Landscape
+        Landscape,
     }
 
     /** 按键生成器 */

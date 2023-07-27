@@ -30,50 +30,22 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class CtrlKey extends BaseKey<CtrlKey> {
     private final Type type;
-    private final int iconResId;
-    private final String text;
-
-    private CtrlKey(Type type, int iconResId) {
-        this.type = type;
-        this.iconResId = iconResId;
-        this.text = null;
-    }
-
-    public CtrlKey(Type type, String text) {
-        this.type = type;
-        this.text = text;
-        this.iconResId = -1;
-    }
 
     public static CtrlKey noop() {
-        return noop(null);
+        return create(Type.NoOp);
     }
 
-    public static CtrlKey noop(String text) {
-        return new CtrlKey(Type.NoOp, text);
+    public static CtrlKey create(Type type) {
+        return new CtrlKey(type);
     }
 
-    public static CtrlKey create(Type type, int iconResId) {
-        return new CtrlKey(type, iconResId);
-    }
-
-    public static CtrlKey create(Type type, String text) {
-        return new CtrlKey(type, text);
+    private CtrlKey(Type type) {
+        this.type = type;
     }
 
     /** 按钮{@link Type 类型} */
     public Type getType() {
         return this.type;
-    }
-
-    /** 图形资源 id */
-    public int getIconResId() {
-        return this.iconResId;
-    }
-
-    /** 显示的文本 */
-    public String getText() {
-        return this.text;
     }
 
     public boolean isSpace() {
@@ -84,12 +56,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this.type == Type.NoOp;
     }
 
-    /**
-     * 转换为文本字符
-     * <p/>
-     * 若其不对应任何字符，则返回 <code>null</code>
-     */
-    public String toText() {
+    @Override
+    public String getText() {
         switch (this.type) {
             case Space:
                 return " ";
@@ -122,19 +90,18 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             return false;
         }
         CtrlKey that = (CtrlKey) o;
-        return this.iconResId == that.iconResId && this.type == that.type //
-               && Objects.equals(this.text, that.text);
+        return this.type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.type, this.iconResId, this.text);
+        return Objects.hash(super.hashCode(), this.type);
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "CtrlKey(" + getType() + ')';
+        return "CTRL - " + getType();
     }
 
     public enum Type {

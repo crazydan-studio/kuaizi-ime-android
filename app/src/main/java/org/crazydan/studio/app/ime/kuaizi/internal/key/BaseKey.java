@@ -26,9 +26,32 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-07-02
  */
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
+    private String label;
+    private int iconResId;
+
     private boolean disabled;
     private int fgColorAttrId;
     private int bgColorAttrId;
+
+    @Override
+    public boolean isLatin() {
+        return false;
+    }
+
+    @Override
+    public boolean isNumber() {
+        return false;
+    }
+
+    @Override
+    public boolean isSymbol() {
+        return false;
+    }
+
+    @Override
+    public boolean isEmotion() {
+        return false;
+    }
 
     @Override
     public boolean isDisabled() {
@@ -41,13 +64,38 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         return (K) this;
     }
 
-    /** 获取前景色属性 id */
+    @Override
+    public String getText() {
+        return null;
+    }
+
+    @Override
+    public String getLabel() {
+        return this.label;
+    }
+
+    @Override
+    public K setLabel(String label) {
+        this.label = label;
+        return (K) this;
+    }
+
+    @Override
+    public int getIconResId() {
+        return this.iconResId;
+    }
+
+    @Override
+    public K setIconResId(int iconResId) {
+        this.iconResId = iconResId;
+        return (K) this;
+    }
+
     @Override
     public int getFgColorAttrId() {
         return this.fgColorAttrId;
     }
 
-    /** 设置前景色属性 id */
     @Override
     public K setFgColorAttrId(int fgColorAttrId) {
         this.fgColorAttrId = fgColorAttrId;
@@ -74,13 +122,19 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
             return false;
         }
         BaseKey<?> that = (BaseKey<?>) o;
-        return this.disabled == that.disabled
+        return this.getIconResId() == that.getIconResId()
+               && Objects.equals(this.getLabel(), that.getLabel())
+               && this.disabled == that.disabled
                && this.fgColorAttrId == that.fgColorAttrId
                && this.bgColorAttrId == that.bgColorAttrId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.disabled, this.fgColorAttrId, this.bgColorAttrId);
+        return Objects.hash(this.getIconResId(),
+                            this.getLabel(),
+                            this.disabled,
+                            this.fgColorAttrId,
+                            this.bgColorAttrId);
     }
 }

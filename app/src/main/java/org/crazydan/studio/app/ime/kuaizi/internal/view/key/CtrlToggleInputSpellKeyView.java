@@ -45,8 +45,8 @@ public class CtrlToggleInputSpellKeyView extends KeyView<CtrlKey, View> {
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        if (key.getText() != null) {
-            String[] splits = key.getText().split(",");
+        if (key.getLabel() != null) {
+            String[] splits = key.getLabel().split(",");
             this.sourceView.setText(splits[0]);
             this.targetView.setText(splits[1]);
         }

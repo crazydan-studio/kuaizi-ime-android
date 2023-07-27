@@ -48,9 +48,9 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
         if (key.getIconResId() > 0) {
             ViewUtils.hide(this.fgTextView);
             ViewUtils.show(this.fgView).setImageResource(key.getIconResId());
-        } else if (key.getText() != null) {
+        } else if (key.getLabel() != null) {
             ViewUtils.hide(this.fgView);
-            ViewUtils.show(this.fgTextView).setText(key.getText());
+            ViewUtils.show(this.fgTextView).setText(key.getLabel());
 
             setTextColorByAttrId(this.fgTextView, key.getFgColorAttrId());
         } else {

@@ -42,8 +42,8 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
     public void bind(CharKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        String text = key.isDoubleSymbol() ? key.getText().replaceAll("^(.)", "$1 ") : key.getText();
-        this.fgView.setText(text);
+        String label = key.getLabel();
+        this.fgView.setText(label);
 
         float textSize = ScreenUtils.pxFromDimension(getContext(),
                                                      key.isSymbol()

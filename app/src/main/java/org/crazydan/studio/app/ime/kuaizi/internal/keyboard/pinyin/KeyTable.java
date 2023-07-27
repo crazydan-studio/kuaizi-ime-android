@@ -337,7 +337,7 @@ public class KeyTable {
             for (int j = 0; j < keys[i].length; j++) {
                 Key<?> key = keys[i][j];
                 if (!(key instanceof CharKey) //
-                    || !nextChars.contains(((CharKey) key).getText())) {
+                    || !nextChars.contains(key.getText())) {
                     keys[i][j] = null;
                 }
             }
@@ -397,7 +397,7 @@ public class KeyTable {
                     InputWord word = inputWords.get(wordIndex);
 
                     int bgAttrId = input_word_key_level_bg_colors[level];
-                    InputWordKey key = InputWordKey.word(word)
+                    InputWordKey key = InputWordKey.create(word)
                                                    .setFgColorAttrId(R.attr.input_word_key_fg_color)
                                                    .setBgColorAttrId(bgAttrId);
 
@@ -464,7 +464,13 @@ public class KeyTable {
                     Symbol symbol = symbols[symbolIndex];
 
                     int bgAttrId = input_word_key_level_bg_colors[level];
-                    CharKey key = symbol.isDoubled() ? doubleSymbolKey(symbol.getText()) : symbolKey(symbol.getText());
+                    String text = symbol.getText();
+                    CharKey key = symbol.isDoubled() ? doubleSymbolKey(text) : symbolKey(text);
+
+                    if (symbol.isDoubled()) {
+                        String label = text.charAt(0) + " " + text.charAt(1);
+                        key.setLabel(label);
+                    }
 
                     key.setFgColorAttrId(R.attr.input_word_key_fg_color).setBgColorAttrId(bgAttrId);
                     symbol.getReplacements().forEach(key::withReplacements);
@@ -485,7 +491,7 @@ public class KeyTable {
         return ctrlKey(type, null);
     }
 
-    public static CtrlKey ctrlKey(CtrlKey.Type type, String text) {
+    public static CtrlKey ctrlKey(CtrlKey.Type type, String label) {
         int iconResId = 0;
         int bgAttrId = 0;
         int fgAttrId = 0;
@@ -499,16 +505,19 @@ public class KeyTable {
             }
         }
 
-        CtrlKey key = text != null ? CtrlKey.create(type, text) : CtrlKey.create(type, iconResId);
-        return key.setBgColorAttrId(bgAttrId).setFgColorAttrId(fgAttrId);
+        return CtrlKey.create(type)
+                      .setLabel(label)
+                      .setIconResId(iconResId)
+                      .setBgColorAttrId(bgAttrId)
+                      .setFgColorAttrId(fgAttrId);
     }
 
     public static CtrlKey noopCtrlKey() {
         return noopCtrlKey(null);
     }
 
-    public static CtrlKey noopCtrlKey(String text) {
-        return CtrlKey.noop(text).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+    public static CtrlKey noopCtrlKey(String label) {
+        return CtrlKey.noop().setLabel(label).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
     }
 
     public static CharKey alphabetKey(String text) {
@@ -543,7 +552,7 @@ public class KeyTable {
             }
         }
 
-        return CharKey.create(type, text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+        return CharKey.create(type, text).setLabel(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
     }
 
     public static class Configure {

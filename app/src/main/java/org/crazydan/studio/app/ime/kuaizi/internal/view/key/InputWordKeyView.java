@@ -23,9 +23,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -38,8 +36,6 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class InputWordKeyView extends KeyView<InputWordKey, View> {
     private final TextView notationView;
     private final TextView wordView;
-    private final TextView charKeyView;
-    private final View charKeyBgView;
     private final View traditionalMarkView;
 
     public InputWordKeyView(@NonNull View itemView) {
@@ -47,8 +43,6 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         this.notationView = this.fgView.findViewById(R.id.notation_view);
         this.wordView = this.fgView.findViewById(R.id.word_view);
-        this.charKeyView = itemView.findViewById(R.id.char_key_view);
-        this.charKeyBgView = itemView.findViewById(R.id.char_key_bg_view);
         this.traditionalMarkView = itemView.findViewById(R.id.traditional_mark_view);
     }
 
@@ -56,22 +50,6 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         super.bind(key, orientation);
 
         InputWord inputWord = key.getWord();
-        CharKey charKey = key.getCharKey();
-
-        if (charKey != null) {
-            this.charKeyView.setText(charKey.getText());
-            // Note: 汉语标点符号右侧的空白较多，需向右移动以抵消空白
-            if (charKey.isSymbol()) {
-                this.charKeyView.setTranslationX(ScreenUtils.dpToPx(4));
-                this.charKeyView.setTranslationY(ScreenUtils.dpToPx(2));
-            }
-
-            setTextColorByAttrId(this.charKeyView, charKey.getFgColorAttrId());
-            ViewUtils.show(this.charKeyBgView);
-        } else {
-            this.charKeyView.setText("");
-            ViewUtils.hide(this.charKeyBgView);
-        }
 
         if (inputWord != null) {
             this.wordView.setText(inputWord.getValue());

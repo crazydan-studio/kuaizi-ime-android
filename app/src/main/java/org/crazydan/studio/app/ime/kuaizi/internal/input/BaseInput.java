@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -40,35 +38,27 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isLatin() {
-        if (isPinyin() || isEmotion() || isEmpty()) {
+        if (isPinyin()) {
             return false;
         }
 
         for (Key<?> key : this.keys) {
-            if (key instanceof CharKey) {
-                String text = ((CharKey) key).getText();
-                for (int i = 0; i < text.length(); i++) {
-                    if (!Character.isLetterOrDigit(text.charAt(i))) {
-                        return false;
-                    }
-                }
-            } else {
+            if (!key.isLatin()) {
                 return false;
             }
         }
-        return true;
+        return !isEmpty();
     }
 
     @Override
     public boolean isPinyin() {
-        return hasWord();
+        return false;
     }
 
     @Override
     public boolean isSymbol() {
         for (Key<?> key : this.keys) {
-            if (!(key instanceof CharKey) //
-                || !((CharKey) key).isSymbol()) {
+            if (!key.isSymbol()) {
                 return false;
             }
         }
@@ -77,7 +67,12 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isEmotion() {
-        return false;
+        for (Key<?> key : this.keys) {
+            if (!key.isEmotion()) {
+                return false;
+            }
+        }
+        return !isEmpty();
     }
 
     @Override
@@ -114,12 +109,7 @@ public abstract class BaseInput implements Input {
 
     @Override
     public List<String> getChars() {
-        return this.keys.stream()
-                        .map(k -> k instanceof CharKey
-                                  ? ((CharKey) k).getText()
-                                  : k instanceof CtrlKey ? ((CtrlKey) k).toText() : null)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+        return this.keys.stream().map(Key::getText).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override

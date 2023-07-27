@@ -30,26 +30,20 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-06
  */
 public class CharInput extends BaseInput {
-    private boolean emotion;
 
     public CharInput copy() {
         CharInput input = new CharInput();
         getKeys().forEach(input::appendKey);
 
-        input.emotion = this.emotion;
         input.setWord(getWord());
 
         return input;
     }
 
     @Override
-    public boolean isEmotion() {
-        return this.emotion;
-    }
-
-    public CharInput setEmotion(boolean emotion) {
-        this.emotion = emotion;
-        return this;
+    public boolean isPinyin() {
+        // TODO 调整为更准确的方式：当前仅拼音存在候选字
+        return hasWord();
     }
 
     /** 是否为拼音 平/翘舌 开头 */

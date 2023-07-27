@@ -127,7 +127,7 @@ public class Service extends InputMethodService implements InputMsgListener {
             && subtype != null //
             && ("en_US".equals(subtype.getLocale()) //
                 || "en_US".equals(subtype.getLanguageTag()))) {
-            keyboardType = Keyboard.Type.English;
+            keyboardType = Keyboard.Type.Latin;
         }
 
         this.imeView.keyboard.startInput(keyboardType);

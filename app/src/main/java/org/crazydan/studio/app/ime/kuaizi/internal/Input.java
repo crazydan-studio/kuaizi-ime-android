@@ -36,7 +36,7 @@ public interface Input {
     /** 是否为标点符号 */
     boolean isSymbol();
 
-    /** 是否为颜文字输入 */
+    /** 是否为表情符号 */
     boolean isEmotion();
 
     /** 是否为空输入 */

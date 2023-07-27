@@ -46,30 +46,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <!-- 构造一个椭圆背景 -->
-            <RelativeLayout
-                    android:id="@+id/char_key_bg_view"
-                    android:layout_width="18sp"
-                    android:layout_height="24sp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentStart="true"
-                    android:rotation="-30"
-                    android:translationX="-4sp"
-                    android:translationY="4sp"
-                    android:background="@drawable/bg_input_word_char_key_view">
-
-                <TextView
-                        android:id="@+id/char_key_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:layout_centerHorizontal="true"
-                        android:rotation="30"
-                        android:translationX="2sp"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-            </RelativeLayout>
-
             <TextView
                     android:id="@+id/word_view"
                     android:layout_width="wrap_content"

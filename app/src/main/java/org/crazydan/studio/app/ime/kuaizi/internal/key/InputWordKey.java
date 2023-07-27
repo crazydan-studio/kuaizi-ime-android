@@ -30,16 +30,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class InputWordKey extends BaseKey<InputWordKey> {
     private final InputWord word;
-    private CharKey charKey;
 
-    private int fgColorAttrId;
+    public static InputWordKey create(InputWord word) {
+        return new InputWordKey(word);
+    }
 
     private InputWordKey(InputWord word) {
         this.word = word;
-    }
-
-    public static InputWordKey word(InputWord word) {
-        return new InputWordKey(word);
     }
 
     public boolean hasWord() {
@@ -48,29 +45,6 @@ public class InputWordKey extends BaseKey<InputWordKey> {
 
     public InputWord getWord() {
         return this.word;
-    }
-
-    public boolean hasCharKey() {
-        return this.charKey != null;
-    }
-
-    public CharKey getCharKey() {
-        return this.charKey;
-    }
-
-    public void setCharKey(CharKey key) {
-        this.charKey = key;
-    }
-
-    /** 获取前景色属性 id */
-    public int getFgColorAttrId() {
-        return this.fgColorAttrId;
-    }
-
-    /** 设置前景色属性 id */
-    public InputWordKey setFgColorAttrId(int fgColorAttrId) {
-        this.fgColorAttrId = fgColorAttrId;
-        return this;
     }
 
     @Override
@@ -95,13 +69,11 @@ public class InputWordKey extends BaseKey<InputWordKey> {
             return false;
         }
         InputWordKey that = (InputWordKey) o;
-        return this.fgColorAttrId == that.fgColorAttrId
-               && Objects.equals(this.word, that.word)
-               && Objects.equals(this.charKey, that.charKey);
+        return Objects.equals(this.word, that.word);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), this.word, this.charKey, this.fgColorAttrId);
+        return Objects.hash(super.hashCode(), this.word);
     }
 }

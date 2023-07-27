@@ -25,6 +25,18 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  */
 public interface Key<K extends Key<?>> {
 
+    /** 是否为英文或数字 */
+    boolean isLatin();
+
+    /** 是否为数字 */
+    boolean isNumber();
+
+    /** 是否为标点符号 */
+    boolean isSymbol();
+
+    /** 是否为表情符号 */
+    boolean isEmotion();
+
     /** 是否与指定的按键相同：即实例不同但按键类型和符号相同 */
     boolean isSameWith(Key<?> key);
 
@@ -33,6 +45,25 @@ public interface Key<K extends Key<?>> {
 
     /** 设置为禁用 */
     K setDisabled(boolean disabled);
+
+    /**
+     * 获取按键对应的文本字符
+     * <p/>
+     * 若其不对应任何字符，则返回 <code>null</code>
+     */
+    String getText();
+
+    /** 按键上显示的文字内容 */
+    String getLabel();
+
+    /** 设置按键上显示的文字内容 */
+    K setLabel(String label);
+
+    /** 按键上显示的图标资源 id */
+    int getIconResId();
+
+    /** 设置按键上显示的图标资源 id */
+    K setIconResId(int iconResId);
 
     /** 获取前景色属性 id */
     int getFgColorAttrId();
