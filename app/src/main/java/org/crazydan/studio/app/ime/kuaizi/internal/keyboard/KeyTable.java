@@ -180,19 +180,19 @@ public class KeyTable {
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),
                                    new Integer[] { R.attr.key_char_final_fg_color, R.attr.key_char_final_bg_color });
-        char_key_color_palette.put(Arrays.asList("r", "f", "m", "p", "d", "b", "t", "y"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("f", "l", "m", "j", "k"), new Integer[] {
                 R.attr.key_char_initial_fg_color, R.attr.key_char_initial_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("j", "q", "x"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("w", "p", "q", "d", "b"), new Integer[] {
                 R.attr.key_char_initial_jqx_fg_color, R.attr.key_char_initial_jqx_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("s", "c", "z"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("s", "c", "z", "t"), new Integer[] {
                 R.attr.key_char_initial_scz_fg_color, R.attr.key_char_initial_scz_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("g", "w", "k"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("x", "y"), new Integer[] {
                 R.attr.key_char_initial_hgwk_fg_color, R.attr.key_char_initial_hgwk_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("h", "n", "l"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("r", "g", "h", "n"), new Integer[] {
                 R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
         });
         char_key_color_palette.put(Arrays.asList("：", "！", "？", "；", "，", "。"), new Integer[] {
@@ -268,7 +268,7 @@ public class KeyTable {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchIME),
-                        symbolKey("：").withReplacements(":"),
+                        alphabetKey("ü").withReplacements("v", "V"),
                         alphabetKey("i").withReplacements("I"),
                         alphabetKey("a").withReplacements("A"),
                         alphabetKey("e").withReplacements("E"),
@@ -276,48 +276,48 @@ public class KeyTable {
                         alphabetKey("u").withReplacements("U"),
                         } //
                 , new Key[] {
-                symbolKey("！").withReplacements("!"),
-                alphabetKey("ü").withReplacements("v", "V"),
-                alphabetKey("j").withReplacements("J"),
-                alphabetKey("q").withReplacements("Q"),
+                ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
+                alphabetKey("n").withReplacements("N"),
+                alphabetKey("r").withReplacements("R"),
+                alphabetKey("x").withReplacements("X"),
                 alphabetKey("s").withReplacements("S"),
-                alphabetKey("z").withReplacements("Z"),
+                alphabetKey("t").withReplacements("T"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
-                symbolKey("？").withReplacements("?"),
-                alphabetKey("x").withReplacements("X"),
-                alphabetKey("l").withReplacements("L"),
+                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("g").withReplacements("G"),
+                alphabetKey("h").withReplacements("H"),
+                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("z").withReplacements("Z"),
                 alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                symbolKey("；").withReplacements(";"),
-                alphabetKey("n").withReplacements("N"),
-                alphabetKey("h").withReplacements("H"),
+                noopCtrlKey(),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("j").withReplacements("J"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("w").withReplacements("W"),
-                alphabetKey("k").withReplacements("K"),
+                alphabetKey("b").withReplacements("B"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                symbolKey("，").withReplacements(","),
-                alphabetKey("r").withReplacements("R"),
-                alphabetKey("f").withReplacements("F"),
+                alphabetKey("l").withReplacements("L"),
                 alphabetKey("m").withReplacements("M"),
+                alphabetKey("k").withReplacements("K"),
                 alphabetKey("p").withReplacements("P"),
-                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
+                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("d").withReplacements("D"),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                symbolKey("：").withReplacements(":"),
+                symbolKey("！").withReplacements("!"),
+                symbolKey("？").withReplacements("?"),
+                symbolKey("；").withReplacements(";"),
+                symbolKey("，").withReplacements(","),
                 symbolKey("。").withReplacements("."),
-                alphabetKey("d").withReplacements("D"),
-                alphabetKey("b").withReplacements("B"),
-                alphabetKey("t").withReplacements("T"),
-                alphabetKey("y").withReplacements("Y"),
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 },
                 };
@@ -503,7 +503,7 @@ public class KeyTable {
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.Math_Equal, "=");
-        gridKeys[4][6] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[2][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
 
         int keyIndex = 0;
         for (int level = 0; level < math_key_around_level_coords.length; level++) {

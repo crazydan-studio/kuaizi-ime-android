@@ -111,15 +111,12 @@ public class Service extends InputMethodService implements InputMsgListener {
             default:
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
-                    keyboardType = Keyboard.Type.Latin;
-                    singleLineInput = true;
-                }
-
-                if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    || variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
                     || variation == InputType.TYPE_TEXT_VARIATION_URI
                     || variation == InputType.TYPE_TEXT_VARIATION_FILTER
                     || (attribute.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) != 0) {
+                    keyboardType = Keyboard.Type.Latin;
                     singleLineInput = true;
                 }
         }
