@@ -116,6 +116,10 @@ public class KeyViewAnimator extends DefaultItemAnimator {
         }
     }
 
+    public void clearFadeOutKey() {
+        this.fadeOutKeys.clear();
+    }
+
     private boolean needToFadeOut(RecyclerView.ViewHolder holder) {
         return holder instanceof KeyView //
                && this.fadeOutKeys.contains(((KeyView<?, ?>) holder).getKey());

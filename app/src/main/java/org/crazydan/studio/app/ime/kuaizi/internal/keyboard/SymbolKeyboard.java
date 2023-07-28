@@ -78,8 +78,6 @@ public class SymbolKeyboard extends BaseKeyboard {
             Symbol.single("、"),
             Symbol.doubled("‘’").withReplacements("''"),
             Symbol.doubled("“”").withReplacements("\"\""),
-            Symbol.doubled("﹁﹂"),
-            Symbol.doubled("﹃﹄"),
             Symbol.doubled("「」"),
             Symbol.doubled("『』"),
             Symbol.doubled("（）").withReplacements("()"),
@@ -114,13 +112,36 @@ public class SymbolKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        Key<?> key = data.target;
+        if (try_OnUserKeyMsg(msg, data)) {
+            return;
+        }
 
+        Key<?> key = data.target;
         if (key instanceof CharKey) {
             onCharKeyMsg(msg, (CharKey) key, data);
         } else if (key instanceof CtrlKey) {
             onCtrlKeyMsg(msg, (CtrlKey) key, data);
         }
+    }
+
+    @Override
+    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
+        commit_InputList();
+    }
+
+    @Override
+    protected void on_CtrlKey_Backspace(CtrlKey key) {
+        backspace_InputList_or_InputTarget();
+    }
+
+    @Override
+    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {
+        confirm_Input_Enter_or_Space(key);
+    }
+
+    @Override
+    protected void before_Commit_InputList() {
+        // nothing to do
     }
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
@@ -145,23 +166,10 @@ public class SymbolKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
-
                 switch (key.getType()) {
                     case Exit: {
+                        play_InputtingSingleTick_Audio(key);
                         switch_Keyboard(Type.Pinyin);
-                        break;
-                    }
-                    case Backspace: {
-                        backspace_InputList_or_InputTarget();
-                        break;
-                    }
-                    case Enter: {
-                        confirm_Input_Enter_or_Space(key);
-                        break;
-                    }
-                    case CommitInputList: {
-                        commit_InputList();
                         break;
                     }
                 }
@@ -173,11 +181,6 @@ public class SymbolKeyboard extends BaseKeyboard {
         }
     }
 
-    @Override
-    protected void before_Commit_InputList() {
-        // nothing to do
-    }
-
     private void doSingleKeyInputting(CharKey key) {
         boolean continueInputting = !getInputList().isEmpty();
 
@@ -185,7 +188,7 @@ public class SymbolKeyboard extends BaseKeyboard {
         if (key.isDoubleSymbol()) {
             // 拆分成两个 Key 插入到输入列表
             CharKey leftKey = KeyTable.symbolKey(key.getText().substring(0, 1));
-            CharKey rightKey = KeyTable.symbolKey(key.getText().substring(1, 2));
+            CharKey rightKey = KeyTable.symbolKey(key.getText().substring(1));
 
             input.appendKey(leftKey);
             input = getInputList().newPending();

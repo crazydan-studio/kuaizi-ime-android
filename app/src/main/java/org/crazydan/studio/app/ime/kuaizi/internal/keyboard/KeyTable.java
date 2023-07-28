@@ -53,7 +53,7 @@ public class KeyTable {
             };
 
     /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
-    private static final int[][][] input_word_key_level_coords = new int[][][] {
+    private static final int[][][] input_word_key_around_level_coords = new int[][][] {
             //// level 0
             //new int[][] { new int[] { 3, 3 }, },
             // level 1
@@ -108,7 +108,7 @@ public class KeyTable {
     };
 
     /** 以 输入定位按键 为中心的从内到外的标点符号环形布局坐标 */
-    private static final int[][][] symbol_key_level_coords = new int[][][] {
+    private static final int[][][] symbol_key_around_level_coords = new int[][][] {
             // level 1
             new int[][] {
                     new int[] { 2, 3 },
@@ -140,8 +140,8 @@ public class KeyTable {
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
-                    new int[] { 2, 6 },
-                    new int[] { 4, 6 },
+                    //new int[] { 2, 6 },
+                    //new int[] { 4, 6 },
                     new int[] { 5, 5 },
                     new int[] { 5, 1 },
                     new int[] { 4, 1 },
@@ -149,15 +149,34 @@ public class KeyTable {
                     new int[] { 2, 1 },
                     new int[] { 1, 1 },
                     },
-//            // level 4
-//            new int[][] {
-//                    new int[] { 5, 0 }, //
-//                    new int[] { 4, 0 }, //
-//                    new int[] { 2, 0 }, //
-//                    new int[] { 1, 0 }, //
-//                    new int[] { 0, 1 },
-//                    },
-    };
+            };
+
+    /** 以 等号按键 为中心的从内到外的数学按键环形布局坐标 */
+    private static final int[][][] math_key_around_level_coords = new int[][][] {
+            // level 1
+            new int[][] {
+                    new int[] { 2, 4 },
+                    new int[] { 3, 4 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 3, 2 },
+                    new int[] { 2, 3 },
+                    new int[] { 1, 3 },
+                    },
+            // level 2
+            new int[][] {
+                    new int[] { 0, 4 },
+                    new int[] { 1, 4 },
+                    new int[] { 2, 5 },
+                    new int[] { 3, 5 },
+                    new int[] { 4, 5 },
+                    new int[] { 4, 2 },
+                    new int[] { 3, 1 },
+                    new int[] { 2, 2 },
+                    new int[] { 1, 2 },
+                    new int[] { 0, 3 },
+                    },
+            };
 
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),
@@ -194,8 +213,8 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
                 R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
         });
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToNumericKeyboard, new Integer[] {
-                R.drawable.ic_abacus, R.attr.key_ctrl_switch_to_numeric_keyboard_bg_color
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToMathKeyboard, new Integer[] {
+                R.drawable.ic_calculator, R.attr.key_ctrl_switch_to_math_keyboard_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard, new Integer[] {
                 R.drawable.ic_symbol, R.attr.key_ctrl_switch_to_symbol_keyboard_bg_color
@@ -225,6 +244,8 @@ public class KeyTable {
                 -1, R.attr.key_ctrl_toggle_input_spell_bg_color
         });
 
+        ctrl_key_styles.put(CtrlKey.Type.NoOp,
+                            new Integer[] { -1, R.attr.key_ctrl_noop_bg_color, R.attr.key_ctrl_noop_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Undo,
                             new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Redo,
@@ -235,6 +256,9 @@ public class KeyTable {
                             new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Copy,
                             new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+
+        ctrl_key_styles.put(CtrlKey.Type.Math_Equal,
+                            new Integer[] { -1, R.attr.key_ctrl_locator_bg_color, R.attr.key_ctrl_locator_fg_color });
     }
 
     /** 创建基础按键 */
@@ -286,7 +310,7 @@ public class KeyTable {
                 alphabetKey("f").withReplacements("F"),
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("p").withReplacements("P"),
-                ctrlKey(CtrlKey.Type.SwitchToNumericKeyboard).setDisabled(true),
+                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
@@ -332,7 +356,7 @@ public class KeyTable {
     /** 候选字按键的分页大小 */
     public static int getInputCandidateKeysPageSize() {
         int size = 0;
-        for (int[][] level : input_word_key_level_coords) {
+        for (int[][] level : input_word_key_around_level_coords) {
             size += level.length;
         }
         return size;
@@ -370,8 +394,8 @@ public class KeyTable {
         }
 
         int wordIndex = startIndex;
-        for (int level = 0; level < input_word_key_level_coords.length; level++) {
-            int[][] keyCoords = input_word_key_level_coords[level];
+        for (int level = 0; level < input_word_key_around_level_coords.length; level++) {
+            int[][] keyCoords = input_word_key_around_level_coords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -433,6 +457,7 @@ public class KeyTable {
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : ctrlKey(CtrlKey.Type.Enter);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
@@ -442,8 +467,8 @@ public class KeyTable {
                                      + ((int) Math.ceil(symbols.length / (pageSize * 1.0))));
 
         int symbolIndex = startIndex;
-        for (int level = 0; level < symbol_key_level_coords.length; level++) {
-            int[][] keyCoords = symbol_key_level_coords[level];
+        for (int level = 0; level < symbol_key_around_level_coords.length; level++) {
+            int[][] keyCoords = symbol_key_around_level_coords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -476,29 +501,64 @@ public class KeyTable {
         return gridKeys;
     }
 
+    /** 创建数学键盘按键 */
+    public static Key<?>[][] createMathKeys(Keyboard.KeyFactory.Option option, Configure config, Key<?>[] keys) {
+        Key<?>[][] gridKeys = new Key[6][7];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
+        gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : ctrlKey(CtrlKey.Type.Enter);
+        gridKeys[3][3] = ctrlKey(CtrlKey.Type.Math_Equal, "=");
+        gridKeys[4][6] = ctrlKey(CtrlKey.Type.Exit);
+
+        int keyIndex = 0;
+        for (int level = 0; level < math_key_around_level_coords.length; level++) {
+            int[][] keyCoords = math_key_around_level_coords[level];
+
+            for (int[] keyCoord : keyCoords) {
+                int x = keyCoord[0];
+                int y = keyCoord[1];
+
+                if (keyIndex < keys.length) {
+                    Key<?> key = keys[keyIndex];
+
+                    int bgAttrId = key_char_around_level_bg_colors[level];
+                    key.setFgColorAttrId(R.attr.key_char_around_fg_color).setBgColorAttrId(bgAttrId);
+
+                    gridKeys[x][y] = key;
+                } else {
+                    break;
+                }
+
+                keyIndex += 1;
+            }
+        }
+
+        return gridKeys;
+    }
+
     public static CtrlKey ctrlKey(CtrlKey.Type type) {
         return ctrlKey(type, null);
     }
 
     public static CtrlKey ctrlKey(CtrlKey.Type type, String label) {
+        return ctrlKey(CtrlKey.create(type).setLabel(label));
+    }
+
+    public static CtrlKey ctrlKey(CtrlKey key) {
         int iconResId = 0;
         int bgAttrId = 0;
         int fgAttrId = 0;
-        for (Map.Entry<CtrlKey.Type, Integer[]> entry : ctrl_key_styles.entrySet()) {
-            Integer[] configs = entry.getValue();
-            if (entry.getKey() == type) {
-                iconResId = configs[0];
-                bgAttrId = configs[1];
-                fgAttrId = configs.length > 2 ? configs[2] : 0;
-                break;
-            }
+
+        Integer[] configs = ctrl_key_styles.get(key.getType());
+        if (configs != null) {
+            iconResId = configs[0];
+            bgAttrId = configs[1];
+            fgAttrId = configs.length > 2 ? configs[2] : 0;
         }
 
-        return CtrlKey.create(type)
-                      .setLabel(label)
-                      .setIconResId(iconResId)
-                      .setBgColorAttrId(bgAttrId)
-                      .setFgColorAttrId(fgAttrId);
+        return key.setIconResId(iconResId).setBgColorAttrId(bgAttrId).setFgColorAttrId(fgAttrId);
     }
 
     public static CtrlKey noopCtrlKey() {
@@ -506,7 +566,7 @@ public class KeyTable {
     }
 
     public static CtrlKey noopCtrlKey(String label) {
-        return CtrlKey.noop().setLabel(label).setBgColorAttrId(R.attr.key_ctrl_noop_bg_color);
+        return ctrlKey(CtrlKey.noop().setLabel(label));
     }
 
     public static CharKey alphabetKey(String text) {
@@ -522,18 +582,23 @@ public class KeyTable {
     }
 
     private static CharKey charKey(CharKey.Type type, String text) {
+        return charKey(CharKey.create(type, text).setLabel(text));
+    }
+
+    private static CharKey charKey(CharKey key) {
         int fgAttrId = 0;
         int bgAttrId = 0;
+
         for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {
             Integer[] configs = entry.getValue();
-            if (entry.getKey().contains(text)) {
+            if (entry.getKey().contains(key.getText())) {
                 fgAttrId = configs[0];
                 bgAttrId = configs[1];
                 break;
             }
         }
 
-        return CharKey.create(type, text).setLabel(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+        return key.setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
     }
 
     public static class Configure {

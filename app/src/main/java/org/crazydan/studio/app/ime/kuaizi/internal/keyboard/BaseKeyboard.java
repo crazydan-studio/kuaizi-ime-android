@@ -23,14 +23,22 @@ import java.util.Set;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -91,11 +99,61 @@ public abstract class BaseKeyboard implements Keyboard {
         return new KeyTable.Configure(getHandMode(), !getInputList().isEmpty());
     }
 
+    /**
+     * 尝试对 {@link UserKeyMsg} 做处理
+     * <p/>
+     * 若返回 <code>true</code>，则表示已处理，否则，返回 <code>false</code>
+     */
+    protected boolean try_OnUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        Key<?> key = data.target;
+
+        switch (this.state.type) {
+            case InputTarget_Cursor_Locating: {
+                on_LocatingInputTargetCursor_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                return true;
+            }
+            case Input_Waiting: {
+                if (key instanceof CtrlKey) {
+                    return try_OnCtrlKeyMsg(msg, (CtrlKey) key, data);
+                }
+                break;
+            }
+        }
+
+        return false;
+    }
+
     /** 当前字符输入已完成，等待新的输入 */
     protected void end_InputChars_Inputting() {
         this.state = new State(State.Type.Input_Waiting);
 
         fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+    }
+
+    /**
+     * 触发按键输入消息
+     * <p/>
+     * 注：键盘的{@link #state 状态}不变
+     */
+    protected void do_InputChars_Inputting(Keyboard.KeyFactory keyFactory, Key<?> key) {
+        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, key);
+        fireInputMsg(InputMsg.InputChars_Inputting, data);
+    }
+
+    /**
+     * 追加按键到持续输入，即，在当前输入上持续添加字符
+     * <p/>
+     * 注：键盘的{@link #state 状态}不变
+     */
+    protected void append_Key_for_Continuous_InputChars_Inputting(Key<?> key) {
+        if (getInputList().hasEmptyPending()) {
+            getInputList().newPending();
+        }
+
+        CharInput input = getInputList().getPending();
+        input.appendKey(key);
+
+        do_InputChars_Inputting(getKeyFactory(), key);
     }
 
     /** 确认当前输入 */
@@ -141,7 +199,6 @@ public abstract class BaseKeyboard implements Keyboard {
         getInputList().empty();
 
         InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), text);
-
         fireInputMsg(InputMsg.InputList_Committing, data);
     }
 
@@ -194,7 +251,6 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 播放输入翻页音效 */
     protected void play_InputPageFlipping_Audio() {
         InputMsgData data = new InputAudioPlayingMsgData(InputAudioPlayingMsgData.AudioType.PageFlip);
-
         fireInputMsg(InputMsg.InputAudio_Playing, data);
     }
 
@@ -205,7 +261,214 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         InputMsgData data = new InputAudioPlayingMsgData(audioType);
-
         fireInputMsg(InputMsg.InputAudio_Playing, data);
     }
+
+    /** 处理 {@link CtrlKey.Type#CommitInputList} 控制按键点击事件 */
+    protected abstract void on_CtrlKey_CommitInputList(CtrlKey key);
+
+    /** 处理 {@link CtrlKey.Type#Backspace} 控制按键点击事件 */
+    protected abstract void on_CtrlKey_Backspace(CtrlKey key);
+
+    /** 处理 {@link CtrlKey.Type#Space} 或 {@link CtrlKey.Type#Enter} 控制按键点击事件 */
+    protected abstract void on_CtrlKey_Space_or_Enter(CtrlKey key);
+
+    /** 尝试处理控制按键消息 */
+    private boolean try_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    // 定位按钮不响应单击和双击操作
+                    case LocateInputCursor:
+                        return true;
+                    case CommitInputList: {
+                        play_InputtingSingleTick_Audio(key);
+                        on_CtrlKey_CommitInputList(key);
+                        return true;
+                    }
+                    case Backspace: {
+                        play_InputtingSingleTick_Audio(key);
+                        on_CtrlKey_Backspace(key);
+                        return true;
+                    }
+                    case Space:
+                    case Enter: {
+                        play_InputtingSingleTick_Audio(key);
+                        on_CtrlKey_Space_or_Enter(key);
+                        return true;
+                    }
+                }
+                break;
+            }
+            case KeyLongPressStart: {
+                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+                    play_InputtingDoubleTick_Audio(key);
+                    do_InputTarget_Cursor_Locating(key, null);
+                    return true;
+                }
+                break;
+            }
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Space:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        return try_OnCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                }
+                break;
+            }
+            case FingerSlipping: {
+                // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
+                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                    play_InputtingSingleTick_Audio(key);
+
+                    Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
+                    InputMsgData idata = new InputTargetCursorLocatingMsgData(null, key, anchor);
+                    fireInputMsg(InputMsg.InputTarget_Cursor_Locating, idata);
+
+                    return true;
+                }
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    // <<<<<< 输入定位逻辑
+    private void on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    // 点击 退出 按钮，则退回到输入状态
+                    case Exit:
+                        play_InputtingSingleTick_Audio(key);
+
+                        end_InputChars_Inputting();
+                        break;
+                    case Backspace:
+                        play_InputtingSingleTick_Audio(key);
+
+                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(null));
+                        break;
+                    case Enter:
+                        play_InputtingSingleTick_Audio(key);
+
+                        InputMsgData msgData = new InputListCommittingMsgData(null, "\n");
+                        fireInputMsg(InputMsg.InputList_Committing, msgData);
+                        break;
+                    case Redo:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_InputTarget_Redoing();
+                        break;
+                    case Undo:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_InputTarget_Undoing();
+                        break;
+                    case Cut:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_InputTarget_Cutting();
+                        break;
+                    case Paste:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_InputTarget_Pasting();
+                        break;
+                    case Copy:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_InputTarget_Copying();
+                        break;
+                }
+                break;
+            }
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                        break;
+                }
+                break;
+            }
+            case FingerSlipping:
+                // Note: 仅在 按键 上的滑动才有效
+                if (key != null) {
+                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                    switch (key.getType()) {
+                        case LocateInputCursor_Locator:
+                            play_InputtingSingleTick_Audio(key);
+
+                            do_InputTarget_Cursor_Locating(key, motion);
+                            break;
+                        case LocateInputCursor_Selector:
+                            play_InputtingSingleTick_Audio(key);
+
+                            do_InputTarget_Selecting(key, motion);
+                            break;
+                    }
+                }
+                break;
+        }
+    }
+
+    private void do_InputTarget_Cursor_Locating(CtrlKey key, Motion motion) {
+        KeyFactory keyFactory = null;
+        LocatingInputCursorStateData stateData;
+
+        if (this.state.type != State.Type.InputTarget_Cursor_Locating) {
+            stateData = new LocatingInputCursorStateData();
+            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
+
+            this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData);
+        } else {
+            stateData = (LocatingInputCursorStateData) this.state.data;
+            stateData.updateLocator(motion);
+        }
+
+        InputMsgData data = new InputTargetCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
+        fireInputMsg(InputMsg.InputTarget_Cursor_Locating, data);
+    }
+
+    private void do_InputTarget_Selecting(CtrlKey key, Motion motion) {
+        LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
+        stateData.updateSelector(motion);
+
+        InputMsgData data = new InputTargetCursorLocatingMsgData(null, key, stateData.getSelector());
+        fireInputMsg(InputMsg.InputTarget_Selecting, data);
+    }
+
+    private void do_InputTarget_Copying() {
+        InputMsgData data = new InputCommonMsgData(null);
+        fireInputMsg(InputMsg.InputTarget_Copying, data);
+    }
+
+    private void do_InputTarget_Pasting() {
+        InputMsgData data = new InputCommonMsgData(null);
+        fireInputMsg(InputMsg.InputTarget_Pasting, data);
+    }
+
+    private void do_InputTarget_Cutting() {
+        InputMsgData data = new InputCommonMsgData(null);
+        fireInputMsg(InputMsg.InputTarget_Cutting, data);
+    }
+
+    private void do_InputTarget_Undoing() {
+        InputMsgData data = new InputCommonMsgData(null);
+        fireInputMsg(InputMsg.InputTarget_Undoing, data);
+    }
+
+    private void do_InputTarget_Redoing() {
+        InputMsgData data = new InputCommonMsgData(null);
+        fireInputMsg(InputMsg.InputTarget_Redoing, data);
+    }
+    // >>>>>>>>
 }

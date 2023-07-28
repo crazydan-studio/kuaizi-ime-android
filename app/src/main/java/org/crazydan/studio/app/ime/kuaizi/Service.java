@@ -123,12 +123,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
         Keyboard.Type keyboardType = this.imeKeyboardType;
-        if (keyboardType == Keyboard.Type.Pinyin //
-            && subtype != null //
-            && ("en_US".equals(subtype.getLocale()) //
-                || "en_US".equals(subtype.getLanguageTag()))) {
-            keyboardType = Keyboard.Type.Latin;
-        }
 
         this.imeView.keyboard.startInput(keyboardType);
     }

@@ -63,6 +63,15 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return " ";
             case Enter:
                 return "\n";
+            case Math_Plus:
+            case Math_Minus:
+            case Math_Multiply:
+            case Math_Divide:
+            case Math_Equal:
+                return " " + getLabel() + " ";
+            case Math_Dot:
+            case Math_Percent:
+                return getLabel();
             default:
                 return null;
         }
@@ -151,9 +160,26 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 重做 */
         Redo,
 
-        /** 切换至数字键盘 */
-        SwitchToNumericKeyboard,
-        /** 切换至标点符号键盘: 在拼音键盘中，先选中中文标点，在字母数字键盘时，先选中英文标点 */
+        /** 切换至计算器键盘 */
+        SwitchToMathKeyboard,
+        /** 切换至标点符号键盘 */
         SwitchToSymbolKeyboard,
+
+        /** 数学 = */
+        Math_Equal,
+        /** 数学 + */
+        Math_Plus,
+        /** 数学 - */
+        Math_Minus,
+        /** 数学 × */
+        Math_Multiply,
+        /** 数学 ÷ */
+        Math_Divide,
+        /** 数学 % */
+        Math_Percent,
+        /** 数学 () */
+        Math_Brackets,
+        /** 数学 . */
+        Math_Dot,
     }
 }

@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -41,9 +42,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
@@ -124,6 +125,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case Symbol:
                 if (!(this.keyboard instanceof SymbolKeyboard)) {
                     this.keyboard = new SymbolKeyboard();
+                }
+                break;
+            case Math:
+                if (!(this.keyboard instanceof MathKeyboard)) {
+                    this.keyboard = new MathKeyboard();
                 }
                 break;
             default:
@@ -221,6 +227,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         int rows = keys.length;
         this.layoutManager.configGrid(columns, rows, this.keySpacing);
 
+        this.animator.clearFadeOutKey();
         doRelayoutKeys(keys);
     }
 

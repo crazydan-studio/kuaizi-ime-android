@@ -62,7 +62,7 @@ public class CharKey extends BaseKey<CharKey> {
     /** 添加可替换内容，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等 */
     public CharKey withReplacements(String... replacements) {
         for (String s : replacements) {
-            if (s != null && !s.isEmpty()) {
+            if (s != null && !s.isEmpty() && !this.replacements.contains(s)) {
                 this.replacements.add(s);
             }
         }
@@ -115,6 +115,7 @@ public class CharKey extends BaseKey<CharKey> {
 
     /** 是否为双标点 */
     public boolean isDoubleSymbol() {
+        // TODO 配对符号按键支持在其下挂多层组合按键
         return this.type == Type.DoubleSymbol;
     }
 

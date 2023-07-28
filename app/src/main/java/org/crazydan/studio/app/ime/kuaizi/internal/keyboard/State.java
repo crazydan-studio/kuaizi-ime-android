@@ -45,7 +45,7 @@ public class State {
         SlippingInput,
 
         /** 输入组件光标定位：含移动光标和文本选择 */
-        LocatingInputCursor,
+        InputTarget_Cursor_Locating,
 
         /** 输入候选字选择中 */
         ChoosingInputCandidate,

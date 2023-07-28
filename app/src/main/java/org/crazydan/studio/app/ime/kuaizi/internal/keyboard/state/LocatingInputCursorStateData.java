@@ -22,7 +22,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 
 /**
- * {@link State.Type#LocatingInputCursor}的状态数据
+ * {@link State.Type#InputTarget_Cursor_Locating}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-19

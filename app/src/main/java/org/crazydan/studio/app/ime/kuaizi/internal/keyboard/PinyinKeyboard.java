@@ -31,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingInputCandidateStateData;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
@@ -39,10 +38,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -77,6 +74,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        if (try_OnUserKeyMsg(msg, data)) {
+            return;
+        }
+
         Key<?> key = data.target;
         switch (this.state.type) {
             case SlippingInput:
@@ -91,9 +92,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     onInputCandidatesPageSlippingMsg(msg, key, data);
                 }
                 break;
-            case LocatingInputCursor:
-                onLocatingInputCursorCtrlKeyMsg(msg, (CtrlKey) key, data);
-                break;
             default:
                 if (key instanceof CharKey) {
                     onCharKeyMsg(msg, (CharKey) key, data);
@@ -101,6 +99,28 @@ public class PinyinKeyboard extends BaseKeyboard {
                     onCtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
         }
+    }
+
+    @Override
+    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
+        commit_InputList();
+    }
+
+    @Override
+    protected void on_CtrlKey_Backspace(CtrlKey key) {
+        backspace_InputList_or_InputTarget();
+    }
+
+    @Override
+    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {
+        confirm_Input_Enter_or_Space(key);
+    }
+
+    @Override
+    protected void before_Commit_InputList() {
+        // 本地更新用户选字频率
+        List<List<InputWord>> phrases = getInputList().getPinyinPhrases(false);
+        this.pinyinDict.saveUsedPhrases(phrases);
     }
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
@@ -115,7 +135,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     play_InputtingDoubleTick_Audio(key);
 
-                    onContinuousInput(input, data.target, null, true);
+                    onContinuousInput(input, data.target, true);
                 }
                 break;
             }
@@ -153,7 +173,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 if (key != null || closedKey != null) {
                     // Note: 第二个参数传事件触发的实际 key，而不是当前的 charkey
-                    onContinuousInput(input, data.target, closedKey, true);
+                    onContinuousInput(input, data.target, true);
                 }
                 break;
             }
@@ -174,63 +194,21 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
-                if (key.getType() != CtrlKey.Type.LocateInputCursor) {
-                    play_InputtingSingleTick_Audio(key);
-                }
+                play_InputtingSingleTick_Audio(key);
 
                 switch (key.getType()) {
-                    case CommitInputList: {
-                        commit_InputList();
-                        break;
-                    }
-                    case Backspace: {
-                        backspace_InputList_or_InputTarget();
-                        break;
-                    }
-                    case Space:
-                    case Enter: {
-                        confirm_Input_Enter_or_Space(key);
-                        break;
-                    }
                     case SwitchIME: {
-                        onSwitchingIME();
+                        switch_IME();
                         break;
                     }
                     case SwitchToSymbolKeyboard: {
                         switch_Keyboard(Type.Symbol);
                         break;
                     }
-                }
-                break;
-            }
-            case KeyLongPressStart: {
-                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
-                    play_InputtingDoubleTick_Audio(key);
-
-                    onLocatingInputCursor(key, null);
-                }
-                break;
-            }
-            case KeyLongPressTick: {
-                switch (key.getType()) {
-                    case Backspace:
-                    case Space:
-                    case Enter:
-                        // 长按 tick 视为连续单击
-                        onCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                    case SwitchToMathKeyboard: {
+                        switch_Keyboard(Type.Math);
                         break;
-                }
-                break;
-            }
-            case FingerSlipping: {
-                // 在定位切换按钮上滑动也可以移动光标
-                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
-                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
-                    play_InputtingSingleTick_Audio(key);
-
-                    Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
-                    InputMsgData idata = new InputTargetCursorLocatingMsgData(null, key, anchor);
-                    fireInputMsg(InputMsg.InputTarget_Cursor_Locating, idata);
+                    }
                 }
                 break;
             }
@@ -384,7 +362,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         input.replaceLatestKey(latestCharKey, newKey);
 
         this.state = new State(State.Type.Input_Waiting);
-        onContinuousInput(input, key, null, false);
+        onContinuousInput(input, key, false);
     }
 
     private void doSingleKeyInputting(CharInput input, CharKey key) {
@@ -410,13 +388,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                 this.state = new State(State.Type.Input_Waiting);
 
                 input.appendKey(key);
-                onContinuousInput(input, key, null, false);
+                onContinuousInput(input, key, false);
                 break;
             }
         }
     }
 
-    private void onContinuousInput(CharInput input, Key<?> currentKey, Key<?> closedKey, boolean isPinyin) {
+    private void onContinuousInput(CharInput input, Key<?> currentKey, boolean isPinyin) {
         Collection<String> nextChars = null;
         if (isPinyin) {
             nextChars = this.pinyinDict.findNextChar(input.getChars());
@@ -436,8 +414,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                       createKeyTableConfigure(),
                                                                       finalNextChars);
 
-        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, input.getKeys(), currentKey, closedKey);
-        fireInputMsg(InputMsg.InputChars_Inputting, data);
+        do_InputChars_Inputting(keyFactory, currentKey);
     }
 
     /** 重新进入候选字状态 */
@@ -485,7 +462,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                             createKeyTableConfigure(),
                                                                             input,
                                                                             stateData.getPageStart());
-        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, input.getKeys(), null, null);
+        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, null);
 
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);
     }
@@ -504,14 +481,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         onChoosingInputMsg(null, selected, null);
     }
 
-    @Override
-    protected void before_Commit_InputList() {
-        // 本地更新用户选字频率
-        List<List<InputWord>> phrases = getInputList().getPinyinPhrases(false);
-        this.pinyinDict.saveUsedPhrases(phrases);
-    }
-
-    private void onSwitchingIME() {
+    private void switch_IME() {
         // 单次操作，直接重置为待输入状态
         reset();
 
@@ -573,140 +543,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         return true;
     }
-
-    // <<<<<< 输入定位逻辑
-    private void onLocatingInputCursorCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                switch (key.getType()) {
-                    // 点击 退出 按钮，则退回到输入状态
-                    case Exit:
-                        play_InputtingSingleTick_Audio(key);
-
-                        end_InputChars_Inputting();
-                        break;
-                    case Backspace:
-                        play_InputtingSingleTick_Audio(key);
-
-                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(null));
-                        break;
-                    case Enter:
-                        play_InputtingSingleTick_Audio(key);
-
-                        InputMsgData msgData = new InputListCommittingMsgData(null, "\n");
-                        fireInputMsg(InputMsg.InputList_Committing, msgData);
-                        break;
-                    case Redo:
-                        play_InputtingSingleTick_Audio(key);
-
-                        onRedoingInputChange();
-                        break;
-                    case Undo:
-                        play_InputtingSingleTick_Audio(key);
-
-                        onUndoingInputChange();
-                        break;
-                    case Cut:
-                        play_InputtingSingleTick_Audio(key);
-
-                        onCuttingInputText();
-                        break;
-                    case Paste:
-                        play_InputtingSingleTick_Audio(key);
-
-                        onPastingInputText();
-                        break;
-                    case Copy:
-                        play_InputtingSingleTick_Audio(key);
-
-                        onCopyingInputText();
-                        break;
-                }
-                break;
-            }
-            case KeyLongPressTick: {
-                switch (key.getType()) {
-                    case Backspace:
-                    case Enter:
-                        // 长按 tick 视为连续单击
-                        onLocatingInputCursorCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
-                        break;
-                }
-                break;
-            }
-            case FingerSlipping:
-                // Note: 仅在 按键 上的滑动才有效
-                if (key != null) {
-                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
-                    switch (key.getType()) {
-                        case LocateInputCursor_Locator:
-                            play_InputtingSingleTick_Audio(key);
-
-                            onLocatingInputCursor(key, motion);
-                            break;
-                        case LocateInputCursor_Selector:
-                            play_InputtingSingleTick_Audio(key);
-
-                            onSelectingInputText(key, motion);
-                            break;
-                    }
-                }
-                break;
-        }
-    }
-
-    private void onLocatingInputCursor(CtrlKey key, Motion motion) {
-        KeyFactory keyFactory = null;
-        LocatingInputCursorStateData stateData;
-
-        if (this.state.type != State.Type.LocatingInputCursor) {
-            stateData = new LocatingInputCursorStateData();
-            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
-
-            this.state = new State(State.Type.LocatingInputCursor, stateData);
-        } else {
-            stateData = (LocatingInputCursorStateData) this.state.data;
-            stateData.updateLocator(motion);
-        }
-
-        InputMsgData data = new InputTargetCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
-        fireInputMsg(InputMsg.InputTarget_Cursor_Locating, data);
-    }
-
-    private void onSelectingInputText(CtrlKey key, Motion motion) {
-        LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
-        stateData.updateSelector(motion);
-
-        InputMsgData data = new InputTargetCursorLocatingMsgData(null, key, stateData.getSelector());
-        fireInputMsg(InputMsg.InputTarget_Selecting, data);
-    }
-
-    private void onCopyingInputText() {
-        InputMsgData data = new InputCommonMsgData(null);
-        fireInputMsg(InputMsg.InputTarget_Copying, data);
-    }
-
-    private void onPastingInputText() {
-        InputMsgData data = new InputCommonMsgData(null);
-        fireInputMsg(InputMsg.InputTarget_Pasting, data);
-    }
-
-    private void onCuttingInputText() {
-        InputMsgData data = new InputCommonMsgData(null);
-        fireInputMsg(InputMsg.InputTarget_Cutting, data);
-    }
-
-    private void onUndoingInputChange() {
-        InputMsgData data = new InputCommonMsgData(null);
-        fireInputMsg(InputMsg.InputTarget_Undoing, data);
-    }
-
-    private void onRedoingInputChange() {
-        InputMsgData data = new InputCommonMsgData(null);
-        fireInputMsg(InputMsg.InputTarget_Redoing, data);
-    }
-    // >>>>>>>>
 
     // <<<<<<<<< 对输入列表的操作
     private void onChoosingInputMsg(UserInputMsg msg, Input input, UserInputMsgData data) {

@@ -20,11 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * 英文{@link Keyboard 键盘}
- * <p/>
- * 含字母和数字
+ * 电话{@link Keyboard 键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-04
+ * @date 2023-07-28
  */
-public class LatinKeyboard {}
+public class PhoneKeyboard {}

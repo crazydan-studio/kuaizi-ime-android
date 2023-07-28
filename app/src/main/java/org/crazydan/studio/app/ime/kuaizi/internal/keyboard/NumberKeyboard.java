@@ -15,25 +15,14 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputChars_Inputting}消息数据
+ * 纯数字{@link Keyboard 键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-07-28
  */
-public class InputCharsInputtingMsgData extends InputCommonMsgData {
-    /** 当前按键 */
-    public final Key<?> current;
-
-    public InputCharsInputtingMsgData(Keyboard.KeyFactory keyFactory, Key<?> current) {
-        super(keyFactory);
-
-        this.current = current;
-    }
-}
+public class NumberKeyboard {}
