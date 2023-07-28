@@ -68,7 +68,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     private final int keySpacing = 8;
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
-    private final Keyboard.Orientation keyboardOrientation;
     private final RecyclerViewGestureDetector gesture;
     private final KeyViewAnimator animator;
     private final AudioPlayer audioPlayer;
@@ -86,7 +85,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
-        this.keyboardOrientation = Keyboard.Orientation.Portrait;
 
         this.adapter = new KeyViewAdapter(keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
@@ -108,20 +106,20 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         return this.inputList;
     }
 
-    public void startInput(Keyboard.Type type) {
+    public void startInput(Keyboard.Config config) {
         this.gesture.reset();
 
-        changeKeyboardType(type);
+        configKeyboard(config);
     }
 
     public void finishInput() {
         this.keyboard.reset();
     }
 
-    public void changeKeyboardType(Keyboard.Type type) {
+    public void configKeyboard(Keyboard.Config config) {
         Keyboard oldKeyboard = this.keyboard;
 
-        switch (type) {
+        switch (config.getType()) {
             case Symbol:
                 if (!(this.keyboard instanceof SymbolKeyboard)) {
                     this.keyboard = new SymbolKeyboard();
@@ -138,6 +136,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                 }
         }
 
+        this.keyboard.setConfig(config);
         if (oldKeyboard != this.keyboard) {
             if (oldKeyboard != null) {
                 this.inputList.removeUserInputMsgListener(oldKeyboard);
@@ -176,7 +175,9 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         switch (msg) {
             case Keyboard_Switching: {
                 Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
-                changeKeyboardType(type);
+                Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
+
+                configKeyboard(config);
                 break;
             }
             case InputAudio_Playing: {
@@ -246,10 +247,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
-        Keyboard.KeyFactory.Option option = new Keyboard.KeyFactory.Option();
-        option.orientation = this.keyboardOrientation;
-
-        return keyFactory.create(option);
+        return keyFactory.create();
     }
 
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */

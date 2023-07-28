@@ -59,7 +59,7 @@ public class Guide extends AppCompatActivity implements InputMsgListener {
 
         ImeInputView imeView = findViewById(R.id.ime_view);
         imeView.keyboard.addInputMsgListener(this);
-        imeView.keyboard.changeKeyboardType(Keyboard.Type.Pinyin);
+        imeView.keyboard.configKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
     }
 
     @Override

@@ -31,6 +31,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  */
 public interface Keyboard extends UserInputMsgListener {
 
+    void setConfig(Config config);
+
+    Config getConfig();
+
     KeyFactory getKeyFactory();
 
     void setInputList(InputList inputList);
@@ -57,6 +61,8 @@ public interface Keyboard extends UserInputMsgListener {
         Pinyin,
         /** 数学键盘：支持数学计算 */
         Math,
+        /** 拉丁文键盘：含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件 */
+        Latin,
         /** 数字键盘：纯数字 */
         Number,
         /** 电话号码键盘：纯数字加 #、* 等 */
@@ -83,10 +89,65 @@ public interface Keyboard extends UserInputMsgListener {
          * 元素可为<code>null</code>，
          * 表示该位置不放置任何按键
          */
-        Key<?>[][] create(Option option);
+        Key<?>[][] create();
+    }
 
-        class Option {
-            public Orientation orientation;
+    /** 键盘配置 */
+    class Config {
+        /** 键盘类型 */
+        private final Type type;
+        /** 是否为单行输入 */
+        private boolean singleLineInput;
+        /** 键盘布局方向 */
+        private Orientation orientation = Orientation.Portrait;
+        /** 左右手模式 */
+        private HandMode handMode = HandMode.Right;
+
+        public Config(Type type) {
+            this.type = type;
         }
+
+        public Config(Type type, Config config) {
+            this(type);
+            this.singleLineInput = config.singleLineInput;
+            this.orientation = config.orientation;
+            this.handMode = config.handMode;
+        }
+
+        public Type getType() {
+            return this.type;
+        }
+
+        public boolean isSingleLineInput() {
+            return this.singleLineInput;
+        }
+
+        public void setSingleLineInput(boolean singleLineInput) {
+            this.singleLineInput = singleLineInput;
+        }
+
+        public Orientation getOrientation() {
+            return this.orientation;
+        }
+
+        public void setOrientation(Orientation orientation) {
+            this.orientation = orientation;
+        }
+
+        public HandMode getHandMode() {
+            return this.handMode;
+        }
+
+        public void setHandMode(HandMode handMode) {
+            this.handMode = handMode;
+        }
+    }
+
+    /** 左右手模式 */
+    enum HandMode {
+        /** 左手模式 */
+        Left,
+        /** 右手模式 */
+        Right,
     }
 }

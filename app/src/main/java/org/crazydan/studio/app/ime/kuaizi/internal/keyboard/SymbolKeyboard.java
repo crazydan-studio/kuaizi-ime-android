@@ -102,7 +102,7 @@ public class SymbolKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return option -> KeyTable.createSymbolKeys(option, createKeyTableConfigure(), 0, chinese_symbols);
+        return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(), 0, chinese_symbols);
     }
 
     @Override

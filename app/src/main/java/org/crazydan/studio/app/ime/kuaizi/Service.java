@@ -50,7 +50,7 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     private ContextThemeWrapper imeViewTheme;
     private ImeInputView imeView;
-    private Keyboard.Type imeKeyboardType;
+    private Keyboard.Config imeKeyboardConfig;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -98,6 +98,7 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         super.onStartInput(attribute, restarting);
 
+        boolean singleLineInput = false;
         Keyboard.Type keyboardType = Keyboard.Type.Pinyin;
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
@@ -107,9 +108,24 @@ public class Service extends InputMethodService implements InputMsgListener {
             case InputType.TYPE_CLASS_PHONE:
                 keyboardType = Keyboard.Type.Phone;
                 break;
+            default:
+                int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
+                if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                    keyboardType = Keyboard.Type.Latin;
+                    singleLineInput = true;
+                }
+
+                if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    || variation == InputType.TYPE_TEXT_VARIATION_URI
+                    || variation == InputType.TYPE_TEXT_VARIATION_FILTER
+                    || (attribute.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) != 0) {
+                    singleLineInput = true;
+                }
         }
 
-        this.imeKeyboardType = keyboardType;
+        this.imeKeyboardConfig = new Keyboard.Config(keyboardType);
+        this.imeKeyboardConfig.setSingleLineInput(singleLineInput);
     }
 
     /** 每次弹出键盘时调用 */
@@ -122,9 +138,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 响应对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        Keyboard.Type keyboardType = this.imeKeyboardType;
-
-        this.imeView.keyboard.startInput(keyboardType);
+        this.imeView.keyboard.startInput(this.imeKeyboardConfig);
     }
 
     /** 输入结束隐藏键盘 */

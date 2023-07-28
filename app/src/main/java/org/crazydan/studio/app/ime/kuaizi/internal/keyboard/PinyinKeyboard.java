@@ -55,7 +55,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return option -> KeyTable.createKeys(option, createKeyTableConfigure());
+        return () -> KeyTable.createKeys(createKeyTableConfigure());
     }
 
     @Override
@@ -410,9 +410,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         input.setCandidates(new ArrayList<>());
 
         Collection<String> finalNextChars = nextChars;
-        KeyFactory keyFactory = option -> KeyTable.createNextCharKeys(option,
-                                                                      createKeyTableConfigure(),
-                                                                      finalNextChars);
+        KeyFactory keyFactory = () -> KeyTable.createNextCharKeys(createKeyTableConfigure(), finalNextChars);
 
         do_InputChars_Inputting(keyFactory, currentKey);
     }
@@ -458,10 +456,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }
 
-        KeyFactory keyFactory = option -> KeyTable.createInputCandidateKeys(option,
-                                                                            createKeyTableConfigure(),
-                                                                            input,
-                                                                            stateData.getPageStart());
+        KeyFactory keyFactory = () -> KeyTable.createInputCandidateKeys(createKeyTableConfigure(),
+                                                                        input,
+                                                                        stateData.getPageStart());
         InputMsgData data = new InputCharsInputtingMsgData(keyFactory, null);
 
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);

@@ -49,23 +49,24 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected State state = new State(State.Type.Input_Waiting);
 
-    /** 左右手模式 */
-    private HandMode handMode = HandMode.Right;
+    private Config config;
 
     /** 输入列表 */
     private InputList inputList;
 
     @Override
+    public void setConfig(Config config) {
+        this.config = config;
+    }
+
+    @Override
+    public Config getConfig() {
+        return this.config;
+    }
+
+    @Override
     public void reset() {
         end_InputChars_Inputting();
-    }
-
-    public HandMode getHandMode() {
-        return this.handMode;
-    }
-
-    public void setHandMode(HandMode handMode) {
-        this.handMode = handMode;
     }
 
     public InputList getInputList() {
@@ -95,8 +96,8 @@ public abstract class BaseKeyboard implements Keyboard {
         listeners.forEach(listener -> listener.onInputMsg(msg, data));
     }
 
-    protected KeyTable.Configure createKeyTableConfigure() {
-        return new KeyTable.Configure(getHandMode(), !getInputList().isEmpty());
+    protected KeyTable.Config createKeyTableConfigure() {
+        return new KeyTable.Config(getConfig(), !getInputList().isEmpty());
     }
 
     /**
@@ -426,7 +427,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (this.state.type != State.Type.InputTarget_Cursor_Locating) {
             stateData = new LocatingInputCursorStateData();
-            keyFactory = option -> KeyTable.createLocatorKeys(option, createKeyTableConfigure());
+            keyFactory = () -> KeyTable.createLocatorKeys(createKeyTableConfigure());
 
             this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData);
         } else {

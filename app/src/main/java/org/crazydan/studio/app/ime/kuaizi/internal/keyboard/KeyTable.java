@@ -140,8 +140,7 @@ public class KeyTable {
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
-                    //new int[] { 2, 6 },
-                    //new int[] { 4, 6 },
+                    new int[] { 4, 6 },
                     new int[] { 5, 5 },
                     new int[] { 5, 1 },
                     new int[] { 4, 1 },
@@ -262,7 +261,7 @@ public class KeyTable {
     }
 
     /** 创建基础按键 */
-    public static Key<?>[][] createKeys(Keyboard.KeyFactory.Option option, Configure config) {
+    public static Key<?>[][] createKeys(Config config) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
 
         // 右手模式的纵向屏幕 7 x 6 的按键表
@@ -301,7 +300,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("k").withReplacements("K"),
-                config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : ctrlKey(CtrlKey.Type.Enter),
+                config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
@@ -330,10 +329,8 @@ public class KeyTable {
      * 若 <code>nextChars</code> 为 <code>null</code>，则创建{@link #createKeys 基础按键}，
      * 若其为空，则返回空白按键
      */
-    public static Key<?>[][] createNextCharKeys(
-            Keyboard.KeyFactory.Option option, Configure config, Collection<String> nextChars
-    ) {
-        Key<?>[][] keys = createKeys(option, config);
+    public static Key<?>[][] createNextCharKeys(Config config, Collection<String> nextChars) {
+        Key<?>[][] keys = createKeys(config);
 
         if (nextChars == null) {
             return keys;
@@ -363,9 +360,7 @@ public class KeyTable {
     }
 
     /** 创建输入候选字按键 */
-    public static Key<?>[][] createInputCandidateKeys(
-            Keyboard.KeyFactory.Option option, Configure config, CharInput input, int startIndex
-    ) {
+    public static Key<?>[][] createInputCandidateKeys(Config config, CharInput input, int startIndex) {
         List<InputWord> inputWords = input.getCandidates();
         int pageSize = getInputCandidateKeysPageSize();
 
@@ -427,7 +422,7 @@ public class KeyTable {
     }
 
     /** 创建定位按键 */
-    public static Key<?>[][] createLocatorKeys(Keyboard.KeyFactory.Option option, Configure config) {
+    public static Key<?>[][] createLocatorKeys(Config config) {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
@@ -435,7 +430,7 @@ public class KeyTable {
         gridKeys[3][4] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
 
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][6] = ctrlKey(CtrlKey.Type.Enter);
+        gridKeys[3][6] = enterCtrlKey(config);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
 
         gridKeys[4][3] = ctrlKey(CtrlKey.Type.Cut, "剪切");
@@ -448,9 +443,7 @@ public class KeyTable {
     }
 
     /** 创建标点符号按键 */
-    public static Key<?>[][] createSymbolKeys(
-            Keyboard.KeyFactory.Option option, Configure config, int startIndex, Symbol[] symbols
-    ) {
+    public static Key<?>[][] createSymbolKeys(Config config, int startIndex, Symbol[] symbols) {
         int pageSize = getInputCandidateKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
@@ -459,7 +452,7 @@ public class KeyTable {
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
-        gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : ctrlKey(CtrlKey.Type.Enter);
+        gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
 
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
@@ -502,13 +495,13 @@ public class KeyTable {
     }
 
     /** 创建数学键盘按键 */
-    public static Key<?>[][] createMathKeys(Keyboard.KeyFactory.Option option, Configure config, Key<?>[] keys) {
+    public static Key<?>[][] createMathKeys(Config config, Key<?>[] keys) {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : ctrlKey(CtrlKey.Type.Enter);
+        gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.Math_Equal, "=");
         gridKeys[4][6] = ctrlKey(CtrlKey.Type.Exit);
 
@@ -536,6 +529,12 @@ public class KeyTable {
         }
 
         return gridKeys;
+    }
+
+    public static CtrlKey enterCtrlKey(Config config) {
+        return config.keyboardConfig.isSingleLineInput()
+               ? ctrlKey(CtrlKey.Type.Enter).setIconResId(R.drawable.ic_right_hand_ok)
+               : ctrlKey(CtrlKey.Type.Enter);
     }
 
     public static CtrlKey ctrlKey(CtrlKey.Type type) {
@@ -601,12 +600,12 @@ public class KeyTable {
         return key.setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
     }
 
-    public static class Configure {
-        private final HandMode handMode;
+    public static class Config {
+        private final Keyboard.Config keyboardConfig;
         private final boolean hasInputs;
 
-        public Configure(HandMode handMode, boolean hasInputs) {
-            this.handMode = handMode;
+        public Config(Keyboard.Config keyboardConfig, boolean hasInputs) {
+            this.keyboardConfig = keyboardConfig;
             this.hasInputs = hasInputs;
         }
     }
