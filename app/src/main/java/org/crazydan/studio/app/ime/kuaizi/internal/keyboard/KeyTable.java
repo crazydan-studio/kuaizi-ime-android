@@ -204,7 +204,7 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_left_hand_backspace, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Space, new Integer[] { R.drawable.ic_space, R.attr.key_ctrl_space_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.Enter,
-                            new Integer[] { R.drawable.ic_left_hand_enter, R.attr.key_ctrl_enter_bg_color });
+                            new Integer[] { R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
 
