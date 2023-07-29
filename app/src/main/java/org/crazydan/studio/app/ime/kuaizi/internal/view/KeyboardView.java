@@ -107,9 +107,12 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         return this.inputList;
     }
 
-    public void startInput(Keyboard.Config config) {
+    public void startInput(Keyboard.Config config, boolean reset) {
         this.gesture.reset();
 
+        if (reset) {
+            this.inputList.reset();
+        }
         configKeyboard(config);
     }
 

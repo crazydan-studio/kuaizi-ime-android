@@ -206,7 +206,7 @@ public abstract class BaseKeyboard implements Keyboard {
         before_Commit_InputList();
 
         StringBuilder text = getInputList().getText();
-        getInputList().empty();
+        getInputList().reset();
 
         InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), text);
         fireInputMsg(InputMsg.InputList_Committing, data);

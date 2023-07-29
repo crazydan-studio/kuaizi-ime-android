@@ -109,9 +109,12 @@ public interface Keyboard extends UserInputMsgListener {
 
         public Config(Type type, Config config) {
             this(type);
-            this.singleLineInput = config.singleLineInput;
-            this.orientation = config.orientation;
-            this.handMode = config.handMode;
+
+            if (config != null) {
+                this.singleLineInput = config.singleLineInput;
+                this.orientation = config.orientation;
+                this.handMode = config.handMode;
+            }
         }
 
         public Type getType() {

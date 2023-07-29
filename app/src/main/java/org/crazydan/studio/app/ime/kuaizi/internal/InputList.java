@@ -42,7 +42,7 @@ public class InputList {
     private final Cursor cursor = new Cursor();
 
     public InputList() {
-        empty();
+        reset();
     }
 
     /**
@@ -66,8 +66,8 @@ public class InputList {
         listeners.forEach(listener -> listener.onUserInputMsg(msg, data));
     }
 
-    /** 清空输入列表 */
-    public void empty() {
+    /** 重置输入列表 */
+    public void reset() {
         this.inputs.clear();
         this.cursor.reset();
 

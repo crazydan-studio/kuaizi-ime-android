@@ -46,8 +46,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @date 2023-06-29
  */
 public class Service extends InputMethodService implements InputMsgListener {
-    private InputMethodManager inputMethodManager;
-
     private ContextThemeWrapper imeViewTheme;
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
@@ -61,7 +59,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onCreate() {
         super.onCreate();
 
-        this.inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         this.imeViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
     }
 
@@ -88,8 +85,9 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     /**
-     * 开始启动输入，先于 {@link #onStartInputView(EditorInfo, boolean)} 调用，
-     * 可用于记录弹出键盘的需设置的模式等信息
+     * 开始启动输入，先于 {@link #onStartInputView(EditorInfo, boolean)} 调用
+     * <p/>
+     * Note: 不可进行视图渲染相关的调用
      */
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
@@ -97,9 +95,15 @@ public class Service extends InputMethodService implements InputMsgListener {
         PinyinDictDB.getInstance().open(getApplicationContext());
 
         super.onStartInput(attribute, restarting);
+    }
 
+    /** 每次弹出键盘时调用 */
+    @Override
+    public void onStartInputView(EditorInfo attribute, boolean restarting) {
         boolean singleLineInput = false;
-        Keyboard.Type keyboardType = Keyboard.Type.Pinyin;
+        Keyboard.Config config = this.imeKeyboardConfig;
+        Keyboard.Type keyboardType = config != null ? config.getType() : Keyboard.Type.Pinyin;
+
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
             case InputType.TYPE_CLASS_DATETIME:
@@ -108,34 +112,36 @@ public class Service extends InputMethodService implements InputMsgListener {
             case InputType.TYPE_CLASS_PHONE:
                 keyboardType = Keyboard.Type.Phone;
                 break;
-            default:
+            case InputType.TYPE_CLASS_TEXT:
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                    keyboardType = Keyboard.Type.Latin;
+                    singleLineInput = true;
+                }
+
+                if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
                     || variation == InputType.TYPE_TEXT_VARIATION_URI
                     || variation == InputType.TYPE_TEXT_VARIATION_FILTER
                     || (attribute.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) != 0) {
-                    keyboardType = Keyboard.Type.Latin;
                     singleLineInput = true;
                 }
         }
 
-        this.imeKeyboardConfig = new Keyboard.Config(keyboardType);
-        this.imeKeyboardConfig.setSingleLineInput(singleLineInput);
+        // Note: 此接口内只是根据输入目标的类型对键盘类型做临时切换，
+        // 故不直接修改 this.imeKeyboardConfig
+        config = new Keyboard.Config(keyboardType, config);
+        config.setSingleLineInput(singleLineInput);
+
+        this.imeView.keyboard.startInput(config, true);
     }
 
-    /** 每次弹出键盘时调用 */
-    @Override
-    public void onStartInputView(EditorInfo info, boolean restarting) {
-        InputMethodSubtype subtype = this.inputMethodManager.getCurrentInputMethodSubtype();
-        onCurrentInputMethodSubtypeChanged(subtype);
-    }
-
-    /** 响应对子键盘类型的修改 */
+    /** 响应系统对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
+        Keyboard.Config config = this.imeKeyboardConfig;
         Keyboard.Type keyboardType;
+
         if (subtype != null //
             && ("en_US".equals(subtype.getLocale()) //
                 || "en_US".equals(subtype.getLanguageTag()))) {
@@ -144,9 +150,8 @@ public class Service extends InputMethodService implements InputMsgListener {
             keyboardType = Keyboard.Type.Pinyin;
         }
 
-        this.imeKeyboardConfig = new Keyboard.Config(keyboardType, this.imeKeyboardConfig);
-
-        this.imeView.keyboard.startInput(this.imeKeyboardConfig);
+        this.imeKeyboardConfig = new Keyboard.Config(keyboardType, config);
+        this.imeView.keyboard.startInput(this.imeKeyboardConfig, false);
     }
 
     /** 输入结束隐藏键盘 */
