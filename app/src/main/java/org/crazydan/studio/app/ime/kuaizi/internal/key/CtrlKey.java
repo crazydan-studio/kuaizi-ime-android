@@ -160,6 +160,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 重做 */
         Redo,
 
+        /** 切换至拼音键盘 */
+        SwitchToPinyinKeyboard,
+        /** 切换至拉丁文键盘 */
+        SwitchToLatinKeyboard,
         /** 切换至计算器键盘 */
         SwitchToMathKeyboard,
         /** 切换至标点符号键盘 */

@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
- * 纯数字{@link Keyboard 键盘}
+ * {@link Keyboard.Type#Number 纯数字键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-28

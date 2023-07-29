@@ -27,37 +27,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link Keyboard.Type#Math 数学键盘}
+ * {@link Keyboard.Type#Latin 拉丁文键盘}
  * <p/>
- * 含数字、计算符号等
+ * 含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-04
+ * @date 2023-07-29
  */
-public class MathKeyboard extends BaseKeyboard {
-    private static final Key<?>[] math_keys = new Key[] {
-            CtrlKey.create(CtrlKey.Type.Math_Plus).setLabel("+"),
-            CtrlKey.create(CtrlKey.Type.Math_Minus).setLabel("-"),
-            CtrlKey.create(CtrlKey.Type.Math_Multiply).setLabel("×"),
-            CtrlKey.create(CtrlKey.Type.Math_Divide).setLabel("÷"),
-            CtrlKey.create(CtrlKey.Type.Math_Percent).setLabel("%"),
-            CtrlKey.create(CtrlKey.Type.Math_Dot).setLabel("."),
-            CtrlKey.create(CtrlKey.Type.Math_Brackets).setLabel("( )"),
-            CharKey.create(CharKey.Type.Number, "0").setLabel("0"),
-            CharKey.create(CharKey.Type.Number, "1").setLabel("1"),
-            CharKey.create(CharKey.Type.Number, "2").setLabel("2"),
-            CharKey.create(CharKey.Type.Number, "3").setLabel("3"),
-            CharKey.create(CharKey.Type.Number, "4").setLabel("4"),
-            CharKey.create(CharKey.Type.Number, "5").setLabel("5"),
-            CharKey.create(CharKey.Type.Number, "6").setLabel("6"),
-            CharKey.create(CharKey.Type.Number, "7").setLabel("7"),
-            CharKey.create(CharKey.Type.Number, "8").setLabel("8"),
-            CharKey.create(CharKey.Type.Number, "9").setLabel("9"),
-            };
+public class LatinKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return () -> KeyTable.createMathKeys(createKeyTableConfigure(), math_keys);
+        return () -> KeyTable.createLatinKeys(createKeyTableConfigure());
     }
 
     @Override
@@ -79,14 +60,19 @@ public class MathKeyboard extends BaseKeyboard {
         }
     }
 
+    @Override
+    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
+        // 都是直接输入到目标输入组件中，无需提交
+    }
+
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
-                // 单字符输入
+                // 单字符直接输入
                 play_InputtingSingleTick_Audio(key);
 
-                append_Key_for_Continuous_InputChars_Inputting(key);
+                append_Key_and_Commit_InputList(key);
                 break;
             }
         }
@@ -98,21 +84,8 @@ public class MathKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
+                // Note: 切换至拼音输入法的逻辑在基类中处理
                 switch (key.getType()) {
-                    case Exit: {
-                        switch_Keyboard(Type.Pinyin);
-                        break;
-                    }
-                    case Math_Plus:
-                    case Math_Minus:
-                    case Math_Multiply:
-                    case Math_Divide:
-                    case Math_Equal:
-                    case Math_Dot:
-                    case Math_Percent: {
-                        append_Key_for_Continuous_InputChars_Inputting(key);
-                        break;
-                    }
                 }
                 break;
             }

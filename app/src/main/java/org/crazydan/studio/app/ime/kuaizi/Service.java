@@ -135,6 +135,17 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 响应对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
+        Keyboard.Type keyboardType;
+        if (subtype != null //
+            && ("en_US".equals(subtype.getLocale()) //
+                || "en_US".equals(subtype.getLanguageTag()))) {
+            keyboardType = Keyboard.Type.Latin;
+        } else {
+            keyboardType = Keyboard.Type.Pinyin;
+        }
+
+        this.imeKeyboardConfig = new Keyboard.Config(keyboardType, this.imeKeyboardConfig);
+
         this.imeView.keyboard.startInput(this.imeKeyboardConfig);
     }
 
@@ -199,8 +210,9 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         if (text.length() == 1) {
+            char ch = text.charAt(0);
             // 回车、单个的数字等字符，需以事件形式发送，才能被所有组件识别
-            switch (text.charAt(0)) {
+            switch (ch) {
                 case ' ':
                     sendKey(KeyEvent.KEYCODE_SPACE);
                     break;
@@ -208,7 +220,13 @@ public class Service extends InputMethodService implements InputMsgListener {
                     sendKey(KeyEvent.KEYCODE_ENTER);
                     break;
                 default:
-                    commitText(text);
+                    if (ch >= 'a' && ch <= 'z') {
+                        sendKey(KeyEvent.KEYCODE_A + (ch - 'a'));
+                    } else if (ch >= '0' && ch <= '9') {
+                        sendKey(KeyEvent.KEYCODE_0 + (ch - '0'));
+                    } else {
+                        commitText(text);
+                    }
             }
         } else {
             commitText(text);

@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * 标点符号{@link Keyboard 键盘}
+ * {@link Keyboard.Type#Symbol 标点符号键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-27
@@ -122,26 +122,6 @@ public class SymbolKeyboard extends BaseKeyboard {
         } else if (key instanceof CtrlKey) {
             onCtrlKeyMsg(msg, (CtrlKey) key, data);
         }
-    }
-
-    @Override
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
-        commit_InputList();
-    }
-
-    @Override
-    protected void on_CtrlKey_Backspace(CtrlKey key) {
-        backspace_InputList_or_InputTarget();
-    }
-
-    @Override
-    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {
-        confirm_Input_Enter_or_Space(key);
-    }
-
-    @Override
-    protected void before_Commit_InputList() {
-        // nothing to do
     }
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {

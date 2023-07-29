@@ -39,13 +39,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
- * 汉语拼音{@link Keyboard 键盘}
+ * {@link Keyboard.Type#Pinyin 汉语拼音键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
@@ -55,7 +54,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return () -> KeyTable.createKeys(createKeyTableConfigure());
+        return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
     }
 
     @Override
@@ -99,21 +98,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     onCtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
         }
-    }
-
-    @Override
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
-        commit_InputList();
-    }
-
-    @Override
-    protected void on_CtrlKey_Backspace(CtrlKey key) {
-        backspace_InputList_or_InputTarget();
-    }
-
-    @Override
-    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {
-        confirm_Input_Enter_or_Space(key);
     }
 
     @Override
@@ -196,11 +180,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
+                // Note: 切换至拉丁文输入法的逻辑在基类中处理
                 switch (key.getType()) {
-                    case SwitchIME: {
-                        switch_IME();
-                        break;
-                    }
                     case SwitchToSymbolKeyboard: {
                         switch_Keyboard(Type.Symbol);
                         break;
@@ -410,7 +391,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         input.setCandidates(new ArrayList<>());
 
         Collection<String> finalNextChars = nextChars;
-        KeyFactory keyFactory = () -> KeyTable.createNextCharKeys(createKeyTableConfigure(), finalNextChars);
+        KeyFactory keyFactory = () -> KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(), finalNextChars);
 
         do_InputChars_Inputting(keyFactory, currentKey);
     }
@@ -476,13 +457,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         } while (selected != null && !selected.isPinyin() && selected != getInputList().getLastInput());
 
         onChoosingInputMsg(null, selected, null);
-    }
-
-    private void switch_IME() {
-        // 单次操作，直接重置为待输入状态
-        reset();
-
-        fireInputMsg(InputMsg.IME_Switching, new InputCommonMsgData(null));
     }
 
     private void prepareInputCandidates(CharInput input) {

@@ -157,6 +157,15 @@ public abstract class BaseKeyboard implements Keyboard {
         do_InputChars_Inputting(getKeyFactory(), key);
     }
 
+    /**
+     * 添加按键并直接提交输入列表
+     */
+    protected void append_Key_and_Commit_InputList(Key<?> key) {
+        getInputList().newPending().appendKey(key);
+
+        commit_InputList();
+    }
+
     /** 确认当前输入 */
     protected void confirm_InputChars() {
         getInputList().confirmPending();
@@ -204,7 +213,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 在 {@link #commit_InputList() 输入列表提交} 之前需要做的事情 */
-    protected abstract void before_Commit_InputList();
+    protected void before_Commit_InputList() {}
 
     /**
      * 回删输入列表中的输入或输入目标中的内容
@@ -232,11 +241,19 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(getKeyFactory()));
     }
 
-    /** 切换到指定类型的输入法 */
+    /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Type type) {
         this.state = new State(State.Type.Input_Waiting);
 
         fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(type));
+    }
+
+    /** 切换系统输入法 */
+    protected void switch_IME() {
+        // 单次操作，直接重置为待输入状态
+        reset();
+
+        fireInputMsg(InputMsg.IME_Switching, new InputCommonMsgData(null));
     }
 
     /** 播放输入单击音效 */
@@ -266,13 +283,13 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 处理 {@link CtrlKey.Type#CommitInputList} 控制按键点击事件 */
-    protected abstract void on_CtrlKey_CommitInputList(CtrlKey key);
+    protected void on_CtrlKey_CommitInputList(CtrlKey key) {commit_InputList();}
 
     /** 处理 {@link CtrlKey.Type#Backspace} 控制按键点击事件 */
-    protected abstract void on_CtrlKey_Backspace(CtrlKey key);
+    protected void on_CtrlKey_Backspace(CtrlKey key) {backspace_InputList_or_InputTarget();}
 
     /** 处理 {@link CtrlKey.Type#Space} 或 {@link CtrlKey.Type#Enter} 控制按键点击事件 */
-    protected abstract void on_CtrlKey_Space_or_Enter(CtrlKey key);
+    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {confirm_Input_Enter_or_Space(key);}
 
     /** 尝试处理控制按键消息 */
     private boolean try_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
@@ -297,6 +314,24 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Enter: {
                         play_InputtingSingleTick_Audio(key);
                         on_CtrlKey_Space_or_Enter(key);
+                        return true;
+                    }
+                    case SwitchIME: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_IME();
+                        return true;
+                    }
+                    case SwitchHandMode: {
+                        return true;
+                    }
+                    case SwitchToLatinKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_Keyboard(Type.Latin);
+                        return true;
+                    }
+                    case SwitchToPinyinKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_Keyboard(Type.Pinyin);
                         return true;
                     }
                 }

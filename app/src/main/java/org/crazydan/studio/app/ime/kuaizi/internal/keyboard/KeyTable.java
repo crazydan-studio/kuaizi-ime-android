@@ -167,7 +167,7 @@ public class KeyTable {
             };
 
     static {
-        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), new Integer[] {
                 R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color
         });
         char_key_color_palette.put(Arrays.asList("p", "q", "g", "h", "d", "b", "c"), new Integer[] {
@@ -184,9 +184,6 @@ public class KeyTable {
         });
         char_key_color_palette.put(Arrays.asList("j", "k", "f"), new Integer[] {
                 R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color
-        });
-        char_key_color_palette.put(Arrays.asList("：", "！", "？", "；", "，", "。"), new Integer[] {
-                R.attr.key_char_symbol_fg_color, R.attr.key_char_symbol_bg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
@@ -207,6 +204,12 @@ public class KeyTable {
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard, new Integer[] {
                 R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToLatinKeyboard, new Integer[] {
+                R.drawable.ic_switch_zi_to_a, R.attr.key_ctrl_switcher_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToPinyinKeyboard, new Integer[] {
+                R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
@@ -249,8 +252,8 @@ public class KeyTable {
                             new Integer[] { -1, R.attr.key_fg_color, R.attr.key_highlight_fg_color });
     }
 
-    /** 创建基础按键 */
-    public static Key<?>[][] createKeys(Config config) {
+    /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
+    public static Key<?>[][] createPinyinKeys(Config config) {
         // TODO 根据系统支持情况和配置等信息，调整部分按键的显示或隐藏
 
         // 右手模式的纵向屏幕 7 x 6 的按键表
@@ -283,7 +286,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -312,14 +315,74 @@ public class KeyTable {
                 };
     }
 
+    /** 创建{@link LatinKeyboard 拉丁文键盘}按键 */
+    public static Key<?>[][] createLatinKeys(Config config) {
+        return new Key[][] {
+                new Key[] {
+                        ctrlKey(CtrlKey.Type.SwitchIME),
+                        alphabetKey("a").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        alphabetKey("b").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        alphabetKey("c").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        alphabetKey("d").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        alphabetKey("e").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        alphabetKey("f").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
+                        } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
+                alphabetKey("g").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
+                alphabetKey("h").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
+                alphabetKey("i").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
+                alphabetKey("j").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
+                alphabetKey("k").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
+                ctrlKey(CtrlKey.Type.Backspace),
+                } //
+                , new Key[] {
+                noopCtrlKey(),
+                alphabetKey("l").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
+                alphabetKey("m").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
+                alphabetKey("n").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
+                alphabetKey("o").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
+                alphabetKey("p").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
+                ctrlKey(CtrlKey.Type.Space),
+                } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
+                alphabetKey("q").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
+                alphabetKey("r").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
+                ctrlKey(CtrlKey.Type.LocateInputCursor),
+                alphabetKey("s").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
+                alphabetKey("t").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
+                enterCtrlKey(config),
+                } //
+                , new Key[] {
+                noopCtrlKey(),
+                alphabetKey("u").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                alphabetKey("v").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                alphabetKey("w").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                alphabetKey("x").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                alphabetKey("y").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                alphabetKey("z").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
+                } //
+                , new Key[] {
+                symbolKey(":"),
+                symbolKey("?"),
+                symbolKey("#"),
+                symbolKey("@"),
+                symbolKey(","),
+                symbolKey("."),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                },
+                };
+    }
+
     /**
-     * 创建后继字母按键
+     * 创建拼音后继字母按键
      * <p/>
-     * 若 <code>nextChars</code> 为 <code>null</code>，则创建{@link #createKeys 基础按键}，
+     * 若 <code>nextChars</code> 为 <code>null</code>，则创建{@link #createPinyinKeys 基础按键}，
      * 若其为空，则返回空白按键
      */
-    public static Key<?>[][] createNextCharKeys(Config config, Collection<String> nextChars) {
-        Key<?>[][] keys = createKeys(config);
+    public static Key<?>[][] createPinyinNextCharKeys(Config config, Collection<String> nextChars) {
+        Key<?>[][] keys = createPinyinKeys(config);
 
         if (nextChars == null) {
             return keys;
@@ -430,9 +493,18 @@ public class KeyTable {
         return gridKeys;
     }
 
+    /** 标点符号按键的分页大小 */
+    public static int getSymbolKeysPageSize() {
+        int size = 0;
+        for (int[][] level : symbol_key_around_level_coords) {
+            size += level.length;
+        }
+        return size;
+    }
+
     /** 创建标点符号按键 */
     public static Key<?>[][] createSymbolKeys(Config config, int startIndex, Symbol[] symbols) {
-        int pageSize = getInputCandidateKeysPageSize();
+        int pageSize = getSymbolKeysPageSize();
 
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
@@ -483,7 +555,7 @@ public class KeyTable {
         return gridKeys;
     }
 
-    /** 创建数学键盘按键 */
+    /** 创建{@link MathKeyboard 数学键盘}按键 */
     public static Key<?>[][] createMathKeys(Config config, Key<?>[] keys) {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
@@ -564,7 +636,8 @@ public class KeyTable {
     }
 
     public static CharKey symbolKey(String text) {
-        return charKey(CharKey.Type.Symbol, text);
+        return charKey(CharKey.Type.Symbol, text).setFgColorAttrId(R.attr.key_char_symbol_fg_color)
+                                                 .setBgColorAttrId(R.attr.key_char_symbol_bg_color);
     }
 
     public static CharKey doubleSymbolKey(String text) {
@@ -581,7 +654,7 @@ public class KeyTable {
 
         for (Map.Entry<List<String>, Integer[]> entry : char_key_color_palette.entrySet()) {
             Integer[] configs = entry.getValue();
-            if (entry.getKey().contains(key.getText())) {
+            if (entry.getKey().contains(key.getText().toLowerCase())) {
                 fgAttrId = configs[0];
                 bgAttrId = configs[1];
                 break;
