@@ -286,7 +286,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
+                noopCtrlKey(),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -295,7 +295,7 @@ public class KeyTable {
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("l").withReplacements("L"),
                 alphabetKey("t").withReplacements("T"),
@@ -310,7 +310,7 @@ public class KeyTable {
                 symbolKey("；").withReplacements(";"),
                 symbolKey("，").withReplacements(","),
                 symbolKey("。").withReplacements("."),
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
                 },
                 };
     }
@@ -346,7 +346,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
+                noopCtrlKey(),
                 alphabetKey("q").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
                 alphabetKey("r").setBgColorAttrId(R.attr.key_char_level_3_bg_color),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -355,7 +355,7 @@ public class KeyTable {
                 enterCtrlKey(config),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("u").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("v").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("w").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
@@ -370,7 +370,7 @@ public class KeyTable {
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
                 },
                 };
     }
