@@ -28,30 +28,17 @@
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
-
-        <attr name="key_char_around_bg_color" format="color" />
-        <attr name="key_char_around_fg_color" format="color" />
-        <attr name="key_char_around_level_0_bg_color" format="color" />
-        <attr name="key_char_around_level_1_bg_color" format="color" />
-        <attr name="key_char_around_level_2_bg_color" format="color" />
-        <attr name="key_char_around_level_3_bg_color" format="color" />
-        <attr name="key_char_around_level_4_bg_color" format="color" />
+        <attr name="key_highlight_fg_color" format="color" />
 
         <attr name="key_ctrl_noop_bg_color" format="color" />
         <attr name="key_ctrl_noop_fg_color" format="color" />
-        <attr name="key_ctrl_switch_ime_bg_color" format="color" />
-        <attr name="key_ctrl_switch_ime_fg_color" format="color" />
-        <attr name="key_ctrl_switch_hand_mode_bg_color" format="color" />
-        <attr name="key_ctrl_switch_hand_mode_fg_color" format="color" />
-        <attr name="key_ctrl_switch_to_math_keyboard_bg_color" format="color" />
-        <attr name="key_ctrl_switch_to_math_keyboard_fg_color" format="color" />
-        <attr name="key_ctrl_switch_to_symbol_keyboard_bg_color" format="color" />
-        <attr name="key_ctrl_switch_to_symbol_keyboard_fg_color" format="color" />
-        <attr name="key_ctrl_toggle_input_spell_bg_color" format="color" />
-        <attr name="key_ctrl_toggle_input_spell_fg_color" format="color" />
+        <attr name="key_ctrl_switcher_bg_color" format="color" />
+        <attr name="key_ctrl_switcher_fg_color" format="color" />
 
         <attr name="key_ctrl_backspace_bg_color" format="color" />
         <attr name="key_ctrl_backspace_fg_color" format="color" />
+        <attr name="key_ctrl_ok_bg_color" format="color" />
+        <attr name="key_ctrl_ok_fg_color" format="color" />
         <attr name="key_ctrl_exit_bg_color" format="color" />
         <attr name="key_ctrl_exit_fg_color" format="color" />
         <attr name="key_ctrl_space_bg_color" format="color" />
@@ -66,17 +53,17 @@
         <attr name="key_ctrl_enter_bg_color" format="color" />
         <attr name="key_ctrl_enter_fg_color" format="color" />
 
-        <attr name="key_char_initial_bg_color" format="color" />
-        <attr name="key_char_initial_fg_color" format="color" />
-        <attr name="key_char_final_bg_color" format="color" />
-        <attr name="key_char_final_fg_color" format="color" />
-        <attr name="key_char_initial_nl_bg_color" format="color" />
-        <attr name="key_char_initial_nl_fg_color" format="color" />
-        <attr name="key_char_initial_hgwk_bg_color" format="color" />
-        <attr name="key_char_initial_hgwk_fg_color" format="color" />
-        <attr name="key_char_initial_jqx_bg_color" format="color" />
-        <attr name="key_char_initial_jqx_fg_color" format="color" />
-        <attr name="key_char_initial_scz_bg_color" format="color" />
-        <attr name="key_char_initial_scz_fg_color" format="color" />
+        <attr name="key_char_level_0_bg_color" format="color" />
+        <attr name="key_char_level_0_fg_color" format="color" />
+        <attr name="key_char_level_1_bg_color" format="color" />
+        <attr name="key_char_level_1_fg_color" format="color" />
+        <attr name="key_char_level_2_bg_color" format="color" />
+        <attr name="key_char_level_2_fg_color" format="color" />
+        <attr name="key_char_level_3_bg_color" format="color" />
+        <attr name="key_char_level_3_fg_color" format="color" />
+        <attr name="key_char_level_4_bg_color" format="color" />
+        <attr name="key_char_level_4_fg_color" format="color" />
+        <attr name="key_char_level_5_bg_color" format="color" />
+        <attr name="key_char_level_5_fg_color" format="color" />
     </declare-styleable>
 </resources>

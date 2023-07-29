@@ -43,19 +43,16 @@ public class KeyTable {
     private static final Map<List<String>, Integer[]> char_key_color_palette = new HashMap<>();
     /** 控制按键样式：图标+背景色 */
     private static final Map<CtrlKey.Type, Integer[]> ctrl_key_styles = new HashMap<>();
-    /** 环绕型字符按键布局的按键背景色：从内到外分为不同层级 */
-    private static final int[] key_char_around_level_bg_colors = new int[] {
-            //R.attr.key_char_around_level_0_bg_color,
-            R.attr.key_char_around_level_1_bg_color,
-            R.attr.key_char_around_level_2_bg_color,
-            R.attr.key_char_around_level_3_bg_color,
-            R.attr.key_char_around_level_4_bg_color,
+    /** 环绕型字符按键布局的按键背景和前景色：从内到外分为不同层级 */
+    private static final int[][] key_char_around_level_bg_colors = new int[][] {
+            new int[] { R.attr.key_char_level_2_bg_color, R.attr.key_char_level_2_fg_color },
+            new int[] { R.attr.key_char_level_4_bg_color, R.attr.key_char_level_4_fg_color },
+            new int[] { R.attr.key_char_level_3_bg_color, R.attr.key_char_level_3_fg_color },
+            new int[] { R.attr.key_char_level_1_bg_color, R.attr.key_char_level_1_fg_color },
             };
 
-    /** 以 候选字确认按键 为中心的从内到外的候选字环形布局坐标 */
+    /** 从中心按键由内到外的候选字环形布局坐标 */
     private static final int[][][] input_word_key_around_level_coords = new int[][][] {
-            //// level 0
-            //new int[][] { new int[] { 3, 3 }, },
             // level 1
             new int[][] {
                     new int[] { 2, 3 },
@@ -97,17 +94,9 @@ public class KeyTable {
                     new int[] { 2, 1 },
                     new int[] { 1, 1 },
                     },
-//            // level 4
-//            new int[][] {
-//                    new int[] { 5, 0 }, //
-//                    new int[] { 4, 0 }, //
-//                    new int[] { 2, 0 }, //
-//                    new int[] { 1, 0 }, //
-//                    new int[] { 0, 1 },
-//                    },
-    };
+            };
 
-    /** 以 输入定位按键 为中心的从内到外的标点符号环形布局坐标 */
+    /** 从中心按键由内到外的标点符号环形布局坐标 */
     private static final int[][][] symbol_key_around_level_coords = new int[][][] {
             // level 1
             new int[][] {
@@ -150,7 +139,7 @@ public class KeyTable {
                     },
             };
 
-    /** 以 等号按键 为中心的从内到外的数学按键环形布局坐标 */
+    /** 从中心按键由内到外的数学按键环形布局坐标 */
     private static final int[][][] math_key_around_level_coords = new int[][][] {
             // level 1
             new int[][] {
@@ -178,22 +167,23 @@ public class KeyTable {
             };
 
     static {
-        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"),
-                                   new Integer[] { R.attr.key_char_final_fg_color, R.attr.key_char_final_bg_color });
-        char_key_color_palette.put(Arrays.asList("f", "l", "m", "j", "k"), new Integer[] {
-                R.attr.key_char_initial_fg_color, R.attr.key_char_initial_bg_color
+        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü"), new Integer[] {
+                R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("w", "p", "q", "d", "b"), new Integer[] {
-                R.attr.key_char_initial_jqx_fg_color, R.attr.key_char_initial_jqx_bg_color
+        char_key_color_palette.put(Arrays.asList("p", "q", "g", "h", "d", "b", "c"), new Integer[] {
+                R.attr.key_char_level_1_fg_color, R.attr.key_char_level_1_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("s", "c", "z", "t"), new Integer[] {
-                R.attr.key_char_initial_scz_fg_color, R.attr.key_char_initial_scz_bg_color
+        char_key_color_palette.put(Arrays.asList("s", "r", "t", "z", "x", "y"), new Integer[] {
+                R.attr.key_char_level_2_fg_color, R.attr.key_char_level_2_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("x", "y"), new Integer[] {
-                R.attr.key_char_initial_hgwk_fg_color, R.attr.key_char_initial_hgwk_bg_color
+        char_key_color_palette.put(Arrays.asList("w"), new Integer[] {
+                R.attr.key_char_level_3_fg_color, R.attr.key_char_level_3_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("r", "g", "h", "n"), new Integer[] {
-                R.attr.key_char_initial_nl_fg_color, R.attr.key_char_initial_nl_bg_color
+        char_key_color_palette.put(Arrays.asList("l", "m", "n"), new Integer[] {
+                R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color
+        });
+        char_key_color_palette.put(Arrays.asList("j", "k", "f"), new Integer[] {
+                R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color
         });
         char_key_color_palette.put(Arrays.asList("：", "！", "？", "；", "，", "。"), new Integer[] {
                 R.attr.key_char_symbol_fg_color, R.attr.key_char_symbol_bg_color
@@ -208,15 +198,15 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
-                            new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switch_ime_bg_color });
+                            new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode, new Integer[] {
-                R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switch_hand_mode_bg_color
+                R.drawable.ic_switch_to_left_hand, R.attr.key_ctrl_switcher_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToMathKeyboard, new Integer[] {
-                R.drawable.ic_calculator, R.attr.key_ctrl_switch_to_math_keyboard_bg_color
+                R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard, new Integer[] {
-                R.drawable.ic_symbol, R.attr.key_ctrl_switch_to_symbol_keyboard_bg_color
+                R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
@@ -234,30 +224,29 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
 
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+                -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_zcs_h, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+                -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color
         });
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl, new Integer[] {
-                -1, R.attr.key_ctrl_toggle_input_spell_bg_color
+                -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp,
                             new Integer[] { -1, R.attr.key_ctrl_noop_bg_color, R.attr.key_ctrl_noop_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Undo,
-                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Redo,
-                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
-        ctrl_key_styles.put(CtrlKey.Type.Cut,
-                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color });
+        ctrl_key_styles.put(CtrlKey.Type.Cut, new Integer[] { -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Paste,
-                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color });
         ctrl_key_styles.put(CtrlKey.Type.Copy,
-                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_ctrl_locator_fg_color });
+                            new Integer[] { -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color });
 
         ctrl_key_styles.put(CtrlKey.Type.Math_Equal,
-                            new Integer[] { -1, R.attr.key_ctrl_locator_bg_color, R.attr.key_ctrl_locator_fg_color });
+                            new Integer[] { -1, R.attr.key_fg_color, R.attr.key_highlight_fg_color });
     }
 
     /** 创建基础按键 */
@@ -269,47 +258,47 @@ public class KeyTable {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchIME),
                         alphabetKey("ü").withReplacements("v", "V"),
-                        alphabetKey("i").withReplacements("I"),
                         alphabetKey("a").withReplacements("A"),
                         alphabetKey("e").withReplacements("E"),
+                        alphabetKey("i").withReplacements("I"),
                         alphabetKey("o").withReplacements("O"),
                         alphabetKey("u").withReplacements("U"),
                         } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
-                alphabetKey("n").withReplacements("N"),
-                alphabetKey("r").withReplacements("R"),
-                alphabetKey("x").withReplacements("X"),
-                alphabetKey("s").withReplacements("S"),
-                alphabetKey("t").withReplacements("T"),
+                alphabetKey("h").withReplacements("H"),
+                alphabetKey("p").withReplacements("P"),
+                alphabetKey("w").withReplacements("W"),
+                alphabetKey("b").withReplacements("B"),
+                alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("g").withReplacements("G"),
-                alphabetKey("h").withReplacements("H"),
-                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("r").withReplacements("R"),
+                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("d").withReplacements("D"),
                 alphabetKey("z").withReplacements("Z"),
-                alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                alphabetKey("f").withReplacements("F"),
-                alphabetKey("j").withReplacements("J"),
+                alphabetKey("n").withReplacements("N"),
+                alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("w").withReplacements("W"),
-                alphabetKey("b").withReplacements("B"),
+                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("k").withReplacements("K"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
-                alphabetKey("l").withReplacements("L"),
                 alphabetKey("m").withReplacements("M"),
-                alphabetKey("k").withReplacements("K"),
-                alphabetKey("p").withReplacements("P"),
-                alphabetKey("q").withReplacements("Q"),
-                alphabetKey("d").withReplacements("D"),
+                alphabetKey("l").withReplacements("L"),
+                alphabetKey("t").withReplacements("T"),
+                alphabetKey("x").withReplacements("X"),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("j").withReplacements("J"),
                 } //
                 , new Key[] {
                 symbolKey("：").withReplacements(":"),
@@ -399,10 +388,9 @@ public class KeyTable {
                 if (wordIndex < inputWords.size()) {
                     InputWord word = inputWords.get(wordIndex);
 
-                    int bgAttrId = key_char_around_level_bg_colors[level];
-                    InputWordKey key = InputWordKey.create(word)
-                                                   .setFgColorAttrId(R.attr.key_char_around_fg_color)
-                                                   .setBgColorAttrId(bgAttrId);
+                    int bgAttrId = key_char_around_level_bg_colors[level][0];
+                    int fgAttrId = key_char_around_level_bg_colors[level][1];
+                    InputWordKey key = InputWordKey.create(word).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
 
                     // 禁用已被选中的候选字按键
                     if (word.equals(input.getWord())) {
@@ -470,7 +458,8 @@ public class KeyTable {
                 if (symbolIndex < symbols.length) {
                     Symbol symbol = symbols[symbolIndex];
 
-                    int bgAttrId = key_char_around_level_bg_colors[level];
+                    int bgAttrId = key_char_around_level_bg_colors[level][0];
+                    int fgAttrId = key_char_around_level_bg_colors[level][1];
                     String text = symbol.getText();
                     CharKey key = symbol.isDoubled() ? doubleSymbolKey(text) : symbolKey(text);
 
@@ -479,7 +468,7 @@ public class KeyTable {
                         key.setLabel(label);
                     }
 
-                    key.setFgColorAttrId(R.attr.key_char_around_fg_color).setBgColorAttrId(bgAttrId);
+                    key.setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
                     symbol.getReplacements().forEach(key::withReplacements);
 
                     gridKeys[x][y] = key;
@@ -516,8 +505,9 @@ public class KeyTable {
                 if (keyIndex < keys.length) {
                     Key<?> key = keys[keyIndex];
 
-                    int bgAttrId = key_char_around_level_bg_colors[level];
-                    key.setFgColorAttrId(R.attr.key_char_around_fg_color).setBgColorAttrId(bgAttrId);
+                    int bgAttrId = key_char_around_level_bg_colors[level][0];
+                    int fgAttrId = key_char_around_level_bg_colors[level][1];
+                    key.setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
 
                     gridKeys[x][y] = key;
                 } else {
@@ -534,6 +524,7 @@ public class KeyTable {
     public static CtrlKey enterCtrlKey(Config config) {
         return config.keyboardConfig.isSingleLineInput()
                ? ctrlKey(CtrlKey.Type.Enter).setIconResId(R.drawable.ic_right_hand_ok)
+                                            .setBgColorAttrId(R.attr.key_ctrl_ok_bg_color)
                : ctrlKey(CtrlKey.Type.Enter);
     }
 
