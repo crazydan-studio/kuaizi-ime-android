@@ -166,6 +166,36 @@ public class KeyTable {
                     },
             };
 
+    /** 从中心按键由内到外的数字按键环形布局坐标 */
+    private static final int[][][] number_key_around_level_coords = new int[][][] {
+            // level 1
+            new int[][] {
+                    new int[] { 2, 3 },
+                    new int[] { 2, 4 },
+                    new int[] { 3, 4 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 3, 2 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 2 },
+                    new int[] { 5, 1 },
+                    },
+            // level 2
+            new int[][] {
+                    new int[] { 5, 3 },
+                    new int[] { 4, 5 },
+                    new int[] { 3, 5 },
+                    new int[] { 2, 5 },
+                    new int[] { 1, 4 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 2 },
+                    new int[] { 2, 2 },
+                    new int[] { 3, 1 },
+                    new int[] { 4, 2 },
+                    },
+            };
+
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), new Integer[] {
                 R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color
@@ -210,6 +240,9 @@ public class KeyTable {
         });
         ctrl_key_styles.put(CtrlKey.Type.SwitchToPinyinKeyboard, new Integer[] {
                 R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color
+        });
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToNumberKeyboard, new Integer[] {
+                R.drawable.ic_alphabet_number, R.attr.key_ctrl_switcher_bg_color
         });
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
@@ -286,7 +319,8 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                //noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToNumberKeyboard),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -593,6 +627,44 @@ public class KeyTable {
         return gridKeys;
     }
 
+    /** 创建{@link NumberKeyboard 数字键盘}按键 */
+    public static Key<?>[][] createNumberKeys(Config config, Key<?>[] keys) {
+        Key<?>[][] gridKeys = new Key[6][7];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
+        gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][6] = enterCtrlKey(config);
+        gridKeys[3][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
+
+        int keyIndex = 0;
+        for (int level = 0; level < number_key_around_level_coords.length; level++) {
+            int[][] keyCoords = number_key_around_level_coords[level];
+
+            for (int[] keyCoord : keyCoords) {
+                int x = keyCoord[0];
+                int y = keyCoord[1];
+
+                if (keyIndex < keys.length) {
+                    Key<?> key = keys[keyIndex];
+
+                    int bgAttrId = key_char_around_level_bg_colors[level][0];
+                    int fgAttrId = key_char_around_level_bg_colors[level][1];
+                    key.setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+
+                    gridKeys[x][y] = key;
+                } else {
+                    break;
+                }
+
+                keyIndex += 1;
+            }
+        }
+
+        return gridKeys;
+    }
+
     public static CtrlKey enterCtrlKey(Config config) {
         return config.keyboardConfig.isSingleLineInput()
                ? ctrlKey(CtrlKey.Type.Enter).setIconResId(R.drawable.ic_right_hand_ok)
@@ -633,6 +705,10 @@ public class KeyTable {
 
     public static CharKey alphabetKey(String text) {
         return charKey(CharKey.Type.Alphabet, text);
+    }
+
+    public static CharKey numberKey(String text) {
+        return charKey(CharKey.Type.Number, text);
     }
 
     public static CharKey symbolKey(String text) {

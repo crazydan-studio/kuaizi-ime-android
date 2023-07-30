@@ -63,10 +63,8 @@ public interface Keyboard extends UserInputMsgListener {
         Math,
         /** 拉丁文键盘：含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件 */
         Latin,
-        /** 数字键盘：纯数字 */
+        /** 数字键盘：纯数字和 +、-、#、* 等符号 */
         Number,
-        /** 电话号码键盘：纯数字加 #、* 等 */
-        Phone,
         /** 标点符号键盘：各类符号可切换 */
         Symbol,
         /** 表情符号键盘 */

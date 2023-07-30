@@ -107,10 +107,8 @@ public class Service extends InputMethodService implements InputMsgListener {
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
             case InputType.TYPE_CLASS_DATETIME:
-                keyboardType = Keyboard.Type.Number;
-                break;
             case InputType.TYPE_CLASS_PHONE:
-                keyboardType = Keyboard.Type.Phone;
+                keyboardType = Keyboard.Type.Number;
                 break;
             case InputType.TYPE_CLASS_TEXT:
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;

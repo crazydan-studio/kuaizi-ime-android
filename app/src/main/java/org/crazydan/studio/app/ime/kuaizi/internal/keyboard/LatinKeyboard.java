@@ -17,14 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
  * {@link Keyboard.Type#Latin 拉丁文键盘}
@@ -34,61 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-29
  */
-public class LatinKeyboard extends BaseKeyboard {
+public class LatinKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
         return () -> KeyTable.createLatinKeys(createKeyTableConfigure());
-    }
-
-    @Override
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-
-    }
-
-    @Override
-    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(msg, data)) {
-            return;
-        }
-
-        Key<?> key = data.target;
-        if (key instanceof CharKey) {
-            onCharKeyMsg(msg, (CharKey) key, data);
-        } else if (key instanceof CtrlKey) {
-            onCtrlKeyMsg(msg, (CtrlKey) key, data);
-        }
-    }
-
-    @Override
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
-        // 都是直接输入到目标输入组件中，无需提交
-    }
-
-    private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                // 单字符直接输入
-                play_InputtingSingleTick_Audio(key);
-
-                append_Key_and_Commit_InputList(key);
-                break;
-            }
-        }
-    }
-
-    private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
-
-                // Note: 切换至拼音输入法的逻辑在基类中处理
-                switch (key.getType()) {
-                }
-                break;
-            }
-        }
     }
 }

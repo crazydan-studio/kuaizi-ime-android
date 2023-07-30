@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -137,6 +138,11 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case Latin:
                 if (!(this.keyboard instanceof LatinKeyboard)) {
                     this.keyboard = new LatinKeyboard();
+                }
+                break;
+            case Number:
+                if (!(this.keyboard instanceof NumberKeyboard)) {
+                    this.keyboard = new NumberKeyboard();
                 }
                 break;
             default:
