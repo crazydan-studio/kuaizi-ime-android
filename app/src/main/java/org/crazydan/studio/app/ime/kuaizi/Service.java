@@ -21,9 +21,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
@@ -46,20 +44,19 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @date 2023-06-29
  */
 public class Service extends InputMethodService implements InputMsgListener {
-    private ContextThemeWrapper imeViewTheme;
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
 
+    /** 在横竖屏转换、字体大小变更等时机调用 */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            this.imeKeyboardConfig.setOrientation(Keyboard.Orientation.Landscape);
+        } else {
+            this.imeKeyboardConfig.setOrientation(Keyboard.Orientation.Portrait);
+        }
+
         super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        this.imeViewTheme = new ContextThemeWrapper(getApplicationContext(), R.style.Theme_DayNight_KuaiziIME);
     }
 
     /** 切换到其他系统输入法时调用 */
@@ -74,12 +71,9 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        // 只能通过 Context Theme 设置输入视图的暗黑模式，
-        // 而 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES) 方式无效
-        // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
-        this.imeView = inflateView(R.layout.ime_input_view);
+        this.imeView = (ImeInputView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
 
-        this.imeView.keyboard.addInputMsgListener(this);
+        this.imeView.addInputMsgListener(this);
 
         return this.imeView;
     }
@@ -131,7 +125,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         config = new Keyboard.Config(keyboardType, config);
         config.setSingleLineInput(singleLineInput);
 
-        this.imeView.keyboard.startInput(config, true);
+        this.imeView.startInput(config, true);
     }
 
     /** 响应系统对子键盘类型的修改 */
@@ -149,7 +143,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         this.imeKeyboardConfig = new Keyboard.Config(keyboardType, config);
-        this.imeView.keyboard.startInput(this.imeKeyboardConfig, false);
+        this.imeView.startInput(this.imeKeyboardConfig, false);
     }
 
     /** 输入结束隐藏键盘 */
@@ -157,7 +151,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onFinishInput() {
         super.onFinishInput();
 
-        this.imeView.keyboard.finishInput();
+        this.imeView.finishInput();
     }
 
     @Override
@@ -356,9 +350,5 @@ public class Service extends InputMethodService implements InputMsgListener {
             return null;
         }
         return extractedText;
-    }
-
-    private <T extends View> T inflateView(int resId) {
-        return (T) LayoutInflater.from(this.imeViewTheme).inflate(resId, null);
     }
 }

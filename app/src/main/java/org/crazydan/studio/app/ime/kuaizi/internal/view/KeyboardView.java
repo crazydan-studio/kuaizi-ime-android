@@ -18,9 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import android.content.Context;
@@ -30,15 +28,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -46,8 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
@@ -64,15 +53,13 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final InputList inputList;
-    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
-
     private final int keySpacing = 8;
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
     private final RecyclerViewGestureDetector gesture;
     private final KeyViewAnimator animator;
     private final AudioPlayer audioPlayer;
+
     private Keyboard keyboard;
 
     public KeyboardView(@NonNull Context context) {
@@ -81,10 +68,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        PinyinDictDB.getInstance().init(getContext());
-
-        this.inputList = new InputList();
-        this.inputMsgListeners.add(this);
 
         HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
 
@@ -97,85 +80,42 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         setItemAnimator(this.animator);
 
         this.audioPlayer = new AudioPlayer();
-        this.audioPlayer.load(context, R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
+        this.audioPlayer.load(getContext(), R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
                     .addListener(new KeyViewGestureListener(this));
     }
 
-    public InputList getInputList() {
-        return this.inputList;
-    }
-
-    public void startInput(Keyboard.Config config, boolean reset) {
+    /** 重置视图 */
+    public void reset() {
         this.gesture.reset();
+        this.animator.reset();
 
-        if (reset) {
-            this.inputList.reset();
-        }
-        configKeyboard(config);
-    }
-
-    public void finishInput() {
-        this.keyboard.reset();
-    }
-
-    public void configKeyboard(Keyboard.Config config) {
-        Keyboard oldKeyboard = this.keyboard;
-
-        switch (config.getType()) {
-            case Symbol:
-                if (!(this.keyboard instanceof SymbolKeyboard)) {
-                    this.keyboard = new SymbolKeyboard();
-                }
-                break;
-            case Math:
-                if (!(this.keyboard instanceof MathKeyboard)) {
-                    this.keyboard = new MathKeyboard();
-                }
-                break;
-            case Latin:
-                if (!(this.keyboard instanceof LatinKeyboard)) {
-                    this.keyboard = new LatinKeyboard();
-                }
-                break;
-            case Number:
-                if (!(this.keyboard instanceof NumberKeyboard)) {
-                    this.keyboard = new NumberKeyboard();
-                }
-                break;
-            default:
-                if (!(this.keyboard instanceof PinyinKeyboard)) {
-                    this.keyboard = new PinyinKeyboard();
-                }
+        updateKeys(new Key[][] {});
+        if (this.keyboard != null) {
+            this.keyboard.removeInputMsgListener(this);
         }
 
-        this.keyboard.setConfig(config);
-        if (oldKeyboard != this.keyboard) {
-            if (oldKeyboard != null) {
-                this.inputList.removeUserInputMsgListener(oldKeyboard);
-                this.inputMsgListeners.forEach(oldKeyboard::removeInputMsgListener);
-            }
-
-            this.keyboard.setInputList(this.inputList);
-            this.inputMsgListeners.forEach(this.keyboard::addInputMsgListener);
-
-            doRelayout();
-        } else {
-            this.keyboard.reset();
-        }
+        this.keyboard = null;
     }
 
-    /**
-     * 添加{@link InputMsg 输入消息监听}
-     * <p/>
-     * 忽略重复加入的监听，且执行顺序与添加顺序无关
-     */
-    public void addInputMsgListener(InputMsgListener listener) {
-        this.inputMsgListeners.add(listener);
+    /** 更新键盘，并重绘键盘 */
+    public void updateKeyboard(Keyboard keyboard) {
+        reset();
+
+        this.keyboard = keyboard;
+        this.keyboard.addInputMsgListener(this);
+
+        Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
+        int columns = keys[0].length;
+        int rows = keys.length;
+        this.layoutManager.configGrid(columns, rows, this.keySpacing);
+
+        updateKeys(keys);
     }
 
+    /** 响应按键点击、双击等消息 */
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
         if (key != null && key.isDisabled()) {
@@ -185,16 +125,10 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
+    /** 响应键盘输入消息 */
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case Keyboard_Switching: {
-                Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
-                Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
-
-                configKeyboard(config);
-                break;
-            }
             case InputAudio_Playing: {
                 onPlayingInputAudioMsg((InputAudioPlayingMsgData) data);
                 break;
@@ -206,58 +140,53 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
             case InputChars_InputtingEnd:
             case InputCandidate_Choosing:
                 break;
-            case InputTarget_Cursor_Locating: {
-                onLocatingInputTargetCursorMsg((InputTargetCursorLocatingMsgData) data);
-                break;
-            }
         }
 
-        relayoutKeysByInputMsg(data);
+        updateKeysByInputMsg(data);
     }
 
     private void onInputtingCharsMsg(InputCharsInputtingMsgData data) {
-        // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
-        this.animator.addFadeOutKey(data.current);
+        Keyboard.Config config = this.keyboard.getConfig();
+
+        if (!config.isGlidingInputAnimationDisabled()) {
+            // Note: 单击输入不会有渐隐动画，因为不会发生按键重绘
+            this.animator.addFadeOutKey(data.current);
+        }
     }
 
     private void onPlayingInputAudioMsg(InputAudioPlayingMsgData data) {
+        Keyboard.Config config = this.keyboard.getConfig();
+
         switch (data.audioType) {
             case SingleTick:
-                this.audioPlayer.play(R.raw.tick_single);
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_single);
+                }
                 break;
             case DoubleTick:
-                this.audioPlayer.play(R.raw.tick_double);
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_double);
+                }
                 break;
             case PageFlip:
-                this.audioPlayer.play(R.raw.page_flip);
+                if (!config.isPagingAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.page_flip);
+                }
                 break;
         }
     }
 
-    private void onLocatingInputTargetCursorMsg(InputTargetCursorLocatingMsgData data) {
-    }
-
-    private void doRelayout() {
-        Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
-        int columns = keys[0].length;
-        int rows = keys.length;
-        this.layoutManager.configGrid(columns, rows, this.keySpacing);
-
-        this.animator.clearFadeOutKey();
-        doRelayoutKeys(keys);
-    }
-
-    private void relayoutKeysByInputMsg(InputMsgData data) {
+    private void updateKeysByInputMsg(InputMsgData data) {
         Keyboard.KeyFactory keyFactory = data.getKeyFactory();
         if (keyFactory == null) {
             return;
         }
 
         Key<?>[][] keys = createKeys(keyFactory);
-        doRelayoutKeys(keys);
+        updateKeys(keys);
     }
 
-    private void doRelayoutKeys(Key<?>[][] keys) {
+    private void updateKeys(Key<?>[][] keys) {
         this.adapter.bindKeys(keys);
     }
 

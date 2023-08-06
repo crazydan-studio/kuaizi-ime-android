@@ -17,12 +17,36 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.util.AttributeSet;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 
@@ -30,22 +54,237 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class ImeInputView extends FrameLayout {
-    public final KeyboardView keyboard;
-    public final InputListView inputList;
+public class ImeInputView extends FrameLayout
+        implements InputMsgListener, SharedPreferences.OnSharedPreferenceChangeListener {
+    private final SharedPreferences preferences;
+    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
-    public ImeInputView(
-            @NonNull Context context, @Nullable AttributeSet attrs
-    ) {
+    public KeyboardView keyboardView;
+    public InputListView inputListView;
+
+    private final InputList inputList;
+    private Keyboard keyboard;
+
+    public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        inflate(context, R.layout.ime_input_view_layout, this);
+        PinyinDictDB.getInstance().init(getContext());
 
-        this.keyboard = findViewById(R.id.keyboard);
-        this.inputList = findViewById(R.id.input_list);
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        this.preferences.registerOnSharedPreferenceChangeListener(this);
 
-        this.inputList.setInputList(this.keyboard.getInputList());
+        this.inputList = new InputList();
 
-        this.keyboard.addInputMsgListener(this.inputList);
+        bindViews();
+    }
+
+    /**
+     * 添加{@link InputMsg 输入消息监听}
+     * <p/>
+     * 忽略重复加入的监听，且执行顺序与添加顺序无关
+     */
+    public void addInputMsgListener(InputMsgListener listener) {
+        this.inputMsgListeners.add(listener);
+    }
+
+    /** 开始输入 */
+    public void startInput(Keyboard.Config config, boolean resetInputList) {
+        if (resetInputList) {
+            this.inputList.reset();
+        }
+        updateKeyboard(config);
+    }
+
+    /** 结束输入 */
+    public void finishInput() {
+        this.keyboard.reset();
+    }
+
+    /** 响应键盘输入消息 */
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        if (msg == InputMsg.Keyboard_Switching) {
+            Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
+            Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
+
+            updateKeyboard(config);
+        }
+    }
+
+    /** 根据配置更新键盘：设计键盘切换等 */
+    public void updateKeyboard(Keyboard.Config config) {
+        Keyboard oldKeyboard = this.keyboard;
+
+        Keyboard newKeyboard = createKeyboard(config.getType());
+        if (this.keyboard == null || !newKeyboard.getClass().equals(this.keyboard.getClass())) {
+            this.keyboard = newKeyboard;
+        } else {
+            newKeyboard = this.keyboard;
+        }
+
+        config = patchKeyboardConfig(config);
+        newKeyboard.setConfig(config);
+
+        if (oldKeyboard != newKeyboard) {
+            if (oldKeyboard != null) {
+                oldKeyboard.destroy();
+            }
+
+            bindKeyboard(newKeyboard);
+        } else {
+            newKeyboard.reset();
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        List<String> validKeys = new ArrayList<>(Arrays.asList(Keyboard.Config.pref_key_disable_key_clicked_audio,
+                                                               Keyboard.Config.pref_key_disable_pinyin_gliding_input_animation,
+                                                               Keyboard.Config.pref_key_disable_input_candidates_paging_audio,
+                                                               Keyboard.Config.pref_key_hand_mode,
+                                                               Keyboard.Config.pref_key_theme));
+        if (!validKeys.contains(key)) {
+            return;
+        }
+
+        Keyboard.Config oldConfig = this.keyboard.getConfig();
+        Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
+        this.keyboard.setConfig(newConfig);
+
+        // 主题发生变化，重新绑定视图
+        if (oldConfig.getThemeResId() != newConfig.getThemeResId()) {
+            bindViews();
+        }
+        // Note: 仅需更新视图，无需更新监听等
+        else if (oldConfig.getHandMode() != newConfig.getHandMode()) {
+            this.keyboardView.updateKeyboard(this.keyboard);
+        }
+    }
+
+    private void reset() {
+        if (this.keyboard != null) {
+            this.inputMsgListeners.forEach(this.keyboard::removeInputMsgListener);
+        }
+
+        if (this.keyboardView != null) {
+            this.keyboardView.reset();
+        }
+        if (this.inputListView != null) {
+            this.inputListView.reset();
+        }
+
+        this.inputMsgListeners.remove(this);
+        this.inputMsgListeners.remove(this.inputListView);
+    }
+
+    private void bindViews() {
+        reset();
+        // 必须先清除已有的子视图，否则，重复 inflate 会无法即可生效
+        removeAllViews();
+
+        int themeResId = this.keyboard != null ? this.keyboard.getConfig().getThemeResId() : getThemeResId();
+        View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
+
+        this.keyboardView = rootView.findViewById(R.id.keyboard);
+        this.inputListView = rootView.findViewById(R.id.input_list);
+
+        this.inputListView.setInputList(this.inputList);
+
+        addInputMsgListener(this);
+        addInputMsgListener(this.inputListView);
+
+        bindKeyboard(this.keyboard);
+    }
+
+    private void bindKeyboard(Keyboard keyboard) {
+        if (keyboard != null) {
+            keyboard.setInputList(this.inputList);
+            this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
+
+            this.keyboardView.updateKeyboard(keyboard);
+        }
+    }
+
+    private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
+        Keyboard.Config patchedConfig = new Keyboard.Config(config.getType(), config);
+
+        boolean disableKeyClickedAudio = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_key_clicked_audio,
+                                                                     false);
+        patchedConfig.setKeyClickedAudioDisabled(disableKeyClickedAudio);
+
+        boolean disablePinyinGlidingInputAnimation
+                = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_pinyin_gliding_input_animation, false);
+        patchedConfig.setGlidingInputAnimationDisabled(disablePinyinGlidingInputAnimation);
+
+        boolean disableInputCandidatesPagingAudio
+                = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
+        patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);
+
+        Keyboard.HandMode handMode = getHandMode();
+        patchedConfig.setHandMode(handMode);
+
+        int themeResId = getThemeResId();
+        patchedConfig.setThemeResId(themeResId);
+
+        return patchedConfig;
+    }
+
+    private <T extends View> T inflateWithTheme(int resId, int themeResId) {
+        // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
+        // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
+        // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
+        Context context = new ContextThemeWrapper(getContext(), themeResId);
+
+        return (T) LayoutInflater.from(context).inflate(resId, this);
+    }
+
+    private Keyboard createKeyboard(Keyboard.Type type) {
+        switch (type) {
+            case Symbol:
+                return new SymbolKeyboard();
+            case Math:
+                return new MathKeyboard();
+            case Latin:
+                return new LatinKeyboard();
+            case Number:
+                return new NumberKeyboard();
+            default:
+                return new PinyinKeyboard();
+        }
+    }
+
+    private int getThemeResId() {
+        String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, "night");
+
+        int themeResId = R.style.Theme_Night_KuaiziIME;
+        switch (theme) {
+            case "light":
+                themeResId = R.style.Theme_Light_KuaiziIME;
+                break;
+            case "follow_system":
+                int themeMode = getContext().getResources().getConfiguration().uiMode
+                                & Configuration.UI_MODE_NIGHT_MASK;
+                switch (themeMode) {
+                    case Configuration.UI_MODE_NIGHT_NO:
+                        themeResId = R.style.Theme_Light_KuaiziIME;
+                        break;
+                    case Configuration.UI_MODE_NIGHT_YES:
+                        themeResId = R.style.Theme_Night_KuaiziIME;
+                        break;
+                }
+                break;
+        }
+
+        return themeResId;
+    }
+
+    private Keyboard.HandMode getHandMode() {
+        String handMode = this.preferences.getString(Keyboard.Config.pref_key_hand_mode, "right");
+
+        if ("left".equals(handMode)) {
+            return Keyboard.HandMode.Left;
+        } else {
+            return Keyboard.HandMode.Right;
+        }
     }
 }

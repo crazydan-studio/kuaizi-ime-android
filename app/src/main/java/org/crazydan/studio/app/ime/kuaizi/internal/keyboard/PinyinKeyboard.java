@@ -421,18 +421,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputPageFlipping_Audio();
             }
         } else {
-            // 翻到当前已选中候选字所在的页
             int dataSize = input.getCandidates().size();
             int pageSize = KeyTable.getInputCandidateKeysPageSize();
-            int wordIndex = input.getCandidates().indexOf(input.getWord());
-
             stateData = new ChoosingInputCandidateStateData(dataSize, pageSize);
-            // Note: 初始状态分页一定是从 0 开始的
-            int pageStart = stateData.getPageStart();
-            while (wordIndex >= pageStart + pageSize) {
-                stateData.nextPage();
-                pageStart = stateData.getPageStart();
-            }
 
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }

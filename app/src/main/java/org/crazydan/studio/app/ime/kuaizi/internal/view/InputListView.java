@@ -67,15 +67,24 @@ public class InputListView extends RecyclerView implements InputMsgListener {
                     .addListener(new InputViewGestureListener(this));
     }
 
+    /** 重置视图 */
+    public void reset() {
+        this.gesture.reset();
+
+        setInputList(null);
+    }
+
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
         this.adapter.setInputList(inputList);
     }
 
+    /** 响应输入列表的点击等消息 */
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         this.inputList.onUserInputMsg(msg, data);
     }
 
+    /** 响应键盘输入消息 */
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {

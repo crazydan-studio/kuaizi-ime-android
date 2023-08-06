@@ -19,7 +19,7 @@
 
     <style name="Theme.KuaiziIME" parent="Theme.Light.KuaiziIME" />
 
-    <style name="Theme.Light.KuaiziIME" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.Light.KuaiziIME" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">@color/color_white</item>
         <item name="keyboard_border_color">@color/color_gray_900</item>
@@ -71,7 +71,7 @@
         <item name="key_char_level_5_fg_color">?attr/key_fg_color</item>
     </style>
 
-    <style name="Theme.DayNight.KuaiziIME" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Night.KuaiziIME" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">@color/color_gray_950</item>
         <item name="keyboard_border_color">@color/color_gray_900</item>

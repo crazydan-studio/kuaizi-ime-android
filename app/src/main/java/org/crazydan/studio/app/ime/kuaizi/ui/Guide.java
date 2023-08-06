@@ -22,7 +22,6 @@ import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
@@ -47,10 +46,6 @@ public class Guide extends AppCompatActivity implements InputMsgListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 启用暗黑主题: https://juejin.cn/post/7130482856878407694
-        // https://developer.android.com/develop/ui/views/theming/darktheme
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-
         setContentView(R.layout.guide_activity);
 
         this.editText = findViewById(R.id.text_input);
@@ -58,8 +53,8 @@ public class Guide extends AppCompatActivity implements InputMsgListener {
         this.editText.setText("这是一段测试文本\nThis is a text for testing\n欢迎使用筷字输入法\nThanks for using Kuaizi Input Method");
 
         ImeInputView imeView = findViewById(R.id.ime_view);
-        imeView.keyboard.addInputMsgListener(this);
-        imeView.keyboard.configKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
+        imeView.addInputMsgListener(this);
+        imeView.updateKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
     }
 
     @Override

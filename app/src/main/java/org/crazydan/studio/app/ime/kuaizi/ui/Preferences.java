@@ -17,12 +17,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 
+/**
+ * 输入法配置界面
+ * <p/>
+ * 在视图内通过 {@link androidx.preference.Preference}
+ * 组件读写应用的 {@link SharedPreferences} 配置数据
+ *
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-08-06
+ */
 public class Preferences extends AppCompatActivity {
 
     @Override
@@ -41,6 +51,7 @@ public class Preferences extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences, rootKey);

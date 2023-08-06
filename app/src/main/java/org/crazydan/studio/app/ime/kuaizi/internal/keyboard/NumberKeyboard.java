@@ -19,9 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
  * {@link Keyboard.Type#Number 纯数字键盘}
@@ -58,24 +55,5 @@ public class NumberKeyboard extends DirectInputKeyboard {
     @Override
     public KeyFactory getKeyFactory() {
         return () -> KeyTable.createNumberKeys(createKeyTableConfigure(), number_keys);
-    }
-
-    @Override
-    protected void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                switch (key.getType()) {
-                    case Exit: {
-                        // 单字符直接输入
-                        play_InputtingSingleTick_Audio(key);
-
-                        switch_Keyboard(Type.Pinyin);
-                        break;
-                    }
-                }
-                break;
-            }
-        }
     }
 }

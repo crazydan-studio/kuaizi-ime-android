@@ -69,6 +69,15 @@ public abstract class BaseKeyboard implements Keyboard {
         end_InputChars_Inputting();
     }
 
+    @Override
+    public void destroy() {
+        if (this.inputList != null) {
+            this.inputList.removeUserInputMsgListener(this);
+        }
+        this.inputMsgListeners.clear();
+        this.config = null;
+    }
+
     public InputList getInputList() {
         return this.inputList;
     }

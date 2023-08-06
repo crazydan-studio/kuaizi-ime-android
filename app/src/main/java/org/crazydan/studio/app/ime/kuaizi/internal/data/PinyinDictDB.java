@@ -94,6 +94,10 @@ public class PinyinDictDB {
         File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
         copySQLite(context, appDBFile, R.raw.pinyin_dict);
 
+        File userDBFile = new File(context.getFilesDir(), file_user_dict_db);
+        SQLiteDatabase userDB = openSQLite(userDBFile, false);
+        initUserDB(userDB);
+
         this.inited = true;
     }
 
@@ -109,7 +113,6 @@ public class PinyinDictDB {
         this.appDB = openSQLite(appDBFile, true);
         this.userDB = openSQLite(userDBFile, false);
 
-        initUserDB(this.userDB);
         configSQLite(this.appDB);
         configSQLite(this.userDB);
 
@@ -450,7 +453,7 @@ public class PinyinDictDB {
 
     private void configSQLite(SQLiteDatabase db) {
         String[] clauses = new String[] {
-                "PRAGMA cache_size = 50000;", "PRAGMA temp_store = MEMORY;",
+                "PRAGMA cache_size = 5000;", "PRAGMA temp_store = MEMORY;",
                 };
         for (String clause : clauses) {
             db.execSQL(clause);

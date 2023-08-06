@@ -26,16 +26,22 @@
     <string name="label_input_word_key_trad_mark">繁</string>
 
     <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="title_preference_basic">Basic</string>
+    <string name="title_preference_performance">Performance</string>
+    <string name="title_preference_about">About</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <!-- Settings Preferences -->
+    <string name="label_disable_key_clicked_audio">Disable the key clicked audio</string>
+    <string name="label_disable_paging_audio">Disable the paging audio</string>
+    <string name="label_disable_gliding_input_animation">Disable the gliding input animation</string>
+    <string name="label_switch_theme">Switch theme</string>
+    <string name="label_switch_hand_mode">Hand mode</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="value_theme_light">Light</string>
+    <string name="value_theme_night">Night</string>
+    <string name="value_theme_follow_system">Follow System</string>
+    <string name="value_hand_mode_left">Left Mode</string>
+    <string name="value_hand_mode_right">Right Mode</string>
+
+    <!-- About Preferences -->
 </resources>

@@ -17,5 +17,5 @@
 
 <resources>
 
-    <style name="Theme.KuaiziIME" parent="Theme.DayNight.KuaiziIME" />
+    <style name="Theme.KuaiziIME" parent="Theme.Night.KuaiziIME" />
 </resources>

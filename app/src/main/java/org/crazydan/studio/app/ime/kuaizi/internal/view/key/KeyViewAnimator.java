@@ -41,6 +41,10 @@ public class KeyViewAnimator extends DefaultItemAnimator {
     private final Set<Key<?>> fadeOutKeys = new HashSet<>();
     private KeyView<?, ?> closedKeyView;
 
+    public void reset() {
+        clearFadeOutKey();
+    }
+
     @Override
     public boolean animateChange(
             RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromX, int fromY, int toX, int toY
@@ -116,7 +120,7 @@ public class KeyViewAnimator extends DefaultItemAnimator {
         }
     }
 
-    public void clearFadeOutKey() {
+    private void clearFadeOutKey() {
         this.fadeOutKeys.clear();
     }
 

@@ -319,8 +319,8 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                //noopCtrlKey(),
-                ctrlKey(CtrlKey.Type.SwitchToNumberKeyboard),
+                noopCtrlKey(),
+                //ctrlKey(CtrlKey.Type.SwitchToNumberKeyboard),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -547,7 +547,7 @@ public class KeyTable {
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[4][0] = ctrlKey(CtrlKey.Type.Exit);
 
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                      + "/" //
@@ -636,7 +636,6 @@ public class KeyTable {
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][6] = enterCtrlKey(config);
-        gridKeys[3][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
 
         int keyIndex = 0;
         for (int level = 0; level < number_key_around_level_coords.length; level++) {

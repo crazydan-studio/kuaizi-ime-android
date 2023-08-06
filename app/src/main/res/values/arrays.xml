@@ -16,14 +16,27 @@
   -->
 
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <!-- Theme Preference -->
+    <string-array name="theme_entries">
+        <item>@string/value_theme_light</item>
+        <item>@string/value_theme_night</item>
+        <item>@string/value_theme_follow_system</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>night</item>
+        <item>follow_system</item>
+    </string-array>
+
+    <!-- Hand Mode Preference -->
+    <string-array name="hand_mode_entries">
+        <item>@string/value_hand_mode_left</item>
+        <item>@string/value_hand_mode_right</item>
+    </string-array>
+
+    <string-array name="hand_mode_values">
+        <item>left</item>
+        <item>right</item>
     </string-array>
 </resources>

@@ -42,6 +42,9 @@ public interface Keyboard extends UserInputMsgListener {
     /** 重置状态 */
     void reset();
 
+    /** 销毁 */
+    void destroy();
+
     /** 处理{@link UserKeyMsg 按键消息} */
     void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
 
@@ -92,6 +95,14 @@ public interface Keyboard extends UserInputMsgListener {
 
     /** 键盘配置 */
     class Config {
+        public static final String pref_key_disable_key_clicked_audio = "disable_key_clicked_audio";
+        public static final String pref_key_disable_pinyin_gliding_input_animation
+                = "disable_pinyin_gliding_input_animation";
+        public static final String pref_key_disable_input_candidates_paging_audio
+                = "disable_input_candidates_paging_audio";
+        public static final String pref_key_hand_mode = "hand_mode";
+        public static final String pref_key_theme = "theme";
+
         /** 键盘类型 */
         private final Type type;
         /** 是否为单行输入 */
@@ -100,6 +111,12 @@ public interface Keyboard extends UserInputMsgListener {
         private Orientation orientation = Orientation.Portrait;
         /** 左右手模式 */
         private HandMode handMode = HandMode.Right;
+        /** 主题资源 id */
+        private int themeResId;
+
+        private boolean keyClickedAudioDisabled;
+        private boolean glidingInputAnimationDisabled;
+        private boolean pagingAudioDisabled;
 
         public Config(Type type) {
             this.type = type;
@@ -112,6 +129,10 @@ public interface Keyboard extends UserInputMsgListener {
                 this.singleLineInput = config.singleLineInput;
                 this.orientation = config.orientation;
                 this.handMode = config.handMode;
+
+                this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
+                this.glidingInputAnimationDisabled = config.glidingInputAnimationDisabled;
+                this.pagingAudioDisabled = config.pagingAudioDisabled;
             }
         }
 
@@ -141,6 +162,38 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setHandMode(HandMode handMode) {
             this.handMode = handMode;
+        }
+
+        public int getThemeResId() {
+            return this.themeResId;
+        }
+
+        public void setThemeResId(int themeResId) {
+            this.themeResId = themeResId;
+        }
+
+        public boolean isKeyClickedAudioDisabled() {
+            return this.keyClickedAudioDisabled;
+        }
+
+        public void setKeyClickedAudioDisabled(boolean keyClickedAudioDisabled) {
+            this.keyClickedAudioDisabled = keyClickedAudioDisabled;
+        }
+
+        public boolean isGlidingInputAnimationDisabled() {
+            return this.glidingInputAnimationDisabled;
+        }
+
+        public void setGlidingInputAnimationDisabled(boolean glidingInputAnimationDisabled) {
+            this.glidingInputAnimationDisabled = glidingInputAnimationDisabled;
+        }
+
+        public boolean isPagingAudioDisabled() {
+            return this.pagingAudioDisabled;
+        }
+
+        public void setPagingAudioDisabled(boolean pagingAudioDisabled) {
+            this.pagingAudioDisabled = pagingAudioDisabled;
         }
     }
 
