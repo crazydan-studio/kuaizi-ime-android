@@ -547,7 +547,7 @@ public class KeyTable {
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[4][0] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[4][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
 
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                      + "/" //
