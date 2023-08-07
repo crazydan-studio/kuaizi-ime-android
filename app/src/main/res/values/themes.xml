@@ -17,8 +17,6 @@
 
 <resources>
 
-    <style name="Theme.KuaiziIME" parent="Theme.Light.KuaiziIME" />
-
     <style name="Theme.Light.KuaiziIME" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">@color/color_white</item>

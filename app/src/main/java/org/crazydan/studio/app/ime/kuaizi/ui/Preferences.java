@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 
@@ -33,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-06
  */
-public class Preferences extends AppCompatActivity {
+public class Preferences extends FollowSystemThemeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +47,13 @@ public class Preferences extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    /** 点击顶部的返回按钮的响应动作 */
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

@@ -26,16 +26,16 @@
     <string name="label_input_word_key_trad_mark">繁</string>
 
     <!-- Preference Titles -->
-    <string name="title_preference_basic">Basic</string>
-    <string name="title_preference_performance">Performance</string>
+    <string name="title_preference_basic">Basic Settings</string>
+    <string name="title_preference_performance">Performance First</string>
     <string name="title_preference_about">About</string>
 
     <!-- Settings Preferences -->
     <string name="label_disable_key_clicked_audio">Disable the key clicked audio</string>
     <string name="label_disable_paging_audio">Disable the paging audio</string>
     <string name="label_disable_gliding_input_animation">Disable the gliding input animation</string>
-    <string name="label_switch_theme">Switch theme</string>
-    <string name="label_switch_hand_mode">Hand mode</string>
+    <string name="label_switch_theme">Switch keyboard theme</string>
+    <string name="label_switch_hand_mode">Switch keyboard hand mode</string>
 
     <string name="value_theme_light">Light</string>
     <string name="value_theme_night">Night</string>

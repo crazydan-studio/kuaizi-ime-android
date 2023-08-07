@@ -41,12 +41,12 @@
                 app:title="@string/label_disable_key_clicked_audio" />
 
         <SwitchPreferenceCompat
-                app:key="disable_pinyin_gliding_input_animation"
-                app:title="@string/label_disable_gliding_input_animation" />
-
-        <SwitchPreferenceCompat
                 app:key="disable_input_candidates_paging_audio"
                 app:title="@string/label_disable_paging_audio" />
+
+        <SwitchPreferenceCompat
+                app:key="disable_pinyin_gliding_input_animation"
+                app:title="@string/label_disable_gliding_input_animation" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/title_preference_about"></PreferenceCategory>

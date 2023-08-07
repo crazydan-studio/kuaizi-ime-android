@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
@@ -39,13 +38,12 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class Guide extends AppCompatActivity implements InputMsgListener {
+public class Guide extends FollowSystemThemeActivity implements InputMsgListener {
     private EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.guide_activity);
 
         this.editText = findViewById(R.id.text_input);

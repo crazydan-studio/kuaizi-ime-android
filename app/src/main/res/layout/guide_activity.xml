@@ -25,8 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autofillHints=""
-            android:textColor="?attr/key_fg_color" />
+            android:autofillHints="" />
 
     <include
             layout="@layout/ime_input_view"
