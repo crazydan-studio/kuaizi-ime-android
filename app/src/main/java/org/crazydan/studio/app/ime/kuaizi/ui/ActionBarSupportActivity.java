@@ -17,37 +17,38 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.preference.PreferenceFragmentCompat;
-import org.crazydan.studio.app.ime.kuaizi.R;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * 输入法配置界面
- * <p/>
- * 在视图内通过 {@link androidx.preference.Preference}
- * 组件读写应用的 {@link SharedPreferences} 配置数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-06
+ * @date 2023-08-07
  */
-public class Preferences extends FollowSystemThemeActivity {
+public abstract class ActionBarSupportActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.preferences_activity);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
+        if (isActionBarEnabled()) {
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
         }
     }
 
-    public static class SettingsFragment extends PreferenceFragmentCompat {
-
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.app_preferences, rootKey);
+    /** 点击顶部的返回按钮的响应动作 */
+    @Override
+    public boolean onSupportNavigateUp() {
+        if (isActionBarEnabled()) {
+            onBackPressed();
         }
+        return true;
+    }
+
+    protected boolean isActionBarEnabled() {
+        return true;
     }
 }

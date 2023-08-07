@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * 支持根据系统暗黑主题设置窗口主题
@@ -27,7 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-07
  */
-public abstract class FollowSystemThemeActivity extends AppCompatActivity {
+public abstract class FollowSystemThemeActivity extends ActionBarSupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

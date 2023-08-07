@@ -15,16 +15,8 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <dimen name="about_activity_text_size">18sp</dimen>
-
-    <dimen name="gap_input_width">4dp</dimen>
-    <dimen name="char_input_notation_text_size">12sp</dimen>
-    <dimen name="char_input_word_text_size">22sp</dimen>
-    <dimen name="char_key_text_size">28sp</dimen>
-    <dimen name="ctrl_key_text_size">14sp</dimen>
-    <dimen name="char_symbol_key_text_size">14sp</dimen>
-    <dimen name="input_spell_toggle_key_text_size">14sp</dimen>
-    <dimen name="input_word_key_notation_text_size">12sp</dimen>
-    <dimen name="input_word_key_word_text_size">18sp</dimen>
-</resources>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+</LinearLayout>

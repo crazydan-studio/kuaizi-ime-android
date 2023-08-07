@@ -15,7 +15,8 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="@string/title_preference_basic">
         <!-- useSimpleSummaryProvider 为 true 时，在标签下方将显示设置的值 -->
         <ListPreference
@@ -49,5 +50,22 @@
                 app:title="@string/label_disable_gliding_input_animation" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/title_preference_about"></PreferenceCategory>
+    <PreferenceCategory app:title="@string/title_preference_about">
+        <!-- https://stackoverflow.com/questions/7275015/android-start-activity-from-preferences-xml#answer-10441707 -->
+        <PreferenceScreen android:title="@string/title_about_thanks">
+            <intent android:action=".ui.about.AboutThanks" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/title_about_suggestion">
+            <intent android:action=".ui.about.AboutSuggestion" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/title_about_app">
+            <intent android:action=".ui.about.AboutApp" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/title_about_team">
+            <intent android:action=".ui.about.AboutTeam" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/title_about_change_log">
+            <intent android:action=".ui.about.AboutChangeLog" />
+        </PreferenceScreen>
+    </PreferenceCategory>
 </PreferenceScreen>

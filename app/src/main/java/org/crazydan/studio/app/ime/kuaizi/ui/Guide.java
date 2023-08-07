@@ -42,6 +42,11 @@ public class Guide extends FollowSystemThemeActivity implements InputMsgListener
     private EditText editText;
 
     @Override
+    protected boolean isActionBarEnabled() {
+        return false;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_activity);

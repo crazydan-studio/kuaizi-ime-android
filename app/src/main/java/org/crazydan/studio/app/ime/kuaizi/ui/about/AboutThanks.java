@@ -15,39 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui;
+package org.crazydan.studio.app.ime.kuaizi.ui.about;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.preference.PreferenceFragmentCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.ui.HtmlSupportActivity;
 
 /**
- * 输入法配置界面
- * <p/>
- * 在视图内通过 {@link androidx.preference.Preference}
- * 组件读写应用的 {@link SharedPreferences} 配置数据
+ * 感谢
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-06
+ * @date 2023-08-07
  */
-public class Preferences extends FollowSystemThemeActivity {
+public class AboutThanks extends HtmlSupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.preferences_activity);
+        setContentView(R.layout.about_only_text_activity);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
-        }
-    }
-
-    public static class SettingsFragment extends PreferenceFragmentCompat {
-
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.app_preferences, rootKey);
-        }
+        setHtmlText(R.id.text_only, R.string.text_about_thanks);
     }
 }

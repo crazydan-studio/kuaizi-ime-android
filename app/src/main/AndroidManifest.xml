@@ -56,5 +56,56 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+                android:name=".ui.about.AboutApp"
+                android:exported="false"
+                android:label="@string/title_about_app"
+                android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name=".ui.about.AboutApp" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.AboutTeam"
+                android:exported="false"
+                android:label="@string/title_about_team"
+                android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name=".ui.about.AboutTeam" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.AboutSuggestion"
+                android:exported="false"
+                android:label="@string/title_about_suggestion"
+                android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name=".ui.about.AboutSuggestion" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.AboutThanks"
+                android:exported="false"
+                android:label="@string/title_about_thanks"
+                android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name=".ui.about.AboutThanks" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.AboutChangeLog"
+                android:exported="false"
+                android:label="@string/title_about_change_log"
+                android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name=".ui.about.AboutChangeLog" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>
