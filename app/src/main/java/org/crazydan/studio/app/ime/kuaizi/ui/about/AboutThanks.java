@@ -34,6 +34,8 @@ public class AboutThanks extends HtmlSupportActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_only_text_activity);
 
-        setHtmlText(R.id.text_only, R.string.text_about_thanks);
+        String appName = getAppName();
+
+        setHtmlText(R.id.text_only, R.string.text_about_thanks, appName);
     }
 }

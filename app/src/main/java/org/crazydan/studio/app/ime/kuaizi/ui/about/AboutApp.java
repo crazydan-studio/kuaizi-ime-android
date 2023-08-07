@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.about;
 
-import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.ui.HtmlSupportActivity;
@@ -35,22 +34,10 @@ public class AboutApp extends HtmlSupportActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_app_activity);
 
-        String appVersion = getVersion();
-        String appName = getResources().getString(R.string.app_name);
+        String appVersion = getAppVersion();
+        String appName = getAppName();
 
         setText(R.id.app_name, R.string.app_name_with_version, appVersion);
         setHtmlText(R.id.about_app, R.string.text_about_app, appName);
-    }
-
-    private String getVersion() {
-        // https://developer.android.com/studio/publish/versioning
-        // https://stackoverflow.com/questions/4616095/how-can-you-get-the-build-version-number-of-your-android-application#answer-6593822
-        try {
-            PackageInfo pkgInfo = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0);
-
-            return pkgInfo.versionName;
-        } catch (Exception ignore) {
-        }
-        return null;
     }
 }

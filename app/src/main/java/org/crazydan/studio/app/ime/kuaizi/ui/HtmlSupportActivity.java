@@ -17,9 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
+import android.content.pm.PackageInfo;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 import static android.text.Html.FROM_HTML_MODE_LEGACY;
 
@@ -44,5 +47,23 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
 
         TextView view = findViewById(viewResId);
         view.setText(viewText);
+        // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
+        view.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    protected String getAppName() {
+        return getResources().getString(R.string.app_name);
+    }
+
+    protected String getAppVersion() {
+        // https://developer.android.com/studio/publish/versioning
+        // https://stackoverflow.com/questions/4616095/how-can-you-get-the-build-version-number-of-your-android-application#answer-6593822
+        try {
+            PackageInfo pkgInfo = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0);
+
+            return pkgInfo.versionName;
+        } catch (Exception ignore) {
+        }
+        return null;
     }
 }

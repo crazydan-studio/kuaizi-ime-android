@@ -34,7 +34,7 @@ public class AboutTeam extends HtmlSupportActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_only_text_activity);
 
-        String appName = getResources().getString(R.string.app_name);
+        String appName = getAppName();
 
         setHtmlText(R.id.text_only, R.string.text_about_team, appName);
     }
