@@ -32,10 +32,11 @@ public class AboutTeam extends HtmlSupportActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.about_team_activity);
+        setContentView(R.layout.about_text_with_icon_activity);
 
         String appName = getAppName();
 
-        setHtmlText(R.id.about_team, R.string.text_about_team, appName);
+        setIcon(R.id.about_icon, R.drawable.ic_team_logo);
+        setHtmlText(R.id.about_text, R.string.text_about_team, appName);
     }
 }

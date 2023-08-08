@@ -32,8 +32,9 @@ public class AboutChangeLog extends HtmlSupportActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.about_text_only_activity);
+        setContentView(R.layout.about_text_with_icon_activity);
 
-        setHtmlText(R.id.text_only, R.string.text_about_change_log);
+        setIcon(R.id.about_icon, R.drawable.ic_change_log);
+        setHtmlText(R.id.about_text, R.string.text_about_change_log);
     }
 }

@@ -21,6 +21,7 @@ import android.content.pm.PackageInfo;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.widget.ImageView;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 
@@ -49,6 +50,11 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
         view.setText(viewText);
         // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
         view.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    protected void setIcon(int viewResId, int iconResId) {
+        ImageView view = findViewById(viewResId);
+        view.setImageResource(iconResId);
     }
 
     protected String getAppName() {

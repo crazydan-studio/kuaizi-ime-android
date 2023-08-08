@@ -37,7 +37,7 @@ public class AboutApp extends HtmlSupportActivity {
         String appVersion = getAppVersion();
         String appName = getAppName();
 
-        setText(R.id.app_name, R.string.app_name_with_version, appVersion);
-        setHtmlText(R.id.about_app, R.string.text_about_app, appName);
+        setText(R.id.about_icon_name, R.string.app_name_with_version, appVersion);
+        setHtmlText(R.id.about_text, R.string.text_about_app, appName);
     }
 }
