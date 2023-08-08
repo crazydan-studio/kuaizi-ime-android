@@ -32,7 +32,7 @@ public class AboutThanks extends HtmlSupportActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.about_only_text_activity);
+        setContentView(R.layout.about_text_only_activity);
 
         String appName = getAppName();
 
