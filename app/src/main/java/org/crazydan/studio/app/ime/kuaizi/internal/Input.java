@@ -45,13 +45,13 @@ public interface Input {
     /** 获取输入按键列表 */
     List<Key<?>> getKeys();
 
-    /** 获取当前按键 */
-    Key<?> getLatestKey();
+    /** 获取最后一个按键 */
+    Key<?> getLastKey();
 
     /** 追加输入按键 */
     void appendKey(Key<?> key);
 
-    /** 替换最新的输入按键 */
+    /** 替换指定按键的最近添加位置的按键 */
     void replaceLatestKey(Key<?> oldKey, Key<?> newKey);
 
     /** 获取输入字符列表 */

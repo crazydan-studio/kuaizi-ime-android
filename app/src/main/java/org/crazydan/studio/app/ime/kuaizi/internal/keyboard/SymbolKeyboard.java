@@ -210,16 +210,16 @@ public class SymbolKeyboard extends BaseKeyboard {
             input = getInputList().getPending();
         }
 
-        Key<?> latestKey = input.getLatestKey();
-        if (!key.canReplaceTheKey(latestKey)) {
+        Key<?> latKey = input.getLastKey();
+        if (!key.canReplaceTheKey(latKey)) {
             return;
         }
 
-        CharKey latestCharKey = (CharKey) latestKey;
+        CharKey lastCharKey = (CharKey) latKey;
         // Note: 在 Input 中的 key 可能不携带 replacement 信息，只能通过当前按键做判断
-        String newKeyText = key.nextReplacement(latestCharKey.getText());
+        String newKeyText = key.nextReplacement(lastCharKey.getText());
 
         CharKey newKey = KeyTable.alphabetKey(newKeyText);
-        input.replaceLatestKey(latestCharKey, newKey);
+        input.replaceLatestKey(lastCharKey, newKey);
     }
 }

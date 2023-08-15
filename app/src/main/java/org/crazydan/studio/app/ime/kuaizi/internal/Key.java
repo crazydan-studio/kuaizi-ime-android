@@ -76,4 +76,14 @@ public interface Key<K extends Key<?>> {
 
     /** 设置背景色属性 id */
     K setBgColorAttrId(int bgColorAttrId);
+
+    /** 按键级别 */
+    enum Level {
+        /** 第 0 级：初始布局的按键 */
+        level_0,
+        /** 第 1 级：拼音滑屏的第一级后继字母按键 */
+        level_1,
+        /** 第 2 级：拼音滑屏的第二级后继字母按键 */
+        level_2,
+    }
 }

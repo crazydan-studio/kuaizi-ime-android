@@ -41,6 +41,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
@@ -147,19 +148,38 @@ public class PinyinDictDB {
      *
      * @return 参数为<code>null</code>或为空时，返回<code>null</code>
      */
-    public Collection<String> findNextChar(List<String> pinyin) {
+    public Collection<String> findNextChar(Key.Level currentKeyLevel, List<String> pinyin) {
         if (pinyin == null || pinyin.isEmpty()) {
             return null;
         }
 
         String pinyinChars = String.join("", pinyin);
-        return this.pinyinCharsAndIdCache.keySet()
-                                         .stream()
-                                         .filter(chars -> //
-                                                         chars.length() > pinyinChars.length() //
-                                                         && chars.startsWith(pinyinChars))
-                                         .map(chars -> chars.substring(pinyinChars.length(), pinyinChars.length() + 1))
-                                         .collect(Collectors.toList());
+        List<String> nextCharList = this.pinyinCharsAndIdCache.keySet().stream().filter(chars -> {
+            if (chars.length() > pinyinChars.length() //
+                && chars.startsWith(pinyinChars)) {
+                // 平翘舌需相同
+                return !(chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh"))
+                       || pinyinChars.startsWith(chars.substring(0, 2));
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+        return nextCharList.stream().map(chars -> {
+            if (currentKeyLevel == Key.Level.level_0) {
+                int startsCount = 0;
+                for (String nextChar : nextCharList) {
+                    if (nextChar.startsWith(pinyinChars)) {
+                        startsCount += 1;
+                    }
+                }
+                return startsCount == 1
+                       // 只有一个可选拼音，则返回该拼音剩余部分
+                       ? chars.substring(pinyinChars.length() - 1)
+                       // 否则，返回拼音的下一个字母
+                       : chars.substring(pinyinChars.length(), pinyinChars.length() + 1);
+            }
+            return chars.substring(pinyinChars.length() - 1);
+        }).collect(Collectors.toSet());
     }
 
     /** 获取指定拼音的候选字 */

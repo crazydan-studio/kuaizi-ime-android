@@ -48,7 +48,13 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
         float textSize = ScreenUtils.pxFromDimension(getContext(),
                                                      key.isSymbol()
                                                      ? R.dimen.char_symbol_key_text_size
-                                                     : R.dimen.char_key_text_size);
+                                                     : key.getText().length() == 4
+                                                       ? R.dimen.char_key_text_size_3d
+                                                       : key.getText().length() == 3
+                                                         ? R.dimen.char_key_text_size_2d
+                                                         : key.getText().length() == 2
+                                                           ? R.dimen.char_key_text_size_1d
+                                                           : R.dimen.char_key_text_size);
         this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
         setTextColorByAttrId(this.fgView, key.getFgColorAttrId());
