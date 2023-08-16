@@ -426,12 +426,7 @@ public class KeyTable {
                 };
     }
 
-    /**
-     * 创建拼音后继字母按键
-     * <p/>
-     * 若 <code>nextChars</code> 为 <code>null</code>，则创建{@link #createPinyinKeys 基础按键}，
-     * 若其为空，则返回空白按键
-     */
+    /** 创建拼音后继字母第 1/2 级按键 */
     public static Key<?>[][] createPinyinNextCharKeys(
             Config config, Collection<String> level1NextChars, Collection<String> level2NextChars
     ) {
@@ -462,6 +457,7 @@ public class KeyTable {
             }
         }
 
+        // 在指定可用位置创建第 2 级字母按键
         Iterator<String> it = level2NextChars.iterator();
         for (int level = 0; level < pinyin_level_2_key_level_coords.length; level++) {
             int[][] keyCoords = pinyin_level_2_key_level_coords[level];

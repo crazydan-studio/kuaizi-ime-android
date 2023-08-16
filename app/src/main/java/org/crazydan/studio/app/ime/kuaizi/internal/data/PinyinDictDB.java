@@ -144,7 +144,7 @@ public class PinyinDictDB {
     }
 
     /**
-     * 查找指定拼音的后继字母
+     * 查找指定{@link Key.Level 级别}的后继字母
      *
      * @return 参数为<code>null</code>或为空时，返回<code>null</code>
      */
