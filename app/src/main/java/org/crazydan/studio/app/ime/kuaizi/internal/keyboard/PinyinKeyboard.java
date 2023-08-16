@@ -384,9 +384,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                 stateData.setLevel2NextChars(level2NextChars);
             }
 
-            level1NextChars.remove(lastKey.getText());
-            // Note: 通过第 2 级字母按键的首字母移除第 1 级字母按键中的按键
-            level1NextChars.remove(lastKey.getText().substring(0, 1));
+            // 第 1 级按键均不显示
+            level1NextChars.clear();
 
             // 保持第 2 级字母按键（其按键动态生成）的位置不变，以避免出现闪动
             int lastKeyIndex = level2NextChars.indexOf(lastKey.getText());

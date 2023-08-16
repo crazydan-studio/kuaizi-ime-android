@@ -201,15 +201,15 @@ public class KeyTable {
     private static final int[][][] pinyin_level_2_key_level_coords = new int[][][] {
             //
             new int[][] {
-                    new int[] { 1, 2 }, new int[] { 2, 2 }, new int[] { 3, 2 },
+                    new int[] { 2, 3 }, new int[] { 3, 2 }, new int[] { 1, 2 },
                     //
-                    new int[] { 0, 2 }, new int[] { 4, 2 },
+                    new int[] { 4, 2 }, new int[] { 0, 2 },
                     },
             //
             new int[][] {
-                    new int[] { 1, 1 }, new int[] { 2, 1 }, new int[] { 3, 1 },
+                    new int[] { 2, 2 }, new int[] { 3, 1 }, new int[] { 1, 1 },
                     //
-                    new int[] { 0, 1 }, new int[] { 4, 1 },
+                    new int[] { 4, 1 }, new int[] { 0, 1 },
                     },
             };
 
@@ -220,16 +220,16 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), new Integer[] {
                 R.attr.key_char_level_1_fg_color, R.attr.key_char_level_1_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("p", "q", "s", "r", "t", "z", "x", "y", "k"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("p", "q", "s", "r", "t", "z", "x", "y", "w"), new Integer[] {
                 R.attr.key_char_level_2_fg_color, R.attr.key_char_level_2_bg_color
         });
         char_key_color_palette.put(Arrays.asList("d", "b", "c"), new Integer[] {
                 R.attr.key_char_level_3_fg_color, R.attr.key_char_level_3_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("f", "l", "m", "n", "w"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("f", "g", "m", "n", "l"), new Integer[] {
                 R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("g", "j", "h"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("k", "j", "h"), new Integer[] {
                 R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color
         });
 
@@ -320,10 +320,10 @@ public class KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true),
                 alphabetKey("f").withReplacements("F"),
-                alphabetKey("l").withReplacements("L"),
+                alphabetKey("g").withReplacements("G"),
                 alphabetKey("m").withReplacements("M"),
-                alphabetKey("w").withReplacements("W"),
                 alphabetKey("n").withReplacements("N"),
+                alphabetKey("l").withReplacements("L"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
@@ -332,7 +332,7 @@ public class KeyTable {
                 alphabetKey("s").withReplacements("S"),
                 alphabetKey("h").withReplacements("H"),
                 alphabetKey("j").withReplacements("J"),
-                alphabetKey("k").withReplacements("K"),
+                alphabetKey("w").withReplacements("W"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
@@ -341,7 +341,7 @@ public class KeyTable {
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("g").withReplacements("G"),
+                alphabetKey("k").withReplacements("K"),
                 alphabetKey("x").withReplacements("X"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
@@ -355,10 +355,10 @@ public class KeyTable {
                 alphabetKey("z").withReplacements("Z"),
                 } //
                 , new Key[] {
-                alphabetKey("ü").withReplacements("v", "V"),
+                symbolKey("？").withReplacements("?"),
                 alphabetKey("i").withReplacements("I"),
                 alphabetKey("u").withReplacements("U"),
-                symbolKey("？").withReplacements("?"),
+                alphabetKey("ü").withReplacements("v", "V"),
                 symbolKey("，").withReplacements(","),
                 symbolKey("。").withReplacements("."),
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
@@ -436,12 +436,6 @@ public class KeyTable {
             Config config, Collection<String> level1NextChars, Collection<String> level2NextChars
     ) {
         Key<?>[][] keys = createPinyinKeys(config);
-
-        if (level1NextChars == null) {
-            return keys;
-        } else if (level1NextChars.isEmpty()) {
-            return new Key[6][7];
-        }
 
         // Note: 第 1 级后继按键与键盘初始按键位置保持一致
         for (int i = 0; i < keys.length; i++) {

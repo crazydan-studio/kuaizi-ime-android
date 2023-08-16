@@ -159,7 +159,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void fire_and_Waiting_Continuous_InputChars_Inputting(Key<?> key) {
         this.state = new State(State.Type.Input_Waiting);
 
-        fire_InputChars_Inputting(null, key);
+        fire_InputChars_Inputting(getKeyFactory(), key);
     }
 
     /**
