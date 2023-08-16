@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 
 /**
  * 字符{@link Input 输入}
@@ -47,7 +48,7 @@ public class CharInput extends BaseInput {
     }
 
     /** 是否为拼音 平/翘舌 开头 */
-    public boolean isPinyinStartsWithSCZ() {
+    public boolean is_Pinyin_SCZ_Starting() {
         List<String> chars = getChars();
         if (chars.isEmpty()) {
             return false;
@@ -57,16 +58,48 @@ public class CharInput extends BaseInput {
         return ch.startsWith("s") || ch.startsWith("c") || ch.startsWith("z");
     }
 
-    /** 是否为拼音 前/后鼻韵 */
-    public boolean isPinyinEndsWithNG() {
-        String s = String.join("", getChars());
+    /** 切换拼音输入的平翘舌 */
+    public void toggle_Pinyin_SCZ_Starting() {
+        CharKey key = (CharKey) getFirstKey();
+        String keyText = key.getText();
 
-        return s.endsWith("eng") || s.endsWith("ing") || s.endsWith("ang") //
-               || s.endsWith("en") || s.endsWith("in") || s.endsWith("an");
+        if ("s".equals(keyText) || "c".equals(keyText) || "z".equals(keyText)) {
+            keyText += "h";
+        } else if ("sh".equals(keyText) || "ch".equals(keyText) || "zh".equals(keyText)) {
+            keyText = keyText.substring(0, 1);
+        }
+
+        replaceCharKeyText(key, 0, keyText);
+    }
+
+    /** 是否为拼音 前/后鼻韵 */
+    public boolean is_Pinyin_NG_Ending() {
+        List<String> chars = getChars();
+        if (chars.isEmpty()) {
+            return false;
+        }
+
+        String ch = chars.get(chars.size() - 1);
+        return ch.endsWith("eng") || ch.endsWith("ing") || ch.endsWith("ang") //
+               || ch.endsWith("en") || ch.endsWith("in") || ch.endsWith("an");
+    }
+
+    /** 切换拼音输入的前/后鼻韵 */
+    public void toggle_Pinyin_NG_Ending() {
+        CharKey key = (CharKey) getLastKey();
+        String keyText = key.getText();
+
+        if (keyText.endsWith("eng") || keyText.endsWith("ing") || keyText.endsWith("ang")) {
+            keyText = keyText.substring(0, keyText.length() - 1);
+        } else if (keyText.endsWith("en") || keyText.endsWith("in") || keyText.endsWith("an")) {
+            keyText += "g";
+        }
+
+        replaceCharKeyText(key, getKeys().size() - 1, keyText);
     }
 
     /** 是否为拼音 n/l 开头 */
-    public boolean isPinyinStartsWithNL() {
+    public boolean is_Pinyin_NL_Starting() {
         List<String> chars = getChars();
         if (chars.isEmpty()) {
             return false;
@@ -74,5 +107,24 @@ public class CharInput extends BaseInput {
 
         String ch = chars.get(0);
         return ch.startsWith("n") || ch.startsWith("l");
+    }
+
+    /** 切换拼音输入的 n/l */
+    public void toggle_Pinyin_NL_Starting() {
+        CharKey key = (CharKey) getFirstKey();
+        String keyText = key.getText();
+
+        if ("n".equals(keyText)) {
+            keyText = "l";
+        } else if ("l".equals(keyText)) {
+            keyText = "n";
+        }
+
+        replaceCharKeyText(key, 0, keyText);
+    }
+
+    protected void replaceCharKeyText(CharKey key, int keyIndex, String keyText) {
+        getKeys().remove(keyIndex);
+        getKeys().add(keyIndex, CharKey.create(key.getType(), keyText).setLabel(keyText));
     }
 }

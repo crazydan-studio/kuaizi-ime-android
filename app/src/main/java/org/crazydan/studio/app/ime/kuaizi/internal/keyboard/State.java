@@ -41,7 +41,7 @@ public class State {
     public enum Type {
         /** 待输入 */
         Input_Waiting,
-        /** 滑行输入中 */
+        /** 滑屏输入中 */
         SlippingInput,
 
         /** 输入组件光标定位：含移动光标和文本选择 */

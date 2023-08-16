@@ -141,13 +141,25 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /**
-     * 触发按键输入消息
+     * 触发 {@link InputMsg#InputChars_Inputting} 消息
      * <p/>
      * 注：键盘的{@link #state 状态}不变
      */
-    protected void do_InputChars_Inputting(Keyboard.KeyFactory keyFactory, Key<?> key) {
+    protected void fire_InputChars_Inputting(Keyboard.KeyFactory keyFactory, Key<?> key) {
         InputMsgData data = new InputCharsInputtingMsgData(keyFactory, key);
+
         fireInputMsg(InputMsg.InputChars_Inputting, data);
+    }
+
+    /**
+     * 在连续输入中添加单个按键后触发 {@link InputMsg#InputChars_Inputting} 消息
+     * <p/>
+     * 注：键盘的{@link #state 状态}始终为 {@link State.Type#Input_Waiting}
+     */
+    protected void fire_and_Waiting_Continuous_InputChars_Inputting(Key<?> key) {
+        this.state = new State(State.Type.Input_Waiting);
+
+        fire_InputChars_Inputting(null, key);
     }
 
     /**
@@ -163,7 +175,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = getInputList().getPending();
         input.appendKey(key);
 
-        do_InputChars_Inputting(getKeyFactory(), key);
+        fire_InputChars_Inputting(getKeyFactory(), key);
     }
 
     /**

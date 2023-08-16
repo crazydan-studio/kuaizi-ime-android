@@ -201,21 +201,17 @@ public class KeyTable {
     private static final int[][][] pinyin_level_2_key_level_coords = new int[][][] {
             //
             new int[][] {
-                    new int[] { 1, 0 }, new int[] { 2, 0 },
+                    new int[] { 1, 2 }, new int[] { 2, 2 }, new int[] { 3, 2 },
                     //
-                    new int[] { 3, 0 }, new int[] { 4, 0 },
+                    new int[] { 0, 2 }, new int[] { 4, 2 },
                     },
             //
             new int[][] {
-                    new int[] { 1, 1 }, new int[] { 2, 1 },
+                    new int[] { 1, 1 }, new int[] { 2, 1 }, new int[] { 3, 1 },
                     //
-                    new int[] { 3, 1 }, new int[] { 4, 1 },
+                    new int[] { 0, 1 }, new int[] { 4, 1 },
                     },
-            //
-            new int[][] { //
-                          new int[] { 2, 2 }, new int[] { 4, 2 },
-                          }
-    };
+            };
 
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), new Integer[] {
@@ -224,16 +220,16 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), new Integer[] {
                 R.attr.key_char_level_1_fg_color, R.attr.key_char_level_1_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("p", "q", "s", "r", "t", "z", "x", "y", "w"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("p", "q", "s", "r", "t", "z", "x", "y", "k"), new Integer[] {
                 R.attr.key_char_level_2_fg_color, R.attr.key_char_level_2_bg_color
         });
         char_key_color_palette.put(Arrays.asList("d", "b", "c"), new Integer[] {
                 R.attr.key_char_level_3_fg_color, R.attr.key_char_level_3_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("j", "l", "m", "n", "f"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("f", "l", "m", "n", "w"), new Integer[] {
                 R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("k", "g", "h"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("g", "j", "h"), new Integer[] {
                 R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color
         });
 
@@ -326,17 +322,17 @@ public class KeyTable {
                 alphabetKey("f").withReplacements("F"),
                 alphabetKey("l").withReplacements("L"),
                 alphabetKey("m").withReplacements("M"),
+                alphabetKey("w").withReplacements("W"),
                 alphabetKey("n").withReplacements("N"),
-                alphabetKey("j").withReplacements("J"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("s").withReplacements("S"),
-                alphabetKey("g").withReplacements("G"),
                 alphabetKey("h").withReplacements("H"),
-                alphabetKey("w").withReplacements("W"),
+                alphabetKey("j").withReplacements("J"),
+                alphabetKey("k").withReplacements("K"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
@@ -345,27 +341,27 @@ public class KeyTable {
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("c").withReplacements("C"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("k").withReplacements("K"),
+                alphabetKey("g").withReplacements("G"),
                 alphabetKey("x").withReplacements("X"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
                 alphabetKey("p").withReplacements("P"),
                 alphabetKey("q").withReplacements("Q"),
                 alphabetKey("b").withReplacements("B"),
                 alphabetKey("d").withReplacements("D"),
-                alphabetKey("z").withReplacements("Z"),
                 alphabetKey("y").withReplacements("Y"),
+                alphabetKey("z").withReplacements("Z"),
                 } //
                 , new Key[] {
-                symbolKey("：").withReplacements(":"),
-                symbolKey("！").withReplacements("!"),
+                alphabetKey("ü").withReplacements("v", "V"),
+                alphabetKey("i").withReplacements("I"),
+                alphabetKey("u").withReplacements("U"),
                 symbolKey("？").withReplacements("?"),
-                symbolKey("；").withReplacements(";"),
                 symbolKey("，").withReplacements(","),
                 symbolKey("。").withReplacements("."),
-                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 },
                 };
     }
@@ -410,7 +406,7 @@ public class KeyTable {
                 enterCtrlKey(config),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
                 alphabetKey("u").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("v").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("w").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
@@ -425,7 +421,7 @@ public class KeyTable {
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 },
                 };
     }
@@ -437,73 +433,64 @@ public class KeyTable {
      * 若其为空，则返回空白按键
      */
     public static Key<?>[][] createPinyinNextCharKeys(
-            Config config, Key.Level currentKeyLevel, Collection<String> nextChars
+            Config config, Collection<String> level1NextChars, Collection<String> level2NextChars
     ) {
         Key<?>[][] keys = createPinyinKeys(config);
 
-        if (nextChars == null) {
+        if (level1NextChars == null) {
             return keys;
-        } else if (nextChars.isEmpty()) {
+        } else if (level1NextChars.isEmpty()) {
             return new Key[6][7];
         }
 
-        switch (currentKeyLevel) {
-            case level_0: {
-                // Note: 第一级后继字母按键与键盘初始按键位置保持一致
-                for (int i = 0; i < keys.length; i++) {
-                    for (int j = 0; j < keys[i].length; j++) {
-                        Key<?> key = keys[i][j];
-                        if ("ch".equals(key.getText()) //
-                            || "sh".equals(key.getText()) //
-                            || "zh".equals(key.getText())) {
-                            key = keys[i][j] = alphabetKey(((CharKey) key).nextReplacement(key.getText()));
-                        }
+        // Note: 第 1 级后继按键与键盘初始按键位置保持一致
+        for (int i = 0; i < keys.length; i++) {
+            for (int j = 0; j < keys[i].length; j++) {
+                Key<?> key = keys[i][j];
 
-                        if (!(key instanceof CharKey) //
-                            || !nextChars.contains(key.getText())) {
-                            keys[i][j] = null;
-                        } else {
-                            for (String nextChar : nextChars) {
-                                if (nextChar.length() > key.getText().length() //
-                                    && nextChar.startsWith(key.getText())) {
-                                    keys[i][j] = alphabetKey(nextChar).setFgColorAttrId(key.getFgColorAttrId())
-                                                                      .setBgColorAttrId(key.getBgColorAttrId());
-                                    break;
-                                }
-                            }
-                        }
+                keys[i][j] = null;
+                if (!(key instanceof CharKey)) {
+                    continue;
+                }
+
+                for (String nextChar : level1NextChars) {
+                    if (nextChar.length() > key.getText().length() //
+                        // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
+                        && nextChar.startsWith(key.getText())) {
+                        keys[i][j] = alphabetKey(nextChar).setFgColorAttrId(key.getFgColorAttrId())
+                                                          .setBgColorAttrId(key.getBgColorAttrId());
+                        break;
+                    } else if (nextChar.equals(key.getText())) {
+                        keys[i][j] = key;
+                        break;
                     }
                 }
-                break;
-            }
-            case level_1: {
-                keys = new Key[6][7];
-
-                Iterator<String> it = nextChars.stream().sorted().iterator();
-                for (int level = 0; level < pinyin_level_2_key_level_coords.length; level++) {
-                    int[][] keyCoords = pinyin_level_2_key_level_coords[level];
-
-                    for (int[] keyCoord : keyCoords) {
-                        if (!it.hasNext()) {
-                            break;
-                        }
-
-                        String text = it.next();
-                        int x = keyCoord[0];
-                        int y = keyCoord[1];
-                        int bgAttrId = key_char_around_level_bg_colors[level][0];
-                        int fgAttrId = key_char_around_level_bg_colors[level][1];
-
-                        keys[x][y] = alphabetKey(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
-                    }
-                }
-                break;
-            }
-            case level_2: {
-                keys = new Key[6][7];
-                break;
             }
         }
+
+        Iterator<String> it = level2NextChars.iterator();
+        for (int level = 0; level < pinyin_level_2_key_level_coords.length; level++) {
+            int[][] keyCoords = pinyin_level_2_key_level_coords[level];
+
+            for (int[] keyCoord : keyCoords) {
+                if (!it.hasNext()) {
+                    break;
+                }
+
+                String text = it.next();
+                int x = keyCoord[0];
+                int y = keyCoord[1];
+                int bgAttrId = key_char_around_level_bg_colors[level][0];
+                int fgAttrId = key_char_around_level_bg_colors[level][1];
+
+                if (text == null) {
+                    keys[x][y] = null;
+                } else {
+                    keys[x][y] = alphabetKey(text).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+                }
+            }
+        }
+
         return keys;
     }
 
@@ -533,14 +520,15 @@ public class KeyTable {
                                          + ((int) Math.ceil(inputWords.size() / (pageSize * 1.0))));
         }
 
-        if (input.isPinyinStartsWithSCZ()) {
-            String s = input.getChars().get(0);
+        if (input.is_Pinyin_SCZ_Starting()) {
+            String s = input.getChars().get(0).substring(0, 1);
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
-        } else if (input.isPinyinStartsWithNL()) {
+        } else if (input.is_Pinyin_NL_Starting()) {
+            // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
         }
-        if (input.isPinyinEndsWithNG()) {
-            String s = String.join("", input.getChars());
+        if (input.is_Pinyin_NG_Ending()) {
+            String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
             gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
         }
@@ -618,7 +606,7 @@ public class KeyTable {
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[4][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_right_hand_exit);
 
         gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                      + "/" //

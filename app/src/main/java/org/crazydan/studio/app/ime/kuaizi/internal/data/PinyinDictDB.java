@@ -148,37 +148,39 @@ public class PinyinDictDB {
      *
      * @return 参数为<code>null</code>或为空时，返回<code>null</code>
      */
-    public Collection<String> findNextChar(Key.Level currentKeyLevel, List<String> pinyin) {
-        if (pinyin == null || pinyin.isEmpty()) {
+    public Collection<String> findNextChar(Key.Level keyLevel, String startChar) {
+        if (startChar == null || startChar.isEmpty()) {
             return null;
         }
 
-        String pinyinChars = String.join("", pinyin);
         List<String> nextCharList = this.pinyinCharsAndIdCache.keySet().stream().filter(chars -> {
-            if (chars.length() > pinyinChars.length() //
-                && chars.startsWith(pinyinChars)) {
+            if (chars.length() > startChar.length() //
+                && chars.startsWith(startChar)) {
                 // 平翘舌需相同
                 return !(chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh"))
-                       || pinyinChars.startsWith(chars.substring(0, 2));
+                       || startChar.startsWith(chars.substring(0, 2));
             }
             return false;
         }).collect(Collectors.toList());
 
         return nextCharList.stream().map(chars -> {
-            if (currentKeyLevel == Key.Level.level_0) {
-                int startsCount = 0;
-                for (String nextChar : nextCharList) {
-                    if (nextChar.startsWith(pinyinChars)) {
-                        startsCount += 1;
+            if (keyLevel == Key.Level.level_1) {
+                String nextChar = chars.substring(startChar.length(), startChar.length() + 1);
+
+                int startsWithCount = 0;
+                for (String ch : nextCharList) {
+                    if (ch.startsWith(startChar + nextChar)) {
+                        startsWithCount += 1;
                     }
                 }
-                return startsCount == 1
-                       // 只有一个可选拼音，则返回该拼音剩余部分
-                       ? chars.substring(pinyinChars.length() - 1)
-                       // 否则，返回拼音的下一个字母
-                       : chars.substring(pinyinChars.length(), pinyinChars.length() + 1);
+                return startsWithCount == 1
+                       // 只有一个可选拼音，则返回从直接后继字母开始的剩余部分
+                       ? chars.substring(startChar.length())
+                       // 否则，返回直接后继字母
+                       : nextChar;
             }
-            return chars.substring(pinyinChars.length() - 1);
+            // Note: 第 2 级后继需包含第 1 级后继字母
+            return chars.substring(startChar.length() - 1);
         }).collect(Collectors.toSet());
     }
 

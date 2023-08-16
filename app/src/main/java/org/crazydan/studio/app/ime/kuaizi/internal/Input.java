@@ -45,6 +45,9 @@ public interface Input {
     /** 获取输入按键列表 */
     List<Key<?>> getKeys();
 
+    /** 获取第一个按键 */
+    Key<?> getFirstKey();
+
     /** 获取最后一个按键 */
     Key<?> getLastKey();
 

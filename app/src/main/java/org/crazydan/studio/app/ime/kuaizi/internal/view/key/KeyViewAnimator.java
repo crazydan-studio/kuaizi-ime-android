@@ -49,6 +49,9 @@ public class KeyViewAnimator extends DefaultItemAnimator {
     public boolean animateChange(
             RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromX, int fromY, int toX, int toY
     ) {
+        resetViewScale(oldHolder.itemView);
+        resetViewScale(newHolder.itemView);
+
         boolean result = super.animateChange(oldHolder, newHolder, fromX, fromY, toX, toY);
 
         // 在原动画效果上增加放大效果
@@ -64,12 +67,10 @@ public class KeyViewAnimator extends DefaultItemAnimator {
 
     @Override
     public void onChangeFinished(RecyclerView.ViewHolder holder, boolean oldHolder) {
+        resetViewScale(holder.itemView);
+
         if (oldHolder && needToFadeOut(holder)) {
             this.fadeOutKeys.remove(((KeyView<?, ?>) holder).getKey());
-
-            // 复位
-            View view = holder.itemView;
-            resetViewScale(view);
         }
     }
 

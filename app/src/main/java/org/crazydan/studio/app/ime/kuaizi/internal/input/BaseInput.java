@@ -86,6 +86,11 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public Key<?> getFirstKey() {
+        return this.keys.isEmpty() ? null : this.keys.get(0);
+    }
+
+    @Override
     public Key<?> getLastKey() {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }

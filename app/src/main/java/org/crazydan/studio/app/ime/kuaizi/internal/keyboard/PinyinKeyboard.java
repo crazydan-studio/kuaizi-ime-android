@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -110,16 +111,15 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         switch (msg) {
             case FingerMovingStart: {
-                // 开始滑行输入
+                // 开始滑屏输入
                 if (key.getType() == CharKey.Type.Alphabet) {
-                    this.state = new State(State.Type.SlippingInput, new SlippingInputStateData(Key.Level.level_0));
+                    this.state = new State(State.Type.SlippingInput, new SlippingInputStateData());
 
                     CharInput input = getInputList().newPending();
-                    input.appendKey(key);
 
                     play_InputtingDoubleTick_Audio(key);
 
-                    onContinuousInput(input, key, true);
+                    onSlippingInput(input, key);
                 }
                 break;
             }
@@ -150,20 +150,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // Note: 拼音不存在重复字母相邻的情况
                 Key<?> lastKey = input.getLastKey();
                 if (key != null && !key.isSameWith(lastKey)) {
-                    switch (((SlippingInputStateData) this.state.data).keyLevel) {
-                        case level_1: {
-                            input.appendKey(key);
-                            break;
-                        }
-                        case level_2: {
-                            input.replaceLatestKey(lastKey, key);
-                            break;
-                        }
-                    }
-
                     play_InputtingDoubleTick_Audio(key);
 
-                    onContinuousInput(input, key, true);
+                    onSlippingInput(input, key);
                 }
                 break;
             }
@@ -234,8 +223,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputtingSingleTick_Audio(key);
 
                 CharInput input = getInputList().getPending();
-                String joinedInputChars = String.join("", input.getChars());
-
                 // 丢弃或变更拼音
                 switch (key.getType()) {
                     case DropInput: {
@@ -249,41 +236,19 @@ public class PinyinKeyboard extends BaseKeyboard {
                         break;
                     }
                     case ToggleInputSpell_zcs_h: {
-                        if (joinedInputChars.startsWith("sh")
-                            || joinedInputChars.startsWith("ch")
-                            || joinedInputChars.startsWith("zh")) {
-                            input.getKeys().remove(1);
-                        } else if (joinedInputChars.startsWith("s")
-                                   || joinedInputChars.startsWith("c")
-                                   || joinedInputChars.startsWith("z")) {
-                            input.getKeys().add(1, KeyTable.alphabetKey("h"));
-                        }
+                        input.toggle_Pinyin_SCZ_Starting();
 
                         onNewChoosingInputCandidate(input);
                         break;
                     }
                     case ToggleInputSpell_nl: {
-                        if (joinedInputChars.startsWith("n")) {
-                            input.getKeys().remove(0);
-                            input.getKeys().add(0, KeyTable.alphabetKey("l"));
-                        } else if (joinedInputChars.startsWith("l")) {
-                            input.getKeys().remove(0);
-                            input.getKeys().add(0, KeyTable.alphabetKey("n"));
-                        }
+                        input.toggle_Pinyin_NL_Starting();
 
                         onNewChoosingInputCandidate(input);
                         break;
                     }
                     case ToggleInputSpell_ng: {
-                        if (joinedInputChars.endsWith("eng")
-                            || joinedInputChars.endsWith("ing")
-                            || joinedInputChars.endsWith("ang")) {
-                            input.getKeys().remove(input.getKeys().size() - 1);
-                        } else if (joinedInputChars.endsWith("en")
-                                   || joinedInputChars.endsWith("in")
-                                   || joinedInputChars.endsWith("an")) {
-                            input.getKeys().add(input.getKeys().size(), KeyTable.alphabetKey("g"));
-                        }
+                        input.toggle_Pinyin_NG_Ending();
 
                         onNewChoosingInputCandidate(input);
                         break;
@@ -348,8 +313,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         CharKey newKey = KeyTable.alphabetKey(newKeyText);
         input.replaceLatestKey(lastCharKey, newKey);
 
-        this.state = new State(State.Type.Input_Waiting);
-        onContinuousInput(input, key, false);
+        fire_and_Waiting_Continuous_InputChars_Inputting(key);
     }
 
     private void doSingleKeyInputting(CharInput input, CharKey key) {
@@ -372,47 +336,74 @@ public class PinyinKeyboard extends BaseKeyboard {
             // 字母、数字可连续输入
             case Number:
             case Alphabet: {
-                this.state = new State(State.Type.Input_Waiting);
-
                 input.appendKey(key);
-                onContinuousInput(input, key, false);
+
+                fire_and_Waiting_Continuous_InputChars_Inputting(key);
                 break;
             }
         }
     }
 
-    private void onContinuousInput(CharInput input, Key<?> currentKey, boolean isPinyin) {
-        KeyFactory keyFactory;
-        if (isPinyin) {
-            Key.Level currentKeyLevel = ((SlippingInputStateData) this.state.data).keyLevel;
-            Collection<String> nextChars = this.pinyinDict.findNextChar(currentKeyLevel, input.getChars());
+    /** 滑屏输入 */
+    private void onSlippingInput(CharInput input, Key<?> currentKey) {
+        SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
+        Key.Level currentKeyLevel = stateData.getKeyLevel();
 
-            prepareInputCandidates(input);
+        if (currentKeyLevel == Key.Level.level_0) {
+            input.appendKey(currentKey);
 
-            keyFactory = () -> KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(), currentKeyLevel, nextChars);
+            Collection<String> level1NextChars = this.pinyinDict.findNextChar(Key.Level.level_1, currentKey.getText());
+            stateData.setLevel1NextChars(level1NextChars);
+            stateData.setLevel0Key(currentKey);
 
-            Key.Level nextKeyLevel = Key.Level.level_0;
-            switch (currentKeyLevel) {
-                case level_0: {
-                    nextKeyLevel = Key.Level.level_1;
-                    break;
-                }
-                case level_1: {
-                    nextKeyLevel = Key.Level.level_2;
-                    break;
-                }
+            stateData.nextKeyLevel();
+        } else {
+            // Note: 第 1 级后继按键仅在首次添加时采用追加方式，后续均为替换输入中的最后一个按键，
+            // 即第 1/2 级按键均可相互替换，确保输入始终最多保留两个按键（第 0 级 + 第 1/2 级）
+            if (input.getKeys().size() == 1) {
+                input.appendKey(currentKey);
+            } else {
+                Key<?> lastKey = input.getLastKey();
+                input.replaceLatestKey(lastKey, currentKey);
+            }
+        }
+
+        List<String> level1NextChars = new ArrayList<>(stateData.getLevel1NextChars());
+        List<String> level2NextChars = new ArrayList<>(stateData.getLevel2NextChars());
+
+        Key<?> lastKey = input.getLastKey();
+        if (currentKeyLevel != Key.Level.level_0) {
+            // 输入的最后一个按键处于第 1 级，则查找并更新第 2 级后继字母按键
+            if (level1NextChars.contains(lastKey.getText())) {
+                String startChar = stateData.getLevel0Key().getText();
+                startChar += lastKey.getText();
+
+                Collection<String> nextChars = this.pinyinDict.findNextChar(Key.Level.level_2, startChar);
+
+                level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
+                stateData.setLevel2NextChars(level2NextChars);
             }
 
-            this.state = new State(State.Type.SlippingInput, new SlippingInputStateData(nextKeyLevel));
-        } else {
-            input.setWord(null);
+            level1NextChars.remove(lastKey.getText());
+            // Note: 通过第 2 级字母按键的首字母移除第 1 级字母按键中的按键
+            level1NextChars.remove(lastKey.getText().substring(0, 1));
 
-            keyFactory = () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
+            // 保持第 2 级字母按键（其按键动态生成）的位置不变，以避免出现闪动
+            int lastKeyIndex = level2NextChars.indexOf(lastKey.getText());
+            if (lastKeyIndex >= 0) {
+                level2NextChars.set(lastKeyIndex, null);
+            }
         }
+
+        Key<?>[][] keys = KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(),
+                                                            level1NextChars,
+                                                            level2NextChars);
+
+        prepareInputCandidates(input);
         // Note: 连续输入过程中不处理候选字，故而，直接置空该输入的候选字列表，避免浪费内存
         input.setCandidates(new ArrayList<>());
 
-        do_InputChars_Inputting(keyFactory, currentKey);
+        fire_InputChars_Inputting(() -> keys, currentKey);
     }
 
     /** 重新进入候选字状态 */
