@@ -321,9 +321,9 @@ public class KeyTable {
                         alphabetKey("zh").withReplacements("Zh", "ZH"),
                         alphabetKey("ch").withReplacements("Ch", "CH"),
                         alphabetKey("sh").withReplacements("Sh", "SH"),
-                        alphabetKey("a").withReplacements("A"),
-                        alphabetKey("e").withReplacements("E"),
                         alphabetKey("o").withReplacements("O"),
+                        alphabetKey("e").withReplacements("E"),
+                        alphabetKey("a").withReplacements("A"),
                         } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true),
