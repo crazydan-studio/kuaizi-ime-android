@@ -327,20 +327,20 @@ public class KeyTable {
                         } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("g").withReplacements("G"),
                 alphabetKey("b").withReplacements("B"),
                 alphabetKey("c").withReplacements("C"),
                 alphabetKey("d").withReplacements("D"),
-                alphabetKey("f").withReplacements("F"),
-                alphabetKey("g").withReplacements("G"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
-                alphabetKey("h").withReplacements("H"),
-                alphabetKey("j").withReplacements("J"),
                 alphabetKey("k").withReplacements("K"),
-                alphabetKey("l").withReplacements("L"),
+                alphabetKey("j").withReplacements("J"),
+                alphabetKey("n").withReplacements("N"),
                 alphabetKey("m").withReplacements("M"),
+                alphabetKey("l").withReplacements("L"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
@@ -349,7 +349,7 @@ public class KeyTable {
                 alphabetKey("r").withReplacements("R"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("x").withReplacements("X"),
-                alphabetKey("n").withReplacements("N"),
+                alphabetKey("h").withReplacements("H"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
@@ -359,15 +359,15 @@ public class KeyTable {
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("y").withReplacements("Y"),
                 alphabetKey("z").withReplacements("Z"),
-                symbolKey("，").withReplacements(","),
+                symbolKey("！").withReplacements("!"),
                 } //
                 , new Key[] {
                 symbolKey("？").withReplacements("?"),
-                symbolKey("！").withReplacements("!"),
                 alphabetKey("u").withReplacements("U"),
                 alphabetKey("i").withReplacements("I"),
                 alphabetKey("ü").withReplacements("v", "V"),
                 symbolKey("。").withReplacements("."),
+                symbolKey("，").withReplacements(","),
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 },
                 };
@@ -429,7 +429,7 @@ public class KeyTable {
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard).setDisabled(true),
                 },
                 };
     }
