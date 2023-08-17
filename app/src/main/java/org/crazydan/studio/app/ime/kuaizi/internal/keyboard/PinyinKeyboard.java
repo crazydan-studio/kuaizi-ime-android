@@ -81,7 +81,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         Key<?> key = data.target;
         switch (this.state.type) {
             case SlippingInput:
-                onSlippingInputCharKeyMsg(msg, (CharKey) key, data);
+                onSlippingInputUserKeyMsg(msg, key, data);
                 break;
             case ChoosingInputCandidate:
                 if (key instanceof InputWordKey) {
@@ -141,7 +141,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void onSlippingInputCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
+    private void onSlippingInputUserKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         switch (msg) {
             case FingerMoving: {
                 // 添加拼音后继字母
@@ -149,7 +149,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 // Note: 拼音不存在重复字母相邻的情况
                 Key<?> lastKey = input.getLastKey();
-                if (key != null && !key.isSameWith(lastKey)) {
+                if (key instanceof CharKey && !key.isSameWith(lastKey)) {
                     play_InputtingDoubleTick_Audio(key);
 
                     onSlippingInput(input, key);
@@ -395,6 +395,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         Key<?>[][] keys = KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(),
+                                                            stateData.getLevel0Key().getText(),
                                                             level1NextChars,
                                                             level2NextChars);
 

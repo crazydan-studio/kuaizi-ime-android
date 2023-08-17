@@ -134,10 +134,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         ToggleInputSpell_ng,
         /** 在候选字状态下切换当前输入的 n/l */
         ToggleInputSpell_nl,
-        /** 切换输入法 */
-        SwitchIME,
-        /** 切换左右手模式 */
-        SwitchHandMode,
         /** 输入光标定位按钮 */
         LocateInputCursor,
         /** 输入光标定位按钮 - 定位 */
@@ -160,6 +156,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 重做 */
         Redo,
 
+        /** 切换输入法 */
+        SwitchIME,
+        /** 切换左右手模式 */
+        SwitchHandMode,
         /** 切换至拼音键盘 */
         SwitchToPinyinKeyboard,
         /** 切换至拉丁文键盘 */
@@ -170,6 +170,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         SwitchToNumberKeyboard,
         /** 切换至标点符号键盘 */
         SwitchToSymbolKeyboard,
+        /** 切换至表情键盘 */
+        SwitchToEmotionKeyboard,
 
         /** 数学 = */
         Math_Equal,

@@ -45,16 +45,30 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
         String label = key.getLabel();
         this.fgView.setText(label);
 
-        float textSize = ScreenUtils.pxFromDimension(getContext(),
-                                                     key.isSymbol()
-                                                     ? R.dimen.char_symbol_key_text_size
-                                                     : key.getText().length() == 4
-                                                       ? R.dimen.char_key_text_size_3d
-                                                       : key.getText().length() == 3
-                                                         ? R.dimen.char_key_text_size_2d
-                                                         : key.getText().length() == 2
-                                                           ? R.dimen.char_key_text_size_1d
-                                                           : R.dimen.char_key_text_size);
+        int textSizeDimen;
+        if (key.isSymbol()) {
+            textSizeDimen = R.dimen.char_symbol_key_text_size;
+        } else {
+            switch (key.getLabel().length()) {
+                case 6:
+                case 5:
+                    textSizeDimen = R.dimen.char_key_text_size_4d;
+                    break;
+                case 4:
+                    textSizeDimen = R.dimen.char_key_text_size_3d;
+                    break;
+                case 3:
+                    textSizeDimen = R.dimen.char_key_text_size_2d;
+                    break;
+                case 2:
+                    textSizeDimen = R.dimen.char_key_text_size_1d;
+                    break;
+                default:
+                    textSizeDimen = R.dimen.char_key_text_size;
+            }
+        }
+        float textSize = ScreenUtils.pxFromDimension(getContext(), textSizeDimen);
+
         this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
         setTextColorByAttrId(this.fgView, key.getFgColorAttrId());
