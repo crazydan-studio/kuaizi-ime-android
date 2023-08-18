@@ -221,10 +221,10 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), new Integer[] {
                 R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh", "w"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), new Integer[] {
                 R.attr.key_char_level_1_fg_color, R.attr.key_char_level_1_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("z", "x", "y"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("h", "w", "z", "x", "y"), new Integer[] {
                 R.attr.key_char_level_2_fg_color, R.attr.key_char_level_2_bg_color
         });
         char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"), new Integer[] {
@@ -233,7 +233,7 @@ public class KeyTable {
         char_key_color_palette.put(Arrays.asList("p", "q", "s", "t", "r"), new Integer[] {
                 R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color
         });
-        char_key_color_palette.put(Arrays.asList("k", "j", "h", "m", "l", "n"), new Integer[] {
+        char_key_color_palette.put(Arrays.asList("k", "j", "m", "l", "n"), new Integer[] {
                 R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color
         });
 
@@ -335,7 +335,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
+                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
                 alphabetKey("k").withReplacements("K"),
                 alphabetKey("j").withReplacements("J"),
                 alphabetKey("n").withReplacements("N"),
@@ -344,22 +344,22 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
+                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("p").withReplacements("P"),
                 alphabetKey("q").withReplacements("Q"),
-                alphabetKey("r").withReplacements("R"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("x").withReplacements("X"),
                 alphabetKey("h").withReplacements("H"),
+                alphabetKey("y").withReplacements("Y"),
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
+                symbolKey("！").withReplacements("!"),
+                alphabetKey("r").withReplacements("R"),
                 alphabetKey("s").withReplacements("S"),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("w").withReplacements("W"),
-                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("x").withReplacements("X"),
                 alphabetKey("z").withReplacements("Z"),
-                symbolKey("！").withReplacements("!"),
                 } //
                 , new Key[] {
                 symbolKey("？").withReplacements("?"),

@@ -19,17 +19,16 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,13 +42,15 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
 /**
  * 拼音字典（数据库版）
  * <p/>
- * 应用内置的拼音字典数据库的表结构和数据生成见单元测试用例 PinyinDataTest#writePinyinDictToSQLite
+ * 应用内置的拼音字典数据库的表结构和数据生成见
+ * <a href="https://github.com/crazydan-studio/kuaizi-ime/blob/master/tools/pinyin-dict/src/generate/sqlite/ime/index.mjs">kuaizi-ime/tools/pinyin-dict</a>
  * <p/>
- * 采用单例方式读写数据，以确保可以支持在 Demo 和 InputMethodService 中进行数据库的开启和关闭，
+ * 采用单例方式读写数据，以确保可以支持在 Guide 和 InputMethodService 中进行数据库的开启和关闭，
  * 且在两者同时启动时，不会重复开关数据库
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -72,7 +73,7 @@ public class PinyinDictDB {
     private SQLiteDatabase userDB;
 
     // <<<<<<<<<<<<< 缓存常量数据
-    private Map<String, Integer> pinyinCharsAndIdCache;
+    private Map<String, String> pinyinCharsAndIdCache;
     // >>>>>>>>>>>>>
 
     public static PinyinDictDB getInstance() {
@@ -80,6 +81,14 @@ public class PinyinDictDB {
     }
 
     private PinyinDictDB() {
+    }
+
+    private File getAppDBFile(Context context) {
+        return new File(context.getFilesDir(), file_app_dict_db);
+    }
+
+    private File getUserDBFile(Context context) {
+        return new File(context.getFilesDir(), file_user_dict_db);
     }
 
     /**
@@ -92,10 +101,10 @@ public class PinyinDictDB {
             return;
         }
 
-        File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
-        copySQLite(context, appDBFile, R.raw.pinyin_dict);
+        File appDBFile = getAppDBFile(context);
+        copySQLite(context, appDBFile, R.raw.pinyin_dict, R.raw.pinyin_dict_db_hash);
 
-        File userDBFile = new File(context.getFilesDir(), file_user_dict_db);
+        File userDBFile = getUserDBFile(context);
         SQLiteDatabase userDB = openSQLite(userDBFile, false);
         initUserDB(userDB);
 
@@ -108,8 +117,8 @@ public class PinyinDictDB {
             return;
         }
 
-        File appDBFile = new File(context.getFilesDir(), file_app_dict_db);
-        File userDBFile = new File(context.getFilesDir(), file_user_dict_db);
+        File appDBFile = getAppDBFile(context);
+        File userDBFile = getUserDBFile(context);
 
         this.appDB = openSQLite(appDBFile, true);
         this.userDB = openSQLite(userDBFile, false);
@@ -118,13 +127,13 @@ public class PinyinDictDB {
         configSQLite(this.userDB);
 
         this.pinyinCharsAndIdCache = new HashMap<>(600);
-        doSQLiteQuery(this.appDB, "pinyin_chars_meta", new String[] {
+        doSQLiteQuery(this.appDB, "meta_pinyin_chars", new String[] {
                               "id_", "value_"
                       }, //
                       null, null, null, null, //
                       (cursor) -> {
                           // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
-                          this.pinyinCharsAndIdCache.put(cursor.getString(1), cursor.getInt(0));
+                          this.pinyinCharsAndIdCache.put(cursor.getString(1), cursor.getString(0));
                           return null;
                       });
 
@@ -191,50 +200,84 @@ public class PinyinDictDB {
         }
 
         String pinyinChars = String.join("", pinyin);
-        Integer pinyinCharsId = this.pinyinCharsAndIdCache.get(pinyinChars);
+        String pinyinCharsId = this.pinyinCharsAndIdCache.get(pinyinChars);
         if (pinyinCharsId == null) {
             return new ArrayList<>();
         }
 
-        Map<String, String[]> pinyinWordIdMap = new LinkedHashMap<>(1000);
-        doSQLiteQuery(this.appDB, "pinyin_pinyin_meta", new String[] {
-                              "id_", "value_", "word_id_"
+        Map<String, Set<String>> wordAndPinyinIdMap = new LinkedHashMap<>(1000);
+        doSQLiteQuery(this.appDB, "link_word_with_pinyin", new String[] {
+                              "id_", "source_id_", "target_id_"
                       }, //
-                      "chars_id_ = ?", //
-                      new String[] { String.valueOf(pinyinCharsId) }, //
-                      "weight_ desc", //
-                      null,//
+                      "target_chars_id_ = ?", //
+                      new String[] { pinyinCharsId }, //
+                      "target_id_ asc", // Note：拼音的 id 排序即为其字母排序
+                      null, //
                       (cursor) -> {
-                          pinyinWordIdMap.put(cursor.getString(0),
-                                              new String[] { cursor.getString(1), cursor.getString(2) });
+                          String wordId = cursor.getString(1);
+                          String wordPinyinId = cursor.getString(2);
+
+                          wordAndPinyinIdMap.computeIfAbsent(wordId, (k) -> new LinkedHashSet<>()).add(wordPinyinId);
 
                           return null;
                       });
-        if (pinyinWordIdMap.isEmpty()) {
+        if (wordAndPinyinIdMap.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Set<String> wordIdSet = pinyinWordIdMap.values().stream().map(tuple -> tuple[1]).collect(Collectors.toSet());
-        Map<String, String[]> wordMap = new HashMap<>(wordIdSet.size());
-        doSQLiteQuery(this.appDB, "pinyin_word_meta", new String[] {
-                              "id_", "value_", "simple_word_id_"
+        Set<String> pinyinIdSet = wordAndPinyinIdMap.values().stream().reduce(new HashSet<>(), (acc, set) -> {
+            acc.addAll(set);
+            return acc;
+        });
+        Map<String, String> pinyinMap = new HashMap<>(pinyinIdSet.size());
+        doSQLiteQuery(this.appDB, "meta_pinyin", new String[] {
+                              "id_", "value_"
                       }, //
-                      "id_ in (" + wordIdSet.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")", //
-                      wordIdSet.toArray(new String[0]), //
+                      "id_ in (" + pinyinIdSet.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")", //
+                      pinyinIdSet.toArray(new String[0]), //
                       null, //
                       null, //
                       (cursor) -> {
-                          wordMap.put(cursor.getString(0), new String[] { cursor.getString(1), cursor.getString(2) });
+                          String id = cursor.getString(0);
+                          String value = cursor.getString(1);
+
+                          pinyinMap.put(id, value);
 
                           return null;
                       });
 
-        List<InputWord> result = new ArrayList<>(pinyinWordIdMap.size());
-        pinyinWordIdMap.forEach((id, pinyinTuple) -> {
-            String[] wordTuple = wordMap.get(pinyinTuple[1]);
-            InputWord pw = new InputWord(id, wordTuple[0], pinyinTuple[0], wordTuple[1] != null);
+        Set<String> wordIdSet = wordAndPinyinIdMap.keySet();
+        Map<String, String[]> wordMap = new LinkedHashMap<>(wordIdSet.size());
+        doSQLiteQuery(this.appDB, "meta_word", new String[] {
+                              "id_", "value_", "traditional_"
+                      }, //
+                      "id_ in (" + wordIdSet.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")", //
+                      wordIdSet.toArray(new String[0]), //
+                      "weight_ desc", //
+                      null, //
+                      (cursor) -> {
+                          String id = cursor.getString(0);
+                          String value = cursor.getString(1);
+                          String traditional = (cursor.getInt(2) != 0) + "";
 
-            result.add(pw);
+                          wordMap.put(id, new String[] { value, traditional });
+
+                          return null;
+                      });
+
+        // 返回按字形权重排序的结果
+        List<InputWord> result = new ArrayList<>(wordAndPinyinIdMap.size() * 2);
+        wordMap.forEach((wordId, wordTuple) -> {
+            wordAndPinyinIdMap.get(wordId).forEach((wordPinyinId) -> {
+                String wordPinyin = pinyinMap.get(wordPinyinId);
+
+                InputWord pw = new InputWord(wordId + "-" + wordPinyinId,
+                                             wordTuple[0],
+                                             wordPinyin,
+                                             Boolean.getBoolean(wordTuple[1]));
+
+                result.add(pw);
+            });
         });
 
         return result;
@@ -435,20 +478,27 @@ public class PinyinDictDB {
         }
     }
 
-    private static void copySQLite(Context context, File target, int dbRawResId) {
-        try (
-                InputStream input = context.getResources().openRawResource(dbRawResId);
-                OutputStream output = Files.newOutputStream(target.toPath());
-        ) {
-            int length;
-            byte[] buffer = new byte[1024];
-            while ((length = input.read(buffer)) > 0) {
-                output.write(buffer, 0, length);
-            }
+    private static void copySQLite(Context context, File targetDBFile, int dbRawResId, int dbHashRawResId) {
+        String dbHash = FileUtils.read(context, dbHashRawResId, true);
 
-            output.flush();
+        File targetDBHashFile = new File(targetDBFile.getPath() + ".hash");
+        String targetHash = FileUtils.read(targetDBHashFile, true);
+
+        if (dbHash != null && Objects.equals(dbHash, targetHash)) {
+            return;
+        }
+
+        try {
+            FileUtils.copy(context, dbRawResId, targetDBFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        if (dbHash != null) {
+            try {
+                FileUtils.write(targetDBHashFile, dbHash);
+            } catch (IOException ignore) {
+            }
         }
     }
 
