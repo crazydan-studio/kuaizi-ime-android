@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -327,22 +326,33 @@ public class PinyinDictDB {
     private List<String> findTopBestPinyinWordsFromUserDB(
             String inputPinyinCharsId, int top, List<InputWord> preInputWords
     ) {
-        List<String> pinyinWordIdList = doSQLiteQuery(this.userDB, "used_pinyin_word", new String[] {
-                                                              "oid_"
-                                                      }, //
-                                                      "chars_id_ = ?", //
-                                                      new String[] { inputPinyinCharsId }, //
-                                                      "weight_ desc", //
-                                                      String.valueOf(top), //
-                                                      (cursor) -> cursor.getString(0));
-        return pinyinWordIdList;
+        return findTopBestPinyinWordsFromDB(this.appDB,
+                                            "used_pinyin_word",
+                                            "used_phrase_pinyin_word",
+                                            "used_phrase",
+                                            inputPinyinCharsId,
+                                            top,
+                                            preInputWords);
     }
 
     private List<String> findTopBestPinyinWordsFromAppDB(
             String inputPinyinCharsId, int top, List<InputWord> preInputWords
     ) {
+        return findTopBestPinyinWordsFromDB(this.appDB,
+                                            "link_word_with_pinyin",
+                                            "link_phrase_with_pinyin_word",
+                                            "meta_phrase",
+                                            inputPinyinCharsId,
+                                            top,
+                                            preInputWords);
+    }
+
+    private List<String> findTopBestPinyinWordsFromDB(
+            SQLiteDatabase db, String wordTable, String phraseWordTable, String phraseTable, String inputPinyinCharsId,
+            int top, List<InputWord> preInputWords
+    ) {
         // 匹配高频字
-        List<String> pinyinWordIdList = doSQLiteQuery(this.appDB, "link_word_with_pinyin", new String[] {
+        List<String> pinyinWordIdList = doSQLiteQuery(db, wordTable, new String[] {
                                                               "id_"
                                                       }, //
                                                       "target_chars_id_ = ?", //
@@ -360,7 +370,7 @@ public class PinyinDictDB {
         Set<String> phrasePinyinCharsIdSet = new HashSet<>(phrasePinyinCharsIdList);
         Set<String> invalidPhraseIdSet = new HashSet<>();
         Map<String, List<String[]>> matchedPhraseMap = new HashMap<>(phrasePinyinCharsIdSet.size() * 10);
-        doSQLiteQuery(this.appDB, "link_phrase_with_pinyin_word", new String[] {
+        doSQLiteQuery(db, phraseWordTable, new String[] {
                               "source_id_", "target_id_", "target_spell_chars_id_", "target_index_"
                       }, //
                       "target_spell_chars_id_ in (" + phrasePinyinCharsIdSet.stream()
@@ -405,11 +415,16 @@ public class PinyinDictDB {
             return pinyinWordIdList;
         }
 
-        List<String> sortedPhraseIdList = doSQLiteQuery(this.appDB, "meta_phrase", new String[] {
+        List<String> sortedPhraseIdList = doSQLiteQuery(db, phraseTable, new String[] {
                                                                 "id_"
                                                         }, //
-                                                        "id_ in ()", //
-                                                        new String[] { inputPinyinCharsId }, //
+                                                        "id_ in ("
+                                                        + matchedPhraseMap.keySet()
+                                                                          .stream()
+                                                                          .map((id) -> "?")
+                                                                          .collect(Collectors.joining(", "))
+                                                        + ")", //
+                                                        matchedPhraseMap.keySet().toArray(new String[0]), //
                                                         "weight_ desc", //
                                                         (cursor) -> cursor.getString(0));
         Set<String> pinyinWordIdInPhraseSet = new LinkedHashSet<>(sortedPhraseIdList.size());
@@ -423,96 +438,124 @@ public class PinyinDictDB {
     }
 
     private void doSaveUsedPhrase(List<InputWord> phrase) {
+        SQLiteDatabase db = this.userDB;
+
         doSaveWordInUsedPhrase(phrase);
 
-        Set<String> phrasePinyinIds = extractPinyinId(phrase);
+        String phraseValue = phrase.stream().map(InputWord::getOid).collect(Collectors.joining(":"));
 
-        Map<String, String[]> existUsedPhraseMap = new HashMap<>();
-        doSQLiteQuery(this.userDB, "used_phrase_meta", new String[] {
-                              "id_", "pre_pinyin_id_", "post_pinyin_id_", "weight_"
+        Map<String, Integer> existUsedPhraseMap = new HashMap<>();
+        doSQLiteQuery(db, "used_phrase", new String[] {
+                              "value_", "weight_"
                       }, //
-                      null, null, null, null, //
+                      "value_ = ?", new String[] { phraseValue }, //
                       (cursor) -> {
-                          existUsedPhraseMap.put(cursor.getString(1) + ":" + cursor.getString(2),
-                                                 new String[] { cursor.getString(0), cursor.getString(3) });
+                          existUsedPhraseMap.put(cursor.getString(0), cursor.getInt(1));
                           return null;
                       });
 
-        this.userDB.beginTransaction();
+        boolean phraseNotExist = existUsedPhraseMap.isEmpty();
+
+        db.beginTransaction();
         try {
-            SQLiteStatement insert = this.userDB.compileStatement(
-                    "insert into used_phrase_meta (pre_pinyin_id_, post_pinyin_id_, weight_) values (?, ?, ?)");
-            SQLiteStatement update = this.userDB.compileStatement(
-                    "update used_phrase_meta set pre_pinyin_id_ = ?, post_pinyin_id_ = ?, weight_ = ? where id_ = ?");
+            SQLiteStatement insert = db.compileStatement("insert into used_phrase (weight_, value_) values (?, ?)");
+            SQLiteStatement update = db.compileStatement("update used_phrase set weight_ = ? where value_ = ?");
 
-            Iterator<String> it = phrasePinyinIds.iterator();
-            String prePinyinId = it.next();
-            while (it.hasNext()) {
-                String postPinyinId = it.next();
-                String[] exist = existUsedPhraseMap.get(prePinyinId + ":" + postPinyinId);
-                if (exist == null) {
-                    insert.bindAllArgsAsStrings(new String[] { prePinyinId, postPinyinId, "1" });
-                    insert.execute();
-                } else {
-                    update.bindAllArgsAsStrings(new String[] {
-                            prePinyinId, postPinyinId, String.valueOf(Integer.parseInt(exist[1]) + 1), exist[0]
-                    });
-                    update.execute();
-                }
-
-                prePinyinId = postPinyinId;
+            int weight = existUsedPhraseMap.getOrDefault(phraseValue, 0) + 1;
+            if (phraseNotExist) {
+                insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
+                insert.execute();
+            } else {
+                update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
+                update.execute();
             }
 
-            this.userDB.setTransactionSuccessful();
+            db.setTransactionSuccessful();
         } finally {
-            this.userDB.endTransaction();
+            db.endTransaction();
+        }
+
+        if (!phraseNotExist) {
+            return;
+        }
+
+        // 保存短语中的字
+        List<String> idList = doSQLiteQuery(db, "used_phrase", //
+                                            new String[] { "id_" }, "value_ = ?", //
+                                            new String[] { phraseValue }, //
+                                            (cursor) -> cursor.getString(0));
+        String phraseId = idList.get(0);
+
+        db.beginTransaction();
+        try {
+            SQLiteStatement insert = db.compileStatement("insert into"
+                                                         + " used_phrase_pinyin_word"
+                                                         + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
+                                                         + " values (?, ?, ?, ?)");
+
+            for (int i = 0; i < phrase.size(); i++) {
+                InputWord word = phrase.get(i);
+
+                insert.bindAllArgsAsStrings(new String[] {
+                        phraseId,
+                        word.getOid(),
+                        word.getCharsId(),
+                        String.valueOf(i)
+                });
+                insert.execute();
+            }
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 
     /** 保存短语中字的使用频率等信息 */
     private void doSaveWordInUsedPhrase(List<InputWord> phrase) {
-        Map<String, String> oidAndCharsIdMap = phrase.stream()
-                                                     .collect(Collectors.toMap(InputWord::getOid,
-                                                                               InputWord::getCharsId));
+        SQLiteDatabase db = this.userDB;
+
+        Map<String, String> idAndTargetCharsIdMap = phrase.stream()
+                                                          .collect(Collectors.toMap(InputWord::getOid,
+                                                                                    InputWord::getCharsId));
 
         Map<String, Integer> existUsedPinyinWordMap = new HashMap<>();
-        doSQLiteQuery(this.userDB,
+        doSQLiteQuery(db,
                       "used_pinyin_word",
                       new String[] {
-                              "id_", "oid_", "chars_id_", "weight_"
+                              "id_", "target_chars_id_", "weight_"
                       },
-                      "oid_ in (" + oidAndCharsIdMap.keySet()
-                                                    .stream()
-                                                    .map((id) -> "?")
-                                                    .collect(Collectors.joining(", ")) + ")",
-                      oidAndCharsIdMap.keySet().toArray(new String[0]),
+                      "id_ in (" + idAndTargetCharsIdMap.keySet()
+                                                        .stream()
+                                                        .map((id) -> "?")
+                                                        .collect(Collectors.joining(", ")) + ")",
+                      idAndTargetCharsIdMap.keySet().toArray(new String[0]),
                       (cursor) -> {
-                          existUsedPinyinWordMap.put(cursor.getString(1), cursor.getInt(3));
+                          existUsedPinyinWordMap.put(cursor.getString(0), cursor.getInt(2));
                           return null;
                       });
 
-        this.userDB.beginTransaction();
+        db.beginTransaction();
         try {
-            SQLiteStatement insert = this.userDB.compileStatement(
-                    "insert into used_pinyin_word (weight_, oid_, chars_id_) values (?, ?, ?)");
-            SQLiteStatement update = this.userDB.compileStatement(
-                    "update used_pinyin_word set weight_ = ? where oid_ = ?");
+            SQLiteStatement insert = db.compileStatement(
+                    "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)");
+            SQLiteStatement update = db.compileStatement("update used_pinyin_word set weight_ = ? where id_ = ?");
 
-            oidAndCharsIdMap.forEach((oid, charsId) -> {
-                int weight = existUsedPinyinWordMap.getOrDefault(oid, 0) + 1;
+            idAndTargetCharsIdMap.forEach((id, charsId) -> {
+                int weight = existUsedPinyinWordMap.getOrDefault(id, 0) + 1;
 
-                if (existUsedPinyinWordMap.containsKey(oid)) {
-                    update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), oid });
+                if (existUsedPinyinWordMap.containsKey(id)) {
+                    update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
                     update.execute();
                 } else {
-                    insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), oid, charsId });
+                    insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id, charsId });
                     insert.execute();
                 }
             });
 
-            this.userDB.setTransactionSuccessful();
+            db.setTransactionSuccessful();
         } finally {
-            this.userDB.endTransaction();
+            db.endTransaction();
         }
     }
 
@@ -636,23 +679,38 @@ public class PinyinDictDB {
         String[] clauses = new String[] {
                 "CREATE TABLE\n"
                 + "    IF NOT EXISTS used_pinyin_word (\n"
+                // -- id_, target_chars_id_ 与内置字典中的 link_word_with_pinyin 表的数据保持一致
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
-                + "        oid_ INTEGER NOT NUll,\n"
-                + "        chars_id_ INTEGER NOT NUll,\n"
-                + "        weight_ INTEGER DEFAULT 0,\n"
-                + "        UNIQUE (oid_)"
-                + "    );",
-                "CREATE INDEX IF NOT EXISTS idx_used_py_wrd_chars ON used_pinyin_word (chars_id_);",
+                + "        target_chars_id_ INTEGER NOT NUll,\n"
+                + "        weight_ INTEGER DEFAULT 0\n"
+                + "    );", "CREATE INDEX IF NOT EXISTS idx_used_py_wrd_chars ON used_pinyin_word (target_chars_id_);",
                 //
                 "CREATE TABLE\n"
-                + "    IF NOT EXISTS used_phrase_meta (\n"
+                + "    IF NOT EXISTS used_phrase (\n"
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
-                + "        pre_pinyin_id_ INTEGER NOT NULL,\n"
-                + "        post_pinyin_id_ INTEGER NOT NUll,\n"
+                // -- 短语内容标识：由 used_phrase_pinyin_word 中的 target_id_ 拼接而成
+                + "        value_ TEXT NOT NULL,\n"
+                // -- 按使用频率等排序的权重
                 + "        weight_ INTEGER DEFAULT 0,\n"
-                + "        UNIQUE (pre_pinyin_id_, post_pinyin_id_)"
-                + "    );",
-                "CREATE INDEX IF NOT EXISTS idx_used_ph_py_id ON used_phrase_meta (pre_pinyin_id_, post_pinyin_id_);",
+                + "        UNIQUE (value_)\n"
+                + "    );\n"
+                + "\n"
+                + "CREATE TABLE\n"
+                + "    IF NOT EXISTS used_phrase_pinyin_word (\n"
+                + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
+                // -- used_phrase 中的 id_
+                + "        source_id_ INTEGER NOT NULL,\n"
+                // -- 与内置字典中的 link_word_with_pinyin 表的 id_ 一致
+                + "        target_id_ INTEGER NOT NULL,\n"
+                // -- 拼音字母组合 id
+                + "        target_spell_chars_id_ INTEGER NOT NULL,\n"
+                // -- 字在词中的序号
+                + "        target_index_ INTEGER NOT NULL,\n"
+                + "        UNIQUE (source_id_, target_id_, target_index_),\n"
+                + "        FOREIGN KEY (source_id_) REFERENCES used_phrase (id_)\n"
+                + "    );\n"
+                + "\n"
+                + "CREATE INDEX IF NOT EXISTS idx_used_phrs_py_wrd_chars ON used_phrase_with_pinyin_word (target_spell_chars_id_);",
                 };
 
         for (String clause : clauses) {
