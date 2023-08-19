@@ -393,16 +393,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                 level2NextChars.set(lastKeyIndex, null);
             }
         }
+        determineInputWord(input);
 
         Key<?>[][] keys = KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(),
                                                             stateData.getLevel0Key().getText(),
                                                             level1NextChars,
                                                             level2NextChars);
-
-        prepareInputCandidates(input);
-        // Note: 连续输入过程中不处理候选字，故而，直接置空该输入的候选字列表，避免浪费内存
-        input.setCandidates(new ArrayList<>());
-
         fire_InputChars_Inputting(() -> keys, currentKey);
     }
 
@@ -410,7 +406,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void onNewChoosingInputCandidate(CharInput input) {
         // Note: 复位状态，以便于做新状态的初始化，而不是利用原状态
         this.state = new State(State.Type.Input_Waiting);
-        prepareInputCandidates(input);
 
         onChoosingInputCandidate(input, true);
     }
@@ -431,16 +426,27 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputPageFlipping_Audio();
             }
         } else {
-            int dataSize = input.getCandidates().size();
-            int pageSize = KeyTable.getInputCandidateKeysPageSize();
-            stateData = new ChoosingInputCandidateStateData(dataSize, pageSize);
+            List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
+            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, candidates);
 
+            int pageSize = KeyTable.getInputCandidateKeysPageSize();
+            if (!topBestCandidates.isEmpty()) {
+                // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
+                for (int i = topBestCandidates.size(); i < pageSize; i++) {
+                    topBestCandidates.add(null);
+                }
+                candidates.addAll(0, topBestCandidates);
+            }
+
+            stateData = new ChoosingInputCandidateStateData(candidates, pageSize);
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
         }
 
-        KeyFactory keyFactory = () -> KeyTable.createInputCandidateKeys(createKeyTableConfigure(),
-                                                                        input,
-                                                                        stateData.getPageStart());
+        KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
+                                                                            input,
+                                                                            stateData.getCandidates(),
+                                                                            stateData.getPageStart(),
+                                                                            stateData.getPageSize());
         InputMsgData data = new InputCharsInputtingMsgData(keyFactory, null);
 
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);
@@ -460,16 +466,23 @@ public class PinyinKeyboard extends BaseKeyboard {
         onChoosingInputMsg(null, selected, null);
     }
 
-    private void prepareInputCandidates(CharInput input) {
-        List<String> pinyinChars = input.getChars();
-        List<InputWord> candidateWords = this.pinyinDict.getCandidateWords(pinyinChars);
-        input.setCandidates(candidateWords);
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input, List<InputWord> candidates) {
+        // 根据当前位置之前的输入确定当前位置的最佳候选字
+        List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
 
-        if (!candidateWords.contains(input.getWord()) || !input.getWord().isConfirmed()) {
-            // 根据当前位置之前的输入确定当前位置的最佳候选字
-            List<InputWord> preInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
+        return this.pinyinDict.findTopBestCandidateWords(input, 6, candidates, preInputWords);
+    }
 
-            InputWord bestCandidate = this.pinyinDict.findBestCandidateWord(candidateWords, preInputWords);
+    private void determineInputWord(CharInput input) {
+        if (input.getWord() != null && input.getWord().isConfirmed()) {
+            return;
+        }
+
+        List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
+        if (!candidates.contains(input.getWord())) {
+            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, candidates);
+            InputWord bestCandidate = CollectionUtils.first(topBestCandidates);
+
             input.setWord(bestCandidate);
         }
     }

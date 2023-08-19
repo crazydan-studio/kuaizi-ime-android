@@ -504,20 +504,19 @@ public class KeyTable {
     }
 
     /** 创建输入候选字按键 */
-    public static Key<?>[][] createInputCandidateKeys(Config config, CharInput input, int startIndex) {
-        List<InputWord> inputWords = input.getCandidates();
-        int pageSize = getInputCandidateKeysPageSize();
-
+    public static Key<?>[][] createInputCandidateWordKeys(
+            Config config, CharInput input, List<InputWord> candidates, int startIndex, int pageSize
+    ) {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.ConfirmInput);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
 
-        if (!inputWords.isEmpty()) {
+        if (!candidates.isEmpty()) {
             gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
                                          + "/" //
-                                         + ((int) Math.ceil(inputWords.size() / (pageSize * 1.0))));
+                                         + ((int) Math.ceil(candidates.size() / (pageSize * 1.0))));
         }
 
         if (input.is_Pinyin_SCZ_Starting()) {
@@ -541,19 +540,24 @@ public class KeyTable {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < inputWords.size()) {
-                    InputWord word = inputWords.get(wordIndex);
+                if (wordIndex < candidates.size()) {
+                    InputWord word = candidates.get(wordIndex);
 
-                    int bgAttrId = key_char_around_level_bg_colors[level][0];
-                    int fgAttrId = key_char_around_level_bg_colors[level][1];
-                    InputWordKey key = InputWordKey.create(word).setFgColorAttrId(fgAttrId).setBgColorAttrId(bgAttrId);
+                    if (word != null) {
+                        int bgAttrId = key_char_around_level_bg_colors[level][0];
+                        int fgAttrId = key_char_around_level_bg_colors[level][1];
 
-                    // 禁用已被选中的候选字按键
-                    if (word.equals(input.getWord())) {
-                        key.setDisabled(true);
+                        InputWordKey key = InputWordKey.create(word)
+                                                       .setFgColorAttrId(fgAttrId)
+                                                       .setBgColorAttrId(bgAttrId);
+
+                        // 禁用已被选中的候选字按键
+                        if (word.equals(input.getWord())) {
+                            key.setDisabled(true);
+                        }
+
+                        gridKeys[x][y] = key;
                     }
-
-                    gridKeys[x][y] = key;
                 } else {
                     break;
                 }

@@ -30,6 +30,9 @@ import androidx.annotation.NonNull;
 public class InputWord {
     /** 对应的持久化对象 id */
     private final String oid;
+    /** 字符组合 id，一般为拼音字母组合 id */
+    private final String charsId;
+
     /** 是否已确认 */
     private boolean confirmed;
 
@@ -38,8 +41,9 @@ public class InputWord {
     /** 是否繁体 */
     private final boolean traditional;
 
-    public InputWord(String oid, String value, String notation, boolean traditional) {
+    public InputWord(String oid, String charsId, String value, String notation, boolean traditional) {
         this.oid = oid;
+        this.charsId = charsId;
         this.value = value;
         this.notation = notation;
         this.traditional = traditional;
@@ -47,6 +51,10 @@ public class InputWord {
 
     public String getOid() {
         return this.oid;
+    }
+
+    public String getCharsId() {
+        return this.charsId;
     }
 
     public boolean isConfirmed() {

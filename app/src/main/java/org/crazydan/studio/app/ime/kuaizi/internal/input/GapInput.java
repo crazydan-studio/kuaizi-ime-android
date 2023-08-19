@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
@@ -37,10 +36,6 @@ public class GapInput extends BaseInput {
 
     @Override
     public void appendKey(Key<?> key) {
-    }
-
-    @Override
-    public void setCandidates(List<InputWord> candidates) {
     }
 
     @Override

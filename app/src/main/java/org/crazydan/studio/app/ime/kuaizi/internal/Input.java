@@ -72,11 +72,4 @@ public interface Input {
      * @return 若为<code>null</code>，则表示未选择
      */
     InputWord getWord();
-
-    /**
-     * 获取可选候选字列表
-     *
-     * @return 若无候选字，则返回空集合
-     */
-    List<InputWord> getCandidates();
 }

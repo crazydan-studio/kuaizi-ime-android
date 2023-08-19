@@ -18,6 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -26,13 +29,37 @@ import java.util.Collection;
 public class CollectionUtils {
 
     public static <T> T first(Collection<T> c) {
-        return c.isEmpty() ? null : c.iterator().next();
+        return c == null || c.isEmpty() ? null : c.iterator().next();
     }
 
     public static <T> T last(Collection<T> c) {
-        return c.isEmpty() ? null //
-                           : c.size() == 1 //
-                             ? first(c) //
-                             : c.stream().reduce((prev, next) -> next).orElse(null);
+        return c == null || c.isEmpty() ? null //
+                                        : c.size() == 1 //
+                                          ? first(c) //
+                                          : c.stream().reduce((prev, next) -> next).orElse(null);
+    }
+
+    /**
+     * 从 <code>source</code> 向 <code>target</code> 补充元素，
+     * 直到元素数量小于或等于 <code>top</code> 数
+     */
+    public static <T> List<T> topPatch(List<T> target, int top, Supplier<Collection<T>> supplier) {
+        int lostCount = top - target.size();
+
+        if (lostCount > 0) {
+            Iterator<T> it = supplier.get().iterator();
+            while (it.hasNext() && lostCount > 0) {
+                T e = it.next();
+                if (target.contains(e)) {
+                    continue;
+                }
+
+                target.add(e);
+                lostCount--;
+            }
+        } else if (lostCount < 0) {
+            return target.subList(0, top);
+        }
+        return target;
     }
 }

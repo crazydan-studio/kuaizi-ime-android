@@ -144,15 +144,6 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public List<InputWord> getCandidates() {
-        return this.candidates == null ? new ArrayList<>() : this.candidates;
-    }
-
-    public void setCandidates(List<InputWord> candidates) {
-        this.candidates = candidates;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

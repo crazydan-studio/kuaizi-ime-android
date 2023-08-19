@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
@@ -26,6 +29,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @date 2023-07-10
  */
 public class ChoosingInputCandidateStateData implements State.Data {
+    private final List<InputWord> candidates;
+
     /** 数据总量 */
     private final int dataSize;
     /** 分页大小 */
@@ -33,13 +38,25 @@ public class ChoosingInputCandidateStateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingInputCandidateStateData(int dataSize, int pageSize) {
-        this.dataSize = dataSize;
+    public ChoosingInputCandidateStateData(
+            List<InputWord> candidates, int pageSize
+    ) {
+        this.candidates = candidates;
+
+        this.dataSize = candidates.size();
         this.pageSize = pageSize;
+    }
+
+    public List<InputWord> getCandidates() {
+        return this.candidates;
     }
 
     public int getPageStart() {
         return this.pageStart;
+    }
+
+    public int getPageSize() {
+        return this.pageSize;
     }
 
     /**
