@@ -56,16 +56,15 @@ public class KeyTable {
     private static final int[][][] input_word_key_around_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 2, 3 },
                     new int[] { 2, 4 },
                     new int[] { 3, 4 },
                     new int[] { 4, 4 },
                     new int[] { 4, 3 },
                     new int[] { 3, 2 },
+                    new int[] { 2, 3 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 1, 2 },
                     new int[] { 1, 3 },
                     new int[] { 1, 4 },
                     new int[] { 2, 5 },
@@ -77,11 +76,10 @@ public class KeyTable {
                     new int[] { 4, 2 },
                     new int[] { 3, 1 },
                     new int[] { 2, 2 },
+                    new int[] { 1, 2 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 0, 2 },
-                    new int[] { 0, 3 },
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
@@ -94,6 +92,8 @@ public class KeyTable {
                     new int[] { 3, 0 },
                     new int[] { 2, 1 },
                     new int[] { 1, 1 },
+                    new int[] { 0, 2 },
+                    new int[] { 0, 3 },
                     },
             };
 
@@ -101,16 +101,15 @@ public class KeyTable {
     private static final int[][][] symbol_key_around_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 2, 3 },
                     new int[] { 2, 4 },
                     new int[] { 3, 4 },
                     new int[] { 4, 4 },
                     new int[] { 4, 3 },
                     new int[] { 3, 2 },
+                    new int[] { 2, 3 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 1, 2 },
                     new int[] { 1, 3 },
                     new int[] { 1, 4 },
                     new int[] { 2, 5 },
@@ -122,11 +121,10 @@ public class KeyTable {
                     new int[] { 4, 2 },
                     new int[] { 3, 1 },
                     new int[] { 2, 2 },
+                    new int[] { 1, 2 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 0, 2 },
-                    new int[] { 0, 3 },
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
@@ -137,6 +135,8 @@ public class KeyTable {
                     new int[] { 3, 0 },
                     new int[] { 2, 1 },
                     new int[] { 1, 1 },
+                    new int[] { 0, 2 },
+                    new int[] { 0, 3 },
                     },
             };
 
@@ -387,7 +387,7 @@ public class KeyTable {
                         alphabetKey("f").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
                         } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true),
                 alphabetKey("g").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
                 alphabetKey("h").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
                 alphabetKey("i").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
@@ -396,7 +396,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
                 alphabetKey("l").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
                 alphabetKey("m").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
                 alphabetKey("n").setBgColorAttrId(R.attr.key_char_level_2_bg_color),
@@ -414,7 +414,7 @@ public class KeyTable {
                 enterCtrlKey(config),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
+                noopCtrlKey(),
                 alphabetKey("u").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("v").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
                 alphabetKey("w").setBgColorAttrId(R.attr.key_char_level_4_bg_color),
@@ -657,11 +657,12 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
+        gridKeys[0][0] = ctrlKey(CtrlKey.Type.SwitchHandMode).setDisabled(true);
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][6] = config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.Math_Equal, "=");
-        gridKeys[2][0] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_left_hand_exit);
+        gridKeys[5][6] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_right_hand_exit);
 
         int keyIndex = 0;
         for (int level = 0; level < math_key_around_level_coords.length; level++) {
