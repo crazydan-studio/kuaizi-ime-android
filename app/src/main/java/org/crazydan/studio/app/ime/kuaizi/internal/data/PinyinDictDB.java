@@ -209,7 +209,8 @@ public class PinyinDictDB {
                       }, //
                       "target_chars_id_ = ?", //
                       new String[] { inputPinyinCharsId }, //
-                      "target_id_ asc", // Note：拼音的 id 排序即为其字母排序
+                      // Note：拼音的 id 排序即为其字母排序
+                      "weight_ desc, glyph_weight_ desc, target_id_ asc", //
                       (cursor) -> {
                           String oid = cursor.getString(0);
                           String wordId = cursor.getString(1);
@@ -253,7 +254,6 @@ public class PinyinDictDB {
                       }, //
                       "id_ in (" + wordIdSet.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")", //
                       wordIdSet.toArray(new String[0]), //
-                      "weight_ desc", //
                       (cursor) -> {
                           String id = cursor.getString(0);
                           String value = cursor.getString(1);
@@ -264,10 +264,12 @@ public class PinyinDictDB {
                           return null;
                       });
 
-        // 返回按字形权重排序的结果
+        // 返回按拼音权重、字形权重、拼音字母顺序等排序的结果
         List<InputWord> candidates = new ArrayList<>(wordAndPinyinIdMap.size() * 2);
-        wordMap.forEach((wordId, wordTuple) -> {
-            wordAndPinyinIdMap.get(wordId).forEach((pinyinTuple) -> {
+        wordAndPinyinIdMap.forEach((wordId, pinyinIds) -> {
+            String[] wordTuple = wordMap.get(wordId);
+
+            pinyinIds.forEach((pinyinTuple) -> {
                 // Note：字与拼音存在唯一隐射，故以其关联 id 作为输入词的唯一标识
                 String oid = pinyinTuple[0];
                 String wordPinyinId = pinyinTuple[1];
