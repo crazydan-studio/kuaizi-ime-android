@@ -20,12 +20,14 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
@@ -162,7 +164,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 无候选字的输入，视为无效输入，直接丢弃
                 if (!input.hasWord()) {
                     getInputList().dropPending();
+                } else {
+                    determineNotConfirmedInputWordBeforeSelected(input);
                 }
+
                 confirm_InputChars();
                 break;
             }
@@ -426,24 +431,30 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputPageFlipping_Audio();
             }
         } else {
-            List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
-            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, candidates);
+            Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+
+            List<InputWord> candidates = new ArrayList<>(candidateMap.values());
+            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input);
 
             int pageSize = KeyTable.getInputCandidateKeysPageSize();
-            if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidates.size()) {
+            if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
                 // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
                 for (int i = topBestCandidates.size(); i < pageSize; i++) {
                     topBestCandidates.add(null);
                 }
                 candidates.addAll(0, topBestCandidates);
-            } else if (topBestCandidates.size() == candidates.size()) {
+            } else if (topBestCandidates.size() == candidateMap.size()) {
                 candidates = topBestCandidates;
+            }
+            // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
+            else if (topBestCandidates.isEmpty()) {
+                topBestCandidates = candidates;
             }
 
             stateData = new ChoosingInputCandidateStateData(candidates, pageSize);
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
 
-            if (input.getWord() == null || !input.getWord().isConfirmed()) {
+            if (!input.getWord().isConfirmed()) {
                 input.setWord(CollectionUtils.first(topBestCandidates));
             }
         }
@@ -472,22 +483,85 @@ public class PinyinKeyboard extends BaseKeyboard {
         onChoosingInputMsg(null, selected, null);
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input, List<InputWord> candidates) {
-        // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> prevInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input) {
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+        BestCandidateWords best = getTopBestCandidateWords(input);
 
-        return this.pinyinDict.findTopBestCandidateWords(input, 18, candidates, prevInputWords);
+        return best.words.stream().map(candidateMap::get).collect(Collectors.toList());
+    }
+
+    /** 确定指定输入的前序未确认输入的最佳候选字 */
+    private void determineNotConfirmedInputWordBeforeSelected(CharInput input) {
+        BestCandidateWords best = getTopBestCandidateWords(input);
+
+        String[] phrase = CollectionUtils.first(best.phrases);
+        int inputIndex = getInputList().getSelectedIndex();
+        if (phrase == null || phrase.length < 2 || inputIndex <= 0) {
+            return;
+        }
+
+        List<CharInput> inputs = new ArrayList<>(phrase.length);
+        inputs.add(input);
+
+        for (int i = inputIndex; i >= 0; i--) {
+            Input check = getInputList().getInputs().get(i);
+
+            if (check instanceof CharInput) {
+                if (!check.isPinyin()) {
+                    break;
+                }
+                inputs.add((CharInput) check);
+            }
+        }
+
+        if (inputs.size() < phrase.length) {
+            return;
+        }
+
+        for (int i = 0; i < phrase.length; i++) {
+            String wordId = phrase[i];
+            CharInput charInput = inputs.get(i);
+
+            Map<String, InputWord> candidateMap = getInputCandidateWords(charInput);
+            InputWord word = candidateMap.get(wordId);
+
+            charInput.setWord(word);
+        }
     }
 
     private void determineInputWord(CharInput input) {
-        List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
 
-        if (!candidates.contains(input.getWord()) || !input.getWord().isConfirmed()) {
-            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, candidates);
+        if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
+            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input);
+
             InputWord bestCandidate = CollectionUtils.first(topBestCandidates);
+            // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
+            if (bestCandidate == null) {
+                bestCandidate = CollectionUtils.first(candidateMap.values());
+            }
 
             input.setWord(bestCandidate);
         }
+    }
+
+    private Map<String, InputWord> getInputCandidateWords(CharInput input) {
+        Map<String, InputWord> words = getInputList().getCachedCandidateWords(input);
+
+        if (words == null) {
+            List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
+            getInputList().cacheCandidateWords(input, candidates);
+
+            words = getInputList().getCachedCandidateWords(input);
+        }
+        return words;
+    }
+
+    private BestCandidateWords getTopBestCandidateWords(CharInput input) {
+        // 根据当前位置之前的输入确定当前位置的最佳候选字
+        List<InputWord> prevInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
+
+        return this.pinyinDict.findTopBestCandidateWords(input, 18, prevInputWords);
     }
 
     // <<<<<<<<< 对输入列表的操作

@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -519,17 +520,35 @@ public class KeyTable {
                                          + ((int) Math.ceil(candidates.size() / (pageSize * 1.0))));
         }
 
+        CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
+
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_zcs_h, s + "," + s + "h");
+            startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             gridKeys[0][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_nl, "n,l  ");
+            startingToggle.toggle_Pinyin_NL_Starting();
         }
+        // 若拼音变换无效，则不提供切换按钮
+        if (!startingToggle.getChars().equals(input.getChars()) //
+            && !PinyinDictDB.getInstance().hasValidPinyin(startingToggle)) {
+            gridKeys[0][6] = noopCtrlKey();
+        }
+
+        CharInput endingToggle = input.copy();
         if (input.is_Pinyin_NG_Ending()) {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
+
             gridKeys[1][6] = ctrlKey(CtrlKey.Type.ToggleInputSpell_ng, tail + "," + tail + "g");
+            endingToggle.toggle_Pinyin_NG_Ending();
+        }
+        // 若拼音变换无效，则不提供切换按钮
+        if (!endingToggle.getChars().equals(input.getChars()) //
+            && !PinyinDictDB.getInstance().hasValidPinyin(endingToggle)) {
+            gridKeys[1][6] = noopCtrlKey();
         }
 
         int wordIndex = startIndex;

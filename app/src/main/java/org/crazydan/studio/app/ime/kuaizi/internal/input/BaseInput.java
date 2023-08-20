@@ -34,7 +34,6 @@ public abstract class BaseInput implements Input {
     private final List<Key<?>> keys = new ArrayList<>();
 
     private InputWord word;
-    private List<InputWord> candidates;
 
     @Override
     public boolean isLatin() {

@@ -20,8 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
@@ -37,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
  */
 public class InputList {
     private final Set<UserInputMsgListener> listeners = new HashSet<>();
+    private final Map<String, Map<String, InputWord>> candidateWordsCache = new LinkedHashMap<>(50);
 
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
@@ -70,9 +75,32 @@ public class InputList {
     public void reset() {
         this.inputs.clear();
         this.cursor.reset();
+        this.candidateWordsCache.clear();
 
         this.inputs.add(new GapInput());
         this.cursor.selected = this.inputs.get(0);
+    }
+
+    /** 缓存输入的候选字列表 */
+    public void cacheCandidateWords(CharInput input, List<InputWord> candidateWords) {
+        String inputChars = String.join("", input.getChars());
+
+        if (!this.candidateWordsCache.containsKey(inputChars)) {
+            this.candidateWordsCache.put(inputChars,
+                                         candidateWords.stream()
+                                                       .collect(Collectors.toMap(InputWord::getOid,
+                                                                                 Function.identity(),
+                                                                                 (a, b) -> a,
+                                                                                 // 保持候选字的顺序不变
+                                                                                 LinkedHashMap::new)));
+        }
+    }
+
+    /** 获取已缓存的输入的候选字列表 */
+    public Map<String, InputWord> getCachedCandidateWords(CharInput input) {
+        String inputChars = String.join("", input.getChars());
+
+        return this.candidateWordsCache.get(inputChars);
     }
 
     /** 是否有空的待输入 */
