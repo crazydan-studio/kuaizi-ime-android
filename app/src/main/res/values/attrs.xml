@@ -43,6 +43,8 @@
         <attr name="key_ctrl_exit_fg_color" format="color" />
         <attr name="key_ctrl_space_bg_color" format="color" />
         <attr name="key_ctrl_space_fg_color" format="color" />
+        <attr name="key_ctrl_commit_bg_color" format="color" />
+        <attr name="key_ctrl_commit_fg_color" format="color" />
         <attr name="key_ctrl_confirm_bg_color" format="color" />
         <attr name="key_ctrl_confirm_fg_color" format="color" />
         <attr name="key_ctrl_locator_bg_color" format="color" />

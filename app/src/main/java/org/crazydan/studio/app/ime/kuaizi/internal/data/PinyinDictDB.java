@@ -273,7 +273,7 @@ public class PinyinDictDB {
 
     /** 根据前序输入分析得出最靠前的 <code>top</code> 个候选字 */
     public BestCandidateWords findTopBestCandidateWords(
-            CharInput input, int top, List<InputWord> prevInputWords, boolean userDataDisabled
+            CharInput input, int top, List<InputWord> prevPhrase, boolean userDataDisabled
     ) {
         String inputPinyinCharsId = getPinyinCharsId(input);
         if (inputPinyinCharsId == null) {
@@ -282,8 +282,8 @@ public class PinyinDictDB {
 
         BestCandidateWords userBest = userDataDisabled
                                       ? new BestCandidateWords()
-                                      : findTopBestPinyinWordsFromUserDB(inputPinyinCharsId, top, prevInputWords);
-        BestCandidateWords appBest = findTopBestPinyinWordsFromAppDB(inputPinyinCharsId, top, prevInputWords);
+                                      : findTopBestPinyinWordsFromUserDB(inputPinyinCharsId, top, prevPhrase);
+        BestCandidateWords appBest = findTopBestPinyinWordsFromAppDB(inputPinyinCharsId, top, prevPhrase);
 
         // 用户字典的常用字优先，不够时，再合并内置字典的高频字
         CollectionUtils.topPatch(userBest.words, top, () -> appBest.words);
@@ -303,32 +303,32 @@ public class PinyinDictDB {
     }
 
     private BestCandidateWords findTopBestPinyinWordsFromUserDB(
-            String inputPinyinCharsId, int top, List<InputWord> prevInputWords
+            String inputPinyinCharsId, int top, List<InputWord> prevPhrase
     ) {
         return findTopBestPinyinWordsFromDB(this.userDB,
                                             "used_pinyin_word",
                                             "used_pinyin_phrase",
                                             inputPinyinCharsId,
                                             top,
-                                            prevInputWords);
+                                            prevPhrase);
     }
 
     private BestCandidateWords findTopBestPinyinWordsFromAppDB(
-            String inputPinyinCharsId, int top, List<InputWord> prevInputWords
+            String inputPinyinCharsId, int top, List<InputWord> prevPhrase
     ) {
         return findTopBestPinyinWordsFromDB(this.appDB,
                                             "link_word_with_pinyin",
                                             "pinyin_phrase",
                                             inputPinyinCharsId,
                                             top,
-                                            prevInputWords);
+                                            prevPhrase);
     }
 
     private BestCandidateWords findTopBestPinyinWordsFromDB(
             SQLiteDatabase db, String wordTable, String phraseTable, String inputPinyinCharsId, int top,
-            List<InputWord> prevInputWords
+            List<InputWord> prevPhrase
     ) {
-        List<InputWord> pinyinWords = prevInputWords != null ? new ArrayList<>(prevInputWords) : new ArrayList<>();
+        List<InputWord> pinyinWords = prevPhrase != null ? new ArrayList<>(prevPhrase) : new ArrayList<>();
         Collections.reverse(pinyinWords);
 
         // 匹配短语中的常用字：倒序分析

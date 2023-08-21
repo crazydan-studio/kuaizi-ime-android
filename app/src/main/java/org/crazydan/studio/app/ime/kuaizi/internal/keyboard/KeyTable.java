@@ -244,7 +244,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             new Integer[] { R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
-                            new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
+                            new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_commit_bg_color });
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
                             new Integer[] { R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color });
@@ -282,7 +282,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
-                            new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
+                            new Integer[] { R.drawable.ic_confirm, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             new Integer[] { R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color });
 
@@ -514,6 +514,7 @@ public class KeyTable {
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.ConfirmInput);
+        gridKeys[3][6] = ctrlKey(CtrlKey.Type.CommitInputList);
         gridKeys[5][6] = ctrlKey(CtrlKey.Type.DropInput);
 
         if (!candidates.isEmpty()) {

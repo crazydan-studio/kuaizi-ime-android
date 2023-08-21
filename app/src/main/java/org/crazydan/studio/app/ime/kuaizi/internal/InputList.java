@@ -288,16 +288,39 @@ public class InputList {
         return this.inputs;
     }
 
-    /** 获取全部拼音输入组成的短语或词组 */
-    public List<List<InputWord>> getPinyinPhrases(boolean untilToSelected) {
-        List<Input> inputs = untilToSelected ? this.inputs.subList(0, getSelectedIndex()) : this.inputs;
+    /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
+    public List<List<InputWord>> getPinyinPhraseWords() {
+        return getPinyinPhraseWordsBefore(null);
+    }
 
-        List<List<InputWord>> list = new ArrayList<>();
+    /** 获取指定输入之前的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
+    public List<List<InputWord>> getPinyinPhraseWordsBefore(Input untilToInput) {
+        return getPinyinPhraseInputsBefore(untilToInput).stream()
+                                                        .map(phrase -> phrase.stream()
+                                                                             .map(Input::getWord)
+                                                                             .collect(Collectors.toList()))
+                                                        .collect(Collectors.toList());
+    }
 
-        List<InputWord> phrase = new ArrayList<>();
-        for (Input input : inputs) {
+    /**
+     * 获取指定输入之前的拼音短语输入（未被非拼音输入隔开的输入均视为短语，但可能为单字输入）
+     * <p/>
+     * 注：不包含参数本身
+     */
+    public List<List<CharInput>> getPinyinPhraseInputsBefore(Input untilToInput) {
+        List<List<CharInput>> list = new ArrayList<>();
+
+        List<CharInput> phrase = new ArrayList<>();
+        for (Input input : this.inputs) {
+            if (untilToInput != null //
+                && (input == untilToInput //
+                    || (this.cursor.pending == untilToInput //
+                        && this.cursor.selected == input))) {
+                break;
+            }
+
             if (input.isPinyin() && input.hasWord()) {
-                phrase.add(input.getWord());
+                phrase.add((CharInput) input);
             } else if (!(input instanceof GapInput)) {
                 if (!phrase.isEmpty()) {
                     list.add(phrase);
