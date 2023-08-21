@@ -34,6 +34,11 @@
                 app:entryValues="@array/hand_mode_values"
                 app:defaultValue="right"
                 app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+                app:key="disable_user_input_data"
+                app:title="@string/label_disable_user_input_data"
+                app:summary="@string/desc_disable_user_input_data" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/title_preference_performance">

@@ -37,11 +37,16 @@
     <string name="title_preference_about">关于</string>
 
     <!-- Settings Preferences -->
+    <string name="label_disable_user_input_data">禁止记录用户输入</string>
     <string name="label_disable_key_clicked_audio">禁用按键音效</string>
     <string name="label_disable_paging_audio">禁用翻页音效</string>
     <string name="label_disable_gliding_input_animation">禁用滑行输入动画</string>
     <string name="label_switch_theme">切换键盘主题样式</string>
     <string name="label_switch_hand_mode">切换键盘左右手模式</string>
+
+    <string name="desc_disable_user_input_data">
+        禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
+    </string>
 
     <string name="value_theme_light">浅色主题</string>
     <string name="value_theme_night">深色主题</string>
@@ -200,14 +205,14 @@
             &lt;li>
                 拼音键盘采用先录入一句话的全部拼音再挨个选字的方式进行输入，
                 录入拼音的过程中将根据本地记录的字词使用频率确定最佳候选字。
-                在选字页面还提供了前鼻韵/后鼻韵、平舌/翘舌、n/l的直接纠正按钮，
+                在选字页面还提供了对前鼻韵/后鼻韵、平舌/翘舌、n/l的直接纠正支持，
                 以避免重新输入拼音；
             &lt;/li>
             &lt;li>
                 拼音键盘输入过程中将根据输入字词对表情符号进行关键字匹配，
-                并在候选字页面（第零页）显示匹配到的表情文字以供选择。
-                在长按确认输入按钮后，会进一步提供带拼音输入、仅输入拼音、繁简字转换的功能按钮，
-                可以根据不同的场景需求按需选择；
+                并在候选字页面显示匹配到的表情文字以供选择。
+                在长按确认输入按钮后，还将进一步提供带拼音输入、仅输入拼音、繁简字转换的功能按钮，
+                可以根据不同的场景按需选择；
             &lt;/li>
             &lt;li>
                 符号键盘支持配对符号的输入（如，括号、引号等），也即，将选择内容自动包裹在配对符号内，

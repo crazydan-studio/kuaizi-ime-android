@@ -95,6 +95,7 @@ public interface Keyboard extends UserInputMsgListener {
 
     /** 键盘配置 */
     class Config {
+        public static final String pref_key_disable_user_input_data = "disable_user_input_data";
         public static final String pref_key_disable_key_clicked_audio = "disable_key_clicked_audio";
         public static final String pref_key_disable_pinyin_gliding_input_animation
                 = "disable_pinyin_gliding_input_animation";
@@ -114,6 +115,7 @@ public interface Keyboard extends UserInputMsgListener {
         /** 主题资源 id */
         private int themeResId;
 
+        private boolean userInputDataDisabled;
         private boolean keyClickedAudioDisabled;
         private boolean glidingInputAnimationDisabled;
         private boolean pagingAudioDisabled;
@@ -130,6 +132,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.orientation = config.orientation;
                 this.handMode = config.handMode;
 
+                this.userInputDataDisabled = config.userInputDataDisabled;
                 this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
                 this.glidingInputAnimationDisabled = config.glidingInputAnimationDisabled;
                 this.pagingAudioDisabled = config.pagingAudioDisabled;
@@ -170,6 +173,14 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setThemeResId(int themeResId) {
             this.themeResId = themeResId;
+        }
+
+        public boolean isUserInputDataDisabled() {
+            return this.userInputDataDisabled;
+        }
+
+        public void setUserInputDataDisabled(boolean userInputDataDisabled) {
+            this.userInputDataDisabled = userInputDataDisabled;
         }
 
         public boolean isKeyClickedAudioDisabled() {

@@ -17,10 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import android.content.Context;
@@ -138,15 +135,6 @@ public class ImeInputView extends FrameLayout
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        List<String> validKeys = new ArrayList<>(Arrays.asList(Keyboard.Config.pref_key_disable_key_clicked_audio,
-                                                               Keyboard.Config.pref_key_disable_pinyin_gliding_input_animation,
-                                                               Keyboard.Config.pref_key_disable_input_candidates_paging_audio,
-                                                               Keyboard.Config.pref_key_hand_mode,
-                                                               Keyboard.Config.pref_key_theme));
-        if (!validKeys.contains(key)) {
-            return;
-        }
-
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
         this.keyboard.setConfig(newConfig);
@@ -207,6 +195,10 @@ public class ImeInputView extends FrameLayout
 
     private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
         Keyboard.Config patchedConfig = new Keyboard.Config(config.getType(), config);
+
+        boolean disableUserInputData = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_user_input_data,
+                                                                   false);
+        patchedConfig.setUserInputDataDisabled(disableUserInputData);
 
         boolean disableKeyClickedAudio = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_key_clicked_audio,
                                                                      false);

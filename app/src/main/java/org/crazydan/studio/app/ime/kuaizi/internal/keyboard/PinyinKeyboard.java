@@ -30,6 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -105,6 +106,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void before_Commit_InputList() {
+        if (getConfig().isUserInputDataDisabled()) {
+            return;
+        }
+
         // 本地更新用户选字频率
         List<List<InputWord>> phrases = getInputList().getPinyinPhrases(false);
         this.pinyinDict.saveUsedPhrases(phrases);
@@ -165,7 +170,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (!input.hasWord()) {
                     getInputList().dropPending();
                 } else {
-                    determineNotConfirmedInputWordBeforeSelected(input);
+                    determineNotConfirmedInputWordBeforePending(input);
                 }
 
                 confirm_InputChars();
@@ -398,7 +403,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 level2NextChars.set(lastKeyIndex, null);
             }
         }
-        determineInputWord(input);
+        determineSlippingInputWord(input);
 
         Key<?>[][] keys = KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(),
                                                             stateData.getLevel0Key().getText(),
@@ -433,7 +438,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         } else {
             Map<String, InputWord> candidateMap = getInputCandidateWords(input);
 
-            List<InputWord> candidates = new ArrayList<>(candidateMap.values());
+            List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
             List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input);
 
             int pageSize = KeyTable.getInputCandidateKeysPageSize();
@@ -442,21 +447,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                 for (int i = topBestCandidates.size(); i < pageSize; i++) {
                     topBestCandidates.add(null);
                 }
-                candidates.addAll(0, topBestCandidates);
+                allCandidates.addAll(0, topBestCandidates);
             } else if (topBestCandidates.size() == candidateMap.size()) {
-                candidates = topBestCandidates;
-            }
-            // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
-            else if (topBestCandidates.isEmpty()) {
-                topBestCandidates = candidates;
+                allCandidates = topBestCandidates;
             }
 
-            stateData = new ChoosingInputCandidateStateData(candidates, pageSize);
+            stateData = new ChoosingInputCandidateStateData(allCandidates, pageSize);
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
-
-            if (!input.getWord().isConfirmed()) {
-                input.setWord(CollectionUtils.first(topBestCandidates));
-            }
         }
 
         KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
@@ -483,34 +480,26 @@ public class PinyinKeyboard extends BaseKeyboard {
         onChoosingInputMsg(null, selected, null);
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-        BestCandidateWords best = getTopBestCandidateWords(input);
-
-        return best.words.stream().map(candidateMap::get).collect(Collectors.toList());
-    }
-
-    /** 确定指定输入的前序未确认输入的最佳候选字 */
-    private void determineNotConfirmedInputWordBeforeSelected(CharInput input) {
-        BestCandidateWords best = getTopBestCandidateWords(input);
+    /** 确定 待输入 的 前序 未确认输入 的最佳候选字 */
+    private void determineNotConfirmedInputWordBeforePending(CharInput pending) {
+        BestCandidateWords best = getTopBestCandidateWords(pending);
 
         String[] phrase = CollectionUtils.first(best.phrases);
-        int inputIndex = getInputList().getSelectedIndex();
-        if (phrase == null || phrase.length < 2 || inputIndex <= 0) {
+        int pendingIndex = getInputList().getSelectedIndex();
+        if (phrase == null || phrase.length < 2 || pendingIndex <= 0) {
             return;
         }
 
         List<CharInput> inputs = new ArrayList<>(phrase.length);
-        inputs.add(input);
+        inputs.add(pending);
 
-        for (int i = inputIndex; i >= 0; i--) {
-            Input check = getInputList().getInputs().get(i);
+        for (int i = pendingIndex; i >= 0; i--) {
+            Input input = getInputList().getInputs().get(i);
 
-            if (check instanceof CharInput) {
-                if (!check.isPinyin()) {
-                    break;
-                }
-                inputs.add((CharInput) check);
+            if (input.isPinyin() && input.hasWord()) {
+                inputs.add((CharInput) input);
+            } else if (!(input instanceof GapInput)) {
+                break;
             }
         }
 
@@ -519,17 +508,21 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         for (int i = 0; i < phrase.length; i++) {
-            String wordId = phrase[i];
-            CharInput charInput = inputs.get(i);
+            CharInput input = inputs.get(i);
+            if (input.getWord().isConfirmed()) {
+                continue;
+            }
 
-            Map<String, InputWord> candidateMap = getInputCandidateWords(charInput);
-            InputWord word = candidateMap.get(wordId);
+            String pinyinWordId = phrase[i];
+            Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+            InputWord word = candidateMap.get(pinyinWordId);
 
-            charInput.setWord(word);
+            input.setWord(word);
         }
     }
 
-    private void determineInputWord(CharInput input) {
+    /** 确定滑行输入的候选字 */
+    private void determineSlippingInputWord(CharInput input) {
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
 
         if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
@@ -545,6 +538,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input) {
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+        BestCandidateWords best = getTopBestCandidateWords(input);
+
+        return best.words.stream().map(candidateMap::get).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取输入的候选字列表
+     * <p/>
+     * 仅在首次获取时才查询拼音字典，后续的相同拼音都直接从缓存中取
+     */
     private Map<String, InputWord> getInputCandidateWords(CharInput input) {
         Map<String, InputWord> words = getInputList().getCachedCandidateWords(input);
 
@@ -561,7 +566,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 根据当前位置之前的输入确定当前位置的最佳候选字
         List<InputWord> prevInputWords = CollectionUtils.last(getInputList().getPinyinPhrases(true));
 
-        return this.pinyinDict.findTopBestCandidateWords(input, 18, prevInputWords);
+        return this.pinyinDict.findTopBestCandidateWords(input,
+                                                         18,
+                                                         prevInputWords,
+                                                         getConfig().isUserInputDataDisabled());
     }
 
     // <<<<<<<<< 对输入列表的操作

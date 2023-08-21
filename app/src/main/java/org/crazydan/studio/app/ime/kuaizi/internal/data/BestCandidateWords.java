@@ -29,7 +29,13 @@ import java.util.List;
 public class BestCandidateWords {
     /** 列表元素为 link_word_with_pinyin 表的 id */
     public final List<String> words;
-    /** 匹配到的最佳短语列表，列表内为短语中的字倒序排列的数组，数组内为 link_word_with_pinyin 表的 id */
+    /**
+     * 匹配到的最佳短语列表，列表内为短语中的字倒序排列的数组，
+     * 数组内为 link_word_with_pinyin 表的 id
+     * <p/>
+     * 如果前序输入中存在已确认的字，则匹配的短语列表的对应位置的 id
+     * 也与已确认的字是相同的
+     */
     public final List<String[]> phrases;
 
     public BestCandidateWords() {

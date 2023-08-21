@@ -272,13 +272,17 @@ public class PinyinDictDB {
     }
 
     /** 根据前序输入分析得出最靠前的 <code>top</code> 个候选字 */
-    public BestCandidateWords findTopBestCandidateWords(CharInput input, int top, List<InputWord> prevInputWords) {
+    public BestCandidateWords findTopBestCandidateWords(
+            CharInput input, int top, List<InputWord> prevInputWords, boolean userDataDisabled
+    ) {
         String inputPinyinCharsId = getPinyinCharsId(input);
         if (inputPinyinCharsId == null) {
             return new BestCandidateWords();
         }
 
-        BestCandidateWords userBest = findTopBestPinyinWordsFromUserDB(inputPinyinCharsId, top, prevInputWords);
+        BestCandidateWords userBest = userDataDisabled
+                                      ? new BestCandidateWords()
+                                      : findTopBestPinyinWordsFromUserDB(inputPinyinCharsId, top, prevInputWords);
         BestCandidateWords appBest = findTopBestPinyinWordsFromAppDB(inputPinyinCharsId, top, prevInputWords);
 
         // 用户字典的常用字优先，不够时，再合并内置字典的高频字
@@ -324,16 +328,20 @@ public class PinyinDictDB {
             SQLiteDatabase db, String wordTable, String phraseTable, String inputPinyinCharsId, int top,
             List<InputWord> prevInputWords
     ) {
-        // 匹配短语中的常用字
-        List<String> phrasePinyinCharsIdList = prevInputWords == null
-                                               ? new ArrayList<>()
-                                               : prevInputWords.stream()
-                                                               .map(InputWord::getCharsId)
-                                                               .collect(Collectors.toList());
-        phrasePinyinCharsIdList.add(inputPinyinCharsId);
-        Collections.reverse(phrasePinyinCharsIdList);
+        List<InputWord> pinyinWords = prevInputWords != null ? new ArrayList<>(prevInputWords) : new ArrayList<>();
+        Collections.reverse(pinyinWords);
 
-        Set<String> phrasePinyinCharsIdSet = new HashSet<>(phrasePinyinCharsIdList);
+        // 匹配短语中的常用字：倒序分析
+        List<String> pinyinCharsIdList = pinyinWords.stream().map(InputWord::getCharsId).collect(Collectors.toList());
+        pinyinCharsIdList.add(0, inputPinyinCharsId);
+
+        // 已确认的拼音字 id
+        List<String> confirmedPinyinWordIdList = pinyinWords.stream()
+                                                            .map(word -> word.isConfirmed() ? word.getOid() : null)
+                                                            .collect(Collectors.toList());
+        confirmedPinyinWordIdList.add(0, null);
+
+        Set<String> phrasePinyinCharsIdSet = new HashSet<>(pinyinCharsIdList);
         Set<String> invalidPhraseIdSet = new HashSet<>();
 
         Map<String, List<String[]>> matchedPhraseMap = new LinkedHashMap<>(phrasePinyinCharsIdSet.size() * 10);
@@ -347,7 +355,7 @@ public class PinyinDictDB {
                       "weight_ desc, source_id_ asc" +
                       // Note：只有一个字时，应该将其视为短语的开头（升序排序短语中的字），
                       // 否则，视其为短语的结尾（降序排序短语中的字）
-                      (", target_index_ " + (phrasePinyinCharsIdList.size() == 1 ? "asc" : "desc")), //
+                      (", target_index_ " + (pinyinCharsIdList.size() == 1 ? "asc" : "desc")), //
                       (cursor) -> {
                           String phraseId = cursor.getString(0);
                           if (invalidPhraseIdSet.contains(phraseId)) {
@@ -360,13 +368,16 @@ public class PinyinDictDB {
 
                           List<String[]> list = matchedPhraseMap.computeIfAbsent(phraseId, (k) -> new ArrayList<>());
 
+                          int listSize = list.size();
                           String[] prev = CollectionUtils.last(list);
                           if ( // 去掉 搜索的字 在 短语 中 不相邻 的数据：对短语内的字顺序做了降序处理，故而，prev 的序号应该比当前字的序号更大
                                   (prev != null //
                                    && Integer.parseInt(prev[1]) - Integer.parseInt(pinyinWordIndex) != 1)
-                                  // 去掉与 查询短语 在 相同位置 读音不匹配 的数据
-                                  || (list.size() < phrasePinyinCharsIdList.size() //
-                                      && !phrasePinyinCharsIdList.get(list.size()).equals(pinyinCharsId))) {
+                                  // 去掉与 查询短语 在 相同位置 读音（或已确认的字）不匹配 的数据
+                                  || (listSize < pinyinCharsIdList.size() //
+                                      && (!pinyinCharsIdList.get(listSize).equals(pinyinCharsId) //
+                                          || (confirmedPinyinWordIdList.get(listSize) != null //
+                                              && !confirmedPinyinWordIdList.get(listSize).equals(pinyinWordId))))) {
                               invalidPhraseIdSet.add(phraseId);
                               matchedPhraseMap.remove(phraseId);
 
