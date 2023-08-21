@@ -325,13 +325,13 @@ public class InputList {
                 if (!phrase.isEmpty()) {
                     list.add(phrase);
                 }
+                // 出现非拼音输入，重新开始下一个短语
                 phrase = new ArrayList<>();
             }
         }
 
-        if (!phrase.isEmpty()) {
-            list.add(phrase);
-        }
+        // 最后一个可能为空，表示没有能与 指定输入 组成 短语 的输入
+        list.add(phrase);
 
         return list;
     }
