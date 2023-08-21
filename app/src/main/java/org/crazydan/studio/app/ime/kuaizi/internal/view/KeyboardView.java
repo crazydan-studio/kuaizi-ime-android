@@ -92,7 +92,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.gesture.reset();
         this.animator.reset();
 
-        updateKeys(new Key[][] {});
+        // Note：不清空按键，以避免子键盘切换过程中出现闪动
+        //updateKeys(new Key[][] {});
         if (this.keyboard != null) {
             this.keyboard.removeInputMsgListener(this);
         }
