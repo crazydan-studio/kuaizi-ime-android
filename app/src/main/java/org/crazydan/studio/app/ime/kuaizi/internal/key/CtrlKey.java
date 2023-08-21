@@ -127,6 +127,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         DropInput,
         /** 确认当前输入 */
         ConfirmInput,
+        /** 撤回输入 */
+        RevokeInput,
 
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
         ToggleInputSpell_zcs_h,

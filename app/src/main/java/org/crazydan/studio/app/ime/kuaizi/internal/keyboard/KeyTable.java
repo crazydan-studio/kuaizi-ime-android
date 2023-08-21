@@ -283,6 +283,8 @@ public class KeyTable {
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
                             new Integer[] { R.drawable.ic_right_hand_like, R.attr.key_ctrl_confirm_bg_color });
+        ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
+                            new Integer[] { R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color });
 
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng, new Integer[] {
                 -1, R.attr.key_bg_color, R.attr.key_highlight_fg_color
@@ -327,7 +329,7 @@ public class KeyTable {
                         alphabetKey("a").withReplacements("A"),
                         } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true),
+                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("f").withReplacements("F"),
                 alphabetKey("g").withReplacements("G"),
                 alphabetKey("b").withReplacements("B"),
@@ -345,7 +347,7 @@ public class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
+                symbolKey("！").withReplacements("!"),
                 alphabetKey("p").withReplacements("P"),
                 alphabetKey("q").withReplacements("Q"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
@@ -354,7 +356,7 @@ public class KeyTable {
                 config.hasInputs ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
-                symbolKey("！").withReplacements("!"),
+                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("s").withReplacements("S"),
                 alphabetKey("t").withReplacements("T"),
@@ -369,7 +371,7 @@ public class KeyTable {
                 alphabetKey("ü").withReplacements("v", "V"),
                 symbolKey("。").withReplacements("."),
                 symbolKey("，").withReplacements(","),
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
                 },
                 };
     }
@@ -388,7 +390,7 @@ public class KeyTable {
                         alphabetKey("f").setBgColorAttrId(R.attr.key_char_level_0_bg_color),
                         } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true),
+                noopCtrlKey(),
                 alphabetKey("g").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
                 alphabetKey("h").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
                 alphabetKey("i").setBgColorAttrId(R.attr.key_char_level_1_bg_color),
@@ -625,6 +627,7 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
+        gridKeys[0][6] = ctrlKey(CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true);
         gridKeys[1][6] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[2][6] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.LocateInputCursor);
