@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
@@ -458,6 +459,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
             stateData = new ChoosingInputCandidateStateData(allCandidates, pageSize);
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
+
+            determineNotConfirmedInputWord(input, candidateMap, () -> topBestCandidates);
         }
 
         KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
@@ -529,8 +532,14 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void determineNotConfirmedInputWord(CharInput input) {
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
 
+        determineNotConfirmedInputWord(input, candidateMap, () -> getTopBestInputCandidateWords(input));
+    }
+
+    private void determineNotConfirmedInputWord(
+            CharInput input, Map<String, InputWord> candidateMap, Supplier<List<InputWord>> topBestCandidatesGetter
+    ) {
         if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
-            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input);
+            List<InputWord> topBestCandidates = topBestCandidatesGetter.get();
 
             InputWord bestCandidate = CollectionUtils.first(topBestCandidates);
             // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字

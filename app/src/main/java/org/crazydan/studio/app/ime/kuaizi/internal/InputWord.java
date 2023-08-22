@@ -28,7 +28,7 @@ import androidx.annotation.NonNull;
  * @date 2023-07-08
  */
 public class InputWord {
-    /** 对应的持久化对象 id */
+    /** 查询表的行 id */
     private final String oid;
     /** 字符组合 id，一般为拼音字母组合 id */
     private final String charsId;

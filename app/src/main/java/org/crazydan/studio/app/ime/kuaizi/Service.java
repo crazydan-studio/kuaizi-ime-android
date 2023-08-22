@@ -47,7 +47,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
 
-    /** 在横竖屏转换、字体大小变更等时机调用 */
+    /** 在横竖屏转换、字体大小等发生变更时调用 */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -57,6 +57,17 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         super.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * 启动输入，先于 {@link #onCreateInputView()} 和
+     * {@link #onStartInputView(EditorInfo, boolean)} 调用
+     * <p/>
+     * Note: 不可进行视图渲染相关的调用；该接口在显示和隐藏键盘时均会被调用；
+     */
+    @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
     }
 
     /** 切换到其他系统输入法时调用 */
@@ -78,22 +89,12 @@ public class Service extends InputMethodService implements InputMsgListener {
         return this.imeView;
     }
 
-    /**
-     * 开始启动输入，先于 {@link #onStartInputView(EditorInfo, boolean)} 调用
-     * <p/>
-     * Note: 不可进行视图渲染相关的调用
-     */
-    @Override
-    public void onStartInput(EditorInfo attribute, boolean restarting) {
-        // 确保拼音字典库保持就绪状态
-        PinyinDictDB.getInstance().open(getApplicationContext());
-
-        super.onStartInput(attribute, restarting);
-    }
-
     /** 每次弹出键盘时调用 */
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
+        // 确保拼音字典库保持就绪状态
+        PinyinDictDB.getInstance().open(getApplicationContext());
+
         boolean singleLineInput = false;
         Keyboard.Config config = this.imeKeyboardConfig;
         Keyboard.Type keyboardType = config != null ? config.getType() : Keyboard.Type.Pinyin;

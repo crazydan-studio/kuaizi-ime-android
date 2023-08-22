@@ -62,10 +62,10 @@ public class Guide extends FollowSystemThemeActivity implements InputMsgListener
 
     @Override
     protected void onStart() {
-        super.onStart();
-
         // 确保拼音字典库保持就绪状态
         PinyinDictDB.getInstance().open(getApplicationContext());
+
+        super.onStart();
     }
 
     @Override

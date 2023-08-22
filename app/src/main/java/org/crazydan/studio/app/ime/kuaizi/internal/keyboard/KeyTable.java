@@ -349,7 +349,7 @@ public class KeyTable {
                 , new Key[] {
                 symbolKey("！").withReplacements("!"),
                 alphabetKey("p").withReplacements("P"),
-                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("r").withReplacements("R"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("h").withReplacements("H"),
                 alphabetKey("y").withReplacements("Y"),
@@ -357,7 +357,7 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
-                alphabetKey("r").withReplacements("R"),
+                alphabetKey("q").withReplacements("Q"),
                 alphabetKey("s").withReplacements("S"),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("w").withReplacements("W"),
