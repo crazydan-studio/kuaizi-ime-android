@@ -37,7 +37,7 @@
     <string name="title_preference_about">About</string>
 
     <!-- Settings Preferences -->
-    <string name="label_disable_user_input_data">DO NOT SAVE user input data</string>
+    <string name="label_disable_user_input_data">DO NOT SAVE user inputting data</string>
     <string name="label_disable_key_clicked_audio">Disable the key clicked audio</string>
     <string name="label_disable_paging_audio">Disable the paging audio</string>
     <string name="label_disable_gliding_input_animation">Disable the gliding input animation</string>
