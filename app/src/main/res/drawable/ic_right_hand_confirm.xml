@@ -20,11 +20,8 @@
         android:height="24dp"
         android:viewportWidth="24"
         android:viewportHeight="24">
-    <!-- https://www.iconfinder.com/icons/3643781/check_checklist_complete_done_mark_icon -->
+    <!-- https://www.iconfinder.com/icons/8541612/check_tick_mark_icon -->
     <path
-            android:pathData="M12,23A11,11 0,1 1,23 12,11 11,0 0,1 12,23ZM12,2.467A9.533,9.533 0,1 0,21.533 12,9.533 9.533,0 0,0 12,2.467Z"
-            android:fillColor="?attr/key_ctrl_confirm_fg_color" />
-    <path
-            android:pathData="m10.291,16.4a0.733,0.733 126.361,0 1,-0.535 -0.235l-3.425,-3.667a0.733,0.733 0,0 1,1.071 -0.997l2.889,3.087 6.307,-6.754a0.733,0.733 0,1 1,1.071 0.997l-6.842,7.333A0.733,0.733 120.563,0 1,10.291 16.4Z"
-            android:fillColor="?attr/key_ctrl_confirm_fg_color" />
+            android:fillColor="?attr/key_ctrl_confirm_fg_color"
+            android:pathData="M8.151,20.597 L0.351,12.797c-0.469,-0.469 -0.469,-1.228 0,-1.697L2.048,9.403c0.469,-0.469 1.228,-0.469 1.697,0L9,14.657 20.254,3.403c0.469,-0.469 1.228,-0.469 1.697,0l1.697,1.697c0.469,0.469 0.469,1.228 0,1.697L9.849,20.597c-0.469,0.469 -1.228,0.469 -1.697,-0z" />
 </vector>

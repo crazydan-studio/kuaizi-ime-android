@@ -49,8 +49,8 @@
         <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
         <item name="key_ctrl_commit_bg_color">@color/color_orange_600</item>
         <item name="key_ctrl_commit_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_highlight_fg_color</item>
-        <item name="key_ctrl_confirm_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_confirm_bg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_confirm_fg_color">?attr/key_highlight_fg_color</item>
 
         <item name="key_char_symbol_bg_color">#02aaf5</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
@@ -103,8 +103,8 @@
         <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
         <item name="key_ctrl_commit_bg_color">@color/color_orange_600</item>
         <item name="key_ctrl_commit_fg_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_highlight_fg_color</item>
-        <item name="key_ctrl_confirm_fg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_confirm_bg_color">?attr/key_fg_color</item>
+        <item name="key_ctrl_confirm_fg_color">?attr/key_highlight_fg_color</item>
 
         <item name="key_char_symbol_bg_color">#02aaf5</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>

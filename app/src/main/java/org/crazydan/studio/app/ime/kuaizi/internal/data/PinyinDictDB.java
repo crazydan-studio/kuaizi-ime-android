@@ -67,8 +67,8 @@ public class PinyinDictDB {
 
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
 
-    private final SyncStatus dbInitStatus = new SyncStatus();
-    private final SyncStatus dbOpenStatus = new SyncStatus();
+    private Future<Boolean> dbInited;
+    private Future<Boolean> dbOpened;
 
     /** 内置字典数据库 */
     private SQLiteDatabase appDB;
@@ -100,40 +100,45 @@ public class PinyinDictDB {
      * 仅第一次调用起作用，后续调用均会被忽略
      */
     public synchronized void init(Context context) {
-        if (this.dbInitStatus.value == Status.waiting) {
-            this.dbInitStatus.value = Status.doing;
-
-            this.executor.execute(() -> {
-                doInit(context);
-                this.dbInitStatus.done();
-            });
+        if (isInited()) {
+            return;
         }
+
+        this.dbInited = this.executor.submit(() -> {
+            doInit(context);
+            return true;
+        });
     }
 
     /** 在任意需要启用输入法的情况下调用该开启接口 */
     public synchronized void open(Context context) {
-        if (this.dbOpenStatus.value == Status.waiting) {
-            this.dbOpenStatus.value = Status.doing;
-
-            this.executor.execute(() -> {
-                this.dbInitStatus.waitDone(() -> {
-                    doOpen(context);
-                    this.dbOpenStatus.done();
-                });
-            });
+        if (isOpened()) {
+            return;
         }
+
+        this.dbOpened = this.executor.submit(() -> {
+            // 等待初始化完成后，再开启数据库
+            if (isInited()) {
+                doOpen(context);
+            }
+            return true;
+        });
     }
 
     /** 在任意存在完全退出的情况下调用该关闭接口 */
     public synchronized void close() {
-        if (this.dbOpenStatus.value == Status.waiting) {
-            return;
-        }
-
-        this.dbOpenStatus.waitDone(() -> {
+        if (isOpened()) {
             doClose();
-            this.dbOpenStatus.value = Status.waiting;
-        });
+        }
+        this.dbOpened = null;
+    }
+
+    public boolean isInited() {
+        return Boolean.TRUE.equals(value(this.dbInited));
+    }
+
+    public boolean isOpened() {
+        return Boolean.TRUE.equals(value(this.dbOpened));
     }
 
     /** 判断指定的输入是否为有效拼音 */
@@ -218,26 +223,19 @@ public class PinyinDictDB {
             return new BestCandidateWords();
         }
 
-        Future<BestCandidateWords> appBestFuture = this.executor.submit(() -> findTopBestPinyinWordsFromAppDB(
-                inputPinyinCharsId,
-                top,
-                prevPhrase));
         Future<BestCandidateWords> userBestFuture = userDataDisabled
                                                     ? null
                                                     : this.executor.submit(() -> findTopBestPinyinWordsFromUserDB(
                                                             inputPinyinCharsId,
                                                             top,
                                                             prevPhrase));
+        Future<BestCandidateWords> appBestFuture = this.executor.submit(() -> findTopBestPinyinWordsFromAppDB(
+                inputPinyinCharsId,
+                top,
+                prevPhrase));
 
-        BestCandidateWords userBest;
-        BestCandidateWords appBest;
-        try {
-            appBest = appBestFuture.get();
-            userBest = userBestFuture != null ? userBestFuture.get() : null;
-        } catch (Exception e) {
-            return new BestCandidateWords();
-        }
-
+        BestCandidateWords userBest = value(userBestFuture);
+        BestCandidateWords appBest = value(appBestFuture);
         if (userBest == null) {
             return appBest;
         }
@@ -603,17 +601,11 @@ public class PinyinDictDB {
     }
 
     private SQLiteDatabase getAppDB() {
-        // 等待数据库就绪
-        this.dbOpenStatus.waitDone(() -> {});
-
-        return this.appDB;
+        return isOpened() ? this.appDB : null;
     }
 
     private SQLiteDatabase getUserDB() {
-        // 等待数据库就绪
-        this.dbOpenStatus.waitDone(() -> {});
-
-        return this.userDB;
+        return isOpened() ? this.userDB : null;
     }
 
     private void doInit(Context context) {
@@ -752,39 +744,11 @@ public class PinyinDictDB {
         }
     }
 
-    enum Status {
-        waiting,
-        doing,
-        done,
-    }
-
-    static class SyncStatus {
-        private final Object sync = new Object();
-        private Status value = Status.waiting;
-
-        public void done() {
-            synchronized (this.sync) {
-                this.value = Status.done;
-                this.sync.notifyAll();
-            }
+    private <T> T value(Future<T> f) {
+        try {
+            return f != null ? f.get() : null;
+        } catch (Exception e) {
+            return null;
         }
-
-        public void waitDone(SyncStatusCaller caller) {
-            synchronized (this.sync) {
-                while (this.value != Status.done) {
-                    try {
-                        this.sync.wait();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-
-            caller.call();
-        }
-    }
-
-    interface SyncStatusCaller {
-        void call();
     }
 }

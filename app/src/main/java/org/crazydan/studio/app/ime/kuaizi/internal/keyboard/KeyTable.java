@@ -282,7 +282,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             new Integer[] { R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
-                            new Integer[] { R.drawable.ic_confirm, R.attr.key_ctrl_confirm_bg_color });
+                            new Integer[] { R.drawable.ic_right_hand_confirm, R.attr.key_ctrl_confirm_bg_color });
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             new Integer[] { R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color });
 
