@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
 
@@ -282,7 +283,8 @@ public abstract class BaseKeyboard implements Keyboard {
                 break;
         }
 
-        fireInputMsg(InputMsg.HandMode_Switching, new InputCommonMsgData(getKeyFactory()));
+        fireInputMsg(InputMsg.HandMode_Switching,
+                     new KeyboardHandModeSwitchingMsgData(getKeyFactory(), getConfig().getHandMode()));
     }
 
     /** 切换系统输入法 */

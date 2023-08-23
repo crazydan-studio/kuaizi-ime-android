@@ -234,6 +234,26 @@ public class KeyTable {
                     },
             };
 
+    /** 拼音{@link Key.Level#level_2 第二级}按键坐标（左手模式） */
+    private static final int[][][] pinyin_level_2_key_level_coords_left_hand = new int[][][] {
+            //
+            new int[][] {
+                    new int[] { 2, 5 }, new int[] { 2, 4 }, new int[] { 2, 6 },
+                    },
+            //
+            new int[][] {
+                    new int[] { 1, 4 }, new int[] { 1, 5 },
+                    },
+            //
+            new int[][] {
+                    new int[] { 3, 4 }, new int[] { 3, 5 },
+                    },
+            //
+            new int[][] {
+                    new int[] { 1, 3 }, new int[] { 3, 3 }, new int[] { 2, 3 },
+                    },
+            };
+
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"),
                                    KeyColor.create(R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color));
@@ -249,9 +269,7 @@ public class KeyTable {
                                    KeyColor.create(R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_backspace,
-                                              R.drawable.ic_left_hand_backspace,
-                                              R.attr.key_ctrl_backspace_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Space, KeyStyle.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
@@ -380,11 +398,7 @@ public class KeyTable {
                 },
                 };
 
-        for (int i = 0; i < keys.length; i++) {
-            keys[i] = changeHandModeKeys(config, keys[i]);
-        }
-
-        return keys;
+        return changeLayoutForHandMode(config, keys);
     }
 
     /** 创建{@link LatinKeyboard 拉丁文键盘}按键 */
@@ -448,8 +462,6 @@ public class KeyTable {
                 };
 
         for (int i = 0; i < keys.length; i++) {
-            keys[i] = changeHandModeKeys(config, keys[i]);
-
             for (int j = 0; j < keys[i].length; j++) {
                 Key<?> key = keys[i][j];
 
@@ -460,7 +472,7 @@ public class KeyTable {
             }
         }
 
-        return keys;
+        return changeLayoutForHandMode(config, keys);
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
@@ -493,10 +505,13 @@ public class KeyTable {
             }
         }
 
+        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
         // 在指定可用位置创建第 2 级字母按键
         Iterator<String> it = level2NextChars.iterator();
-        for (int level = 0; level < pinyin_level_2_key_level_coords.length; level++) {
-            int[][] keyCoords = pinyin_level_2_key_level_coords[level];
+        int[][][] levelKeyCoords = isLeft ? pinyin_level_2_key_level_coords_left_hand : pinyin_level_2_key_level_coords;
+
+        for (int level = 0; level < levelKeyCoords.length; level++) {
+            int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 if (!it.hasNext()) {
@@ -535,31 +550,41 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[3][3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
-        gridKeys[3][6] = ctrlKey(config, CtrlKey.Type.CommitInputList);
-        gridKeys[5][6] = ctrlKey(config, CtrlKey.Type.DropInput);
-
-        if (!candidates.isEmpty()) {
-            gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
-                                         + "/" //
-                                         + ((int) Math.ceil(candidates.size() / (pageSize * 1.0))));
+        if (candidates.isEmpty()) {
+            return gridKeys;
         }
+
+        int currentPage = startIndex / pageSize + 1;
+        int totalPage = (int) Math.ceil(candidates.size() / (pageSize * 1.0));
+
+        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
+        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
+        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+
+        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
+        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.DropInput);
+
+        if (currentPage == 1) {
+            gridKeys[3][index_6] = ctrlKey(config, CtrlKey.Type.CommitInputList);
+        }
+
+        gridKeys[0][index_0] = noopCtrlKey(currentPage + "/" + totalPage);
 
         CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
-            gridKeys[0][6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_zcs_h).setLabel(s + "," + s + "h");
+            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_zcs_h).setLabel(s + "," + s + "h");
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
-            gridKeys[0][6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_nl).setLabel("n,l  ");
+            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_nl).setLabel("n,l  ");
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!startingToggle.getChars().equals(input.getChars()) //
             && !PinyinDictDB.getInstance().hasValidPinyin(startingToggle)) {
-            gridKeys[0][6] = noopCtrlKey();
+            gridKeys[0][index_6] = noopCtrlKey();
         }
 
         CharInput endingToggle = input.copy();
@@ -567,18 +592,20 @@ public class KeyTable {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
-            gridKeys[1][6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_ng).setLabel(tail + "," + tail + "g");
+            gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_ng).setLabel(tail + "," + tail + "g");
             endingToggle.toggle_Pinyin_NG_Ending();
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!endingToggle.getChars().equals(input.getChars()) //
             && !PinyinDictDB.getInstance().hasValidPinyin(endingToggle)) {
-            gridKeys[1][6] = noopCtrlKey();
+            gridKeys[1][index_6] = noopCtrlKey();
         }
 
         int wordIndex = startIndex;
-        for (int level = 0; level < input_word_key_around_level_coords.length; level++) {
-            int[][] keyCoords = input_word_key_around_level_coords[level];
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, input_word_key_around_level_coords);
+
+        for (int level = 0; level < levelKeyCoords.length; level++) {
+            int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -615,18 +642,25 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[3][1] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Locator);
-        gridKeys[3][4] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Selector);
+        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
+        int index_1 = changeIndexForHandMode(config, gridKeys, 1);
+        int index_2 = changeIndexForHandMode(config, gridKeys, 2);
+        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
+        int index_4 = changeIndexForHandMode(config, gridKeys, 4);
+        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
-        gridKeys[1][6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[3][6] = enterCtrlKey(config);
-        gridKeys[5][6] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][index_1] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Locator);
+        gridKeys[3][index_4] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Selector);
 
-        gridKeys[4][3] = ctrlKey(config, CtrlKey.Type.Cut).setLabel("剪切");
-        gridKeys[5][1] = ctrlKey(config, CtrlKey.Type.Redo).setLabel("重做");
-        gridKeys[5][2] = ctrlKey(config, CtrlKey.Type.Undo).setLabel("撤销");
-        gridKeys[5][3] = ctrlKey(config, CtrlKey.Type.Paste).setLabel("粘贴");
-        gridKeys[5][4] = ctrlKey(config, CtrlKey.Type.Copy).setLabel("复制");
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
+        gridKeys[3][index_6] = enterCtrlKey(config);
+        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+
+        gridKeys[4][isLeft ? 4 : 3] = ctrlKey(config, CtrlKey.Type.Cut).setLabel("剪切");
+        gridKeys[5][index_1] = ctrlKey(config, CtrlKey.Type.Redo).setLabel("重做");
+        gridKeys[5][index_2] = ctrlKey(config, CtrlKey.Type.Undo).setLabel("撤销");
+        gridKeys[5][index_3] = ctrlKey(config, CtrlKey.Type.Paste).setLabel("粘贴");
+        gridKeys[5][index_4] = ctrlKey(config, CtrlKey.Type.Copy).setLabel("复制");
 
         return gridKeys;
     }
@@ -647,20 +681,26 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[0][6] = ctrlKey(config, CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true);
-        gridKeys[1][6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[2][6] = ctrlKey(config, CtrlKey.Type.Space);
-        gridKeys[3][3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
-        gridKeys[3][6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[5][6] = ctrlKey(config, CtrlKey.Type.Exit).setIconResId(R.drawable.ic_right_hand_exit);
+        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
+        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
+        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
-        gridKeys[0][0] = noopCtrlKey((startIndex / pageSize + 1) //
-                                     + "/" //
-                                     + ((int) Math.ceil(symbols.length / (pageSize * 1.0))));
+        gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true);
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
+        gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+
+        gridKeys[0][index_0] = noopCtrlKey((startIndex / pageSize + 1) //
+                                           + "/" //
+                                           + ((int) Math.ceil(symbols.length / (pageSize * 1.0))));
 
         int symbolIndex = startIndex;
-        for (int level = 0; level < symbol_key_around_level_coords.length; level++) {
-            int[][] keyCoords = symbol_key_around_level_coords[level];
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_around_level_coords);
+
+        for (int level = 0; level < levelKeyCoords.length; level++) {
+            int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -698,16 +738,22 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[0][0] = ctrlKey(config, CtrlKey.Type.SwitchHandMode);
-        gridKeys[1][6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[2][6] = ctrlKey(config, CtrlKey.Type.Space);
-        gridKeys[3][6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[3][3] = ctrlKey(config, CtrlKey.Type.Math_Equal).setLabel("=");
-        gridKeys[5][6] = ctrlKey(config, CtrlKey.Type.Exit).setIconResId(R.drawable.ic_right_hand_exit);
+        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
+        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
+        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+
+        gridKeys[0][index_0] = ctrlKey(config, CtrlKey.Type.SwitchHandMode);
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
+        gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[3][index_6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.Math_Equal).setLabel("=");
+        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
 
         int keyIndex = 0;
-        for (int level = 0; level < math_key_around_level_coords.length; level++) {
-            int[][] keyCoords = math_key_around_level_coords[level];
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, math_key_around_level_coords);
+
+        for (int level = 0; level < levelKeyCoords.length; level++) {
+            int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -736,14 +782,19 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        gridKeys[1][6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[2][6] = ctrlKey(config, CtrlKey.Type.Space);
-        gridKeys[3][3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
-        gridKeys[3][6] = enterCtrlKey(config);
+        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
+        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
+        gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_6] = enterCtrlKey(config);
 
         int keyIndex = 0;
-        for (int level = 0; level < number_key_around_level_coords.length; level++) {
-            int[][] keyCoords = number_key_around_level_coords[level];
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, number_key_around_level_coords);
+
+        for (int level = 0; level < levelKeyCoords.length; level++) {
+            int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
@@ -843,16 +894,32 @@ public class KeyTable {
         return key.setColor(color);
     }
 
-    /** 若配置启用左右模式，则翻转右手模式按键布局为左手模式 */
-    private static Key<?>[] changeHandModeKeys(Config config, Key<?>[] keys) {
+    /** 若配置启用左手模式，则翻转右手模式按键布局为左手模式 */
+    private static <T> T[][] changeLayoutForHandMode(Config config, T[][] rightHandLayout) {
         if (config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left) {
-            Key<?>[] newKeys = new Key[keys.length];
-            for (int i = keys.length - 1, j = 0; i >= 0; i--, j++) {
-                newKeys[j] = keys[i];
+            T[][] newLayout = Arrays.copyOf(rightHandLayout, rightHandLayout.length);
+
+            for (int i = 0; i < newLayout.length; i++) {
+                T[] newRow = newLayout[i] = Arrays.copyOf(rightHandLayout[i], rightHandLayout[i].length);
+
+                int mid = (newRow.length - 1) / 2;
+                for (int j = newRow.length - 1, k = 0; j > mid; j--, k++) {
+                    T tmp = newRow[j];
+                    newRow[j] = newRow[k];
+                    newRow[k] = tmp;
+                }
             }
-            return newKeys;
+            return newLayout;
         }
-        return keys;
+        return rightHandLayout;
+    }
+
+    /** 若配置启用左手模式，则翻转右手模式按键位置为左手模式按键位置 */
+    private static <T> int changeIndexForHandMode(Config config, T[][] gridKeys, int index) {
+        if (config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left) {
+            return gridKeys[0].length - 1 - index;
+        }
+        return index;
     }
 
     private static class KeyStyle {

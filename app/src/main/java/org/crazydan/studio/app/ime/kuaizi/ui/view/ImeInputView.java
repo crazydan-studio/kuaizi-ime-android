@@ -43,6 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
@@ -61,6 +62,7 @@ public class ImeInputView extends FrameLayout
 
     private final InputList inputList;
     private Keyboard keyboard;
+    private Keyboard.HandMode keyboardHandMode;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -100,11 +102,18 @@ public class ImeInputView extends FrameLayout
     /** 响应键盘输入消息 */
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        if (msg == InputMsg.Keyboard_Switching) {
-            Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
-            Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
+        switch (msg) {
+            case Keyboard_Switching: {
+                Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
+                Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
 
-            updateKeyboard(config);
+                updateKeyboard(config);
+                break;
+            }
+            case HandMode_Switching: {
+                this.keyboardHandMode = ((KeyboardHandModeSwitchingMsgData) data).mode;
+                break;
+            }
         }
     }
 
@@ -119,8 +128,13 @@ public class ImeInputView extends FrameLayout
             newKeyboard = this.keyboard;
         }
 
-        config = patchKeyboardConfig(config);
-        newKeyboard.setConfig(config);
+        Keyboard.Config patchedConfig = patchKeyboardConfig(config);
+        // 支持临时修改左右手模式
+        if (this.keyboardHandMode != null) {
+            patchedConfig.setHandMode(this.keyboardHandMode);
+        }
+
+        newKeyboard.setConfig(patchedConfig);
 
         if (oldKeyboard != newKeyboard) {
             if (oldKeyboard != null) {
@@ -145,6 +159,10 @@ public class ImeInputView extends FrameLayout
         }
         // Note: 仅需更新视图，无需更新监听等
         else if (oldConfig.getHandMode() != newConfig.getHandMode()) {
+            if (this.keyboardHandMode != null) {
+                this.keyboardHandMode = newConfig.getHandMode();
+            }
+
             this.keyboardView.updateKeyboard(this.keyboard);
         }
     }
