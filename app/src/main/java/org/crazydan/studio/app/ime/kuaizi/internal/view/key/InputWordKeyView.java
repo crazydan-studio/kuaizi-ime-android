@@ -65,7 +65,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
             ViewUtils.hide(this.traditionalMarkView);
         }
 
-        setTextColorByAttrId(this.wordView, key.getFgColorAttrId());
-        setTextColorByAttrId(this.notationView, key.getFgColorAttrId());
+        setTextColorByAttrId(this.wordView, key.getColor().fg);
+        setTextColorByAttrId(this.notationView, key.getColor().fg);
     }
 }

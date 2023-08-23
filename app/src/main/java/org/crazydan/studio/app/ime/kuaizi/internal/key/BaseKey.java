@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -30,8 +31,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private int iconResId;
 
     private boolean disabled;
-    private int fgColorAttrId;
-    private int bgColorAttrId;
+    private KeyColor color = KeyColor.none();
 
     @Override
     public boolean isLatin() {
@@ -92,24 +92,13 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public int getFgColorAttrId() {
-        return this.fgColorAttrId;
+    public KeyColor getColor() {
+        return this.color;
     }
 
     @Override
-    public K setFgColorAttrId(int fgColorAttrId) {
-        this.fgColorAttrId = fgColorAttrId;
-        return (K) this;
-    }
-
-    @Override
-    public int getBgColorAttrId() {
-        return this.bgColorAttrId;
-    }
-
-    @Override
-    public K setBgColorAttrId(int bgColorAttrId) {
-        this.bgColorAttrId = bgColorAttrId;
+    public K setColor(KeyColor color) {
+        this.color = color == null ? KeyColor.none() : color;
         return (K) this;
     }
 
@@ -125,16 +114,12 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         return this.getIconResId() == that.getIconResId()
                && Objects.equals(this.getLabel(), that.getLabel())
                && this.disabled == that.disabled
-               && this.fgColorAttrId == that.fgColorAttrId
-               && this.bgColorAttrId == that.bgColorAttrId;
+               && this.color.fg == that.color.fg
+               && this.color.bg == that.color.bg;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getIconResId(),
-                            this.getLabel(),
-                            this.disabled,
-                            this.fgColorAttrId,
-                            this.bgColorAttrId);
+        return Objects.hash(this.getIconResId(), this.getLabel(), this.disabled, this.color.fg, this.color.bg);
     }
 }

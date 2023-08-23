@@ -71,6 +71,6 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
 
         this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
-        setTextColorByAttrId(this.fgView, key.getFgColorAttrId());
+        setTextColorByAttrId(this.fgView, key.getColor().fg);
     }
 }

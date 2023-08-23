@@ -53,4 +53,6 @@ public enum InputMsg {
     IME_Switching,
     /** 键盘切换中 */
     Keyboard_Switching,
+    /** 左右手模式切换中 */
+    HandMode_Switching,
 }

@@ -65,17 +65,11 @@ public interface Key<K extends Key<?>> {
     /** 设置按键上显示的图标资源 id */
     K setIconResId(int iconResId);
 
-    /** 获取前景色属性 id */
-    int getFgColorAttrId();
+    /** 获取按键配色 */
+    KeyColor getColor();
 
-    /** 设置前景色属性 id */
-    K setFgColorAttrId(int fgColorAttrId);
-
-    /** 获取背景色属性 id */
-    int getBgColorAttrId();
-
-    /** 设置背景色属性 id */
-    K setBgColorAttrId(int bgColorAttrId);
+    /** 设置按键配色 */
+    K setColor(KeyColor color);
 
     /** 按键级别 */
     enum Level {

@@ -269,6 +269,22 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(type));
     }
 
+    /** 切换键盘的左右手模式 */
+    protected void switch_HandMode() {
+        this.state = new State(State.Type.Input_Waiting);
+
+        switch (getConfig().getHandMode()) {
+            case Left:
+                getConfig().setHandMode(HandMode.Right);
+                break;
+            case Right:
+                getConfig().setHandMode(HandMode.Left);
+                break;
+        }
+
+        fireInputMsg(InputMsg.HandMode_Switching, new InputCommonMsgData(getKeyFactory()));
+    }
+
     /** 切换系统输入法 */
     protected void switch_IME() {
         // 单次操作，直接重置为待输入状态
@@ -343,6 +359,8 @@ public abstract class BaseKeyboard implements Keyboard {
                         return true;
                     }
                     case SwitchHandMode: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_HandMode();
                         return true;
                     }
                     case SwitchToLatinKeyboard: {
