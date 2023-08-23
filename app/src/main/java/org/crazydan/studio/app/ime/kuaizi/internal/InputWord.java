@@ -40,13 +40,18 @@ public class InputWord {
     private final String notation;
     /** 是否繁体 */
     private final boolean traditional;
+    /** 笔画顺序 */
+    private final String strokeOrder;
 
-    public InputWord(String oid, String charsId, String value, String notation, boolean traditional) {
+    public InputWord(
+            String oid, String charsId, String value, String notation, boolean traditional, String strokeOrder
+    ) {
         this.oid = oid;
         this.charsId = charsId;
         this.value = value;
         this.notation = notation;
         this.traditional = traditional;
+        this.strokeOrder = strokeOrder != null ? strokeOrder : "";
     }
 
     public String getOid() {
@@ -75,6 +80,10 @@ public class InputWord {
 
     public boolean isTraditional() {
         return this.traditional;
+    }
+
+    public String getStrokeOrder() {
+        return this.strokeOrder;
     }
 
     @NonNull

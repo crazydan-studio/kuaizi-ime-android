@@ -253,19 +253,19 @@ public class PinyinKeyboard extends BaseKeyboard {
                     case ToggleInputSpell_zcs_h: {
                         input.toggle_Pinyin_SCZ_Starting();
 
-                        onNewChoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input, true);
                         break;
                     }
                     case ToggleInputSpell_nl: {
                         input.toggle_Pinyin_NL_Starting();
 
-                        onNewChoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input, true);
                         break;
                     }
                     case ToggleInputSpell_ng: {
                         input.toggle_Pinyin_NG_Ending();
 
-                        onNewChoosingInputCandidate(input);
+                        onNewChoosingInputCandidate(input, true);
                         break;
                     }
                 }
@@ -283,7 +283,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 CharInput input = getInputList().getPending();
 
                 // Note: 在该函数中根据实际是否有上下翻页来确定是否播放翻页音效
-                onChoosingInputCandidate(input, pageUp);
+                onChoosingInputCandidate(input, pageUp, false);
                 break;
             }
         }
@@ -418,14 +418,15 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     /** 重新进入候选字状态 */
-    private void onNewChoosingInputCandidate(CharInput input) {
+    private void onNewChoosingInputCandidate(CharInput input, boolean inputChanged) {
         // Note: 复位状态，以便于做新状态的初始化，而不是利用原状态
         this.state = new State(State.Type.Input_Waiting);
 
-        onChoosingInputCandidate(input, true);
+        onChoosingInputCandidate(input, false, inputChanged);
     }
 
-    private void onChoosingInputCandidate(CharInput input, boolean pageUp) {
+    /** 进入候选字选择状态，并处理候选字翻页 */
+    private void onChoosingInputCandidate(CharInput input, boolean pageUp, boolean inputChanged) {
         ChoosingInputCandidateStateData stateData;
         if (this.state.type == State.Type.ChoosingInputCandidate) {
             stateData = (ChoosingInputCandidateStateData) this.state.data;
@@ -444,7 +445,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             Map<String, InputWord> candidateMap = getInputCandidateWords(input);
 
             List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input);
+            List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, 18);
 
             int pageSize = KeyTable.getInputCandidateKeysPageSize();
             if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
@@ -460,7 +461,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             stateData = new ChoosingInputCandidateStateData(allCandidates, pageSize);
             this.state = new State(State.Type.ChoosingInputCandidate, stateData);
 
-            determineNotConfirmedInputWord(input, candidateMap, () -> topBestCandidates);
+            if (inputChanged) {
+                determineNotConfirmedInputWord(input, () -> topBestCandidates);
+            }
         }
 
         KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
@@ -493,12 +496,16 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     /**
-     * 确定 指定输入 的 前序 未确认输入 的最佳候选字
+     * 确定 <code>input</code> 的 前序 未确认输入 的最佳候选字
      * <p/>
-     * 指定输入 也将根据前序确定的候选字而进行调整
+     * <code>input</code> 也将根据前序确定的候选字而进行调整
+     * <p/>
+     * 在滑屏输入完成后，对未确认前序的候选字按匹配的最佳短语进行调整，
+     * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
      */
     private void determineNotConfirmedInputWordsBefore(CharInput input) {
-        BestCandidateWords best = getTopBestCandidateWords(input);
+        // Note: top 取 0 以避免查询单字
+        BestCandidateWords best = getTopBestCandidateWords(input, 0);
 
         String[] phrase = CollectionUtils.first(best.phrases);
         if (phrase == null || phrase.length < 2) {
@@ -511,7 +518,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         inputs.add(input);
-        // Note: phrase 为倒序匹配，故，前序输入集需倒置
+        // Note: phrase 为倒序匹配，故，前序 输入集 需倒置
         Collections.reverse(inputs);
 
         for (int i = 0; i < phrase.length; i++) {
@@ -528,16 +535,19 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    /** 确认 未确认输入 的候选字 */
+    /**
+     * 确认 未确认输入 的候选字
+     * <p/>
+     * 在滑屏输入中实时调用
+     */
     private void determineNotConfirmedInputWord(CharInput input) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-
-        determineNotConfirmedInputWord(input, candidateMap, () -> getTopBestInputCandidateWords(input));
+        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1));
     }
 
-    private void determineNotConfirmedInputWord(
-            CharInput input, Map<String, InputWord> candidateMap, Supplier<List<InputWord>> topBestCandidatesGetter
-    ) {
+    /** 在滑屏输入中，以及拼音纠正切换中被调用 */
+    private void determineNotConfirmedInputWord(CharInput input, Supplier<List<InputWord>> topBestCandidatesGetter) {
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+
         if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
             List<InputWord> topBestCandidates = topBestCandidatesGetter.get();
 
@@ -551,10 +561,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-        BestCandidateWords best = getTopBestCandidateWords(input);
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top) {
+        BestCandidateWords best = getTopBestCandidateWords(input, top);
+        if (best.words.isEmpty()) {
+            return new ArrayList<>();
+        }
 
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
         return best.words.stream().map(candidateMap::get).collect(Collectors.toList());
     }
 
@@ -562,6 +575,8 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 获取输入的候选字列表
      * <p/>
      * 仅在首次获取时才查询拼音字典，后续的相同拼音都直接从缓存中取
+     *
+     * @return 不为 <code>null</code>
      */
     private Map<String, InputWord> getInputCandidateWords(CharInput input) {
         Map<String, InputWord> words = getInputList().getCachedCandidateWords(input);
@@ -575,24 +590,23 @@ public class PinyinKeyboard extends BaseKeyboard {
         return words;
     }
 
-    private BestCandidateWords getTopBestCandidateWords(CharInput input) {
+    private BestCandidateWords getTopBestCandidateWords(CharInput input, int top) {
         // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> prevInputWords = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
+        List<InputWord> prevPhrase = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
 
-        return this.pinyinDict.findTopBestCandidateWords(input,
-                                                         18,
-                                                         prevInputWords,
-                                                         getConfig().isUserInputDataDisabled());
+        return this.pinyinDict.findTopBestCandidateWords(input, top, prevPhrase, getConfig().isUserInputDataDisabled());
     }
 
     // <<<<<<<<< 对输入列表的操作
+
+    /** 在输入列表中选中候选字 */
     private void onChoosingInputMsg(UserInputMsg msg, Input input, UserInputMsgData data) {
         getInputList().newPendingOn(input);
 
         CharInput pending = getInputList().getPending();
-        // 仅当待输入为拼音时才进入候选字模式：输入过程中操作和处理的都是待输入
+        // 仅当待输入为拼音时才进入候选字模式：输入过程中操作和处理的都是 pending
         if (pending.isPinyin()) {
-            onNewChoosingInputCandidate(pending);
+            onNewChoosingInputCandidate(pending, false);
         }
         // 其余情况都是直接做替换输入
         else {

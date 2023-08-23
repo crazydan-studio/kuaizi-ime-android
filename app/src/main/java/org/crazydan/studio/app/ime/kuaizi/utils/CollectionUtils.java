@@ -42,10 +42,16 @@ public class CollectionUtils {
     /**
      * 从 <code>source</code> 向 <code>target</code> 补充元素，
      * 直到元素数量小于或等于 <code>top</code> 数
+     * <p/>
+     * 直接修改 <code>target</code>，且返回值也为该参数本身
      */
     public static <T> List<T> topPatch(List<T> target, int top, Supplier<Collection<T>> supplier) {
-        int lostCount = top - target.size();
+        if (top == 0) {
+            target.clear();
+            return target;
+        }
 
+        int lostCount = top - target.size();
         if (lostCount > 0) {
             Iterator<T> it = supplier.get().iterator();
             while (it.hasNext() && lostCount > 0) {
@@ -58,7 +64,16 @@ public class CollectionUtils {
                 lostCount--;
             }
         } else if (lostCount < 0) {
-            return target.subList(0, top);
+            Iterator<T> it = target.iterator();
+            int total = target.size();
+            for (int i = 0; i < total && it.hasNext(); i++) {
+                it.next();
+
+                if (i >= top) {
+                    it.remove();
+                }
+            }
+            return target;
         }
         return target;
     }

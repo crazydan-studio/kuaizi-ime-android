@@ -197,7 +197,7 @@ public class PinyinDictDB {
         }
 
         return doSQLiteQuery(db, "pinyin_word", new String[] {
-                                     "id_", "word_", "spell_", "traditional_"
+                                     "id_", "word_", "spell_", "traditional_", "stroke_order_"
                              }, //
                              "spell_chars_id_ = ?", //
                              new String[] { inputPinyinCharsId }, //
@@ -209,8 +209,14 @@ public class PinyinDictDB {
                                  String word = cursor.getString(1);
                                  String wordPinyin = cursor.getString(2);
                                  boolean traditional = cursor.getInt(3) > 0;
+                                 String strokeOrder = cursor.getString(4);
 
-                                 return new InputWord(oid, inputPinyinCharsId, word, wordPinyin, traditional);
+                                 return new InputWord(oid,
+                                                      inputPinyinCharsId,
+                                                      word,
+                                                      wordPinyin,
+                                                      traditional,
+                                                      strokeOrder);
                              });
     }
 
@@ -279,6 +285,11 @@ public class PinyinDictDB {
                                             prevPhrase);
     }
 
+    /**
+     * @param top
+     *         为 0 时，{@link BestCandidateWords#words} 为空，
+     *         但 {@link BestCandidateWords#phrases} 依然是按权重降序排序后的最佳短语
+     */
     private BestCandidateWords findTopBestPinyinWordsFromDB(
             SQLiteDatabase db, String wordTable, String phraseTable, String inputPinyinCharsId, int top,
             List<InputWord> prevPhrase
@@ -728,7 +739,6 @@ public class PinyinDictDB {
     private void initAppDB(SQLiteDatabase db) {
         String[] clauses = new String[] {
                 // 创建索引以加速查询
-                //"CREATE INDEX IF NOT EXISTS idx_meta_word ON meta_word (stroke_order_);",
                 "CREATE INDEX IF NOT EXISTS idx_link_word_with_pinyin"
                 + " ON link_word_with_pinyin"
                 + " (target_chars_id_, weight_, glyph_weight_, target_id_);",
