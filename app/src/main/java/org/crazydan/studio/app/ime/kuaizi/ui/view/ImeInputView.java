@@ -167,7 +167,7 @@ public class ImeInputView extends FrameLayout
 
     private void bindViews() {
         reset();
-        // 必须先清除已有的子视图，否则，重复 inflate 会无法即可生效
+        // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
         int themeResId = this.keyboard != null ? this.keyboard.getConfig().getThemeResId() : getThemeResId();
