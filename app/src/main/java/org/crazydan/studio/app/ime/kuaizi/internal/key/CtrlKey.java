@@ -136,6 +136,17 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         ToggleInputSpell_ng,
         /** 在候选字状态下切换当前输入的 n/l */
         ToggleInputSpell_nl,
+        /** 在候选字状态下根据笔画过滤候选字：横 */
+        FilterInputCandidate_stroke_heng,
+        /** 在候选字状态下根据笔画过滤候选字：竖 */
+        FilterInputCandidate_stroke_shu,
+        /** 在候选字状态下根据笔画过滤候选字：撇 */
+        FilterInputCandidate_stroke_pie,
+        /** 在候选字状态下根据笔画过滤候选字：捺 */
+        FilterInputCandidate_stroke_na,
+        /** 在候选字状态下根据笔画过滤候选字：折 */
+        FilterInputCandidate_stroke_zhe,
+
         /** 输入光标定位按钮 */
         LocateInputCursor,
         /** 输入光标定位按钮 - 定位 */

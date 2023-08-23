@@ -102,12 +102,16 @@ public class SymbolKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(), 0, chinese_symbols);
+        return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
+                                               0,
+                                               getConfig().getSwitchFromType() == Type.Pinyin
+                                               ? chinese_symbols
+                                               : latin_symbols);
     }
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-
+        // Note：符号为一次性操作，不具备连续输入性，故不处理对输入列表的操作
     }
 
     @Override
@@ -127,9 +131,11 @@ public class SymbolKeyboard extends BaseKeyboard {
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeySingleTap: {
-                // 单字符输入
+                // 单字符输入，并切回原键盘
                 play_InputtingSingleTick_Audio(key);
                 doSingleKeyInputting(key);
+
+                switchTo_Previous_Keyboard();
                 break;
             }
             case KeyDoubleTap: {
@@ -144,17 +150,6 @@ public class SymbolKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                switch (key.getType()) {
-                    case Exit: {
-                        play_InputtingSingleTick_Audio(key);
-                        switch_Keyboard(Type.Pinyin);
-                        break;
-                    }
-                }
-                break;
-            }
             case FingerSlipping: {
                 break;
             }

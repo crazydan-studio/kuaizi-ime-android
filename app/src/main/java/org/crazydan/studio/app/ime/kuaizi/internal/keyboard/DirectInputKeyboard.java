@@ -37,7 +37,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        // Note: 值输键盘无预处理过程，故没有对输入列表事件的响应
+        // Note: 直输键盘无预处理过程，故没有对输入列表事件的响应
     }
 
     @Override
@@ -52,11 +52,6 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         } else if (key instanceof CtrlKey) {
             onCtrlKeyMsg(msg, (CtrlKey) key, data);
         }
-    }
-
-    @Override
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {
-        // 都是直接输入到目标输入组件中，无需提交
     }
 
     protected void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {

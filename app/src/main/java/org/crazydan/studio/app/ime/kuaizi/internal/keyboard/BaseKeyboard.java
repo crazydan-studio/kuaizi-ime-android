@@ -264,10 +264,15 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 切换到指定类型的键盘 */
-    protected void switch_Keyboard(Keyboard.Type type) {
+    protected void switch_Keyboard(Keyboard.Type target) {
         this.state = new State(State.Type.Input_Waiting);
 
-        fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(type));
+        fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(getConfig().getType(), target));
+    }
+
+    /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
+    protected void switchTo_Previous_Keyboard() {
+        switch_Keyboard(getConfig().getSwitchFromType());
     }
 
     /** 切换键盘的左右手模式 */
@@ -355,6 +360,11 @@ public abstract class BaseKeyboard implements Keyboard {
                         on_CtrlKey_Space_or_Enter(key);
                         return true;
                     }
+                    case Exit: {
+                        play_InputtingSingleTick_Audio(key);
+                        switchTo_Previous_Keyboard();
+                        return true;
+                    }
                     case SwitchIME: {
                         play_InputtingSingleTick_Audio(key);
                         switch_IME();
@@ -378,6 +388,16 @@ public abstract class BaseKeyboard implements Keyboard {
                     case SwitchToNumberKeyboard: {
                         play_InputtingSingleTick_Audio(key);
                         switch_Keyboard(Type.Number);
+                        return true;
+                    }
+                    case SwitchToSymbolKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_Keyboard(Type.Symbol);
+                        return true;
+                    }
+                    case SwitchToMathKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        switch_Keyboard(Type.Math);
                         return true;
                     }
                 }

@@ -27,10 +27,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
  * @date 2023-07-27
  */
 public class KeyboardSwitchingMsgData extends InputCommonMsgData {
-    public final Keyboard.Type type;
+    public final Keyboard.Type source;
+    public final Keyboard.Type target;
 
-    public KeyboardSwitchingMsgData(Keyboard.Type type) {
+    public KeyboardSwitchingMsgData(Keyboard.Type source, Keyboard.Type target) {
         super(null);
-        this.type = type;
+        this.source = source;
+        this.target = target;
     }
 }

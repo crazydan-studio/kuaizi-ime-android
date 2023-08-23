@@ -145,6 +145,8 @@ public class KeyTable {
                     new int[] { 0, 4 },
                     new int[] { 0, 5 },
                     new int[] { 1, 5 },
+                    new int[] { 2, 6 },
+                    new int[] { 3, 6 },
                     new int[] { 4, 6 },
                     new int[] { 5, 5 },
                     new int[] { 5, 1 },
@@ -325,6 +327,16 @@ public class KeyTable {
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_heng,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_shu,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_pie,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_na,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_zhe,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp,
                             KeyStyle.withColor(R.attr.key_ctrl_noop_fg_color, R.attr.key_ctrl_noop_bg_color));
@@ -439,10 +451,10 @@ public class KeyTable {
                 ctrlKey(config, CtrlKey.Type.LocateInputCursor),
                 alphabetKey("s"),
                 alphabetKey("t"),
-                enterCtrlKey(config),
+                config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
                 } //
                 , new Key[] {
-                noopCtrlKey(),
+                ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("u"),
                 alphabetKey("v"),
                 alphabetKey("w"),
@@ -452,12 +464,12 @@ public class KeyTable {
                 } //
                 , new Key[] {
                 symbolKey(":"),
+                symbolKey("!"),
                 symbolKey("?"),
                 symbolKey("#"),
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard).setDisabled(true),
                 },
                 };
 
@@ -558,11 +570,17 @@ public class KeyTable {
         int totalPage = (int) Math.ceil(candidates.size() / (pageSize * 1.0));
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
+        int index_1 = changeIndexForHandMode(config, gridKeys, 1);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
         gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.DropInput);
+        gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_heng).setLabel("一");
+        gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_shu).setLabel("丨");
+        gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_pie).setLabel("丿");
+        gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_na).setLabel("㇏");
+        gridKeys[5][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_zhe).setLabel("\uD840\uDCCB");
 
         if (currentPage == 1) {
             gridKeys[3][index_6] = ctrlKey(config, CtrlKey.Type.CommitInputList);
@@ -686,11 +704,11 @@ public class KeyTable {
         int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
         gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true);
-        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
-        gridKeys[3][index_6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+
+        if (config.keyboardConfig.getSwitchFromType() != null) {
+            gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+        }
 
         gridKeys[0][index_0] = noopCtrlKey((startIndex / pageSize + 1) //
                                            + "/" //
@@ -747,7 +765,10 @@ public class KeyTable {
         gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
         gridKeys[3][index_6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.Math_Equal).setLabel("=");
-        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+
+        if (config.keyboardConfig.getSwitchFromType() != null) {
+            gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+        }
 
         int keyIndex = 0;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, math_key_around_level_coords);

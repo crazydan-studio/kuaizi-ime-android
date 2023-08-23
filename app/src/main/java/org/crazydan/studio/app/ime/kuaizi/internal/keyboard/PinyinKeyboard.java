@@ -66,7 +66,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case Input_Waiting:
-            case ChoosingInputCandidate:
+            case Choosing_Input_Candidate:
                 switch (msg) {
                     case ChoosingInput:
                         onChoosingInputMsg(msg, data.target, data);
@@ -84,10 +84,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Key<?> key = data.target;
         switch (this.state.type) {
-            case SlippingInput:
+            case Slipping_Input:
                 onSlippingInputUserKeyMsg(msg, key, data);
                 break;
-            case ChoosingInputCandidate:
+            case Choosing_Input_Candidate:
                 if (key instanceof InputWordKey) {
                     onInputCandidatesKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
@@ -121,7 +121,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case FingerMovingStart: {
                 // 开始滑屏输入
                 if (key.getType() == CharKey.Type.Alphabet) {
-                    this.state = new State(State.Type.SlippingInput, new SlippingInputStateData());
+                    this.state = new State(State.Type.Slipping_Input, new SlippingInputStateData());
 
                     CharInput input = getInputList().newPending();
 
@@ -181,25 +181,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
-            case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
-
-                // Note: 切换至拉丁文输入法的逻辑在基类中处理
-                switch (key.getType()) {
-                    case SwitchToSymbolKeyboard: {
-                        switch_Keyboard(Type.Symbol);
-                        break;
-                    }
-                    case SwitchToMathKeyboard: {
-                        switch_Keyboard(Type.Math);
-                        break;
-                    }
-                }
-                break;
-            }
-        }
     }
 
     private void onInputCandidatesKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
@@ -428,7 +409,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     /** 进入候选字选择状态，并处理候选字翻页 */
     private void onChoosingInputCandidate(CharInput input, boolean pageUp, boolean inputChanged) {
         ChoosingInputCandidateStateData stateData;
-        if (this.state.type == State.Type.ChoosingInputCandidate) {
+        if (this.state.type == State.Type.Choosing_Input_Candidate) {
             stateData = (ChoosingInputCandidateStateData) this.state.data;
 
             boolean hasPage;
@@ -459,7 +440,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
 
             stateData = new ChoosingInputCandidateStateData(allCandidates, pageSize);
-            this.state = new State(State.Type.ChoosingInputCandidate, stateData);
+            this.state = new State(State.Type.Choosing_Input_Candidate, stateData);
 
             if (inputChanged) {
                 determineNotConfirmedInputWord(input, () -> topBestCandidates);

@@ -104,8 +104,11 @@ public class ImeInputView extends FrameLayout
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case Keyboard_Switching: {
-                Keyboard.Type type = ((KeyboardSwitchingMsgData) data).type;
-                Keyboard.Config config = new Keyboard.Config(type, this.keyboard.getConfig());
+                Keyboard.Type source = ((KeyboardSwitchingMsgData) data).source;
+                Keyboard.Type target = ((KeyboardSwitchingMsgData) data).target;
+
+                Keyboard.Config config = new Keyboard.Config(target, this.keyboard.getConfig());
+                config.setSwitchFromType(source);
 
                 updateKeyboard(config);
                 break;

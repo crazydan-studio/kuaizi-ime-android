@@ -106,6 +106,9 @@ public interface Keyboard extends UserInputMsgListener {
 
         /** 键盘类型 */
         private final Type type;
+
+        /** 当前键盘是从哪个类型的键盘切换过来的，以便于退出时切换到原键盘 */
+        private Type switchFromType;
         /** 是否为单行输入 */
         private boolean singleLineInput;
         /** 键盘布局方向 */
@@ -128,6 +131,7 @@ public interface Keyboard extends UserInputMsgListener {
             this(type);
 
             if (config != null) {
+                this.switchFromType = config.switchFromType;
                 this.singleLineInput = config.singleLineInput;
                 this.orientation = config.orientation;
                 this.handMode = config.handMode;
@@ -141,6 +145,14 @@ public interface Keyboard extends UserInputMsgListener {
 
         public Type getType() {
             return this.type;
+        }
+
+        public Type getSwitchFromType() {
+            return this.switchFromType;
+        }
+
+        public void setSwitchFromType(Type switchFromType) {
+            this.switchFromType = switchFromType;
         }
 
         public boolean isSingleLineInput() {

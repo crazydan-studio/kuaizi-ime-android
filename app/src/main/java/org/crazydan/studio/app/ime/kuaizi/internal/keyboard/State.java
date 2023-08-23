@@ -42,13 +42,13 @@ public class State {
         /** 待输入 */
         Input_Waiting,
         /** 滑屏输入中 */
-        SlippingInput,
+        Slipping_Input,
 
         /** 输入组件光标定位：含移动光标和文本选择 */
         InputTarget_Cursor_Locating,
 
         /** 输入候选字选择中 */
-        ChoosingInputCandidate,
+        Choosing_Input_Candidate,
     }
 
     public interface Data {}
