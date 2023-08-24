@@ -51,9 +51,9 @@ public class CharKeyView extends KeyView<CharKey, TextView> {
         } else {
             switch (key.getLabel().length()) {
                 case 6:
-                case 5:
                     textSizeDimen = R.dimen.char_key_text_size_4d;
                     break;
+                case 5:
                 case 4:
                     textSizeDimen = R.dimen.char_key_text_size_3d;
                     break;

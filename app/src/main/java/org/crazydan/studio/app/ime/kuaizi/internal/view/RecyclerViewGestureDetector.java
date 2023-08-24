@@ -42,7 +42,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     /** 确定长按的超时时间 */
     private static final long LONG_PRESS_TIMEOUT_MILLS = 200;
     /** 确定长按 tick 的超时时间 */
-    private static final long LONG_PRESS_TICK_TIMEOUT_MILLS = 150;
+    private static final long LONG_PRESS_TICK_TIMEOUT_MILLS = 100;
     /** 确定双击的超时时间 */
     private static final long DOUBLE_TAP_TIMEOUT_MILLS = 400;
     /** 确定滑动的超时时间 */

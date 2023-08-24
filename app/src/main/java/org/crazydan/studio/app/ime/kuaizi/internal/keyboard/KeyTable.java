@@ -365,6 +365,7 @@ public class KeyTable {
                         alphabetKey("o").withReplacements("O"),
                         alphabetKey("e").withReplacements("E"),
                         alphabetKey("a").withReplacements("A"),
+                        noopCtrlKey(),
                         } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToMathKeyboard),
@@ -374,6 +375,7 @@ public class KeyTable {
                 alphabetKey("c").withReplacements("C"),
                 alphabetKey("d").withReplacements("D"),
                 ctrlKey(config, CtrlKey.Type.Backspace),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToLatinKeyboard),
@@ -383,6 +385,7 @@ public class KeyTable {
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("l").withReplacements("L"),
                 ctrlKey(config, CtrlKey.Type.Space),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 symbolKey("！").withReplacements("!"),
@@ -392,6 +395,7 @@ public class KeyTable {
                 alphabetKey("h").withReplacements("H"),
                 alphabetKey("y").withReplacements("Y"),
                 config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard),
@@ -401,6 +405,7 @@ public class KeyTable {
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("x").withReplacements("X"),
                 alphabetKey("z").withReplacements("Z"),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 symbolKey("？").withReplacements("?"),
@@ -410,6 +415,7 @@ public class KeyTable {
                 symbolKey("。").withReplacements("."),
                 symbolKey("，").withReplacements(","),
                 ctrlKey(config, CtrlKey.Type.RevokeInput).setDisabled(true),
+                noopCtrlKey(),
                 },
                 };
 
@@ -428,6 +434,7 @@ public class KeyTable {
                         alphabetKey("d"),
                         alphabetKey("e"),
                         alphabetKey("f"),
+                        noopCtrlKey(),
                         } //
                 , new Key[] {
                 noopCtrlKey(),
@@ -437,6 +444,7 @@ public class KeyTable {
                 alphabetKey("j"),
                 alphabetKey("k"),
                 ctrlKey(config, CtrlKey.Type.Backspace),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToPinyinKeyboard),
@@ -446,6 +454,7 @@ public class KeyTable {
                 alphabetKey("o"),
                 alphabetKey("p"),
                 ctrlKey(config, CtrlKey.Type.Space),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 noopCtrlKey(),
@@ -455,6 +464,7 @@ public class KeyTable {
                 alphabetKey("s"),
                 alphabetKey("t"),
                 config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard),
@@ -464,6 +474,7 @@ public class KeyTable {
                 alphabetKey("x"),
                 alphabetKey("y"),
                 alphabetKey("z"),
+                noopCtrlKey(),
                 } //
                 , new Key[] {
                 symbolKey(":"),
@@ -473,6 +484,7 @@ public class KeyTable {
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
+                noopCtrlKey(),
                 },
                 };
 
@@ -488,6 +500,13 @@ public class KeyTable {
         }
 
         return changeLayoutForHandMode(config, keys);
+    }
+
+    private static Key<?>[][] emptyGridKeys() {
+        Key<?>[][] gridKeys = new Key[6][8];
+        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        return gridKeys;
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
@@ -562,8 +581,7 @@ public class KeyTable {
     public static Key<?>[][] createInputCandidateWordKeys(
             Config config, CharInput input, List<InputWord> candidates, int startIndex, int pageSize
     ) {
-        Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        Key<?>[][] gridKeys = emptyGridKeys();
 
         int dataSize = candidates.size();
         if (dataSize == 0) {
@@ -667,8 +685,7 @@ public class KeyTable {
 
     /** 创建定位按键 */
     public static Key<?>[][] createLocatorKeys(Config config) {
-        Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        Key<?>[][] gridKeys = emptyGridKeys();
 
         boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
         int index_1 = changeIndexForHandMode(config, gridKeys, 1);
@@ -704,8 +721,7 @@ public class KeyTable {
 
     /** 创建标点符号按键 */
     public static Key<?>[][] createSymbolKeys(Config config, Symbol[] symbols, int startIndex, int pageSize) {
-        Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        Key<?>[][] gridKeys = emptyGridKeys();
 
         int dataSize = symbols.length;
         if (dataSize == 0) {
@@ -765,8 +781,7 @@ public class KeyTable {
 
     /** 创建{@link MathKeyboard 数学键盘}按键 */
     public static Key<?>[][] createMathKeys(Config config, Key<?>[] keys) {
-        Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        Key<?>[][] gridKeys = emptyGridKeys();
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
@@ -812,8 +827,7 @@ public class KeyTable {
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
     public static Key<?>[][] createNumberKeys(Config config, Key<?>[] keys) {
-        Key<?>[][] gridKeys = new Key[6][7];
-        Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+        Key<?>[][] gridKeys = emptyGridKeys();
 
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_6 = changeIndexForHandMode(config, gridKeys, 6);
