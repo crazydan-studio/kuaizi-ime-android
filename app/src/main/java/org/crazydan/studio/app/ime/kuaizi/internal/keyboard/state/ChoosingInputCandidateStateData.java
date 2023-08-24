@@ -34,10 +34,11 @@ public class ChoosingInputCandidateStateData implements State.Data {
     private final List<InputWord> candidates;
     private final List<String> strokes;
 
-    /** 数据总量 */
-    private final int dataSize;
     /** 分页大小 */
     private final int pageSize;
+
+    /** 数据总量 */
+    private int dataSize;
     /** 分页开始序号 */
     private int pageStart;
 
@@ -45,22 +46,27 @@ public class ChoosingInputCandidateStateData implements State.Data {
         this.candidates = candidates;
         this.strokes = new ArrayList<>();
 
-        this.dataSize = candidates.size();
         this.pageSize = pageSize;
+        this.dataSize = candidates.size();
     }
 
     public List<InputWord> getCandidates() {
-        if (!this.strokes.isEmpty() && this.dataSize > this.pageSize) {
+        int totalSize = this.candidates.size();
+        if (!this.strokes.isEmpty() && totalSize > this.pageSize) {
             // 第一页为最佳候选字，不做过滤
             List<InputWord> results = new ArrayList<>(this.candidates.subList(0, this.pageSize));
-            List<InputWord> filtered = this.candidates.subList(this.pageSize, this.dataSize)
+            List<InputWord> filtered = this.candidates.subList(this.pageSize, totalSize)
                                                       .stream()
                                                       .filter(this::hasStrokes)
                                                       .collect(Collectors.toList());
 
             results.addAll(filtered);
+
+            this.dataSize = results.size();
             return results;
         }
+
+        this.dataSize = totalSize;
         return this.candidates;
     }
 
