@@ -254,6 +254,19 @@ public class PinyinDictDB {
         return userBest;
     }
 
+    /** 获取表情 */
+    public List<String> getEmotions() {
+        SQLiteDatabase db = getAppDB();
+
+        return doSQLiteQuery(db, "meta_emotion", new String[] {
+                                     "id_", "value_"
+                             }, //
+                             null, //
+                             null, //
+                             "id_ asc", //
+                             (cursor) -> cursor.getString(1));
+    }
+
     /** 保存已使用的短语：异步处理 */
     public void saveUsedPhrases(List<List<InputWord>> phrases) {
         if (phrases == null || phrases.isEmpty()) {

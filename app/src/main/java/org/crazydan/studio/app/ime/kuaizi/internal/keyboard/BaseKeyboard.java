@@ -336,7 +336,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {confirm_Input_Enter_or_Space(key);}
 
     /** 尝试处理控制按键消息 */
-    private boolean try_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    protected boolean try_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
@@ -360,11 +360,11 @@ public abstract class BaseKeyboard implements Keyboard {
                         on_CtrlKey_Space_or_Enter(key);
                         return true;
                     }
-                    case Exit: {
-                        play_InputtingSingleTick_Audio(key);
-                        switchTo_Previous_Keyboard();
-                        return true;
-                    }
+//                    case Exit: {
+//                        play_InputtingSingleTick_Audio(key);
+//                        switchTo_Previous_Keyboard();
+//                        return true;
+//                    }
                     case SwitchIME: {
                         play_InputtingSingleTick_Audio(key);
                         switch_IME();
@@ -390,11 +390,11 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(Type.Number);
                         return true;
                     }
-                    case SwitchToSymbolKeyboard: {
-                        play_InputtingSingleTick_Audio(key);
-                        switch_Keyboard(Type.Symbol);
-                        return true;
-                    }
+//                    case SwitchToSymbolKeyboard: {
+//                        play_InputtingSingleTick_Audio(key);
+//                        switch_Keyboard(Type.Symbol);
+//                        return true;
+//                    }
                     case SwitchToMathKeyboard: {
                         play_InputtingSingleTick_Audio(key);
                         switch_Keyboard(Type.Math);

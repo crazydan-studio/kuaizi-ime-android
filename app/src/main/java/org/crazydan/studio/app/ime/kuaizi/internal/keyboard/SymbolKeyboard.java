@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  */
 public class SymbolKeyboard extends BaseKeyboard {
     /** 英文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
-    private static final Symbol[] latin_symbols = new Symbol[] {
+    public static final Symbol[] latin_symbols = new Symbol[] {
             Symbol.single(",").withReplacements("，"),
             Symbol.single(".").withReplacements("。"),
             Symbol.single("?").withReplacements("？"),
@@ -68,7 +68,7 @@ public class SymbolKeyboard extends BaseKeyboard {
             Symbol.single("—"),
             };
     /** 中文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
-    private static final Symbol[] chinese_symbols = new Symbol[] {
+    public static final Symbol[] chinese_symbols = new Symbol[] {
             Symbol.single("，").withReplacements(","),
             Symbol.single("。").withReplacements("."),
             Symbol.single("？").withReplacements("?"),
@@ -103,10 +103,11 @@ public class SymbolKeyboard extends BaseKeyboard {
     @Override
     public KeyFactory getKeyFactory() {
         return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
-                                               0,
                                                getConfig().getSwitchFromType() == Type.Pinyin
                                                ? chinese_symbols
-                                               : latin_symbols);
+                                               : latin_symbols,
+                                               0,
+                                               0);
     }
 
     @Override

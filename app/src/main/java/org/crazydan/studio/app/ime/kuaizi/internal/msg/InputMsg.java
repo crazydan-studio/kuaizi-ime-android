@@ -55,4 +55,7 @@ public enum InputMsg {
     Keyboard_Switching,
     /** 左右手模式切换中 */
     HandMode_Switching,
+
+    /** 符号（标点、表情）选择中 */
+    SymbolEmotion_Choosing,
 }

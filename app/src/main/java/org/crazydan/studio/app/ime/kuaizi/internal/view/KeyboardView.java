@@ -138,9 +138,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
                 onInputtingCharsMsg((InputCharsInputtingMsgData) data);
                 break;
             }
-            case InputChars_InputtingEnd:
-            case InputCandidate_Choosing:
-                break;
         }
 
         updateKeysByInputMsg(data);

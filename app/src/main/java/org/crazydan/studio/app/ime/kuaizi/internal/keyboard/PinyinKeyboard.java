@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingInputCandidateStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolEmotionStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.SlippingInputStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -45,6 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
@@ -84,10 +86,11 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Key<?> key = data.target;
         switch (this.state.type) {
-            case Slipping_Input:
+            case Slipping_Input: {
                 onSlippingInputUserKeyMsg(msg, key, data);
                 break;
-            case Choosing_Input_Candidate:
+            }
+            case Choosing_Input_Candidate: {
                 if (key instanceof InputWordKey) {
                     onInputCandidatesKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
@@ -96,12 +99,24 @@ public class PinyinKeyboard extends BaseKeyboard {
                     onInputCandidatesPageSlippingMsg(msg, key, data);
                 }
                 break;
-            default:
+            }
+            case Choosing_SymbolEmotion: {
+                if (key instanceof CharKey) {
+                    on_ChoosingSymbolEmotion_CharKeyMsg(msg, (CharKey) key, data);
+                } else if (key instanceof CtrlKey) {
+                    on_ChoosingSymbolEmotion_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                } else {
+                    on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
+                }
+                break;
+            }
+            default: {
                 if (key instanceof CharKey) {
                     onCharKeyMsg(msg, (CharKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     onCtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
+            }
         }
     }
 
@@ -181,6 +196,18 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    case SwitchToSymbolKeyboard:
+                        play_InputtingSingleTick_Audio(key);
+
+                        do_SymbolEmotion_Choosing(key);
+                        break;
+                }
+                break;
+            }
+        }
     }
 
     private void onInputCandidatesKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
@@ -622,4 +649,157 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
     // >>>>>>>>>
+
+    // <<<<<<<<<<< 对标点符号的操作
+    private void do_SymbolEmotion_Choosing(CtrlKey key) {
+        ChoosingSymbolEmotionStateData stateData = new ChoosingSymbolEmotionStateData(KeyTable.getSymbolKeysPageSize());
+        stateData.setSymbols(SymbolKeyboard.chinese_symbols);
+
+        this.state = new State(State.Type.Choosing_SymbolEmotion, stateData);
+
+        do_Update_SymbolEmotion_Keys(false, false);
+    }
+
+    private void on_ChoosingSymbolEmotion_CharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case FingerSlipping: {
+                on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
+                break;
+            }
+            case KeySingleTap: {
+                // 单字符输入，并切回原键盘
+                play_InputtingSingleTick_Audio(key);
+
+                do_Single_SymbolEmotion_Key_Inputting(key, true);
+                break;
+            }
+            case KeyLongPressTick: {
+                // 长按则连续输入
+                play_InputtingSingleTick_Audio(key);
+
+                do_Single_SymbolEmotion_Key_Inputting(key, false);
+                break;
+            }
+        }
+    }
+
+    private void on_ChoosingSymbolEmotion_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        if (try_OnCtrlKeyMsg(msg, key, data)) {
+            return;
+        }
+
+        switch (msg) {
+            case FingerSlipping: {
+                on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
+                break;
+            }
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    case Exit: {
+                        play_InputtingSingleTick_Audio(key);
+                        end_InputChars_Inputting();
+                        break;
+                    }
+                    case ToggleSymbol_Locale_Zh_and_En: {
+                        play_InputtingSingleTick_Audio(key);
+
+                        ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
+                        if (stateData.getSymbols() == SymbolKeyboard.chinese_symbols) {
+                            stateData.setSymbols(SymbolKeyboard.latin_symbols);
+                        } else {
+                            stateData.setSymbols(SymbolKeyboard.chinese_symbols);
+                        }
+
+                        do_Update_SymbolEmotion_Keys(false, false);
+                        break;
+                    }
+                    case ToggleSymbol_Emotion: {
+                        play_InputtingSingleTick_Audio(key);
+
+                        ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
+                        Symbol[] symbols = this.pinyinDict.getEmotions()
+                                                          .stream()
+                                                          .map(Symbol::single)
+                                                          .toArray(Symbol[]::new);
+                        stateData.setSymbols(symbols);
+
+                        do_Update_SymbolEmotion_Keys(false, false);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private void do_Update_SymbolEmotion_Keys(boolean doPaging, boolean pageUp) {
+        ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
+        if (doPaging) {
+            boolean hasPage;
+            if (pageUp) {
+                hasPage = stateData.nextPage();
+            } else {
+                hasPage = stateData.prevPage();
+            }
+
+            if (hasPage) {
+                play_InputPageFlipping_Audio();
+            }
+        }
+
+        KeyFactory keyFactory = () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
+                                                                stateData.getSymbols(),
+                                                                stateData.getPageStart(),
+                                                                stateData.getPageSize());
+
+        fireInputMsg(InputMsg.SymbolEmotion_Choosing, new InputCommonMsgData(keyFactory));
+    }
+
+    private void do_Single_SymbolEmotion_Key_Inputting(CharKey key, boolean singleInputting) {
+        boolean continuousInputting = !singleInputting || !getInputList().isEmpty();
+
+        CharInput input = getInputList().newPending();
+        if (key.isDoubleSymbol()) {
+            // 拆分成两个 Key 插入到输入列表
+            CharKey leftKey = KeyTable.symbolKey(key.getText().substring(0, 1));
+            CharKey rightKey = KeyTable.symbolKey(key.getText().substring(1));
+
+            input.appendKey(leftKey);
+            input = getInputList().newPending();
+            input.appendKey(rightKey);
+            // 确认第二个 Key，并移动光标到其后的 Gap 位置
+            getInputList().confirmPending();
+
+            // 并将光标移动到成对标点之间的 Gap 位置
+            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
+
+            // 再在成对标点之间等待新的输入
+            continuousInputting = true;
+        } else {
+            input.appendKey(key);
+        }
+
+        if (continuousInputting) {
+            if (singleInputting) {
+                confirm_InputChars();
+            } else {
+                do_Update_SymbolEmotion_Keys(false, false);
+            }
+        } else {
+            commit_InputList();
+        }
+    }
+
+    private void on_ChoosingSymbolEmotion_PageSlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        switch (msg) {
+            case FingerSlipping: {
+                Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+
+                do_Update_SymbolEmotion_Keys(true, pageUp);
+                break;
+            }
+        }
+    }
+    // >>>>>>>>>>>
 }

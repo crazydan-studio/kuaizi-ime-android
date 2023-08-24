@@ -49,6 +49,9 @@ public class State {
 
         /** 输入候选字选择中 */
         Choosing_Input_Candidate,
+
+        /** 符号（标点、表情）选择中 */
+        Choosing_SymbolEmotion,
     }
 
     public interface Data {}

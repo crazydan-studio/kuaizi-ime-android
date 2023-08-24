@@ -288,16 +288,19 @@ public class KeyTable {
                                               R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToMathKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard,
-                            KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToEmotionKeyboard,
-                            KeyStyle.withIcon(R.drawable.ic_emotion, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToLatinKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_switch_zi_to_a, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToPinyinKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToNumberKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_alphabet_number, R.attr.key_ctrl_switcher_bg_color));
+
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard,
+                            KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Emotion,
+                            KeyStyle.withIcon(R.drawable.ic_emotion, R.attr.key_ctrl_switcher_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Locale_Zh_and_En,
+                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
                             KeyStyle.withIcon(R.drawable.ic_right_hand_pointer,
@@ -700,26 +703,28 @@ public class KeyTable {
     }
 
     /** 创建标点符号按键 */
-    public static Key<?>[][] createSymbolKeys(Config config, int startIndex, Symbol[] symbols) {
-        int pageSize = getSymbolKeysPageSize();
-
+    public static Key<?>[][] createSymbolKeys(Config config, Symbol[] symbols, int startIndex, int pageSize) {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
+
+        int dataSize = symbols.length;
+        if (dataSize == 0) {
+            return gridKeys;
+        }
+
+        int currentPage = startIndex / pageSize + 1;
+        int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
-        gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.SwitchToEmotionKeyboard).setDisabled(true);
+        gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.ToggleSymbol_Emotion);
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.ToggleSymbol_Locale_Zh_and_En).setLabel("中/英");
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
+        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
 
-        if (config.keyboardConfig.getSwitchFromType() != null) {
-            gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
-        }
-
-        gridKeys[0][index_0] = noopCtrlKey((startIndex / pageSize + 1) //
-                                           + "/" //
-                                           + ((int) Math.ceil(symbols.length / (pageSize * 1.0))));
+        gridKeys[0][index_0] = noopCtrlKey(currentPage + "/" + totalPage);
 
         int symbolIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_around_level_coords);
