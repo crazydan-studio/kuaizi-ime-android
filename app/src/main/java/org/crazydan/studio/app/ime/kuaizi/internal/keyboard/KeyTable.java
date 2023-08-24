@@ -562,12 +562,14 @@ public class KeyTable {
         Key<?>[][] gridKeys = new Key[6][7];
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
-        if (candidates.isEmpty()) {
+        int dataSize = candidates.size();
+        if (dataSize == 0) {
             return gridKeys;
         }
 
         int currentPage = startIndex / pageSize + 1;
-        int totalPage = (int) Math.ceil(candidates.size() / (pageSize * 1.0));
+        int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
+        int remainDataSize = dataSize - startIndex;
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_1 = changeIndexForHandMode(config, gridKeys, 1);
@@ -576,11 +578,16 @@ public class KeyTable {
 
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
         gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.DropInput);
-        gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_heng).setLabel("一");
-        gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_shu).setLabel("丨");
-        gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_pie).setLabel("丿");
-        gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_na).setLabel("㇏");
-        gridKeys[5][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_zhe).setLabel("\uD840\uDCCB");
+
+        // 从第二页开始支持按笔画过滤
+        if (currentPage > 1 && totalPage > 1 && remainDataSize > 8) {
+            gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_heng).setLabel("一");
+            gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_shu).setLabel("丨");
+            gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_pie).setLabel("丿");
+            gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_na).setLabel("㇏");
+            gridKeys[5][index_0] = ctrlKey(config,
+                                           CtrlKey.Type.FilterInputCandidate_stroke_zhe).setLabel("\uD840\uDCCB");
+        }
 
         if (currentPage == 1) {
             gridKeys[3][index_6] = ctrlKey(config, CtrlKey.Type.CommitInputList);

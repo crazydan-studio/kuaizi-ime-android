@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
@@ -30,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  */
 public class ChoosingInputCandidateStateData implements State.Data {
     private final List<InputWord> candidates;
+    private final List<String> strokes;
 
     /** 数据总量 */
     private final int dataSize;
@@ -38,17 +41,33 @@ public class ChoosingInputCandidateStateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingInputCandidateStateData(
-            List<InputWord> candidates, int pageSize
-    ) {
+    public ChoosingInputCandidateStateData(List<InputWord> candidates, int pageSize) {
         this.candidates = candidates;
+        this.strokes = new ArrayList<>();
 
         this.dataSize = candidates.size();
         this.pageSize = pageSize;
     }
 
     public List<InputWord> getCandidates() {
+        if (!this.strokes.isEmpty() && this.dataSize > this.pageSize) {
+            // 第一页为最佳候选字，不做过滤
+            List<InputWord> results = new ArrayList<>(this.candidates.subList(0, this.pageSize));
+            List<InputWord> filtered = this.candidates.subList(this.pageSize, this.dataSize)
+                                                      .stream()
+                                                      .filter(this::hasStrokes)
+                                                      .collect(Collectors.toList());
+
+            results.addAll(filtered);
+            return results;
+        }
         return this.candidates;
+    }
+
+    public void addStroke(String stroke) {
+        if (stroke != null) {
+            this.strokes.add(stroke);
+        }
     }
 
     public int getPageStart() {
@@ -84,5 +103,15 @@ public class ChoosingInputCandidateStateData implements State.Data {
         this.pageStart = Math.max(start, 0);
 
         return start >= 0;
+    }
+
+    private boolean hasStrokes(InputWord word) {
+        // 占位用，不做过滤
+        if (word == null) {
+            return true;
+        }
+
+        String strokeOrder = String.join("", this.strokes);
+        return word.getStrokeOrder().contains(strokeOrder);
     }
 }

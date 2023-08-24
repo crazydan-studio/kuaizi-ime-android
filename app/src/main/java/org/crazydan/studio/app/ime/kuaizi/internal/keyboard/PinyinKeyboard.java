@@ -214,6 +214,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
+                String stroke = null;
                 CharInput input = getInputList().getPending();
                 // 丢弃或变更拼音
                 switch (key.getType()) {
@@ -249,6 +250,25 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onNewChoosingInputCandidate(input, true);
                         break;
                     }
+                    case FilterInputCandidate_stroke_heng:
+                        stroke = "1";
+                        break;
+                    case FilterInputCandidate_stroke_shu:
+                        stroke = "2";
+                        break;
+                    case FilterInputCandidate_stroke_pie:
+                        stroke = "3";
+                        break;
+                    case FilterInputCandidate_stroke_na:
+                        stroke = "4";
+                        break;
+                    case FilterInputCandidate_stroke_zhe:
+                        stroke = "5";
+                        break;
+                }
+
+                if (stroke != null) {
+                    onFilterInputCandidateByStroke(input, stroke);
                 }
                 break;
             }
@@ -446,6 +466,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                 determineNotConfirmedInputWord(input, () -> topBestCandidates);
             }
         }
+
+        onFilterInputCandidateByStroke(input, null);
+    }
+
+    private void onFilterInputCandidateByStroke(CharInput input, String stroke) {
+        ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
+        stateData.addStroke(stroke);
 
         KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
                                                                             input,
