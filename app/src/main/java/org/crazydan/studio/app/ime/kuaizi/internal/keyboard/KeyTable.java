@@ -64,6 +64,8 @@ public class KeyTable {
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
     private static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
                                                                           R.attr.key_char_symbol_bg_color);
+    /** {@link CharKey.Type#Emotion 表情符号}按键的配色 */
+    private static final KeyColor key_char_emotion_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -261,13 +263,13 @@ public class KeyTable {
                                    KeyColor.create(R.attr.key_char_level_0_fg_color, R.attr.key_char_level_0_bg_color));
         char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"),
                                    KeyColor.create(R.attr.key_char_level_1_fg_color, R.attr.key_char_level_1_bg_color));
-        char_key_color_palette.put(Arrays.asList("h", "w", "z", "x", "y"),
+        char_key_color_palette.put(Arrays.asList("w", "z", "x", "y"),
                                    KeyColor.create(R.attr.key_char_level_2_fg_color, R.attr.key_char_level_2_bg_color));
         char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"),
                                    KeyColor.create(R.attr.key_char_level_3_fg_color, R.attr.key_char_level_3_bg_color));
-        char_key_color_palette.put(Arrays.asList("p", "q", "s", "t", "r"),
+        char_key_color_palette.put(Arrays.asList("p", "q", "n", "s", "t", "r"),
                                    KeyColor.create(R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color));
-        char_key_color_palette.put(Arrays.asList("k", "j", "m", "l", "n"),
+        char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"),
                                    KeyColor.create(R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
@@ -297,6 +299,8 @@ public class KeyTable {
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.SwitchToEmotionKeyboard,
+                            KeyStyle.withIcon(R.drawable.ic_emotion, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Emotion,
                             KeyStyle.withIcon(R.drawable.ic_emotion, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Locale_Zh_and_En,
@@ -359,63 +363,63 @@ public class KeyTable {
                 new Key[] {
                         //ctrlKey(config, CtrlKey.Type.SwitchIME),
                         ctrlKey(config, CtrlKey.Type.SwitchHandMode),
+                        symbolKey("；").withReplacements(";"),
                         alphabetKey("zh").withReplacements("Zh", "ZH"),
                         alphabetKey("ch").withReplacements("Ch", "CH"),
                         alphabetKey("sh").withReplacements("Sh", "SH"),
                         alphabetKey("o").withReplacements("O"),
                         alphabetKey("e").withReplacements("E"),
                         alphabetKey("a").withReplacements("A"),
-                        noopCtrlKey(),
                         } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToMathKeyboard),
-                alphabetKey("f").withReplacements("F"),
+                symbolKey("：").withReplacements(":"),
+                alphabetKey("r").withReplacements("R"),
                 alphabetKey("g").withReplacements("G"),
-                alphabetKey("b").withReplacements("B"),
-                alphabetKey("c").withReplacements("C"),
+                alphabetKey("f").withReplacements("F"),
                 alphabetKey("d").withReplacements("D"),
-                ctrlKey(config, CtrlKey.Type.Backspace),
-                noopCtrlKey(),
+                alphabetKey("c").withReplacements("C"),
+                alphabetKey("b").withReplacements("B"),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToLatinKeyboard),
-                alphabetKey("k").withReplacements("K"),
-                alphabetKey("j").withReplacements("J"),
-                alphabetKey("n").withReplacements("N"),
+                symbolKey("！").withReplacements("!"),
+                alphabetKey("s").withReplacements("S"),
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("l").withReplacements("L"),
-                ctrlKey(config, CtrlKey.Type.Space),
-                noopCtrlKey(),
+                alphabetKey("k").withReplacements("K"),
+                alphabetKey("j").withReplacements("J"),
+                alphabetKey("h").withReplacements("H"),
                 } //
                 , new Key[] {
-                symbolKey("！").withReplacements("!"),
-                alphabetKey("p").withReplacements("P"),
-                alphabetKey("r").withReplacements("R"),
+                ctrlKey(config, CtrlKey.Type.SwitchToEmotionKeyboard),
+                symbolKey("？").withReplacements("?"),
+                alphabetKey("t").withReplacements("T"),
+                alphabetKey("n").withReplacements("N"),
                 ctrlKey(config, CtrlKey.Type.LocateInputCursor),
-                alphabetKey("h").withReplacements("H"),
-                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("p").withReplacements("P"),
                 config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
-                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard),
-                alphabetKey("q").withReplacements("Q"),
-                alphabetKey("s").withReplacements("S"),
-                alphabetKey("t").withReplacements("T"),
+                symbolKey("。").withReplacements("."),
+                alphabetKey("ü").withReplacements("v", "V"),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("x").withReplacements("X"),
+                alphabetKey("y").withReplacements("Y"),
                 alphabetKey("z").withReplacements("Z"),
-                noopCtrlKey(),
+                ctrlKey(config, CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                symbolKey("？").withReplacements("?"),
+                ctrlKey(config, CtrlKey.Type.RevokeInput).setDisabled(true),
+                symbolKey("，").withReplacements(","),
                 alphabetKey("u").withReplacements("U"),
                 alphabetKey("i").withReplacements("I"),
-                alphabetKey("ü").withReplacements("v", "V"),
-                symbolKey("。").withReplacements("."),
-                symbolKey("，").withReplacements(","),
-                ctrlKey(config, CtrlKey.Type.RevokeInput).setDisabled(true),
-                noopCtrlKey(),
+                emotionKey("\uD83D\uDE02"),
+                emotionKey("\uD83D\uDE04"),
+                emotionKey("\uD83D\uDE09"),
+                ctrlKey(config, CtrlKey.Type.Backspace),
                 },
                 };
 
@@ -913,6 +917,10 @@ public class KeyTable {
 
     public static CharKey numberKey(String text) {
         return charKey(CharKey.Type.Number, text);
+    }
+
+    public static CharKey emotionKey(String text) {
+        return charKey(CharKey.Type.Emotion, text).setColor(key_char_emotion_color);
     }
 
     public static CharKey symbolKey(String text) {

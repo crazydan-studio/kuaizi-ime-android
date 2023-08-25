@@ -53,7 +53,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-06-30
  */
 public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final int keySpacing = 8;
+    private final int keySpacing = 6;
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
     private final RecyclerViewGestureDetector gesture;
