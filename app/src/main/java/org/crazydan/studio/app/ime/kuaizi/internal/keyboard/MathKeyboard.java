@@ -99,6 +99,10 @@ public class MathKeyboard extends BaseKeyboard {
                 play_InputtingSingleTick_Audio(key);
 
                 switch (key.getType()) {
+                    case Exit: {
+                        switchTo_Previous_Keyboard();
+                        break;
+                    }
                     case Math_Plus:
                     case Math_Minus:
                     case Math_Multiply:

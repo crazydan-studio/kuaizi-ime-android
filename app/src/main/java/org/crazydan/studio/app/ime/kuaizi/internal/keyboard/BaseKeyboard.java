@@ -382,11 +382,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         on_CtrlKey_Space_or_Enter(key);
                         return true;
                     }
-//                    case Exit: {
-//                        play_InputtingSingleTick_Audio(key);
-//                        switchTo_Previous_Keyboard();
-//                        return true;
-//                    }
                     case SwitchIME: {
                         play_InputtingSingleTick_Audio(key);
                         switch_IME();
@@ -412,11 +407,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(Type.Number);
                         return true;
                     }
-//                    case SwitchToSymbolKeyboard: {
-//                        play_InputtingSingleTick_Audio(key);
-//                        switch_Keyboard(Type.Symbol);
-//                        return true;
-//                    }
                     case SwitchToMathKeyboard: {
                         play_InputtingSingleTick_Audio(key);
                         switch_Keyboard(Type.Math);
