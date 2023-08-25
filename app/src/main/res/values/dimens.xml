@@ -18,9 +18,12 @@
 <resources>
     <dimen name="about_activity_text_size">18sp</dimen>
 
+    <dimen name="input_list_view_height">40dp</dimen>
+    <dimen name="keyboard_view_height">260dp</dimen>
+
     <dimen name="gap_input_width">4dp</dimen>
-    <dimen name="char_input_notation_text_size">12sp</dimen>
-    <dimen name="char_input_word_text_size">22sp</dimen>
+    <dimen name="char_input_notation_text_size">10sp</dimen>
+    <dimen name="char_input_word_text_size">18sp</dimen>
     <dimen name="char_key_text_size">26sp</dimen>
     <dimen name="char_key_text_size_1d">22sp</dimen>
     <dimen name="char_key_text_size_2d">18sp</dimen>

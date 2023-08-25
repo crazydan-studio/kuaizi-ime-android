@@ -56,7 +56,7 @@ public class MathKeyboard extends BaseKeyboard {
             };
 
     @Override
-    public KeyFactory getKeyFactory() {
+    protected KeyFactory doGetKeyFactory() {
         return () -> KeyTable.createMathKeys(createKeyTableConfigure(), math_keys);
     }
 

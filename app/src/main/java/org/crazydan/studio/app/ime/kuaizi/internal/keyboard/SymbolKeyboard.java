@@ -101,7 +101,7 @@ public class SymbolKeyboard extends BaseKeyboard {
             };
 
     @Override
-    public KeyFactory getKeyFactory() {
+    protected KeyFactory doGetKeyFactory() {
         return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
                                                getConfig().getSwitchFromType() == Type.Pinyin
                                                ? chinese_symbols

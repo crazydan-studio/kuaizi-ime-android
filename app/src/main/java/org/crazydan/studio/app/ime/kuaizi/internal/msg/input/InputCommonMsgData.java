@@ -27,6 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 public class InputCommonMsgData implements InputMsgData {
     private final Keyboard.KeyFactory keyFactory;
 
+    public InputCommonMsgData() {
+        this(null);
+    }
+
     public InputCommonMsgData(Keyboard.KeyFactory keyFactory) {
         this.keyFactory = keyFactory;
     }

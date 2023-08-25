@@ -35,6 +35,10 @@ public class InputTargetCursorLocatingMsgData extends InputCommonMsgData {
     /** 触发消息的按键 */
     public final Key<?> key;
 
+    public InputTargetCursorLocatingMsgData(Key<?> key, Motion anchor) {
+        this(null, key, anchor);
+    }
+
     public InputTargetCursorLocatingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
         super(keyFactory);
         this.key = key;

@@ -53,7 +53,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
             };
 
     @Override
-    public KeyFactory getKeyFactory() {
+    protected KeyFactory doGetKeyFactory() {
         return () -> KeyTable.createNumberKeys(createKeyTableConfigure(), number_keys);
     }
 }

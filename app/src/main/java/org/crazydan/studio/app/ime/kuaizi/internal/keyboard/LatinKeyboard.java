@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 public class LatinKeyboard extends DirectInputKeyboard {
 
     @Override
-    public KeyFactory getKeyFactory() {
+    protected KeyFactory doGetKeyFactory() {
         return () -> KeyTable.createLatinKeys(createKeyTableConfigure());
     }
 }

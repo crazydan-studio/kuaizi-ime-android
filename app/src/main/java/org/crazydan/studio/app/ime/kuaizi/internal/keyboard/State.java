@@ -28,14 +28,20 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 public class State {
     public final Type type;
     public final Data data;
+    public final State previous;
 
     public State(Type type) {
         this(type, null);
     }
 
     public State(Type type, Data data) {
+        this(type, data, null);
+    }
+
+    public State(Type type, Data data, State previous) {
         this.type = type;
         this.data = data;
+        this.previous = previous;
     }
 
     public enum Type {

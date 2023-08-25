@@ -60,8 +60,30 @@ public class PinyinKeyboard extends BaseKeyboard {
     private final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
 
     @Override
-    public KeyFactory getKeyFactory() {
-        return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
+    protected KeyFactory doGetKeyFactory() {
+        switch (this.state.type) {
+            case Choosing_Input_Candidate: {
+                ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
+                CharInput input = stateData.getInput();
+
+                return () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
+                                                                   input,
+                                                                   stateData.getCandidates(),
+                                                                   stateData.getPageStart(),
+                                                                   stateData.getPageSize());
+            }
+            case Choosing_SymbolEmotion: {
+                ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
+
+                return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
+                                                       stateData.getSymbols(),
+                                                       stateData.getPageStart(),
+                                                       stateData.getPageSize());
+            }
+            default: {
+                return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
+            }
+        }
     }
 
     @Override
@@ -91,22 +113,22 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case Choosing_Input_Candidate: {
-                if (key instanceof InputWordKey) {
+                if (msg == UserKeyMsg.FingerSlipping) {
+                    onInputCandidatesPageSlippingMsg(msg, key, data);
+                } else if (key instanceof InputWordKey) {
                     onInputCandidatesKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     onInputCandidatesCtrlKeyMsg(msg, (CtrlKey) key, data);
-                } else {
-                    onInputCandidatesPageSlippingMsg(msg, key, data);
                 }
                 break;
             }
             case Choosing_SymbolEmotion: {
-                if (key instanceof CharKey) {
+                if (msg == UserKeyMsg.FingerSlipping) {
+                    on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
+                } else if (key instanceof CharKey) {
                     on_ChoosingSymbolEmotion_CharKeyMsg(msg, (CharKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_ChoosingSymbolEmotion_CtrlKeyMsg(msg, (CtrlKey) key, data);
-                } else {
-                    on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
                 }
                 break;
             }
@@ -212,10 +234,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
         switch (msg) {
-            case FingerSlipping: {
-                onInputCandidatesPageSlippingMsg(msg, key, data);
-                break;
-            }
             case KeySingleTap: {
                 // 确认候选字
                 if (key.hasWord()) {
@@ -233,10 +251,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case FingerSlipping: {
-                onInputCandidatesPageSlippingMsg(msg, key, data);
-                break;
-            }
             case KeyDoubleTap: // 双击继续触发第二次单击操作，以便于支持连续点击并执行对应操作
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
@@ -303,18 +317,13 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onInputCandidatesPageSlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        switch (msg) {
-            case FingerSlipping: {
-                // 候选字翻页
-                Motion motion = ((UserFingerSlippingMsgData) data).motion;
-                boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
-                CharInput input = getInputList().getPending();
+        // 候选字翻页
+        Motion motion = ((UserFingerSlippingMsgData) data).motion;
+        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+        CharInput input = getInputList().getPending();
 
-                // Note: 在该函数中根据实际是否有上下翻页来确定是否播放翻页音效
-                onChoosingInputCandidate(input, pageUp, false);
-                break;
-            }
-        }
+        // Note: 在该函数中根据实际是否有上下翻页来确定是否播放翻页音效
+        onChoosingInputCandidate(input, pageUp, false);
     }
 
     private void doSingleKeyInputting(CharKey key) {
@@ -486,7 +495,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 allCandidates = topBestCandidates;
             }
 
-            stateData = new ChoosingInputCandidateStateData(allCandidates, pageSize);
+            stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
             this.state = new State(State.Type.Choosing_Input_Candidate, stateData);
 
             if (inputChanged) {
@@ -501,13 +510,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
         stateData.addStroke(stroke);
 
-        KeyFactory keyFactory = () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
-                                                                            input,
-                                                                            stateData.getCandidates(),
-                                                                            stateData.getPageStart(),
-                                                                            stateData.getPageSize());
-        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, null);
-
+        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), null);
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);
     }
 
@@ -655,17 +658,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         ChoosingSymbolEmotionStateData stateData = new ChoosingSymbolEmotionStateData(KeyTable.getSymbolKeysPageSize());
         stateData.setSymbols(SymbolKeyboard.chinese_symbols);
 
-        this.state = new State(State.Type.Choosing_SymbolEmotion, stateData);
+        this.state = new State(State.Type.Choosing_SymbolEmotion, stateData, this.state);
 
         do_Update_SymbolEmotion_Keys(false, false);
     }
 
     private void on_ChoosingSymbolEmotion_CharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         switch (msg) {
-            case FingerSlipping: {
-                on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
-                break;
-            }
             case KeySingleTap: {
                 // 单字符输入，并切回原键盘
                 play_InputtingSingleTick_Audio(key);
@@ -689,20 +688,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         switch (msg) {
-            case FingerSlipping: {
-                on_ChoosingSymbolEmotion_PageSlippingMsg(msg, key, data);
-                break;
-            }
             case KeySingleTap: {
+                play_InputtingSingleTick_Audio(key);
+
                 switch (key.getType()) {
                     case Exit: {
-                        play_InputtingSingleTick_Audio(key);
-                        end_InputChars_Inputting();
+                        back_To_Previous_State();
                         break;
                     }
                     case ToggleSymbol_Locale_Zh_and_En: {
-                        play_InputtingSingleTick_Audio(key);
-
                         ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
                         if (stateData.getSymbols() == SymbolKeyboard.chinese_symbols) {
                             stateData.setSymbols(SymbolKeyboard.latin_symbols);
@@ -714,8 +708,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                         break;
                     }
                     case ToggleSymbol_Emotion: {
-                        play_InputtingSingleTick_Audio(key);
-
                         ChoosingSymbolEmotionStateData stateData = (ChoosingSymbolEmotionStateData) this.state.data;
                         Symbol[] symbols = this.pinyinDict.getEmotions()
                                                           .stream()
@@ -747,12 +739,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        KeyFactory keyFactory = () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
-                                                                stateData.getSymbols(),
-                                                                stateData.getPageStart(),
-                                                                stateData.getPageSize());
-
-        fireInputMsg(InputMsg.SymbolEmotion_Choosing, new InputCommonMsgData(keyFactory));
+        fireInputMsg(InputMsg.SymbolEmotion_Choosing, new InputCommonMsgData(getKeyFactory()));
     }
 
     private void do_Single_SymbolEmotion_Key_Inputting(CharKey key, boolean singleInputting) {
@@ -791,15 +778,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_ChoosingSymbolEmotion_PageSlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        switch (msg) {
-            case FingerSlipping: {
-                Motion motion = ((UserFingerSlippingMsgData) data).motion;
-                boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+        Motion motion = ((UserFingerSlippingMsgData) data).motion;
+        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
 
-                do_Update_SymbolEmotion_Keys(true, pageUp);
-                break;
-            }
-        }
+        do_Update_SymbolEmotion_Keys(true, pageUp);
     }
     // >>>>>>>>>>>
 }

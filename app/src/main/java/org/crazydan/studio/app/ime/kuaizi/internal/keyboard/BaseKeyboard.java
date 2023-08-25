@@ -106,6 +106,18 @@ public abstract class BaseKeyboard implements Keyboard {
         listeners.forEach(listener -> listener.onInputMsg(msg, data));
     }
 
+    @Override
+    public KeyFactory getKeyFactory() {
+        switch (this.state.type) {
+            case InputTarget_Cursor_Locating: {
+                return () -> KeyTable.createLocatorKeys(createKeyTableConfigure());
+            }
+        }
+        return doGetKeyFactory();
+    }
+
+    protected abstract KeyFactory doGetKeyFactory();
+
     protected KeyTable.Config createKeyTableConfigure() {
         return new KeyTable.Config(getConfig(), !getInputList().isEmpty());
     }
@@ -138,6 +150,16 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void end_InputChars_Inputting() {
         this.state = new State(State.Type.Input_Waiting);
 
+        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+    }
+
+    /** 回到前序状态 */
+    protected void back_To_Previous_State() {
+        if (this.state.previous == null) {
+            return;
+        }
+
+        this.state = this.state.previous;
         fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
     }
 
@@ -297,7 +319,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // 单次操作，直接重置为待输入状态
         reset();
 
-        fireInputMsg(InputMsg.IME_Switching, new InputCommonMsgData(null));
+        fireInputMsg(InputMsg.IME_Switching, new InputCommonMsgData());
     }
 
     /** 播放输入单击音效 */
@@ -428,7 +450,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     play_InputtingSingleTick_Audio(key);
 
                     Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
-                    InputMsgData idata = new InputTargetCursorLocatingMsgData(null, key, anchor);
+                    InputMsgData idata = new InputTargetCursorLocatingMsgData(key, anchor);
                     fireInputMsg(InputMsg.InputTarget_Cursor_Locating, idata);
 
                     return true;
@@ -446,21 +468,21 @@ public abstract class BaseKeyboard implements Keyboard {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
-                    // 点击 退出 按钮，则退回到输入状态
+                    // 点击 退出 按钮，则退回到前序状态
                     case Exit:
                         play_InputtingSingleTick_Audio(key);
 
-                        end_InputChars_Inputting();
+                        back_To_Previous_State();
                         break;
                     case Backspace:
                         play_InputtingSingleTick_Audio(key);
 
-                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(null));
+                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData());
                         break;
                     case Enter:
                         play_InputtingSingleTick_Audio(key);
 
-                        InputMsgData msgData = new InputListCommittingMsgData(null, "\n");
+                        InputMsgData msgData = new InputListCommittingMsgData("\n");
                         fireInputMsg(InputMsg.InputList_Committing, msgData);
                         break;
                     case Redo:
@@ -523,20 +545,18 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void do_InputTarget_Cursor_Locating(CtrlKey key, Motion motion) {
-        KeyFactory keyFactory = null;
         LocatingInputCursorStateData stateData;
 
         if (this.state.type != State.Type.InputTarget_Cursor_Locating) {
             stateData = new LocatingInputCursorStateData();
-            keyFactory = () -> KeyTable.createLocatorKeys(createKeyTableConfigure());
 
-            this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData);
+            this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData, this.state);
         } else {
             stateData = (LocatingInputCursorStateData) this.state.data;
             stateData.updateLocator(motion);
         }
 
-        InputMsgData data = new InputTargetCursorLocatingMsgData(keyFactory, key, stateData.getLocator());
+        InputMsgData data = new InputTargetCursorLocatingMsgData(getKeyFactory(), key, stateData.getLocator());
         fireInputMsg(InputMsg.InputTarget_Cursor_Locating, data);
     }
 
@@ -544,32 +564,32 @@ public abstract class BaseKeyboard implements Keyboard {
         LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
         stateData.updateSelector(motion);
 
-        InputMsgData data = new InputTargetCursorLocatingMsgData(null, key, stateData.getSelector());
+        InputMsgData data = new InputTargetCursorLocatingMsgData(key, stateData.getSelector());
         fireInputMsg(InputMsg.InputTarget_Selecting, data);
     }
 
     private void do_InputTarget_Copying() {
-        InputMsgData data = new InputCommonMsgData(null);
+        InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Copying, data);
     }
 
     private void do_InputTarget_Pasting() {
-        InputMsgData data = new InputCommonMsgData(null);
+        InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Pasting, data);
     }
 
     private void do_InputTarget_Cutting() {
-        InputMsgData data = new InputCommonMsgData(null);
+        InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Cutting, data);
     }
 
     private void do_InputTarget_Undoing() {
-        InputMsgData data = new InputCommonMsgData(null);
+        InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Undoing, data);
     }
 
     private void do_InputTarget_Redoing() {
-        InputMsgData data = new InputCommonMsgData(null);
+        InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Redoing, data);
     }
     // >>>>>>>>

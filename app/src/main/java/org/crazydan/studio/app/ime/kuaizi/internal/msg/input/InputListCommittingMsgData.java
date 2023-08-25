@@ -29,6 +29,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 public class InputListCommittingMsgData extends InputCommonMsgData {
     public final CharSequence text;
 
+    public InputListCommittingMsgData(CharSequence text) {
+        this(null, text);
+    }
+
     public InputListCommittingMsgData(Keyboard.KeyFactory keyFactory, CharSequence text) {
         super(keyFactory);
         this.text = text;

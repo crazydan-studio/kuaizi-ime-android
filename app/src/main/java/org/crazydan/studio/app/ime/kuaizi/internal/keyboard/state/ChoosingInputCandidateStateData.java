@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
@@ -31,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @date 2023-07-10
  */
 public class ChoosingInputCandidateStateData implements State.Data {
+    private final CharInput input;
     private final List<InputWord> candidates;
     private final List<String> strokes;
 
@@ -42,12 +44,17 @@ public class ChoosingInputCandidateStateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingInputCandidateStateData(List<InputWord> candidates, int pageSize) {
+    public ChoosingInputCandidateStateData(CharInput input, List<InputWord> candidates, int pageSize) {
+        this.input = input;
         this.candidates = candidates;
         this.strokes = new ArrayList<>();
 
         this.pageSize = pageSize;
         this.dataSize = candidates.size();
+    }
+
+    public CharInput getInput() {
+        return this.input;
     }
 
     public List<InputWord> getCandidates() {
