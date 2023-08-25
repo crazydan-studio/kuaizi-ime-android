@@ -44,7 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.utils.ApiUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
@@ -259,15 +259,16 @@ public class PinyinDictDB {
     public List<String> getEmojis() {
         SQLiteDatabase db = getAppDB();
 
-        String[] unicodeVersion = new String[] { ApiUtils.supportedUnicodeVersion() };
-
         return doSQLiteQuery(db, "meta_emoji", new String[] {
                                      "id_", "value_"
                              }, //
-                             "unicode_version_ <= ?", //
-                             unicodeVersion, //
+                             null, //
+                             null, //
                              "id_ asc", //
-                             (cursor) -> cursor.getString(1));
+                             (cursor) -> {
+                                 String value = cursor.getString(1);
+                                 return CharUtils.isPrintable(value) ? value : null;
+                             });
     }
 
     /** 保存已使用的短语：异步处理 */
@@ -620,7 +621,10 @@ public class PinyinDictDB {
             List<T> list = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext()) {
                 T data = creator.apply(cursor);
-                list.add(data);
+
+                if (data != null) {
+                    list.add(data);
+                }
             }
 
             return list;

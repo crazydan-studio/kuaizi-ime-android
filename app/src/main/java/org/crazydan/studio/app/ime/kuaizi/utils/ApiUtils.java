@@ -54,7 +54,7 @@ public class ApiUtils {
                 version = "10.0";
                 break;
             case 29:
-                version = "12.0";
+                version = "11.0";
                 break;
             case 30:
             case 31:

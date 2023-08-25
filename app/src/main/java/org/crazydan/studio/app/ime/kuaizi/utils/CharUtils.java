@@ -20,6 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Paint;
+import android.os.Build;
+
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-25
@@ -56,5 +59,16 @@ public class CharUtils {
             }
         }
         return sb.toString();
+    }
+
+    public static boolean isPrintable(String s) {
+        boolean hasGlyph = true;
+
+        // https://stackoverflow.com/questions/11815458/check-if-custom-font-can-display-character#answer-47711610
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Paint paint = new Paint();
+            hasGlyph = paint.hasGlyph(s);
+        }
+        return hasGlyph;
     }
 }
