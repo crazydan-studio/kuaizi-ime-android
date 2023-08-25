@@ -44,6 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.utils.ApiUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
@@ -254,15 +255,17 @@ public class PinyinDictDB {
         return userBest;
     }
 
-    /** 获取表情 */
-    public List<String> getEmotions() {
+    /** 获取表情符号 */
+    public List<String> getEmojis() {
         SQLiteDatabase db = getAppDB();
 
-        return doSQLiteQuery(db, "meta_emotion", new String[] {
+        String[] unicodeVersion = new String[] { ApiUtils.supportedUnicodeVersion() };
+
+        return doSQLiteQuery(db, "meta_emoji", new String[] {
                                      "id_", "value_"
                              }, //
-                             null, //
-                             null, //
+                             "unicode_version_ <= ?", //
+                             unicodeVersion, //
                              "id_ asc", //
                              (cursor) -> cursor.getString(1));
     }

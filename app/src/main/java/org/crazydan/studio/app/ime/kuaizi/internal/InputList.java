@@ -387,7 +387,7 @@ public class InputList {
         }
 
         Input before = i > 1 ? this.inputs.get(i - 2) : null;
-        return before != null && (before.isPinyin() || before.isEmotion());
+        return before != null && (before.isPinyin() || before.isEmoji());
     }
 
     /** 指定位置的输入是否需要后续空格 */
@@ -398,7 +398,7 @@ public class InputList {
         }
 
         Input after = i < this.inputs.size() - 2 ? this.inputs.get(i + 2) : null;
-        return after != null && (after.isPinyin() || after.isEmotion());
+        return after != null && (after.isPinyin() || after.isEmoji());
     }
 
     /** 获取指定输入的位置 */

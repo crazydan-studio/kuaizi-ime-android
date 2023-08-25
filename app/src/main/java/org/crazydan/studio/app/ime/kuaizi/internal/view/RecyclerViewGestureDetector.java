@@ -214,6 +214,8 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
         if (latestData != null //
             && data.timestamp - latestData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS) {
+            this.latestSingleTap = null; // 避免连续触发双击
+
             triggerListeners(GestureType.DoubleTap, data);
         } else {
             triggerListeners(GestureType.SingleTap, data);

@@ -37,7 +37,7 @@ public interface Input {
     boolean isSymbol();
 
     /** 是否为表情符号 */
-    boolean isEmotion();
+    boolean isEmoji();
 
     /** 是否为空输入 */
     boolean isEmpty();

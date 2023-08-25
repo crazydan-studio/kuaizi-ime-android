@@ -57,5 +57,5 @@ public enum InputMsg {
     HandMode_Switching,
 
     /** 符号（标点、表情）选择中 */
-    SymbolEmotion_Choosing,
+    SymbolEmoji_Choosing,
 }

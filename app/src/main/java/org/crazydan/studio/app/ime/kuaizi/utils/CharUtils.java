@@ -43,4 +43,18 @@ public class CharUtils {
         }
         return chars.toArray(new String[0]);
     }
+
+    public static String fromUnicode(String unicode) {
+        StringBuilder sb = new StringBuilder();
+
+        // https://medium.com/swlh/how-to-easily-handle-emoji-unicode-in-java-ff905f264f98
+        String[] codes = unicode.replace("U+", "0x").replace("\\u", "0x").split("\\s+");
+        for (String code : codes) {
+            int intCode = Integer.decode(code.trim());
+            for (Character ch : Character.toChars(intCode)) {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+    }
 }

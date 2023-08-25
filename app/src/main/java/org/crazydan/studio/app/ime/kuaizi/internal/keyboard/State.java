@@ -57,7 +57,7 @@ public class State {
         Choosing_Input_Candidate,
 
         /** 符号（标点、表情）选择中 */
-        Choosing_SymbolEmotion,
+        Choosing_SymbolEmoji,
     }
 
     public interface Data {}

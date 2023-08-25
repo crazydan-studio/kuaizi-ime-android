@@ -103,8 +103,8 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     @Override
-    public boolean isEmotion() {
-        return this.type == Type.Emotion;
+    public boolean isEmoji() {
+        return this.type == Type.Emoji;
     }
 
     /** 是否为标点 */
@@ -165,6 +165,6 @@ public class CharKey extends BaseKey<CharKey> {
         /** 双标点符号按键：括号、引号等配对标点 */
         DoubleSymbol,
         /** 表情符号按键 */
-        Emotion,
+        Emoji,
     }
 }

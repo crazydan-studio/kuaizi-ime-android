@@ -21,12 +21,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.Symbol;
 
 /**
- * {@link State.Type#Choosing_SymbolEmotion}的状态数据
+ * {@link State.Type#Choosing_SymbolEmoji}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-24
  */
-public class ChoosingSymbolEmotionStateData implements State.Data {
+public class ChoosingSymbolEmojiStateData implements State.Data {
     private Symbol[] symbols;
 
     /** 分页大小 */
@@ -34,7 +34,7 @@ public class ChoosingSymbolEmotionStateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingSymbolEmotionStateData(int pageSize) {
+    public ChoosingSymbolEmojiStateData(int pageSize) {
         this.pageSize = pageSize;
     }
 

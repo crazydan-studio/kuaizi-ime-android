@@ -49,7 +49,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public boolean isEmotion() {
+    public boolean isEmoji() {
         return false;
     }
 

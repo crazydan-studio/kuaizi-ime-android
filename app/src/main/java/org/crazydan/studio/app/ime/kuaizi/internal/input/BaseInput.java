@@ -65,9 +65,9 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public boolean isEmotion() {
+    public boolean isEmoji() {
         for (Key<?> key : this.keys) {
-            if (!key.isEmotion()) {
+            if (!key.isEmoji()) {
                 return false;
             }
         }

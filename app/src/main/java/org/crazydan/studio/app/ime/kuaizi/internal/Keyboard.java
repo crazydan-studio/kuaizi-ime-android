@@ -71,7 +71,7 @@ public interface Keyboard extends UserInputMsgListener {
         /** 标点符号键盘：各类符号可切换 */
         Symbol,
         /** 表情符号键盘 */
-        Emotion,
+        Emoji,
     }
 
     /** 键盘布局方向 */
