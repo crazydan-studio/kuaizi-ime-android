@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -150,7 +151,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // 本地更新用户选字频率
         List<List<InputWord>> phrases = getInputList().getPinyinPhraseWords();
-        this.pinyinDict.saveUsedPhrases(phrases);
+        List<InputWord> emojis = getInputList().getEmojis();
+
+        this.pinyinDict.saveUsedData(phrases, emojis);
     }
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
@@ -606,7 +609,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-        return best.words.stream().map(candidateMap::get).collect(Collectors.toList());
+        return best.words.stream().map(candidateMap::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /**
@@ -703,17 +706,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                         } else {
                             stateData.setSymbols(SymbolKeyboard.chinese_symbols);
                         }
-
-                        do_Update_SymbolEmoji_Keys(false, false);
-                        break;
-                    }
-                    case ToggleSymbol_Emoji: {
-                        ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
-                        Symbol[] symbols = this.pinyinDict.getEmojis()
-                                                          .stream()
-                                                          .map(Symbol::single)
-                                                          .toArray(Symbol[]::new);
-                        stateData.setSymbols(symbols);
 
                         do_Update_SymbolEmoji_Keys(false, false);
                         break;

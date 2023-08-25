@@ -51,7 +51,7 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isPinyin() {
-        return false;
+        return this.word instanceof PinyinInputWord;
     }
 
     @Override
@@ -138,8 +138,8 @@ public abstract class BaseInput implements Input {
         return this.word;
     }
 
-    public void setWord(InputWord candidate) {
-        this.word = candidate;
+    public void setWord(InputWord word) {
+        this.word = word;
     }
 
     @Override

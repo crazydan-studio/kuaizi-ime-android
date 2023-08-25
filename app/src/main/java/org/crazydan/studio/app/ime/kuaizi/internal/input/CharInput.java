@@ -41,12 +41,6 @@ public class CharInput extends BaseInput {
         return input;
     }
 
-    @Override
-    public boolean isPinyin() {
-        // TODO 调整为更准确的方式：当前仅拼音存在候选字
-        return hasWord();
-    }
-
     /** 是否为拼音 平/翘舌 开头 */
     public boolean is_Pinyin_SCZ_Starting() {
         List<String> chars = getChars();

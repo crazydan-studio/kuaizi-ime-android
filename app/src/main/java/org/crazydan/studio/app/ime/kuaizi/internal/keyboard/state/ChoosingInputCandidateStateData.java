@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
@@ -125,6 +126,6 @@ public class ChoosingInputCandidateStateData implements State.Data {
         }
 
         String strokeOrder = String.join("", this.strokes);
-        return word.getStrokeOrder().contains(strokeOrder);
+        return word instanceof PinyinInputWord && ((PinyinInputWord) word).getStrokeOrder().contains(strokeOrder);
     }
 }

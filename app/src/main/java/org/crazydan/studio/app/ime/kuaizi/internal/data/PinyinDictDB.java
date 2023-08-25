@@ -44,6 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
@@ -212,12 +213,12 @@ public class PinyinDictDB {
                                  boolean traditional = cursor.getInt(3) > 0;
                                  String strokeOrder = cursor.getString(4);
 
-                                 return new InputWord(oid,
-                                                      inputPinyinCharsId,
-                                                      word,
-                                                      wordPinyin,
-                                                      traditional,
-                                                      strokeOrder);
+                                 return new PinyinInputWord(oid,
+                                                            inputPinyinCharsId,
+                                                            word,
+                                                            wordPinyin,
+                                                            traditional,
+                                                            strokeOrder);
                              });
     }
 
@@ -256,28 +257,36 @@ public class PinyinDictDB {
     }
 
     /** 获取表情符号 */
-    public List<String> getEmojis() {
+    public List<InputWord> getEmojis() {
         SQLiteDatabase db = getAppDB();
 
-        return doSQLiteQuery(db, "meta_emoji", new String[] {
-                                     "id_", "value_"
+        return doSQLiteQuery(db, "group_emoji", new String[] {
+                                     "id_", "value_", "group_"
                              }, //
                              null, //
                              null, //
                              "id_ asc", //
                              (cursor) -> {
+                                 String oid = cursor.getString(0);
                                  String value = cursor.getString(1);
-                                 return CharUtils.isPrintable(value) ? value : null;
+
+                                 if (CharUtils.isPrintable(value)) {
+                                     return new InputWord(oid, value, null);
+                                 }
+                                 return null;
                              });
     }
 
-    /** 保存已使用的短语：异步处理 */
-    public void saveUsedPhrases(List<List<InputWord>> phrases) {
-        if (phrases == null || phrases.isEmpty()) {
+    /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
+    public void saveUsedData(List<List<InputWord>> phrases, List<InputWord> emojis) {
+        if (phrases.isEmpty() && emojis.isEmpty()) {
             return;
         }
 
-        this.executor.execute(() -> phrases.forEach(this::doSaveUsedPhrase));
+        this.executor.execute(() -> {
+            phrases.forEach(this::doSaveUsedPhrase);
+            doSaveUsedEmojis(emojis);
+        });
     }
 
     private BestCandidateWords findTopBestPinyinWordsFromUserDB(
@@ -315,7 +324,9 @@ public class PinyinDictDB {
         Collections.reverse(pinyinWords);
 
         // 匹配短语中的常用字：倒序分析
-        List<String> pinyinCharsIdList = pinyinWords.stream().map(InputWord::getCharsId).collect(Collectors.toList());
+        List<String> pinyinCharsIdList = pinyinWords.stream()
+                                                    .map((word) -> ((PinyinInputWord) word).getCharsId())
+                                                    .collect(Collectors.toList());
         pinyinCharsIdList.add(0, inputPinyinCharsId);
 
         // 已确认的拼音字 id
@@ -401,7 +412,7 @@ public class PinyinDictDB {
     private void doSaveUsedPhrase(List<InputWord> phrase) {
         SQLiteDatabase db = getUserDB();
 
-        doSaveWordInUsedPhrase(phrase);
+        doSaveUsedWordInPhrase(phrase);
 
         if (phrase.size() < 2) {
             return;
@@ -415,36 +426,31 @@ public class PinyinDictDB {
         }
         String phraseValue = String.valueOf(sum) + phrase.size();
 
-        Map<String, Integer> existUsedPhraseMap = new HashMap<>();
+        Map<String, Integer> existDataMap = new HashMap<>();
         doSQLiteQuery(db, "used_phrase", new String[] {
                               "value_", "weight_"
                       }, //
                       "value_ = ?", new String[] { phraseValue }, //
                       (cursor) -> {
-                          existUsedPhraseMap.put(cursor.getString(0), cursor.getInt(1));
+                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
                           return null;
                       });
 
-        boolean phraseNotExist = existUsedPhraseMap.isEmpty();
+        boolean phraseNotExist = existDataMap.isEmpty();
 
-        db.beginTransaction();
-        try {
-            SQLiteStatement insert = db.compileStatement("insert into used_phrase (weight_, value_) values (?, ?)");
-            SQLiteStatement update = db.compileStatement("update used_phrase set weight_ = ? where value_ = ?");
-
-            int weight = existUsedPhraseMap.getOrDefault(phraseValue, 0) + 1;
-            if (phraseNotExist) {
-                insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
-                insert.execute();
-            } else {
-                update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
-                update.execute();
-            }
-
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
+        doSQLiteSave(db,
+                     "insert into used_phrase (weight_, value_) values (?, ?)",
+                     "update used_phrase set weight_ = ? where value_ = ?",
+                     (insert, update) -> {
+                         int weight = existDataMap.getOrDefault(phraseValue, 0) + 1;
+                         if (phraseNotExist) {
+                             insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
+                             insert.execute();
+                         } else {
+                             update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
+                             update.execute();
+                         }
+                     });
 
         if (!phraseNotExist) {
             return;
@@ -457,75 +463,101 @@ public class PinyinDictDB {
                                             (cursor) -> cursor.getString(0));
         String phraseId = idList.get(0);
 
-        db.beginTransaction();
-        try {
-            SQLiteStatement insert = db.compileStatement("insert into"
-                                                         + " used_phrase_pinyin_word"
-                                                         + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
-                                                         + " values (?, ?, ?, ?)");
+        doSQLiteSave(db,
+                     "insert into"
+                     + " used_phrase_pinyin_word"
+                     + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
+                     + " values (?, ?, ?, ?)",
+                     null,
+                     (insert, update) -> {
+                         for (int i = 0; i < phrase.size(); i++) {
+                             InputWord word = phrase.get(i);
 
-            for (int i = 0; i < phrase.size(); i++) {
-                InputWord word = phrase.get(i);
-
-                insert.bindAllArgsAsStrings(new String[] {
-                        phraseId, word.getOid(), word.getCharsId(), String.valueOf(i)
-                });
-                insert.execute();
-            }
-
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
+                             insert.bindAllArgsAsStrings(new String[] {
+                                     phraseId, word.getOid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
+                             });
+                             insert.execute();
+                         }
+                     });
     }
 
     /** 保存短语中字的使用频率等信息 */
-    private void doSaveWordInUsedPhrase(List<InputWord> phrase) {
+    private void doSaveUsedWordInPhrase(List<InputWord> phrase) {
         SQLiteDatabase db = getUserDB();
 
         Map<String, String> idAndTargetCharsIdMap = phrase.stream()
                                                           .collect(Collectors.toMap(InputWord::getOid,
-                                                                                    InputWord::getCharsId,
+                                                                                    (word) -> ((PinyinInputWord) word).getCharsId(),
                                                                                     (v1, v2) -> v1));
 
-        Map<String, Integer> existUsedPinyinWordMap = new HashMap<>();
+        Map<String, Integer> existDataMap = new HashMap<>();
         doSQLiteQuery(db,
                       "used_pinyin_word",
-                      new String[] {
-                              "id_", "target_chars_id_", "weight_"
-                      },
+                      new String[] { "id_", "weight_" },
                       "id_ in (" + idAndTargetCharsIdMap.keySet()
                                                         .stream()
                                                         .map((id) -> "?")
                                                         .collect(Collectors.joining(", ")) + ")",
                       idAndTargetCharsIdMap.keySet().toArray(new String[0]),
                       (cursor) -> {
-                          existUsedPinyinWordMap.put(cursor.getString(0), cursor.getInt(2));
+                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
                           return null;
                       });
 
-        db.beginTransaction();
-        try {
-            SQLiteStatement insert = db.compileStatement(
-                    "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)");
-            SQLiteStatement update = db.compileStatement("update used_pinyin_word set weight_ = ? where id_ = ?");
+        doSQLiteSave(db,
+                     "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
+                     "update used_pinyin_word set weight_ = ? where id_ = ?",
+                     (insert, update) -> {
+                         idAndTargetCharsIdMap.forEach((id, charsId) -> {
+                             int weight = existDataMap.getOrDefault(id, 0) + 1;
 
-            idAndTargetCharsIdMap.forEach((id, charsId) -> {
-                int weight = existUsedPinyinWordMap.getOrDefault(id, 0) + 1;
+                             if (existDataMap.containsKey(id)) {
+                                 update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
+                                 update.execute();
+                             } else {
+                                 insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id, charsId });
+                                 insert.execute();
+                             }
+                         });
+                     });
+    }
 
-                if (existUsedPinyinWordMap.containsKey(id)) {
-                    update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
-                    update.execute();
-                } else {
-                    insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id, charsId });
-                    insert.execute();
-                }
-            });
-
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
+    /** 保存短语中字的使用频率等信息 */
+    private void doSaveUsedEmojis(List<InputWord> emojis) {
+        SQLiteDatabase db = getUserDB();
+        if (emojis.isEmpty()) {
+            return;
         }
+
+        Set<String> dataIdSet = emojis.stream().map(InputWord::getOid).collect(Collectors.toSet());
+
+        Map<String, Integer> existDataMap = new HashMap<>();
+        doSQLiteQuery(db,
+                      "used_emoji",
+                      new String[] { "id_", "weight_" },
+                      "id_ in (" + dataIdSet.stream().map((id) -> "?").collect(Collectors.joining(", ")) + ")",
+                      dataIdSet.toArray(new String[0]),
+                      (cursor) -> {
+                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
+                          return null;
+                      });
+
+        doSQLiteSave(db,
+                     "insert into used_emoji (weight_, id_) values (?, ?)",
+                     "update used_emoji set weight_ = ? where id_ = ?",
+                     (insert, update) -> {
+                         dataIdSet.forEach((id) -> {
+                             int weight = existDataMap.getOrDefault(id, 0) + 1;
+
+                             if (existDataMap.containsKey(id)) {
+                                 update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
+                                 update.execute();
+                             } else {
+                                 insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
+                                 insert.execute();
+                             }
+                         });
+                     });
     }
 
     private String getPinyinCharsId(CharInput input) {
@@ -628,6 +660,20 @@ public class PinyinDictDB {
             }
 
             return list;
+        }
+    }
+
+    private void doSQLiteSave(SQLiteDatabase db, String insertSQL, String updateSQL, SQLiteSaver saver) {
+        db.beginTransaction();
+        try {
+            SQLiteStatement insert = insertSQL != null ? db.compileStatement(insertSQL) : null;
+            SQLiteStatement update = updateSQL != null ? db.compileStatement(updateSQL) : null;
+
+            saver.save(insert, update);
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 
@@ -749,6 +795,15 @@ public class PinyinDictDB {
                 + "FROM\n"
                 + "    used_phrase phrase_\n"
                 + "    INNER JOIN used_phrase_pinyin_word lnk_ on lnk_.source_id_ = phrase_.id_;",
+                //
+                "CREATE TABLE\n" //
+                + "    IF NOT EXISTS used_emoji (\n" //
+                + "        id_ INTEGER NOT NULL PRIMARY KEY,\n" //
+                // -- 按使用频率等排序的权重
+                + "        weight_ INTEGER DEFAULT 0,\n" //
+                + "        UNIQUE (value_)\n" //
+                + "    );",
+                "CREATE INDEX IF NOT EXISTS idx_used_emoji ON used_emoji (weight_);",
                 };
 
         for (String clause : clauses) {
@@ -780,5 +835,9 @@ public class PinyinDictDB {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private interface SQLiteSaver {
+        void save(SQLiteStatement insert, SQLiteStatement update);
     }
 }

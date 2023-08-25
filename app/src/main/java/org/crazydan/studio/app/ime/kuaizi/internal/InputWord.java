@@ -30,36 +30,21 @@ import androidx.annotation.NonNull;
 public class InputWord {
     /** 查询表的行 id */
     private final String oid;
-    /** 字符组合 id，一般为拼音字母组合 id */
-    private final String charsId;
 
     /** 是否已确认 */
     private boolean confirmed;
 
     private final String value;
     private final String notation;
-    /** 是否繁体 */
-    private final boolean traditional;
-    /** 笔画顺序 */
-    private final String strokeOrder;
 
-    public InputWord(
-            String oid, String charsId, String value, String notation, boolean traditional, String strokeOrder
-    ) {
+    public InputWord(String oid, String value, String notation) {
         this.oid = oid;
-        this.charsId = charsId;
         this.value = value;
-        this.notation = notation;
-        this.traditional = traditional;
-        this.strokeOrder = strokeOrder != null ? strokeOrder : "";
+        this.notation = notation != null ? notation : "";
     }
 
     public String getOid() {
         return this.oid;
-    }
-
-    public String getCharsId() {
-        return this.charsId;
     }
 
     public boolean isConfirmed() {
@@ -76,14 +61,6 @@ public class InputWord {
 
     public String getNotation() {
         return this.notation;
-    }
-
-    public boolean isTraditional() {
-        return this.traditional;
-    }
-
-    public String getStrokeOrder() {
-        return this.strokeOrder;
     }
 
     @NonNull

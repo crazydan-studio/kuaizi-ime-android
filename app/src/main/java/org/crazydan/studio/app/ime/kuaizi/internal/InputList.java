@@ -288,6 +288,11 @@ public class InputList {
         return this.inputs;
     }
 
+    /** 获取全部的表情符号 */
+    public List<InputWord> getEmojis() {
+        return getInputs().stream().filter(Input::isEmoji).map(Input::getWord).collect(Collectors.toList());
+    }
+
     /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
     public List<List<InputWord>> getPinyinPhraseWords() {
         return getPinyinPhraseWordsBefore(null);
@@ -319,7 +324,7 @@ public class InputList {
                 break;
             }
 
-            if (input.isPinyin() && input.hasWord()) {
+            if (input.isPinyin()) {
                 phrase.add((CharInput) input);
             } else if (!(input instanceof GapInput)) {
                 if (!phrase.isEmpty()) {
