@@ -257,24 +257,47 @@ public class PinyinDictDB {
     }
 
     /** 获取表情符号 */
-    public List<InputWord> getEmojis() {
-        SQLiteDatabase db = getAppDB();
+    public Emojis getEmojis(int top) {
+        SQLiteDatabase userDB = getUserDB();
+        SQLiteDatabase appDB = getAppDB();
 
-        return doSQLiteQuery(db, "group_emoji", new String[] {
-                                     "id_", "value_", "group_"
-                             }, //
-                             null, //
-                             null, //
-                             "id_ asc", //
-                             (cursor) -> {
-                                 String oid = cursor.getString(0);
-                                 String value = cursor.getString(1);
+        Map<String, List<InputWord>> groups = new LinkedHashMap<>();
+        // 高优先级的分组先占位
+        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>());
 
-                                 if (CharUtils.isPrintable(value)) {
-                                     return new InputWord(oid, value, null);
-                                 }
-                                 return null;
-                             });
+        Map<String, InputWord> idAndDataMap = new HashMap<>();
+        doSQLiteQuery(appDB, "group_emoji", new String[] {
+                              "id_", "value_", "group_"
+                      }, //
+                      null, //
+                      null, //
+                      "group_ asc, id_ asc", //
+                      (cursor) -> {
+                          String oid = cursor.getString(0);
+                          String value = cursor.getString(1);
+                          String group = cursor.getString(2);
+
+                          if (CharUtils.isPrintable(value)) {
+                              InputWord emoji = new InputWord(oid, value);
+
+                              idAndDataMap.put(oid, emoji);
+                              groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
+                          }
+
+                          return null;
+                      });
+
+        List<InputWord> used = doSQLiteQuery(userDB, "used_emoji", new String[] {
+                                                     "id_"
+                                             }, //
+                                             null, //
+                                             null, //
+                                             "weight_ desc", //
+                                             String.valueOf(top), //
+                                             (cursor) -> idAndDataMap.get(cursor.getString(0)));
+        groups.put(Emojis.GROUP_GENERAL, used);
+
+        return new Emojis(groups);
     }
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
@@ -800,8 +823,7 @@ public class PinyinDictDB {
                 + "    IF NOT EXISTS used_emoji (\n" //
                 + "        id_ INTEGER NOT NULL PRIMARY KEY,\n" //
                 // -- 按使用频率等排序的权重
-                + "        weight_ INTEGER DEFAULT 0,\n" //
-                + "        UNIQUE (value_)\n" //
+                + "        weight_ INTEGER DEFAULT 0\n" //
                 + "    );",
                 "CREATE INDEX IF NOT EXISTS idx_used_emoji ON used_emoji (weight_);",
                 };

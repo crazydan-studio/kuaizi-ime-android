@@ -37,10 +37,14 @@ public class InputWord {
     private final String value;
     private final String notation;
 
+    public InputWord(String oid, String value) {
+        this(oid, value, null);
+    }
+
     public InputWord(String oid, String value, String notation) {
         this.oid = oid;
         this.value = value;
-        this.notation = notation != null ? notation : "";
+        this.notation = notation;
     }
 
     public String getOid() {
@@ -66,7 +70,7 @@ public class InputWord {
     @NonNull
     @Override
     public String toString() {
-        return this.value + '(' + this.notation + ')';
+        return this.value + '(' + (this.notation != null ? this.notation : "") + ')';
     }
 
     @Override
@@ -79,7 +83,7 @@ public class InputWord {
         }
         // Note: 不处理与视图更细相关的变更判断，如有必要则在视图对象中处理
         InputWord that = (InputWord) o;
-        return this.value.equals(that.value) && this.notation.equals(that.notation);
+        return this.value.equals(that.value) && Objects.equals(this.notation, that.notation);
     }
 
     @Override

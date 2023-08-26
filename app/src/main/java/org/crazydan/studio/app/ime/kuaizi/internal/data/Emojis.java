@@ -27,11 +27,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
  * @date 2023-08-26
  */
 public class Emojis {
-    public final List<InputWord> used;
-    public final Map<String, InputWord> grouped;
+    public static final String GROUP_GENERAL = "常用";
 
-    public Emojis(List<InputWord> used, Map<String, InputWord> grouped) {
-        this.used = used;
-        this.grouped = grouped;
+    public final Map<String, List<InputWord>> groups;
+
+    public Emojis(Map<String, List<InputWord>> groups) {
+        this.groups = groups;
     }
 }

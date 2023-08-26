@@ -191,6 +191,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         ToggleSymbol_Locale_Zh_and_En,
         /** 切换标点和表情符号 */
         ToggleSymbol_Emoji,
+        /** 切换表情符号分组 */
+        ToggleEmoji_Group,
 
         /** 数学 = */
         Math_Equal,

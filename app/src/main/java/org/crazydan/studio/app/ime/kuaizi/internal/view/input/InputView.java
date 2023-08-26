@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * {@link Input 键盘输入}的视图
@@ -76,20 +77,22 @@ public abstract class InputView<I extends Input> extends RecyclerViewHolder {
     }
 
     protected void showWord(CharInput input, boolean selected, boolean needToAddPrevSpace, boolean needToAddPostSpace) {
-        setSelectedTextColor(this.wordView, selected);
-        setSelectedTextColor(this.notationView, selected);
-
         InputWord word = input.getWord();
-        if (word == null) {
-            String text = (needToAddPrevSpace ? " " : "") //
-                          + String.join("", input.getChars()) //
-                          + (needToAddPostSpace ? " " : "");
+        String value = word != null ? word.getValue() : (needToAddPrevSpace ? " " : "") //
+                                                       + String.join("", input.getChars()) //
+                                                       + (needToAddPostSpace ? " " : "");
+        String notation = word != null ? word.getNotation() : null;
 
-            this.wordView.setText(text);
-            this.notationView.setText("");
+        this.wordView.setText(value);
+        setSelectedTextColor(this.wordView, selected);
+
+        if (notation == null || notation.isEmpty()) {
+            ViewUtils.hide(this.notationView);
         } else {
-            this.wordView.setText(word.getValue());
-            this.notationView.setText(word.getNotation());
+            this.notationView.setText(notation);
+            setSelectedTextColor(this.notationView, selected);
+
+            ViewUtils.show(this.notationView);
         }
     }
 }

@@ -31,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -58,12 +57,11 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    private final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
 
     @Override
     protected KeyFactory doGetKeyFactory() {
         switch (this.state.type) {
-            case Choosing_Input_Candidate: {
+            case Input_Candidate_Choosing: {
                 ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
                 CharInput input = stateData.getInput();
 
@@ -73,7 +71,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                    stateData.getPageStart(),
                                                                    stateData.getPageSize());
             }
-            case Choosing_SymbolEmoji: {
+            case SymbolEmoji_Choosing: {
                 ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
 
                 return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
@@ -91,7 +89,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case Input_Waiting:
-            case Choosing_Input_Candidate:
+            case Input_Candidate_Choosing:
                 switch (msg) {
                     case ChoosingInput:
                         onChoosingInputMsg(msg, data.target, data);
@@ -109,11 +107,11 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Key<?> key = data.target;
         switch (this.state.type) {
-            case Slipping_Input: {
+            case Input_Slipping: {
                 onSlippingInputUserKeyMsg(msg, key, data);
                 break;
             }
-            case Choosing_Input_Candidate: {
+            case Input_Candidate_Choosing: {
                 if (msg == UserKeyMsg.FingerSlipping) {
                     onInputCandidatesPageSlippingMsg(msg, key, data);
                 } else if (key instanceof InputWordKey) {
@@ -123,7 +121,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case Choosing_SymbolEmoji: {
+            case SymbolEmoji_Choosing: {
                 if (msg == UserKeyMsg.FingerSlipping) {
                     on_ChoosingSymbolEmoji_PageSlippingMsg(msg, key, data);
                 } else if (key instanceof CharKey) {
@@ -161,7 +159,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case FingerMovingStart: {
                 // 开始滑屏输入
                 if (key.getType() == CharKey.Type.Alphabet) {
-                    this.state = new State(State.Type.Slipping_Input, new SlippingInputStateData());
+                    this.state = new State(State.Type.Input_Slipping, new SlippingInputStateData());
 
                     CharInput input = getInputList().newPending();
 
@@ -468,7 +466,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     /** 进入候选字选择状态，并处理候选字翻页 */
     private void onChoosingInputCandidate(CharInput input, boolean pageUp, boolean inputChanged) {
         ChoosingInputCandidateStateData stateData;
-        if (this.state.type == State.Type.Choosing_Input_Candidate) {
+        if (this.state.type == State.Type.Input_Candidate_Choosing) {
             stateData = (ChoosingInputCandidateStateData) this.state.data;
 
             boolean hasPage;
@@ -499,7 +497,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
 
             stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
-            this.state = new State(State.Type.Choosing_Input_Candidate, stateData);
+            this.state = new State(State.Type.Input_Candidate_Choosing, stateData);
 
             if (inputChanged) {
                 determineNotConfirmedInputWord(input, () -> topBestCandidates);
@@ -661,7 +659,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         ChoosingSymbolEmojiStateData stateData = new ChoosingSymbolEmojiStateData(KeyTable.getSymbolKeysPageSize());
         stateData.setSymbols(SymbolKeyboard.chinese_symbols);
 
-        this.state = new State(State.Type.Choosing_SymbolEmoji, stateData, this.state);
+        this.state = new State(State.Type.SymbolEmoji_Choosing, stateData, this.state);
 
         do_Update_SymbolEmoji_Keys(false, false);
     }

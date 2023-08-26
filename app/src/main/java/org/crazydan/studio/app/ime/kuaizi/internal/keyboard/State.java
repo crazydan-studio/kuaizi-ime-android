@@ -48,16 +48,19 @@ public class State {
         /** 待输入 */
         Input_Waiting,
         /** 滑屏输入中 */
-        Slipping_Input,
+        Input_Slipping,
 
         /** 输入组件光标定位：含移动光标和文本选择 */
         InputTarget_Cursor_Locating,
 
         /** 输入候选字选择中 */
-        Choosing_Input_Candidate,
+        Input_Candidate_Choosing,
+
+        /** 表情符号选择中 */
+        Emoji_Choosing,
 
         /** 符号（标点、表情）选择中 */
-        Choosing_SymbolEmoji,
+        SymbolEmoji_Choosing,
     }
 
     public interface Data {}

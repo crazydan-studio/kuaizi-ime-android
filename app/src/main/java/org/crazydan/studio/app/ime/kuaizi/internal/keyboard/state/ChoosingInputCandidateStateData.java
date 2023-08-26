@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link State.Type#Choosing_Input_Candidate}的状态数据
+ * {@link State.Type#Input_Candidate_Choosing}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10

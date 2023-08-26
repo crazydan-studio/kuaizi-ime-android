@@ -50,23 +50,26 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
     public void bind(InputWordKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        InputWord inputWord = key.getWord();
+        InputWord word = key.getWord();
 
-        if (inputWord != null) {
-            this.wordView.setText(inputWord.getValue());
-            this.notationView.setText(inputWord.getNotation());
-        } else {
-            this.wordView.setText("");
-            this.notationView.setText("");
-        }
-
-        if (inputWord instanceof PinyinInputWord && ((PinyinInputWord) inputWord).isTraditional()) {
+        if (word instanceof PinyinInputWord && ((PinyinInputWord) word).isTraditional()) {
             ViewUtils.show(this.traditionalMarkView);
         } else {
             ViewUtils.hide(this.traditionalMarkView);
         }
 
+        String value = word != null ? word.getValue() : "";
+        String notation = word != null ? word.getNotation() : null;
+        this.wordView.setText(value);
         setTextColorByAttrId(this.wordView, key.getColor().fg);
-        setTextColorByAttrId(this.notationView, key.getColor().fg);
+
+        if (notation == null || notation.isEmpty()) {
+            ViewUtils.hide(this.notationView);
+        } else {
+            this.notationView.setText(notation);
+            setTextColorByAttrId(this.notationView, key.getColor().fg);
+
+            ViewUtils.show(this.notationView);
+        }
     }
 }

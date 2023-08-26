@@ -17,33 +17,56 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.Symbol;
 
 /**
- * {@link State.Type#SymbolEmoji_Choosing}的状态数据
+ * {@link State.Type#Emoji_Choosing}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-24
+ * @date 2023-08-26
  */
-public class ChoosingSymbolEmojiStateData implements State.Data {
-    private Symbol[] symbols;
-
+public class ChoosingEmojiStateData implements State.Data {
+    private final CharInput input;
+    private final Emojis emojis;
     /** 分页大小 */
     private final int pageSize;
+
+    private String group = Emojis.GROUP_GENERAL;
+
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingSymbolEmojiStateData(int pageSize) {
+    public ChoosingEmojiStateData(CharInput input, Emojis emojis, int pageSize) {
+        this.input = input;
+        this.emojis = emojis;
         this.pageSize = pageSize;
     }
 
-    public Symbol[] getSymbols() {
-        return this.symbols;
+    public CharInput getInput() {
+        return this.input;
     }
 
-    public void setSymbols(Symbol[] symbols) {
-        this.symbols = symbols;
+    public List<String> getGroups() {
+        return new ArrayList<>(this.emojis.groups.keySet());
+    }
+
+    public String getGroup() {
+        return this.group;
+    }
+
+    public void setGroup(String group) {
+        this.pageStart = 0;
+        this.group = group;
+    }
+
+    public List<InputWord> getData() {
+        return this.emojis.groups.getOrDefault(getGroup(), new ArrayList<>());
     }
 
     public int getPageSize() {
@@ -55,7 +78,7 @@ public class ChoosingSymbolEmojiStateData implements State.Data {
     }
 
     public int getDataSize() {
-        return this.symbols.length;
+        return getData().size();
     }
 
     /**
@@ -68,9 +91,11 @@ public class ChoosingSymbolEmojiStateData implements State.Data {
 
         if (start < getDataSize()) {
             this.pageStart = start;
-            return true;
+        } else {
+            // 进行轮播
+            this.pageStart = 0;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -80,8 +105,19 @@ public class ChoosingSymbolEmojiStateData implements State.Data {
      */
     public boolean prevPage() {
         int start = this.pageStart - this.pageSize;
-        this.pageStart = Math.max(start, 0);
 
-        return start >= 0;
+        if (start < 0) {
+            int total = getDataSize();
+            int left = total % this.pageSize;
+            // 翻到最后一页
+            if (left > 0) {
+                this.pageStart = total - left;
+            } else {
+                this.pageStart = total - this.pageSize;
+            }
+        } else {
+            this.pageStart = start;
+        }
+        return true;
     }
 }

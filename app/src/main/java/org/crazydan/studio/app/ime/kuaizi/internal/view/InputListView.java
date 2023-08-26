@@ -91,6 +91,7 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputChars_Inputting:
             case InputChars_InputtingEnd:
             case InputCandidate_Choosing:
+            case Emoji_Choosing:
             case SymbolEmoji_Choosing:
             case InputList_Committing:
                 this.adapter.updateItems();

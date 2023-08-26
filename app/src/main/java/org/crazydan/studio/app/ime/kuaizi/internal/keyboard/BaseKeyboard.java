@@ -23,8 +23,11 @@ import java.util.Set;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -47,6 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMs
  */
 public abstract class BaseKeyboard implements Keyboard {
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
+    protected final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
 
     protected State state = new State(State.Type.Input_Waiting);
 
@@ -112,6 +116,18 @@ public abstract class BaseKeyboard implements Keyboard {
             case InputTarget_Cursor_Locating: {
                 return () -> KeyTable.createLocatorKeys(createKeyTableConfigure());
             }
+            case Emoji_Choosing: {
+                ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
+                CharInput input = stateData.getInput();
+
+                return () -> KeyTable.createEmojiKeys(createKeyTableConfigure(),
+                                                      input,
+                                                      stateData.getGroups(),
+                                                      stateData.getData(),
+                                                      stateData.getGroup(),
+                                                      stateData.getPageStart(),
+                                                      stateData.getPageSize());
+            }
         }
         return doGetKeyFactory();
     }
@@ -133,6 +149,14 @@ public abstract class BaseKeyboard implements Keyboard {
         switch (this.state.type) {
             case InputTarget_Cursor_Locating: {
                 on_LocatingInputTargetCursor_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                return true;
+            }
+            case Emoji_Choosing: {
+                if (msg == UserKeyMsg.FingerSlipping) {
+                    on_ChoosingEmoji_PageSlippingMsg(msg, key, data);
+                } else if (key instanceof CtrlKey) {
+                    on_ChoosingEmoji_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                }
                 return true;
             }
             case Input_Waiting: {
@@ -412,6 +436,11 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(Type.Math);
                         return true;
                     }
+                    case SwitchToEmojiKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        do_Emoji_Choosing(null, key);
+                        return true;
+                    }
                 }
                 break;
             }
@@ -453,6 +482,22 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     // <<<<<< 输入定位逻辑
+    private void do_InputTarget_Cursor_Locating(CtrlKey key, Motion motion) {
+        LocatingInputCursorStateData stateData;
+
+        if (this.state.type != State.Type.InputTarget_Cursor_Locating) {
+            stateData = new LocatingInputCursorStateData();
+
+            this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData, this.state);
+        } else {
+            stateData = (LocatingInputCursorStateData) this.state.data;
+            stateData.updateLocator(motion);
+        }
+
+        InputMsgData data = new InputTargetCursorLocatingMsgData(getKeyFactory(), key, stateData.getLocator());
+        fireInputMsg(InputMsg.InputTarget_Cursor_Locating, data);
+    }
+
     private void on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
@@ -534,22 +579,6 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    private void do_InputTarget_Cursor_Locating(CtrlKey key, Motion motion) {
-        LocatingInputCursorStateData stateData;
-
-        if (this.state.type != State.Type.InputTarget_Cursor_Locating) {
-            stateData = new LocatingInputCursorStateData();
-
-            this.state = new State(State.Type.InputTarget_Cursor_Locating, stateData, this.state);
-        } else {
-            stateData = (LocatingInputCursorStateData) this.state.data;
-            stateData.updateLocator(motion);
-        }
-
-        InputMsgData data = new InputTargetCursorLocatingMsgData(getKeyFactory(), key, stateData.getLocator());
-        fireInputMsg(InputMsg.InputTarget_Cursor_Locating, data);
-    }
-
     private void do_InputTarget_Selecting(CtrlKey key, Motion motion) {
         LocatingInputCursorStateData stateData = (LocatingInputCursorStateData) this.state.data;
         stateData.updateSelector(motion);
@@ -581,6 +610,67 @@ public abstract class BaseKeyboard implements Keyboard {
     private void do_InputTarget_Redoing() {
         InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Redoing, data);
+    }
+    // >>>>>>>>
+
+    // <<<<<<<< 表情符号选择逻辑
+    private void do_Emoji_Choosing(CharInput input, CtrlKey key) {
+        int pageSize = KeyTable.getEmojiKeysPageSize();
+        Emojis emojis = this.pinyinDict.getEmojis(18);
+
+        ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(input, emojis, pageSize);
+        if (stateData.getData().isEmpty()) {
+            stateData.setGroup(stateData.getGroups().get(1));
+        }
+
+        this.state = new State(State.Type.Emoji_Choosing, stateData, this.state);
+
+        do_Update_Emoji_Keys(false, false);
+    }
+
+    private void on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeyDoubleTap: // 双击继续触发第二次单击操作
+            case KeySingleTap: {
+                switch (key.getType()) {
+                    case ToggleEmoji_Group: {
+                        play_InputtingSingleTick_Audio(key);
+
+                        ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
+                        stateData.setGroup(key.getLabel());
+
+                        do_Update_Emoji_Keys(false, false);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private void on_ChoosingEmoji_PageSlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        Motion motion = ((UserFingerSlippingMsgData) data).motion;
+        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+
+        do_Update_Emoji_Keys(true, pageUp);
+    }
+
+    private void do_Update_Emoji_Keys(boolean doPaging, boolean pageUp) {
+        ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
+        if (doPaging) {
+            boolean hasPage;
+            if (pageUp) {
+                hasPage = stateData.nextPage();
+            } else {
+                hasPage = stateData.prevPage();
+            }
+
+            if (hasPage) {
+                play_InputPageFlipping_Audio();
+            }
+        }
+
+        fireInputMsg(InputMsg.Emoji_Choosing, new InputCommonMsgData(getKeyFactory()));
     }
     // >>>>>>>>
 }
