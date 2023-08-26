@@ -28,8 +28,8 @@ import androidx.annotation.NonNull;
  * @date 2023-07-08
  */
 public class InputWord {
-    /** 查询表的行 id */
-    private final String oid;
+    /** 唯一 id，对应持久化标识 */
+    private final String uid;
 
     /** 是否已确认 */
     private boolean confirmed;
@@ -37,18 +37,14 @@ public class InputWord {
     private final String value;
     private final String notation;
 
-    public InputWord(String oid, String value) {
-        this(oid, value, null);
-    }
-
-    public InputWord(String oid, String value, String notation) {
-        this.oid = oid;
+    public InputWord(String uid, String value, String notation) {
+        this.uid = uid;
         this.value = value;
         this.notation = notation;
     }
 
-    public String getOid() {
-        return this.oid;
+    public String getUid() {
+        return this.uid;
     }
 
     public boolean isConfirmed() {
@@ -70,7 +66,10 @@ public class InputWord {
     @NonNull
     @Override
     public String toString() {
-        return this.value + '(' + (this.notation != null ? this.notation : "") + ')';
+        if (this.notation == null) {
+            return this.value;
+        }
+        return this.value + '(' + this.notation + ')';
     }
 
     @Override

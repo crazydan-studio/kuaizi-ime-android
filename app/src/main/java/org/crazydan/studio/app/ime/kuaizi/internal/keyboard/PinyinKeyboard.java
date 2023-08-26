@@ -237,14 +237,12 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeySingleTap: {
                 // 确认候选字
-                if (key.hasWord()) {
-                    play_InputtingSingleTick_Audio(key);
+                play_InputtingSingleTick_Audio(key);
 
-                    InputWord word = key.getWord();
-                    getInputList().getPending().setWord(word);
+                InputWord word = key.getWord();
+                getInputList().getPending().setWord(word);
 
-                    onConfirmSelectedInputCandidate();
-                }
+                onConfirmSelectedInputCandidate();
             }
             break;
         }
@@ -382,7 +380,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     confirm_InputChars();
                 } else {
                     // 单个标点、表情则直接提交输入
-                    commit_InputList();
+                    commit_InputList_and_Waiting_Input();
                 }
                 break;
             }
@@ -570,7 +568,10 @@ public class PinyinKeyboard extends BaseKeyboard {
             Map<String, InputWord> candidateMap = getInputCandidateWords(target);
             InputWord word = candidateMap.get(pinyinWordId);
 
-            target.setWord(word);
+            // Note：可能存在用户数据与内置字典数据不一致的情况
+            if (word != null) {
+                target.setWord(word);
+            }
         }
     }
 
@@ -763,7 +764,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 do_Update_SymbolEmoji_Keys(false, false);
             }
         } else {
-            commit_InputList();
+            commit_InputList_and_Waiting_Input();
         }
     }
 

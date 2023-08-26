@@ -20,37 +20,14 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
 /**
- * 拼音输入{@link InputWord 候选字}
+ * 表情符号输入{@link InputWord 候选字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
-public class PinyinInputWord extends InputWord {
-    /** 拼音字母组合 id */
-    private final String charsId;
-    /** 是否繁体 */
-    private final boolean traditional;
-    /** 笔画顺序 */
-    private final String strokeOrder;
+public class EmojiInputWord extends InputWord {
 
-    public PinyinInputWord(
-            String uid, String value, String notation, String charsId, boolean traditional, String strokeOrder
-    ) {
-        super(uid, value, notation);
-        this.charsId = charsId;
-        this.traditional = traditional;
-        this.strokeOrder = strokeOrder != null ? strokeOrder : "";
-    }
-
-    public String getCharsId() {
-        return this.charsId;
-    }
-
-    public boolean isTraditional() {
-        return this.traditional;
-    }
-
-    public String getStrokeOrder() {
-        return this.strokeOrder;
+    public EmojiInputWord(String uid, String value) {
+        super(uid, value, null);
     }
 }

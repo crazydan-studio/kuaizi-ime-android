@@ -147,7 +147,6 @@ public class KeyTable {
                     new int[] { 2, 4 },
                     new int[] { 2, 5 },
                     new int[] { 2, 6 },
-                    new int[] { 2, 7 },
                     },
             // level 3
             new int[][] {
@@ -798,7 +797,7 @@ public class KeyTable {
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
-        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+        int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
         for (int i = 0, j = 0; i < emoji_group_key_coords.length && j < groups.size(); i++, j++) {
@@ -811,12 +810,11 @@ public class KeyTable {
             gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.ToggleEmoji_Group).setLabel(group).setDisabled(selected);
         }
 
+        gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
-//        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.DropInput);
-
-//        if (currentPage == 1) {
-//            gridKeys[3][index_6] = ctrlKey(config, CtrlKey.Type.CommitInputList);
-//        }
+        gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
         int wordIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, emoji_key_level_coords);

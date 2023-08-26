@@ -66,12 +66,7 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isEmoji() {
-        for (Key<?> key : this.keys) {
-            if (!key.isEmoji()) {
-                return false;
-            }
-        }
-        return !isEmpty();
+        return this.word instanceof EmojiInputWord;
     }
 
     @Override

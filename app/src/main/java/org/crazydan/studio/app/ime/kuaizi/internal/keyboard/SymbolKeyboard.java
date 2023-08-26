@@ -184,7 +184,7 @@ public class SymbolKeyboard extends BaseKeyboard {
         if (continueInputting) {
             confirm_InputChars();
         } else {
-            commit_InputList();
+            commit_InputList_and_Waiting_Input();
         }
     }
 

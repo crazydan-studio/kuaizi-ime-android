@@ -88,7 +88,7 @@ public class InputList {
         if (!this.candidateWordsCache.containsKey(inputChars)) {
             this.candidateWordsCache.put(inputChars,
                                          candidateWords.stream()
-                                                       .collect(Collectors.toMap(InputWord::getOid,
+                                                       .collect(Collectors.toMap(InputWord::getUid,
                                                                                  Function.identity(),
                                                                                  (a, b) -> a,
                                                                                  // 保持候选字的顺序不变

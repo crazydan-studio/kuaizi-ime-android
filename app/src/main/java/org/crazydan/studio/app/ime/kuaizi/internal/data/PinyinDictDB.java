@@ -44,6 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -207,16 +208,16 @@ public class PinyinDictDB {
                              // 按拼音使用频率（weight_）、拼音内字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
                              "weight_ desc, glyph_weight_ desc, spell_id_ asc", //
                              (cursor) -> {
-                                 String oid = cursor.getString(0);
-                                 String word = cursor.getString(1);
-                                 String wordPinyin = cursor.getString(2);
+                                 String uid = cursor.getString(0);
+                                 String value = cursor.getString(1);
+                                 String notation = cursor.getString(2);
                                  boolean traditional = cursor.getInt(3) > 0;
                                  String strokeOrder = cursor.getString(4);
 
-                                 return new PinyinInputWord(oid,
+                                 return new PinyinInputWord(uid,
+                                                            value,
+                                                            notation,
                                                             inputPinyinCharsId,
-                                                            word,
-                                                            wordPinyin,
                                                             traditional,
                                                             strokeOrder);
                              });
@@ -273,14 +274,14 @@ public class PinyinDictDB {
                       null, //
                       "group_ asc, id_ asc", //
                       (cursor) -> {
-                          String oid = cursor.getString(0);
+                          String uid = cursor.getString(0);
                           String value = cursor.getString(1);
                           String group = cursor.getString(2);
 
                           if (CharUtils.isPrintable(value)) {
-                              InputWord emoji = new InputWord(oid, value);
+                              InputWord emoji = new EmojiInputWord(uid, value);
 
-                              idAndDataMap.put(oid, emoji);
+                              idAndDataMap.put(uid, emoji);
                               groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
                           }
 
@@ -354,7 +355,7 @@ public class PinyinDictDB {
 
         // 已确认的拼音字 id
         List<String> confirmedPinyinWordIdList = pinyinWords.stream()
-                                                            .map(word -> word.isConfirmed() ? word.getOid() : null)
+                                                            .map(word -> word.isConfirmed() ? word.getUid() : null)
                                                             .collect(Collectors.toList());
         confirmedPinyinWordIdList.add(0, null);
 
@@ -444,7 +445,7 @@ public class PinyinDictDB {
         int sum = 0;
         for (int i = 0; i < phrase.size(); i++) {
             InputWord word = phrase.get(i);
-            int code = Integer.parseInt(word.getOid() + i);
+            int code = Integer.parseInt(word.getUid() + i);
             sum += code;
         }
         String phraseValue = String.valueOf(sum) + phrase.size();
@@ -497,7 +498,7 @@ public class PinyinDictDB {
                              InputWord word = phrase.get(i);
 
                              insert.bindAllArgsAsStrings(new String[] {
-                                     phraseId, word.getOid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
+                                     phraseId, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
                              });
                              insert.execute();
                          }
@@ -509,7 +510,7 @@ public class PinyinDictDB {
         SQLiteDatabase db = getUserDB();
 
         Map<String, String> idAndTargetCharsIdMap = phrase.stream()
-                                                          .collect(Collectors.toMap(InputWord::getOid,
+                                                          .collect(Collectors.toMap(InputWord::getUid,
                                                                                     (word) -> ((PinyinInputWord) word).getCharsId(),
                                                                                     (v1, v2) -> v1));
 
@@ -552,7 +553,7 @@ public class PinyinDictDB {
             return;
         }
 
-        Set<String> dataIdSet = emojis.stream().map(InputWord::getOid).collect(Collectors.toSet());
+        Set<String> dataIdSet = emojis.stream().map(InputWord::getUid).collect(Collectors.toSet());
 
         Map<String, Integer> existDataMap = new HashMap<>();
         doSQLiteQuery(db,

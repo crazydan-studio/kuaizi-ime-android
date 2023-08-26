@@ -21,12 +21,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -154,6 +156,8 @@ public abstract class BaseKeyboard implements Keyboard {
             case Emoji_Choosing: {
                 if (msg == UserKeyMsg.FingerSlipping) {
                     on_ChoosingEmoji_PageSlippingMsg(msg, key, data);
+                } else if (key instanceof InputWordKey) {
+                    on_ChoosingEmoji_InputWordKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_ChoosingEmoji_CtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
@@ -231,7 +235,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void append_Key_and_Commit_InputList(Key<?> key) {
         getInputList().newPending().appendKey(key);
 
-        commit_InputList();
+        commit_InputList_and_Waiting_Input();
     }
 
     /** 确认当前输入 */
@@ -262,14 +266,19 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 否则，直接提交按键输入
         else {
-            commit_InputList();
+            commit_InputList_and_Waiting_Input();
         }
     }
 
-    /** 提交输入列表 */
-    protected void commit_InputList() {
+    /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void commit_InputList_and_Waiting_Input() {
         this.state = new State(State.Type.Input_Waiting);
 
+        commit_InputList();
+    }
+
+    /** 提交输入列表，且状态保持不变 */
+    protected void commit_InputList() {
         getInputList().confirmPending();
         before_Commit_InputList();
 
@@ -280,7 +289,7 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputList_Committing, data);
     }
 
-    /** 在 {@link #commit_InputList() 输入列表提交} 之前需要做的事情 */
+    /** 在 {@link #commit_InputList_and_Waiting_Input() 输入列表提交} 之前需要做的事情 */
     protected void before_Commit_InputList() {}
 
     /**
@@ -373,7 +382,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 处理 {@link CtrlKey.Type#CommitInputList} 控制按键点击事件 */
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {commit_InputList();}
+    protected void on_CtrlKey_CommitInputList(CtrlKey key) {commit_InputList_and_Waiting_Input();}
 
     /** 处理 {@link CtrlKey.Type#Backspace} 控制按键点击事件 */
     protected void on_CtrlKey_Backspace(CtrlKey key) {backspace_InputList_or_InputTarget();}
@@ -616,7 +625,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // <<<<<<<< 表情符号选择逻辑
     private void do_Emoji_Choosing(CharInput input, CtrlKey key) {
         int pageSize = KeyTable.getEmojiKeysPageSize();
-        Emojis emojis = this.pinyinDict.getEmojis(18);
+        Emojis emojis = this.pinyinDict.getEmojis(pageSize);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(input, emojis, pageSize);
         if (stateData.getData().isEmpty()) {
@@ -626,6 +635,33 @@ public abstract class BaseKeyboard implements Keyboard {
         this.state = new State(State.Type.Emoji_Choosing, stateData, this.state);
 
         do_Update_Emoji_Keys(false, false);
+    }
+
+    private void on_ChoosingEmoji_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeyLongPressTick:
+            case KeyDoubleTap:
+            case KeySingleTap: {
+                play_InputtingSingleTick_Audio(key);
+
+                boolean isEmpty = getInputList().isEmpty();
+                CharInput input = getInputList().newPending();
+
+                InputWord word = key.getWord();
+                input.appendKey(key);
+                input.setWord(word);
+
+                if (isEmpty) {
+                    // 直接提交输入
+                    commit_InputList();
+                } else {
+                    // 追加输入
+                    getInputList().confirmPending();
+                    fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+                }
+            }
+            break;
+        }
     }
 
     private void on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
@@ -642,6 +678,32 @@ public abstract class BaseKeyboard implements Keyboard {
                         do_Update_Emoji_Keys(false, false);
                         break;
                     }
+                    case Exit:
+                        play_InputtingSingleTick_Audio(key);
+                        back_To_Previous_State();
+                        break;
+                    case Backspace:
+                        play_InputtingSingleTick_Audio(key);
+                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData());
+                        break;
+                    case Space:
+                    case Enter:
+                        play_InputtingSingleTick_Audio(key);
+
+                        InputMsgData msgData = new InputListCommittingMsgData(key.getText());
+                        fireInputMsg(InputMsg.InputList_Committing, msgData);
+                        break;
+                }
+                break;
+            }
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Space:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                        break;
                 }
                 break;
             }

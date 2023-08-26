@@ -39,10 +39,6 @@ public class InputWordKey extends BaseKey<InputWordKey> {
         this.word = word;
     }
 
-    public boolean hasWord() {
-        return this.word != null;
-    }
-
     public InputWord getWord() {
         return this.word;
     }
