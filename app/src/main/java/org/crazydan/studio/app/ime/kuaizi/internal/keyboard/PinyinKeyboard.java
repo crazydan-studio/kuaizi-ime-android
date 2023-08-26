@@ -65,11 +65,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
                 CharInput input = stateData.getInput();
 
-                return () -> KeyTable.createPinyinInputCandidateWordKeys(createKeyTableConfigure(),
-                                                                         input,
-                                                                         stateData.getCandidates(),
-                                                                         stateData.getPageStart(),
-                                                                         stateData.getPageSize());
+                return () -> KeyTable.createPinyinInputWordKeys(createKeyTableConfigure(),
+                                                                input,
+                                                                stateData.getCandidates(),
+                                                                stateData.getPageStart(),
+                                                                stateData.getPageSize());
             }
             case SymbolEmoji_Choosing: {
                 ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
@@ -477,7 +477,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
             List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, 18);
 
-            int pageSize = KeyTable.getPinyinInputCandidateKeysPageSize();
+            int pageSize = KeyTable.getPinyinInputKeysPageSize();
             if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
                 // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
                 for (int i = topBestCandidates.size(); i < pageSize; i++) {
@@ -688,10 +688,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputtingSingleTick_Audio(key);
 
                 switch (key.getType()) {
-                    case Exit: {
-                        back_To_Previous_State();
-                        break;
-                    }
                     case Toggle_Symbol_Locale_Zh_and_En: {
                         ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
                         if (stateData.getSymbols() == SymbolKeyboard.chinese_symbols) {

@@ -71,48 +71,47 @@ public class KeyTable {
                                                                         R.drawable.ic_left_hand_ok,
                                                                         R.attr.key_ctrl_ok_bg_color);
 
-    /** 从中心按键由内到外的候选字环形布局坐标 */
-    private static final int[][][] input_word_key_around_level_coords = new int[][][] {
+    /** 从中心按键由内到外的拼音候选字布局坐标 */
+    private static final int[][][] pinyin_input_word_key_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 2, 4 },
-                    new int[] { 3, 4 },
-                    new int[] { 4, 4 },
-                    new int[] { 4, 3 },
-                    new int[] { 3, 2 },
-                    new int[] { 2, 3 },
+                    new int[] { 1, 1 },
+                    new int[] { 1, 2 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 4 },
+                    new int[] { 1, 5 },
+                    new int[] { 1, 6 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 1, 3 },
-                    new int[] { 1, 4 },
-                    new int[] { 2, 5 },
-                    new int[] { 3, 5 },
-                    new int[] { 4, 5 },
-                    new int[] { 5, 4 },
-                    new int[] { 5, 3 },
-                    new int[] { 5, 2 },
-                    new int[] { 4, 2 },
-                    new int[] { 3, 1 },
+                    new int[] { 2, 1 },
                     new int[] { 2, 2 },
-                    new int[] { 1, 2 },
+                    new int[] { 2, 3 },
+                    new int[] { 2, 4 },
+                    new int[] { 2, 5 },
+                    new int[] { 2, 6 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 0, 4 },
-                    new int[] { 0, 5 },
-                    new int[] { 1, 5 },
-                    new int[] { 2, 6 },
-                    new int[] { 3, 6 },
-                    new int[] { 4, 6 },
-                    new int[] { 5, 5 },
-                    new int[] { 5, 1 },
+                    new int[] { 3, 1 }, new int[] { 3, 2 }, new int[] { 3, 3 }, new int[] { 3, 5 }, new int[] { 3, 6 },
+                    },
+            // level 4
+            new int[][] {
                     new int[] { 4, 1 },
-                    new int[] { 3, 0 },
-                    new int[] { 2, 1 },
-                    new int[] { 1, 1 },
-                    new int[] { 0, 2 },
-                    new int[] { 0, 3 },
+                    new int[] { 4, 2 },
+                    new int[] { 4, 3 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 5 },
+                    new int[] { 4, 6 },
+                    },
+            // level 5
+            new int[][] {
+                    new int[] { 5, 1 },
+                    new int[] { 5, 2 },
+                    new int[] { 5, 3 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 6 },
                     },
             };
 
@@ -128,6 +127,20 @@ public class KeyTable {
             new int[] { 0, 1 },
             new int[] { 1, 0 },
             new int[] { 2, 0 },
+            };
+
+    /** 表情符号的分组按键坐标 */
+    private static final int[][] emoji_group_key_coords_left_hand = new int[][] {
+            new int[] { 1, 0 },
+            new int[] { 0, 1 },
+            new int[] { 0, 2 },
+            new int[] { 0, 3 },
+            new int[] { 0, 4 },
+            new int[] { 0, 5 },
+            new int[] { 0, 6 },
+            new int[] { 0, 7 },
+            new int[] { 1, 7 },
+            new int[] { 2, 7 },
             };
     private static final int[][][] emoji_key_level_coords = new int[][][] {
             // level 1
@@ -150,7 +163,6 @@ public class KeyTable {
                     },
             // level 3
             new int[][] {
-                    new int[] { 3, 0 },
                     new int[] { 3, 1 },
                     new int[] { 3, 2 },
                     new int[] { 3, 3 },
@@ -529,8 +541,8 @@ public class KeyTable {
                 ctrlKey(config, CtrlKey.Type.SwitchToEmojiKeyboard),
                 alphabetKey("m"),
                 alphabetKey("n"),
-                ctrlKey(config, CtrlKey.Type.LocateInputCursor),
                 alphabetKey("o"),
+                ctrlKey(config, CtrlKey.Type.LocateInputCursor),
                 alphabetKey("p"),
                 alphabetKey("q"),
                 config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
@@ -638,67 +650,62 @@ public class KeyTable {
     }
 
     /** 候选字按键的分页大小 */
-    public static int getPinyinInputCandidateKeysPageSize() {
+    public static int getPinyinInputKeysPageSize() {
         int size = 0;
-        for (int[][] level : input_word_key_around_level_coords) {
+        for (int[][] level : pinyin_input_word_key_level_coords) {
             size += level.length;
         }
         return size;
     }
 
     /** 创建输入候选字按键 */
-    public static Key<?>[][] createPinyinInputCandidateWordKeys(
-            Config config, CharInput input, List<InputWord> candidates, int startIndex, int pageSize
+    public static Key<?>[][] createPinyinInputWordKeys(
+            Config config, CharInput input, List<InputWord> words, int startIndex, int pageSize
     ) {
         Key<?>[][] gridKeys = emptyGridKeys();
 
-        int dataSize = candidates.size();
+        int dataSize = words.size();
         int currentPage = startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
-        int remainDataSize = dataSize - startIndex;
+        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
 
-        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_1 = changeIndexForHandMode(config, gridKeys, 1);
+        int index_2 = changeIndexForHandMode(config, gridKeys, 2);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
-        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+        int index_4 = changeIndexForHandMode(config, gridKeys, 4);
+        int index_5 = changeIndexForHandMode(config, gridKeys, 5);
+        int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
-        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
-        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.DropInput);
+        gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[3][4] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
+        gridKeys[3][index_7] = ctrlKey(config, CtrlKey.Type.CommitInputList);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.DropInput);
 
-        // 从第二页开始支持按笔画过滤
-        if (currentPage > 1 && totalPage > 1 && remainDataSize > 8) {
-            gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng).setLabel("一");
-            gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu).setLabel("丨");
-            gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie).setLabel("丿");
-            gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na).setLabel("㇏");
-            gridKeys[5][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe).setLabel(
-                    "\uD840\uDCCB");
-        }
-
-        if (currentPage == 1) {
-            gridKeys[3][index_6] = ctrlKey(config, CtrlKey.Type.CommitInputList);
-        }
-
-        gridKeys[0][index_0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng).setLabel("一");
+        gridKeys[0][index_2] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu).setLabel("丨");
+        gridKeys[0][index_3] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie).setLabel("丿");
+        gridKeys[0][index_4] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na).setLabel("㇏");
+        gridKeys[0][index_5] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe).setLabel(
+                "\uD840\uDCCB");
 
         CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
-            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h).setLabel(s
-                                                                                                        + ","
-                                                                                                        + s
-                                                                                                        + "h");
+            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h).setLabel(s
+                                                                                                               + ","
+                                                                                                               + s
+                                                                                                               + "h");
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
-            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_nl).setLabel("n,l  ");
+            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_nl).setLabel("n,l  ");
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!startingToggle.getChars().equals(input.getChars()) //
             && !PinyinDictDB.getInstance().hasValidPinyin(startingToggle)) {
-            gridKeys[0][index_6] = noopCtrlKey();
+            gridKeys[0][isLeft ? 1 : 7] = noopCtrlKey();
         }
 
         CharInput endingToggle = input.copy();
@@ -706,7 +713,7 @@ public class KeyTable {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
-            gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_ng).setLabel(tail
+            gridKeys[1][index_7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_ng).setLabel(tail
                                                                                                      + ","
                                                                                                      + tail
                                                                                                      + "g");
@@ -715,11 +722,11 @@ public class KeyTable {
         // 若拼音变换无效，则不提供切换按钮
         if (!endingToggle.getChars().equals(input.getChars()) //
             && !PinyinDictDB.getInstance().hasValidPinyin(endingToggle)) {
-            gridKeys[1][index_6] = noopCtrlKey();
+            gridKeys[1][index_7] = noopCtrlKey();
         }
 
         int wordIndex = startIndex;
-        int[][][] levelKeyCoords = changeLayoutForHandMode(config, input_word_key_around_level_coords);
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, pinyin_input_word_key_level_coords);
 
         for (int level = 0; level < levelKeyCoords.length; level++) {
             int[][] keyCoords = levelKeyCoords[level];
@@ -728,11 +735,11 @@ public class KeyTable {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < candidates.size()) {
-                    InputWord word = candidates.get(wordIndex);
+                if (wordIndex < words.size()) {
+                    InputWord word = words.get(wordIndex);
 
                     if (word != null) {
-                        KeyColor color = key_char_around_level_colors[level];
+                        KeyColor color = latin_key_char_alphabet_level_colors[level];
 
                         InputWordKey key = InputWordKey.create(word).setColor(color);
 
@@ -784,7 +791,7 @@ public class KeyTable {
     /** 表情符号按键的分页大小 */
     public static int getEmojiKeysPageSize() {
         int size = 0;
-        for (int[][] level : input_word_key_around_level_coords) {
+        for (int[][] level : pinyin_input_word_key_level_coords) {
             size += level.length;
         }
         return size;
@@ -800,12 +807,19 @@ public class KeyTable {
         int dataSize = words.size();
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
+        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
 
         int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        for (int i = 0, j = 0; i < emoji_group_key_coords.length && j < groups.size(); i++, j++) {
-            int[] keyCoord = emoji_group_key_coords[i];
+        gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
+
+        int[][] groupKeyCoords = isLeft ? emoji_group_key_coords_left_hand : emoji_group_key_coords;
+        for (int i = 0, j = 0; i < groupKeyCoords.length && j < groups.size(); i++, j++) {
+            int[] keyCoord = groupKeyCoords[i];
             String group = groups.get(j);
             boolean selected = group.equals(selectedGroup);
 
@@ -813,11 +827,6 @@ public class KeyTable {
             int y = keyCoord[1];
             gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Emoji_Group).setLabel(group).setDisabled(selected);
         }
-
-        gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
-        gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
-        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
-        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
         int wordIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, emoji_key_level_coords);

@@ -439,11 +439,16 @@ public abstract class BaseKeyboard implements Keyboard {
                         confirm_Input_Enter_or_Space(key);
                         return true;
                     }
-                    // 点击 退出 按钮，则退回到前序状态
+                    // 点击 退出 按钮，则退回到前序状态或原键盘
                     case Exit: {
                         play_InputtingSingleTick_Audio(key);
-                        back_To_Previous_State();
-                        break;
+
+                        if (this.state.previous == null) {
+                            switchTo_Previous_Keyboard();
+                        } else {
+                            back_To_Previous_State();
+                        }
+                        return true;
                     }
                     case SwitchIME: {
                         play_InputtingSingleTick_Audio(key);
@@ -621,7 +626,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // <<<<<<<< 表情符号选择逻辑
     protected void do_Emoji_Choosing() {
         int pageSize = KeyTable.getEmojiKeysPageSize();
-        Emojis emojis = this.pinyinDict.getEmojis(pageSize);
+        Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
         if (stateData.getData().isEmpty()) {

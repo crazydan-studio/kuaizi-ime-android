@@ -80,15 +80,14 @@ public class ChoosingEmojiStateData implements State.Data {
      * @return 若有翻页，则返回 <code>true</code>
      */
     public boolean nextPage() {
+        int total = getDataSize();
         int start = this.pageStart + this.pageSize;
 
-        if (start < getDataSize()) {
-            this.pageStart = start;
-        } else {
+        if (start >= total) {
             // 进行轮播
-            this.pageStart = 0;
+            start = 0;
         }
-        return true;
+        return updatePageStart(start);
     }
 
     /**
@@ -102,15 +101,22 @@ public class ChoosingEmojiStateData implements State.Data {
         if (start < 0) {
             int total = getDataSize();
             int left = total % this.pageSize;
+
             // 翻到最后一页
             if (left > 0) {
-                this.pageStart = total - left;
+                start = total - left;
             } else {
-                this.pageStart = total - this.pageSize;
+                start = total - this.pageSize;
             }
-        } else {
-            this.pageStart = start;
         }
-        return true;
+        return updatePageStart(start);
+    }
+
+    private boolean updatePageStart(int start) {
+        if (this.pageStart != start) {
+            this.pageStart = start;
+            return true;
+        }
+        return false;
     }
 }
