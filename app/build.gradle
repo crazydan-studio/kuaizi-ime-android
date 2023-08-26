@@ -19,8 +19,28 @@ android {
 
     buildTypes {
         release {
+            // https://juejin.cn/post/6844904103131234311
+            // 是否进行混淆
             minifyEnabled true
+            // 移除无用的resource文件：当ProGuard 把部分无用代码移除的时候，
+            // 这些代码所引用的资源也会被标记为无用资源，然后
+            // 系统通过资源压缩功能将它们移除。
+            // 需要注意的是目前资源压缩器目前不会移除values/文件夹中
+            // 定义的资源（例如字符串、尺寸、样式和颜色）
+            // 开启后，Android构建工具会通过ResourceUsageAnalyzer来检查
+            // 哪些资源是无用的，当检查到无用的资源时会把该资源替换
+            // 成预定义的版本。主要是针对.png、.9.png、.xml提供了
+            // TINY_PNG、TINY_9PNG、TINY_XML这3个byte数组的预定义版本。
+            // 资源压缩工具默认是采用安全压缩模式来运行，可以通过开启严格压缩模式来达到更好的瘦身效果。
+            shrinkResources true
+            // 开启zipAlign可以让安装包中的资源按4字节对齐，这样可以减少应用在运行时的内存消耗
+            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            //minifyEnabled true
+            //shrinkResources true
+            zipAlignEnabled true
         }
     }
     compileOptions {
