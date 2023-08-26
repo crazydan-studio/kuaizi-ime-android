@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
@@ -73,7 +74,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void reset() {
-        end_InputChars_Inputting();
+        end_InputChars_Inputting_and_Waiting_Input();
     }
 
     @Override
@@ -120,10 +121,8 @@ public abstract class BaseKeyboard implements Keyboard {
             }
             case Emoji_Choosing: {
                 ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
-                CharInput input = stateData.getInput();
 
                 return () -> KeyTable.createEmojiKeys(createKeyTableConfigure(),
-                                                      input,
                                                       stateData.getGroups(),
                                                       stateData.getData(),
                                                       stateData.getGroup(),
@@ -148,9 +147,18 @@ public abstract class BaseKeyboard implements Keyboard {
     protected boolean try_OnUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
 
+        if (key instanceof CtrlKey && try_Common_OnCtrlKeyMsg(msg, (CtrlKey) key, data)) {
+            return true;
+        }
+
         switch (this.state.type) {
+            case Input_Waiting: {
+                break;
+            }
             case InputTarget_Cursor_Locating: {
-                on_LocatingInputTargetCursor_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                if (key instanceof CtrlKey) {
+                    on_LocatingInputTargetCursor_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                }
                 return true;
             }
             case Emoji_Choosing: {
@@ -163,43 +171,30 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 return true;
             }
-            case Input_Waiting: {
-                if (key instanceof CtrlKey) {
-                    return try_OnCtrlKeyMsg(msg, (CtrlKey) key, data);
-                }
-                break;
-            }
         }
 
         return false;
     }
 
-    /** 当前字符输入已完成，等待新的输入 */
-    protected void end_InputChars_Inputting() {
+    /** 当前字符输入已完成，并进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void end_InputChars_Inputting_and_Waiting_Input() {
         this.state = new State(State.Type.Input_Waiting);
 
-        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+        end_InputChars_Inputting();
     }
 
-    /** 回到前序状态 */
-    protected void back_To_Previous_State() {
-        if (this.state.previous == null) {
-            return;
-        }
+    /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void confirm_InputChars_and_Waiting_Input() {
+        this.state = new State(State.Type.Input_Waiting);
 
-        this.state = this.state.previous;
-        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+        confirm_InputChars();
     }
 
-    /**
-     * 触发 {@link InputMsg#InputChars_Inputting} 消息
-     * <p/>
-     * 注：键盘的{@link #state 状态}不变
-     */
-    protected void fire_InputChars_Inputting(Keyboard.KeyFactory keyFactory, Key<?> key) {
-        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, key);
+    /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void commit_InputList_and_Waiting_Input() {
+        this.state = new State(State.Type.Input_Waiting);
 
-        fireInputMsg(InputMsg.InputChars_Inputting, data);
+        commit_InputList();
     }
 
     /**
@@ -211,6 +206,27 @@ public abstract class BaseKeyboard implements Keyboard {
         this.state = new State(State.Type.Input_Waiting);
 
         fire_InputChars_Inputting(getKeyFactory(), key);
+    }
+
+    /** 回到前序状态 */
+    protected void back_To_Previous_State() {
+        if (this.state.previous == null) {
+            return;
+        }
+
+        this.state = this.state.previous;
+        end_InputChars_Inputting();
+    }
+
+    /**
+     * 触发 {@link InputMsg#InputChars_Inputting} 消息
+     * <p/>
+     * 注：键盘的{@link #state 状态}不变
+     */
+    protected void fire_InputChars_Inputting(Keyboard.KeyFactory keyFactory, Key<?> key) {
+        InputMsgData data = new InputCharsInputtingMsgData(keyFactory, key);
+
+        fireInputMsg(InputMsg.InputChars_Inputting, data);
     }
 
     /**
@@ -238,15 +254,28 @@ public abstract class BaseKeyboard implements Keyboard {
         commit_InputList_and_Waiting_Input();
     }
 
-    /** 确认当前输入 */
+    /** 当前字符输入已完成，且保持状态不变 */
+    protected void end_InputChars_Inputting() {
+        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+    }
+
+    /** 确认当前输入，且状态保持不变 */
     protected void confirm_InputChars() {
         getInputList().confirmPending();
 
         end_InputChars_Inputting();
     }
 
+    /** 确认当前输入并移至下一个输入，且状态保持不变 */
+    protected void confirm_InputChars_and_MoveToNext() {
+        getInputList().confirmPending();
+        getInputList().moveToNextCharInput();
+
+        end_InputChars_Inputting();
+    }
+
     /**
-     * 确认回车或空格的控制按键输入
+     * 确认回车或空格的控制按键输入，且状态保持不变
      * <p/>
      * 为回车时，直接提交当前输入或在目标输入组件中输入换行；
      * 为空格时，当输入列表为空时，直接向目标输入组件输入空格，
@@ -266,15 +295,8 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 否则，直接提交按键输入
         else {
-            commit_InputList_and_Waiting_Input();
+            commit_InputList();
         }
-    }
-
-    /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
-    protected void commit_InputList_and_Waiting_Input() {
-        this.state = new State(State.Type.Input_Waiting);
-
-        commit_InputList();
     }
 
     /** 提交输入列表，且状态保持不变 */
@@ -293,7 +315,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void before_Commit_InputList() {}
 
     /**
-     * 回删输入列表中的输入或输入目标中的内容
+     * 回删输入列表中的输入或输入目标中的内容，且状态保持不变
      * <p/>
      * 输入列表不为空时，在输入列表中做删除，否则，在输入目标中做删除
      */
@@ -304,17 +326,17 @@ public abstract class BaseKeyboard implements Keyboard {
             } else {
                 getInputList().deleteBackward();
             }
+
             end_InputChars_Inputting();
         } else {
             backspace_InputTarget();
         }
     }
 
-    /** 回删输入目标中的内容 */
+    /**
+     * 回删输入目标中的内容，且状态保持不变
+     */
     protected void backspace_InputTarget() {
-        // 单次操作，直接重置为待输入状态
-        this.state = new State(State.Type.Input_Waiting);
-
         fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(getKeyFactory()));
     }
 
@@ -381,39 +403,47 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputAudio_Playing, data);
     }
 
-    /** 处理 {@link CtrlKey.Type#CommitInputList} 控制按键点击事件 */
-    protected void on_CtrlKey_CommitInputList(CtrlKey key) {commit_InputList_and_Waiting_Input();}
-
-    /** 处理 {@link CtrlKey.Type#Backspace} 控制按键点击事件 */
-    protected void on_CtrlKey_Backspace(CtrlKey key) {backspace_InputList_or_InputTarget();}
-
-    /** 处理 {@link CtrlKey.Type#Space} 或 {@link CtrlKey.Type#Enter} 控制按键点击事件 */
-    protected void on_CtrlKey_Space_or_Enter(CtrlKey key) {confirm_Input_Enter_or_Space(key);}
-
     /** 尝试处理控制按键消息 */
-    protected boolean try_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    protected boolean try_Common_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
+            case KeyLongPressTick: {
+                switch (key.getType()) {
+                    case Backspace:
+                    case Space:
+                    case Enter:
+                        // 长按 tick 视为连续单击
+                        return try_Common_OnCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                }
+                break;
+            }
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
                     // 定位按钮不响应单击和双击操作
                     case LocateInputCursor:
                         return true;
+                    // 在任意副键盘中提交输入，都直接回到初始键盘
                     case CommitInputList: {
                         play_InputtingSingleTick_Audio(key);
-                        on_CtrlKey_CommitInputList(key);
+                        commit_InputList_and_Waiting_Input();
                         return true;
                     }
                     case Backspace: {
                         play_InputtingSingleTick_Audio(key);
-                        on_CtrlKey_Backspace(key);
+                        backspace_InputList_or_InputTarget();
                         return true;
                     }
                     case Space:
                     case Enter: {
                         play_InputtingSingleTick_Audio(key);
-                        on_CtrlKey_Space_or_Enter(key);
+                        confirm_Input_Enter_or_Space(key);
                         return true;
+                    }
+                    // 点击 退出 按钮，则退回到前序状态
+                    case Exit: {
+                        play_InputtingSingleTick_Audio(key);
+                        back_To_Previous_State();
+                        break;
                     }
                     case SwitchIME: {
                         play_InputtingSingleTick_Audio(key);
@@ -447,43 +477,36 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case SwitchToEmojiKeyboard: {
                         play_InputtingSingleTick_Audio(key);
-                        do_Emoji_Choosing(null, key);
+                        do_Emoji_Choosing();
                         return true;
                     }
                 }
                 break;
             }
-            case KeyLongPressStart: {
-                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+        }
+
+        // 处理定位按钮
+        if (key.getType() == CtrlKey.Type.LocateInputCursor) {
+            switch (msg) {
+                case KeyLongPressStart: {
                     play_InputtingDoubleTick_Audio(key);
+
                     do_InputTarget_Cursor_Locating(key, null);
+
                     return true;
                 }
-                break;
-            }
-            case KeyLongPressTick: {
-                switch (key.getType()) {
-                    case Backspace:
-                    case Space:
-                    case Enter:
-                        // 长按 tick 视为连续单击
-                        return try_OnCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
-                }
-                break;
-            }
-            case FingerSlipping: {
-                // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
-                if (key.getType() == CtrlKey.Type.LocateInputCursor) {
-                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                case FingerSlipping: {
                     play_InputtingSingleTick_Audio(key);
 
+                    // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
+                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
                     Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
+
                     InputMsgData idata = new InputTargetCursorLocatingMsgData(key, anchor);
                     fireInputMsg(InputMsg.InputTarget_Cursor_Locating, idata);
 
                     return true;
                 }
-                break;
             }
         }
 
@@ -512,23 +535,6 @@ public abstract class BaseKeyboard implements Keyboard {
             case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
-                    // 点击 退出 按钮，则退回到前序状态
-                    case Exit:
-                        play_InputtingSingleTick_Audio(key);
-
-                        back_To_Previous_State();
-                        break;
-                    case Backspace:
-                        play_InputtingSingleTick_Audio(key);
-
-                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData());
-                        break;
-                    case Enter:
-                        play_InputtingSingleTick_Audio(key);
-
-                        InputMsgData msgData = new InputListCommittingMsgData("\n");
-                        fireInputMsg(InputMsg.InputList_Committing, msgData);
-                        break;
                     case Redo:
                         play_InputtingSingleTick_Audio(key);
 
@@ -553,16 +559,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         play_InputtingSingleTick_Audio(key);
 
                         do_InputTarget_Copying();
-                        break;
-                }
-                break;
-            }
-            case KeyLongPressTick: {
-                switch (key.getType()) {
-                    case Backspace:
-                    case Enter:
-                        // 长按 tick 视为连续单击
-                        on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
                         break;
                 }
                 break;
@@ -623,11 +619,11 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>
 
     // <<<<<<<< 表情符号选择逻辑
-    private void do_Emoji_Choosing(CharInput input, CtrlKey key) {
+    protected void do_Emoji_Choosing() {
         int pageSize = KeyTable.getEmojiKeysPageSize();
         Emojis emojis = this.pinyinDict.getEmojis(pageSize);
 
-        ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(input, emojis, pageSize);
+        ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
         if (stateData.getData().isEmpty()) {
             stateData.setGroup(stateData.getGroups().get(1));
         }
@@ -655,9 +651,14 @@ public abstract class BaseKeyboard implements Keyboard {
                     // 直接提交输入
                     commit_InputList();
                 } else {
-                    // 追加输入
-                    getInputList().confirmPending();
-                    fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+                    // 连续输入
+                    if (getInputList().getSelected() instanceof GapInput) {
+                        confirm_InputChars();
+                    }
+                    // 替换输入
+                    else {
+                        confirm_InputChars_and_MoveToNext();
+                    }
                 }
             }
             break;
@@ -666,10 +667,9 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
-                    case ToggleEmoji_Group: {
+                    case Toggle_Emoji_Group: {
                         play_InputtingSingleTick_Audio(key);
 
                         ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
@@ -678,32 +678,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         do_Update_Emoji_Keys(false, false);
                         break;
                     }
-                    case Exit:
-                        play_InputtingSingleTick_Audio(key);
-                        back_To_Previous_State();
-                        break;
-                    case Backspace:
-                        play_InputtingSingleTick_Audio(key);
-                        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData());
-                        break;
-                    case Space:
-                    case Enter:
-                        play_InputtingSingleTick_Audio(key);
-
-                        InputMsgData msgData = new InputListCommittingMsgData(key.getText());
-                        fireInputMsg(InputMsg.InputList_Committing, msgData);
-                        break;
-                }
-                break;
-            }
-            case KeyLongPressTick: {
-                switch (key.getType()) {
-                    case Backspace:
-                    case Space:
-                    case Enter:
-                        // 长按 tick 视为连续单击
-                        on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
-                        break;
                 }
                 break;
             }

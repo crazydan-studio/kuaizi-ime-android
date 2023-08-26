@@ -131,21 +131,21 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         RevokeInput,
 
         /** 在候选字状态下切换当前输入的平舌和翘舌 */
-        ToggleInputSpell_zcs_h,
+        Toggle_PinyinInputSpell_zcs_h,
         /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
-        ToggleInputSpell_ng,
+        Toggle_PinyinInputSpell_ng,
         /** 在候选字状态下切换当前输入的 n/l */
-        ToggleInputSpell_nl,
+        Toggle_PinyinInputSpell_nl,
         /** 在候选字状态下根据笔画过滤候选字：横 */
-        FilterInputCandidate_stroke_heng,
+        Filter_PinyinInputCandidate_stroke_heng,
         /** 在候选字状态下根据笔画过滤候选字：竖 */
-        FilterInputCandidate_stroke_shu,
+        Filter_PinyinInputCandidate_stroke_shu,
         /** 在候选字状态下根据笔画过滤候选字：撇 */
-        FilterInputCandidate_stroke_pie,
+        Filter_PinyinInputCandidate_stroke_pie,
         /** 在候选字状态下根据笔画过滤候选字：捺 */
-        FilterInputCandidate_stroke_na,
+        Filter_PinyinInputCandidate_stroke_na,
         /** 在候选字状态下根据笔画过滤候选字：折 */
-        FilterInputCandidate_stroke_zhe,
+        Filter_PinyinInputCandidate_stroke_zhe,
 
         /** 输入光标定位按钮 */
         LocateInputCursor,
@@ -188,11 +188,9 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         SwitchToEmojiKeyboard,
 
         /** 切换中英文的标点符号 */
-        ToggleSymbol_Locale_Zh_and_En,
-        /** 切换标点和表情符号 */
-        ToggleSymbol_Emoji,
+        Toggle_Symbol_Locale_Zh_and_En,
         /** 切换表情符号分组 */
-        ToggleEmoji_Group,
+        Toggle_Emoji_Group,
 
         /** 数学 = */
         Math_Equal,

@@ -76,9 +76,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case ToggleInputSpell_zcs_h:
-                case ToggleInputSpell_ng:
-                case ToggleInputSpell_nl:
+                case Toggle_PinyinInputSpell_zcs_h:
+                case Toggle_PinyinInputSpell_ng:
+                case Toggle_PinyinInputSpell_nl:
                     ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
                     break;
                 default:
@@ -99,9 +99,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case ToggleInputSpell_zcs_h:
-                case ToggleInputSpell_ng:
-                case ToggleInputSpell_nl:
+                case Toggle_PinyinInputSpell_zcs_h:
+                case Toggle_PinyinInputSpell_ng:
+                case Toggle_PinyinInputSpell_nl:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
                     return VIEW_TYPE_CTRL_KEY;

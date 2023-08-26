@@ -65,11 +65,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
                 CharInput input = stateData.getInput();
 
-                return () -> KeyTable.createInputCandidateWordKeys(createKeyTableConfigure(),
-                                                                   input,
-                                                                   stateData.getCandidates(),
-                                                                   stateData.getPageStart(),
-                                                                   stateData.getPageSize());
+                return () -> KeyTable.createPinyinInputCandidateWordKeys(createKeyTableConfigure(),
+                                                                         input,
+                                                                         stateData.getCandidates(),
+                                                                         stateData.getPageStart(),
+                                                                         stateData.getPageSize());
             }
             case SymbolEmoji_Choosing: {
                 ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
@@ -159,12 +159,11 @@ public class PinyinKeyboard extends BaseKeyboard {
             case FingerMovingStart: {
                 // 开始滑屏输入
                 if (key.getType() == CharKey.Type.Alphabet) {
+                    play_InputtingDoubleTick_Audio(key);
+
                     this.state = new State(State.Type.Input_Slipping, new SlippingInputStateData());
 
                     CharInput input = getInputList().newPending();
-
-                    play_InputtingDoubleTick_Audio(key);
-
                     onSlippingInput(input, key);
                 }
                 break;
@@ -212,7 +211,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     determineNotConfirmedInputWordsBefore(input);
                 }
 
-                confirm_InputChars();
+                confirm_InputChars_and_Waiting_Input();
                 break;
             }
         }
@@ -258,51 +257,46 @@ public class PinyinKeyboard extends BaseKeyboard {
                 CharInput input = getInputList().getPending();
                 // 丢弃或变更拼音
                 switch (key.getType()) {
-                    case CommitInputList: {
-                        on_CtrlKey_CommitInputList(key);
-                        break;
-                    }
                     case DropInput: {
                         getInputList().deleteSelected();
-
-                        confirm_InputChars();
+                        confirm_InputChars_and_Waiting_Input();
                         break;
                     }
                     case ConfirmInput: {
                         onConfirmSelectedInputCandidate();
                         break;
                     }
-                    case ToggleInputSpell_zcs_h: {
+                    case Toggle_PinyinInputSpell_zcs_h: {
                         input.toggle_Pinyin_SCZ_Starting();
 
                         onNewChoosingInputCandidate(input, true);
                         break;
                     }
-                    case ToggleInputSpell_nl: {
+                    case Toggle_PinyinInputSpell_nl: {
                         input.toggle_Pinyin_NL_Starting();
 
                         onNewChoosingInputCandidate(input, true);
                         break;
                     }
-                    case ToggleInputSpell_ng: {
+                    case Toggle_PinyinInputSpell_ng: {
                         input.toggle_Pinyin_NG_Ending();
 
                         onNewChoosingInputCandidate(input, true);
                         break;
                     }
-                    case FilterInputCandidate_stroke_heng:
+                    case Filter_PinyinInputCandidate_stroke_heng:
                         stroke = "1";
                         break;
-                    case FilterInputCandidate_stroke_shu:
+                    case Filter_PinyinInputCandidate_stroke_shu:
                         stroke = "2";
                         break;
-                    case FilterInputCandidate_stroke_pie:
+                    case Filter_PinyinInputCandidate_stroke_pie:
                         stroke = "3";
                         break;
-                    case FilterInputCandidate_stroke_na:
+                    case Filter_PinyinInputCandidate_stroke_na:
                         stroke = "4";
                         break;
-                    case FilterInputCandidate_stroke_zhe:
+                    case Filter_PinyinInputCandidate_stroke_zhe:
                         stroke = "5";
                         break;
                 }
@@ -377,7 +371,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 getInputList().newPending().appendKey(key);
 
                 if (!isEmpty) {
-                    confirm_InputChars();
+                    confirm_InputChars_and_Waiting_Input();
                 } else {
                     // 单个标点、表情则直接提交输入
                     commit_InputList_and_Waiting_Input();
@@ -483,7 +477,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
             List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, 18);
 
-            int pageSize = KeyTable.getInputCandidateKeysPageSize();
+            int pageSize = KeyTable.getPinyinInputCandidateKeysPageSize();
             if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
                 // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
                 for (int i = topBestCandidates.size(); i < pageSize; i++) {
@@ -650,7 +644,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
         // 其余情况都是直接做替换输入
         else {
-            confirm_InputChars();
+            confirm_InputChars_and_Waiting_Input();
         }
     }
     // >>>>>>>>>
@@ -685,7 +679,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_ChoosingSymbolEmoji_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (try_OnCtrlKeyMsg(msg, key, data)) {
+        if (try_Common_OnCtrlKeyMsg(msg, key, data)) {
             return;
         }
 
@@ -698,7 +692,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         back_To_Previous_State();
                         break;
                     }
-                    case ToggleSymbol_Locale_Zh_and_En: {
+                    case Toggle_Symbol_Locale_Zh_and_En: {
                         ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
                         if (stateData.getSymbols() == SymbolKeyboard.chinese_symbols) {
                             stateData.setSymbols(SymbolKeyboard.latin_symbols);

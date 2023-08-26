@@ -65,7 +65,7 @@ public class KeyTable {
     private static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
                                                                           R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
-    private static final KeyColor key_char_emoji_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
+    private static final KeyColor key_char_emoji_color = KeyColor.create(-1, R.attr.key_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -153,6 +153,7 @@ public class KeyTable {
                     new int[] { 3, 0 },
                     new int[] { 3, 1 },
                     new int[] { 3, 2 },
+                    new int[] { 3, 3 },
                     new int[] { 3, 4 },
                     new int[] { 3, 5 },
                     new int[] { 3, 6 },
@@ -332,6 +333,8 @@ public class KeyTable {
                                    KeyColor.create(R.attr.key_char_level_4_fg_color, R.attr.key_char_level_4_bg_color));
         char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"),
                                    KeyColor.create(R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color));
+        char_key_color_palette.put(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
+                                   KeyColor.create(R.attr.key_char_level_5_fg_color, R.attr.key_char_level_5_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             KeyStyle.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
@@ -362,12 +365,10 @@ public class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToEmojiKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Locale_Zh_and_En,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.ToggleSymbol_Emoji,
-                            KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ToggleEmoji_Group,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
@@ -392,21 +393,21 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_ng,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_ng,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_zcs_h,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ToggleInputSpell_nl,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_nl,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_heng,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_shu,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_pie,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_na,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.FilterInputCandidate_stroke_zhe,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp,
@@ -496,63 +497,63 @@ public class KeyTable {
                 new Key[] {
                         //ctrlKey(config, CtrlKey.Type.SwitchIME),
                         ctrlKey(config, CtrlKey.Type.SwitchHandMode),
-                        alphabetKey("a"),
-                        alphabetKey("b"),
-                        alphabetKey("c"),
-                        alphabetKey("d"),
-                        alphabetKey("e"),
-                        alphabetKey("f"),
-                        noopCtrlKey(),
+                        numberKey("8"),
+                        numberKey("7"),
+                        numberKey("6"),
+                        numberKey("5"),
+                        numberKey("4"),
+                        numberKey("3"),
+                        numberKey("2"),
                         } //
                 , new Key[] {
-                noopCtrlKey(),
+                numberKey("9"),
+                alphabetKey("a"),
+                alphabetKey("b"),
+                alphabetKey("c"),
+                alphabetKey("d"),
+                alphabetKey("e"),
+                alphabetKey("f"),
+                numberKey("1"),
+                } //
+                , new Key[] {
+                ctrlKey(config, CtrlKey.Type.SwitchToPinyinKeyboard),
                 alphabetKey("g"),
                 alphabetKey("h"),
                 alphabetKey("i"),
                 alphabetKey("j"),
                 alphabetKey("k"),
-                ctrlKey(config, CtrlKey.Type.Backspace),
-                noopCtrlKey(),
+                alphabetKey("l"),
+                numberKey("0"),
                 } //
                 , new Key[] {
-                ctrlKey(config, CtrlKey.Type.SwitchToPinyinKeyboard),
-                alphabetKey("l"),
+                ctrlKey(config, CtrlKey.Type.SwitchToEmojiKeyboard),
                 alphabetKey("m"),
                 alphabetKey("n"),
+                ctrlKey(config, CtrlKey.Type.LocateInputCursor),
                 alphabetKey("o"),
                 alphabetKey("p"),
-                ctrlKey(config, CtrlKey.Type.Space),
-                noopCtrlKey(),
-                } //
-                , new Key[] {
-                noopCtrlKey(),
                 alphabetKey("q"),
-                alphabetKey("r"),
-                ctrlKey(config, CtrlKey.Type.LocateInputCursor),
-                alphabetKey("s"),
-                alphabetKey("t"),
                 config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config),
-                noopCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(config, CtrlKey.Type.SwitchToSymbolKeyboard),
+                alphabetKey("r"),
+                alphabetKey("s"),
+                alphabetKey("t"),
                 alphabetKey("u"),
                 alphabetKey("v"),
                 alphabetKey("w"),
-                alphabetKey("x"),
-                alphabetKey("y"),
-                alphabetKey("z"),
-                noopCtrlKey(),
+                ctrlKey(config, CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                symbolKey(":"),
-                symbolKey("!"),
-                symbolKey("?"),
                 symbolKey("#"),
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                noopCtrlKey(),
+                alphabetKey("x"),
+                alphabetKey("y"),
+                alphabetKey("z"),
+                ctrlKey(config, CtrlKey.Type.Backspace),
                 },
                 };
 
@@ -561,7 +562,7 @@ public class KeyTable {
                 Key<?> key = keys[i][j];
 
                 if (key instanceof CharKey && ((CharKey) key).getType() == CharKey.Type.Alphabet) {
-                    KeyColor color = latin_key_char_alphabet_level_colors[i];
+                    KeyColor color = latin_key_char_alphabet_level_colors[i - 1];
                     key.setColor(color);
                 }
             }
@@ -637,7 +638,7 @@ public class KeyTable {
     }
 
     /** 候选字按键的分页大小 */
-    public static int getInputCandidateKeysPageSize() {
+    public static int getPinyinInputCandidateKeysPageSize() {
         int size = 0;
         for (int[][] level : input_word_key_around_level_coords) {
             size += level.length;
@@ -646,7 +647,7 @@ public class KeyTable {
     }
 
     /** 创建输入候选字按键 */
-    public static Key<?>[][] createInputCandidateWordKeys(
+    public static Key<?>[][] createPinyinInputCandidateWordKeys(
             Config config, CharInput input, List<InputWord> candidates, int startIndex, int pageSize
     ) {
         Key<?>[][] gridKeys = emptyGridKeys();
@@ -666,12 +667,12 @@ public class KeyTable {
 
         // 从第二页开始支持按笔画过滤
         if (currentPage > 1 && totalPage > 1 && remainDataSize > 8) {
-            gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_heng).setLabel("一");
-            gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_shu).setLabel("丨");
-            gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_pie).setLabel("丿");
-            gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.FilterInputCandidate_stroke_na).setLabel("㇏");
-            gridKeys[5][index_0] = ctrlKey(config,
-                                           CtrlKey.Type.FilterInputCandidate_stroke_zhe).setLabel("\uD840\uDCCB");
+            gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng).setLabel("一");
+            gridKeys[1][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu).setLabel("丨");
+            gridKeys[2][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie).setLabel("丿");
+            gridKeys[4][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na).setLabel("㇏");
+            gridKeys[5][index_0] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe).setLabel(
+                    "\uD840\uDCCB");
         }
 
         if (currentPage == 1) {
@@ -684,11 +685,14 @@ public class KeyTable {
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
-            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_zcs_h).setLabel(s + "," + s + "h");
+            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h).setLabel(s
+                                                                                                        + ","
+                                                                                                        + s
+                                                                                                        + "h");
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
-            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_nl).setLabel("n,l  ");
+            gridKeys[0][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_nl).setLabel("n,l  ");
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
@@ -702,7 +706,10 @@ public class KeyTable {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
-            gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.ToggleInputSpell_ng).setLabel(tail + "," + tail + "g");
+            gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_ng).setLabel(tail
+                                                                                                     + ","
+                                                                                                     + tail
+                                                                                                     + "g");
             endingToggle.toggle_Pinyin_NG_Ending();
         }
         // 若拼音变换无效，则不提供切换按钮
@@ -751,25 +758,25 @@ public class KeyTable {
     public static Key<?>[][] createLocatorKeys(Config config) {
         Key<?>[][] gridKeys = emptyGridKeys();
 
-        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
-        int index_1 = changeIndexForHandMode(config, gridKeys, 1);
         int index_2 = changeIndexForHandMode(config, gridKeys, 2);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_4 = changeIndexForHandMode(config, gridKeys, 4);
-        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+        int index_5 = changeIndexForHandMode(config, gridKeys, 5);
+        int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
-        gridKeys[3][index_1] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Locator);
-        gridKeys[3][index_4] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Selector);
+        gridKeys[2][index_2] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Locator);
+        gridKeys[2][index_5] = ctrlKey(config, CtrlKey.Type.LocateInputCursor_Selector);
 
-        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[3][index_6] = enterCtrlKey(config);
-        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][index_7] = enterCtrlKey(config);
+        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
-        gridKeys[4][isLeft ? 4 : 3] = ctrlKey(config, CtrlKey.Type.Cut).setLabel("剪切");
-        gridKeys[5][index_1] = ctrlKey(config, CtrlKey.Type.Redo).setLabel("重做");
-        gridKeys[5][index_2] = ctrlKey(config, CtrlKey.Type.Undo).setLabel("撤销");
-        gridKeys[5][index_3] = ctrlKey(config, CtrlKey.Type.Paste).setLabel("粘贴");
-        gridKeys[5][index_4] = ctrlKey(config, CtrlKey.Type.Copy).setLabel("复制");
+        gridKeys[3][3] = ctrlKey(config, CtrlKey.Type.Cut).setLabel("剪切");
+        gridKeys[4][index_2] = ctrlKey(config, CtrlKey.Type.Redo).setLabel("重做");
+        gridKeys[4][index_3] = ctrlKey(config, CtrlKey.Type.Undo).setLabel("撤销");
+        gridKeys[4][index_4] = ctrlKey(config, CtrlKey.Type.Paste).setLabel("粘贴");
+        gridKeys[4][index_5] = ctrlKey(config, CtrlKey.Type.Copy).setLabel("复制");
 
         return gridKeys;
     }
@@ -785,18 +792,15 @@ public class KeyTable {
 
     /** 创建表情符号按键 */
     public static Key<?>[][] createEmojiKeys(
-            Config config, CharInput input, List<String> groups, List<InputWord> words, String selectedGroup,
-            int startIndex, int pageSize
+            Config config, List<String> groups, List<InputWord> words, String selectedGroup, int startIndex,
+            int pageSize
     ) {
         Key<?>[][] gridKeys = emptyGridKeys();
 
         int dataSize = words.size();
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
-        InputWord selectedWord = input != null ? input.getWord() : null;
 
-        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
-        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
@@ -807,11 +811,10 @@ public class KeyTable {
 
             int x = keyCoord[0];
             int y = keyCoord[1];
-            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.ToggleEmoji_Group).setLabel(group).setDisabled(selected);
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Emoji_Group).setLabel(group).setDisabled(selected);
         }
 
         gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
-        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.ConfirmInput);
         gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
         gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
@@ -833,12 +836,6 @@ public class KeyTable {
                         KeyColor color = latin_key_char_alphabet_level_colors[level];
 
                         InputWordKey key = InputWordKey.create(word).setColor(color);
-
-                        // 禁用已被选中的按键
-                        if (word.equals(selectedWord)) {
-                            key.setDisabled(true);
-                        }
-
                         gridKeys[x][y] = key;
                     }
                 } else {
@@ -877,7 +874,7 @@ public class KeyTable {
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
         int index_6 = changeIndexForHandMode(config, gridKeys, 6);
 
-        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.ToggleSymbol_Locale_Zh_and_En).setLabel("中/英");
+        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En).setLabel("中/英");
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
         gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
 
@@ -926,16 +923,17 @@ public class KeyTable {
 
         int index_0 = changeIndexForHandMode(config, gridKeys, 0);
         int index_3 = changeIndexForHandMode(config, gridKeys, 3);
-        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+        int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][index_0] = ctrlKey(config, CtrlKey.Type.SwitchHandMode);
-        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Backspace);
-        gridKeys[2][index_6] = ctrlKey(config, CtrlKey.Type.Space);
-        gridKeys[3][index_6] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
+
         gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.Math_Equal).setLabel("=");
 
         if (config.keyboardConfig.getSwitchFromType() != null) {
-            gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
+            gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
         }
 
         int keyIndex = 0;

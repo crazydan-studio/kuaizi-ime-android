@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
@@ -32,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @date 2023-08-26
  */
 public class ChoosingEmojiStateData implements State.Data {
-    private final CharInput input;
     private final Emojis emojis;
     /** 分页大小 */
     private final int pageSize;
@@ -42,14 +40,9 @@ public class ChoosingEmojiStateData implements State.Data {
     /** 分页开始序号 */
     private int pageStart;
 
-    public ChoosingEmojiStateData(CharInput input, Emojis emojis, int pageSize) {
-        this.input = input;
+    public ChoosingEmojiStateData(Emojis emojis, int pageSize) {
         this.emojis = emojis;
         this.pageSize = pageSize;
-    }
-
-    public CharInput getInput() {
-        return this.input;
     }
 
     public List<String> getGroups() {
