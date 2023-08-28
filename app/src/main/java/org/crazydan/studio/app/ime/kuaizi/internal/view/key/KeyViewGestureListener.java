@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
@@ -94,8 +94,8 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 onMovingEnd(keyView, data);
                 break;
             }
-            case Slipping: {
-                onSlipping(keyView, data);
+            case Flipping: {
+                onFlipping(keyView, data);
                 break;
             }
         }
@@ -173,13 +173,13 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerMovingEnd, msgData);
     }
 
-    private void onSlipping(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
+    private void onFlipping(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         Key<?> targetKey = getKey(keyView);
 
-        Motion motion = ((RecyclerViewGestureDetector.SlippingGestureData) data).motion;
-        UserFingerSlippingMsgData msgData = new UserFingerSlippingMsgData(targetKey, motion);
+        Motion motion = ((RecyclerViewGestureDetector.FlippingGestureData) data).motion;
+        UserFingerFlippingMsgData msgData = new UserFingerFlippingMsgData(targetKey, motion);
 
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerSlipping, msgData);
+        this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerFlipping, msgData);
     }
 
     private void onUserKeyMsg(UserKeyMsg msg, KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {

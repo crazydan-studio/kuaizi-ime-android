@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
- * {@link State.Type#Input_Candidate_Choosing}的状态数据
+ * {@link State.Type#InputCandidate_Choosing}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10

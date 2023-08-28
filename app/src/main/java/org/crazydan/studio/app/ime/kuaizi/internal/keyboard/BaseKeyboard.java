@@ -32,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -45,7 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerSlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -162,8 +163,8 @@ public abstract class BaseKeyboard implements Keyboard {
                 return true;
             }
             case Emoji_Choosing: {
-                if (msg == UserKeyMsg.FingerSlipping) {
-                    on_ChoosingEmoji_PageSlippingMsg(msg, key, data);
+                if (msg == UserKeyMsg.FingerFlipping) {
+                    on_ChoosingEmoji_PageFlippingMsg(msg, key, data);
                 } else if (key instanceof InputWordKey) {
                     on_ChoosingEmoji_InputWordKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
@@ -340,6 +341,17 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(getKeyFactory()));
     }
 
+    /** 为状态数据做翻页处理 */
+    protected void flip_Page_for_PagingState(PagingStateData<?> stateData, UserFingerFlippingMsgData data) {
+        Motion motion = data.motion;
+        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+
+        boolean needPaging = pageUp ? stateData.nextPage() : stateData.prevPage();
+        if (needPaging) {
+            play_InputPageFlipping_Audio();
+        }
+    }
+
     /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Type target) {
         this.state = new State(State.Type.Input_Waiting);
@@ -481,7 +493,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case SwitchToEmojiKeyboard: {
                         play_InputtingSingleTick_Audio(key);
-                        do_Emoji_Choosing();
+                        start_Emoji_Choosing();
                         return true;
                     }
                 }
@@ -499,11 +511,11 @@ public abstract class BaseKeyboard implements Keyboard {
 
                     return true;
                 }
-                case FingerSlipping: {
+                case FingerFlipping: {
                     play_InputtingSingleTick_Audio(key);
 
                     // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
-                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                    Motion motion = ((UserFingerFlippingMsgData) data).motion;
                     Motion anchor = LocatingInputCursorStateData.createAnchor(motion);
 
                     InputMsgData idata = new InputTargetCursorLocatingMsgData(key, anchor);
@@ -566,10 +578,10 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 break;
             }
-            case FingerSlipping:
+            case FingerFlipping:
                 // Note: 仅在 按键 上的滑动才有效
                 if (key != null) {
-                    Motion motion = ((UserFingerSlippingMsgData) data).motion;
+                    Motion motion = ((UserFingerFlippingMsgData) data).motion;
                     switch (key.getType()) {
                         case LocateInputCursor_Locator:
                             play_InputtingSingleTick_Audio(key);
@@ -622,7 +634,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>
 
     // <<<<<<<< 表情符号选择逻辑
-    protected void do_Emoji_Choosing() {
+    protected void start_Emoji_Choosing() {
         int pageSize = KeyTable.getEmojiKeysPageSize();
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
@@ -632,8 +644,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         this.state = new State(State.Type.Emoji_Choosing, stateData, this.state);
-
-        do_Update_Emoji_Keys(false, false);
+        do_Emoji_Choosing();
     }
 
     private void on_ChoosingEmoji_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
@@ -677,7 +688,7 @@ public abstract class BaseKeyboard implements Keyboard {
                         ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
                         stateData.setGroup(key.getLabel());
 
-                        do_Update_Emoji_Keys(false, false);
+                        do_Emoji_Choosing();
                         break;
                     }
                 }
@@ -686,29 +697,15 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    private void on_ChoosingEmoji_PageSlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        Motion motion = ((UserFingerSlippingMsgData) data).motion;
-        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+    private void on_ChoosingEmoji_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
 
-        do_Update_Emoji_Keys(true, pageUp);
+        do_Emoji_Choosing();
     }
 
-    private void do_Update_Emoji_Keys(boolean doPaging, boolean pageUp) {
-        ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
-        if (doPaging) {
-            boolean hasPage;
-            if (pageUp) {
-                hasPage = stateData.nextPage();
-            } else {
-                hasPage = stateData.prevPage();
-            }
-
-            if (hasPage) {
-                play_InputPageFlipping_Audio();
-            }
-        }
-
-        fireInputMsg(InputMsg.Emoji_Choosing, new InputCommonMsgData(getKeyFactory()));
+    private void do_Emoji_Choosing() {
+        InputMsgData data = new InputCommonMsgData(getKeyFactory());
+        fireInputMsg(InputMsg.Emoji_Choosing, data);
     }
     // >>>>>>>>
 }

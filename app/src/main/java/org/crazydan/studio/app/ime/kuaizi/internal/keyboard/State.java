@@ -54,13 +54,13 @@ public class State {
         InputTarget_Cursor_Locating,
 
         /** 输入候选字选择中 */
-        Input_Candidate_Choosing,
+        InputCandidate_Choosing,
 
         /** 表情符号选择中 */
         Emoji_Choosing,
 
         /** 符号（标点、表情）选择中 */
-        SymbolEmoji_Choosing,
+        Symbol_Choosing,
     }
 
     public interface Data {}

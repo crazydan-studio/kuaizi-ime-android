@@ -151,7 +151,7 @@ public class SymbolKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case FingerSlipping: {
+            case FingerFlipping: {
                 break;
             }
         }

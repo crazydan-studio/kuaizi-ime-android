@@ -123,8 +123,8 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
                 if (!this.longPressing.get() //
                     && !this.moving) {
                     onSingleTap(data);
-                } else if (!this.longPressing.get() && isSlipping()) {
-                    onSlipping(data);
+                } else if (!this.longPressing.get() && isFlipping()) {
+                    onFlipping(data);
                 }
 
                 onGestureEnd(data);
@@ -265,7 +265,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
     }
 
-    private void onSlipping(GestureData data) {
+    private void onFlipping(GestureData data) {
         int size = this.movingTracker.size();
         GestureData g1 = this.movingTracker.get(0);
         // Note: g2 应该始终与 data 相同
@@ -277,12 +277,12 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
 
         // Note: 坐标位置设置为事件初始发生位置
-        GestureData newData = new SlippingGestureData(g1, motion);
+        GestureData newData = new FlippingGestureData(g1, motion);
 
-        triggerListeners(GestureType.Slipping, newData);
+        triggerListeners(GestureType.Flipping, newData);
     }
 
-    private boolean isSlipping() {
+    private boolean isFlipping() {
         int size = this.movingTracker.size();
         if (size < 2) {
             return false;
@@ -351,7 +351,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         /** 结束移动 */
         MovingEnd,
         /** 滑动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
-        Slipping,
+        Flipping,
     }
 
     public interface Listener {
@@ -389,10 +389,10 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
     }
 
-    public static class SlippingGestureData extends GestureData {
+    public static class FlippingGestureData extends GestureData {
         public final Motion motion;
 
-        public SlippingGestureData(GestureData g, Motion motion) {
+        public FlippingGestureData(GestureData g, Motion motion) {
             super(g.x, g.y, g.timestamp);
             this.motion = motion;
         }

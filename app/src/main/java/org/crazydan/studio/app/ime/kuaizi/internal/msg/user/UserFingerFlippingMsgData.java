@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link UserKeyMsg#FingerSlipping}消息数据
+ * {@link UserKeyMsg#FingerFlipping}消息数据
  * <p/>
  * 注：<ul>
  * <li>{@link #target} 为滑动开始所按下的按键；</li>
@@ -32,11 +32,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class UserFingerSlippingMsgData extends UserKeyMsgData {
+public class UserFingerFlippingMsgData extends UserKeyMsgData {
     /** 运动信息 */
     public final Motion motion;
 
-    public UserFingerSlippingMsgData(Key<?> target, Motion motion) {
+    public UserFingerFlippingMsgData(Key<?> target, Motion motion) {
         super(target);
         this.motion = motion;
     }

@@ -58,6 +58,6 @@ public enum InputMsg {
 
     /** 表情符号选择中 */
     Emoji_Choosing,
-    /** 符号（标点、表情）选择中 */
-    SymbolEmoji_Choosing,
+    /** 标点符号选择中 */
+    Symbol_Choosing,
 }
