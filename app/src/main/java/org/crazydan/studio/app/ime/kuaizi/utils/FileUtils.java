@@ -61,16 +61,9 @@ public class FileUtils {
 
     public static void copy(Context context, int rawResId, File target) throws IOException {
         try (
-                InputStream input = context.getResources().openRawResource(rawResId);
                 OutputStream output = Files.newOutputStream(target.toPath());
         ) {
-            int length;
-            byte[] buffer = new byte[1024];
-            while ((length = input.read(buffer)) > 0) {
-                output.write(buffer, 0, length);
-            }
-
-            output.flush();
+            ResourceUtils.copy(context, rawResId, output);
         }
     }
 

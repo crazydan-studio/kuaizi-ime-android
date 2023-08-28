@@ -24,8 +24,9 @@ import android.text.method.LinkMovementMethod;
 import android.widget.ImageView;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
-import static android.text.Html.FROM_HTML_MODE_LEGACY;
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -41,10 +42,12 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
         view.setText(viewText);
     }
 
-    protected void setHtmlText(int viewResId, int htmlTextResId, Object... args) {
+    protected void setHtmlText(int viewResId, int htmlRawResId, Object... args) {
+        String text = ResourceUtils.readString(getApplicationContext(), htmlRawResId, args);
+        text = text.replaceAll("(?m)^\\s+", "").replaceAll("\n", "");
+
         // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
-        String text = getResources().getString(htmlTextResId, args);
-        Spanned viewText = Html.fromHtml(text, FROM_HTML_MODE_LEGACY);
+        Spanned viewText = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
 
         TextView view = findViewById(viewResId);
         view.setText(viewText);

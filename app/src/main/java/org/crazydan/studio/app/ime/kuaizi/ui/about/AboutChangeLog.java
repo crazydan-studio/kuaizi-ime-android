@@ -35,6 +35,6 @@ public class AboutChangeLog extends HtmlSupportActivity {
         setContentView(R.layout.about_text_with_icon_activity);
 
         setIcon(R.id.about_icon, R.drawable.ic_change_log);
-        setHtmlText(R.id.about_text, R.string.text_about_change_log);
+        setHtmlText(R.id.about_text, R.raw.text_about_change_log);
     }
 }

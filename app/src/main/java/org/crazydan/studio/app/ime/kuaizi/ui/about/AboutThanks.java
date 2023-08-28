@@ -37,6 +37,6 @@ public class AboutThanks extends HtmlSupportActivity {
         String appName = getAppName();
 
         setIcon(R.id.about_icon, R.drawable.ic_thanks);
-        setHtmlText(R.id.about_text, R.string.text_about_thanks, appName);
+        setHtmlText(R.id.about_text, R.raw.text_about_thanks, appName);
     }
 }
