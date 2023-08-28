@@ -124,7 +124,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
                 return () -> KeyTable.createEmojiKeys(createKeyTableConfigure(),
                                                       stateData.getGroups(),
-                                                      stateData.getData(),
+                                                      stateData.getPagingData(),
                                                       stateData.getGroup(),
                                                       stateData.getPageStart(),
                                                       stateData.getPageSize());
@@ -627,7 +627,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
-        if (stateData.getData().isEmpty()) {
+        if (stateData.getPagingData().isEmpty()) {
             stateData.setGroup(stateData.getGroups().get(1));
         }
 

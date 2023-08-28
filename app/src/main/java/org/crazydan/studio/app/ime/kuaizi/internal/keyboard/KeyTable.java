@@ -669,7 +669,7 @@ public class KeyTable {
         Key<?>[][] gridKeys = emptyGridKeys();
 
         int dataSize = words.size();
-        int currentPage = startIndex / pageSize + 1;
+        int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
         boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
 
@@ -737,14 +737,14 @@ public class KeyTable {
         int wordIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, pinyin_input_word_key_level_coords);
 
-        for (int level = 0; level < levelKeyCoords.length; level++) {
+        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
             int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < words.size()) {
+                if (wordIndex < dataSize) {
                     InputWord word = words.get(wordIndex);
 
                     if (word != null) {
@@ -840,14 +840,14 @@ public class KeyTable {
         int wordIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, emoji_key_level_coords);
 
-        for (int level = 0; level < levelKeyCoords.length; level++) {
+        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
             int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < words.size()) {
+                if (wordIndex < dataSize) {
                     InputWord word = words.get(wordIndex);
 
                     if (word != null) {
@@ -897,14 +897,14 @@ public class KeyTable {
         int symbolIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_level_coords);
 
-        for (int level = 0; level < levelKeyCoords.length; level++) {
+        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
             int[][] keyCoords = levelKeyCoords[level];
 
             for (int[] keyCoord : keyCoords) {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (symbolIndex < symbols.length) {
+                if (symbolIndex < dataSize) {
                     Symbol symbol = symbols[symbolIndex];
 
                     KeyColor color = latin_key_char_alphabet_level_colors[level];

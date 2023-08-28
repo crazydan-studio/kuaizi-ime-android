@@ -68,7 +68,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 return () -> KeyTable.createPinyinInputWordKeys(createKeyTableConfigure(),
                                                                 input,
-                                                                stateData.getCandidates(),
+                                                                stateData.getPagingData(),
                                                                 stateData.getPageStart(),
                                                                 stateData.getPageSize(),
                                                                 stateData.getStrokes());
@@ -254,16 +254,17 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyLongPressTick:
                 // 过滤的笔画数 -1
                 if (key.getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
-                    play_InputtingSingleTick_Audio(key);
-
                     CharInput input = getInputList().getPending();
                     String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
 
-                    onFilterInputCandidateByStroke(input, strokeCode, -1);
+                    onFilterInputCandidateByStroke(input, key, strokeCode, -1);
                     break;
                 }
             case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
+                // Note：笔画过滤按键音效由过滤接口处理
+                if (key.getType() != CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
+                    play_InputtingSingleTick_Audio(key);
+                }
 
                 CharInput input = getInputList().getPending();
                 // 丢弃或变更拼音
@@ -297,7 +298,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     }
                     case Filter_PinyinInputCandidate_stroke: {
                         String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
-                        onFilterInputCandidateByStroke(input, strokeCode, 1);
+                        onFilterInputCandidateByStroke(input, key, strokeCode, 1);
                         break;
                     }
                 }
@@ -477,9 +478,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             int pageSize = KeyTable.getPinyinInputKeysPageSize();
             if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
                 // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
-                for (int i = topBestCandidates.size(); i < pageSize; i++) {
-                    topBestCandidates.add(null);
-                }
+                CollectionUtils.fillToSize(topBestCandidates, null, pageSize);
+
                 allCandidates.addAll(0, topBestCandidates);
             } else if (topBestCandidates.size() == candidateMap.size()) {
                 allCandidates = topBestCandidates;
@@ -493,12 +493,14 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        onFilterInputCandidateByStroke(input, null, 0);
+        onFilterInputCandidateByStroke(input, null, null, 0);
     }
 
-    private void onFilterInputCandidateByStroke(CharInput input, String strokeCode, int strokeIncrement) {
+    private void onFilterInputCandidateByStroke(CharInput input, Key<?> key, String strokeCode, int strokeIncrement) {
         ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
-        stateData.addStroke(strokeCode, strokeIncrement);
+        if (stateData.addStroke(strokeCode, strokeIncrement)) {
+            play_InputtingSingleTick_Audio(key);
+        }
 
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), null);
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);

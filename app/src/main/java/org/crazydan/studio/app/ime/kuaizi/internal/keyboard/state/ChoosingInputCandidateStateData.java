@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
+import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * {@link State.Type#Input_Candidate_Choosing}的状态数据
@@ -34,102 +36,95 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class ChoosingInputCandidateStateData implements State.Data {
+public class ChoosingInputCandidateStateData extends PagingStateData<InputWord> {
     private final CharInput input;
     private final List<InputWord> candidates;
     private final Map<String, Integer> strokes;
 
-    /** 分页大小 */
-    private final int pageSize;
-
-    /** 数据总量 */
-    private int dataSize;
-    /** 分页开始序号 */
-    private int pageStart;
+    private List<InputWord> cachedFilterCandidates;
 
     public ChoosingInputCandidateStateData(CharInput input, List<InputWord> candidates, int pageSize) {
+        super(pageSize);
+
         this.input = input;
         this.candidates = candidates;
-        this.strokes = new HashMap<>();
 
-        this.pageSize = pageSize;
-        this.dataSize = candidates.size();
+        this.strokes = new HashMap<>();
+        this.cachedFilterCandidates = candidates;
     }
 
     public CharInput getInput() {
         return this.input;
     }
 
-    public List<InputWord> getCandidates() {
-        int totalSize = this.candidates.size();
-        if (!this.strokes.isEmpty() && totalSize > this.pageSize) {
-            // 第一页为最佳候选字，不做过滤
-            List<InputWord> results = new ArrayList<>(this.candidates.subList(0, this.pageSize));
-            List<InputWord> filtered = this.candidates.subList(this.pageSize, totalSize)
-                                                      .stream()
-                                                      .filter(this::matched)
-                                                      .collect(Collectors.toList());
-
-            results.addAll(filtered);
-
-            this.dataSize = results.size();
-            return results;
-        }
-
-        this.dataSize = totalSize;
-        return this.candidates;
+    @Override
+    public List<InputWord> getPagingData() {
+        return this.cachedFilterCandidates;
     }
 
     public Map<String, Integer> getStrokes() {
         return this.strokes;
     }
 
-    public void addStroke(String stroke, int increment) {
-        if (stroke != null) {
-            int count = this.strokes.getOrDefault(stroke, 0);
-            count += increment;
-
-            if (count > 0) {
-                this.strokes.put(stroke, count);
-            } else {
-                this.strokes.remove(stroke);
-            }
+    /** @return 若添加笔画且其数量大于 0 则返回 <code>true</code>，否则返回 <code>false</code> */
+    public boolean addStroke(String stroke, int increment) {
+        if (stroke == null) {
+            return false;
         }
-    }
 
-    public int getPageStart() {
-        return this.pageStart;
-    }
+        int count = this.strokes.getOrDefault(stroke, 0);
+        count += increment;
 
-    public int getPageSize() {
-        return this.pageSize;
-    }
-
-    /**
-     * 下一页
-     *
-     * @return 若有翻页，则返回 <code>true</code>
-     */
-    public boolean nextPage() {
-        int start = this.pageStart + this.pageSize;
-
-        if (start < this.dataSize) {
-            this.pageStart = start;
-            return true;
+        boolean changed = true;
+        if (count > 0) {
+            this.strokes.put(stroke, count);
+        } else {
+            changed = this.strokes.remove(stroke) != null;
         }
-        return false;
+
+        if (changed) {
+            this.cachedFilterCandidates = filterCandidates(this.candidates);
+        }
+        return changed;
     }
 
-    /**
-     * 上一页
-     *
-     * @return 若有翻页，则返回 <code>true</code>
-     */
-    public boolean prevPage() {
-        int start = this.pageStart - this.pageSize;
-        this.pageStart = Math.max(start, 0);
+    private List<InputWord> filterCandidates(List<InputWord> candidates) {
+        if (this.strokes.isEmpty()) {
+            return candidates;
+        }
 
-        return start >= 0;
+        int pageSize = getPageSize();
+        // Note：第一页为最佳候选字，单独进行过滤
+        List<InputWord> firstPageData = CollectionUtils.subList(candidates, 0, pageSize)
+                                                       .stream()
+                                                       .filter(this::matched)
+                                                       .filter(Objects::nonNull)
+                                                       .collect(Collectors.toList());
+        List<InputWord> restPageData = CollectionUtils.subList(candidates, pageSize, candidates.size())
+                                                      .stream()
+                                                      .filter(this::matched)
+                                                      .collect(Collectors.toList());
+        restPageData.removeAll(firstPageData);
+
+        int totalPageDataSize = firstPageData.size() + restPageData.size();
+        if (totalPageDataSize == 0) {
+            return new ArrayList<>();
+        }
+        // 首页为空，则返回剩余数据
+        else if (firstPageData.isEmpty()) {
+            return restPageData;
+        }
+        // 不够一页时，做合并
+        else if (totalPageDataSize <= pageSize) {
+            firstPageData.addAll(restPageData);
+
+            return firstPageData;
+        }
+
+        // 首页和剩余数据在单独页显示
+        CollectionUtils.fillToSize(firstPageData, null, pageSize).addAll(restPageData);
+
+        return firstPageData;
     }
 
     private boolean matched(InputWord word) {

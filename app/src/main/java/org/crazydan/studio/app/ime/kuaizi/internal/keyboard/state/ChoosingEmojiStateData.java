@@ -30,19 +30,14 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
-public class ChoosingEmojiStateData implements State.Data {
+public class ChoosingEmojiStateData extends PagingStateData<InputWord> {
     private final Emojis emojis;
-    /** 分页大小 */
-    private final int pageSize;
 
     private String group = Emojis.GROUP_GENERAL;
 
-    /** 分页开始序号 */
-    private int pageStart;
-
     public ChoosingEmojiStateData(Emojis emojis, int pageSize) {
+        super(pageSize);
         this.emojis = emojis;
-        this.pageSize = pageSize;
     }
 
     public List<String> getGroups() {
@@ -54,69 +49,12 @@ public class ChoosingEmojiStateData implements State.Data {
     }
 
     public void setGroup(String group) {
-        this.pageStart = 0;
         this.group = group;
+
+        resetPageStart();
     }
 
-    public List<InputWord> getData() {
+    public List<InputWord> getPagingData() {
         return this.emojis.groups.getOrDefault(getGroup(), new ArrayList<>());
-    }
-
-    public int getPageSize() {
-        return this.pageSize;
-    }
-
-    public int getPageStart() {
-        return this.pageStart;
-    }
-
-    public int getDataSize() {
-        return getData().size();
-    }
-
-    /**
-     * 下一页
-     *
-     * @return 若有翻页，则返回 <code>true</code>
-     */
-    public boolean nextPage() {
-        int total = getDataSize();
-        int start = this.pageStart + this.pageSize;
-
-        if (start >= total) {
-            // 进行轮播
-            start = 0;
-        }
-        return updatePageStart(start);
-    }
-
-    /**
-     * 上一页
-     *
-     * @return 若有翻页，则返回 <code>true</code>
-     */
-    public boolean prevPage() {
-        int start = this.pageStart - this.pageSize;
-
-        if (start < 0) {
-            int total = getDataSize();
-            int left = total % this.pageSize;
-
-            // 翻到最后一页
-            if (left > 0) {
-                start = total - left;
-            } else {
-                start = total - this.pageSize;
-            }
-        }
-        return updatePageStart(start);
-    }
-
-    private boolean updatePageStart(int start) {
-        if (this.pageStart != start) {
-            this.pageStart = start;
-            return true;
-        }
-        return false;
     }
 }

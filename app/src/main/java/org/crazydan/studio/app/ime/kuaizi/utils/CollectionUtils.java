@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,30 @@ public class CollectionUtils {
                                         : c.size() == 1 //
                                           ? first(c) //
                                           : c.stream().reduce((prev, next) -> next).orElse(null);
+    }
+
+    /** 返回的为新建的 List 实例，可直接做元素增删 */
+    public static <T> List<T> subList(List<T> list, int start, int end) {
+        if (start >= list.size() || start >= end) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(list.subList(start, Math.min(end, list.size())));
+    }
+
+    /**
+     * 向列表填充指定元素直到满足指定大小
+     *
+     * @return 填充后的原始列表
+     */
+    public static <E, T extends Collection<E>> T fillToSize(T c, E e, int untilSize) {
+        int size = c.size();
+
+        if (size < untilSize) {
+            for (int i = size; i < untilSize; i++) {
+                c.add(e);
+            }
+        }
+        return c;
     }
 
     /**
