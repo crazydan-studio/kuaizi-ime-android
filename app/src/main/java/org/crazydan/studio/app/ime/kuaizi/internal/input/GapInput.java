@@ -44,6 +44,11 @@ public class GapInput extends BaseInput {
     }
 
     @Override
+    public boolean isSameWith(Object o) {
+        return equals(o);
+    }
+
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

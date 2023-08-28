@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
  * {@link InputWord 输入候选字}按键
@@ -44,7 +43,7 @@ public class InputWordKey extends BaseKey<InputWordKey> {
     }
 
     @Override
-    public boolean isSameWith(Key<?> key) {
+    public boolean isSameWith(Object key) {
         if (!(key instanceof InputWordKey)) {
             return false;
         }

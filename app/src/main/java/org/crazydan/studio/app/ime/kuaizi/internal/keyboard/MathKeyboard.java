@@ -81,7 +81,6 @@ public class MathKeyboard extends BaseKeyboard {
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 // 单字符输入
                 play_InputtingSingleTick_Audio(key);
@@ -94,7 +93,6 @@ public class MathKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 

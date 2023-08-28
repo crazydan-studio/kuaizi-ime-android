@@ -118,7 +118,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     }
 
     private Key<?> getKey(KeyView<?, ?> keyView) {
-        return keyView != null ? keyView.getKey() : null;
+        return keyView != null ? keyView.getData() : null;
     }
 
     private void onLongPressStart(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
@@ -133,9 +133,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
         RecyclerViewGestureDetector.LongPressTickGestureData tickData
                 = (RecyclerViewGestureDetector.LongPressTickGestureData) data;
-        UserLongPressTickMsgData msgData = new UserLongPressTickMsgData(targetKey,
-                                                                        tickData.tick,
-                                                                        tickData.duration);
+        UserLongPressTickMsgData msgData = new UserLongPressTickMsgData(targetKey, tickData.tick, tickData.duration);
 
         this.keyboardView.onUserKeyMsg(UserKeyMsg.KeyLongPressTick, msgData);
     }
@@ -197,7 +195,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     private boolean isAvailableKeyView(KeyView<?, ?> keyView) {
         return keyView != null //
                && (!(keyView instanceof CtrlKeyView) //
-                   || !((CtrlKeyView) keyView).getKey().isNoOp()) //
-               && !keyView.getKey().isDisabled();
+                   || !((CtrlKeyView) keyView).getData().isNoOp()) //
+               && !keyView.getData().isDisabled();
     }
 }

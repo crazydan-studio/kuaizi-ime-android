@@ -25,7 +25,7 @@ import java.util.List;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public interface Input {
+public interface Input extends ViewData {
 
     /** 是否为英文、数字或二者的组合输入 */
     boolean isLatin();

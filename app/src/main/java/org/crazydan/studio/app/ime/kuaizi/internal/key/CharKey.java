@@ -120,33 +120,15 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     @Override
-    public boolean isSameWith(Key<?> key) {
-        if (!(key instanceof CharKey)) {
-            return false;
-        }
-
-        CharKey that = (CharKey) key;
-        return this.type == that.type && Objects.equals(this.text, that.text);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
+    public boolean isSameWith(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
+        } else if (this == o) {
+            return true;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
+
         CharKey that = (CharKey) o;
         return this.type == that.type && Objects.equals(this.text, that.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.type, this.text);
     }
 
     @NonNull

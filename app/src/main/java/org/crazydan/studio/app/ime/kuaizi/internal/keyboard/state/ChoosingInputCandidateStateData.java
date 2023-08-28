@@ -18,7 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -35,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 public class ChoosingInputCandidateStateData implements State.Data {
     private final CharInput input;
     private final List<InputWord> candidates;
-    private final List<String> strokes;
+    private final Map<String, Integer> strokes;
 
     /** 分页大小 */
     private final int pageSize;
@@ -48,7 +50,7 @@ public class ChoosingInputCandidateStateData implements State.Data {
     public ChoosingInputCandidateStateData(CharInput input, List<InputWord> candidates, int pageSize) {
         this.input = input;
         this.candidates = candidates;
-        this.strokes = new ArrayList<>();
+        this.strokes = new HashMap<>();
 
         this.pageSize = pageSize;
         this.dataSize = candidates.size();
@@ -65,7 +67,7 @@ public class ChoosingInputCandidateStateData implements State.Data {
             List<InputWord> results = new ArrayList<>(this.candidates.subList(0, this.pageSize));
             List<InputWord> filtered = this.candidates.subList(this.pageSize, totalSize)
                                                       .stream()
-                                                      .filter(this::hasStrokes)
+                                                      .filter(this::matched)
                                                       .collect(Collectors.toList());
 
             results.addAll(filtered);
@@ -78,9 +80,20 @@ public class ChoosingInputCandidateStateData implements State.Data {
         return this.candidates;
     }
 
-    public void addStroke(String stroke) {
+    public Map<String, Integer> getStrokes() {
+        return this.strokes;
+    }
+
+    public void addStroke(String stroke, int increment) {
         if (stroke != null) {
-            this.strokes.add(stroke);
+            int count = this.strokes.getOrDefault(stroke, 0);
+            count += increment;
+
+            if (count > 0) {
+                this.strokes.put(stroke, count);
+            } else {
+                this.strokes.remove(stroke);
+            }
         }
     }
 
@@ -119,13 +132,26 @@ public class ChoosingInputCandidateStateData implements State.Data {
         return start >= 0;
     }
 
-    private boolean hasStrokes(InputWord word) {
+    private boolean matched(InputWord word) {
         // 占位用，不做过滤
-        if (word == null) {
+        if (!(word instanceof PinyinInputWord)) {
             return true;
         }
 
-        String strokeOrder = String.join("", this.strokes);
-        return word instanceof PinyinInputWord && ((PinyinInputWord) word).getStrokeOrder().contains(strokeOrder);
+        Map<String, Integer> wordStrokes = ((PinyinInputWord) word).getStrokes();
+        if (wordStrokes.isEmpty() || this.strokes.isEmpty()) {
+            return true;
+        }
+
+        for (Map.Entry<String, Integer> entry : this.strokes.entrySet()) {
+            String stroke = entry.getKey();
+            int expectedCount = entry.getValue();
+            int actualCount = wordStrokes.getOrDefault(stroke, 0);
+
+            if (actualCount < expectedCount) {
+                return false;
+            }
+        }
+        return true;
     }
 }

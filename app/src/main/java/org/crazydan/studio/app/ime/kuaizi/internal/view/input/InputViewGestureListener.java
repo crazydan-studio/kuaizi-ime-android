@@ -63,6 +63,6 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
     }
 
     private Input getInput(InputView<?> inputView) {
-        return inputView != null ? inputView.getInput() : null;
+        return inputView != null ? inputView.getData() : null;
     }
 }

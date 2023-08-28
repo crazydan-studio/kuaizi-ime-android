@@ -45,6 +45,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_NULL_KEY = 2;
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
     private static final int VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY = 4;
+    private static final int VIEW_TYPE_FILTER_INPUT_WORD_KEY = 5;
 
     private final HexagonOrientation orientation;
     private List<Key<?>> keys = new ArrayList<>();
@@ -76,6 +77,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
+                case Filter_PinyinInputCandidate_stroke:
+                    ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, this.orientation);
+                    break;
                 case Toggle_PinyinInputSpell_zcs_h:
                 case Toggle_PinyinInputSpell_ng:
                 case Toggle_PinyinInputSpell_nl:
@@ -99,6 +103,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
+                case Filter_PinyinInputCandidate_stroke:
+                    return VIEW_TYPE_FILTER_INPUT_WORD_KEY;
                 case Toggle_PinyinInputSpell_zcs_h:
                 case Toggle_PinyinInputSpell_ng:
                 case Toggle_PinyinInputSpell_nl:
@@ -120,6 +126,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
+        } else if (viewType == VIEW_TYPE_FILTER_INPUT_WORD_KEY) {
+            return new CtrlFilterInputWordKeyView(inflateHolderView(parent, R.layout.ctrl_key_filter_input_word_view));
         } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
             return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
                                                                      R.layout.ctrl_key_toggle_input_spell_view));

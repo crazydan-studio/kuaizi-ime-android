@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -75,44 +76,50 @@ public class KeyTable {
     private static final int[][][] pinyin_input_word_key_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 1, 1 },
-                    new int[] { 1, 2 },
-                    new int[] { 1, 3 },
-                    new int[] { 1, 4 },
-                    new int[] { 1, 5 },
                     new int[] { 1, 6 },
+                    new int[] { 1, 5 },
+                    new int[] { 1, 4 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 2 },
+                    new int[] { 1, 1 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 2, 1 },
-                    new int[] { 2, 2 },
-                    new int[] { 2, 3 },
-                    new int[] { 2, 4 },
-                    new int[] { 2, 5 },
                     new int[] { 2, 6 },
+                    new int[] { 2, 5 },
+                    new int[] { 2, 4 },
+                    new int[] { 2, 3 },
+                    new int[] { 2, 2 },
+                    new int[] { 2, 1 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 3, 1 }, new int[] { 3, 2 }, new int[] { 3, 3 }, new int[] { 3, 5 }, new int[] { 3, 6 },
+                    new int[] { 3, 6 }, new int[] { 3, 5 }, new int[] { 3, 3 }, new int[] { 3, 2 }, new int[] { 3, 1 },
                     },
             // level 4
             new int[][] {
-                    new int[] { 4, 1 },
-                    new int[] { 4, 2 },
-                    new int[] { 4, 3 },
-                    new int[] { 4, 4 },
-                    new int[] { 4, 5 },
                     new int[] { 4, 6 },
+                    new int[] { 4, 5 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 4, 2 },
+                    new int[] { 4, 1 },
                     },
             // level 5
             new int[][] {
-                    new int[] { 5, 1 },
-                    new int[] { 5, 2 },
-                    new int[] { 5, 3 },
-                    new int[] { 5, 4 },
-                    new int[] { 5, 5 },
                     new int[] { 5, 6 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 3 },
+                    new int[] { 5, 2 },
+                    new int[] { 5, 1 },
                     },
+            };
+    private static final int[][] pinyin_input_word_stroke_filter_key_coords = new int[][] {
+            new int[] { 0, 6 }, new int[] { 0, 5 }, new int[] { 0, 4 }, new int[] { 0, 3 }, new int[] { 0, 2 },
+            };
+    private static final int[][] pinyin_input_word_stroke_filter_key_coords_left_hand = new int[][] {
+            new int[] { 0, 2 }, new int[] { 0, 3 }, new int[] { 0, 4 }, new int[] { 0, 5 }, new int[] { 0, 6 },
             };
 
     /** 表情符号的分组按键坐标 */
@@ -145,93 +152,97 @@ public class KeyTable {
     private static final int[][][] emoji_key_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 1, 1 },
-                    new int[] { 1, 2 },
-                    new int[] { 1, 3 },
-                    new int[] { 1, 4 },
-                    new int[] { 1, 5 },
                     new int[] { 1, 6 },
+                    new int[] { 1, 5 },
+                    new int[] { 1, 4 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 2 },
+                    new int[] { 1, 1 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 2, 1 },
-                    new int[] { 2, 2 },
-                    new int[] { 2, 3 },
-                    new int[] { 2, 4 },
-                    new int[] { 2, 5 },
                     new int[] { 2, 6 },
+                    new int[] { 2, 5 },
+                    new int[] { 2, 4 },
+                    new int[] { 2, 3 },
+                    new int[] { 2, 2 },
+                    new int[] { 2, 1 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 3, 1 },
-                    new int[] { 3, 2 },
-                    new int[] { 3, 3 },
-                    new int[] { 3, 4 },
-                    new int[] { 3, 5 },
                     new int[] { 3, 6 },
+                    new int[] { 3, 5 },
+                    new int[] { 3, 4 },
+                    new int[] { 3, 3 },
+                    new int[] { 3, 2 },
+                    new int[] { 3, 1 },
                     },
             // level 4
             new int[][] {
-                    new int[] { 4, 1 },
-                    new int[] { 4, 2 },
-                    new int[] { 4, 3 },
-                    new int[] { 4, 4 },
-                    new int[] { 4, 5 },
                     new int[] { 4, 6 },
+                    new int[] { 4, 5 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 4, 2 },
+                    new int[] { 4, 1 },
                     },
             // level 5
             new int[][] {
-                    new int[] { 5, 1 },
-                    new int[] { 5, 2 },
-                    new int[] { 5, 3 },
-                    new int[] { 5, 4 },
-                    new int[] { 5, 5 },
                     new int[] { 5, 6 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 3 },
+                    new int[] { 5, 2 },
+                    new int[] { 5, 1 },
                     },
             };
 
-    /** 从中心按键由内到外的标点符号环形布局坐标 */
-    private static final int[][][] symbol_key_around_level_coords = new int[][][] {
+    /** 从中心按键由内到外的标点符号布局坐标 */
+    private static final int[][][] symbol_key_level_coords = new int[][][] {
             // level 1
             new int[][] {
-                    new int[] { 2, 4 },
-                    new int[] { 3, 4 },
-                    new int[] { 4, 4 },
-                    new int[] { 4, 3 },
-                    new int[] { 3, 2 },
-                    new int[] { 2, 3 },
+                    new int[] { 1, 6 },
+                    new int[] { 1, 5 },
+                    new int[] { 1, 4 },
+                    new int[] { 1, 3 },
+                    new int[] { 1, 2 },
+                    new int[] { 1, 1 },
                     },
             // level 2
             new int[][] {
-                    new int[] { 1, 3 },
-                    new int[] { 1, 4 },
+                    new int[] { 2, 6 },
                     new int[] { 2, 5 },
-                    new int[] { 3, 5 },
-                    new int[] { 4, 5 },
-                    new int[] { 5, 4 },
-                    new int[] { 5, 3 },
-                    new int[] { 5, 2 },
-                    new int[] { 4, 2 },
-                    new int[] { 3, 1 },
+                    new int[] { 2, 4 },
+                    new int[] { 2, 3 },
                     new int[] { 2, 2 },
-                    new int[] { 1, 2 },
+                    new int[] { 2, 1 },
                     },
             // level 3
             new int[][] {
-                    new int[] { 0, 4 },
-                    new int[] { 0, 5 },
-                    new int[] { 1, 5 },
-                    new int[] { 2, 6 },
                     new int[] { 3, 6 },
+                    new int[] { 3, 5 },
+                    new int[] { 3, 4 },
+                    new int[] { 3, 3 },
+                    new int[] { 3, 2 },
+                    new int[] { 3, 1 },
+                    },
+            // level 4
+            new int[][] {
                     new int[] { 4, 6 },
-                    new int[] { 5, 5 },
-                    new int[] { 5, 1 },
+                    new int[] { 4, 5 },
+                    new int[] { 4, 4 },
+                    new int[] { 4, 3 },
+                    new int[] { 4, 2 },
                     new int[] { 4, 1 },
-                    new int[] { 3, 0 },
-                    new int[] { 2, 1 },
-                    new int[] { 1, 1 },
-                    new int[] { 0, 2 },
-                    new int[] { 0, 3 },
+                    },
+            // level 5
+            new int[][] {
+                    new int[] { 5, 6 },
+                    new int[] { 5, 5 },
+                    new int[] { 5, 4 },
+                    new int[] { 5, 3 },
+                    new int[] { 5, 2 },
+                    new int[] { 5, 1 },
                     },
             };
 
@@ -411,15 +422,7 @@ public class KeyTable {
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_nl,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe,
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp,
@@ -660,7 +663,8 @@ public class KeyTable {
 
     /** 创建输入候选字按键 */
     public static Key<?>[][] createPinyinInputWordKeys(
-            Config config, CharInput input, List<InputWord> words, int startIndex, int pageSize
+            Config config, CharInput input, List<InputWord> words, int startIndex, int pageSize,
+            Map<String, Integer> strokes
     ) {
         Key<?>[][] gridKeys = emptyGridKeys();
 
@@ -669,11 +673,6 @@ public class KeyTable {
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
         boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
 
-        int index_1 = changeIndexForHandMode(config, gridKeys, 1);
-        int index_2 = changeIndexForHandMode(config, gridKeys, 2);
-        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
-        int index_4 = changeIndexForHandMode(config, gridKeys, 4);
-        int index_5 = changeIndexForHandMode(config, gridKeys, 5);
         int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
@@ -681,12 +680,22 @@ public class KeyTable {
         gridKeys[3][index_7] = ctrlKey(config, CtrlKey.Type.CommitInputList);
         gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.DropInput);
 
-        gridKeys[0][index_1] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_heng).setLabel("一");
-        gridKeys[0][index_2] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_shu).setLabel("丨");
-        gridKeys[0][index_3] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_pie).setLabel("丿");
-        gridKeys[0][index_4] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_na).setLabel("㇏");
-        gridKeys[0][index_5] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke_zhe).setLabel(
-                "\uD840\uDCCB");
+        int[][] filterStrokeKeyCorrds = isLeft
+                                        ? pinyin_input_word_stroke_filter_key_coords_left_hand
+                                        : pinyin_input_word_stroke_filter_key_coords;
+        String[] filterStrokes = PinyinInputWord.getStrokeNames();
+        for (int i = 0, j = 0; i < filterStrokeKeyCorrds.length && j < filterStrokes.length; i++, j++) {
+            int[] keyCoord = filterStrokeKeyCorrds[i];
+            String stroke = filterStrokes[j];
+
+            int x = keyCoord[0];
+            int y = keyCoord[1];
+
+            String strokeCode = PinyinInputWord.getStrokeCode(stroke);
+            Integer strokeCount = strokes.get(strokeCode);
+            String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke).setLabel(label);
+        }
 
         CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
@@ -861,7 +870,7 @@ public class KeyTable {
     /** 标点符号按键的分页大小 */
     public static int getSymbolKeysPageSize() {
         int size = 0;
-        for (int[][] level : symbol_key_around_level_coords) {
+        for (int[][] level : symbol_key_level_coords) {
             size += level.length;
         }
         return size;
@@ -872,25 +881,21 @@ public class KeyTable {
         Key<?>[][] gridKeys = emptyGridKeys();
 
         int dataSize = symbols.length;
-        if (dataSize == 0) {
-            return gridKeys;
-        }
-
-        int currentPage = startIndex / pageSize + 1;
+        int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
+        boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
 
-        int index_0 = changeIndexForHandMode(config, gridKeys, 0);
-        int index_3 = changeIndexForHandMode(config, gridKeys, 3);
-        int index_6 = changeIndexForHandMode(config, gridKeys, 6);
+        int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
-        gridKeys[1][index_6] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En).setLabel("中/英");
-        gridKeys[3][index_3] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
-        gridKeys[5][index_6] = ctrlKey(config, CtrlKey.Type.Exit);
-
-        gridKeys[0][index_0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[1][index_7] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En).setLabel("中/英");
+        gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
+        gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
+        gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
         int symbolIndex = startIndex;
-        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_around_level_coords);
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_level_coords);
 
         for (int level = 0; level < levelKeyCoords.length; level++) {
             int[][] keyCoords = levelKeyCoords[level];
@@ -902,7 +907,7 @@ public class KeyTable {
                 if (symbolIndex < symbols.length) {
                     Symbol symbol = symbols[symbolIndex];
 
-                    KeyColor color = key_char_around_level_colors[level];
+                    KeyColor color = latin_key_char_alphabet_level_colors[level];
                     String text = symbol.getText();
                     CharKey key = symbol.isDoubled() ? doubleSymbolKey(text) : symbolKey(text);
 

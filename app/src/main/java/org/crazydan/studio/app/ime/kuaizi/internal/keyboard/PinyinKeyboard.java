@@ -32,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -69,7 +70,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                 input,
                                                                 stateData.getCandidates(),
                                                                 stateData.getPageStart(),
-                                                                stateData.getPageSize());
+                                                                stateData.getPageSize(),
+                                                                stateData.getStrokes());
             }
             case SymbolEmoji_Choosing: {
                 ChoosingSymbolEmojiStateData stateData = (ChoosingSymbolEmojiStateData) this.state.data;
@@ -176,10 +178,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyDoubleTap: {
-                // 双击字符，则替换前一个相同的输入字符：
-                // 因为双击会先触发单击，而单击时已添加了一次该双击的字符
-                play_InputtingSingleTick_Audio(key);
+                // 双击前已触发两次单击，故，不需再播放按键提示音
+                //play_InputtingSingleTick_Audio(key);
 
+                // TODO 双击切换字母按键的策略需调整
                 doReplacementKeyInputting(key);
                 break;
             }
@@ -249,11 +251,20 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onInputCandidatesCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作，以便于支持连续点击并执行对应操作
+            case KeyLongPressTick:
+                // 过滤的笔画数 -1
+                if (key.getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
+                    play_InputtingSingleTick_Audio(key);
+
+                    CharInput input = getInputList().getPending();
+                    String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
+
+                    onFilterInputCandidateByStroke(input, strokeCode, -1);
+                    break;
+                }
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
-                String stroke = null;
                 CharInput input = getInputList().getPending();
                 // 丢弃或变更拼音
                 switch (key.getType()) {
@@ -284,25 +295,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onNewChoosingInputCandidate(input, true);
                         break;
                     }
-                    case Filter_PinyinInputCandidate_stroke_heng:
-                        stroke = "1";
+                    case Filter_PinyinInputCandidate_stroke: {
+                        String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
+                        onFilterInputCandidateByStroke(input, strokeCode, 1);
                         break;
-                    case Filter_PinyinInputCandidate_stroke_shu:
-                        stroke = "2";
-                        break;
-                    case Filter_PinyinInputCandidate_stroke_pie:
-                        stroke = "3";
-                        break;
-                    case Filter_PinyinInputCandidate_stroke_na:
-                        stroke = "4";
-                        break;
-                    case Filter_PinyinInputCandidate_stroke_zhe:
-                        stroke = "5";
-                        break;
-                }
-
-                if (stroke != null) {
-                    onFilterInputCandidateByStroke(input, stroke);
+                    }
                 }
                 break;
             }
@@ -496,12 +493,12 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        onFilterInputCandidateByStroke(input, null);
+        onFilterInputCandidateByStroke(input, null, 0);
     }
 
-    private void onFilterInputCandidateByStroke(CharInput input, String stroke) {
+    private void onFilterInputCandidateByStroke(CharInput input, String strokeCode, int strokeIncrement) {
         ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
-        stateData.addStroke(stroke);
+        stateData.addStroke(strokeCode, strokeIncrement);
 
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), null);
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);

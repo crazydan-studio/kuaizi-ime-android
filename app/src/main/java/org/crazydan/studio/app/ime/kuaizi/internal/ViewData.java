@@ -15,29 +15,16 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
-
-import android.view.View;
-import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+package org.crazydan.studio.app.ime.kuaizi.internal;
 
 /**
+ * 视图数据，用于判断数据是否相同
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-08-28
  */
-public class CharInputView extends InputView<CharInput> {
+public interface ViewData {
 
-    public CharInputView(@NonNull View itemView) {
-        super(itemView);
-    }
-
-    public void bind(
-            CharInput input, CharInput pending, boolean selected, //
-            boolean needToAddPrevSpace, boolean needToAddPostSpace
-    ) {
-        super.bind(input);
-
-        showWord(pending != null ? pending : input, selected, needToAddPrevSpace, needToAddPostSpace);
-        setSelectedBgColor(this.itemView, selected);
-    }
+    /** 判定排除视图展示相关的配置信息后的数据是否依然相同 */
+    boolean isSameWith(Object o);
 }

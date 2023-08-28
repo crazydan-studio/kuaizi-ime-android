@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
 /**
@@ -31,7 +34,7 @@ public class PinyinInputWord extends InputWord {
     /** 是否繁体 */
     private final boolean traditional;
     /** 笔画顺序 */
-    private final String strokeOrder;
+    private final Map<String, Integer> strokes;
 
     public PinyinInputWord(
             String uid, String value, String notation, String charsId, boolean traditional, String strokeOrder
@@ -39,7 +42,15 @@ public class PinyinInputWord extends InputWord {
         super(uid, value, notation);
         this.charsId = charsId;
         this.traditional = traditional;
-        this.strokeOrder = strokeOrder != null ? strokeOrder : "";
+        this.strokes = new HashMap<>();
+
+        if (strokeOrder != null) {
+            for (int i = 0; i < strokeOrder.length(); i++) {
+                String stroke = strokeOrder.charAt(i) + "";
+                int count = this.strokes.getOrDefault(stroke, 0);
+                this.strokes.put(stroke, count + 1);
+            }
+        }
     }
 
     public String getCharsId() {
@@ -50,7 +61,33 @@ public class PinyinInputWord extends InputWord {
         return this.traditional;
     }
 
-    public String getStrokeOrder() {
-        return this.strokeOrder;
+    public Map<String, Integer> getStrokes() {
+        return this.strokes;
+    }
+
+    public static String[] getStrokeNames() {
+        return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" };
+    }
+
+    public static String getStrokeCode(String stroke) {
+        String code = null;
+        switch (stroke) {
+            case "一":
+                code = "1";
+                break;
+            case "丨":
+                code = "2";
+                break;
+            case "丿":
+                code = "3";
+                break;
+            case "㇏":
+                code = "4";
+                break;
+            case "\uD840\uDCCB":
+                code = "5";
+                break;
+        }
+        return code;
     }
 }

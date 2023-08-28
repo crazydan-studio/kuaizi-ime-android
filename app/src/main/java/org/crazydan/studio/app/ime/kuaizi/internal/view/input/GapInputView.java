@@ -46,7 +46,7 @@ public class GapInputView extends InputView<GapInput> {
     }
 
     public void bind(GapInput input, CharInput pending, boolean selected) {
-        super.bind(input, pending);
+        super.bind(input);
 
         boolean hasPending = pending != null && !pending.isEmpty();
         if (hasPending) {

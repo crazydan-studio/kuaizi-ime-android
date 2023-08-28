@@ -23,16 +23,26 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
+public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerView.ViewHolder {
+    private T data;
 
     public RecyclerViewHolder(@NonNull View itemView) {
         super(itemView);
+    }
+
+    public T getData() {
+        return this.data;
+    }
+
+    public void bind(T data) {
+        this.data = data;
     }
 
     public boolean isHidden() {

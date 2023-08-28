@@ -416,7 +416,6 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 break;
             }
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
                     // 定位按钮不响应单击和双击操作
@@ -537,7 +536,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyDoubleTap: // 双击继续触发第二次单击操作
             case KeySingleTap: {
                 switch (key.getType()) {
                     case Redo:
@@ -641,7 +639,6 @@ public abstract class BaseKeyboard implements Keyboard {
     private void on_ChoosingEmoji_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeyLongPressTick:
-            case KeyDoubleTap:
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 

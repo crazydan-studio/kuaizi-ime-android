@@ -23,7 +23,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key<K extends Key<?>> {
+public interface Key<K extends Key<?>> extends ViewData {
 
     /** 是否为英文或数字 */
     boolean isLatin();
@@ -36,9 +36,6 @@ public interface Key<K extends Key<?>> {
 
     /** 是否为表情符号 */
     boolean isEmoji();
-
-    /** 是否与指定的按键相同：即实例不同但按键类型和符号相同 */
-    boolean isSameWith(Key<?> key);
 
     /** 是否已禁用 */
     boolean isDisabled();

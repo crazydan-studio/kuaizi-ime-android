@@ -70,7 +70,7 @@ public class KeyViewAnimator extends DefaultItemAnimator {
         resetViewScale(holder.itemView);
 
         if (oldHolder && needToFadeOut(holder)) {
-            this.fadeOutKeys.remove(((KeyView<?, ?>) holder).getKey());
+            this.fadeOutKeys.remove(((KeyView<?, ?>) holder).getData());
         }
     }
 
@@ -127,7 +127,7 @@ public class KeyViewAnimator extends DefaultItemAnimator {
 
     private boolean needToFadeOut(RecyclerView.ViewHolder holder) {
         return holder instanceof KeyView //
-               && this.fadeOutKeys.contains(((KeyView<?, ?>) holder).getKey());
+               && this.fadeOutKeys.contains(((KeyView<?, ?>) holder).getData());
     }
 
     private void resetViewScale(View view) {

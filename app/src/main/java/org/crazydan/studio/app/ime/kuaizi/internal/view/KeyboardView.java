@@ -17,10 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -217,28 +213,5 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
 
         return keyView != null && !keyView.isHidden() ? keyView : null;
-    }
-
-    private KeyView<?, ?> getKeyViewByKey(Key<?> key) {
-        if (key == null) {
-            return null;
-        }
-
-        List<KeyView<?, ?>> list = filterKeyViews(keyView -> key.equals(keyView.getKey()));
-        return list.isEmpty() ? null : list.get(0);
-    }
-
-    private List<KeyView<?, ?>> filterKeyViews(Predicate<KeyView<?, ?>> filter) {
-        List<KeyView<?, ?>> list = new ArrayList<>();
-
-        for (int i = 0; i < getChildCount(); i++) {
-            View view = getChildAt(i);
-            KeyView<?, ?> keyView = (KeyView<?, ?>) getChildViewHolder(view);
-
-            if (filter.test(keyView)) {
-                list.add(keyView);
-            }
-        }
-        return list;
     }
 }

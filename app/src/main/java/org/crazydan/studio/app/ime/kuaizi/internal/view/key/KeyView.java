@@ -36,11 +36,9 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class KeyView<K extends Key<?>, V extends View> extends RecyclerViewHolder {
+public abstract class KeyView<K extends Key<?>, V extends View> extends RecyclerViewHolder<K> {
     protected final ImageView bgView;
     protected final V fgView;
-
-    private K key;
 
     public KeyView(@NonNull View itemView) {
         super(itemView);
@@ -49,12 +47,8 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
         this.fgView = itemView.findViewById(R.id.fg_view);
     }
 
-    public K getKey() {
-        return this.key;
-    }
-
     public void bind(K key, HexagonOrientation orientation) {
-        this.key = key;
+        super.bind(key);
 
         if (key.isDisabled()) {
             disable();

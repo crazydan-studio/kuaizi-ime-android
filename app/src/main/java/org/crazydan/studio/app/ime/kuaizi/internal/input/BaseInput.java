@@ -138,6 +138,18 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public boolean isSameWith(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        } else if (this == o) {
+            return true;
+        }
+
+        BaseInput that = (BaseInput) o;
+        return this.keys.equals(that.keys);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -145,6 +157,7 @@ public abstract class BaseInput implements Input {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         BaseInput that = (BaseInput) o;
         return this.keys.equals(that.keys) && Objects.equals(this.word, that.word);
     }

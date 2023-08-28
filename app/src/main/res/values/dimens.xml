@@ -31,6 +31,7 @@
     <dimen name="char_key_text_size_4d">12sp</dimen>
     <dimen name="char_key_text_size_5d">8sp</dimen>
     <dimen name="ctrl_key_text_size">12sp</dimen>
+    <dimen name="ctrl_key_sub_text_size">10sp</dimen>
     <dimen name="char_symbol_key_text_size">14sp</dimen>
     <dimen name="input_spell_toggle_key_text_size">12sp</dimen>
     <dimen name="input_word_key_notation_text_size">10sp</dimen>

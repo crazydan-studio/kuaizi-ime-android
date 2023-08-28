@@ -110,9 +110,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         BaseKey<?> that = (BaseKey<?>) o;
         return this.getIconResId() == that.getIconResId()
                && Objects.equals(this.getLabel(), that.getLabel())
+               && Objects.equals(this.getText(), that.getText())
                && this.disabled == that.disabled
                && this.color.fg == that.color.fg
                && this.color.bg == that.color.bg;
@@ -120,6 +122,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getIconResId(), this.getLabel(), this.disabled, this.color.fg, this.color.bg);
+        return Objects.hash(this.getIconResId(),
+                            this.getLabel(),
+                            this.getText(),
+                            this.disabled,
+                            this.color.fg,
+                            this.color.bg);
     }
 }

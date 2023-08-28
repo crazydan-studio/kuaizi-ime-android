@@ -63,6 +63,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return " ";
             case Enter:
                 return "\n";
+            case Filter_PinyinInputCandidate_stroke:
+                return getLabel().replaceAll("/.+$", "");
             case Math_Plus:
             case Math_Minus:
             case Math_Multiply:
@@ -71,46 +73,27 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return " " + getLabel() + " ";
             case Math_Dot:
             case Math_Percent:
-                return getLabel();
             default:
-                return null;
+                return getLabel();
         }
     }
 
     @Override
-    public boolean isSameWith(Key<?> key) {
-        if (!(key instanceof CtrlKey)) {
-            return false;
-        }
-
-        CtrlKey that = (CtrlKey) key;
-        return this.type == that.type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
+    public boolean isSameWith(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
+        } else if (this == o) {
+            return true;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
-        CtrlKey that = (CtrlKey) o;
-        return this.type == that.type;
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.type);
+        CtrlKey that = (CtrlKey) o;
+        return this.type == that.type && Objects.equals(this.getText(), that.getText());
     }
 
     @NonNull
     @Override
     public String toString() {
-        return "CTRL - " + getType();
+        return "CTRL - " + getType() + (getLabel() != null ? " (" + getLabel() + ")" : "");
     }
 
     public enum Type {
@@ -136,16 +119,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Toggle_PinyinInputSpell_ng,
         /** 在候选字状态下切换当前输入的 n/l */
         Toggle_PinyinInputSpell_nl,
-        /** 在候选字状态下根据笔画过滤候选字：横 */
-        Filter_PinyinInputCandidate_stroke_heng,
-        /** 在候选字状态下根据笔画过滤候选字：竖 */
-        Filter_PinyinInputCandidate_stroke_shu,
-        /** 在候选字状态下根据笔画过滤候选字：撇 */
-        Filter_PinyinInputCandidate_stroke_pie,
-        /** 在候选字状态下根据笔画过滤候选字：捺 */
-        Filter_PinyinInputCandidate_stroke_na,
-        /** 在候选字状态下根据笔画过滤候选字：折 */
-        Filter_PinyinInputCandidate_stroke_zhe,
+        /** 在候选字状态下根据笔画过滤候选字 */
+        Filter_PinyinInputCandidate_stroke,
 
         /** 输入光标定位按钮 */
         LocateInputCursor,

@@ -66,10 +66,8 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         if (notation == null || notation.isEmpty()) {
             ViewUtils.hide(this.notationView);
         } else {
-            this.notationView.setText(notation);
+            ViewUtils.show(this.notationView).setText(notation);
             setTextColorByAttrId(this.notationView, key.getColor().fg);
-
-            ViewUtils.show(this.notationView);
         }
     }
 }

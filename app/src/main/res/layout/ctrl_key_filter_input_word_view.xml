@@ -28,48 +28,27 @@
 
     <com.google.android.flexbox.FlexboxLayout
             android:id="@+id/fg_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:translationY="2sp"
             app:flexWrap="nowrap"
             app:flexDirection="column"
             app:alignItems="center"
             app:alignContent="center">
 
-        <com.google.android.flexbox.FlexboxLayout
+        <TextView
+                android:id="@+id/sub_text_view"
                 android:layout_width="wrap_content"
-                android:layout_height="16dp"
-                app:flexWrap="nowrap"
-                app:flexDirection="row"
-                app:alignItems="center"
-                app:alignContent="stretch">
-
-            <TextView
-                    android:id="@+id/source_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:translationY="-2.5dp"
-                    android:textSize="@dimen/input_spell_toggle_key_text_size"
-                    android:textColor="?attr/key_highlight_fg_color"
-                    android:textStyle="bold" />
-
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_alignSelf="flex_end"
-                    android:src="@drawable/ic_pinyin_spell_switch"
-                    android:scaleX=".8"
-                    android:scaleY=".6" />
-        </com.google.android.flexbox.FlexboxLayout>
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/ctrl_key_sub_text_size" />
 
         <TextView
-                android:id="@+id/target_view"
+                android:id="@+id/fg_text_view"
                 android:layout_width="wrap_content"
-                android:layout_height="16dp"
-                android:translationY="-4dp"
-                app:layout_alignSelf="flex_end"
-                android:textSize="@dimen/input_spell_toggle_key_text_size"
-                android:textColor="?attr/key_highlight_fg_color"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textSize="@dimen/ctrl_key_text_size"
                 android:textStyle="bold" />
     </com.google.android.flexbox.FlexboxLayout>
 

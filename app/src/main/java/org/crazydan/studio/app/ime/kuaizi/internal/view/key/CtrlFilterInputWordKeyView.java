@@ -23,30 +23,41 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}切换 输入拼写 的{@link CtrlKey 控制按键}视图
+ * {@link Keyboard 键盘}过滤 输入候选字 的{@link CtrlKey 控制按键}视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-11
+ * @date 2023-08-27
  */
-public class CtrlToggleInputSpellKeyView extends KeyView<CtrlKey, View> {
-    private final TextView sourceView;
-    private final TextView targetView;
+public class CtrlFilterInputWordKeyView extends KeyView<CtrlKey, View> {
+    private final TextView fgTextView;
+    private final TextView subTextView;
 
-    public CtrlToggleInputSpellKeyView(@NonNull View itemView) {
+    public CtrlFilterInputWordKeyView(@NonNull View itemView) {
         super(itemView);
 
-        this.sourceView = itemView.findViewById(R.id.source_view);
-        this.targetView = itemView.findViewById(R.id.target_view);
+        this.fgTextView = itemView.findViewById(R.id.fg_text_view);
+        this.subTextView = itemView.findViewById(R.id.sub_text_view);
     }
 
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        String[] splits = key.getLabel().split(",");
-        this.sourceView.setText(splits[0]);
-        this.targetView.setText(splits[1]);
+        String[] splits = key.getLabel().split("/");
+        String text = splits[0];
+        String subText = splits.length > 1 ? splits[1] : null;
+
+        this.fgTextView.setText(text);
+        setTextColorByAttrId(this.fgTextView, key.getColor().fg);
+
+        if (subText != null) {
+            ViewUtils.show(this.subTextView).setText(subText);
+            setTextColorByAttrId(this.subTextView, key.getColor().fg);
+        } else {
+            ViewUtils.hide(this.subTextView);
+        }
     }
 }

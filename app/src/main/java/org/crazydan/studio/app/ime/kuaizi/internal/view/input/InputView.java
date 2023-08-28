@@ -32,37 +32,15 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class InputView<I extends Input> extends RecyclerViewHolder {
+public abstract class InputView<I extends Input> extends RecyclerViewHolder<I> {
     private final TextView notationView;
     private final TextView wordView;
-
-    private I input;
-    private CharInput pending;
 
     public InputView(@NonNull View itemView) {
         super(itemView);
 
         this.notationView = itemView.findViewById(R.id.notation_view);
         this.wordView = itemView.findViewById(R.id.word_view);
-    }
-
-    /** 原输入 */
-    public I getInput() {
-        return this.input;
-    }
-
-    /**
-     * {@link #getInput() 原输入}上附加的待输入，
-     * 在确认后，该待输入将直接替换原输入。
-     * 用于在光标位置插入新输入或修改已有输入
-     */
-    public CharInput getPending() {
-        return this.pending;
-    }
-
-    public void bind(I input, CharInput pending) {
-        this.input = input;
-        this.pending = pending;
     }
 
     protected void setSelectedBgColor(View view, boolean selected) {

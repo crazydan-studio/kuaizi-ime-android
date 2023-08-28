@@ -30,6 +30,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
@@ -56,7 +57,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
     private GestureData latestSingleTap;
-    private View prevView;
+    private ViewData prevViewData;
 
     /** 绑定到 {@link RecyclerView} 上 */
     public RecyclerViewGestureDetector bind(RecyclerView view) {
@@ -98,12 +99,10 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                // 事件发生的视图做了切换，则需要重置事件监测
-                View view = rv.findChildViewUnder(e.getX(), e.getY());
-                if (this.prevView != view) {
+                // 若触发事件的视图数据发生了变化，则需要重置事件监测
+                if (hasChangedViewData(rv, e)) {
                     reset();
                 }
-                this.prevView = view;
 
                 // Note: 优先触发长按监听，以确保其在指定的延时后能够及时执行，
                 // 而不会因为后续监听的执行导致其执行被延后
@@ -136,6 +135,21 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
                 break;
             }
         }
+    }
+
+    private boolean hasChangedViewData(RecyclerView rv, MotionEvent e) {
+        ViewData oldViewData = this.prevViewData;
+
+        // 当某个数据的视图更新后，其 view 实例可能会重建，
+        // 使得在双击、长按 tick 等事件周期内发送了视图更新的数据不能接收这类事件，
+        // 因为监测状态被重置了，所以，只能根据数据自身是否变化做监测重置判断
+        View view = rv.findChildViewUnder(e.getX(), e.getY());
+        ViewData newViewData = view != null ? ((RecyclerViewHolder<?>) rv.getChildViewHolder(view)).getData() : null;
+
+        this.prevViewData = newViewData;
+
+        return (oldViewData != null && !oldViewData.isSameWith(newViewData)) //
+               || oldViewData != newViewData;
     }
 
     private void onGestureEnd(GestureData data) {
@@ -212,13 +226,14 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         GestureData latestData = this.latestSingleTap;
         this.latestSingleTap = data;
 
+        // Note：双击也会触发两次单击事件，且均先于双击事件触发
+        triggerListeners(GestureType.SingleTap, data);
+
         if (latestData != null //
             && data.timestamp - latestData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS) {
             this.latestSingleTap = null; // 避免连续触发双击
 
             triggerListeners(GestureType.DoubleTap, data);
-        } else {
-            triggerListeners(GestureType.SingleTap, data);
         }
     }
 
