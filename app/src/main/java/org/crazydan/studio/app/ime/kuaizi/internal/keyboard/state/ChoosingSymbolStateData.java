@@ -20,8 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 import java.util.Arrays;
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Symbol;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.Symbol;
 
 /**
  * {@link State.Type#Symbol_Choosing}的状态数据
@@ -30,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.Symbol;
  * @date 2023-08-24
  */
 public class ChoosingSymbolStateData extends PagingStateData<Symbol> {
-    private List<Symbol> data;
+    private SymbolGroup group = SymbolGroup.han;
 
     public ChoosingSymbolStateData(int pageSize) {
         super(pageSize);
@@ -38,10 +39,21 @@ public class ChoosingSymbolStateData extends PagingStateData<Symbol> {
 
     @Override
     public List<Symbol> getPagingData() {
-        return this.data;
+        return Arrays.asList(this.group.symbols);
     }
 
-    public void setPagingData(Symbol[] data) {
-        this.data = Arrays.asList(data);
+    public SymbolGroup getGroup() {
+        return this.group;
+    }
+
+    public void setGroup(SymbolGroup group) {
+        if (group != null) {
+            this.group = group;
+            resetPageStart();
+        }
+    }
+
+    public void setGroup(String group) {
+        setGroup(SymbolGroup.nameOf(group));
     }
 }

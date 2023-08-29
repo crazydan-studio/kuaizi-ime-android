@@ -162,10 +162,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 切换至表情键盘 */
         SwitchToEmojiKeyboard,
 
-        /** 切换中英文的标点符号 */
-        Toggle_Symbol_Locale_Zh_and_En,
         /** 切换表情符号分组 */
         Toggle_Emoji_Group,
+        /** 切换标点符号分组 */
+        Toggle_Symbol_Group,
 
         /** 数学 = */
         Math_Equal,

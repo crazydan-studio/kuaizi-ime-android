@@ -39,7 +39,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -253,8 +252,6 @@ public class ImeInputView extends FrameLayout
 
     private Keyboard createKeyboard(Keyboard.Type type) {
         switch (type) {
-            case Symbol:
-                return new SymbolKeyboard();
             case Math:
                 return new MathKeyboard();
             case Latin:

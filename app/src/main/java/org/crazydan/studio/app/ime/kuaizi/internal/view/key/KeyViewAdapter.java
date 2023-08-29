@@ -30,6 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -46,6 +47,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
     private static final int VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY = 4;
     private static final int VIEW_TYPE_FILTER_INPUT_WORD_KEY = 5;
+    private static final int VIEW_TYPE_SYMBOL_KEY = 6;
 
     private final HexagonOrientation orientation;
     private List<Key<?>> keys = new ArrayList<>();
@@ -90,6 +92,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             }
         } else if (key instanceof InputWordKey) {
             ((InputWordKeyView) view).bind((InputWordKey) key, this.orientation);
+        } else if (key instanceof SymbolKey) {
+            ((SymbolKeyView) view).bind((SymbolKey) key, this.orientation);
         } else if (key == null) {
             ((NullKeyView) view).bind();
         } else {
@@ -114,6 +118,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             }
         } else if (key instanceof InputWordKey) {
             return VIEW_TYPE_INPUT_WORD_KEY;
+        } else if (key instanceof SymbolKey) {
+            return VIEW_TYPE_SYMBOL_KEY;
         } else if (key == null) {
             return VIEW_TYPE_NULL_KEY;
         } else {
@@ -133,6 +139,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
                                                                      R.layout.ctrl_key_toggle_input_spell_view));
         } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
             return new InputWordKeyView(inflateHolderView(parent, R.layout.input_word_key_view));
+        } else if (viewType == VIEW_TYPE_SYMBOL_KEY) {
+            return new SymbolKeyView(inflateHolderView(parent, R.layout.char_key_view));
         } else if (viewType == VIEW_TYPE_NULL_KEY) {
             return new NullKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
         } else {

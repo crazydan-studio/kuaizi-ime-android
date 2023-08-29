@@ -110,13 +110,7 @@ public class CharKey extends BaseKey<CharKey> {
     /** 是否为标点 */
     @Override
     public boolean isSymbol() {
-        return this.type == Type.Symbol || isDoubleSymbol();
-    }
-
-    /** 是否为双标点 */
-    public boolean isDoubleSymbol() {
-        // TODO 配对符号按键支持在其下挂多层组合按键
-        return this.type == Type.DoubleSymbol;
+        return this.type == Type.Symbol;
     }
 
     @Override
@@ -144,8 +138,6 @@ public class CharKey extends BaseKey<CharKey> {
         Number,
         /** 标点符号按键 */
         Symbol,
-        /** 双标点符号按键：括号、引号等配对标点 */
-        DoubleSymbol,
         /** 表情符号按键 */
         Emoji,
     }

@@ -47,7 +47,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     /** 确定双击的超时时间 */
     private static final long DOUBLE_TAP_TIMEOUT_MILLS = 400;
     /** 确定滑动的超时时间 */
-    private static final long SLIPPING_TIMEOUT_MILLS = 400;
+    private static final long FLIPPING_TIMEOUT_MILLS = 400;
 
     private final Set<Listener> listeners = new HashSet<>();
 
@@ -291,7 +291,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         GestureData g1 = this.movingTracker.get(0);
         GestureData g2 = this.movingTracker.get(size - 1);
 
-        return g2.timestamp - g1.timestamp < SLIPPING_TIMEOUT_MILLS;
+        return g2.timestamp - g1.timestamp < FLIPPING_TIMEOUT_MILLS;
     }
 
     private void triggerListeners(GestureType type, GestureData data) {

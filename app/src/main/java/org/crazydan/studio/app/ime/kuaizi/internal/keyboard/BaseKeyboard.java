@@ -24,13 +24,17 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -130,6 +134,14 @@ public abstract class BaseKeyboard implements Keyboard {
                                                       stateData.getPageStart(),
                                                       stateData.getPageSize());
             }
+            case Symbol_Choosing: {
+                ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
+
+                return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
+                                                       stateData.getGroup(),
+                                                       stateData.getPageStart(),
+                                                       stateData.getPageSize());
+            }
         }
         return doGetKeyFactory();
     }
@@ -169,6 +181,16 @@ public abstract class BaseKeyboard implements Keyboard {
                     on_ChoosingEmoji_InputWordKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_ChoosingEmoji_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                }
+                return true;
+            }
+            case Symbol_Choosing: {
+                if (msg == UserKeyMsg.FingerFlipping) {
+                    on_ChoosingSymbol_PageFlippingMsg(msg, key, data);
+                } else if (key instanceof SymbolKey) {
+                    on_ChoosingSymbol_SymbolKeyMsg(msg, (SymbolKey) key, data);
+                } else if (key instanceof CtrlKey) {
+                    on_ChoosingSymbol_CtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
                 return true;
             }
@@ -496,6 +518,11 @@ public abstract class BaseKeyboard implements Keyboard {
                         start_Emoji_Choosing();
                         return true;
                     }
+                    case SwitchToSymbolKeyboard: {
+                        play_InputtingSingleTick_Audio(key);
+                        start_Symbol_Choosing();
+                        return true;
+                    }
                 }
                 break;
             }
@@ -639,12 +666,14 @@ public abstract class BaseKeyboard implements Keyboard {
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
-        if (stateData.getPagingData().isEmpty()) {
-            stateData.setGroup(stateData.getGroups().get(1));
-        }
-
         this.state = new State(State.Type.Emoji_Choosing, stateData, this.state);
-        do_Emoji_Choosing();
+
+        String group = null;
+        // 若默认分组（常用）的数据为空，则切换到第二个分组
+        if (stateData.getPagingData().isEmpty()) {
+            group = stateData.getGroups().get(1);
+        }
+        do_Emoji_Choosing(group);
     }
 
     private void on_ChoosingEmoji_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
@@ -653,46 +682,18 @@ public abstract class BaseKeyboard implements Keyboard {
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
-                boolean isEmpty = getInputList().isEmpty();
-                CharInput input = getInputList().newPending();
-
-                InputWord word = key.getWord();
-                input.appendKey(key);
-                input.setWord(word);
-
-                if (isEmpty) {
-                    // 直接提交输入
-                    commit_InputList();
-                } else {
-                    // 连续输入
-                    if (getInputList().getSelected() instanceof GapInput) {
-                        confirm_InputChars();
-                    }
-                    // 替换输入
-                    else {
-                        confirm_InputChars_and_MoveToNext();
-                    }
-                }
+                do_Single_Emoji_Inputting(key);
             }
             break;
         }
     }
 
     private void on_ChoosingEmoji_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                switch (key.getType()) {
-                    case Toggle_Emoji_Group: {
-                        play_InputtingSingleTick_Audio(key);
+        if (msg == UserKeyMsg.KeySingleTap) {
+            if (key.getType() == CtrlKey.Type.Toggle_Emoji_Group) {
+                play_InputtingSingleTick_Audio(key);
 
-                        ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
-                        stateData.setGroup(key.getLabel());
-
-                        do_Emoji_Choosing();
-                        break;
-                    }
-                }
-                break;
+                do_Emoji_Choosing(key.getLabel());
             }
         }
     }
@@ -703,9 +704,129 @@ public abstract class BaseKeyboard implements Keyboard {
         do_Emoji_Choosing();
     }
 
+    private void do_Emoji_Choosing(String group) {
+        ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
+        stateData.setGroup(group);
+
+        do_Emoji_Choosing();
+    }
+
     private void do_Emoji_Choosing() {
         InputMsgData data = new InputCommonMsgData(getKeyFactory());
         fireInputMsg(InputMsg.Emoji_Choosing, data);
     }
+
+    private void do_Single_Emoji_Inputting(InputWordKey key) {
+        boolean isEmpty = getInputList().isEmpty();
+        CharInput input = getInputList().newPending();
+
+        InputWord word = key.getWord();
+        input.appendKey(key);
+        input.setWord(word);
+
+        if (isEmpty) {
+            // 直接提交输入
+            commit_InputList();
+        } else {
+            // 连续输入
+            if (getInputList().getSelected() instanceof GapInput) {
+                confirm_InputChars();
+            }
+            // 替换输入
+            else {
+                confirm_InputChars_and_MoveToNext();
+            }
+        }
+    }
     // >>>>>>>>
+
+    // <<<<<<<<<<< 对标点符号的操作
+    private void start_Symbol_Choosing() {
+        int pageSize = KeyTable.getSymbolKeysPageSize();
+        ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(pageSize);
+        this.state = new State(State.Type.Symbol_Choosing, stateData, this.state);
+
+        String group = SymbolGroup.han.name;
+        if (getConfig().getType() == Type.Latin) {
+            group = SymbolGroup.latin.name;
+        }
+        do_Symbol_Choosing(group);
+    }
+
+    private void on_ChoosingSymbol_SymbolKeyMsg(UserKeyMsg msg, SymbolKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case KeyLongPressTick:
+            case KeySingleTap: {
+                play_InputtingSingleTick_Audio(key);
+
+                do_Single_Symbol_Inputting(key);
+                break;
+            }
+        }
+    }
+
+    private void on_ChoosingSymbol_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        if (msg == UserKeyMsg.KeySingleTap) {
+            if (key.getType() == CtrlKey.Type.Toggle_Symbol_Group) {
+                play_InputtingSingleTick_Audio(key);
+                do_Symbol_Choosing(key.getLabel());
+            }
+        }
+    }
+
+    private void on_ChoosingSymbol_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
+
+        do_Symbol_Choosing();
+    }
+
+    private void do_Symbol_Choosing(String group) {
+        ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
+        stateData.setGroup(group);
+
+        do_Symbol_Choosing();
+    }
+
+    private void do_Symbol_Choosing() {
+        InputMsgData data = new InputCommonMsgData(getKeyFactory());
+        fireInputMsg(InputMsg.Symbol_Choosing, data);
+    }
+
+    private void do_Single_Symbol_Inputting(SymbolKey key) {
+        boolean isEmpty = getInputList().isEmpty();
+        CharInput input = getInputList().newPending();
+
+        if (key.isPair()) {
+            String left = ((Symbol.Pair) key.getSymbol()).left;
+            String right = ((Symbol.Pair) key.getSymbol()).right;
+            SymbolKey leftKey = SymbolKey.create(Symbol.single(left));
+            SymbolKey rightKey = SymbolKey.create(Symbol.single(right));
+
+            input.appendKey(leftKey);
+            input = getInputList().newPending();
+            input.appendKey(rightKey);
+            // 确认第二个 Key，并移动光标到其后的 Gap 位置
+            getInputList().confirmPending();
+
+            // 并将光标移动到成对标点之间的 Gap 位置
+            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
+        } else {
+            input.appendKey(key);
+        }
+
+        if (isEmpty) {
+            // 直接提交输入
+            commit_InputList();
+        } else {
+            // 连续输入
+            if (getInputList().getSelected() instanceof GapInput) {
+                confirm_InputChars();
+            }
+            // 替换输入
+            else {
+                confirm_InputChars_and_MoveToNext();
+            }
+        }
+    }
+    // >>>>>>>>>>>
 }

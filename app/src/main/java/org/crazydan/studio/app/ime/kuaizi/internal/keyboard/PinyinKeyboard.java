@@ -37,7 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingInputCandidateStateData;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.SlippingInputStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -47,8 +46,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
@@ -73,14 +72,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                 stateData.getPageSize(),
                                                                 stateData.getStrokes());
             }
-            case Symbol_Choosing: {
-                ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
-
-                return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
-                                                       stateData.getPagingData().toArray(new Symbol[0]),
-                                                       stateData.getPageStart(),
-                                                       stateData.getPageSize());
-            }
             default: {
                 return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
             }
@@ -92,10 +83,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (this.state.type) {
             case Input_Waiting:
             case InputCandidate_Choosing:
-                switch (msg) {
-                    case ChoosingInput:
-                        onChoosingInputMsg(data.target);
-                        break;
+                if (msg == UserInputMsg.ChoosingInput) {
+                    onChoosingInputMsg(data.target);
                 }
                 break;
         }
@@ -120,16 +109,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     on_InputCandidates_InputWordKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_InputCandidates_CtrlKeyMsg(msg, (CtrlKey) key, data);
-                }
-                break;
-            }
-            case Symbol_Choosing: {
-                if (msg == UserKeyMsg.FingerFlipping) {
-                    on_ChoosingSymbol_PageFlippingMsg(msg, key, data);
-                } else if (key instanceof CharKey) {
-                    on_ChoosingSymbol_CharKeyMsg(msg, (CharKey) key, data);
-                } else if (key instanceof CtrlKey) {
-                    on_ChoosingSymbol_CtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
                 break;
             }
@@ -220,32 +199,16 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                switch (key.getType()) {
-                    case SwitchToSymbolKeyboard:
-                        play_InputtingSingleTick_Audio(key);
-
-                        start_Symbol_Choosing();
-                        break;
-                }
-                break;
-            }
-        }
     }
 
     private void on_InputCandidates_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                // 确认候选字
-                play_InputtingSingleTick_Audio(key);
+        if (msg == UserKeyMsg.KeySingleTap) {// 确认候选字
+            play_InputtingSingleTick_Audio(key);
 
-                InputWord word = key.getWord();
-                getInputList().getPending().setWord(word);
+            InputWord word = key.getWord();
+            getInputList().getPending().setWord(word);
 
-                onConfirmSelectedInputCandidate();
-            }
-            break;
+            onConfirmSelectedInputCandidate();
         }
     }
 
@@ -254,9 +217,11 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyLongPressTick:
                 // 过滤的笔画数 -1
                 if (key.getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
-                    String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
+                    if (((UserLongPressTickMsgData) data).tick % 4 == 0) {
+                        String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
 
-                    do_InputCandidate_Filtering_ByStroke(key, strokeCode, -1);
+                        do_InputCandidate_Filtering_ByStroke(key, strokeCode, -1);
+                    }
                     break;
                 }
             case KeySingleTap: {
@@ -358,7 +323,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emoji:
-            case DoubleSymbol:
             case Symbol: {
                 boolean isEmpty = getInputList().isEmpty();
                 getInputList().newPending().appendKey(key);
@@ -625,102 +589,4 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
     // >>>>>>>>>
-
-    // <<<<<<<<<<< 对标点符号的操作
-    private void start_Symbol_Choosing() {
-        ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(KeyTable.getSymbolKeysPageSize());
-        stateData.setPagingData(SymbolKeyboard.chinese_symbols);
-
-        this.state = new State(State.Type.Symbol_Choosing, stateData, this.state);
-        do_Symbol_Choosing();
-    }
-
-    private void on_ChoosingSymbol_CharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                // 单字符输入，并切回原键盘
-                play_InputtingSingleTick_Audio(key);
-
-                do_Single_Symbol_Key_Inputting(key, true);
-                break;
-            }
-            case KeyLongPressTick: {
-                // 长按则连续输入
-                play_InputtingSingleTick_Audio(key);
-
-                do_Single_Symbol_Key_Inputting(key, false);
-                break;
-            }
-        }
-    }
-
-    private void on_ChoosingSymbol_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (try_Common_OnCtrlKeyMsg(msg, key, data)) {
-            return;
-        }
-
-        switch (msg) {
-            case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
-
-                switch (key.getType()) {
-                    case Toggle_Symbol_Locale_Zh_and_En: {
-                        ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
-                        stateData.setPagingData(SymbolKeyboard.latin_symbols);
-
-                        do_Symbol_Choosing();
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    private void do_Single_Symbol_Key_Inputting(CharKey key, boolean singleInputting) {
-        boolean continuousInputting = !singleInputting || !getInputList().isEmpty();
-
-        CharInput input = getInputList().newPending();
-        if (key.isDoubleSymbol()) {
-            // 拆分成两个 Key 插入到输入列表
-            CharKey leftKey = KeyTable.symbolKey(key.getText().substring(0, 1));
-            CharKey rightKey = KeyTable.symbolKey(key.getText().substring(1));
-
-            input.appendKey(leftKey);
-            input = getInputList().newPending();
-            input.appendKey(rightKey);
-            // 确认第二个 Key，并移动光标到其后的 Gap 位置
-            getInputList().confirmPending();
-
-            // 并将光标移动到成对标点之间的 Gap 位置
-            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
-
-            // 再在成对标点之间等待新的输入
-            continuousInputting = true;
-        } else {
-            input.appendKey(key);
-        }
-
-        if (continuousInputting) {
-            if (singleInputting) {
-                confirm_InputChars();
-            } else {
-                do_Symbol_Choosing();
-            }
-        } else {
-            commit_InputList_and_Waiting_Input();
-        }
-    }
-
-    private void on_ChoosingSymbol_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
-
-        do_Symbol_Choosing();
-    }
-
-    private void do_Symbol_Choosing() {
-        InputMsgData data = new InputCommonMsgData(getKeyFactory());
-        fireInputMsg(InputMsg.Symbol_Choosing, data);
-    }
-    // >>>>>>>>>>>
 }

@@ -33,11 +33,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 public class ChoosingEmojiStateData extends PagingStateData<InputWord> {
     private final Emojis emojis;
 
-    private String group = Emojis.GROUP_GENERAL;
+    private String group;
 
     public ChoosingEmojiStateData(Emojis emojis, int pageSize) {
         super(pageSize);
         this.emojis = emojis;
+
+        this.group = getGroups().get(0);
+    }
+
+    @Override
+    public List<InputWord> getPagingData() {
+        return this.emojis.groups.getOrDefault(getGroup(), new ArrayList<>());
     }
 
     public List<String> getGroups() {
@@ -49,12 +56,9 @@ public class ChoosingEmojiStateData extends PagingStateData<InputWord> {
     }
 
     public void setGroup(String group) {
-        this.group = group;
-
-        resetPageStart();
-    }
-
-    public List<InputWord> getPagingData() {
-        return this.emojis.groups.getOrDefault(getGroup(), new ArrayList<>());
+        if (group != null) {
+            this.group = group;
+            resetPageStart();
+        }
     }
 }

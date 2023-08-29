@@ -29,12 +29,15 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 
 /**
  * {@link Keyboard 键盘}的按键表
@@ -66,7 +69,7 @@ public class KeyTable {
     private static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
                                                                           R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
-    private static final KeyColor key_char_emoji_color = KeyColor.create(-1, R.attr.key_bg_color);
+    private static final KeyColor key_char_emoji_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -123,7 +126,7 @@ public class KeyTable {
             };
 
     /** 表情符号的分组按键坐标 */
-    private static final int[][] emoji_group_key_coords = new int[][] {
+    private static final int[][] symbol_emoji_group_key_coords = new int[][] {
             new int[] { 1, 7 },
             new int[] { 0, 7 },
             new int[] { 0, 6 },
@@ -137,7 +140,7 @@ public class KeyTable {
             };
 
     /** 表情符号的分组按键坐标 */
-    private static final int[][] emoji_group_key_coords_left_hand = new int[][] {
+    private static final int[][] symbol_emoji_group_key_coords_left_hand = new int[][] {
             new int[] { 1, 0 },
             new int[] { 0, 1 },
             new int[] { 0, 2 },
@@ -149,7 +152,7 @@ public class KeyTable {
             new int[] { 1, 7 },
             new int[] { 2, 7 },
             };
-    private static final int[][][] emoji_key_level_coords = new int[][][] {
+    private static final int[][][] symbol_emoji_key_level_coords = new int[][][] {
             // level 1
             new int[][] {
                     new int[] { 1, 6 },
@@ -170,61 +173,9 @@ public class KeyTable {
                     },
             // level 3
             new int[][] {
-                    new int[] { 3, 6 },
-                    new int[] { 3, 5 },
-                    new int[] { 3, 4 },
-                    new int[] { 3, 3 },
-                    new int[] { 3, 2 },
-                    new int[] { 3, 1 },
-                    },
-            // level 4
-            new int[][] {
-                    new int[] { 4, 6 },
-                    new int[] { 4, 5 },
-                    new int[] { 4, 4 },
-                    new int[] { 4, 3 },
-                    new int[] { 4, 2 },
-                    new int[] { 4, 1 },
-                    },
-            // level 5
-            new int[][] {
-                    new int[] { 5, 6 },
-                    new int[] { 5, 5 },
-                    new int[] { 5, 4 },
-                    new int[] { 5, 3 },
-                    new int[] { 5, 2 },
-                    new int[] { 5, 1 },
-                    },
-            };
-
-    /** 从中心按键由内到外的标点符号布局坐标 */
-    private static final int[][][] symbol_key_level_coords = new int[][][] {
-            // level 1
-            new int[][] {
-                    new int[] { 1, 6 },
-                    new int[] { 1, 5 },
-                    new int[] { 1, 4 },
-                    new int[] { 1, 3 },
-                    new int[] { 1, 2 },
-                    new int[] { 1, 1 },
-                    },
-            // level 2
-            new int[][] {
-                    new int[] { 2, 6 },
-                    new int[] { 2, 5 },
-                    new int[] { 2, 4 },
-                    new int[] { 2, 3 },
-                    new int[] { 2, 2 },
-                    new int[] { 2, 1 },
-                    },
-            // level 3
-            new int[][] {
-                    new int[] { 3, 6 },
-                    new int[] { 3, 5 },
-                    new int[] { 3, 4 },
-                    new int[] { 3, 3 },
-                    new int[] { 3, 2 },
-                    new int[] { 3, 1 },
+                    new int[] { 3, 6 }, new int[] { 3, 5 },
+                    //new int[] { 3, 4 },
+                    new int[] { 3, 3 }, new int[] { 3, 2 }, new int[] { 3, 1 },
                     },
             // level 4
             new int[][] {
@@ -388,9 +339,8 @@ public class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToEmojiKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
 
@@ -734,7 +684,7 @@ public class KeyTable {
             gridKeys[1][index_7] = noopCtrlKey();
         }
 
-        int wordIndex = startIndex;
+        int dataIndex = startIndex;
         int[][][] levelKeyCoords = changeLayoutForHandMode(config, pinyin_input_word_key_level_coords);
 
         for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
@@ -744,8 +694,8 @@ public class KeyTable {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < dataSize) {
-                    InputWord word = words.get(wordIndex);
+                if (dataIndex < dataSize) {
+                    InputWord word = words.get(dataIndex);
 
                     if (word != null) {
                         KeyColor color = latin_key_char_alphabet_level_colors[level];
@@ -763,7 +713,7 @@ public class KeyTable {
                     break;
                 }
 
-                wordIndex += 1;
+                dataIndex += 1;
             }
         }
 
@@ -800,7 +750,7 @@ public class KeyTable {
     /** 表情符号按键的分页大小 */
     public static int getEmojiKeysPageSize() {
         int size = 0;
-        for (int[][] level : pinyin_input_word_key_level_coords) {
+        for (int[][] level : symbol_emoji_key_level_coords) {
             size += level.length;
         }
         return size;
@@ -822,11 +772,12 @@ public class KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
         gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][4] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
         gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
-        int[][] groupKeyCoords = isLeft ? emoji_group_key_coords_left_hand : emoji_group_key_coords;
+        int[][] groupKeyCoords = isLeft ? symbol_emoji_group_key_coords_left_hand : symbol_emoji_group_key_coords;
         for (int i = 0, j = 0; i < groupKeyCoords.length && j < groups.size(); i++, j++) {
             int[] keyCoord = groupKeyCoords[i];
             String group = groups.get(j);
@@ -837,8 +788,8 @@ public class KeyTable {
             gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Emoji_Group).setLabel(group).setDisabled(selected);
         }
 
-        int wordIndex = startIndex;
-        int[][][] levelKeyCoords = changeLayoutForHandMode(config, emoji_key_level_coords);
+        int dataIndex = startIndex;
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_emoji_key_level_coords);
 
         for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
             int[][] keyCoords = levelKeyCoords[level];
@@ -847,11 +798,11 @@ public class KeyTable {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (wordIndex < dataSize) {
-                    InputWord word = words.get(wordIndex);
+                if (dataIndex < dataSize) {
+                    InputWord word = words.get(dataIndex);
 
                     if (word != null) {
-                        KeyColor color = latin_key_char_alphabet_level_colors[level];
+                        KeyColor color = key_char_emoji_color;
 
                         InputWordKey key = InputWordKey.create(word).setColor(color);
                         gridKeys[x][y] = key;
@@ -860,7 +811,7 @@ public class KeyTable {
                     break;
                 }
 
-                wordIndex += 1;
+                dataIndex += 1;
             }
         }
 
@@ -870,17 +821,17 @@ public class KeyTable {
     /** 标点符号按键的分页大小 */
     public static int getSymbolKeysPageSize() {
         int size = 0;
-        for (int[][] level : symbol_key_level_coords) {
+        for (int[][] level : symbol_emoji_key_level_coords) {
             size += level.length;
         }
         return size;
     }
 
     /** 创建标点符号按键 */
-    public static Key<?>[][] createSymbolKeys(Config config, Symbol[] symbols, int startIndex, int pageSize) {
+    public static Key<?>[][] createSymbolKeys(Config config, SymbolGroup symbolGroup, int startIndex, int pageSize) {
         Key<?>[][] gridKeys = emptyGridKeys();
 
-        int dataSize = symbols.length;
+        int dataSize = symbolGroup.symbols.length;
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
         boolean isLeft = config.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
@@ -888,14 +839,25 @@ public class KeyTable {
         int index_7 = changeIndexForHandMode(config, gridKeys, 7);
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        gridKeys[1][index_7] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Locale_Zh_and_En).setLabel("中/英");
         gridKeys[2][index_7] = ctrlKey(config, CtrlKey.Type.Exit);
+        gridKeys[3][4] = ctrlKey(config, CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_7] = config.hasInputs ? ctrlKey(config, CtrlKey.Type.CommitInputList) : enterCtrlKey(config);
         gridKeys[4][index_7] = ctrlKey(config, CtrlKey.Type.Space);
         gridKeys[5][index_7] = ctrlKey(config, CtrlKey.Type.Backspace);
 
-        int symbolIndex = startIndex;
-        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_key_level_coords);
+        int[][] groupKeyCoords = isLeft ? symbol_emoji_group_key_coords_left_hand : symbol_emoji_group_key_coords;
+        for (int i = 0, j = 0; i < groupKeyCoords.length && j < SymbolGroup.values().length; i++, j++) {
+            int[] keyCoord = groupKeyCoords[i];
+            String group = SymbolGroup.values()[j].name;
+            boolean selected = group.equals(symbolGroup.name);
+
+            int x = keyCoord[0];
+            int y = keyCoord[1];
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Group).setLabel(group).setDisabled(selected);
+        }
+
+        int dataIndex = startIndex;
+        int[][][] levelKeyCoords = changeLayoutForHandMode(config, symbol_emoji_key_level_coords);
 
         for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
             int[][] keyCoords = levelKeyCoords[level];
@@ -904,27 +866,20 @@ public class KeyTable {
                 int x = keyCoord[0];
                 int y = keyCoord[1];
 
-                if (symbolIndex < dataSize) {
-                    Symbol symbol = symbols[symbolIndex];
+                if (dataIndex < dataSize) {
+                    Symbol data = symbolGroup.symbols[dataIndex];
 
-                    KeyColor color = latin_key_char_alphabet_level_colors[level];
-                    String text = symbol.getText();
-                    CharKey key = symbol.isDoubled() ? doubleSymbolKey(text) : symbolKey(text);
+                    if (data != null) {
+                        KeyColor color = latin_key_char_alphabet_level_colors[level];
 
-                    if (symbol.isDoubled()) {
-                        String label = text.charAt(0) + " " + text.charAt(1);
-                        key.setLabel(label);
+                        SymbolKey key = SymbolKey.create(data).setLabel(data.text).setColor(color);
+                        gridKeys[x][y] = key;
                     }
-
-                    key.setColor(color);
-                    symbol.getReplacements().forEach(key::withReplacements);
-
-                    gridKeys[x][y] = key;
                 } else {
                     break;
                 }
 
-                symbolIndex += 1;
+                dataIndex += 1;
             }
         }
 
@@ -1074,10 +1029,6 @@ public class KeyTable {
 
     public static CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
-    }
-
-    public static CharKey doubleSymbolKey(String text) {
-        return charKey(CharKey.Type.DoubleSymbol, text);
     }
 
     private static CharKey charKey(CharKey.Type type, String text) {

@@ -68,10 +68,6 @@ public interface Keyboard extends UserInputMsgListener {
         Latin,
         /** 数字键盘：纯数字和 +、-、#、* 等符号 */
         Number,
-        /** 标点符号键盘：各类符号可切换 */
-        Symbol,
-        /** 表情符号键盘 */
-        Emoji,
     }
 
     /** 键盘布局方向 */
