@@ -82,9 +82,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
                 case Filter_PinyinInputCandidate_stroke:
                     ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, this.orientation);
                     break;
-                case Toggle_PinyinInputSpell_zcs_h:
-                case Toggle_PinyinInputSpell_ng:
-                case Toggle_PinyinInputSpell_nl:
+                case Toggle_PinyinInput_spell:
                     ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
                     break;
                 default:
@@ -109,9 +107,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             switch (((CtrlKey) key).getType()) {
                 case Filter_PinyinInputCandidate_stroke:
                     return VIEW_TYPE_FILTER_INPUT_WORD_KEY;
-                case Toggle_PinyinInputSpell_zcs_h:
-                case Toggle_PinyinInputSpell_ng:
-                case Toggle_PinyinInputSpell_nl:
+                case Toggle_PinyinInput_spell:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
                     return VIEW_TYPE_CTRL_KEY;

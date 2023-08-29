@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -41,6 +42,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
@@ -152,6 +155,20 @@ public abstract class BaseKeyboard implements Keyboard {
         return new KeyTable.Config(getConfig(), !getInputList().isEmpty());
     }
 
+    @Override
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (this.state.type) {
+            case Input_Waiting:
+            case Emoji_Choosing:
+            case Symbol_Choosing:
+            case InputCandidate_Choosing:
+                if (msg == UserInputMsg.ChoosingInput) {
+                    onChoosingInputMsg(data.target);
+                }
+                break;
+        }
+    }
+
     /**
      * 尝试对 {@link UserKeyMsg} 做处理
      * <p/>
@@ -199,23 +216,27 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
+    protected State getInitState() {
+        return new State(State.Type.Input_Waiting);
+    }
+
     /** 当前字符输入已完成，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void end_InputChars_Inputting_and_Waiting_Input() {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         end_InputChars_Inputting();
     }
 
     /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void confirm_InputChars_and_Waiting_Input() {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         confirm_InputChars();
     }
 
     /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void commit_InputList_and_Waiting_Input() {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         commit_InputList();
     }
@@ -226,7 +247,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 注：键盘的{@link #state 状态}始终为 {@link State.Type#Input_Waiting}
      */
     protected void fire_and_Waiting_Continuous_InputChars_Inputting(Key<?> key) {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         fire_InputChars_Inputting(getKeyFactory(), key);
     }
@@ -234,6 +255,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 回到前序状态 */
     protected void back_To_Previous_State() {
         if (this.state.previous == null) {
+            end_InputChars_Inputting_and_Waiting_Input();
             return;
         }
 
@@ -376,7 +398,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Type target) {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(getConfig().getType(), target));
     }
@@ -388,7 +410,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode() {
-        this.state = new State(State.Type.Input_Waiting);
+        this.state = getInitState();
 
         switch (getConfig().getHandMode()) {
             case Left:
@@ -666,7 +688,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
-        this.state = new State(State.Type.Emoji_Choosing, stateData, this.state);
+        this.state = new State(State.Type.Emoji_Choosing, stateData, getInitState());
 
         String group = null;
         // 若默认分组（常用）的数据为空，则切换到第二个分组
@@ -693,7 +715,8 @@ public abstract class BaseKeyboard implements Keyboard {
             if (key.getType() == CtrlKey.Type.Toggle_Emoji_Group) {
                 play_InputtingSingleTick_Audio(key);
 
-                do_Emoji_Choosing(key.getLabel());
+                CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+                do_Emoji_Choosing(option.value());
             }
         }
     }
@@ -744,11 +767,11 @@ public abstract class BaseKeyboard implements Keyboard {
     private void start_Symbol_Choosing() {
         int pageSize = KeyTable.getSymbolKeysPageSize();
         ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(pageSize);
-        this.state = new State(State.Type.Symbol_Choosing, stateData, this.state);
+        this.state = new State(State.Type.Symbol_Choosing, stateData, getInitState());
 
-        String group = SymbolGroup.han.name;
+        SymbolGroup group = SymbolGroup.han;
         if (getConfig().getType() == Type.Latin) {
-            group = SymbolGroup.latin.name;
+            group = SymbolGroup.latin;
         }
         do_Symbol_Choosing(group);
     }
@@ -769,7 +792,9 @@ public abstract class BaseKeyboard implements Keyboard {
         if (msg == UserKeyMsg.KeySingleTap) {
             if (key.getType() == CtrlKey.Type.Toggle_Symbol_Group) {
                 play_InputtingSingleTick_Audio(key);
-                do_Symbol_Choosing(key.getLabel());
+
+                CtrlKey.SymbolGroupOption option = (CtrlKey.SymbolGroupOption) key.getOption();
+                do_Symbol_Choosing(option.value());
             }
         }
     }
@@ -780,7 +805,7 @@ public abstract class BaseKeyboard implements Keyboard {
         do_Symbol_Choosing();
     }
 
-    private void do_Symbol_Choosing(String group) {
+    private void do_Symbol_Choosing(SymbolGroup group) {
         ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
         stateData.setGroup(group);
 
@@ -829,4 +854,23 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
     // >>>>>>>>>>>
+
+    // <<<<<<<<< 对输入列表的操作
+    protected void onChoosingInputMsg(Input input) {
+        getInputList().newPendingOn(input);
+
+        // Note：输入过程中操作和处理的都是 pending
+        CharInput pending = getInputList().getPending();
+
+        if (pending.isEmoji()) {
+            start_Emoji_Choosing();
+        } else if (pending.isSymbol()) {
+            start_Symbol_Choosing();
+        } else if (!do_Choosing_Input_in_InputList(pending)) {
+            confirm_InputChars_and_Waiting_Input();
+        }
+    }
+
+    protected boolean do_Choosing_Input_in_InputList(CharInput input) {return false;}
+    // >>>>>>>>>
 }

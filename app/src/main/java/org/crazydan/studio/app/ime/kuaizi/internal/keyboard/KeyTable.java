@@ -366,11 +366,7 @@ public class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_ng,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h,
-                            KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInputSpell_nl,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke,
                             KeyStyle.withColor(R.attr.key_highlight_fg_color, R.attr.key_bg_color));
@@ -644,21 +640,28 @@ public class KeyTable {
             String strokeCode = PinyinInputWord.getStrokeCode(stroke);
             Integer strokeCount = strokes.get(strokeCode);
             String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
-            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke).setLabel(label);
+            CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Filter_PinyinInputCandidate_stroke).setOption(option)
+                                                                                             .setLabel(label);
         }
 
         CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
-            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_zcs_h).setLabel(s
-                                                                                                               + ","
-                                                                                                               + s
-                                                                                                               + "h");
+            String label = s + "," + s + "h";
+            CtrlKey.Option<?> option
+                    = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
+            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option)
+                                                                                                .setLabel(label);
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
-            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_nl).setLabel("n,l  ");
+            String label = "n,l  ";
+            CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
+            gridKeys[0][isLeft ? 1 : 7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option)
+                                                                                                .setLabel(label);
+
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
@@ -672,10 +675,10 @@ public class KeyTable {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
-            gridKeys[1][index_7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInputSpell_ng).setLabel(tail
-                                                                                                     + ","
-                                                                                                     + tail
-                                                                                                     + "g");
+            String label = tail + "," + tail + "g";
+            CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
+            gridKeys[1][index_7] = ctrlKey(config, CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option)
+                                                                                         .setLabel(label);
             endingToggle.toggle_Pinyin_NG_Ending();
         }
         // 若拼音变换无效，则不提供切换按钮
@@ -785,7 +788,10 @@ public class KeyTable {
 
             int x = keyCoord[0];
             int y = keyCoord[1];
-            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Emoji_Group).setLabel(group).setDisabled(selected);
+            CtrlKey.Option<?> option = new CtrlKey.TextOption(group);
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Emoji_Group).setOption(option)
+                                                                             .setLabel(group)
+                                                                             .setDisabled(selected);
         }
 
         int dataIndex = startIndex;
@@ -853,7 +859,10 @@ public class KeyTable {
 
             int x = keyCoord[0];
             int y = keyCoord[1];
-            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Group).setLabel(group).setDisabled(selected);
+            CtrlKey.Option<?> option = new CtrlKey.SymbolGroupOption(SymbolGroup.values()[j]);
+            gridKeys[x][y] = ctrlKey(config, CtrlKey.Type.Toggle_Symbol_Group).setOption(option)
+                                                                              .setLabel(group)
+                                                                              .setDisabled(selected);
         }
 
         int dataIndex = startIndex;

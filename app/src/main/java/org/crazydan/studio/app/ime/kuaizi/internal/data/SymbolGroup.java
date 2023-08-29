@@ -72,15 +72,6 @@ public enum SymbolGroup {
         this.symbols = symbols;
     }
 
-    public static SymbolGroup nameOf(String name) {
-        for (SymbolGroup group : values()) {
-            if (group.name.equals(name)) {
-                return group;
-            }
-        }
-        return null;
-    }
-
     private static Symbol single(String text) {
         return Symbol.single(text);
     }

@@ -52,8 +52,4 @@ public class ChoosingSymbolStateData extends PagingStateData<Symbol> {
             resetPageStart();
         }
     }
-
-    public void setGroup(String group) {
-        setGroup(SymbolGroup.nameOf(group));
-    }
 }

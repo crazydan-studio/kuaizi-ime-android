@@ -32,7 +32,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -41,8 +40,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateDat
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.SlippingInputStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
@@ -75,18 +72,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             default: {
                 return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
             }
-        }
-    }
-
-    @Override
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        switch (this.state.type) {
-            case Input_Waiting:
-            case InputCandidate_Choosing:
-                if (msg == UserInputMsg.ChoosingInput) {
-                    onChoosingInputMsg(data.target);
-                }
-                break;
         }
     }
 
@@ -218,9 +203,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 过滤的笔画数 -1
                 if (key.getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
                     if (((UserLongPressTickMsgData) data).tick % 4 == 0) {
-                        String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
+                        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
 
-                        do_InputCandidate_Filtering_ByStroke(key, strokeCode, -1);
+                        do_InputCandidate_Filtering_ByStroke(key, option.value(), -1);
                     }
                     break;
                 }
@@ -242,27 +227,27 @@ public class PinyinKeyboard extends BaseKeyboard {
                         onConfirmSelectedInputCandidate();
                         break;
                     }
-                    case Toggle_PinyinInputSpell_zcs_h: {
-                        input.toggle_Pinyin_SCZ_Starting();
-
-                        start_InputCandidate_Choosing(input, true);
-                        break;
-                    }
-                    case Toggle_PinyinInputSpell_nl: {
-                        input.toggle_Pinyin_NL_Starting();
-
-                        start_InputCandidate_Choosing(input, true);
-                        break;
-                    }
-                    case Toggle_PinyinInputSpell_ng: {
-                        input.toggle_Pinyin_NG_Ending();
+                    case Toggle_PinyinInput_spell: {
+                        CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
+                        switch (option.value()) {
+                            case ng:
+                                input.toggle_Pinyin_NG_Ending();
+                                break;
+                            case nl:
+                                input.toggle_Pinyin_NL_Starting();
+                                break;
+                            case zcs_h:
+                                input.toggle_Pinyin_SCZ_Starting();
+                                break;
+                        }
 
                         start_InputCandidate_Choosing(input, true);
                         break;
                     }
                     case Filter_PinyinInputCandidate_stroke: {
-                        String strokeCode = PinyinInputWord.getStrokeCode(key.getText());
-                        do_InputCandidate_Filtering_ByStroke(key, strokeCode, 1);
+                        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+
+                        do_InputCandidate_Filtering_ByStroke(key, option.value(), 1);
                         break;
                     }
                 }
@@ -574,19 +559,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // <<<<<<<<< 对输入列表的操作
 
-    /** 在输入列表中选中候选字 */
-    private void onChoosingInputMsg(Input input) {
-        getInputList().newPendingOn(input);
-
-        CharInput pending = getInputList().getPending();
-        // 仅当待输入为拼音时才进入候选字模式：输入过程中操作和处理的都是 pending
-        if (pending.isPinyin()) {
-            start_InputCandidate_Choosing(pending, false);
+    /** 在输入列表中选中拼音输入的候选字 */
+    @Override
+    protected boolean do_Choosing_Input_in_InputList(CharInput input) {
+        // 仅当待输入为拼音时才进入候选字模式
+        if (input.isPinyin()) {
+            start_InputCandidate_Choosing(input, false);
+            return true;
         }
-        // 其余情况都是直接做替换输入
-        else {
-            confirm_InputChars_and_Waiting_Input();
-        }
+        return false;
     }
     // >>>>>>>>>
 }

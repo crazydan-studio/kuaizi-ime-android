@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 
 /**
  * 控制{@link Key 按键}
@@ -30,6 +31,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class CtrlKey extends BaseKey<CtrlKey> {
     private final Type type;
+
+    private Option<?> option;
 
     public static CtrlKey noop() {
         return create(Type.NoOp);
@@ -46,6 +49,15 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     /** 按钮{@link Type 类型} */
     public Type getType() {
         return this.type;
+    }
+
+    public Option<?> getOption() {
+        return this.option;
+    }
+
+    public CtrlKey setOption(Option<?> option) {
+        this.option = option;
+        return this;
     }
 
     public boolean isSpace() {
@@ -113,12 +125,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 撤回输入 */
         RevokeInput,
 
-        /** 在候选字状态下切换当前输入的平舌和翘舌 */
-        Toggle_PinyinInputSpell_zcs_h,
-        /** 在候选字状态下切换当前输入的前鼻韵和后鼻韵 */
-        Toggle_PinyinInputSpell_ng,
-        /** 在候选字状态下切换当前输入的 n/l */
-        Toggle_PinyinInputSpell_nl,
+        /** 在候选字状态下切换当前输入的拼音拼写 */
+        Toggle_PinyinInput_spell,
         /** 在候选字状态下根据笔画过滤候选字 */
         Filter_PinyinInputCandidate_stroke,
 
@@ -183,5 +191,31 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Math_Brackets,
         /** 数学 . */
         Math_Dot,
+    }
+
+    public static abstract class Option<T> {
+        private final T value;
+
+        protected Option(T value) {this.value = value;}
+
+        public T value() {return this.value;}
+    }
+
+    public static class TextOption extends Option<String> {
+        public TextOption(String value) {super(value);}
+    }
+
+    public static class SymbolGroupOption extends Option<SymbolGroup> {
+        public SymbolGroupOption(SymbolGroup value) {super(value);}
+    }
+
+    public static class PinyinSpellToggleOption extends Option<PinyinSpellToggleOption.Toggle> {
+        public PinyinSpellToggleOption(Toggle value) {super(value);}
+
+        public enum Toggle {
+            zcs_h,
+            nl,
+            ng,
+        }
     }
 }
