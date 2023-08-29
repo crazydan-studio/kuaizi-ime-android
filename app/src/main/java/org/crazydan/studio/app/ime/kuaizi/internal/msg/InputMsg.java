@@ -31,6 +31,8 @@ public enum InputMsg {
 
     /** 输入列表提交中：录入到目标输入组件中 */
     InputList_Committing,
+    /** 输入列表中的 配对符号 提交中：录入到目标输入组件中 */
+    InputList_PairSymbol_Committing,
 
     /** 定位输入目标的光标 */
     InputTarget_Cursor_Locating,

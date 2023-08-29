@@ -21,16 +21,20 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputList_Committing}消息数据
+ * {@link InputMsg#InputList_PairSymbol_Committing}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-15
+ * @date 2023-08-29
  */
-public class InputListCommittingMsgData extends InputCommonMsgData {
-    public final CharSequence text;
+public class InputListPairSymbolCommittingMsgData extends InputCommonMsgData {
+    public final CharSequence left;
+    public final CharSequence right;
 
-    public InputListCommittingMsgData(Keyboard.KeyFactory keyFactory, CharSequence text) {
+    public InputListPairSymbolCommittingMsgData(
+            Keyboard.KeyFactory keyFactory, CharSequence left, CharSequence right
+    ) {
         super(keyFactory);
-        this.text = text;
+        this.left = left;
+        this.right = right;
     }
 }

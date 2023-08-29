@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -159,7 +160,12 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Committing: {
-                commitInputting(((InputListCommittingMsgData) data).text);
+                commitText(((InputListCommittingMsgData) data).text);
+                break;
+            }
+            case InputList_PairSymbol_Committing: {
+                InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
+                commitText(d.left, d.right);
                 break;
             }
             case InputTarget_Backspacing: {
@@ -198,36 +204,6 @@ public class Service extends InputMethodService implements InputMsgListener {
                 switchIME();
                 break;
             }
-        }
-    }
-
-    private void commitInputting(CharSequence text) {
-        InputConnection ic = getCurrentInputConnection();
-        if (ic == null) {
-            return;
-        }
-
-        if (text.length() == 1) {
-            char ch = text.charAt(0);
-            // 回车、单个的数字等字符，需以事件形式发送，才能被所有组件识别
-            switch (ch) {
-                case ' ':
-                    sendKey(KeyEvent.KEYCODE_SPACE);
-                    break;
-                case '\n':
-                    sendKey(KeyEvent.KEYCODE_ENTER);
-                    break;
-                default:
-                    if (ch >= 'a' && ch <= 'z') {
-                        sendKey(KeyEvent.KEYCODE_A + (ch - 'a'));
-                    } else if (ch >= '0' && ch <= '9') {
-                        sendKey(KeyEvent.KEYCODE_0 + (ch - '0'));
-                    } else {
-                        commitText(text);
-                    }
-            }
-        } else {
-            commitText(text);
         }
     }
 
@@ -303,20 +279,49 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void commitText(CharSequence text) {
-        if (text.length() == 0) {
-            return;
-        }
-
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
             return;
         }
 
+        if (text.length() == 1) {
+            char ch = text.charAt(0);
+            // 单个字符需以事件形式发送，才能被所有组件识别
+            sendKeyChar(ch);
+        } else {
+            ic.beginBatchEdit();
+
+            addText(text);
+
+            ic.endBatchEdit();
+        }
+    }
+
+    private void commitText(CharSequence left, CharSequence right) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        ExtractedText extractedText = getExtractedText();
+        // Note：仅异常情况才获取不到 ExtractedText
+        if (extractedText == null) {
+            return;
+        }
+
+        int start = Math.min(extractedText.selectionStart, extractedText.selectionEnd);
+        int end = Math.max(extractedText.selectionStart, extractedText.selectionEnd);
+
         ic.beginBatchEdit();
-        // Note: 第二个参数必须为 1，
-        // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
-        // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
-        ic.commitText(text, 1);
+
+        // Note：先向选区尾部添加符号，以避免选区发生移动
+        addText(right, end);
+        addText(left, start);
+
+        // 重新选中初始文本：确保选区的选择移动方向不变
+        int offset = left.length();
+        ic.setSelection(extractedText.selectionStart + offset, extractedText.selectionEnd + offset);
+
         ic.endBatchEdit();
     }
 
@@ -346,10 +351,36 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         // https://stackoverflow.com/questions/40521324/selection-using-android-ime#answer-58778722
-        ExtractedText extractedText = ic.getExtractedText(new ExtractedTextRequest(), 0);
-        if (extractedText == null || extractedText.text == null || extractedText.text.length() == 0) {
-            return null;
+        return ic.getExtractedText(new ExtractedTextRequest(), 0);
+    }
+
+    /** 在光标位置添加文本 */
+    private void addText(CharSequence text) {
+        if (text.length() == 0) {
+            return;
         }
-        return extractedText;
+
+        InputConnection ic = getCurrentInputConnection();
+        if (ic != null) {
+            // Note: 第二个参数必须为 1，
+            // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
+            // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
+            ic.commitText(text, 1);
+        }
+    }
+
+    /** 向指定位置添加文本 */
+    private void addText(CharSequence text, int pos) {
+        if (text.length() == 0) {
+            return;
+        }
+
+        InputConnection ic = getCurrentInputConnection();
+        if (ic != null) {
+            // 移动光标到指定位置
+            ic.setSelection(pos, pos);
+
+            addText(text);
+        }
     }
 }

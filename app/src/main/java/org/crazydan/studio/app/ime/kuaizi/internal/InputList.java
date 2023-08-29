@@ -288,6 +288,13 @@ public class InputList {
         return this.inputs;
     }
 
+    public List<CharInput> getCharInputs() {
+        return getInputs().stream()
+                          .filter(input -> input instanceof CharInput)
+                          .map(input -> ((CharInput) input))
+                          .collect(Collectors.toList());
+    }
+
     /** 获取全部的表情符号 */
     public List<InputWord> getEmojis() {
         return getInputs().stream().filter(Input::isEmoji).map(Input::getWord).collect(Collectors.toList());

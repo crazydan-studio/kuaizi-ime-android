@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -80,7 +81,12 @@ public class Guide extends FollowSystemThemeActivity implements InputMsgListener
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Committing: {
-                commitInputting(((InputListCommittingMsgData) data).text);
+                commitText(((InputListCommittingMsgData) data).text);
+                break;
+            }
+            case InputList_PairSymbol_Committing: {
+                InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
+                commitText(d.left, d.right);
                 break;
             }
             case InputTarget_Backspacing: {
@@ -122,13 +128,32 @@ public class Guide extends FollowSystemThemeActivity implements InputMsgListener
         }
     }
 
-    private void commitInputting(CharSequence text) {
+    private void commitText(CharSequence text) {
         int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
         int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
 
         this.editText.getText().replace(start, end, text);
+
         // 移动到替换后的文本内容之后
-        this.editText.setSelection(start + text.length());
+        int offset = text.length();
+        this.editText.setSelection(start + offset);
+    }
+
+    private void commitText(CharSequence left, CharSequence right) {
+        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+
+        // Note：先向选区尾部添加符号，以避免选区发生移动
+        this.editText.getText().replace(end, end, right);
+        this.editText.getText().replace(start, start, left);
+
+        if (start == end) {
+            this.editText.setSelection(start + left.length());
+        } else {
+            // 重新选中初始文本：以上添加文本过程中，EditText 会自动更新选区，且选区结束位置在配对符号的右符号的最右侧
+            this.editText.setSelection(this.editText.getSelectionStart(),
+                                       this.editText.getSelectionEnd() - right.length());
+        }
     }
 
     private void backwardDeleteInput() {

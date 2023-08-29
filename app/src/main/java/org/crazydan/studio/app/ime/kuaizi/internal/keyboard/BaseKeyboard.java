@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
@@ -50,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMs
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
@@ -346,14 +348,34 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 提交输入列表，且状态保持不变 */
     protected void commit_InputList() {
+        commit_InputList(false);
+    }
+
+    /** 提交输入列表，且状态保持不变 */
+    protected void commit_InputList(boolean isPairSymbol) {
         getInputList().confirmPending();
+        if (getInputList().isEmpty()) {
+            return;
+        }
+
         before_Commit_InputList();
 
-        StringBuilder text = getInputList().getText();
-        getInputList().reset();
+        if (isPairSymbol) {
+            List<CharInput> inputs = getInputList().getCharInputs();
+            getInputList().reset();
 
-        InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), text);
-        fireInputMsg(InputMsg.InputList_Committing, data);
+            CharInput left = inputs.get(0);
+            CharInput right = inputs.get(1);
+
+            InputMsgData data = new InputListPairSymbolCommittingMsgData(null, left.getText(), right.getText());
+            fireInputMsg(InputMsg.InputList_PairSymbol_Committing, data);
+        } else {
+            StringBuilder text = getInputList().getText();
+            getInputList().reset();
+
+            InputMsgData data = new InputListCommittingMsgData(null, text);
+            fireInputMsg(InputMsg.InputList_Committing, data);
+        }
     }
 
     /** 在 {@link #commit_InputList_and_Waiting_Input() 输入列表提交} 之前需要做的事情 */
@@ -821,6 +843,7 @@ public abstract class BaseKeyboard implements Keyboard {
         boolean isEmpty = getInputList().isEmpty();
         CharInput input = getInputList().newPending();
 
+        boolean isPairSymbol = key.isPair();
         if (key.isPair()) {
             String left = ((Symbol.Pair) key.getSymbol()).left;
             String right = ((Symbol.Pair) key.getSymbol()).right;
@@ -841,7 +864,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (isEmpty) {
             // 直接提交输入
-            commit_InputList();
+            commit_InputList(isPairSymbol);
         } else {
             // 连续输入
             if (getInputList().getSelected() instanceof GapInput) {
