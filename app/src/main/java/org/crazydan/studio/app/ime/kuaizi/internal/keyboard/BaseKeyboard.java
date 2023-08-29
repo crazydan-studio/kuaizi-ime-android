@@ -367,13 +367,17 @@ public abstract class BaseKeyboard implements Keyboard {
             CharInput left = inputs.get(0);
             CharInput right = inputs.get(1);
 
-            InputMsgData data = new InputListPairSymbolCommittingMsgData(null, left.getText(), right.getText());
+            // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
+            InputMsgData data = new InputListPairSymbolCommittingMsgData(getKeyFactory(),
+                                                                         left.getText(),
+                                                                         right.getText());
             fireInputMsg(InputMsg.InputList_PairSymbol_Committing, data);
         } else {
             StringBuilder text = getInputList().getText();
             getInputList().reset();
 
-            InputMsgData data = new InputListCommittingMsgData(null, text);
+            // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
+            InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), text);
             fireInputMsg(InputMsg.InputList_Committing, data);
         }
     }
