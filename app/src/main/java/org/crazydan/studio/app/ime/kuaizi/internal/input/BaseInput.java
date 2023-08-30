@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
@@ -37,16 +38,7 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isLatin() {
-        if (isPinyin()) {
-            return false;
-        }
-
-        for (Key<?> key : this.keys) {
-            if (!key.isLatin()) {
-                return false;
-            }
-        }
-        return !isEmpty();
+        return !isPinyin() && test(Key::isLatin);
     }
 
     @Override
@@ -56,17 +48,12 @@ public abstract class BaseInput implements Input {
 
     @Override
     public boolean isSymbol() {
-        for (Key<?> key : this.keys) {
-            if (!key.isSymbol()) {
-                return false;
-            }
-        }
-        return !isEmpty();
+        return test(Key::isSymbol);
     }
 
     @Override
     public boolean isEmoji() {
-        return this.word instanceof EmojiInputWord;
+        return this.word instanceof EmojiInputWord || test(Key::isEmoji);
     }
 
     @Override
@@ -165,5 +152,14 @@ public abstract class BaseInput implements Input {
     @Override
     public int hashCode() {
         return Objects.hash(this.keys, this.word);
+    }
+
+    private boolean test(Predicate<Key<?>> predicate) {
+        for (Key<?> key : this.keys) {
+            if (!predicate.test(key)) {
+                return false;
+            }
+        }
+        return !isEmpty();
     }
 }

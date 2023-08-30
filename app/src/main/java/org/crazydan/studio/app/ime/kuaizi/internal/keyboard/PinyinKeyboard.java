@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingInputCandidateStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.SlippingInputStateData;
@@ -57,20 +58,27 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected KeyFactory doGetKeyFactory() {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
+
         switch (this.state.type) {
+            case Input_Slipping: {
+                SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
+
+                return () -> keyTable.createNextCharKeys(stateData.getLevel0Key().getText(),
+                                                         stateData.getActualLevel1NextChars(),
+                                                         stateData.getActualLevel2NextChars());
+            }
             case InputCandidate_Choosing: {
                 ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
                 CharInput input = stateData.getInput();
 
-                return () -> KeyTable.createPinyinInputWordKeys(createKeyTableConfigure(),
-                                                                input,
-                                                                stateData.getPagingData(),
-                                                                stateData.getPageStart(),
-                                                                stateData.getPageSize(),
-                                                                stateData.getStrokes());
+                return () -> keyTable.createInputCandidateKeys(input,
+                                                               stateData.getPagingData(),
+                                                               stateData.getStrokes(),
+                                                               stateData.getPageStart());
             }
             default: {
-                return () -> KeyTable.createPinyinKeys(createKeyTableConfigure());
+                return keyTable::createKeys;
             }
         }
     }
@@ -336,11 +344,12 @@ public class PinyinKeyboard extends BaseKeyboard {
         SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
         Key.Level currentKeyLevel = stateData.getKeyLevel();
 
+        // 添加后继字母，
         if (currentKeyLevel == Key.Level.level_0) {
             input.appendKey(currentKey);
 
             Collection<String> level1NextChars = this.pinyinDict.findNextChar(Key.Level.level_1, currentKey.getText());
-            stateData.setLevel1NextChars(level1NextChars);
+            stateData.setAvailableLevel1NextChars(level1NextChars);
             stateData.setLevel0Key(currentKey);
 
             stateData.nextKeyLevel();
@@ -354,11 +363,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                 input.replaceLatestKey(lastKey, currentKey);
             }
         }
+        // 并确定候选字
+        determineNotConfirmedInputWord(input);
 
-        List<String> level1NextChars = new ArrayList<>(stateData.getLevel1NextChars());
-        List<String> level2NextChars = new ArrayList<>(stateData.getLevel2NextChars());
-
+        // 确定后继字母分布
         Key<?> lastKey = input.getLastKey();
+
+        List<String> level1NextChars = new ArrayList<>(stateData.getAvailableLevel1NextChars());
         if (currentKeyLevel != Key.Level.level_0) {
             // 输入的最后一个按键处于第 1 级，则查找并更新第 2 级后继字母按键
             if (level1NextChars.contains(lastKey.getText())) {
@@ -367,26 +378,27 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 Collection<String> nextChars = this.pinyinDict.findNextChar(Key.Level.level_2, startChar);
 
-                level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
-                stateData.setLevel2NextChars(level2NextChars);
+                List<String> level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
+                stateData.setAvailableLevel2NextChars(level2NextChars);
             }
+        }
 
+        List<String> level2NextChars = new ArrayList<>(stateData.getAvailableLevel2NextChars());
+        if (currentKeyLevel != Key.Level.level_0) {
             // 第 1 级按键均不显示
             level1NextChars.clear();
 
-            // 保持第 2 级字母按键（其按键动态生成）的位置不变，以避免出现闪动
+            // 保持第 2 级字母按键（其按键动态生成）的位置不变（被选中的按键位置置为 null），以避免出现闪动
             int lastKeyIndex = level2NextChars.indexOf(lastKey.getText());
             if (lastKeyIndex >= 0) {
                 level2NextChars.set(lastKeyIndex, null);
             }
         }
-        determineNotConfirmedInputWord(input);
 
-        Key<?>[][] keys = KeyTable.createPinyinNextCharKeys(createKeyTableConfigure(),
-                                                            stateData.getLevel0Key().getText(),
-                                                            level1NextChars,
-                                                            level2NextChars);
-        fire_InputChars_Inputting(() -> keys, currentKey);
+        stateData.setActualLevel1NextChars(level1NextChars);
+        stateData.setActualLevel2NextChars(level2NextChars);
+
+        fire_InputChars_Inputting(getKeyFactory(), currentKey);
     }
 
     // <<<<<<<<< 对输入候选字的操作
@@ -398,7 +410,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
         List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, 18);
 
-        int pageSize = KeyTable.getPinyinInputKeysPageSize();
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
+        int pageSize = keyTable.getInputCandidateKeysPageSize();
+
         if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
             // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
             CollectionUtils.fillToSize(topBestCandidates, null, pageSize);

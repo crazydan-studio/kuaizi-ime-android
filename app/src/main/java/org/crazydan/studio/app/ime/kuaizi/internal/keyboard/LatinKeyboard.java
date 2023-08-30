@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LatinKeyTable;
 
 /**
  * {@link Keyboard.Type#Latin 拉丁文键盘}
@@ -31,6 +32,8 @@ public class LatinKeyboard extends DirectInputKeyboard {
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        return () -> KeyTable.createLatinKeys(createKeyTableConfigure());
+        LatinKeyTable keyTable = LatinKeyTable.create(createKeyTableConfigure());
+
+        return keyTable::createKeys;
     }
 }

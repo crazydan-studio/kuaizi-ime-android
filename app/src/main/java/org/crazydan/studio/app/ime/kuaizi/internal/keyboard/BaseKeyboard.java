@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
@@ -127,7 +128,9 @@ public abstract class BaseKeyboard implements Keyboard {
     public KeyFactory getKeyFactory() {
         switch (this.state.type) {
             case InputTarget_Cursor_Locating: {
-                return () -> KeyTable.createLocatorKeys(createKeyTableConfigure());
+                LocatorKeyTable keyTable = LocatorKeyTable.create(createKeyTableConfigure());
+
+                return keyTable::createKeys;
             }
             case Emoji_Choosing: {
                 ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;

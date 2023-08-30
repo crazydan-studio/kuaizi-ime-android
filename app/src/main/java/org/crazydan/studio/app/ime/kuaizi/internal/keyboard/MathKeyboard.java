@@ -21,6 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
@@ -57,7 +58,9 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        return () -> KeyTable.createMathKeys(createKeyTableConfigure(), math_keys);
+        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfigure());
+
+        return () -> keyTable.createKeys(math_keys);
     }
 
     @Override
