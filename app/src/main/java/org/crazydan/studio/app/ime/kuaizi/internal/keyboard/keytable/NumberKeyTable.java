@@ -22,21 +22,21 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
 
 /**
- * {@link MathKeyboard 数学键盘}按键表
+ * {@link NumberKeyboard 数字键盘}按键表
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31
  */
-public class MathKeyTable extends KeyTable {
+public class NumberKeyTable extends KeyTable {
 
-    public static MathKeyTable create(Config config) {
-        return new MathKeyTable(config);
+    public static NumberKeyTable create(Config config) {
+        return new NumberKeyTable(config);
     }
 
-    protected MathKeyTable(Config config) {
+    protected NumberKeyTable(Config config) {
         super(config);
     }
 
@@ -45,7 +45,7 @@ public class MathKeyTable extends KeyTable {
         return new Key[6][8];
     }
 
-    /** 创建{@link MathKeyboard 数学键盘}按键 */
+    /** 创建{@link NumberKeyboard 数字键盘}按键 */
     public Key<?>[][] createKeys() {
         Key<?>[] keys = new Key[] {
                 numberKey("0"),
@@ -58,13 +58,16 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
-                ctrlKey(CtrlKey.Type.Math_Dot).setLabel("."),
-                ctrlKey(CtrlKey.Type.Math_Plus).setLabel("+"),
-                ctrlKey(CtrlKey.Type.Math_Minus).setLabel("-"),
-                ctrlKey(CtrlKey.Type.Math_Multiply).setLabel("×"),
-                ctrlKey(CtrlKey.Type.Math_Divide).setLabel("÷"),
-                ctrlKey(CtrlKey.Type.Math_Brackets).setLabel("( )"),
-                ctrlKey(CtrlKey.Type.Math_Percent).setLabel("%"),
+                symbolKey("."),
+                symbolKey("+"),
+                symbolKey("-"),
+                symbolKey("*"),
+                symbolKey("/"),
+                symbolKey("#"),
+                symbolKey("%"),
+                symbolKey(","),
+                symbolKey(";"),
+                symbolKey(":"),
                 };
 
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -74,9 +77,9 @@ public class MathKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndexForHandMode();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Math_Equal).setLabel("=");
-        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
+        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_end] = enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
 
@@ -112,7 +115,7 @@ public class MathKeyTable extends KeyTable {
                     new Point[] {
                             point(3, 6), point(2, 7), point(3, 7), point(4, 7), point(2, 6),
                             //
-                            point(3, 5), point(4, 6),
+                            point(3, 5), point(4, 6), point(1, 7), point(1, 6), point(1, 5),
                             },
                     };
         }
@@ -127,7 +130,7 @@ public class MathKeyTable extends KeyTable {
                 new Point[] {
                         point(3, 1), point(2, 1), point(3, 0), point(4, 1), point(2, 2),
                         //
-                        point(3, 2), point(4, 2),
+                        point(3, 2), point(4, 2), point(1, 0), point(1, 1), point(1, 2),
                         },
                 };
     }

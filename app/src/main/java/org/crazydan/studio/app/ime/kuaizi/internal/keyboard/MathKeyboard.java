@@ -36,31 +36,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @date 2023-07-04
  */
 public class MathKeyboard extends BaseKeyboard {
-    private static final Key<?>[] math_keys = new Key[] {
-            CtrlKey.create(CtrlKey.Type.Math_Plus).setLabel("+"),
-            CtrlKey.create(CtrlKey.Type.Math_Minus).setLabel("-"),
-            CtrlKey.create(CtrlKey.Type.Math_Multiply).setLabel("×"),
-            CtrlKey.create(CtrlKey.Type.Math_Divide).setLabel("÷"),
-            CtrlKey.create(CtrlKey.Type.Math_Percent).setLabel("%"),
-            CtrlKey.create(CtrlKey.Type.Math_Dot).setLabel("."),
-            CtrlKey.create(CtrlKey.Type.Math_Brackets).setLabel("( )"),
-            KeyTable.numberKey("0"),
-            KeyTable.numberKey("1"),
-            KeyTable.numberKey("2"),
-            KeyTable.numberKey("3"),
-            KeyTable.numberKey("4"),
-            KeyTable.numberKey("5"),
-            KeyTable.numberKey("6"),
-            KeyTable.numberKey("7"),
-            KeyTable.numberKey("8"),
-            KeyTable.numberKey("9"),
-            };
 
     @Override
     protected KeyFactory doGetKeyFactory() {
         MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfigure());
 
-        return () -> keyTable.createKeys(math_keys);
+        return keyTable::createKeys;
     }
 
     @Override

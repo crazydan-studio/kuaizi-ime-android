@@ -17,8 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.NumberKeyTable;
 
 /**
  * {@link Keyboard.Type#Number 纯数字键盘}
@@ -27,33 +27,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
  * @date 2023-07-28
  */
 public class NumberKeyboard extends DirectInputKeyboard {
-    private static final Key<?>[] number_keys = new Key[] {
-            //
-            KeyTable.symbolKey("+"),
-            KeyTable.symbolKey("-"),
-            KeyTable.symbolKey("*"),
-            KeyTable.symbolKey("#"),
-            KeyTable.symbolKey(","),
-            KeyTable.symbolKey(";"),
-            KeyTable.symbolKey("."),
-            KeyTable.symbolKey(":"),
-            KeyTable.symbolKey("/"),
-            KeyTable.symbolKey("%"),
-            //
-            KeyTable.numberKey("0"),
-            KeyTable.numberKey("1"),
-            KeyTable.numberKey("2"),
-            KeyTable.numberKey("3"),
-            KeyTable.numberKey("4"),
-            KeyTable.numberKey("5"),
-            KeyTable.numberKey("6"),
-            KeyTable.numberKey("7"),
-            KeyTable.numberKey("8"),
-            KeyTable.numberKey("9"),
-            };
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        return () -> KeyTable.createNumberKeys(createKeyTableConfigure(), number_keys);
+        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfigure());
+
+        return keyTable::createKeys;
     }
 }

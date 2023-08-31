@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
@@ -133,22 +134,21 @@ public abstract class BaseKeyboard implements Keyboard {
                 return keyTable::createKeys;
             }
             case Emoji_Choosing: {
+                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+
                 ChoosingEmojiStateData stateData = (ChoosingEmojiStateData) this.state.data;
 
-                return () -> KeyTable.createEmojiKeys(createKeyTableConfigure(),
-                                                      stateData.getGroups(),
+                return () -> keyTable.createEmojiKeys(stateData.getGroups(),
                                                       stateData.getPagingData(),
                                                       stateData.getGroup(),
-                                                      stateData.getPageStart(),
-                                                      stateData.getPageSize());
+                                                      stateData.getPageStart());
             }
             case Symbol_Choosing: {
+                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+
                 ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
 
-                return () -> KeyTable.createSymbolKeys(createKeyTableConfigure(),
-                                                       stateData.getGroup(),
-                                                       stateData.getPageStart(),
-                                                       stateData.getPageSize());
+                return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.getPageStart());
             }
         }
         return doGetKeyFactory();
@@ -713,7 +713,9 @@ public abstract class BaseKeyboard implements Keyboard {
 
     // <<<<<<<< 表情符号选择逻辑
     protected void start_Emoji_Choosing() {
-        int pageSize = KeyTable.getEmojiKeysPageSize();
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+        int pageSize = keyTable.getEmojiKeysPageSize();
+
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         ChoosingEmojiStateData stateData = new ChoosingEmojiStateData(emojis, pageSize);
@@ -794,13 +796,15 @@ public abstract class BaseKeyboard implements Keyboard {
 
     // <<<<<<<<<<< 对标点符号的操作
     private void start_Symbol_Choosing() {
-        int pageSize = KeyTable.getSymbolKeysPageSize();
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+        int pageSize = keyTable.getSymbolKeysPageSize();
+
         ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(pageSize);
         this.state = new State(State.Type.Symbol_Choosing, stateData, getInitState());
 
-        SymbolGroup group = SymbolGroup.han;
-        if (getConfig().getType() == Type.Latin) {
-            group = SymbolGroup.latin;
+        SymbolGroup group = SymbolGroup.latin;
+        if (getConfig().getType() == Type.Pinyin) {
+            group = SymbolGroup.han;
         }
         do_Symbol_Choosing(group);
     }
