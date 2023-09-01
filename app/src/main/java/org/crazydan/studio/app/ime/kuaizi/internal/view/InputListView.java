@@ -132,4 +132,8 @@ public class InputListView extends RecyclerView implements InputMsgListener {
     public Input getLastInput() {
         return this.inputList.getLastInput();
     }
+
+    public Input getFirstInput() {
+        return this.inputList.getFirstInput();
+    }
 }

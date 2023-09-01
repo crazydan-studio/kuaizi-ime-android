@@ -24,6 +24,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.os.Build;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -199,7 +201,7 @@ public class ImeInputView extends FrameLayout
         int themeResId = this.keyboard != null ? this.keyboard.getConfig().getThemeResId() : getThemeResId();
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
-        rootView.findViewById(R.id.settings).setOnClickListener(this::onShowSettings);
+        rootView.findViewById(R.id.settings).setOnClickListener(this::onShowPreferences);
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         toggleShowInputListCleanBtn();
 
@@ -273,14 +275,24 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    private void onShowSettings(View v) {
+    private void onShowPreferences(View v) {
         Context context = getContext();
 
-        // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
-        Intent intent = new Intent(context, Preferences.class);
+        Intent intent;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置
+            // Settings.ACTION_INPUT_METHOD_SETTINGS: 打开输入法设置
+            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
+        } else {
+            // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
+            intent = new Intent(context, Preferences.class);
+        }
+
         // If set then opens Settings Screen(Activity) as new activity.
         // Otherwise, it will be opened in currently running activity.
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         context.startActivity(intent);
     }

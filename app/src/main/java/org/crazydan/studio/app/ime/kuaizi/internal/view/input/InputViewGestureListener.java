@@ -51,7 +51,11 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
     private void onSingleTap(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {
         Input input = getInput(inputView);
         if (input == null) {
-            input = this.inputListView.getLastInput();
+            if (data.x < this.inputListView.getPaddingStart()) {
+                input = this.inputListView.getFirstInput();
+            } else {
+                input = this.inputListView.getLastInput();
+            }
         }
 
         if (input == null) {

@@ -433,6 +433,10 @@ public class InputList {
         return -1;
     }
 
+    public Input getFirstInput() {
+        return this.inputs.size() > 0 ? this.inputs.get(0) : null;
+    }
+
     public Input getLastInput() {
         return this.inputs.size() > 0 ? this.inputs.get(this.inputs.size() - 1) : null;
     }
