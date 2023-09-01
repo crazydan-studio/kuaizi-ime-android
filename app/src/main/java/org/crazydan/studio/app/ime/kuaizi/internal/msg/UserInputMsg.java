@@ -27,5 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  */
 public enum UserInputMsg {
     /** 选择输入 */
-    ChoosingInput,
+    Choosing_Input,
+    /** 清空输入 */
+    Cleaning_Inputs,
 }

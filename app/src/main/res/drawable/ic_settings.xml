@@ -1,0 +1,30 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/4781816/configuration_control_gear_preferences_setting_settings_tools_icon -->
+    <path
+            android:fillColor="?attr/input_fg_color"
+            android:pathData="m13.846,24l-3.692,0a0.923,0.923 0,0 1,-0.923 -0.923l0,-1.329a1.274,1.274 0,0 0,-2.169 -0.923l-0.923,0.923a0.923,0.923 0,0 1,-1.311 0L2.206,19.182a0.923,0.923 0,0 1,0 -1.311l0.923,-0.923a1.274,1.274 0,0 0,-0.923 -2.169L0.923,14.778a0.923,0.923 0,0 1,-0.923 -0.923L0,10.154a0.923,0.923 0,0 1,0.923 -0.923l1.329,0a1.274,1.274 0,0 0,0.923 -2.169l-0.923,-0.923a0.923,0.923 0,0 1,0 -1.311L4.818,2.206a0.923,0.923 0,0 1,1.311 0l0.923,0.923a1.274,1.274 0,0 0,2.169 -0.923L9.222,0.923a0.923,0.923 0,0 1,0.923 -0.923l3.692,0a0.923,0.923 0,0 1,0.923 0.923l0,1.329a1.274,1.274 0,0 0,2.169 0.923l0.923,-0.923a0.923,0.923 0,0 1,1.311 0l2.612,2.612a0.923,0.923 0,0 1,0 1.311l-0.923,0.923a1.274,1.274 0,0 0,0.923 2.169L23.077,9.268a0.923,0.923 0,0 1,0.923 0.923l0,3.692a0.923,0.923 0,0 1,-0.923 0.923l-1.329,0a1.274,1.274 0,0 0,-0.923 2.169l0.923,0.923a0.923,0.923 0,0 1,0 1.311l-2.612,2.612a0.923,0.923 0,0 1,-1.311 0l-0.923,-0.923a1.274,1.274 0,0 0,-2.169 0.923L14.732,23.077A0.923,0.923 0,0 1,13.846 24ZM11.077,22.154l1.846,0l0,-0.406a3.111,3.111 0,0 1,5.317 -2.197l0.286,0.286 1.311,-1.311 -0.286,-0.286A3.111,3.111 0,0 1,21.748 12.923L22.154,12.923L22.154,11.077L21.748,11.077A3.111,3.111 0,0 1,19.551 5.76L19.837,5.474 18.526,4.163 18.24,4.449A3.111,3.111 135,0 1,12.923 2.252L12.923,1.846L11.077,1.846L11.077,2.252A3.111,3.111 135,0 1,5.76 4.449L5.474,4.163 4.163,5.474 4.449,5.76A3.111,3.111 45,0 1,2.252 11.077L1.846,11.077l0,1.846l0.406,0a3.111,3.111 45,0 1,2.197 5.317l-0.286,0.286 1.311,1.311 0.286,-0.286A3.111,3.111 0,0 1,11.077 21.748Z" />
+    <path
+            android:fillColor="?attr/input_fg_color"
+            android:pathData="m12,16.615a4.615,4.615 0,1 1,4.615 -4.615,4.615 4.615,0 0,1 -4.615,4.615zM12,9.231a2.769,2.769 0,1 0,2.769 2.769,2.769 2.769,0 0,0 -2.769,-2.769z" />
+</vector>

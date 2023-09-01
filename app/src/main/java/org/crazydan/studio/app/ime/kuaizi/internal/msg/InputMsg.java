@@ -29,6 +29,8 @@ public enum InputMsg {
     /** 输入音效播放中 */
     InputAudio_Playing,
 
+    /** 输入列表清空中 */
+    InputList_Cleaning,
     /** 输入列表提交中：录入到目标输入组件中 */
     InputList_Committing,
     /** 输入列表中的 配对符号 提交中：录入到目标输入组件中 */

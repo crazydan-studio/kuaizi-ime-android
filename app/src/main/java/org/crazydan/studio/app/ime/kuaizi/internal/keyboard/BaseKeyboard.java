@@ -167,8 +167,15 @@ public abstract class BaseKeyboard implements Keyboard {
             case Emoji_Choosing:
             case Symbol_Choosing:
             case InputCandidate_Choosing:
-                if (msg == UserInputMsg.ChoosingInput) {
-                    onChoosingInputMsg(data.target);
+                switch (msg) {
+                    case Choosing_Input: {
+                        onChoosingInputMsg(data.target);
+                        break;
+                    }
+                    case Cleaning_Inputs: {
+                        clean_InputList();
+                        break;
+                    }
                 }
                 break;
         }
@@ -347,6 +354,11 @@ public abstract class BaseKeyboard implements Keyboard {
         else {
             commit_InputList();
         }
+    }
+
+    /** 清空输入列表，且状态保持不变 */
+    protected void clean_InputList() {
+        fireInputMsg(InputMsg.InputList_Cleaning, new InputCommonMsgData());
     }
 
     /** 提交输入列表，且状态保持不变 */

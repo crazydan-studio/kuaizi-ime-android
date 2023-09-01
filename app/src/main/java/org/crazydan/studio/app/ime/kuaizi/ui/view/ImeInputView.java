@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
@@ -46,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwi
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.ui.Preferences;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -58,6 +60,7 @@ public class ImeInputView extends FrameLayout
 
     public KeyboardView keyboardView;
     public InputListView inputListView;
+    private View inputListCleanBtnView;
 
     private final InputList inputList;
     private Keyboard keyboard;
@@ -115,6 +118,9 @@ public class ImeInputView extends FrameLayout
             case HandMode_Switching: {
                 this.keyboardHandMode = ((KeyboardHandModeSwitchingMsgData) data).mode;
                 break;
+            }
+            default: {
+                toggleShowInputListCleanBtn();
             }
         }
     }
@@ -193,6 +199,10 @@ public class ImeInputView extends FrameLayout
         int themeResId = this.keyboard != null ? this.keyboard.getConfig().getThemeResId() : getThemeResId();
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
+        rootView.findViewById(R.id.settings).setOnClickListener(this::onShowSettings);
+        this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
+        toggleShowInputListCleanBtn();
+
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
 
@@ -260,6 +270,32 @@ public class ImeInputView extends FrameLayout
                 return new NumberKeyboard();
             default:
                 return new PinyinKeyboard();
+        }
+    }
+
+    private void onShowSettings(View v) {
+        Context context = getContext();
+
+        // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
+        Intent intent = new Intent(context, Preferences.class);
+        // If set then opens Settings Screen(Activity) as new activity.
+        // Otherwise, it will be opened in currently running activity.
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(intent);
+    }
+
+    private void onCleanInputList(View v) {
+        this.inputList.reset();
+    }
+
+    private void toggleShowInputListCleanBtn() {
+        if (this.inputList.isEmpty()) {
+            this.inputListCleanBtnView.setAlpha(0);
+            this.inputListCleanBtnView.setOnClickListener(null);
+        } else {
+            this.inputListCleanBtnView.setAlpha(1);
+            this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
         }
     }
 

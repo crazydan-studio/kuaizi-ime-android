@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -79,6 +80,9 @@ public class InputList {
 
         this.inputs.add(new GapInput());
         this.cursor.selected = this.inputs.get(0);
+
+        UserInputMsgData msgData = new UserInputMsgData(null);
+        onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
     }
 
     /** 缓存输入的候选字列表 */
@@ -297,7 +301,11 @@ public class InputList {
 
     /** 获取全部的表情符号 */
     public List<InputWord> getEmojis() {
-        return getInputs().stream().filter(Input::isEmoji).map(Input::getWord).collect(Collectors.toList());
+        return getInputs().stream()
+                          .filter(Input::isEmoji)
+                          .map(Input::getWord)
+                          .filter(Objects::nonNull)
+                          .collect(Collectors.toList());
     }
 
     /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
