@@ -279,14 +279,14 @@ public class ImeInputView extends FrameLayout
         Context context = getContext();
 
         Intent intent;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置
-            // Settings.ACTION_INPUT_METHOD_SETTINGS: 打开输入法设置
-            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
-        } else {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+//            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置
+//            // Settings.ACTION_INPUT_METHOD_SETTINGS: 打开输入法设置
+//            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
+//        } else {
             // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
             intent = new Intent(context, Preferences.class);
-        }
+//        }
 
         // If set then opens Settings Screen(Activity) as new activity.
         // Otherwise, it will be opened in currently running activity.

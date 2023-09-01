@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "org.crazydan.studio.app.ime.kuaizi"
         minSdk 26
-        targetSdk 26
+        targetSdk 33
         // https://developer.android.com/studio/publish/versioning
         versionCode 100
         versionName "1.0.0"
