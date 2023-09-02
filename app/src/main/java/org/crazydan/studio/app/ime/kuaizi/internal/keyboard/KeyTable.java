@@ -374,14 +374,21 @@ public abstract class KeyTable {
     public static class Config {
         private final Keyboard.Config keyboardConfig;
         private final boolean hasInputs;
+        /** 是否已选中字符输入 */
+        private final boolean charInputSelected;
 
-        public Config(Keyboard.Config keyboardConfig, boolean hasInputs) {
+        public Config(Keyboard.Config keyboardConfig, boolean hasInputs, boolean charInputSelected) {
             this.keyboardConfig = keyboardConfig;
             this.hasInputs = hasInputs;
+            this.charInputSelected = charInputSelected;
         }
 
         public boolean hasInputs() {
             return this.hasInputs;
+        }
+
+        public boolean isCharInputSelected() {
+            return this.charInputSelected;
         }
 
         public boolean isLeftHandMode() {

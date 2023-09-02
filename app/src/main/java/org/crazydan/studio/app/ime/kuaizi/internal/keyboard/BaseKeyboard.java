@@ -157,7 +157,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected abstract KeyFactory doGetKeyFactory();
 
     protected KeyTable.Config createKeyTableConfigure() {
-        return new KeyTable.Config(getConfig(), !getInputList().isEmpty());
+        return new KeyTable.Config(getConfig(), !getInputList().isEmpty(), !getInputList().isGapSelected());
     }
 
     @Override
@@ -527,6 +527,18 @@ public abstract class BaseKeyboard implements Keyboard {
                         play_InputtingSingleTick_Audio(key);
                         commit_InputList_and_Waiting_Input();
                         return true;
+                    }
+                    case DropInput: {
+                        switch (this.state.type) {
+                            case Emoji_Choosing:
+                            case Symbol_Choosing:
+                                play_InputtingSingleTick_Audio(key);
+
+                                getInputList().deleteSelected();
+                                end_InputChars_Inputting();
+                                return true;
+                        }
+                        break;
                     }
                     case Backspace: {
                         play_InputtingSingleTick_Audio(key);

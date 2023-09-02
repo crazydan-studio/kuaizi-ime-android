@@ -108,7 +108,9 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
             CharInput pending = this.inputList.getPendingOn(input);
             boolean selected = this.inputList.isSelected(input);
             // 只能做引用比较，因为输入内容可能是相同的
-            int hash = System.identityHashCode(pending != null ? pending : input);
+            int hash = pending != null
+                       ? pending.hashCode() + System.identityHashCode(pending)
+                       : System.identityHashCode(input);
 
             return hash + (selected ? 0 : 1);
         }).collect(Collectors.toList());
