@@ -410,7 +410,8 @@ public abstract class BaseKeyboard implements Keyboard {
      */
     protected void backspace_InputList_or_InputTarget() {
         if (!getInputList().isEmpty()) {
-            if (!getInputList().hasEmptyPending()) {
+            if (getInputList().isGapSelected() //
+                && !getInputList().hasEmptyPending()) {
                 getInputList().dropPending();
             } else {
                 getInputList().deleteBackward();

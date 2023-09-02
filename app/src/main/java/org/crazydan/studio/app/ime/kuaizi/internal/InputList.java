@@ -253,6 +253,11 @@ public class InputList {
         return getSelected() == input;
     }
 
+    /** 当前选中的是否为光标位 */
+    public boolean isGapSelected() {
+        return getSelected() instanceof GapInput;
+    }
+
     /** 删除当前选中的输入：光标位置仅删除正在输入的内容 */
     public void deleteSelected() {
         Input selected = this.cursor.selected;
@@ -263,7 +268,11 @@ public class InputList {
         this.cursor.pending = null;
     }
 
-    /** 回删输入 */
+    /**
+     * 回删输入
+     * <p/>
+     * 若当前为光标位，则删除其前面的输入；若当前为字符输入，则删除该输入
+     */
     public void deleteBackward() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {
@@ -283,8 +292,10 @@ public class InputList {
             // 删除当前选中的输入及其配对的占位
             this.inputs.remove(selectedIndex);
             this.inputs.remove(selectedIndex - 1);
+
             // 再将当前光标后移
             this.cursor.selected = newSelected;
+            this.cursor.pending = null;
         }
     }
 
