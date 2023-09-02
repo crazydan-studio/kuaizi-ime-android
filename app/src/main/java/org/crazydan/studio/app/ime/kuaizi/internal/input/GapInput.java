@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -55,6 +54,6 @@ public class GapInput extends BaseInput {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this);
+        return System.identityHashCode(this);
     }
 }

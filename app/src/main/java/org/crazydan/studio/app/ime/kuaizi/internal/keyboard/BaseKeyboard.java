@@ -163,10 +163,13 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
+            case InputCandidate_Choosing:
+                if (msg == UserInputMsg.Cleaning_Inputs) {
+                    this.state = getInitState();
+                }
             case Input_Waiting:
             case Emoji_Choosing:
             case Symbol_Choosing:
-            case InputCandidate_Choosing:
                 switch (msg) {
                     case Choosing_Input: {
                         onChoosingInputMsg(data.target);
@@ -358,7 +361,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 清空输入列表，且状态保持不变 */
     protected void clean_InputList() {
-        fireInputMsg(InputMsg.InputList_Cleaning, new InputCommonMsgData());
+        fireInputMsg(InputMsg.InputList_Cleaning, new InputCommonMsgData(getKeyFactory()));
     }
 
     /** 提交输入列表，且状态保持不变 */

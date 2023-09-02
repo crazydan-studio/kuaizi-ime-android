@@ -56,8 +56,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         this.orientation = orientation;
     }
 
-    /** 绑定新的按键，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void bindKeys(Key<?>[][] keys) {
+    /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
+    public void updateKeys(Key<?>[][] keys) {
         List<Key<?>> oldKeys = this.keys;
 
         this.keys = new ArrayList<>();

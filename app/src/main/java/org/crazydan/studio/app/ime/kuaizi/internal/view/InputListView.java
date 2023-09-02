@@ -61,6 +61,8 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+        // Note：取消动画以确保输入能够直接显隐，不做淡化
+        setItemAnimator(null);
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
@@ -76,7 +78,6 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
-        this.adapter.setInputList(inputList);
     }
 
     /** 响应输入列表的点击等消息 */
@@ -96,7 +97,8 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputList_Cleaning:
             case InputList_Committing:
             case InputList_PairSymbol_Committing:
-                this.adapter.updateItems();
+                this.adapter.updateInputList(this.inputList);
+
                 smoothScrollToPosition(this.adapter.getSelectedInputPosition());
                 break;
         }

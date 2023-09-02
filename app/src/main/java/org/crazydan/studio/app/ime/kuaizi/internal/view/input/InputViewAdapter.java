@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -41,25 +43,21 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private static final int VIEW_TYPE_GAP_INPUT = 1;
 
     private InputList inputList;
-    private List<Input> oldInputs;
-
-    public void setInputList(InputList inputList) {
-        this.inputList = inputList;
-//        this.oldInputs = new ArrayList<>(inputList.getInputs());
-    }
+    private List<Integer> inputHashes = new ArrayList<>();
 
     public int getSelectedInputPosition() {
         return this.inputList.getSelectedIndex();
     }
 
-    public void updateItems() {
-//        List<Input> newInputs = this.inputList.getInputs();
-//
-//        updateItems(this.oldInputs, newInputs);
-//        notifyItemChanged(this.inputList.getCursorIndex());
-//
-//        this.oldInputs = new ArrayList<>(newInputs);
-        notifyDataSetChanged();
+    /** 更新输入列表，并对发生变更的输入发送变更消息，以仅对变化的输入做渲染 */
+    public void updateInputList(InputList inputList) {
+        this.inputList = inputList;
+
+        List<Integer> oldInputHashes = this.inputHashes;
+        List<Integer> newInputHashes = getInputHashes();
+        this.inputHashes = new ArrayList<>(newInputHashes);
+
+        updateItems(oldInputHashes, newInputHashes);
     }
 
     @Override
@@ -103,5 +101,14 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         } else {
             return new GapInputView(inflateHolderView(parent, R.layout.gap_input_view));
         }
+    }
+
+    private List<Integer> getInputHashes() {
+        return this.inputList.getInputs().stream().map(input -> {
+            CharInput pending = this.inputList.getPendingOn(input);
+            boolean selected = this.inputList.isSelected(input);
+
+            return (pending != null ? pending : input).hashCode() + (selected ? 0 : 1);
+        }).collect(Collectors.toList());
     }
 }

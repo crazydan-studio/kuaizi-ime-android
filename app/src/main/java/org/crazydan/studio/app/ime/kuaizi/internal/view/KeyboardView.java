@@ -181,7 +181,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void updateKeys(Key<?>[][] keys) {
-        this.adapter.bindKeys(keys);
+        this.adapter.updateKeys(keys);
     }
 
     private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
