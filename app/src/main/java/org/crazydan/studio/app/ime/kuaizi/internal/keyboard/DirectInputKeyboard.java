@@ -60,7 +60,11 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
                 // 单字符直接输入
                 play_InputtingSingleTick_Audio(key);
 
-                append_Key_and_Commit_InputList(key);
+                if (getInputList().isEmpty()) {
+                    append_Key_and_Commit_InputList(key);
+                } else {
+                    append_Key_for_Continuous_InputChars_Inputting(key);
+                }
                 break;
             }
         }
