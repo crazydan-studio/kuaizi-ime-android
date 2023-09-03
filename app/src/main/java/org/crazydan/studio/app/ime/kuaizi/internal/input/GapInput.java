@@ -38,6 +38,10 @@ public class GapInput extends BaseInput {
     }
 
     @Override
+    public void dropLastKey() {
+    }
+
+    @Override
     public List<String> getChars() {
         return new ArrayList<>();
     }

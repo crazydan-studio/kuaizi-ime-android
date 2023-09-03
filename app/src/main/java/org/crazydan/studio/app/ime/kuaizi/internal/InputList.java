@@ -271,7 +271,9 @@ public class InputList {
     /**
      * 回删输入
      * <p/>
-     * 若当前为光标位，则删除其前面的输入；若当前为字符输入，则删除该输入
+     * 若当前为光标位，则删除其前面的输入；
+     * 若当前为拉丁字符输入，则从其尾部逐字删除该输入；
+     * 若为非拉丁字符输入，则直接删除该输入
      */
     public void deleteBackward() {
         int selectedIndex = getSelectedIndex();
@@ -280,17 +282,38 @@ public class InputList {
         }
 
         Input selected = this.cursor.selected;
+        Input current = this.cursor.pending != null ? this.cursor.pending : selected;
+        // 逐字删除拉丁字符输入的最后一个字符
+        if (current.isLatin() && current.getKeys().size() > 1) {
+            current.dropLastKey();
+            return;
+        }
+
+        // 删除当前光标之前的 输入和占位
         if (selected instanceof GapInput) {
-            if (selectedIndex > 0) {
-                // 删除当前光标之前的 输入和占位
-                this.inputs.remove(selectedIndex - 1);
-                this.inputs.remove(selectedIndex - 2);
+            if (selectedIndex > 0 && hasEmptyPending()) {
+                int prevIndex = selectedIndex - 1;
+                Input prev = this.inputs.get(prevIndex);
+
+                if (prev.isLatin() && prev.getKeys().size() > 1) {
+                    this.cursor.selected = prev;
+                } else {
+                    // 输入位
+                    this.inputs.remove(prevIndex);
+                    // Gap 位
+                    this.inputs.remove(prevIndex - 1);
+                }
+            } else {
+                dropPending();
             }
-        } else if (selected instanceof CharInput) {
+        }
+        // 删除当前选中的输入及其配对的占位
+        else {
             Input newSelected = this.inputs.get(selectedIndex + 1);
 
-            // 删除当前选中的输入及其配对的占位
+            // 输入位
             this.inputs.remove(selectedIndex);
+            // Gap 位
             this.inputs.remove(selectedIndex - 1);
 
             // 再将当前光标后移

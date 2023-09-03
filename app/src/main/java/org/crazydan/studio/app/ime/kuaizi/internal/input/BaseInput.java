@@ -82,6 +82,13 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public void dropLastKey() {
+        if (!this.keys.isEmpty()) {
+            this.keys.remove(this.keys.size() - 1);
+        }
+    }
+
+    @Override
     public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {
         if (oldKey == null || newKey == null) {
             return;
