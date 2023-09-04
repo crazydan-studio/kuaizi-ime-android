@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
  */
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private String label;
+    private Level level = Level.level_0;
     private int iconResId;
 
     private boolean disabled;
@@ -81,6 +82,17 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
+    public Level getLevel() {
+        return this.level;
+    }
+
+    @Override
+    public K setLevel(Level level) {
+        this.level = level;
+        return (K) this;
+    }
+
+    @Override
     public int getIconResId() {
         return this.iconResId;
     }
@@ -115,6 +127,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         return this.getIconResId() == that.getIconResId()
                && Objects.equals(this.getLabel(), that.getLabel())
                && Objects.equals(this.getText(), that.getText())
+               && Objects.equals(this.getLevel(), that.getLevel())
                && this.disabled == that.disabled
                && this.color.fg == that.color.fg
                && this.color.bg == that.color.bg;
@@ -125,6 +138,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         return Objects.hash(this.getIconResId(),
                             this.getLabel(),
                             this.getText(),
+                            this.getLevel(),
                             this.disabled,
                             this.color.fg,
                             this.color.bg);

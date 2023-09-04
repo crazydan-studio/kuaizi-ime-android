@@ -67,11 +67,14 @@ public abstract class KeyTable {
             key_char_level_3_color,
             key_char_level_4_color,
             };
+    /** {@link CharKey} 按键的配色 */
+    protected static final KeyColor key_char_color = KeyColor.create(R.attr.key_highlight_fg_color,
+                                                                     R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
-    protected static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
-                                                                            R.attr.key_char_symbol_bg_color);
+    protected static final KeyColor key_char_symbol_color = key_char_color; /*KeyColor.create(R.attr.key_char_symbol_fg_color,
+                                                                            R.attr.key_char_symbol_bg_color);*/
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
-    protected static final KeyColor key_char_emoji_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
+    protected static final KeyColor key_char_emoji_color = key_char_color;
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -84,10 +87,10 @@ public abstract class KeyTable {
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), key_char_level_0_color);
         char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), key_char_level_1_color);
-        char_key_color_palette.put(Arrays.asList("w", "z", "x", "y"), key_char_level_2_color);
-        char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"), key_char_level_3_color);
-        char_key_color_palette.put(Arrays.asList("p", "q", "n", "s", "t", "r"), key_char_level_4_color);
-        char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"), key_char_level_5_color);
+        char_key_color_palette.put(Arrays.asList("w", "z", "x", "y"), key_char_color);
+        char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"), key_char_color);
+        char_key_color_palette.put(Arrays.asList("p", "q", "n", "s", "t", "r"), key_char_color);
+        char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"), key_char_color);
         char_key_color_palette.put(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
                                    key_char_level_5_color);
 

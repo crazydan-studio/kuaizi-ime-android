@@ -57,6 +57,14 @@ public interface Input extends ViewData {
     /** 丢弃最后一个按键 */
     void dropLastKey();
 
+    /**
+     * 替换指定{@link Key.Level 按键级别}的按键
+     * <p/>
+     * 若指定级别的按键不存在，则按按键优先级做追加；
+     * 若指定级别的按键在中间位置，则做替换并删除后续的高级别按键
+     */
+    void replaceKeyByLevel(Key.Level level, Key<?> newKey);
+
     /** 替换指定按键的最近添加位置的按键 */
     void replaceLatestKey(Key<?> oldKey, Key<?> newKey);
 

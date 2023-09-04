@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -86,6 +87,24 @@ public abstract class BaseInput implements Input {
         if (!this.keys.isEmpty()) {
             this.keys.remove(this.keys.size() - 1);
         }
+    }
+
+    @Override
+    public void replaceKeyByLevel(Key.Level level, Key<?> newKey) {
+        Iterator<Key<?>> it = this.keys.iterator();
+        boolean removing = false;
+        while (it.hasNext()) {
+            Key<?> oldKey = it.next();
+
+            // 移除指定级别之后的按键
+            removing = removing || (level == oldKey.getLevel());
+            if (removing) {
+                it.remove();
+            }
+        }
+
+        // 追加按键
+        this.keys.add(newKey);
     }
 
     @Override

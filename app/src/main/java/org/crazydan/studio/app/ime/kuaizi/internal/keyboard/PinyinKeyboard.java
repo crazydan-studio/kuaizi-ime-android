@@ -386,7 +386,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<String> level2NextChars = new ArrayList<>(stateData.getAvailableLevel2NextChars());
         if (currentKeyLevel != Key.Level.level_0) {
             // 第 1 级按键均不显示
-            level1NextChars.clear();
+//            level1NextChars.clear();
 
             // 保持第 2 级字母按键（其按键动态生成）的位置不变（被选中的按键位置置为 null），以避免出现闪动
             int lastKeyIndex = level2NextChars.indexOf(lastKey.getText());

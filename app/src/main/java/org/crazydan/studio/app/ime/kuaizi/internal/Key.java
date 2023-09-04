@@ -56,6 +56,12 @@ public interface Key<K extends Key<?>> extends ViewData {
     /** 设置按键上显示的文字内容 */
     K setLabel(String label);
 
+    /** 获取按键所处级别 */
+    Level getLevel();
+
+    /** 设置按键所处级别 */
+    K setLevel(Level level);
+
     /** 按键上显示的图标资源 id */
     int getIconResId();
 
