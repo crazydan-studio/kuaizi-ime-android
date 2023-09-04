@@ -188,11 +188,16 @@ public abstract class BaseKeyboard implements Keyboard {
      * 尝试对 {@link UserKeyMsg} 做处理
      * <p/>
      * 若返回 <code>true</code>，则表示已处理，否则，返回 <code>false</code>
+     * <p/>
+     * {@link CtrlKey#isDisabled() 被禁用}的 {@link CtrlKey} 将始终返回 <code>true</code>
      */
     protected boolean try_OnUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
 
-        if (key instanceof CtrlKey && try_Common_OnCtrlKeyMsg(msg, (CtrlKey) key, data)) {
+        if (key instanceof CtrlKey //
+            && (key.isDisabled() //
+                || ((CtrlKey) key).isNoOp() //
+                || try_Common_OnCtrlKeyMsg(msg, (CtrlKey) key, data))) {
             return true;
         }
 
@@ -517,7 +522,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     // 定位按钮不响应单击和双击操作
                     case LocateInputCursor:
                         return true;
-                    // 在任意副键盘中提交输入，都直接回到初始键盘
+                    // 在任意子键盘中提交输入，都直接回到初始键盘
                     case CommitInputList: {
                         play_InputtingSingleTick_Audio(key);
                         commit_InputList_and_Waiting_Input();

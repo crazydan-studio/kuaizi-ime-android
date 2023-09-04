@@ -138,7 +138,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createNextCharKeys(
-            String startChar, Collection<String> level1NextChars, Collection<String> level2NextChars
+            String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
+            Collection<String> level2NextChars
     ) {
         // 在初始键盘上显隐按键
         Key<?>[][] keys = createKeys();
@@ -157,12 +158,16 @@ public class PinyinKeyTable extends KeyTable {
                     if (nextChar.length() > key.getText().length() //
                         // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
                         && nextChar.startsWith(key.getText())) {
-                        keys[i][j] = alphabetKey(nextChar).setLevel(Key.Level.level_1).setColor(key.getColor());
+                        key = keys[i][j] = alphabetKey(nextChar).setLevel(Key.Level.level_1).setColor(key.getColor());
                         break;
                     } else if (nextChar.equals(key.getText())) {
-                        keys[i][j] = key.setLevel(Key.Level.level_1);
+                        key = keys[i][j] = key.setLevel(Key.Level.level_1);
                         break;
                     }
+                }
+
+                if (key.getText() != null && key.getText().equals(level1Char)) {
+                    key.setDisabled(true);
                 }
             }
         }
@@ -188,8 +193,12 @@ public class PinyinKeyTable extends KeyTable {
                     keys[x][y] = noopCtrlKey();
                 } else {
                     keys[x][y] = alphabetKey(text).setLevel(Key.Level.level_2)
-                                                  .setLabel(startChar + text)
+                                                  .setLabel(level0Char + text)
                                                   .setColor(color);
+                }
+
+                if (text != null && text.equals(level2Char)) {
+                    keys[x][y].setDisabled(true);
                 }
             }
         }

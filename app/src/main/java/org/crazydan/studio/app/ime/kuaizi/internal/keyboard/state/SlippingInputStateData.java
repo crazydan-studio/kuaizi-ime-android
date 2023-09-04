@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -30,17 +29,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @date 2023-08-15
  */
 public class SlippingInputStateData implements State.Data {
-    private Key.Level keyLevel = Key.Level.level_0;
     private Key<?> level0Key;
-    private Collection<String> availableLevel1NextChars;
-    private Collection<String> availableLevel2NextChars;
+    private Key<?> level1Key;
+    private Key<?> level2Key;
 
-    private Collection<String> actualLevel1NextChars;
-    private Collection<String> actualLevel2NextChars;
-
-    public Key.Level getKeyLevel() {
-        return this.keyLevel;
-    }
+    private Collection<String> level1NextChars;
+    private Collection<String> level2NextChars;
 
     public Key<?> getLevel0Key() {
         return this.level0Key;
@@ -50,52 +44,35 @@ public class SlippingInputStateData implements State.Data {
         this.level0Key = level0Key;
     }
 
-    public Collection<String> getAvailableLevel1NextChars() {
-        return this.availableLevel1NextChars != null ? this.availableLevel1NextChars : new ArrayList<>();
+    public Key<?> getLevel1Key() {
+        return this.level1Key;
     }
 
-    public void setAvailableLevel1NextChars(Collection<String> availableLevel1NextChars) {
-        this.availableLevel1NextChars = availableLevel1NextChars;
+    public void setLevel1Key(Key<?> level1Key) {
+        this.level1Key = level1Key;
     }
 
-    public Collection<String> getAvailableLevel2NextChars() {
-        return this.availableLevel2NextChars != null ? this.availableLevel2NextChars : new ArrayList<>();
+    public Key<?> getLevel2Key() {
+        return this.level2Key;
     }
 
-    public void setAvailableLevel2NextChars(Collection<String> availableLevel2NextChars) {
-        this.availableLevel2NextChars = availableLevel2NextChars;
+    public void setLevel2Key(Key<?> level2Key) {
+        this.level2Key = level2Key;
     }
 
-    public Collection<String> getActualLevel1NextChars() {
-        return this.actualLevel1NextChars;
+    public Collection<String> getLevel1NextChars() {
+        return this.level1NextChars;
     }
 
-    public void setActualLevel1NextChars(Collection<String> actualLevel1NextChars) {
-        this.actualLevel1NextChars = actualLevel1NextChars;
+    public void setLevel1NextChars(Collection<String> level1NextChars) {
+        this.level1NextChars = level1NextChars;
     }
 
-    public Collection<String> getActualLevel2NextChars() {
-        return this.actualLevel2NextChars;
+    public Collection<String> getLevel2NextChars() {
+        return this.level2NextChars;
     }
 
-    public void setActualLevel2NextChars(Collection<String> actualLevel2NextChars) {
-        this.actualLevel2NextChars = actualLevel2NextChars;
-    }
-
-    public void nextKeyLevel() {
-        Key.Level nextKeyLevel = Key.Level.level_0;
-
-        switch (this.keyLevel) {
-            case level_0: {
-                nextKeyLevel = Key.Level.level_1;
-                break;
-            }
-            case level_1: {
-                nextKeyLevel = Key.Level.level_2;
-                break;
-            }
-        }
-
-        this.keyLevel = nextKeyLevel;
+    public void setLevel2NextChars(Collection<String> level2NextChars) {
+        this.level2NextChars = level2NextChars;
     }
 }

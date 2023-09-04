@@ -65,8 +65,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                 SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
 
                 return () -> keyTable.createNextCharKeys(stateData.getLevel0Key().getText(),
-                                                         stateData.getActualLevel1NextChars(),
-                                                         stateData.getActualLevel2NextChars());
+                                                         stateData.getLevel1Key() != null ? stateData.getLevel1Key()
+                                                                                                     .getText() : null,
+                                                         stateData.getLevel2Key() != null ? stateData.getLevel2Key()
+                                                                                                     .getText() : null,
+                                                         stateData.getLevel1NextChars(),
+                                                         stateData.getLevel2NextChars());
             }
             case InputCandidate_Choosing: {
                 ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
@@ -98,7 +102,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case InputCandidate_Choosing: {
                 if (msg == UserKeyMsg.FingerFlipping) {
                     on_InputCandidates_PageFlippingMsg(msg, key, data);
-                } else if (key instanceof InputWordKey) {
+                } else if (key instanceof InputWordKey && !key.isDisabled()) {
                     on_InputCandidates_InputWordKeyMsg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_InputCandidates_CtrlKeyMsg(msg, (CtrlKey) key, data);
@@ -106,7 +110,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             default: {
-                if (key instanceof CharKey) {
+                if (key instanceof CharKey && !key.isDisabled()) {
                     onCharKeyMsg(msg, (CharKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     onCtrlKeyMsg(msg, (CtrlKey) key, data);
@@ -168,7 +172,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 // Note: 拼音不存在重复字母相邻的情况
                 Key<?> lastKey = input.getLastKey();
-                if (key instanceof CharKey && !key.isSameWith(lastKey)) {
+                if (key instanceof CharKey //
+                    && !key.isDisabled() //
+                    && !key.isSameWith(lastKey)) {
                     play_InputtingDoubleTick_Audio(key);
 
                     on_SlippingInput(input, key);
@@ -342,61 +348,47 @@ public class PinyinKeyboard extends BaseKeyboard {
     /** 滑屏输入 */
     private void on_SlippingInput(CharInput input, Key<?> currentKey) {
         SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
-        Key.Level currentKeyLevel = stateData.getKeyLevel();
+        Key.Level currentKeyLevel = currentKey.getLevel();
 
         // 添加后继字母，
-        if (currentKeyLevel == Key.Level.level_0) {
-            input.appendKey(currentKey);
-
-            Collection<String> level1NextChars = this.pinyinDict.findNextChar(Key.Level.level_1, currentKey.getText());
-            stateData.setAvailableLevel1NextChars(level1NextChars);
-            stateData.setLevel0Key(currentKey);
-
-            stateData.nextKeyLevel();
-        } else {
-            // Note: 第 1 级后继按键仅在首次添加时采用追加方式，后续均为替换输入中的最后一个按键，
-            // 即第 1/2 级按键均可相互替换，确保输入始终最多保留两个按键（第 0 级 + 第 1/2 级）
-            if (input.getKeys().size() == 1) {
+        switch (currentKeyLevel) {
+            case level_0: {
                 input.appendKey(currentKey);
-            } else {
-                Key<?> lastKey = input.getLastKey();
-                input.replaceLatestKey(lastKey, currentKey);
+
+                Collection<String> level1NextChars = this.pinyinDict.findNextChar(Key.Level.level_1,
+                                                                                  currentKey.getText());
+
+                stateData.setLevel0Key(currentKey);
+                stateData.setLevel1NextChars(level1NextChars);
+
+                stateData.setLevel1Key(null);
+                stateData.setLevel2NextChars(new ArrayList<>());
+                break;
             }
-        }
-        // 并确定候选字
-        determineNotConfirmedInputWord(input);
+            case level_1: {
+                input.replaceKeyAfterLevel(Key.Level.level_0, currentKey);
 
-        // 确定后继字母分布
-        Key<?> lastKey = input.getLastKey();
-
-        List<String> level1NextChars = new ArrayList<>(stateData.getAvailableLevel1NextChars());
-        if (currentKeyLevel != Key.Level.level_0) {
-            // 输入的最后一个按键处于第 1 级，则查找并更新第 2 级后继字母按键
-            if (level1NextChars.contains(lastKey.getText())) {
                 String startChar = stateData.getLevel0Key().getText();
-                startChar += lastKey.getText();
+                startChar += currentKey.getText();
 
                 Collection<String> nextChars = this.pinyinDict.findNextChar(Key.Level.level_2, startChar);
-
                 List<String> level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
-                stateData.setAvailableLevel2NextChars(level2NextChars);
+
+                stateData.setLevel1Key(currentKey);
+                stateData.setLevel2NextChars(level2NextChars);
+                break;
+            }
+            case level_2: {
+                // Note：第二级后继字母已包含第一级后继字母，故而，直接替换第 0 级之后的按键
+                input.replaceKeyAfterLevel(Key.Level.level_0, currentKey);
+
+                stateData.setLevel2Key(currentKey);
+                break;
             }
         }
 
-        List<String> level2NextChars = new ArrayList<>(stateData.getAvailableLevel2NextChars());
-        if (currentKeyLevel != Key.Level.level_0) {
-            // 第 1 级按键均不显示
-//            level1NextChars.clear();
-
-            // 保持第 2 级字母按键（其按键动态生成）的位置不变（被选中的按键位置置为 null），以避免出现闪动
-            int lastKeyIndex = level2NextChars.indexOf(lastKey.getText());
-            if (lastKeyIndex >= 0) {
-                level2NextChars.set(lastKeyIndex, null);
-            }
-        }
-
-        stateData.setActualLevel1NextChars(level1NextChars);
-        stateData.setActualLevel2NextChars(level2NextChars);
+        // 并确定候选字
+        determineNotConfirmedInputWord(input);
 
         fire_InputChars_Inputting(getKeyFactory(), currentKey);
     }

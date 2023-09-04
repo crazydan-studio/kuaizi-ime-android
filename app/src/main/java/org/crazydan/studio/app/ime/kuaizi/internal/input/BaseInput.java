@@ -90,17 +90,17 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
-    public void replaceKeyByLevel(Key.Level level, Key<?> newKey) {
-        Iterator<Key<?>> it = this.keys.iterator();
+    public void replaceKeyAfterLevel(Key.Level level, Key<?> newKey) {
         boolean removing = false;
+        Iterator<Key<?>> it = this.keys.iterator();
         while (it.hasNext()) {
             Key<?> oldKey = it.next();
 
-            // 移除指定级别之后的按键
-            removing = removing || (level == oldKey.getLevel());
             if (removing) {
                 it.remove();
             }
+            // 移除指定级别之后的按键
+            removing = removing || (level == oldKey.getLevel());
         }
 
         // 追加按键

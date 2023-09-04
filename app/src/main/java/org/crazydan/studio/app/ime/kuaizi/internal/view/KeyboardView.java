@@ -114,11 +114,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     /** 响应按键点击、双击等消息 */
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        Key<?> key = data.target;
-        if (key != null && key.isDisabled()) {
-            return;
-        }
-
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
