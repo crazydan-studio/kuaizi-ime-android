@@ -194,9 +194,9 @@ public abstract class BaseKeyboard implements Keyboard {
     protected boolean try_OnUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
 
+        // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
             && (key.isDisabled() //
-                || ((CtrlKey) key).isNoOp() //
                 || try_Common_OnCtrlKeyMsg(msg, (CtrlKey) key, data))) {
             return true;
         }
