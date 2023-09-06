@@ -82,8 +82,8 @@ public class PinyinKeyTable extends KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 alphabetKey("h").withReplacements("H"),
-                alphabetKey("k").withReplacements("K"),
-                alphabetKey("l").withReplacements("L"),
+                alphabetKey("g").withReplacements("G"),
+                alphabetKey("r").withReplacements("R"),
                 alphabetKey("x").withReplacements("X"),
                 alphabetKey("q").withReplacements("Q"),
                 alphabetKey("j").withReplacements("J"),
@@ -91,11 +91,11 @@ public class PinyinKeyTable extends KeyTable {
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
-                alphabetKey("g").withReplacements("G"),
+                alphabetKey("k").withReplacements("K"),
                 alphabetKey("e").withReplacements("E"),
-                alphabetKey("n").withReplacements("N"),
+                alphabetKey("l").withReplacements("L"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("r").withReplacements("R"),
+                alphabetKey("n").withReplacements("N"),
                 alphabetKey("ü").withReplacements("v", "V"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
