@@ -141,8 +141,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     this.state = new State(State.Type.Input_Slipping, new SlippingInputStateData());
 
-                    CharInput input = getInputList().newPending();
-                    on_SlippingInput(input, key);
+                    CharInput pending = getInputList().newPending();
+                    on_SlippingInput(pending, key);
                 }
                 break;
             }
@@ -150,7 +150,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 单字符输入
                 play_InputtingSingleTick_Audio(key);
 
-                do_SingleKey_Inputting(key);
+                do_SingleKey_Inputting(key, false);
                 break;
             }
             case KeyDoubleTap: {
@@ -168,30 +168,31 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case FingerMoving: {
                 // 添加拼音后继字母
-                CharInput input = getInputList().getPending();
+                CharInput pending = getInputList().getPending();
 
                 // Note: 拼音不存在重复字母相邻的情况
-                Key<?> lastKey = input.getLastKey();
+                Key<?> lastKey = pending.getLastKey();
                 if (key instanceof CharKey //
                     && !key.isDisabled() //
                     && !key.isSameWith(lastKey)) {
                     play_InputtingDoubleTick_Audio(key);
 
-                    on_SlippingInput(input, key);
+                    on_SlippingInput(pending, key);
                 }
                 break;
             }
             case FingerMovingEnd: {
-                CharInput input = getInputList().getPending();
+                CharInput pending = getInputList().getPending();
 
                 // 无候选字的输入，视为无效输入，直接丢弃
-                if (!input.hasWord()) {
+                if (!pending.hasWord()) {
                     getInputList().dropPending();
                 } else {
-                    determineNotConfirmedInputWordsBefore(input);
+                    determineNotConfirmedInputWordsBefore(pending);
                 }
 
-                confirm_InputChars_and_Waiting_Input();
+                // 修改字符输入后，光标需后移以继续输入其他字符
+                confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input();
                 break;
             }
         }
@@ -229,12 +230,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                     play_InputtingSingleTick_Audio(key);
                 }
 
-                CharInput input = getInputList().getPending();
+                CharInput pending = getInputList().getPending();
                 // 丢弃或变更拼音
                 switch (key.getType()) {
                     case DropInput: {
                         getInputList().deleteSelected();
-                        confirm_InputChars_and_Waiting_Input();
+                        confirm_Pending_and_Waiting_Input();
                         break;
                     }
                     case ConfirmInput: {
@@ -245,17 +246,17 @@ public class PinyinKeyboard extends BaseKeyboard {
                         CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
                         switch (option.value()) {
                             case ng:
-                                input.toggle_Pinyin_NG_Ending();
+                                pending.toggle_Pinyin_NG_Ending();
                                 break;
                             case nl:
-                                input.toggle_Pinyin_NL_Starting();
+                                pending.toggle_Pinyin_NL_Starting();
                                 break;
                             case zcs_h:
-                                input.toggle_Pinyin_SCZ_Starting();
+                                pending.toggle_Pinyin_SCZ_Starting();
                                 break;
                         }
 
-                        start_InputCandidate_Choosing(input, true);
+                        start_InputCandidate_Choosing(pending, true);
                         break;
                     }
                     case Filter_PinyinInputCandidate_stroke: {
@@ -274,50 +275,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
 
         do_InputCandidate_Choosing();
-    }
-
-    private void do_SingleKey_Inputting(CharKey key) {
-        if (getInputList().hasEmptyPending()) {
-            getInputList().newPending();
-        }
-
-        // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
-        getInputList().clearPairOnSelected();
-
-        CharInput input = getInputList().getPending();
-        switch (key.getType()) {
-            // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
-            case Emoji:
-            case Symbol: {
-                boolean isEmpty = getInputList().isEmpty();
-                getInputList().newPending().appendKey(key);
-
-                if (!isEmpty) {
-                    if (getInputList().getSelected() instanceof CharInput) {
-                        confirm_InputChars_and_MoveToNext_then_Waiting_Input();
-                    } else {
-                        confirm_InputChars_and_Waiting_Input();
-                    }
-                } else {
-                    // 单个标点、表情则直接提交输入
-                    commit_InputList_and_Waiting_Input();
-                }
-                break;
-            }
-            // 字母、数字可连续输入
-            case Number:
-            case Alphabet: {
-                // Note：非拉丁字符输入不可连续输入
-                if (!input.isLatin()) {
-                    getInputList().confirmPending();
-                }
-
-                input.appendKey(key);
-
-                fire_and_Waiting_Continuous_InputChars_Inputting(key);
-                break;
-            }
-        }
     }
 
     private void do_ReplacementKey_Inputting(CharKey key) {

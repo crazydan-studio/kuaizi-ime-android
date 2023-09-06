@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 
 /**
  * {@link InputWord 输入候选字}按键
@@ -36,6 +37,16 @@ public class InputWordKey extends BaseKey<InputWordKey> {
 
     private InputWordKey(InputWord word) {
         this.word = word;
+    }
+
+    @Override
+    public boolean isEmoji() {
+        return getWord() instanceof EmojiInputWord;
+    }
+
+    @Override
+    public String getText() {
+        return getWord().getValue();
     }
 
     public InputWord getWord() {

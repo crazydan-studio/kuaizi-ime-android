@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -38,7 +37,10 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        // Note: 直输键盘无预处理过程，故没有对输入列表事件的响应
+        // Note: 在输入列表为空且消息为非输入列表清空消息时，直输键盘无预处理过程，故不对输入列表事件做响应
+        if (!getInputList().isEmpty() || msg == UserInputMsg.Cleaning_Inputs) {
+            super.onUserInputMsg(msg, data);
+        }
     }
 
     @Override
@@ -61,20 +63,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
                 // 单字符直接输入
                 play_InputtingSingleTick_Audio(key);
 
-                if (getInputList().isEmpty()) {
-                    append_Key_and_Commit_InputList(key);
-                } else {
-                    // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
-                    getInputList().clearPairOnSelected();
-
-                    // Note：非拉丁字符输入不可连续输入
-                    Input input = getInputList().getPending();
-                    if (input != null && !input.isLatin()) {
-                        getInputList().confirmPending();
-                    }
-
-                    append_Key_for_Continuous_InputChars_Inputting(key);
-                }
+                do_SingleKey_Inputting(key, getInputList().isEmpty());
                 break;
             }
         }

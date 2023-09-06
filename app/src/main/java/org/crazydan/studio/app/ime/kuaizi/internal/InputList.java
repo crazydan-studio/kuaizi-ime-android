@@ -261,6 +261,13 @@ public class InputList {
         return getSelected() instanceof GapInput;
     }
 
+    /** 选中后继输入 */
+    public void selectNext() {
+        int selected = getSelectedIndex();
+
+        newPendingOn(selected + 1);
+    }
+
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
     public void clearPairOnSelected() {
         Input selected = getSelected();

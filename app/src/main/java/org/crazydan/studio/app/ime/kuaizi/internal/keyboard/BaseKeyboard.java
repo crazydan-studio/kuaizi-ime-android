@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
@@ -253,17 +253,72 @@ public abstract class BaseKeyboard implements Keyboard {
         end_InputChars_Inputting();
     }
 
-    /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
-    protected void confirm_InputChars_and_Waiting_Input() {
-        goto_InitState();
+    /**
+     * 当前输入设置唯一按键并{@link #confirm_Pending_and_Waiting_Input() 确认当前输入}
+     */
+    protected void input_Only_Key_and_Confirm_Pending(Key<?> key) {
+        getInputList().newPending().appendKey(key);
 
-        confirm_InputChars();
+        confirm_Pending_and_Waiting_Input();
     }
 
-    protected void confirm_InputChars_and_MoveToNext_then_Waiting_Input() {
+    /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void confirm_Pending_and_Waiting_Input() {
         goto_InitState();
 
-        confirm_InputChars_and_MoveToNext();
+        confirm_Pending();
+    }
+
+    /**
+     * 确认当前字符输入，并移至下一个 Gap 输入，再进入 {@link State.Type#Input_Waiting} 状态
+     * <p/>
+     *
+     * @param key
+     *         选中 Gap 输入需添加的按键
+     */
+    protected void confirm_CharInput_Pending_and_MoveTo_NextGapInput(Key<?> key) {
+        if (!getInputList().isGapSelected()) {
+            getInputList().selectNext();
+
+            if (key != null) {
+                getInputList().newPending().appendKey(key);
+            }
+        }
+
+        confirm_Pending();
+    }
+
+    /**
+     * 确认当前字符输入，并移至下一个 Gap 输入，再进入 {@link State.Type#Input_Waiting} 状态
+     * <p/>
+     *
+     * @param key
+     *         选中 Gap 输入需添加的按键
+     */
+    protected void confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input(Key<?> key) {
+        goto_InitState();
+
+        confirm_CharInput_Pending_and_MoveTo_NextGapInput(key);
+    }
+
+    protected void confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input() {
+        confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input(null);
+    }
+
+    /** 确认当前输入，并移至下一个字符输入，再进入 {@link State.Type#Input_Waiting} 状态 */
+    protected void confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input() {
+        goto_InitState();
+
+        confirm_Pending_and_MoveTo_NextCharInput();
+    }
+
+    /**
+     * 当前输入设置唯一按键并直接{@link #commit_InputList_and_Waiting_Input() 提交输入列表}
+     */
+    protected void input_Only_Key_and_Commit_InputList(Key<?> key) {
+        getInputList().newPending().appendKey(key);
+
+        commit_InputList_and_Waiting_Input();
     }
 
     /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
@@ -316,19 +371,10 @@ public abstract class BaseKeyboard implements Keyboard {
             getInputList().newPending();
         }
 
-        CharInput input = getInputList().getPending();
-        input.appendKey(key);
+        CharInput pending = getInputList().getPending();
+        pending.appendKey(key);
 
         fire_InputChars_Inputting(getKeyFactory(), key);
-    }
-
-    /**
-     * 添加按键并直接提交输入列表
-     */
-    protected void append_Key_and_Commit_InputList(Key<?> key) {
-        getInputList().newPending().appendKey(key);
-
-        commit_InputList_and_Waiting_Input();
     }
 
     /** 当前字符输入已完成，且保持状态不变 */
@@ -337,14 +383,14 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 确认当前输入，且状态保持不变 */
-    protected void confirm_InputChars() {
+    protected void confirm_Pending() {
         getInputList().confirmPending();
 
         end_InputChars_Inputting();
     }
 
     /** 确认当前输入并移至下一个输入，且状态保持不变 */
-    protected void confirm_InputChars_and_MoveToNext() {
+    protected void confirm_Pending_and_MoveTo_NextCharInput() {
         getInputList().confirmPending();
         getInputList().moveToNextCharInput();
 
@@ -368,7 +414,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // 输入列表不为空且不是 Enter 按键时，将空格添加到输入列表中
         if (!isEmptyInputList && key.getType() != CtrlKey.Type.Enter) {
-            confirm_InputChars();
+            confirm_Pending();
         }
         // 否则，直接提交按键输入
         else {
@@ -647,6 +693,100 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
+    // <<<<<< 单字符输入处理逻辑
+    protected boolean try_SingleKey_Inputting(Key<?> key) {
+        if (!key.isEmoji() && !key.isSymbol()) {
+            return false;
+        }
+
+        boolean isEmpty = getInputList().isEmpty();
+        CharInput pending = getInputList().getPending();
+
+        if (!isEmpty //
+            && !getInputList().hasEmptyPending() //
+            && pending.isLatin()) {
+            // 对于新增的拉丁字符输入，需先提交，再录入新按键
+            if (getInputList().isGapSelected()) {
+                getInputList().confirmPending();
+            }
+            // 对于修改为拉丁字符的输入，将光标移到其后继输入（实际为 Gap）
+            else {
+                getInputList().selectNext();
+            }
+
+            if (key instanceof SymbolKey && ((SymbolKey) key).isPair()) {
+                prepare_for_PairSymbol_Inputting((Symbol.Pair) ((SymbolKey) key).getSymbol());
+
+                // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
+                confirm_Pending_and_Waiting_Input();
+            } else {
+                getInputList().newPending().appendKey(key);
+
+                confirm_Pending();
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    protected void do_SingleKey_Inputting(CharKey key, boolean directInputting) {
+        if (directInputting) {
+            input_Only_Key_and_Commit_InputList(key);
+            return;
+        }
+
+        if (getInputList().hasEmptyPending()) {
+            getInputList().newPending();
+        }
+
+        // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
+        getInputList().clearPairOnSelected();
+
+        if (try_SingleKey_Inputting(key)) {
+            return;
+        }
+
+        CharInput pending = getInputList().getPending();
+        switch (key.getType()) {
+            // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
+            case Emoji:
+            case Symbol: {
+                boolean isEmpty = getInputList().isEmpty();
+
+                if (!isEmpty) {
+                    // 已选中字符输入，则直接替换
+                    if (!getInputList().isGapSelected()) {
+                        getInputList().newPending().appendKey(key);
+
+                        confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input();
+                    }
+                    // 否则，做追加
+                    else {
+                        input_Only_Key_and_Confirm_Pending(key);
+                    }
+                } else {
+                    // 单个标点、表情则直接提交输入
+                    input_Only_Key_and_Commit_InputList(key);
+                }
+                break;
+            }
+            // 字母、数字可连续输入
+            case Number:
+            case Alphabet: {
+                // Note：非拉丁字符输入不可连续输入直接对其做替换
+                if (!pending.isLatin()) {
+                    pending = getInputList().newPending();
+                }
+                pending.appendKey(key);
+
+                fire_and_Waiting_Continuous_InputChars_Inputting(key);
+                break;
+            }
+        }
+    }
+    // >>>>>>
+
     // <<<<<< 输入定位逻辑
     private void do_InputTarget_Cursor_Locating(CtrlKey key, Motion motion) {
         LocatingInputCursorStateData stateData;
@@ -811,24 +951,28 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void do_Single_Emoji_Inputting(InputWordKey key) {
+        if (try_SingleKey_Inputting(key)) {
+            return;
+        }
+
         boolean isEmpty = getInputList().isEmpty();
-        CharInput input = getInputList().newPending();
+        CharInput pending = getInputList().newPending();
 
         InputWord word = key.getWord();
-        input.appendKey(key);
-        input.setWord(word);
+        pending.appendKey(key);
+        pending.setWord(word);
 
         if (isEmpty) {
             // 直接提交输入
             commit_InputList();
         } else {
             // 连续输入
-            if (getInputList().getSelected() instanceof GapInput) {
-                confirm_InputChars();
+            if (getInputList().isGapSelected()) {
+                confirm_Pending();
             }
             // 替换输入
             else {
-                confirm_InputChars_and_MoveToNext();
+                confirm_Pending_and_MoveTo_NextCharInput();
             }
         }
     }
@@ -891,56 +1035,21 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void do_Single_Symbol_Inputting(SymbolKey key) {
+        if (try_SingleKey_Inputting(key)) {
+            return;
+        }
+
         boolean isEmpty = getInputList().isEmpty();
         boolean isPairSymbolKey = key.isPair();
-        Input selected = getInputList().getSelected();
-        CharInput input = getInputList().newPending();
+        CharInput pending = getInputList().newPending();
 
         if (isPairSymbolKey) {
             Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
-            String left = symbol.left;
-            String right = symbol.right;
 
-            SymbolKey leftKey = SymbolKey.create(Symbol.single(left));
-            SymbolKey rightKey = SymbolKey.create(Symbol.single(right));
-
-            if (selected instanceof CharInput //
-                && ((CharInput) selected).hasPair()) {
-                CharInput leftInput = input;
-                CharInput rightInput = ((CharInput) selected).getPair();
-                int rightInputIndex = getInputList().indexOf(rightInput);
-
-                if (getInputList().getSelectedIndex() > rightInputIndex) {
-                    leftInput = rightInput;
-                    rightInput = input;
-                }
-
-                leftInput.replaceLastKey(leftKey);
-                rightInput.replaceLastKey(rightKey);
-            } else {
-                CharInput leftInput = input;
-                leftInput.appendKey(leftKey);
-
-                // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
-                if (selected instanceof CharInput) {
-                    getInputList().newPendingOn(getInputList().getSelectedIndex() + 1);
-                } else {
-                    getInputList().newPending();
-                }
-
-                CharInput rightInput = getInputList().getPending();
-                rightInput.appendKey(rightKey);
-
-                // 绑定配对符号的关联：由任意一方发起绑定即可
-                rightInput.setPair(leftInput);
-
-                // 确定右侧配对输入，并将光标移动到该输入左侧的 Gap 位置以确保光标在配对符号的中间位置
-                getInputList().confirmPending();
-                getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
-            }
+            prepare_for_PairSymbol_Inputting(symbol);
         } else {
-            input.appendKey(key);
-            input.clearPair();
+            pending.appendKey(key);
+            pending.clearPair();
         }
 
         if (isEmpty) {
@@ -953,13 +1062,60 @@ public abstract class BaseKeyboard implements Keyboard {
             }
 
             // 连续输入
-            if (getInputList().getSelected() instanceof GapInput) {
-                confirm_InputChars();
+            if (getInputList().isGapSelected()) {
+                confirm_Pending();
             }
             // 替换输入
             else {
-                confirm_InputChars_and_MoveToNext();
+                confirm_Pending_and_MoveTo_NextCharInput();
             }
+        }
+    }
+
+    private void prepare_for_PairSymbol_Inputting(Symbol.Pair symbol) {
+        Input selected = getInputList().getSelected();
+        CharInput pending = getInputList().newPending();
+
+        String left = symbol.left;
+        String right = symbol.right;
+
+        SymbolKey leftKey = SymbolKey.create(Symbol.single(left));
+        SymbolKey rightKey = SymbolKey.create(Symbol.single(right));
+
+        if (selected instanceof CharInput //
+            && ((CharInput) selected).hasPair()) {
+            CharInput leftInput = pending;
+            CharInput rightInput = ((CharInput) selected).getPair();
+            int rightInputIndex = getInputList().indexOf(rightInput);
+
+            if (getInputList().getSelectedIndex() > rightInputIndex) {
+                leftInput = rightInput;
+                rightInput = pending;
+            }
+
+            leftInput.replaceLastKey(leftKey);
+            rightInput.replaceLastKey(rightKey);
+        } else {
+            CharInput leftInput = pending;
+            leftInput.appendKey(leftKey);
+
+            // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
+            if (selected instanceof CharInput) {
+                int selectedIndex = getInputList().getSelectedIndex();
+                getInputList().newPendingOn(selectedIndex + 1);
+            } else {
+                getInputList().newPending();
+            }
+
+            CharInput rightInput = getInputList().getPending();
+            rightInput.appendKey(rightKey);
+
+            // 绑定配对符号的关联：由任意一方发起绑定即可
+            rightInput.setPair(leftInput);
+
+            // 确定右侧配对输入，并将光标移动到该输入左侧的 Gap 位置以确保光标在配对符号的中间位置
+            getInputList().confirmPending();
+            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
         }
     }
     // >>>>>>>>>>>
@@ -978,7 +1134,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
             start_Symbol_Choosing(hasPair);
         } else if (!do_Choosing_Input_in_InputList(pending)) {
-            confirm_InputChars_and_Waiting_Input();
+            confirm_Pending_and_Waiting_Input();
         }
     }
 
