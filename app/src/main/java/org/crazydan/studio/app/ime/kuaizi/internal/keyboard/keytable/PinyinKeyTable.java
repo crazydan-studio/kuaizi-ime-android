@@ -92,30 +92,30 @@ public class PinyinKeyTable extends KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
                 alphabetKey("g").withReplacements("G"),
-                alphabetKey("ü").withReplacements("v", "V"),
+                alphabetKey("e").withReplacements("E"),
                 alphabetKey("n").withReplacements("N"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("r").withReplacements("R"),
-                alphabetKey("e").withReplacements("E"),
+                alphabetKey("ü").withReplacements("v", "V"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
                 , this.config.isLeftHandMode() ? new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("w").withReplacements("W"),
-                alphabetKey("i").withReplacements("I"),
-                alphabetKey("u").withReplacements("U"),
-                alphabetKey("o").withReplacements("O"),
                 alphabetKey("a").withReplacements("A"),
+                alphabetKey("o").withReplacements("O"),
+                alphabetKey("u").withReplacements("U"),
+                alphabetKey("i").withReplacements("I"),
                 alphabetKey("y").withReplacements("Y"),
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 } : new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("y").withReplacements("Y"),
-                alphabetKey("i").withReplacements("I"),
-                alphabetKey("u").withReplacements("U"),
-                alphabetKey("o").withReplacements("O"),
                 alphabetKey("a").withReplacements("A"),
+                alphabetKey("o").withReplacements("O"),
+                alphabetKey("u").withReplacements("U"),
+                alphabetKey("i").withReplacements("I"),
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 } //
                 , new Key[] {
