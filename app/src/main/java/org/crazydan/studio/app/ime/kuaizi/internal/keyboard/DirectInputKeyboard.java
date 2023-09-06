@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -63,6 +64,15 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
                 if (getInputList().isEmpty()) {
                     append_Key_and_Commit_InputList(key);
                 } else {
+                    // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
+                    getInputList().clearPairOnSelected();
+
+                    // Note：非拉丁字符输入不可连续输入
+                    Input input = getInputList().getPending();
+                    if (!input.isLatin()) {
+                        getInputList().confirmPending();
+                    }
+
                     append_Key_for_Continuous_InputChars_Inputting(key);
                 }
                 break;

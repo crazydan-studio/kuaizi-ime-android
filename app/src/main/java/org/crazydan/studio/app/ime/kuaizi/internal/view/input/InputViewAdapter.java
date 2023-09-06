@@ -69,8 +69,8 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
         Input input = this.inputList.getInputs().get(position);
         CharInput pending = this.inputList.getPendingOn(input);
-        boolean selected = this.inputList.isSelected(input);
 
+        boolean selected = needToBeSelected(input);
         if (input instanceof CharInput) {
             ((CharInputView) view).bind((CharInput) input,
                                         pending,
@@ -104,14 +104,32 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     }
 
     private List<Integer> getInputHashes() {
+        if (this.inputList == null) {
+            return new ArrayList<>();
+        }
+
         return this.inputList.getInputs().stream().map(input -> {
             CharInput pending = this.inputList.getPendingOn(input);
-            boolean selected = this.inputList.isSelected(input);
             Input target = pending != null ? pending : input;
+
+            boolean selected = needToBeSelected(input);
             // 因为输入内容可能是相同的，故而，需要对其内容和引用做 Hash
             int hash = target.hashCode() + System.identityHashCode(target);
 
             return hash + (selected ? 0 : 1);
         }).collect(Collectors.toList());
+    }
+
+    private boolean needToBeSelected(Input input) {
+        boolean selected = this.inputList.isSelected(input);
+
+        // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中
+        if (!selected && input instanceof CharInput && ((CharInput) input).hasPair()) {
+            if (this.inputList.isSelected(((CharInput) input).getPair())) {
+                selected = true;
+            }
+        }
+
+        return selected;
     }
 }

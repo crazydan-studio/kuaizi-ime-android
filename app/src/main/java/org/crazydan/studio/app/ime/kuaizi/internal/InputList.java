@@ -109,7 +109,7 @@ public class InputList {
 
     /** 是否有空的待输入 */
     public boolean hasEmptyPending() {
-        return this.cursor.pending == null || this.cursor.pending.isEmpty();
+        return getPending() == null || getPending().isEmpty();
     }
 
     /**
@@ -139,8 +139,8 @@ public class InputList {
      */
     public void newPendingOn(Input input) {
         if (input == null || indexOf(input) < 0 //
-            || (this.cursor.selected == input //
-                && this.cursor.pending != null)) {
+            || (getSelected() == input //
+                && getPending() != null)) {
             return;
         }
 
@@ -186,8 +186,8 @@ public class InputList {
      * </ul>
      */
     public void confirmPending() {
-        CharInput pending = this.cursor.pending;
-        Input selected = this.cursor.selected;
+        CharInput pending = getPending();
+        Input selected = getSelected();
 
         int selectedIndex = getSelectedIndex();
         if (pending == null || pending.isEmpty() || selectedIndex < 0) {
@@ -196,6 +196,9 @@ public class InputList {
 
         this.cursor.pending = null;
         if (selected instanceof CharInput) {
+            // 保持对配对符号的引用
+            pending.setPair(((CharInput) selected).getPair());
+
             this.inputs.set(selectedIndex, pending);
             this.cursor.selected = pending;
         } else if (selected instanceof GapInput) {
@@ -229,7 +232,7 @@ public class InputList {
 
     /** 获取已选中输入的位置 */
     public int getSelectedIndex() {
-        Input selected = this.cursor.selected;
+        Input selected = getSelected();
         return indexOf(selected);
     }
 
@@ -240,7 +243,7 @@ public class InputList {
 
     /** 获取指定输入上的待输入 */
     public CharInput getPendingOn(Input input) {
-        return this.cursor.selected == input ? this.cursor.pending : null;
+        return getSelected() == input ? getPending() : null;
     }
 
     /** 获取已选中的输入 */
@@ -258,9 +261,17 @@ public class InputList {
         return getSelected() instanceof GapInput;
     }
 
-    /** 删除当前选中的输入：光标位置仅删除正在输入的内容 */
+    /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
+    public void clearPairOnSelected() {
+        Input selected = getSelected();
+        if (selected instanceof CharInput) {
+            ((CharInput) selected).clearPair();
+        }
+    }
+
+    /** 删除当前选中的输入：对于光标位置，仅删除其正在输入的内容 */
     public void deleteSelected() {
-        Input selected = this.cursor.selected;
+        Input selected = getSelected();
         if (selected instanceof CharInput) {
             deleteBackward();
         }
@@ -273,7 +284,8 @@ public class InputList {
      * <p/>
      * 若当前为光标位，则删除其前面的输入；
      * 若当前为拉丁字符输入，则从其尾部逐字删除该输入；
-     * 若为非拉丁字符输入，则直接删除该输入
+     * 若当前为配对符号输入，则同时删除其另一侧的符号输入；
+     * 若为其他输入，则直接删除该输入
      */
     public void deleteBackward() {
         int selectedIndex = getSelectedIndex();
@@ -281,8 +293,8 @@ public class InputList {
             return;
         }
 
-        Input selected = this.cursor.selected;
-        Input current = this.cursor.pending != null ? this.cursor.pending : selected;
+        Input selected = getSelected();
+        Input current = getPending() != null ? getPending() : selected;
         // 逐字删除拉丁字符输入的最后一个字符
         if (current.isLatin() && current.getKeys().size() > 1) {
             current.dropLastKey();
@@ -298,10 +310,17 @@ public class InputList {
                 if (prev.isLatin() && prev.getKeys().size() > 1) {
                     this.cursor.selected = prev;
                 } else {
-                    // 输入位
-                    this.inputs.remove(prevIndex);
-                    // Gap 位
-                    this.inputs.remove(prevIndex - 1);
+                    removeCharInputPair(prev);
+
+                    // Note：当光标在 中间没有字符输入的配对符号 的中间位置时，
+                    // 先删除其后的 配对字符输入 会导致该光标也被删除，
+                    // 且其所在位置由 被删除的配对字符输入 的后继 Gap 填充，
+                    // 故而，新光标位置不变但对应的 Gap 引用需更新
+                    if (getSelectedIndex() < 0) {
+                        this.cursor.selected = this.inputs.get(selectedIndex);
+                    }
+
+                    removeCharInput(prev);
                 }
             } else {
                 dropPending();
@@ -309,12 +328,16 @@ public class InputList {
         }
         // 删除当前选中的输入及其配对的占位
         else {
+            removeCharInputPair(selected);
+
+            // Note：当选中 左侧配对符号输入 且 配对符号中间 没有其他字符输入时，
+            // 先删除右侧的 配对符号输入 会导致待选中的 Gap 一并被删除，
+            // 且该光标所在位置由 被删除的配对字符输入 的后继 Gap 填充，
+            // 故而，新光标位置不变但对应的 Gap 引用需更新
+            selectedIndex = getSelectedIndex();
             Input newSelected = this.inputs.get(selectedIndex + 1);
 
-            // 输入位
-            this.inputs.remove(selectedIndex);
-            // Gap 位
-            this.inputs.remove(selectedIndex - 1);
+            removeCharInput(selected);
 
             // 再将当前光标后移
             this.cursor.selected = newSelected;
@@ -368,8 +391,8 @@ public class InputList {
         for (Input input : this.inputs) {
             if (untilToInput != null //
                 && (input == untilToInput //
-                    || (this.cursor.pending == untilToInput //
-                        && this.cursor.selected == input))) {
+                    || (getPending() == untilToInput //
+                        && getSelected() == input))) {
                 break;
             }
 
@@ -457,6 +480,10 @@ public class InputList {
 
     /** 获取指定输入的位置 */
     public int indexOf(Input input) {
+        if (input == null) {
+            return -1;
+        }
+
         // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
         for (int i = 0; i < this.inputs.size(); i++) {
             Input ipt = this.inputs.get(i);
@@ -473,6 +500,40 @@ public class InputList {
 
     public Input getLastInput() {
         return this.inputs.size() > 0 ? this.inputs.get(this.inputs.size() - 1) : null;
+    }
+
+    /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
+    private void removeCharInput(Input input) {
+        int index = input instanceof CharInput ? indexOf(input) : -1;
+
+        removeCharInputAt(index);
+    }
+
+    /** 删除指定位置的字符输入（包括与其配对的前序 Gap 位） */
+    private void removeCharInputAt(int index) {
+        if (index <= 0) {
+            return;
+        }
+
+        // 输入位
+        this.inputs.remove(index);
+        // Gap 位
+        this.inputs.remove(index - 1);
+    }
+
+    /** 删除配对符号的另一侧输入 */
+    private void removeCharInputPair(Input input) {
+        if (input instanceof CharInput) {
+            CharInput pairInput = ((CharInput) input).getPair();
+
+            int pairInputIndex = indexOf(pairInput);
+            if (pairInputIndex < 0) {
+                return;
+            }
+
+            pairInput.clearPair();
+            removeCharInputAt(pairInputIndex);
+        }
     }
 
     private static class Cursor {

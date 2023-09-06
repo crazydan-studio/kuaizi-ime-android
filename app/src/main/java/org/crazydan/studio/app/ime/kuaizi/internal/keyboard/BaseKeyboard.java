@@ -148,7 +148,9 @@ public abstract class BaseKeyboard implements Keyboard {
 
                 ChoosingSymbolStateData stateData = (ChoosingSymbolStateData) this.state.data;
 
-                return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.getPageStart());
+                return () -> keyTable.createSymbolKeys(stateData.getGroup(),
+                                                       stateData.isOnlyPair(),
+                                                       stateData.getPageStart());
             }
         }
         return doGetKeyFactory();
@@ -165,7 +167,7 @@ public abstract class BaseKeyboard implements Keyboard {
         switch (this.state.type) {
             case InputCandidate_Choosing:
                 if (msg == UserInputMsg.Cleaning_Inputs) {
-                    this.state = getInitState();
+                    goto_InitState();
                 }
             case Input_Waiting:
             case Emoji_Choosing:
@@ -240,23 +242,33 @@ public abstract class BaseKeyboard implements Keyboard {
         return new State(State.Type.Input_Waiting);
     }
 
+    protected void goto_InitState() {
+        this.state = getInitState();
+    }
+
     /** 当前字符输入已完成，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void end_InputChars_Inputting_and_Waiting_Input() {
-        this.state = getInitState();
+        goto_InitState();
 
         end_InputChars_Inputting();
     }
 
     /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void confirm_InputChars_and_Waiting_Input() {
-        this.state = getInitState();
+        goto_InitState();
 
         confirm_InputChars();
     }
 
+    protected void confirm_InputChars_and_MoveToNext_then_Waiting_Input() {
+        goto_InitState();
+
+        confirm_InputChars_and_MoveToNext();
+    }
+
     /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
     protected void commit_InputList_and_Waiting_Input() {
-        this.state = getInitState();
+        goto_InitState();
 
         commit_InputList();
     }
@@ -267,7 +279,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 注：键盘的{@link #state 状态}始终为 {@link State.Type#Input_Waiting}
      */
     protected void fire_and_Waiting_Continuous_InputChars_Inputting(Key<?> key) {
-        this.state = getInitState();
+        goto_InitState();
 
         fire_InputChars_Inputting(getKeyFactory(), key);
     }
@@ -443,7 +455,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Type target) {
-        this.state = getInitState();
+        goto_InitState();
 
         fireInputMsg(InputMsg.Keyboard_Switching, new KeyboardSwitchingMsgData(getConfig().getType(), target));
     }
@@ -455,7 +467,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode() {
-        this.state = getInitState();
+        goto_InitState();
 
         switch (getConfig().getHandMode()) {
             case Left:
@@ -599,7 +611,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case SwitchToSymbolKeyboard: {
                         play_InputtingSingleTick_Audio(key);
-                        start_Symbol_Choosing();
+                        start_Symbol_Choosing(false);
                         return true;
                     }
                 }
@@ -823,11 +835,11 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>
 
     // <<<<<<<<<<< 对标点符号的操作
-    private void start_Symbol_Choosing() {
+    private void start_Symbol_Choosing(boolean onlyPair) {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getSymbolKeysPageSize();
 
-        ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(pageSize);
+        ChoosingSymbolStateData stateData = new ChoosingSymbolStateData(pageSize, onlyPair);
         this.state = new State(State.Type.Symbol_Choosing, stateData, getInitState());
 
         SymbolGroup group = SymbolGroup.latin;
@@ -880,31 +892,66 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void do_Single_Symbol_Inputting(SymbolKey key) {
         boolean isEmpty = getInputList().isEmpty();
+        boolean isPairSymbolKey = key.isPair();
+        Input selected = getInputList().getSelected();
         CharInput input = getInputList().newPending();
 
-        boolean isPairSymbol = key.isPair();
-        if (key.isPair()) {
-            String left = ((Symbol.Pair) key.getSymbol()).left;
-            String right = ((Symbol.Pair) key.getSymbol()).right;
+        if (isPairSymbolKey) {
+            Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
+            String left = symbol.left;
+            String right = symbol.right;
+
             SymbolKey leftKey = SymbolKey.create(Symbol.single(left));
             SymbolKey rightKey = SymbolKey.create(Symbol.single(right));
 
-            input.appendKey(leftKey);
-            input = getInputList().newPending();
-            input.appendKey(rightKey);
-            // 确认第二个 Key，并移动光标到其后的 Gap 位置
-            getInputList().confirmPending();
+            if (selected instanceof CharInput //
+                && ((CharInput) selected).hasPair()) {
+                CharInput leftInput = input;
+                CharInput rightInput = ((CharInput) selected).getPair();
+                int rightInputIndex = getInputList().indexOf(rightInput);
 
-            // 并将光标移动到成对标点之间的 Gap 位置
-            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
+                if (getInputList().getSelectedIndex() > rightInputIndex) {
+                    leftInput = rightInput;
+                    rightInput = input;
+                }
+
+                leftInput.replaceLastKey(leftKey);
+                rightInput.replaceLastKey(rightKey);
+            } else {
+                CharInput leftInput = input;
+                leftInput.appendKey(leftKey);
+
+                // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
+                if (selected instanceof CharInput) {
+                    getInputList().newPendingOn(getInputList().getSelectedIndex() + 1);
+                } else {
+                    getInputList().newPending();
+                }
+
+                CharInput rightInput = getInputList().getPending();
+                rightInput.appendKey(rightKey);
+
+                // 绑定配对符号的关联：由任意一方发起绑定即可
+                rightInput.setPair(leftInput);
+
+                // 确定右侧配对输入，并将光标移动到该输入左侧的 Gap 位置以确保光标在配对符号的中间位置
+                getInputList().confirmPending();
+                getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
+            }
         } else {
             input.appendKey(key);
+            input.clearPair();
         }
 
         if (isEmpty) {
             // 直接提交输入
-            commit_InputList(isPairSymbol);
+            commit_InputList(isPairSymbolKey);
         } else {
+            // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
+            if (isPairSymbolKey) {
+                goto_InitState();
+            }
+
             // 连续输入
             if (getInputList().getSelected() instanceof GapInput) {
                 confirm_InputChars();
@@ -927,7 +974,9 @@ public abstract class BaseKeyboard implements Keyboard {
         if (pending.isEmoji()) {
             start_Emoji_Choosing();
         } else if (pending.isSymbol()) {
-            start_Symbol_Choosing();
+            boolean hasPair = input instanceof CharInput && ((CharInput) input).hasPair();
+
+            start_Symbol_Choosing(hasPair);
         } else if (!do_Choosing_Input_in_InputList(pending)) {
             confirm_InputChars_and_Waiting_Input();
         }

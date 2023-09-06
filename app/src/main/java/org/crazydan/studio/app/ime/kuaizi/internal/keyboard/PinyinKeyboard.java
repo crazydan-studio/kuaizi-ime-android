@@ -281,8 +281,43 @@ public class PinyinKeyboard extends BaseKeyboard {
             getInputList().newPending();
         }
 
+        // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
+        getInputList().clearPairOnSelected();
+
         CharInput input = getInputList().getPending();
-        do_SingleKey_Inputting(input, key);
+        switch (key.getType()) {
+            // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
+            case Emoji:
+            case Symbol: {
+                boolean isEmpty = getInputList().isEmpty();
+                getInputList().newPending().appendKey(key);
+
+                if (!isEmpty) {
+                    if (getInputList().getSelected() instanceof CharInput) {
+                        confirm_InputChars_and_MoveToNext_then_Waiting_Input();
+                    } else {
+                        confirm_InputChars_and_Waiting_Input();
+                    }
+                } else {
+                    // 单个标点、表情则直接提交输入
+                    commit_InputList_and_Waiting_Input();
+                }
+                break;
+            }
+            // 字母、数字可连续输入
+            case Number:
+            case Alphabet: {
+                // Note：非拉丁字符输入不可连续输入
+                if (!input.isLatin()) {
+                    getInputList().confirmPending();
+                }
+
+                input.appendKey(key);
+
+                fire_and_Waiting_Continuous_InputChars_Inputting(key);
+                break;
+            }
+        }
     }
 
     private void do_ReplacementKey_Inputting(CharKey key) {
@@ -316,33 +351,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         input.replaceLatestKey(lastCharKey, newKey);
 
         fire_and_Waiting_Continuous_InputChars_Inputting(key);
-    }
-
-    private void do_SingleKey_Inputting(CharInput input, CharKey key) {
-        switch (key.getType()) {
-            // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
-            case Emoji:
-            case Symbol: {
-                boolean isEmpty = getInputList().isEmpty();
-                getInputList().newPending().appendKey(key);
-
-                if (!isEmpty) {
-                    confirm_InputChars_and_Waiting_Input();
-                } else {
-                    // 单个标点、表情则直接提交输入
-                    commit_InputList_and_Waiting_Input();
-                }
-                break;
-            }
-            // 字母、数字可连续输入
-            case Number:
-            case Alphabet: {
-                input.appendKey(key);
-
-                fire_and_Waiting_Continuous_InputChars_Inputting(key);
-                break;
-            }
-        }
     }
 
     /** 滑屏输入 */

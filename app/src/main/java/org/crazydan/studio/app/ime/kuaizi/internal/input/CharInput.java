@@ -31,6 +31,33 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  * @date 2023-07-06
  */
 public class CharInput extends BaseInput {
+    private CharInput pair;
+
+    public CharInput getPair() {
+        return this.pair;
+    }
+
+    public void setPair(CharInput pair) {
+        if (pair == null) {
+            clearPair();
+            return;
+        }
+
+        this.pair = pair;
+        // 同步设置对端关联
+        this.pair.pair = this;
+    }
+
+    public void clearPair() {
+        if (this.pair != null) {
+            this.pair.pair = null;
+        }
+        this.pair = null;
+    }
+
+    public boolean hasPair() {
+        return this.pair != null;
+    }
 
     public CharInput copy() {
         CharInput input = new CharInput();

@@ -31,15 +31,21 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
  * @date 2023-08-24
  */
 public class ChoosingSymbolStateData extends PagingStateData<Symbol> {
+    private final boolean onlyPair;
     private SymbolGroup group = SymbolGroup.han;
 
-    public ChoosingSymbolStateData(int pageSize) {
+    public ChoosingSymbolStateData(int pageSize, boolean onlyPair) {
         super(pageSize);
+        this.onlyPair = onlyPair;
     }
 
     @Override
     public List<Symbol> getPagingData() {
         return Arrays.asList(this.group.symbols);
+    }
+
+    public boolean isOnlyPair() {
+        return this.onlyPair;
     }
 
     public SymbolGroup getGroup() {

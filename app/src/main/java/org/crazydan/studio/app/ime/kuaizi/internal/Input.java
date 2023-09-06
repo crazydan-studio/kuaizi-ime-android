@@ -67,6 +67,13 @@ public interface Input extends ViewData {
     /** 替换指定按键的最近添加位置的按键 */
     void replaceLatestKey(Key<?> oldKey, Key<?> newKey);
 
+    /**
+     * 替换最后一个按键
+     * <p/>
+     * 若其按键列表为空，则追加新按键
+     */
+    void replaceLastKey(Key<?> newKey);
+
     /** 获取输入字符列表 */
     List<String> getChars();
 

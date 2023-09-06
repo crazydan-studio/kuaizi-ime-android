@@ -120,6 +120,12 @@ public abstract class BaseInput implements Input {
     }
 
     @Override
+    public void replaceLastKey(Key<?> newKey) {
+        dropLastKey();
+        appendKey(newKey);
+    }
+
+    @Override
     public List<String> getChars() {
         return this.keys.stream().map(Key::getText).filter(Objects::nonNull).collect(Collectors.toList());
     }

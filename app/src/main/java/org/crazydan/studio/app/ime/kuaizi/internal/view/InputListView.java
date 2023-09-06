@@ -78,6 +78,7 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
+        this.adapter.updateInputList(this.inputList);
     }
 
     /** 响应输入列表的点击等消息 */

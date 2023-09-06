@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
+import java.util.Arrays;
 import java.util.List;
 
 import android.graphics.Point;
@@ -138,10 +139,14 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     /** 创建标点符号按键 */
-    public Key<?>[][] createSymbolKeys(SymbolGroup symbolGroup, int startIndex) {
+    public Key<?>[][] createSymbolKeys(SymbolGroup symbolGroup, boolean onlyPair, int startIndex) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
-        int dataSize = symbolGroup.symbols.length;
+        Symbol[] symbols = onlyPair ? Arrays.stream(symbolGroup.symbols)
+                                            .filter(symbol -> symbol instanceof Symbol.Pair)
+                                            .toArray(Symbol[]::new) : symbolGroup.symbols;
+
+        int dataSize = symbols.length;
         int pageSize = getEmojiKeysPageSize();
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
@@ -184,7 +189,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                 int y = keyCoord.y;
 
                 if (dataIndex < dataSize) {
-                    Symbol data = symbolGroup.symbols[dataIndex];
+                    Symbol data = symbols[dataIndex];
 
                     if (data != null) {
                         KeyColor color = latin_key_char_alphabet_level_colors[level];
