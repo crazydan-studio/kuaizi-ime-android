@@ -69,7 +69,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
                     // Note：非拉丁字符输入不可连续输入
                     Input input = getInputList().getPending();
-                    if (!input.isLatin()) {
+                    if (input != null && !input.isLatin()) {
                         getInputList().confirmPending();
                     }
 
