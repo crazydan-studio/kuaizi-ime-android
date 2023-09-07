@@ -61,7 +61,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_alignParentEnd="true"
                     android:translationX="-6sp"
-                    android:translationY="3sp"
+                    android:translationY="6sp"
                     android:background="@drawable/bg_input_word_char_key_view">
 
                 <TextView
