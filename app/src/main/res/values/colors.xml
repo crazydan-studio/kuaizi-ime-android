@@ -16,14 +16,15 @@
   -->
 
 <resources>
-    <color name="color_black">#393939</color>
-    <color name="color_white">#ececec</color>
-    <color name="color_red_800">#991b1b</color>
-    <color name="color_gray_950">#030712</color>
-    <color name="color_gray_900">#111827</color>
-    <color name="color_gray_600">#4b5563</color>
-    <color name="color_slate_700">#334155</color>
-    <color name="color_emerald_400">#34d399</color>
-    <color name="color_emerald_600">#059669</color>
-    <color name="color_orange_600">#ea580c</color>
+    <!-- color format: #AARRGGBB -->
+    <color name="color_black">#ff393939</color>
+    <color name="color_white">#ffececec</color>
+    <color name="color_red_800">#ff991b1b</color>
+    <color name="color_gray_950">#ff030712</color>
+    <color name="color_gray_900">#ff111827</color>
+    <color name="color_gray_600">#ff4b5563</color>
+    <color name="color_slate_700">#ff334155</color>
+    <color name="color_emerald_400">#ff34d399</color>
+    <color name="color_emerald_600">#ff059669</color>
+    <color name="color_orange_600">#ffea580c</color>
 </resources>

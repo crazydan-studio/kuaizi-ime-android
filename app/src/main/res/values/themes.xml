@@ -17,7 +17,11 @@
 
 <resources>
 
-    <style name="Theme.Light.KuaiziIME" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme" />
+
+    <style name="Theme.KuaiziIME" />
+
+    <style name="Theme.KuaiziIME.Light">
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">@color/color_white</item>
         <item name="keyboard_border_color">@color/color_gray_900</item>
@@ -71,9 +75,9 @@
         <item name="key_char_level_5_fg_color">?attr/key_fg_color</item>
     </style>
 
-    <style name="Theme.Night.KuaiziIME" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Theme.KuaiziIME.Night">
         <!-- 键盘样式 -->
-        <item name="keyboard_bg_color">#272B2C</item>
+        <item name="keyboard_bg_color">#ff272b2c</item>
         <item name="keyboard_border_color">@color/color_gray_900</item>
         <item name="keyboard_divider_color">@color/color_gray_600</item>
 
@@ -82,13 +86,13 @@
         <item name="input_selection_bg_color">@color/color_slate_700</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
         <!-- 键盘按键样式 -->
-        <item name="key_bg_color">#2F3336</item>
-        <item name="key_fg_color">#71D4FE</item>
-        <item name="key_highlight_fg_color">#1d98ff</item>
+        <item name="key_bg_color">#ff2f3336</item>
+        <item name="key_fg_color">#ff71d4fe</item>
+        <item name="key_highlight_fg_color">#ff1d98ff</item>
 
-        <!--<item name="key_border_color">#9CCCDF</item>-->
-        <item name="key_border_color">#2F3336</item>
-        <item name="key_shadow_style">1 1 2 #b3000000</item>
+        <!--<item name="key_border_color">#ff9cccdf</item>-->
+        <item name="key_border_color">#ff2f3336</item>
+        <item name="key_shadow_style">0 1 2 #b3000000</item>
 
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_noop_fg_color">?attr/key_fg_color</item>
@@ -110,22 +114,22 @@
         <item name="key_ctrl_confirm_bg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_highlight_fg_color</item>
 
-        <item name="key_char_symbol_bg_color">#02aaf5</item>
+        <item name="key_char_symbol_bg_color">#ff02aaf5</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_enter_bg_color">?attr/key_char_symbol_bg_color</item>
         <item name="key_ctrl_enter_fg_color">?attr/key_char_symbol_fg_color</item>
 
-        <item name="key_char_level_0_bg_color">#9d174d</item>
+        <item name="key_char_level_0_bg_color">#ff9d174d</item>
         <item name="key_char_level_0_fg_color">?attr/key_fg_color</item>
-        <item name="key_char_level_1_bg_color">#9a3412</item>
+        <item name="key_char_level_1_bg_color">#ff9a3412</item>
         <item name="key_char_level_1_fg_color">?attr/key_fg_color</item>
-        <item name="key_char_level_2_bg_color">#86198f</item>
+        <item name="key_char_level_2_bg_color">#ff86198f</item>
         <item name="key_char_level_2_fg_color">?attr/key_fg_color</item>
-        <item name="key_char_level_3_bg_color">#155e75</item>
+        <item name="key_char_level_3_bg_color">#ff155e75</item>
         <item name="key_char_level_3_fg_color">?attr/key_fg_color</item>
-        <item name="key_char_level_4_bg_color">#5b21b6</item>
+        <item name="key_char_level_4_bg_color">#ff5b21b6</item>
         <item name="key_char_level_4_fg_color">?attr/key_fg_color</item>
-        <item name="key_char_level_5_bg_color">#3730a3</item>
+        <item name="key_char_level_5_bg_color">#ff3730a3</item>
         <item name="key_char_level_5_fg_color">?attr/key_fg_color</item>
     </style>
 </resources>

@@ -129,8 +129,8 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
                && Objects.equals(this.getText(), that.getText())
                && Objects.equals(this.getLevel(), that.getLevel())
                && this.disabled == that.disabled
-               && this.color.fg == that.color.fg
-               && this.color.bg == that.color.bg;
+               && Objects.equals(this.color.fg, that.color.fg)
+               && Objects.equals(this.color.bg, that.color.bg);
     }
 
     @Override

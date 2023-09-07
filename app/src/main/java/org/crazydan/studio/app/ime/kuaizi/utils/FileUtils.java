@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,7 +41,7 @@ public class FileUtils {
             return null;
         }
 
-        return read(() -> Files.newInputStream(file.toPath()), trim);
+        return read(() -> newInput(file), trim);
     }
 
     public static String read(Context context, int rawResId, boolean trim) {
@@ -51,7 +53,7 @@ public class FileUtils {
     }
 
     public static void write(File file, String text) throws IOException {
-        try (OutputStream output = Files.newOutputStream(file.toPath());) {
+        try (OutputStream output = newOutput(file);) {
             byte[] bytes = text.getBytes();
             output.write(bytes, 0, bytes.length);
 
@@ -60,9 +62,7 @@ public class FileUtils {
     }
 
     public static void copy(Context context, int rawResId, File target) throws IOException {
-        try (
-                OutputStream output = Files.newOutputStream(target.toPath());
-        ) {
+        try (OutputStream output = newOutput(target);) {
             ResourceUtils.copy(context, rawResId, output);
         }
     }
@@ -81,5 +81,21 @@ public class FileUtils {
         } catch (Exception ignore) {
         }
         return null;
+    }
+
+    private static OutputStream newOutput(File file) throws IOException {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            return Files.newOutputStream(file.toPath());
+        } else {
+            return new FileOutputStream(file);
+        }
+    }
+
+    private static InputStream newInput(File file) throws IOException {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            return Files.newInputStream(file.toPath());
+        } else {
+            return new FileInputStream(file);
+        }
     }
 }

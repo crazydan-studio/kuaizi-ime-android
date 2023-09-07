@@ -25,20 +25,20 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  */
 public class KeyColor {
     /** 前景色资源 id */
-    public final int fg;
+    public final Integer fg;
     /** 背景色资源 id */
-    public final int bg;
+    public final Integer bg;
 
-    private KeyColor(int fg, int bg) {
+    private KeyColor(Integer fg, Integer bg) {
         this.fg = fg;
         this.bg = bg;
     }
 
-    public static KeyColor create(int fg, int bg) {
+    public static KeyColor create(Integer fg, Integer bg) {
         return new KeyColor(fg, bg);
     }
 
     public static KeyColor none() {
-        return create(-1, -1);
+        return create(null, null);
     }
 }

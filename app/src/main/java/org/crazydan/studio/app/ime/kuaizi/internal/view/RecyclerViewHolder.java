@@ -61,15 +61,15 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
         setAlpha(1.0f);
     }
 
-    public void setTextColorByAttrId(TextView text, int attrId) {
-        if (attrId > 0) {
+    public void setTextColorByAttrId(TextView text, Integer attrId) {
+        if (attrId != null) {
             int color = getColorByAttrId(attrId);
             text.setTextColor(color);
         }
     }
 
-    public void setBackgroundColorByAttrId(View view, int attrId) {
-        if (attrId > 0) {
+    public void setBackgroundColorByAttrId(View view, Integer attrId) {
+        if (attrId != null) {
             int color = getColorByAttrId(attrId);
             view.setBackgroundColor(color);
         }

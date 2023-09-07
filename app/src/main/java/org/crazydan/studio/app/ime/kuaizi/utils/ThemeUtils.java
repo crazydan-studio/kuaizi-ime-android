@@ -41,6 +41,10 @@ public class ThemeUtils {
 
     /** 应用阴影 */
     public static void applyShadow(Paint paint, String shadow) {
+        if (shadow == null) {
+            return;
+        }
+
         String[] splits = shadow.trim().split("\\s+");
         int dx = ScreenUtils.dpToPx(Integer.parseInt(splits[0]));
         int dy = ScreenUtils.dpToPx(Integer.parseInt(splits[1]));

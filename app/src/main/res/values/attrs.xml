@@ -31,7 +31,7 @@
         <attr name="key_highlight_fg_color" format="color" />
 
         <attr name="key_border_color" format="color" />
-        <!-- format: dx dy radius color(#AARRGGBB) -->
+        <!-- format: dx dy radius #AARRGGBB -->
         <attr name="key_shadow_style" format="string" />
 
         <attr name="key_ctrl_noop_bg_color" format="color" />

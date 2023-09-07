@@ -24,8 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Build;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -284,8 +282,8 @@ public class ImeInputView extends FrameLayout
 //            // Settings.ACTION_INPUT_METHOD_SETTINGS: 打开输入法设置
 //            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
 //        } else {
-            // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
-            intent = new Intent(context, Preferences.class);
+        // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
+        intent = new Intent(context, Preferences.class);
 //        }
 
         // If set then opens Settings Screen(Activity) as new activity.
@@ -314,20 +312,20 @@ public class ImeInputView extends FrameLayout
     private int getThemeResId() {
         String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, "night");
 
-        int themeResId = R.style.Theme_Night_KuaiziIME;
+        int themeResId = R.style.Theme_KuaiziIME_Night;
         switch (theme) {
             case "light":
-                themeResId = R.style.Theme_Light_KuaiziIME;
+                themeResId = R.style.Theme_KuaiziIME_Light;
                 break;
             case "follow_system":
                 int themeMode = getContext().getResources().getConfiguration().uiMode
                                 & Configuration.UI_MODE_NIGHT_MASK;
                 switch (themeMode) {
                     case Configuration.UI_MODE_NIGHT_NO:
-                        themeResId = R.style.Theme_Light_KuaiziIME;
+                        themeResId = R.style.Theme_KuaiziIME_Light;
                         break;
                     case Configuration.UI_MODE_NIGHT_YES:
-                        themeResId = R.style.Theme_Night_KuaiziIME;
+                        themeResId = R.style.Theme_KuaiziIME_Night;
                         break;
                 }
                 break;

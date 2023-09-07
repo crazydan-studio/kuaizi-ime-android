@@ -40,12 +40,12 @@ public class KeyViewDrawable extends Drawable {
     private final Path path;
     private final HexagonOrientation orientation;
 
-    private int fillColor;
-    private int strokeColor;
+    private Integer fillColor;
+    private Integer strokeColor;
     private String shadow;
 
     public KeyViewDrawable(HexagonOrientation orientation) {
-        this.paint = new Paint();
+        this.paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         this.path = new Path();
         this.orientation = orientation;
     }
@@ -57,17 +57,21 @@ public class KeyViewDrawable extends Drawable {
 
     @Override
     public void draw(Canvas canvas) {
-        this.paint.setAntiAlias(true);
+        if (this.fillColor != null) {
+            ThemeUtils.applyShadow(this.paint, this.shadow);
+            this.paint.setStyle(Paint.Style.FILL);
+            this.paint.setColor(this.fillColor);
 
-        this.paint.setStyle(Paint.Style.FILL);
-        this.paint.setColor(this.fillColor);
-        ThemeUtils.applyShadow(this.paint, this.shadow);
-        canvas.drawPath(this.path, this.paint);
+            canvas.drawPath(this.path, this.paint);
+        }
 
-        this.paint.clearShadowLayer();
-        this.paint.setStyle(Paint.Style.STROKE);
-        this.paint.setColor(this.strokeColor);
-        canvas.drawPath(this.path, this.paint);
+        if (this.strokeColor != null) {
+            this.paint.clearShadowLayer();
+            this.paint.setStyle(Paint.Style.STROKE);
+            this.paint.setColor(this.strokeColor);
+
+            canvas.drawPath(this.path, this.paint);
+        }
     }
 
     public void setFillColor(int color) {
