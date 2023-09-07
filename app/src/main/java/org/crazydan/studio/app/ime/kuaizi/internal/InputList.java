@@ -47,6 +47,8 @@ public class InputList {
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
+    private Input.Option option;
+
     public InputList() {
         reset();
     }
@@ -80,6 +82,7 @@ public class InputList {
 
         this.inputs.add(new GapInput());
         this.cursor.selected = this.inputs.get(0);
+        this.option = null;
 
         UserInputMsgData msgData = new UserInputMsgData(null);
         onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
@@ -110,6 +113,14 @@ public class InputList {
     /** 是否有空的待输入 */
     public boolean hasEmptyPending() {
         return getPending() == null || getPending().isEmpty();
+    }
+
+    public Input.Option getOption() {
+        return this.option;
+    }
+
+    public void setOption(Input.Option option) {
+        this.option = option;
     }
 
     /**
@@ -447,42 +458,48 @@ public class InputList {
     public StringBuilder getText() {
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < this.inputs.size(); i++) {
+        int total = this.inputs.size();
+        for (int i = 0; i < total; i++) {
             Input input = this.inputs.get(i);
 
-            if (needPrevSpace(i)) {
-                sb.append(" ");
-            }
+            sb.append(input.getText(this.option));
 
-            sb.append(input.getText());
-
-            if (needPostSpace(i)) {
+            if (needGapSpace(i)) {
                 sb.append(" ");
             }
         }
         return sb;
     }
 
-    /** 指定位置的输入是否需要前序空格 */
-    public boolean needPrevSpace(int i) {
-        Input input = this.inputs.get(i);
-        if (!(input instanceof CharInput) || !input.isLatin()) {
+    /** 是否需要添加 Gap 空格 */
+    public boolean needGapSpace(int i) {
+        int total = this.inputs.size();
+        Input input = i >= total || i < 0 ? null : this.inputs.get(i);
+        if (!(input instanceof GapInput) || i == 0 || i == total - 1) {
             return false;
         }
 
-        Input before = i > 1 ? this.inputs.get(i - 2) : null;
-        return before != null && (before.isPinyin() || before.isEmoji());
+        Input.Option option = this.option;
+        Input left = this.inputs.get(i - 1);
+        Input right = this.inputs.get(i + 1);
+
+        if (left.isLatin()) {
+            return !right.isSymbol();
+        } else if (right.isLatin()) {
+            return !left.isSymbol();
+        } else if (left.isTextOnlyWordNotation(option)) {
+            return !right.isSymbol();
+        } else if (right.isTextOnlyWordNotation(option)) {
+            return !left.isSymbol();
+        }
+
+        return false;
     }
 
-    /** 指定位置的输入是否需要后续空格 */
-    public boolean needPostSpace(int i) {
-        Input input = this.inputs.get(i);
-        if (!(input instanceof CharInput) || !input.isLatin()) {
-            return false;
-        }
-
-        Input after = i < this.inputs.size() - 2 ? this.inputs.get(i + 2) : null;
-        return after != null && (after.isPinyin() || after.isEmoji());
+    /** 是否需要添加 Gap 空格 */
+    public boolean needGapSpace(Input input) {
+        int i = indexOf(input);
+        return needGapSpace(i);
     }
 
     /** 获取指定输入的位置 */

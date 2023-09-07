@@ -53,11 +53,15 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     public void updateInputList(InputList inputList) {
         this.inputList = inputList;
 
-        List<Integer> oldInputHashes = this.inputHashes;
-        List<Integer> newInputHashes = getInputHashes();
-        this.inputHashes = new ArrayList<>(newInputHashes);
+//        List<Integer> oldInputHashes = this.inputHashes;
+//        List<Integer> newInputHashes = getInputHashes();
+//        this.inputHashes = new ArrayList<>(newInputHashes);
+//
+//        updateItems(oldInputHashes, newInputHashes);
 
-        updateItems(oldInputHashes, newInputHashes);
+        // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
+        // 其判断逻辑较复杂且容易遗漏更新，故而，直接对列表视图做全量更新
+        notifyDataSetChanged();
     }
 
     @Override
@@ -67,18 +71,17 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
+        Input.Option option = this.inputList.getOption();
         Input input = this.inputList.getInputs().get(position);
         CharInput pending = this.inputList.getPendingOn(input);
 
         boolean selected = needToBeSelected(input);
+        boolean needGapSpace = this.inputList.needGapSpace(input);
+
         if (input instanceof CharInput) {
-            ((CharInputView) view).bind((CharInput) input,
-                                        pending,
-                                        selected,
-                                        this.inputList.needPrevSpace(position),
-                                        this.inputList.needPostSpace(position));
+            ((CharInputView) view).bind(option, (CharInput) input, pending, selected);
         } else {
-            ((GapInputView) view).bind((GapInput) input, pending, selected);
+            ((GapInputView) view).bind(option, (GapInput) input, pending, needGapSpace, selected);
         }
     }
 
@@ -109,14 +112,18 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         }
 
         return this.inputList.getInputs().stream().map(input -> {
+            Input.Option option = this.inputList.getOption();
             CharInput pending = this.inputList.getPendingOn(input);
             Input target = pending != null ? pending : input;
 
             boolean selected = needToBeSelected(input);
+            boolean needGapSpace = this.inputList.needGapSpace(input);
+            int textHash = option != null && target.hasWord() ? target.getText(option).hashCode() : 0;
+
             // 因为输入内容可能是相同的，故而，需要对其内容和引用做 Hash
             int hash = target.hashCode() + System.identityHashCode(target);
 
-            return hash + (selected ? 0 : 1);
+            return hash + (selected ? 1 : 0) + (needGapSpace ? 1 : 0) + textHash;
         }).collect(Collectors.toList());
     }
 

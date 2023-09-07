@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 
 /**
@@ -32,12 +33,11 @@ public class CharInputView extends InputView<CharInput> {
     }
 
     public void bind(
-            CharInput input, CharInput pending, boolean selected, //
-            boolean needToAddPrevSpace, boolean needToAddPostSpace
+            Input.Option option, CharInput input, CharInput pending, boolean selected
     ) {
         super.bind(input);
 
-        showWord(pending != null ? pending : input, selected, needToAddPrevSpace, needToAddPostSpace);
+        showWord(option, pending != null ? pending : input, selected);
         setSelectedBgColor(this.itemView, selected);
     }
 }

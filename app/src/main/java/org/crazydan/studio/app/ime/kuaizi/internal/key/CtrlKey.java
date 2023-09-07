@@ -118,6 +118,9 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
         /** 提交输入列表 */
         CommitInputList,
+        /** 输入列表 提交选项 */
+        Option_CommitInputList,
+
         /** 丢弃当前输入 */
         DropInput,
         /** 确认当前输入 */
@@ -216,6 +219,21 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             zcs_h,
             nl,
             ng,
+        }
+    }
+
+    public static class CommitInputListOption extends Option<CommitInputListOption.Option> {
+        public CommitInputListOption(Option value) {
+            super(value);
+        }
+
+        public enum Option {
+            /** 仅拼音 */
+            only_pinyin,
+            /** 携带拼音 */
+            with_pinyin,
+            /** 繁简转换 */
+            switch_simple_trad,
         }
     }
 }

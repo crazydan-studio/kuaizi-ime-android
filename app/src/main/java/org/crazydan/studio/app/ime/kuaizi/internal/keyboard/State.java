@@ -49,6 +49,8 @@ public class State {
         Input_Waiting,
         /** 滑屏输入中 */
         Input_Slipping,
+        /** 输入列表 提交选项 选择中 */
+        InputList_Committing_Option_Choosing,
 
         /** 输入组件光标定位：含移动光标和文本选择 */
         InputTarget_Cursor_Locating,

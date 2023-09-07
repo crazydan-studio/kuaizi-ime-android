@@ -336,6 +336,26 @@ public class PinyinKeyTable extends KeyTable {
         return gridKeys;
     }
 
+    /** 创建 输入列表 提交选项 按键 */
+    public Key<?>[][] createInputListCommittingOptionKeys() {
+        Key<?>[][] gridKeys = createEmptyGrid();
+
+        int index_end = getGridLastColumnIndexForHandMode();
+
+        CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.only_pinyin);
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("仅拼音");
+
+        option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.with_pinyin);
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("带拼音");
+
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.CommitInputList);
+
+//        option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
+//        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("简/繁");
+
+        return gridKeys;
+    }
+
     private Point[][] getInputCandidateLevelKeyCoords() {
         return new Point[][] {
                 // level 1

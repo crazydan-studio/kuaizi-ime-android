@@ -99,10 +99,12 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Space, KeyStyle.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
+
         ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
                             KeyStyle.withIcon(R.drawable.ic_right_hand_like,
                                               R.drawable.ic_left_hand_like,
                                               R.attr.key_ctrl_commit_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Option_CommitInputList, key_ctrl_highlight_style);
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
                             KeyStyle.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));

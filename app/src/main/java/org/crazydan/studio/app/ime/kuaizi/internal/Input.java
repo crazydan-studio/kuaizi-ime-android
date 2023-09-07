@@ -80,6 +80,12 @@ public interface Input extends ViewData {
     /** 获取输入文本内容 */
     StringBuilder getText();
 
+    /** 获取输入文本内容 */
+    StringBuilder getText(Option option);
+
+    /** 输入文本内容是否只有{@link InputWord#getNotation() 候选字的标注} */
+    boolean isTextOnlyWordNotation(Option option);
+
     /** 是否有可输入字 */
     boolean hasWord();
 
@@ -89,4 +95,15 @@ public interface Input extends ViewData {
      * @return 若为<code>null</code>，则表示未选择
      */
     InputWord getWord();
+
+    class Option {
+        public final InputWord.NotationType wordNotationType;
+        /** 是否使用候选字变体 */
+        public final boolean wordVariantUsed;
+
+        public Option(InputWord.NotationType wordNotationType, boolean wordVariantUsed) {
+            this.wordNotationType = wordNotationType;
+            this.wordVariantUsed = wordVariantUsed;
+        }
+    }
 }

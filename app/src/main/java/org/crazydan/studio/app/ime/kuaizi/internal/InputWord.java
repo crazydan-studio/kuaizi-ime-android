@@ -36,11 +36,21 @@ public class InputWord {
 
     private final String value;
     private final String notation;
+    private final String variant;
+
+    public InputWord(String uid, String value) {
+        this(uid, value, null);
+    }
 
     public InputWord(String uid, String value, String notation) {
+        this(uid, value, notation, null);
+    }
+
+    public InputWord(String uid, String value, String notation, String variant) {
         this.uid = uid;
         this.value = value;
         this.notation = notation;
+        this.variant = variant;
     }
 
     public String getUid() {
@@ -63,10 +73,18 @@ public class InputWord {
         return this.notation;
     }
 
+    public boolean hasNotation() {
+        return this.notation != null;
+    }
+
+    public String getVariant() {
+        return this.variant;
+    }
+
     @NonNull
     @Override
     public String toString() {
-        if (this.notation == null) {
+        if (!hasNotation()) {
             return this.value;
         }
         return this.value + '(' + this.notation + ')';
@@ -88,5 +106,13 @@ public class InputWord {
     @Override
     public int hashCode() {
         return Objects.hash(this.value, this.notation);
+    }
+
+    /** 标注类型 */
+    public enum NotationType {
+        /** 替代 {@link InputWord} */
+        replacing,
+        /** 跟随 {@link InputWord} */
+        following,
     }
 }

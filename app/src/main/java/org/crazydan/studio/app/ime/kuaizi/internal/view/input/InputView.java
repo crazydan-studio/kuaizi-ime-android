@@ -53,12 +53,18 @@ public abstract class InputView<I extends Input> extends RecyclerViewHolder<I> {
         setTextColorByAttrId(view, fgColor);
     }
 
-    protected void showWord(CharInput input, boolean selected, boolean needToAddPrevSpace, boolean needToAddPostSpace) {
+    protected void showWord(Input.Option option, CharInput input, boolean selected) {
         InputWord word = input.getWord();
-        String value = word != null ? word.getValue() : (needToAddPrevSpace ? " " : "") //
-                                                        + String.join("", input.getChars()) //
-                                                        + (needToAddPostSpace ? " " : "");
-        String notation = word != null ? word.getNotation() : "";
+        String value = word != null ? word.getValue() : String.join("", input.getChars());
+        String notation = word != null ? word.getNotation() : null;
+
+        if (option != null && word != null) {
+            value = input.getText(option).toString();
+
+            if (notation != null && value.contains(notation)) {
+                notation = null;
+            }
+        }
 
         this.wordView.setText(value);
         setSelectedTextColor(this.wordView, selected);

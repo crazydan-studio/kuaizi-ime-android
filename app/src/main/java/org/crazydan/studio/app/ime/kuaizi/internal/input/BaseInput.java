@@ -132,14 +132,50 @@ public abstract class BaseInput implements Input {
 
     @Override
     public StringBuilder getText() {
+        return getText(null);
+    }
+
+    @Override
+    public StringBuilder getText(Option option) {
         StringBuilder sb = new StringBuilder();
 
         if (this.word != null) {
-            sb.append(this.word.getValue());
+            String value = this.word.getValue();
+            String notation = this.word.getNotation();
+            String variant = this.word.getVariant();
+
+            if (option != null) {
+                if (option.wordVariantUsed && variant != null) {
+                    value = variant;
+                }
+
+                if (option.wordNotationType != null && notation != null) {
+                    switch (option.wordNotationType) {
+                        case following:
+                            value = String.format("%s(%s)", value, notation);
+                            break;
+                        case replacing:
+                            value = notation;
+                            break;
+                    }
+                }
+            }
+
+            if (value != null) {
+                sb.append(value);
+            }
         } else {
             getChars().forEach(sb::append);
         }
         return sb;
+    }
+
+    @Override
+    public boolean isTextOnlyWordNotation(Option option) {
+        return option != null
+               && option.wordNotationType == InputWord.NotationType.replacing
+               && hasWord()
+               && getWord().hasNotation();
     }
 
     @Override
