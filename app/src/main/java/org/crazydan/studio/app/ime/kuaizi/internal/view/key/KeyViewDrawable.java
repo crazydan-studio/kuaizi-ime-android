@@ -26,6 +26,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -39,21 +40,46 @@ public class KeyViewDrawable extends Drawable {
     private final Path path;
     private final HexagonOrientation orientation;
 
+    private int fillColor;
+    private int strokeColor;
+    private String shadow;
+
     public KeyViewDrawable(HexagonOrientation orientation) {
         this.paint = new Paint();
         this.path = new Path();
         this.orientation = orientation;
+    }
 
-        initPaint();
+    @Override
+    protected void onBoundsChange(@NonNull Rect bounds) {
+        resetPath(bounds);
     }
 
     @Override
     public void draw(Canvas canvas) {
+        this.paint.setAntiAlias(true);
+
+        this.paint.setStyle(Paint.Style.FILL);
+        this.paint.setColor(this.fillColor);
+        ThemeUtils.applyShadow(this.paint, this.shadow);
+        canvas.drawPath(this.path, this.paint);
+
+        this.paint.clearShadowLayer();
+        this.paint.setStyle(Paint.Style.STROKE);
+        this.paint.setColor(this.strokeColor);
         canvas.drawPath(this.path, this.paint);
     }
 
-    public void setColor(int color) {
-        this.paint.setColor(color);
+    public void setFillColor(int color) {
+        this.fillColor = color;
+    }
+
+    public void setStrokeColor(int color) {
+        this.strokeColor = color;
+    }
+
+    public void setShadow(String shadow) {
+        this.shadow = shadow;
     }
 
     /** 绘制圆角 */
@@ -76,19 +102,6 @@ public class KeyViewDrawable extends Drawable {
     @Override
     public int getOpacity() {
         return PixelFormat.TRANSPARENT;
-    }
-
-    @Override
-    protected void onBoundsChange(@NonNull Rect bounds) {
-        resetPath(bounds);
-    }
-
-    private void initPaint() {
-        this.paint.setAntiAlias(true);
-        this.paint.setStyle(Paint.Style.FILL);
-
-        // 绘制阴影
-        //this.paint.setShadowLayer(5, 3, 3, Color.GRAY);
     }
 
     private void resetPath(Rect bounds) {

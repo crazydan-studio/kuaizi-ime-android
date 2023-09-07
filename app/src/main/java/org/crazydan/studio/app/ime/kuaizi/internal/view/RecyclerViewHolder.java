@@ -24,7 +24,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
-import org.crazydan.studio.app.ime.kuaizi.utils.ColorUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -76,7 +76,11 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
     }
 
     public int getColorByAttrId(int attrId) {
-        return ColorUtils.getByAttrId(getContext(), attrId);
+        return ThemeUtils.getColorByAttrId(getContext(), attrId);
+    }
+
+    public String getStringByAttrId(int attrId) {
+        return ThemeUtils.getStringByAttrId(getContext(), attrId);
     }
 
     public void touchDown() {

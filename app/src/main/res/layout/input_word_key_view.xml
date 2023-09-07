@@ -18,13 +18,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="0dp">
+        android:layout_height="wrap_content">
 
     <ImageView
             android:id="@+id/bg_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:padding="@dimen/key_view_padding" />
 
     <com.google.android.flexbox.FlexboxLayout
             android:id="@+id/fg_view"
@@ -60,8 +60,8 @@
                     android:layout_height="10sp"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentEnd="true"
-                    android:translationX="-4sp"
-                    android:translationY="4sp"
+                    android:translationX="-6sp"
+                    android:translationY="3sp"
                     android:background="@drawable/bg_input_word_char_key_view">
 
                 <TextView
@@ -71,7 +71,7 @@
                         android:textSize="6sp"
                         android:textStyle="bold"
                         android:text="@string/label_input_word_key_trad_mark"
-                        android:textColor="?attr/key_bg_color" />
+                        android:textColor="?attr/key_highlight_fg_color" />
             </RelativeLayout>
         </RelativeLayout>
     </com.google.android.flexbox.FlexboxLayout>

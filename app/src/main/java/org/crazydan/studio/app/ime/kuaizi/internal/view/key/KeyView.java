@@ -60,8 +60,10 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
             KeyViewDrawable drawable = new KeyViewDrawable(orientation);
 
             int bgColor = getColorByAttrId(key.getColor().bg);
-            drawable.setColor(bgColor);
             drawable.setCornerRadius(10);
+            drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
+            drawable.setFillColor(bgColor);
+            drawable.setStrokeColor(getColorByAttrId(R.attr.key_border_color));
 
             this.bgView.setImageDrawable(drawable);
         } else {
