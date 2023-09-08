@@ -66,6 +66,9 @@ public abstract class KeyTable {
             };
     /** {@link CharKey} 按键的配色 */
     protected static final KeyColor key_char_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
+    /** 特殊的 {@link CharKey} 按键的配色 */
+    protected static final KeyColor key_char_special_color = KeyColor.create(R.attr.key_highlight_fg_color,
+                                                                             R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
     protected static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
                                                                             R.attr.key_char_symbol_bg_color);
@@ -82,15 +85,14 @@ public abstract class KeyTable {
                                                                            R.attr.key_ctrl_noop_bg_color);
 
     static {
-        KeyColor specialCharKeyColor = KeyColor.create(R.attr.key_highlight_fg_color, R.attr.key_bg_color);
-        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), specialCharKeyColor);
-        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), specialCharKeyColor);
+        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), key_char_special_color);
+        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), key_char_special_color);
         char_key_color_palette.put(Arrays.asList("w", "z", "x", "y"), key_char_color);
         char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"), key_char_color);
         char_key_color_palette.put(Arrays.asList("p", "q", "n", "s", "t", "r"), key_char_color);
         char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"), key_char_color);
         char_key_color_palette.put(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
-                                   specialCharKeyColor);
+                                   key_char_special_color);
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             KeyStyle.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
