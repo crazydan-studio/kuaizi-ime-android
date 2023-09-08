@@ -67,9 +67,10 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
 
             // https://stackoverflow.com/questions/17410195/setshadowlayer-android-api-differences/17414651#17414651
             // https://developer.android.com/topic/performance/hardware-accel#determining
-            // Note：在 API 28 及其以下版本中，若在未启用硬件加速的视图上通过 Drawable 画阴影（Paint.setShadowLayer），
+            // https://developer.android.com/topic/performance/hardware-accel#drawing-support
+            // Note：在 API 28 以下版本中，若在未启用硬件加速的视图上通过 Drawable 画阴影（Paint.setShadowLayer），
             // 必须在视图上启用软件加速，否则，视图将会出现整体虚化，且阴影颜色也会使用其填充色而不是设置的颜色
-            if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.P //
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P //
                 && !this.bgView.isHardwareAccelerated()) {
                 this.bgView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
