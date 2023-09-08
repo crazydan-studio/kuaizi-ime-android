@@ -73,10 +73,10 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
                 symbolKey("？").withReplacements("?"),
                 alphabetKey("c").withReplacements("C"),
-                alphabetKey("d").withReplacements("D"),
-                alphabetKey("x").withReplacements("X"),
-                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("b").withReplacements("B"),
                 alphabetKey("j").withReplacements("J"),
+                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("x").withReplacements("X"),
                 alphabetKey("e").withReplacements("E"),
                 } //
                 , new Key[] {
@@ -84,16 +84,16 @@ public class PinyinKeyTable extends KeyTable {
                 symbolKey("；").withReplacements(";"),
                 alphabetKey("sh").withReplacements("Sh", "SH"),
                 alphabetKey("s").withReplacements("S"),
-                alphabetKey("t").withReplacements("T"),
+                alphabetKey("d").withReplacements("D"),
                 alphabetKey("m").withReplacements("M"),
-                alphabetKey("b").withReplacements("B"),
+                alphabetKey("y").withReplacements("Y"),
                 alphabetKey("g").withReplacements("G"),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 symbolKey("：").withReplacements(":"),
                 alphabetKey("ch").withReplacements("Ch", "CH"),
-                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("t").withReplacements("T"),
                 alphabetKey("l").withReplacements("L"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("p").withReplacements("P"),
