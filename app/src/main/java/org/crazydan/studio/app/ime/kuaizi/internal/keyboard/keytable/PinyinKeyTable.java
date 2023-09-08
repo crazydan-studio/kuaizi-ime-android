@@ -61,61 +61,52 @@ public class PinyinKeyTable extends KeyTable {
         Key<?>[][] keys = new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchHandMode),
-                        alphabetKey("zh").withReplacements("Zh", "ZH"),
-                        alphabetKey("ch").withReplacements("Ch", "CH"),
-                        alphabetKey("sh").withReplacements("Sh", "SH"),
                         alphabetKey("z").withReplacements("Z"),
                         alphabetKey("c").withReplacements("C"),
-                        alphabetKey("s").withReplacements("S"),
+                        alphabetKey("i").withReplacements("I"),
+                        alphabetKey("u").withReplacements("U"),
+                        alphabetKey("o").withReplacements("O"),
+                        alphabetKey("a").withReplacements("A"),
                         ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
                         } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchIME),
-                alphabetKey("t").withReplacements("T"),
-                alphabetKey("d").withReplacements("D"),
-                alphabetKey("f").withReplacements("F"),
-                alphabetKey("m").withReplacements("M"),
+                alphabetKey("s").withReplacements("S"),
+                alphabetKey("ü").withReplacements("v", "V"),
+                alphabetKey("q").withReplacements("Q"),
+                alphabetKey("r").withReplacements("R"),
                 alphabetKey("p").withReplacements("P"),
-                alphabetKey("b").withReplacements("B"),
+                alphabetKey("e").withReplacements("E"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
-                alphabetKey("h").withReplacements("H"),
-                alphabetKey("g").withReplacements("G"),
-                alphabetKey("r").withReplacements("R"),
+                alphabetKey("sh").withReplacements("Sh", "SH"),
+                alphabetKey("w").withReplacements("W"),
+                alphabetKey("y").withReplacements("Y"),
                 alphabetKey("x").withReplacements("X"),
-                alphabetKey("q").withReplacements("Q"),
-                alphabetKey("j").withReplacements("J"),
+                alphabetKey("m").withReplacements("M"),
+                alphabetKey("g").withReplacements("G"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
-                alphabetKey("k").withReplacements("K"),
-                alphabetKey("e").withReplacements("E"),
-                alphabetKey("l").withReplacements("L"),
+                alphabetKey("ch").withReplacements("Ch", "CH"),
+                alphabetKey("d").withReplacements("D"),
+                alphabetKey("b").withReplacements("B"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("n").withReplacements("N"),
-                alphabetKey("ü").withReplacements("v", "V"),
+                alphabetKey("k").withReplacements("K"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
-                , this.config.isLeftHandMode() ? new Key[] {
+                , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
-                alphabetKey("w").withReplacements("W"),
-                alphabetKey("a").withReplacements("A"),
-                alphabetKey("o").withReplacements("O"),
-                alphabetKey("u").withReplacements("U"),
-                alphabetKey("i").withReplacements("I"),
-                alphabetKey("y").withReplacements("Y"),
-                ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
-                } : new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
-                alphabetKey("w").withReplacements("W"),
-                alphabetKey("y").withReplacements("Y"),
-                alphabetKey("a").withReplacements("A"),
-                alphabetKey("o").withReplacements("O"),
-                alphabetKey("u").withReplacements("U"),
-                alphabetKey("i").withReplacements("I"),
+                alphabetKey("zh").withReplacements("Zh", "ZH"),
+                alphabetKey("t").withReplacements("T"),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("j").withReplacements("J"),
+                alphabetKey("l").withReplacements("L"),
+                alphabetKey("h").withReplacements("H"),
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 } //
                 , new Key[] {
@@ -406,11 +397,15 @@ public class PinyinKeyTable extends KeyTable {
         return new Point[][] {
                 //
                 new Point[] {
-                        point(1, 6), point(1, 5), point(1, 4), point(1, 3), point(1, 2),
+                        point(2, 3), point(3, 2), point(4, 3), point(5, 2),
                         },
                 //
                 new Point[] {
-                        point(0, 6), point(0, 5), point(0, 4), point(0, 3),
+                        point(2, 2), point(3, 1), point(4, 2),
+                        },
+                //
+                new Point[] {
+                        point(3, 3), point(4, 4), point(5, 3),
                         },
                 };
     }
