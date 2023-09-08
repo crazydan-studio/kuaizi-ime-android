@@ -94,8 +94,8 @@ public class PinyinKeyTable extends KeyTable {
                 symbolKey("：").withReplacements(":"),
                 alphabetKey("ch").withReplacements("Ch", "CH"),
                 alphabetKey("t").withReplacements("T"),
-                alphabetKey("l").withReplacements("L"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
+                alphabetKey("l").withReplacements("L"),
                 alphabetKey("p").withReplacements("P"),
                 alphabetKey("k").withReplacements("K"),
                 } //
