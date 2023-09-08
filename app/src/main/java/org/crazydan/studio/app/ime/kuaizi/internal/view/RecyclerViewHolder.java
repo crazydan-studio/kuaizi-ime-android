@@ -54,7 +54,7 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
     }
 
     public void disable() {
-        setAlpha(0.5f);
+        setAlpha(0.4f);
     }
 
     public void enable() {
@@ -85,9 +85,11 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
 
     public void touchDown() {
         setScale(0.9f);
+        disable();
     }
 
     public void touchUp() {
+        enable();
         setScale(1.0f);
     }
 

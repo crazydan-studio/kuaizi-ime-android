@@ -41,7 +41,7 @@ public class ThemeUtils {
 
     /** 应用阴影 */
     public static void applyShadow(Paint paint, String shadow) {
-        if (shadow == null) {
+        if (shadow == null || shadow.trim().isEmpty()) {
             return;
         }
 
@@ -52,6 +52,26 @@ public class ThemeUtils {
         int color = Color.parseColor(splits[3]);
 
         paint.setShadowLayer(radius, dx, dy, color);
+    }
+
+    /** 应用边框 */
+    public static boolean applyBorder(Paint paint, String border) {
+        if (border == null || border.trim().isEmpty()) {
+            return false;
+        }
+
+        String[] splits = border.trim().split("\\s+");
+        int width = ScreenUtils.dpToPx(Integer.parseInt(splits[0]));
+        int color = Color.parseColor(splits[1]);
+
+        if (width > 0) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(color);
+            paint.setStrokeWidth(width);
+
+            return true;
+        }
+        return false;
     }
 
     private static TypedValue getValue(Context context, int attrId) {

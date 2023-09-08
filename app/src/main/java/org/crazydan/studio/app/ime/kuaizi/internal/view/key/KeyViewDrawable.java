@@ -41,7 +41,7 @@ public class KeyViewDrawable extends Drawable {
     private final HexagonOrientation orientation;
 
     private Integer fillColor;
-    private Integer strokeColor;
+    private String border;
     private String shadow;
 
     public KeyViewDrawable(HexagonOrientation orientation) {
@@ -65,10 +65,8 @@ public class KeyViewDrawable extends Drawable {
             canvas.drawPath(this.path, this.paint);
         }
 
-        if (this.strokeColor != null) {
+        if (ThemeUtils.applyBorder(this.paint, this.border)) {
             this.paint.clearShadowLayer();
-            this.paint.setStyle(Paint.Style.STROKE);
-            this.paint.setColor(this.strokeColor);
 
             canvas.drawPath(this.path, this.paint);
         }
@@ -78,8 +76,8 @@ public class KeyViewDrawable extends Drawable {
         this.fillColor = color;
     }
 
-    public void setStrokeColor(int color) {
-        this.strokeColor = color;
+    public void setBorder(String border) {
+        this.border = border;
     }
 
     public void setShadow(String shadow) {

@@ -61,9 +61,14 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
 
             int bgColor = getColorByAttrId(key.getColor().bg);
             drawable.setCornerRadius(10);
-            drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
             drawable.setFillColor(bgColor);
-            drawable.setStrokeColor(getColorByAttrId(R.attr.key_border_color));
+
+            if (!key.isDisabled()) {
+                drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
+                drawable.setBorder(getStringByAttrId(R.attr.key_border_style));
+            } else {
+                drawable.setBorder(getStringByAttrId(R.attr.key_disabled_border_style));
+            }
 
             // https://stackoverflow.com/questions/17410195/setshadowlayer-android-api-differences/17414651#17414651
             // https://developer.android.com/topic/performance/hardware-accel#determining
