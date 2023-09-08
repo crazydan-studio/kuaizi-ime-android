@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 
 /**
  * {@link Keyboard 键盘}的按键表
@@ -55,12 +56,8 @@ public abstract class KeyTable {
     private static final KeyColor key_char_level_5_color = KeyColor.create(R.attr.key_char_level_5_fg_color,
                                                                            R.attr.key_char_level_5_bg_color);
 
-    /** 环绕型布局的字符按键的配色：从内到外分为不同层级 */
-    protected static final KeyColor[] key_char_around_level_colors = new KeyColor[] {
-            key_char_level_2_color, key_char_level_4_color, key_char_level_3_color, key_char_level_1_color,
-            };
-    /** 拉丁文键盘字符按键的配色 */
-    protected static final KeyColor[] latin_key_char_alphabet_level_colors = new KeyColor[] {
+    /** {@link InputWordKey 候选字}按键的配色 */
+    protected static final KeyColor[] key_input_word_level_colors = new KeyColor[] {
             key_char_level_0_color,
             key_char_level_1_color,
             key_char_level_2_color,
@@ -68,31 +65,32 @@ public abstract class KeyTable {
             key_char_level_4_color,
             };
     /** {@link CharKey} 按键的配色 */
-    protected static final KeyColor key_char_color = KeyColor.create(R.attr.key_highlight_fg_color,
-                                                                     R.attr.key_bg_color);
+    protected static final KeyColor key_char_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
-    protected static final KeyColor key_char_symbol_color = key_char_color; /*KeyColor.create(R.attr.key_char_symbol_fg_color,
-                                                                            R.attr.key_char_symbol_bg_color);*/
+    protected static final KeyColor key_char_symbol_color = KeyColor.create(R.attr.key_char_symbol_fg_color,
+                                                                            R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
-    protected static final KeyColor key_char_emoji_color = key_char_color;
+    protected static final KeyColor key_char_emoji_color = key_char_symbol_color;
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
                                                                         R.attr.key_ctrl_ok_bg_color);
-    private static final KeyStyle key_ctrl_highlight_style = KeyStyle.withColor(R.attr.key_highlight_fg_color,
-                                                                                R.attr.key_bg_color);
+    /** 文本类控制按键的样式 */
+    private static final KeyStyle key_ctrl_label_style = KeyStyle.withColor(R.attr.key_ctrl_label_color,
+                                                                            R.attr.key_bg_color);
     private static final KeyStyle key_ctrl_noop_style = KeyStyle.withColor(R.attr.key_ctrl_noop_fg_color,
                                                                            R.attr.key_ctrl_noop_bg_color);
 
     static {
-        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), key_char_level_0_color);
-        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), key_char_level_1_color);
+        KeyColor specialCharKeyColor = KeyColor.create(R.attr.key_highlight_fg_color, R.attr.key_bg_color);
+        char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), specialCharKeyColor);
+        char_key_color_palette.put(Arrays.asList("ch", "sh", "zh"), specialCharKeyColor);
         char_key_color_palette.put(Arrays.asList("w", "z", "x", "y"), key_char_color);
         char_key_color_palette.put(Arrays.asList("f", "g", "d", "b", "c"), key_char_color);
         char_key_color_palette.put(Arrays.asList("p", "q", "n", "s", "t", "r"), key_char_color);
         char_key_color_palette.put(Arrays.asList("h", "k", "j", "m", "l"), key_char_color);
         char_key_color_palette.put(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
-                                   key_char_level_5_color);
+                                   specialCharKeyColor);
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
                             KeyStyle.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
@@ -101,10 +99,10 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_like,
-                                              R.drawable.ic_left_hand_like,
+                            KeyStyle.withIcon(R.drawable.ic_right_hand_commit,
+                                              R.drawable.ic_left_hand_commit,
                                               R.attr.key_ctrl_commit_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Option_CommitInputList, key_ctrl_highlight_style);
+        ctrl_key_styles.put(CtrlKey.Type.Option_CommitInputList, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
                             KeyStyle.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
@@ -125,8 +123,8 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.SwitchToEmojiKeyboard,
                             KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_highlight_style);
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
                             KeyStyle.withIcon(R.drawable.ic_right_hand_pointer,
@@ -150,17 +148,17 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_highlight_style);
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
-        ctrl_key_styles.put(CtrlKey.Type.Undo, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Redo, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Cut, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Paste, key_ctrl_highlight_style);
-        ctrl_key_styles.put(CtrlKey.Type.Copy, key_ctrl_highlight_style);
+        ctrl_key_styles.put(CtrlKey.Type.Undo, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Redo, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Cut, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Paste, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Copy, key_ctrl_label_style);
 
-        ctrl_key_styles.put(CtrlKey.Type.Math_Equal, key_ctrl_highlight_style);
+        ctrl_key_styles.put(CtrlKey.Type.Math_Equal, key_ctrl_label_style);
     }
 
     protected final Config config;

@@ -235,8 +235,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                         do_InputCandidate_Filtering_ByStroke(key, option.value(), -1);
                     }
-                    break;
                 }
+                break;
             case KeySingleTap: {
                 // Note：笔画过滤按键音效由过滤接口处理
                 if (key.getType() != CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
@@ -344,9 +344,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                                   currentKey.getText());
 
                 stateData.setLevel0Key(currentKey);
-                stateData.setLevel1NextChars(level1NextChars);
 
                 stateData.setLevel1Key(null);
+                stateData.setLevel1NextChars(level1NextChars);
+
+                stateData.setLevel2Key(null);
                 stateData.setLevel2NextChars(new ArrayList<>());
                 break;
             }
@@ -360,6 +362,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                 List<String> level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
 
                 stateData.setLevel1Key(currentKey);
+
+                stateData.setLevel2Key(null);
                 stateData.setLevel2NextChars(level2NextChars);
                 break;
             }

@@ -89,7 +89,7 @@ public class MathKeyTable extends KeyTable {
                 int x = keyCoord.x;
                 int y = keyCoord.y;
 
-                KeyColor color = latin_key_char_alphabet_level_colors[level];
+                KeyColor color = key_char_color;
                 Key<?> key = keys[dataIndex++].setColor(color);
 
                 gridKeys[x][y] = key;

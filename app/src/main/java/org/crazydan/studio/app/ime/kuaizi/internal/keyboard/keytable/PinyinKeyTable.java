@@ -166,9 +166,8 @@ public class PinyinKeyTable extends KeyTable {
                     }
                 }
 
-                if (key.getText() != null && key.getText().equals(level1Char)) {
-                    key.setDisabled(true);
-                }
+                boolean disabled = key.getText() != null && key.getText().equals(level1Char);
+                key.setDisabled(disabled);
             }
         }
 
@@ -187,7 +186,7 @@ public class PinyinKeyTable extends KeyTable {
                 String text = it.next();
                 int x = keyCoord.x;
                 int y = keyCoord.y;
-                KeyColor color = key_char_around_level_colors[level];
+                KeyColor color = key_char_color;
 
                 if (text == null) {
                     keys[x][y] = noopCtrlKey();
@@ -197,9 +196,8 @@ public class PinyinKeyTable extends KeyTable {
                                                   .setColor(color);
                 }
 
-                if (text != null && text.equals(level2Char)) {
-                    keys[x][y].setDisabled(true);
-                }
+                boolean disabled = text != null && text.equals(level2Char);
+                keys[x][y].setDisabled(disabled);
             }
         }
 
@@ -233,6 +231,7 @@ public class PinyinKeyTable extends KeyTable {
         int index_mid = getGridMiddleColumnIndexForHandMode();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.ConfirmInput);
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.CommitInputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.DropInput);
@@ -322,7 +321,7 @@ public class PinyinKeyTable extends KeyTable {
                     continue;
                 }
 
-                KeyColor color = latin_key_char_alphabet_level_colors[level];
+                KeyColor color = key_input_word_level_colors[level];
                 InputWordKey key = InputWordKey.create(word).setColor(color);
 
                 // 禁用已被选中的候选字按键

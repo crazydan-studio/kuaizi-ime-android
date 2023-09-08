@@ -115,7 +115,7 @@ public class LatinKeyTable extends KeyTable {
                 Key<?> key = keys[i][j];
 
                 if (key.isLatin() && !key.isNumber()) {
-                    KeyColor color = latin_key_char_alphabet_level_colors[i - 1];
+                    KeyColor color = key_char_color; // latin_key_char_alphabet_level_colors[i - 1];
                     key.setColor(color);
                 }
             }

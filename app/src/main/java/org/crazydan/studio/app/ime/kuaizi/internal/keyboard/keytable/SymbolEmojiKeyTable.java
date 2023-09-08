@@ -76,6 +76,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndexForHandMode();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
@@ -113,7 +114,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                     InputWord word = words.get(dataIndex);
 
                     if (word != null) {
-                        KeyColor color = key_char_emoji_color;
+                        KeyColor color = key_input_word_level_colors[level];
                         InputWordKey key = InputWordKey.create(word).setColor(color);
 
                         gridKeys[x][y] = key;
@@ -155,6 +156,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndexForHandMode();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
@@ -192,7 +194,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                     Symbol data = symbols[dataIndex];
 
                     if (data != null) {
-                        KeyColor color = latin_key_char_alphabet_level_colors[level];
+                        KeyColor color = key_input_word_level_colors[level];
 
                         SymbolKey key = SymbolKey.create(data).setLabel(data.text).setColor(color);
                         gridKeys[x][y] = key;

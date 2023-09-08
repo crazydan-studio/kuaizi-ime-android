@@ -84,11 +84,11 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
     }
 
     public void touchDown() {
-        setAlpha(0.3f);
+        setScale(0.9f);
     }
 
     public void touchUp() {
-        setAlpha(1.0f);
+        setScale(1.0f);
     }
 
     public void setAlpha(float alpha) {
@@ -100,5 +100,10 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
             View child = ((ViewGroup) this.itemView).getChildAt(i);
             child.setAlpha(alpha);
         }
+    }
+
+    public void setScale(float scale) {
+        this.itemView.setScaleX(scale);
+        this.itemView.setScaleY(scale);
     }
 }

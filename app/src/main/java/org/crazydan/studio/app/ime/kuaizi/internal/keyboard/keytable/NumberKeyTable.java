@@ -77,11 +77,12 @@ public class NumberKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndexForHandMode();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[4][index_begin] = ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
+
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[3][index_end] = enterCtrlKey();
-        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
 
         int dataIndex = 0;
         Point[][] levelKeyCoords = getLevelKeyCoords();
@@ -92,7 +93,7 @@ public class NumberKeyTable extends KeyTable {
                 int x = keyCoord.x;
                 int y = keyCoord.y;
 
-                KeyColor color = latin_key_char_alphabet_level_colors[level];
+                KeyColor color = key_char_color; // latin_key_char_alphabet_level_colors[level];
                 Key<?> key = keys[dataIndex++].setColor(color);
 
                 gridKeys[x][y] = key;

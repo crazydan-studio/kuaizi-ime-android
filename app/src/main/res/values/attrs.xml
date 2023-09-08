@@ -34,6 +34,7 @@
         <!-- format: dx dy radius #AARRGGBB -->
         <attr name="key_shadow_style" format="string" />
 
+        <attr name="key_ctrl_label_color" format="color" />
         <attr name="key_ctrl_noop_bg_color" format="color" />
         <attr name="key_ctrl_noop_fg_color" format="color" />
         <attr name="key_ctrl_switcher_bg_color" format="color" />
@@ -41,14 +42,19 @@
 
         <attr name="key_ctrl_backspace_bg_color" format="color" />
         <attr name="key_ctrl_backspace_fg_color" format="color" />
-        <attr name="key_ctrl_ok_bg_color" format="color" />
-        <attr name="key_ctrl_ok_fg_color" format="color" />
-        <attr name="key_ctrl_exit_bg_color" format="color" />
-        <attr name="key_ctrl_exit_fg_color" format="color" />
         <attr name="key_ctrl_space_bg_color" format="color" />
         <attr name="key_ctrl_space_fg_color" format="color" />
+
+        <attr name="key_ctrl_exit_bg_color" format="color" />
+        <attr name="key_ctrl_exit_fg_color" format="color" />
+
+        <attr name="key_ctrl_ok_bg_color" format="color" />
+        <attr name="key_ctrl_ok_fg_color" format="color" />
         <attr name="key_ctrl_commit_bg_color" format="color" />
         <attr name="key_ctrl_commit_fg_color" format="color" />
+        <attr name="key_ctrl_enter_bg_color" format="color" />
+        <attr name="key_ctrl_enter_fg_color" format="color" />
+
         <attr name="key_ctrl_confirm_bg_color" format="color" />
         <attr name="key_ctrl_confirm_fg_color" format="color" />
         <attr name="key_ctrl_locator_bg_color" format="color" />
@@ -56,8 +62,6 @@
 
         <attr name="key_char_symbol_bg_color" format="color" />
         <attr name="key_char_symbol_fg_color" format="color" />
-        <attr name="key_ctrl_enter_bg_color" format="color" />
-        <attr name="key_ctrl_enter_fg_color" format="color" />
 
         <attr name="key_char_level_0_bg_color" format="color" />
         <attr name="key_char_level_0_fg_color" format="color" />
