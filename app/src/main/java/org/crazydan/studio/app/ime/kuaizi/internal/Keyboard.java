@@ -175,6 +175,10 @@ public interface Keyboard extends UserInputMsgListener {
             this.handMode = handMode;
         }
 
+        public boolean isLeftHandMode() {
+            return getHandMode() == HandMode.Left;
+        }
+
         public int getThemeResId() {
             return this.themeResId;
         }

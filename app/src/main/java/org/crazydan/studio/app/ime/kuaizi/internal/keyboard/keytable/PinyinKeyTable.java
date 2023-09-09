@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import android.graphics.Point;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
@@ -58,7 +57,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
     public Key<?>[][] createKeys() {
-        Key<?>[][] keys = new Key[][] {
+        return (Key<?>[][]) new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.SwitchHandMode),
                         // 😂
@@ -94,12 +93,12 @@ public class PinyinKeyTable extends KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 symbolKey("：").withReplacements(":"),
-                alphabetKey("w").withReplacements("W"),
                 alphabetKey("c").withReplacements("C"),
+                alphabetKey("t").withReplacements("T"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("n").withReplacements("N"),
-                alphabetKey("t").withReplacements("T"),
                 alphabetKey("k").withReplacements("K"),
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
@@ -107,10 +106,10 @@ public class PinyinKeyTable extends KeyTable {
                 emojiKey("\uD83D\uDE09"),
                 symbolKey("。").withReplacements("."),
                 alphabetKey("z").withReplacements("Z"),
-                alphabetKey("f").withReplacements("F"),
                 alphabetKey("l").withReplacements("L"),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("h").withReplacements("H"),
+                ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
@@ -118,13 +117,11 @@ public class PinyinKeyTable extends KeyTable {
                 alphabetKey("sh").withReplacements("Sh", "SH"),
                 alphabetKey("ch").withReplacements("Ch", "CH"),
                 alphabetKey("zh").withReplacements("Zh", "ZH"),
-                ctrlKey(CtrlKey.Type.Space),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("w").withReplacements("W"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 },
                 };
-
-        return relayoutForHandMode(this.config, keys);
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
@@ -165,32 +162,25 @@ public class PinyinKeyTable extends KeyTable {
 
         // 在指定可用位置创建第 2 级字母按键
         Iterator<String> it = level2NextChars.iterator();
-        Point[][] levelKeyCoords = getLevel2KeyCoords();
-
-        for (int level = 0; level < levelKeyCoords.length; level++) {
-            Point[] keyCoords = levelKeyCoords[level];
-
-            for (Point keyCoord : keyCoords) {
-                if (!it.hasNext()) {
-                    break;
-                }
-
-                String text = it.next();
-                int x = keyCoord.x;
-                int y = keyCoord.y;
-                KeyColor color = key_char_color;
-
-                if (text == null) {
-                    keys[x][y] = noopCtrlKey();
-                } else {
-                    keys[x][y] = alphabetKey(text).setLevel(Key.Level.level_2)
-                                                  .setLabel(level0Char + text)
-                                                  .setColor(color);
-                }
-
-                boolean disabled = text != null && text.equals(level2Char);
-                keys[x][y].setDisabled(disabled);
+        for (GridCoord keyCoord : getLevel2KeyCoords()) {
+            if (!it.hasNext()) {
+                break;
             }
+
+            String text = it.next();
+            String label = level0Char + text;
+            int row = keyCoord.row;
+            int column = keyCoord.column;
+            KeyColor color = key_char_color;
+
+            if (text == null) {
+                keys[row][column] = noopCtrlKey();
+            } else {
+                keys[row][column] = alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
+            }
+
+            boolean disabled = text != null && text.equals(level2Char);
+            keys[row][column].setDisabled(disabled);
         }
 
         return keys;
@@ -198,13 +188,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 候选字按键的分页大小 */
     public int getInputCandidateKeysPageSize() {
-        int size = 0;
-        Point[][] levelKeyCoords = getInputCandidateLevelKeyCoords();
-
-        for (Point[] levelKeyCoord : levelKeyCoords) {
-            size += levelKeyCoord.length;
-        }
-        return size;
+        return countGridSize(getInputCandidateLevelKeyCoords());
     }
 
     /** 创建输入候选字按键 */
@@ -218,9 +202,8 @@ public class PinyinKeyTable extends KeyTable {
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
 
-        boolean isLeft = this.config.isLeftHandMode();
-        int index_end = getGridLastColumnIndexForHandMode();
-        int index_mid = getGridMiddleColumnIndexForHandMode();
+        int index_end = getGridLastColumnIndex();
+        int index_mid = getGridMiddleColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
@@ -230,50 +213,51 @@ public class PinyinKeyTable extends KeyTable {
 
         // 部首过滤按键
         String[] filterStrokes = PinyinInputWord.getStrokeNames();
-        Point[] filterStrokeKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
+        GridCoord[] filterStrokeKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
         for (int i = 0, j = 0; i < filterStrokeKeyCorrds.length && j < filterStrokes.length; i++, j++) {
-            Point keyCoord = filterStrokeKeyCorrds[i];
+            GridCoord keyCoord = filterStrokeKeyCorrds[i];
             String stroke = filterStrokes[j];
 
-            int x = keyCoord.x;
-            int y = keyCoord.y;
+            int row = keyCoord.row;
+            int column = keyCoord.column;
 
             String strokeCode = PinyinInputWord.getStrokeCode(stroke);
             Integer strokeCount = strokes.get(strokeCode);
 
             String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_stroke;
             CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
 
-            gridKeys[x][y] = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_stroke).setOption(option).setLabel(label);
+            gridKeys[row][column] = ctrlKey(type).setOption(option).setLabel(label);
         }
 
         // 拼音变换按键
-        int firstToggleKeyIndex = isLeft ? 1 : 7;
         CharInput startingToggle = input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
             String label = s + "," + s + "h";
+            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
             CtrlKey.Option<?> option
                     = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
 
-            gridKeys[0][firstToggleKeyIndex] = ctrlKey(CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option)
-                                                                                             .setLabel(label);
+            gridKeys[0][index_end] = ctrlKey(type).setOption(option).setLabel(label);
+
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             String label = "n,l  ";
+            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
 
-            gridKeys[0][firstToggleKeyIndex] = ctrlKey(CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option)
-                                                                                             .setLabel(label);
+            gridKeys[0][index_end] = ctrlKey(type).setOption(option).setLabel(label);
 
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!startingToggle.getChars().equals(input.getChars()) //
             && !PinyinDictDB.getInstance().hasValidPinyin(startingToggle)) {
-            gridKeys[0][firstToggleKeyIndex] = noopCtrlKey();
+            gridKeys[0][index_end] = noopCtrlKey();
         }
 
         CharInput endingToggle = input.copy();
@@ -282,9 +266,11 @@ public class PinyinKeyTable extends KeyTable {
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
             String label = tail + "," + tail + "g";
+            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
 
-            gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Toggle_PinyinInput_spell).setOption(option).setLabel(label);
+            gridKeys[1][index_end] = ctrlKey(type).setOption(option).setLabel(label);
+
             endingToggle.toggle_Pinyin_NG_Ending();
         }
         // 若拼音变换无效，则不提供切换按钮
@@ -295,14 +281,14 @@ public class PinyinKeyTable extends KeyTable {
 
         // 候选字按键
         int dataIndex = startIndex;
-        Point[][] levelKeyCoords = getInputCandidateLevelKeyCoords();
+        GridCoord[][] levelKeyCoords = getInputCandidateLevelKeyCoords();
 
         for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
-            Point[] keyCoords = levelKeyCoords[level];
+            GridCoord[] keyCoords = levelKeyCoords[level];
 
-            for (Point keyCoord : keyCoords) {
-                int x = keyCoord.x;
-                int y = keyCoord.y;
+            for (GridCoord keyCoord : keyCoords) {
+                int row = keyCoord.row;
+                int column = keyCoord.column;
 
                 if (dataIndex >= dataSize) {
                     break;
@@ -320,7 +306,7 @@ public class PinyinKeyTable extends KeyTable {
                 if (word.equals(input.getWord())) {
                     key.setDisabled(true);
                 }
-                gridKeys[x][y] = key;
+                gridKeys[row][column] = key;
             }
         }
 
@@ -331,7 +317,7 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createInputListCommittingOptionKeys() {
         Key<?>[][] gridKeys = createEmptyGrid();
 
-        int index_end = getGridLastColumnIndexForHandMode();
+        int index_end = getGridLastColumnIndex();
 
         CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.only_pinyin);
         gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("仅拼音");
@@ -347,63 +333,50 @@ public class PinyinKeyTable extends KeyTable {
         return gridKeys;
     }
 
-    private Point[][] getInputCandidateLevelKeyCoords() {
-        return new Point[][] {
+    private GridCoord[][] getInputCandidateLevelKeyCoords() {
+        return new GridCoord[][] {
                 // level 1
-                new Point[] {
+                new GridCoord[] {
                         coord(1, 6), coord(1, 5), coord(1, 4), coord(1, 3), coord(1, 2), coord(1, 1),
                         },
                 // level 2
-                new Point[] {
+                new GridCoord[] {
                         coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3), coord(2, 2), coord(2, 1),
                         },
                 // level 3
-                new Point[] {
+                new GridCoord[] {
                         coord(3, 6), coord(3, 5), coord(3, 3), coord(3, 2), coord(3, 1),
                         },
                 // level 4
-                new Point[] {
+                new GridCoord[] {
                         coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(4, 2), coord(4, 1),
                         },
                 // level 5
-                new Point[] {
+                new GridCoord[] {
                         coord(5, 6), coord(5, 5), coord(5, 4), coord(5, 3), coord(5, 2), coord(5, 1),
                         },
                 };
     }
 
     /** 获取候选字的笔画过滤按键坐标 */
-    private Point[] getInputCandidateStrokeFilterKeyCoords() {
-        Point[] coords = new Point[] {
-                point(0, 6), point(0, 5), point(0, 4), point(0, 3), point(0, 2),
+    private GridCoord[] getInputCandidateStrokeFilterKeyCoords() {
+        return new GridCoord[] {
+                coord(0, 6), coord(0, 5), coord(0, 4), coord(0, 3), coord(0, 2),
                 };
-
-        return relayoutForHandMode(this.config, coords);
     }
 
     /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
-    private Point[][] getLevel2KeyCoords() {
-        if (this.config.isLeftHandMode()) {
-            return new Point[][] {
-                    //
-                    new Point[] {
-                            point(1, 1), point(1, 2), point(1, 3), point(1, 4), point(1, 5),
-                            },
-                    //
-                    new Point[] {
-                            point(0, 2), point(0, 3), point(0, 4), point(0, 5),
-                            },
-                    };
-        }
-        return new Point[][] {
-                //
-                new Point[] {
-                        point(2, 2), point(3, 2), point(4, 2), point(5, 2), point(5, 3), point(4, 4),
-                        },
-                //
-                new Point[] {
-                        point(3, 3), point(4, 5), point(2, 4),
-                        },
+    private GridCoord[] getLevel2KeyCoords() {
+        return new GridCoord[] {
+                coord(2, 2),
+                coord(3, 2),
+                coord(4, 2),
+                coord(5, 2),
+                coord(5, 3),
+                coord(4, 4),
+                coord(3, 3),
+                coord(4, 5),
+                coord(2, 4),
                 };
     }
 }

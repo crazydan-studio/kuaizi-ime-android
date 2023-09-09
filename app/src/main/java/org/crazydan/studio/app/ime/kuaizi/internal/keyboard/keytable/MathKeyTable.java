@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
-import android.graphics.Point;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -69,9 +68,9 @@ public class MathKeyTable extends KeyTable {
 
         Key<?>[][] gridKeys = createEmptyGrid();
 
-        int index_begin = getGridFirstColumnIndexForHandMode();
-        int index_mid = getGridMiddleColumnIndexForHandMode();
-        int index_end = getGridLastColumnIndexForHandMode();
+        int index_begin = getGridFirstColumnIndex();
+        int index_mid = getGridMiddleColumnIndex();
+        int index_end = getGridLastColumnIndex();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
@@ -81,53 +80,35 @@ public class MathKeyTable extends KeyTable {
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
 
         int dataIndex = 0;
-        Point[][] levelKeyCoords = getLevelKeyCoords();
-        for (int level = 0; level < levelKeyCoords.length; level++) {
-            Point[] keyCoords = levelKeyCoords[level];
-
-            for (Point keyCoord : keyCoords) {
-                int x = keyCoord.x;
-                int y = keyCoord.y;
+        GridCoord[][] levelKeyCoords = getKeyCoords();
+        for (GridCoord[] keyCoords : levelKeyCoords) {
+            for (GridCoord keyCoord : keyCoords) {
+                int row = keyCoord.row;
+                int column = keyCoord.column;
 
                 KeyColor color = key_char_color;
                 Key<?> key = keys[dataIndex++].setColor(color);
 
-                gridKeys[x][y] = key;
+                gridKeys[row][column] = key;
             }
         }
 
         return gridKeys;
     }
 
-    private Point[][] getLevelKeyCoords() {
-        if (this.config.isLeftHandMode()) {
-            return new Point[][] {
-                    // level 1
-                    new Point[] {
-                            point(3, 2), point(2, 2), point(2, 3), point(2, 4), point(2, 5),
-                            //
-                            point(4, 2), point(4, 3), point(4, 4), point(4, 5), point(3, 4),
-                            },
-                    // level 2
-                    new Point[] {
-                            point(3, 6), point(2, 7), point(3, 7), point(4, 7), point(2, 6),
-                            //
-                            point(3, 5), point(4, 6),
-                            },
-                    };
-        }
-        return new Point[][] {
+    private GridCoord[][] getKeyCoords() {
+        return new GridCoord[][] {
                 // level 1
-                new Point[] {
-                        point(3, 5), point(2, 6), point(2, 5), point(2, 4), point(2, 3),
+                new GridCoord[] {
+                        coord(3, 5), coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3),
                         //
-                        point(4, 6), point(4, 5), point(4, 4), point(4, 3), point(3, 3),
+                        coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(3, 3),
                         },
                 // level 2
-                new Point[] {
-                        point(3, 1), point(2, 1), point(3, 0), point(4, 1), point(2, 2),
+                new GridCoord[] {
+                        coord(3, 1), coord(2, 1), coord(3, 0), coord(4, 1), coord(2, 2),
                         //
-                        point(3, 2), point(4, 2),
+                        coord(3, 2), coord(4, 2),
                         },
                 };
     }

@@ -110,17 +110,15 @@ public class LatinKeyTable extends KeyTable {
                 },
                 };
 
-        for (int i = 0; i < keys.length; i++) {
-            for (int j = 0; j < keys[i].length; j++) {
-                Key<?> key = keys[i][j];
-
+        for (Key<?>[] value : keys) {
+            for (Key<?> key : value) {
                 if (key.isLatin() && !key.isNumber()) {
-                    KeyColor color = key_char_color; // latin_key_char_alphabet_level_colors[i - 1];
+                    KeyColor color = key_char_color;
+
                     key.setColor(color);
                 }
             }
         }
-
-        return relayoutForHandMode(this.config, keys);
+        return keys;
     }
 }

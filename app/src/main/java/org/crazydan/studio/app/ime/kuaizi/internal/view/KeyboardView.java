@@ -107,6 +107,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
         int columns = keys[0].length;
         int rows = keys.length;
+
         this.layoutManager.configGrid(columns, rows, this.keySpacing);
 
         updateKeys(keys);
@@ -176,6 +177,8 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void updateKeys(Key<?>[][] keys) {
+        this.layoutManager.setReverse(this.keyboard.getConfig().isLeftHandMode());
+
         this.adapter.updateKeys(keys);
     }
 

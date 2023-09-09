@@ -116,6 +116,7 @@ public class ImeInputView extends FrameLayout
                 break;
             }
             case HandMode_Switching: {
+                // Note：仅记录切换到的模式以便于切换到其他类型键盘时按该模式绘制按键
                 this.keyboardHandMode = ((KeyboardHandModeSwitchingMsgData) data).mode;
                 break;
             }

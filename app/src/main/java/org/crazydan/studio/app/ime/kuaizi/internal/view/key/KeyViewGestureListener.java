@@ -22,8 +22,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
@@ -85,8 +85,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
                 break;
             }
             case Moving: {
-                // Note: 靠近检查使用更靠近按键内部的探测方法，以降低拼音滑行输入的后继字母接触的灵敏度
-                keyView = this.keyboardView.findVisibleKeyViewUnder(data.x, data.y);
+                keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
                 onMoving(keyView, data);
                 break;
             }

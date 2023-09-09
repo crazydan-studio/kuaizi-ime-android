@@ -68,10 +68,15 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     /** 网格顶部空白 */
     private double gridPaddingTop;
 
+    private boolean reverse;
     private HexagonalGrid<SatelliteData> grid;
 
     public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
+    }
+
+    public void setReverse(boolean reverse) {
+        this.reverse = reverse;
     }
 
     public void configGrid(int columns, int rows, int itemSpacingInDp) {
@@ -98,17 +103,17 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 break;
             }
 
-            View view = recycler.getViewForPosition(i++);
-            Point center = hexagon.getCenter();
+            Point center = coord(hexagon.getCenter());
 
-            double x = center.getCoordinateX() + this.gridPaddingLeft;
-            double y = center.getCoordinateY() + this.gridPaddingTop;
+            double x = center.getCoordinateX();
+            double y = center.getCoordinateY();
             int left = (int) Math.round(x - radius);
             int top = (int) Math.round(y - radius);
             int right = (int) Math.round(x + radius);
             int bottom = (int) Math.round(y + radius);
 
             // 按按键半径调整按键视图的宽高
+            View view = recycler.getViewForPosition(i++);
             ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
             layoutParams.height = layoutParams.width = (int) Math.round(radius * 2);
 
@@ -212,16 +217,16 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     }
 
     private View filterChildViewByHexagonCenterDistance(double x, double y, Predicate<Double> predicate) {
-        int itemCount = getItemCount();
+        Point point = Point.fromPosition(x, y);
 
         int i = 0;
-        Point point = Point.fromPosition(x - this.gridPaddingLeft, y - this.gridPaddingTop);
+        int itemCount = getItemCount();
         for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
             if (i >= itemCount) {
                 break;
             }
 
-            Point center = hexagon.getCenter();
+            Point center = coord(hexagon.getCenter());
             double distance = center.distanceFrom(point);
 
             if (predicate.test(distance)) {
@@ -231,5 +236,19 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
 
         return null;
+    }
+
+    private Point coord(Point point) {
+        return coord(point.getCoordinateX(), point.getCoordinateY());
+    }
+
+    private Point coord(double x, double y) {
+        x += this.gridPaddingLeft;
+        y += this.gridPaddingTop;
+
+        if (this.reverse) {
+            return Point.fromPosition(getWidth() - x, y);
+        }
+        return Point.fromPosition(x, y);
     }
 }

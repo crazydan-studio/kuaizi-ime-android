@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.graphics.Point;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
@@ -169,14 +168,9 @@ public abstract class KeyTable {
         this.config = config;
     }
 
-    /** 获取坐标点：其将根据左右手模式翻转坐标 */
-    public Point coord(int x, int y) {
-        return point(x, getIndexForHandMode(y));
-    }
-
-    /** 创建{@link Point 点}：其点位置不做左右手模式翻转 */
-    public Point point(int x, int y) {
-        return new Point(x, y);
+    /** 创建{@link GridCoord 网格坐标} */
+    public GridCoord coord(int row, int column) {
+        return new GridCoord(row, column);
     }
 
     protected abstract Key<?>[][] initGrid();
@@ -186,6 +180,10 @@ public abstract class KeyTable {
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         return gridKeys;
+    }
+
+    protected int getGridFirstColumnIndex() {
+        return 0;
     }
 
     protected int getGridLastColumnIndex() {
@@ -201,26 +199,13 @@ public abstract class KeyTable {
         return length / 2 + 1;
     }
 
-    protected int getGridFirstColumnIndexForHandMode() {
-        return getIndexForHandMode(0);
-    }
+    protected static <T> int countGridSize(T[][] grid) {
+        int size = 0;
 
-    protected int getGridLastColumnIndexForHandMode() {
-        return getIndexForHandMode(getGridLastColumnIndex());
-    }
-
-    protected int getGridMiddleColumnIndexForHandMode() {
-        return getIndexForHandMode(getGridMiddleColumnIndex());
-    }
-
-    /** 若配置启用左手模式，则翻转右手模式按键位置为左手模式按键位置 */
-    protected int getIndexForHandMode(int index) {
-        if (this.config.isLeftHandMode()) {
-            int lastColumnIndex = getGridLastColumnIndex();
-
-            return lastColumnIndex - index;
+        for (T[] row : grid) {
+            size += row.length;
         }
-        return index;
+        return size;
     }
 
     public CtrlKey enterCtrlKey() {
@@ -300,39 +285,6 @@ public abstract class KeyTable {
         return key.setColor(color);
     }
 
-    /** 若配置启用左手模式，则翻转右手模式按键布局为左手模式 */
-    protected static <T> T[] relayoutForHandMode(Config config, T[] rightHandLayout) {
-        if (!config.isLeftHandMode()) {
-            return rightHandLayout;
-        }
-
-        T[] newLayout = Arrays.copyOf(rightHandLayout, rightHandLayout.length);
-
-        int mid = (newLayout.length - 1) / 2;
-        for (int j = newLayout.length - 1, k = 0; j > mid; j--, k++) {
-            T tmp = newLayout[j];
-            newLayout[j] = newLayout[k];
-            newLayout[k] = tmp;
-        }
-
-        return newLayout;
-    }
-
-    /** 若配置启用左手模式，则翻转右手模式按键布局为左手模式 */
-    protected static <T> T[][] relayoutForHandMode(Config config, T[][] rightHandLayout) {
-        if (!config.isLeftHandMode()) {
-            return rightHandLayout;
-        }
-
-        T[][] newLayout = Arrays.copyOf(rightHandLayout, rightHandLayout.length);
-        for (int i = 0; i < newLayout.length; i++) {
-            T[] newRow = newLayout[i];
-            newLayout[i] = relayoutForHandMode(config, newRow);
-        }
-
-        return newLayout;
-    }
-
     private static class KeyStyle {
         private final KeyIcon icon;
         private final KeyColor color;
@@ -373,6 +325,16 @@ public abstract class KeyTable {
         public KeyIcon(int right, int left) {
             this.right = right;
             this.left = left;
+        }
+    }
+
+    public static class GridCoord {
+        public final int row;
+        public final int column;
+
+        public GridCoord(int row, int column) {
+            this.row = row;
+            this.column = column;
         }
     }
 

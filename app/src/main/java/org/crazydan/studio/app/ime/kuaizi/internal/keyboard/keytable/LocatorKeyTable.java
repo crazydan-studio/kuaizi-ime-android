@@ -46,14 +46,10 @@ public class LocatorKeyTable extends KeyTable {
     public Key<?>[][] createKeys() {
         Key<?>[][] gridKeys = createEmptyGrid();
 
-        int index_2 = getIndexForHandMode(2);
-        int index_3 = getIndexForHandMode(3);
-        int index_4 = getIndexForHandMode(4);
-        int index_5 = getIndexForHandMode(5);
-        int index_end = getGridLastColumnIndexForHandMode();
+        int index_end = getGridLastColumnIndex();
 
-        gridKeys[2][index_2] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
-        gridKeys[2][index_5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
+        gridKeys[2][2] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
+        gridKeys[2][5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
@@ -61,10 +57,10 @@ public class LocatorKeyTable extends KeyTable {
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
 
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.Cut).setLabel("剪切");
-        gridKeys[4][index_2] = ctrlKey(CtrlKey.Type.Redo).setLabel("重做");
-        gridKeys[4][index_3] = ctrlKey(CtrlKey.Type.Undo).setLabel("撤销");
-        gridKeys[4][index_4] = ctrlKey(CtrlKey.Type.Paste).setLabel("粘贴");
-        gridKeys[4][index_5] = ctrlKey(CtrlKey.Type.Copy).setLabel("复制");
+        gridKeys[4][2] = ctrlKey(CtrlKey.Type.Redo).setLabel("重做");
+        gridKeys[4][3] = ctrlKey(CtrlKey.Type.Undo).setLabel("撤销");
+        gridKeys[4][4] = ctrlKey(CtrlKey.Type.Paste).setLabel("粘贴");
+        gridKeys[4][5] = ctrlKey(CtrlKey.Type.Copy).setLabel("复制");
 
         return gridKeys;
     }
