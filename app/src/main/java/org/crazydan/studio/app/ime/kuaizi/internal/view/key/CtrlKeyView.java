@@ -45,7 +45,7 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        if (key.getIconResId() > 0) {
+        if (key.getIconResId() != null) {
             ViewUtils.hide(this.fgTextView);
             ViewUtils.show(this.fgView).setImageResource(key.getIconResId());
         } else if (key.getLabel() != null) {

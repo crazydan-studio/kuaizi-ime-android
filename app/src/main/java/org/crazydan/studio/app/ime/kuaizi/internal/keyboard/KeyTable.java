@@ -158,8 +158,6 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Cut, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Paste, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Copy, key_ctrl_label_style);
-
-        ctrl_key_styles.put(CtrlKey.Type.Math_Equal, key_ctrl_label_style);
     }
 
     protected final Config config;
@@ -225,7 +223,7 @@ public abstract class KeyTable {
     }
 
     public CtrlKey ctrlKey(CtrlKey key, KeyStyle style) {
-        int icon = 0;
+        Integer icon = null;
         KeyColor color = KeyColor.none();
 
         if (style != null) {
@@ -290,7 +288,7 @@ public abstract class KeyTable {
         private final KeyColor color;
 
         public KeyStyle(KeyColor color) {
-            this(new KeyIcon(-1, -1), color);
+            this(new KeyIcon(null, null), color);
         }
 
         public KeyStyle(KeyIcon icon, KeyColor color) {
@@ -299,30 +297,34 @@ public abstract class KeyTable {
         }
 
         public static KeyStyle withColor(int fg, int bg) {
-            return new KeyStyle(KeyColor.create(fg, bg));
+            return withColor(KeyColor.create(fg, bg));
+        }
+
+        public static KeyStyle withColor(KeyColor color) {
+            return new KeyStyle(color);
         }
 
         public static KeyStyle withIcon(int right, int left, int bg) {
-            return new KeyStyle(new KeyIcon(right, left), KeyColor.create(-1, bg));
+            return new KeyStyle(new KeyIcon(right, left), KeyColor.create(null, bg));
         }
 
         public static KeyStyle withIcon(int resId, int bg) {
-            return new KeyStyle(new KeyIcon(resId), KeyColor.create(-1, bg));
+            return new KeyStyle(new KeyIcon(resId), KeyColor.create(null, bg));
         }
     }
 
     private static class KeyIcon {
         /** 右手模式的图标资源 id */
-        public final int right;
+        public final Integer right;
         /** 左手模式的图标资源 id */
-        public final int left;
+        public final Integer left;
 
-        public KeyIcon(int resId) {
+        public KeyIcon(Integer resId) {
             this.right = resId;
             this.left = resId;
         }
 
-        public KeyIcon(int right, int left) {
+        public KeyIcon(Integer right, Integer left) {
             this.right = right;
             this.left = left;
         }

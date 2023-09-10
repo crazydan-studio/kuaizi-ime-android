@@ -63,10 +63,10 @@ public interface Key<K extends Key<?>> extends ViewData {
     K setLevel(Level level);
 
     /** 按键上显示的图标资源 id */
-    int getIconResId();
+    Integer getIconResId();
 
     /** 设置按键上显示的图标资源 id */
-    K setIconResId(int iconResId);
+    K setIconResId(Integer iconResId);
 
     /** 获取按键配色 */
     KeyColor getColor();

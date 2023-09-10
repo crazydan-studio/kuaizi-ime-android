@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private String label;
     private Level level = Level.level_0;
-    private int iconResId;
+    private Integer iconResId;
 
     private boolean disabled;
     private KeyColor color = KeyColor.none();
@@ -93,12 +93,12 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public int getIconResId() {
+    public Integer getIconResId() {
         return this.iconResId;
     }
 
     @Override
-    public K setIconResId(int iconResId) {
+    public K setIconResId(Integer iconResId) {
         this.iconResId = iconResId;
         return (K) this;
     }
@@ -124,8 +124,9 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
         }
 
         BaseKey<?> that = (BaseKey<?>) o;
-        return this.getIconResId() == that.getIconResId()
-               && Objects.equals(this.getLabel(), that.getLabel())
+        return Objects.equals(this.getIconResId(), that.getIconResId())
+               && Objects.equals(this.getLabel(),
+                                 that.getLabel())
                && Objects.equals(this.getText(), that.getText())
                && Objects.equals(this.getLevel(), that.getLevel())
                && this.disabled == that.disabled

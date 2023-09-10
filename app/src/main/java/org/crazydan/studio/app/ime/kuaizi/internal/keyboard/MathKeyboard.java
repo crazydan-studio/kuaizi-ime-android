@@ -46,7 +46,9 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-
+        if (msg == UserInputMsg.Cleaning_Inputs) {
+            super.onUserInputMsg(msg, data);
+        }
     }
 
     @Override

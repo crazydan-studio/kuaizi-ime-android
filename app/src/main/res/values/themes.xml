@@ -76,6 +76,7 @@
     </style>
 
     <style name="Theme.KuaiziIME.Night">
+        <!-- 配色参考: https://codepen.io/kulpreets/pen/MKgqqB -->
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">#ff272b2c</item>
         <item name="keyboard_border_color">?attr/keyboard_divider_color</item>

@@ -57,6 +57,7 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
+                ctrlKey(CtrlKey.Type.Math_Equal).setLabel("="),
                 ctrlKey(CtrlKey.Type.Math_Dot).setLabel("."),
                 ctrlKey(CtrlKey.Type.Math_Plus).setLabel("+"),
                 ctrlKey(CtrlKey.Type.Math_Minus).setLabel("-"),
@@ -69,12 +70,11 @@ public class MathKeyTable extends KeyTable {
         Key<?>[][] gridKeys = createEmptyGrid();
 
         int index_begin = getGridFirstColumnIndex();
-        int index_mid = getGridMiddleColumnIndex();
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.LocateInputCursor).setColor(key_char_color);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Math_Equal).setLabel("=");
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
@@ -86,9 +86,10 @@ public class MathKeyTable extends KeyTable {
                 int row = keyCoord.row;
                 int column = keyCoord.column;
 
-                KeyColor color = key_char_color;
-                Key<?> key = keys[dataIndex++].setColor(color);
+                Key<?> key = keys[dataIndex++];
+                KeyColor color = key.isNumber() ? key_char_color : key_char_special_color;
 
+                key.setColor(color);
                 gridKeys[row][column] = key;
             }
         }
@@ -98,17 +99,17 @@ public class MathKeyTable extends KeyTable {
 
     private GridCoord[][] getKeyCoords() {
         return new GridCoord[][] {
-                // level 1
+                // number
                 new GridCoord[] {
                         coord(3, 5), coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3),
                         //
                         coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(3, 3),
                         },
-                // level 2
+                // expression
                 new GridCoord[] {
-                        coord(3, 1), coord(2, 1), coord(3, 0), coord(4, 1), coord(2, 2),
+                        coord(3, 4), coord(1, 5), coord(1, 4), coord(1, 3),
                         //
-                        coord(3, 2), coord(4, 2),
+                        coord(0, 6), coord(0, 5), coord(0, 4), coord(0, 3),
                         },
                 };
     }
