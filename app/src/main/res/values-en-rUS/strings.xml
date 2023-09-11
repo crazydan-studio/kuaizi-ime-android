@@ -26,10 +26,15 @@
     <string name="title_about_suggestion">Give us some suggestions</string>
     <string name="title_about_thanks">Thanks</string>
     <string name="title_about_change_log">Change log</string>
+    <string name="title_guide_tour">Kuaizi Input Method Guide</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
     <string name="label_input_word_key_trad_mark">繁</string>
+
+    <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
+    <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
+    <string name="btn_guide_start_tour">Start The Tour</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -49,6 +54,11 @@
         which caused by analyzing the inputting words in the input method.
         However, it will reduce the words matching accuracy of the input method,
         so it will have a certain effect on the inputting efficiency.
+    </string>
+    <string name="msg_ime_should_be_enabled_first">
+        The Kuaizi input method has not been enabled yet.
+        Please click the button [%1$s]
+        to configure to enable the input method.
     </string>
 
     <string name="value_theme_light">Light</string>

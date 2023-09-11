@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
@@ -27,7 +26,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
@@ -39,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -153,7 +152,9 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onFinishInput() {
         super.onFinishInput();
 
-        this.imeView.finishInput();
+        if (this.imeView != null) {
+            this.imeView.finishInput();
+        }
     }
 
     @Override
@@ -201,7 +202,7 @@ public class Service extends InputMethodService implements InputMsgListener {
                 break;
             }
             case IME_Switching: {
-                switchIME();
+                switchIme();
                 break;
             }
         }
@@ -212,13 +213,8 @@ public class Service extends InputMethodService implements InputMsgListener {
         sendKey(KeyEvent.KEYCODE_DEL);
     }
 
-    private void switchIME() {
-        // https://stackoverflow.com/questions/16684482/android-switch-to-a-different-ime-programmatically#answer-16684491
-        InputMethodManager manager
-                = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (manager != null) {
-            manager.showInputMethodPicker();
-        }
+    private void switchIme() {
+        SystemUtils.switchIme(getApplicationContext());
     }
 
     private void locateInputCursor(InputTargetCursorLocatingMsgData data) {

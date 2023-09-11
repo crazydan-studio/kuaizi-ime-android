@@ -17,11 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import android.content.Context;
+import android.provider.Settings;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
+
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-25
  */
-public class ApiUtils {
+public class SystemUtils {
 
     /** 获取设备支持的 Unicode 版本 */
     public static String supportedUnicodeVersion() {
@@ -68,5 +73,35 @@ public class ApiUtils {
         }
 
         return version;
+    }
+
+    /** 检查输入法是否为系统默认输入法 */
+    public static boolean isDefaultIme(Context context, String imeId) {
+        // https://stackoverflow.com/questions/2744729/how-to-determine-the-current-ime-in-android#answer-4256571
+        String defaultImeId = Settings.Secure.getString(context.getContentResolver(),
+                                                        Settings.Secure.DEFAULT_INPUT_METHOD);
+
+        return defaultImeId.equals(imeId);
+    }
+
+    /** 检查输入法是否已启用 */
+    public static boolean isEnabledIme(Context context, String imeId) {
+        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        for (InputMethodInfo info : manager.getEnabledInputMethodList()) {
+            if (info.getId().equals(imeId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 切换输入法 */
+    public static void switchIme(Context context) {
+        // https://stackoverflow.com/questions/16684482/android-switch-to-a-different-ime-programmatically#answer-16684491
+        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (manager != null) {
+            manager.showInputMethodPicker();
+        }
     }
 }

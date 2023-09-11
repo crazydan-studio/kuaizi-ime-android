@@ -17,30 +17,28 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.widget.EditText;
+import android.provider.Settings;
+import android.view.View;
 import android.widget.Toast;
+import androidx.appcompat.widget.SwitchCompat;
+import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.Service;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.TourMain;
+import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
- * 功能演示页面
+ * 使用指南
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class Guide extends FollowSystemThemeActivity implements InputMsgListener {
-    private EditText editText;
+public class Guide extends FollowSystemThemeActivity {
 
     @Override
     protected boolean isActionBarEnabled() {
@@ -52,179 +50,99 @@ public class Guide extends FollowSystemThemeActivity implements InputMsgListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_activity);
 
-        this.editText = findViewById(R.id.text_input);
-        this.editText.setClickable(false);
-        this.editText.setText("这是一段测试文本\nThis is a text for testing\n欢迎使用筷字输入法\nThanks for using Kuaizi Input Method");
+        // https://stackoverflow.com/questions/18486130/detect-if-input-method-has-been-selected#answer-18487989
+        IntentFilter filter = new IntentFilter(Intent.ACTION_INPUT_METHOD_CHANGED);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
 
-        ImeInputView imeView = findViewById(R.id.ime_view);
-        imeView.addInputMsgListener(this);
-        imeView.updateKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
+                if (action.equals(Intent.ACTION_INPUT_METHOD_CHANGED)) {
+                    updateSwitcher();
+                }
+            }
+        }, filter);
     }
 
     @Override
     protected void onStart() {
-        // 确保拼音字典库保持就绪状态
-        PinyinDictDB.getInstance().open(getApplicationContext());
-
         super.onStart();
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+        updateSwitcher();
 
-        // 确保拼音字典库能够被及时关闭
-        PinyinDictDB.getInstance().close();
-    }
+        MaterialButton btnEnableIme = findViewById(R.id.btn_guide_enable_ime);
+        MaterialButton btnStartTour = findViewById(R.id.btn_guide_start_tour);
 
-    @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-        switch (msg) {
-            case InputList_Committing: {
-                commitText(((InputListCommittingMsgData) data).text);
-                break;
-            }
-            case InputList_PairSymbol_Committing: {
-                InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
-                commitText(d.left, d.right);
-                break;
-            }
-            case InputTarget_Backspacing: {
-                backwardDeleteInput();
-                break;
-            }
-            case InputTarget_Cursor_Locating: {
-                locateInputCursor(((InputTargetCursorLocatingMsgData) data).anchor);
-                break;
-            }
-            case InputTarget_Selecting: {
-                selectInputText(((InputTargetCursorLocatingMsgData) data).anchor);
-                break;
-            }
-            case InputTarget_Copying: {
-                copyInputText();
-                break;
-            }
-            case InputTarget_Pasting: {
-                pasteInputText();
-                break;
-            }
-            case InputTarget_Cutting: {
-                cutInputText();
-                break;
-            }
-            case InputTarget_Undoing: {
-                undoInputChange();
-                break;
-            }
-            case InputTarget_Redoing: {
-                redoInputChange();
-                break;
-            }
-            case IME_Switching: {
-                Toast.makeText(getApplicationContext(), "仅在输入法状态下才可切换系统输入法", Toast.LENGTH_LONG).show();
-                break;
-            }
-        }
-    }
-
-    private void commitText(CharSequence text) {
-        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-
-        this.editText.getText().replace(start, end, text);
-
-        // 移动到替换后的文本内容之后
-        int offset = text.length();
-        this.editText.setSelection(start + offset);
-    }
-
-    private void commitText(CharSequence left, CharSequence right) {
-        int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-        int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
-
-        // Note：先向选区尾部添加符号，以避免选区发生移动
-        this.editText.getText().replace(end, end, right);
-        this.editText.getText().replace(start, start, left);
-
-        if (start == end) {
-            this.editText.setSelection(start + left.length());
+        if (isImeEnabled()) {
+            btnEnableIme.setText(R.string.btn_guide_disable_ime);
         } else {
-            // 重新选中初始文本：以上添加文本过程中，EditText 会自动更新选区，且选区结束位置在配对符号的右符号的最右侧
-            this.editText.setSelection(this.editText.getSelectionStart(),
-                                       this.editText.getSelectionEnd() - right.length());
+            btnEnableIme.setText(R.string.btn_guide_enable_ime);
+        }
+
+        btnEnableIme.setOnClickListener(this::showImeSettings);
+        btnStartTour.setOnClickListener(this::startTour);
+    }
+
+    private String getImeId() {
+        // 输入法 Id 组成：<application package name>/<service android:name>
+        return String.format("%s/.%s", getApplicationContext().getPackageName(), Service.class.getSimpleName());
+    }
+
+    private boolean isImeEnabled() {
+        String imeId = getImeId();
+        Context context = getApplicationContext();
+
+        return SystemUtils.isEnabledIme(context, imeId);
+    }
+
+    private boolean isImeDefault() {
+        String imeId = getImeId();
+        Context context = getApplicationContext();
+
+        return SystemUtils.isDefaultIme(context, imeId);
+    }
+
+    private void updateSwitcher() {
+        SwitchCompat switcher = findViewById(R.id.switcher);
+        switcher.setChecked(isImeEnabled() && isImeDefault());
+
+        switcher.setOnClickListener(this::switchIme);
+    }
+
+    private void switchIme(View v) {
+        // 消除点击造成的切换影响
+        updateSwitcher();
+
+        Context context = getApplicationContext();
+
+        if (isImeEnabled()) {
+            SystemUtils.switchIme(getApplicationContext());
+        } else {
+            String btnText = getResources().getString(R.string.btn_guide_enable_ime);
+            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, btnText);
+
+            Toast.makeText(context, msgText, Toast.LENGTH_LONG).show();
         }
     }
 
-    private void backwardDeleteInput() {
-        sendKey(KeyEvent.KEYCODE_DEL);
+    private void showImeSettings(View v) {
+        Context context = getApplicationContext();
+
+        Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
+        // If set then opens Settings Screen(Activity) as new activity.
+        // Otherwise, it will be opened in currently running activity.
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(intent);
     }
 
-    private void locateInputCursor(Motion anchor) {
-        if (anchor == null || anchor.distance <= 0) {
-            return;
-        }
+    private void startTour(View v) {
+        Context context = getApplicationContext();
 
-        // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
-        for (int i = 0; i < anchor.distance; i++) {
-            switch (anchor.direction) {
-                case up:
-                    sendKey(KeyEvent.KEYCODE_DPAD_UP);
-                    break;
-                case down:
-                    sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
-                    break;
-                case left:
-                    sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-                    break;
-                case right:
-                    sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
-                    break;
-            }
-        }
-    }
+        Intent intent = new Intent();
+        intent.setClass(context, TourMain.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-    private void copyInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.copy);
-    }
-
-    private void pasteInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.paste);
-    }
-
-    private void cutInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.cut);
-    }
-
-    private void undoInputChange() {
-        this.editText.onTextContextMenuItem(android.R.id.undo);
-    }
-
-    private void redoInputChange() {
-        this.editText.onTextContextMenuItem(android.R.id.redo);
-    }
-
-    private void selectInputText(Motion anchor) {
-        if (anchor == null || anchor.distance <= 0) {
-            return;
-        }
-
-        // Note: 通过 shift + 方向键 的方式进行文本选择
-        sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
-        locateInputCursor(anchor);
-        sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
-    }
-
-    private void sendKey(int code) {
-        sendKeyDown(code);
-        sendKeyUp(code);
-    }
-
-    private void sendKeyDown(int code) {
-        this.editText.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
-    }
-
-    private void sendKeyUp(int code) {
-        this.editText.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+        context.startActivity(intent);
     }
 }

@@ -31,10 +31,12 @@ public abstract class ActionBarSupportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (isActionBarEnabled()) {
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            if (isActionBarEnabled()) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
+            } else {
+                actionBar.hide();
             }
         }
     }

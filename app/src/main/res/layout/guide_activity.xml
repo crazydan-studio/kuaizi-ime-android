@@ -16,20 +16,61 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:gravity="center_vertical">
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.view.NoImeEditText
-            android:id="@+id/text_input"
+    <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:autofillHints="" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="64dp"
+            android:gravity="center_horizontal">
 
-    <include
-            layout="@layout/ime_input_view"
-            android:id="@+id/ime_view"
+        <ImageView
+                android:id="@+id/logo"
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                app:srcCompat="@drawable/ic_logo" />
+
+        <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switcher"
+                android:layout_width="48dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal">
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guide_enable_ime"
+                android:text="@string/btn_guide_enable_ime"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_width="256dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                android:layout_marginBottom="16dp"
+                app:backgroundTint="#1976d2"
+                android:textColor="@color/color_white"
+                app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guide_start_tour"
+                android:text="@string/btn_guide_start_tour"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_width="256dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                app:backgroundTint="#9c27b0"
+                android:textColor="@color/color_white"
+                app:cornerRadius="8dp" />
+    </LinearLayout>
 </LinearLayout>
