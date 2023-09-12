@@ -26,7 +26,7 @@
     <string name="title_about_suggestion">意见与建议</string>
     <string name="title_about_thanks">感谢</string>
     <string name="title_about_change_log">变更日志</string>
-    <string name="title_guide_tour">筷字输入法使用指南</string>
+    <string name="title_guide_exercises">筷字输入法使用练习</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
@@ -34,7 +34,7 @@
 
     <string name="btn_guide_enable_ime">启用输入法</string>
     <string name="btn_guide_disable_ime">禁用输入法</string>
-    <string name="btn_guide_start_tour">先练练手</string>
+    <string name="btn_guide_try_exercises">先练练手</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -53,7 +53,7 @@
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
     </string>
     <string name="msg_ime_should_be_enabled_first">
-        筷字输入法还未启用，请先点击按钮 [%1$s] 以配置启用该输入法。
+        筷字输入法还未启用，请先点击按钮【%1$s】以配置启用该输入法。
     </string>
 
     <string name="value_theme_light">浅色主题</string>

@@ -29,7 +29,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.Service;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.TourMain;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExercisesMain;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
@@ -71,7 +71,7 @@ public class Guide extends FollowSystemThemeActivity {
         updateSwitcher();
 
         MaterialButton btnEnableIme = findViewById(R.id.btn_guide_enable_ime);
-        MaterialButton btnStartTour = findViewById(R.id.btn_guide_start_tour);
+        MaterialButton btnTryExercises = findViewById(R.id.btn_guide_try_exercises);
 
         if (isImeEnabled()) {
             btnEnableIme.setText(R.string.btn_guide_disable_ime);
@@ -80,7 +80,9 @@ public class Guide extends FollowSystemThemeActivity {
         }
 
         btnEnableIme.setOnClickListener(this::showImeSettings);
-        btnStartTour.setOnClickListener(this::startTour);
+        btnTryExercises.setOnClickListener(this::tryExercises);
+
+        tryExercises(null);
     }
 
     private String getImeId() {
@@ -136,11 +138,11 @@ public class Guide extends FollowSystemThemeActivity {
         context.startActivity(intent);
     }
 
-    private void startTour(View v) {
+    private void tryExercises(View v) {
         Context context = getApplicationContext();
 
         Intent intent = new Intent();
-        intent.setClass(context, TourMain.class);
+        intent.setClass(context, ExercisesMain.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);

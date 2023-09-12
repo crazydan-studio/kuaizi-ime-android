@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class TourMain extends FollowSystemThemeActivity implements InputMsgListener {
+public class ExercisesMain extends FollowSystemThemeActivity implements InputMsgListener {
     private EditText editText;
 
     @Override
