@@ -126,7 +126,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         config = new Keyboard.Config(keyboardType, config);
         config.setSingleLineInput(singleLineInput);
 
-        this.imeView.startInput(config, true);
+        this.imeView.startInput(config, false);
     }
 
     /** 响应系统对子键盘类型的修改 */

@@ -442,6 +442,8 @@ public abstract class BaseKeyboard implements Keyboard {
         before_Commit_InputList();
 
         if (isPairSymbol) {
+            goto_InitState();
+
             List<CharInput> inputs = getInputList().getCharInputs();
             getInputList().reset();
 
