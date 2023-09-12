@@ -442,8 +442,6 @@ public abstract class BaseKeyboard implements Keyboard {
         before_Commit_InputList();
 
         if (isPairSymbol) {
-            goto_InitState();
-
             List<CharInput> inputs = getInputList().getCharInputs();
             getInputList().reset();
 
@@ -996,12 +994,15 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void on_ChoosingSymbol_SymbolKeyMsg(UserKeyMsg msg, SymbolKey key, UserKeyMsgData data) {
+        boolean continuous = false;
+
         switch (msg) {
             case KeyLongPressTick:
+                continuous = true;
             case KeySingleTap: {
                 play_InputtingSingleTick_Audio(key);
 
-                do_Single_Symbol_Inputting(key);
+                do_Single_Symbol_Inputting(key, continuous);
                 break;
             }
         }
@@ -1036,7 +1037,7 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.Symbol_Choosing, data);
     }
 
-    private void do_Single_Symbol_Inputting(SymbolKey key) {
+    private void do_Single_Symbol_Inputting(SymbolKey key, boolean continuousInput) {
         if (try_SingleKey_Inputting(key)) {
             return;
         }
@@ -1054,15 +1055,15 @@ public abstract class BaseKeyboard implements Keyboard {
             pending.clearPair();
         }
 
+        // Note：非连续输入的情况下，配对符号输入后不再做连续输入，键盘状态重置为初始状态
+        if (isPairSymbolKey && !continuousInput) {
+            goto_InitState();
+        }
+
         if (isEmpty) {
             // 直接提交输入
             commit_InputList(isPairSymbolKey);
         } else {
-            // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
-            if (isPairSymbolKey) {
-                goto_InitState();
-            }
-
             // 连续输入
             if (getInputList().isGapSelected()) {
                 confirm_Pending();
