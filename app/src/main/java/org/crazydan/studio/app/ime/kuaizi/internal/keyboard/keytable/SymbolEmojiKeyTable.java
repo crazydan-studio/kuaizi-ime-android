@@ -72,13 +72,13 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[2][index_end] = this.config.isCharInputSelected()
+                                 ? ctrlKey(CtrlKey.Type.DropInput)
+                                 : ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[5][index_end] = this.config.isCharInputSelected()
-                                 ? ctrlKey(CtrlKey.Type.DropInput)
-                                 : ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
         GridCoord[] groupKeyCoords = getGroupKeyCoords();
         for (int i = 0, j = 0; i < groupKeyCoords.length && j < groups.size(); i++, j++) {
@@ -148,13 +148,13 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[2][index_end] = this.config.isCharInputSelected()
+                                 ? ctrlKey(CtrlKey.Type.DropInput)
+                                 : ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[5][index_end] = this.config.isCharInputSelected()
-                                 ? ctrlKey(CtrlKey.Type.DropInput)
-                                 : ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
         GridCoord[] groupKeyCoords = getGroupKeyCoords();
         for (int i = 0, j = 0; i < groupKeyCoords.length && j < SymbolGroup.values().length; i++, j++) {

@@ -64,8 +64,8 @@ public class PinyinKeyTable extends KeyTable {
                         emojiKey("\uD83D\uDE02"),
                         symbolKey("！").withReplacements("!"),
                         alphabetKey("ü").withReplacements("v", "V"),
-                        alphabetKey("u").withReplacements("U"),
                         alphabetKey("i").withReplacements("I"),
+                        alphabetKey("u").withReplacements("U"),
                         alphabetKey("o").withReplacements("O"),
                         alphabetKey("a").withReplacements("A"),
                         } //
@@ -84,20 +84,20 @@ public class PinyinKeyTable extends KeyTable {
                 // 😄
                 emojiKey("\uD83D\uDE04"),
                 symbolKey("；").withReplacements(";"),
-                alphabetKey("s").withReplacements("S"),
                 alphabetKey("m").withReplacements("M"),
+                alphabetKey("l").withReplacements("L"),
                 alphabetKey("y").withReplacements("Y"),
                 alphabetKey("p").withReplacements("P"),
-                alphabetKey("g").withReplacements("G"),
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 symbolKey("：").withReplacements(":"),
-                alphabetKey("c").withReplacements("C"),
+                alphabetKey("s").withReplacements("S"),
                 alphabetKey("t").withReplacements("T"),
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
-                alphabetKey("n").withReplacements("N"),
-                alphabetKey("k").withReplacements("K"),
+                alphabetKey("r").withReplacements("R"),
+                alphabetKey("g").withReplacements("G"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
@@ -105,10 +105,10 @@ public class PinyinKeyTable extends KeyTable {
                 // 😉
                 emojiKey("\uD83D\uDE09"),
                 symbolKey("。").withReplacements("."),
+                alphabetKey("c").withReplacements("C"),
                 alphabetKey("z").withReplacements("Z"),
-                alphabetKey("l").withReplacements("L"),
-                alphabetKey("r").withReplacements("R"),
-                alphabetKey("h").withReplacements("H"),
+                alphabetKey("f").withReplacements("F"),
+                alphabetKey("k").withReplacements("K"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
@@ -117,9 +117,9 @@ public class PinyinKeyTable extends KeyTable {
                 alphabetKey("sh").withReplacements("Sh", "SH"),
                 alphabetKey("ch").withReplacements("Ch", "CH"),
                 alphabetKey("zh").withReplacements("Zh", "ZH"),
-                alphabetKey("f").withReplacements("F"),
+                alphabetKey("n").withReplacements("N"),
                 alphabetKey("w").withReplacements("W"),
-                ctrlKey(CtrlKey.Type.Backspace),
+                alphabetKey("h").withReplacements("H"),
                 },
                 };
     }
@@ -368,15 +368,15 @@ public class PinyinKeyTable extends KeyTable {
     /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
     private GridCoord[] getLevel2KeyCoords() {
         return new GridCoord[] {
-                coord(2, 2),
                 coord(3, 2),
                 coord(4, 2),
                 coord(5, 2),
                 coord(5, 3),
                 coord(4, 4),
                 coord(3, 3),
-                coord(4, 5),
                 coord(2, 4),
+                coord(4, 5),
+                coord(2, 2),
                 };
     }
 }

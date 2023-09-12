@@ -78,10 +78,10 @@ public class NumberKeyTable extends KeyTable {
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
         gridKeys[4][index_begin] = ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
 
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[3][index_end] = enterCtrlKey();
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_end] = enterCtrlKey();
+        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
 
         int dataIndex = 0;
         GridCoord[][] levelKeyCoords = getKeyCoords();

@@ -51,10 +51,10 @@ public class LocatorKeyTable extends KeyTable {
         gridKeys[2][2] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
         gridKeys[2][5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
 
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Exit);
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
-        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Backspace);
+        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
         gridKeys[3][3] = ctrlKey(CtrlKey.Type.Cut).setLabel("剪切");
         gridKeys[4][2] = ctrlKey(CtrlKey.Type.Redo).setLabel("重做");

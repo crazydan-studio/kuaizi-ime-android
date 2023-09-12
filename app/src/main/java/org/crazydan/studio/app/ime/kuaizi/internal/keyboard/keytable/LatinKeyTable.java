@@ -73,30 +73,30 @@ public class LatinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard),
                 numberKey("7"),
                 numberKey("2"),
-                alphabetKey("p").withReplacements("P"),
                 alphabetKey("o").withReplacements("O"),
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
                 alphabetKey("l").withReplacements("L"),
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
                 numberKey("8"),
                 numberKey("3"),
-                alphabetKey("s").withReplacements("S"),
-                ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("c").withReplacements("C"),
+                ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("w").withReplacements("W"),
+                alphabetKey("p").withReplacements("P"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
                 numberKey("9"),
                 numberKey("4"),
-                alphabetKey("v").withReplacements("V"),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("x").withReplacements("X"),
                 alphabetKey("t").withReplacements("T"),
+                alphabetKey("s").withReplacements("S"),
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
@@ -107,7 +107,7 @@ public class LatinKeyTable extends KeyTable {
                 alphabetKey("z").withReplacements("Z"),
                 alphabetKey("k").withReplacements("K"),
                 alphabetKey("y").withReplacements("Y"),
-                ctrlKey(CtrlKey.Type.Backspace),
+                alphabetKey("v").withReplacements("V"),
                 },
                 };
 
