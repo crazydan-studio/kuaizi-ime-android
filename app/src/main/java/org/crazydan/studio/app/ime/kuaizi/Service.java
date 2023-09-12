@@ -47,6 +47,8 @@ public class Service extends InputMethodService implements InputMsgListener {
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
 
+    private int prevFieldId;
+
     /** 在横竖屏转换、字体大小等发生变更时调用 */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -126,7 +128,10 @@ public class Service extends InputMethodService implements InputMsgListener {
         config = new Keyboard.Config(keyboardType, config);
         config.setSingleLineInput(singleLineInput);
 
-        this.imeView.startInput(config, false);
+        int prevFieldId = this.prevFieldId;
+        this.prevFieldId = attribute.fieldId;
+
+        this.imeView.startInput(config, prevFieldId != attribute.fieldId);
     }
 
     /** 响应系统对子键盘类型的修改 */
