@@ -1,0 +1,40 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/216324/pointer_icon -->
+    <path
+            android:pathData="m15.253,19.838l0,0l0.875,0l-4.129,4.162 -4.128,-4.162l0.875,0l0,0zM15.253,19.838m0.438,0m-1.627,2.08m-4.128,0M8.31,19.838m0.438,0m3.252,0"
+            android:fillColor="?attr/key_ctrl_locator_fg_color" />
+    <path
+            android:pathData="m15.253,4.162l0,0l0.875,0L12,0 7.872,4.162l0.875,0l0,0zM15.253,4.162m0.438,0M14.065,2.081m-4.128,0M8.31,4.162m0.438,0m3.252,0"
+            android:fillColor="?attr/key_ctrl_locator_fg_color" />
+    <path
+            android:pathData="m4.163,15.253l0,0 0,0.875L0,12 4.163,7.872l0,0.875 0,0zM4.163,15.253m0,0.438M2.081,14.065m0,-4.128M4.163,8.309m0,0.438m0,3.253"
+            android:fillColor="?attr/key_ctrl_locator_fg_color" />
+    <path
+            android:pathData="m19.838,15.253l0,0 0,0.875l4.162,-4.128 -4.162,-4.128l0,0.875 0,0zM19.838,15.253m0,0.438m2.08,-1.627m0,-4.128M19.838,8.309m0,0.438m0,3.253"
+            android:fillColor="?attr/key_ctrl_locator_fg_color" />
+    <path
+            android:pathData="m12,7.403c2.54,0 4.597,2.059 4.597,4.597 0,2.538 -2.058,4.597 -4.597,4.597 -2.538,0 -4.597,-2.058 -4.597,-4.597 0,-2.538 2.059,-4.597 4.597,-4.597zM12,8.419c-1.977,0 -3.58,1.604 -3.58,3.581 0,1.977 1.604,3.581 3.58,3.581 1.978,0 3.581,-1.604 3.581,-3.581 0,-1.977 -1.603,-3.581 -3.581,-3.581z"
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:fillType="evenOdd" />
+</vector>

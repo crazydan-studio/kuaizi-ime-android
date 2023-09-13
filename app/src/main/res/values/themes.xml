@@ -116,7 +116,7 @@
         <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_space_fg_color">@color/color_white</item>
 
-        <item name="key_ctrl_locator_bg_color">@color/color_white</item>
+        <item name="key_ctrl_locator_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_locator_fg_color">?attr/key_highlight_fg_color</item>
         <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_locator_bg_color</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_ctrl_ok_fg_color</item>
@@ -125,7 +125,7 @@
         <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
 
         <item name="key_ctrl_ok_bg_color">?attr/key_ctrl_switcher_bg_color</item>
-        <item name="key_ctrl_ok_fg_color">#ff059669</item>
+        <item name="key_ctrl_ok_fg_color">#ff4db6ac</item>
         <item name="key_ctrl_commit_bg_color">?attr/key_ctrl_ok_bg_color</item>
         <item name="key_ctrl_commit_fg_color">#ffea580c</item>
         <item name="key_ctrl_enter_bg_color">?attr/key_bg_color</item>

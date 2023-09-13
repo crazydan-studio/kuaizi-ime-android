@@ -128,9 +128,7 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_pointer,
-                                              R.drawable.ic_left_hand_pointer,
-                                              R.attr.key_ctrl_locator_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_pointer, R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Locator,
                             KeyStyle.withIcon(R.drawable.ic_map_location_pin, R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Selector,
@@ -144,8 +142,7 @@ public abstract class KeyTable {
 
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             KeyStyle.withIcon(R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
-                            KeyStyle.withIcon(R.drawable.ic_confirm, R.attr.key_ctrl_confirm_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.ConfirmInput, key_ctrl_ok_style);
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
