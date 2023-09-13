@@ -98,6 +98,8 @@ public class ImeInputView extends FrameLayout
 
     /** 结束输入 */
     public void finishInput() {
+        this.inputList.cleanRevokes();
+
         this.keyboard.reset();
     }
 
