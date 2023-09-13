@@ -506,6 +506,8 @@ public abstract class BaseKeyboard implements Keyboard {
      * 输入列表不为空时，在输入列表中做删除，否则，在输入目标中做删除
      */
     protected void backspace_InputList_or_InputTarget() {
+        getInputList().cleanRevokes();
+
         if (!getInputList().isEmpty()) {
             getInputList().deleteBackward();
 

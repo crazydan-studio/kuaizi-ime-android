@@ -45,7 +45,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
@@ -219,67 +218,68 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputCandidates_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeyLongPressTick:
-                // 过滤的笔画数 -1
-                if (key.getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
-                    if (((UserLongPressTickMsgData) data).tick % 4 == 0) {
-                        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+        if (msg != UserKeyMsg.KeySingleTap) {
+            return;
+        }
 
-                        do_InputCandidate_Filtering_ByStroke(key, option.value(), -1);
-                    }
-                }
+        CharInput pending = getInputList().getPending();
+        // 丢弃或变更拼音
+        switch (key.getType()) {
+            case DropInput: {
+                play_InputtingSingleTick_Audio(key);
+
+                getInputList().deleteSelected();
+                confirm_Pending_and_Waiting_Input();
                 break;
-            case KeySingleTap: {
-                // Note：笔画过滤按键音效由过滤接口处理
-                if (key.getType() != CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
-                    play_InputtingSingleTick_Audio(key);
+            }
+            case ConfirmInput: {
+                play_InputtingSingleTick_Audio(key);
+                onConfirmSelectedInputCandidate();
+                break;
+            }
+            case Toggle_PinyinInput_spell: {
+                play_InputtingSingleTick_Audio(key);
+
+                CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
+                switch (option.value()) {
+                    case ng:
+                        pending.toggle_Pinyin_NG_Ending();
+                        break;
+                    case nl:
+                        pending.toggle_Pinyin_NL_Starting();
+                        break;
+                    case zcs_h:
+                        pending.toggle_Pinyin_SCZ_Starting();
+                        break;
                 }
 
-                CharInput pending = getInputList().getPending();
-                // 丢弃或变更拼音
-                switch (key.getType()) {
-                    case DropInput: {
-                        getInputList().deleteSelected();
-                        confirm_Pending_and_Waiting_Input();
-                        break;
-                    }
-                    case ConfirmInput: {
-                        onConfirmSelectedInputCandidate();
-                        break;
-                    }
-                    case Toggle_PinyinInput_spell: {
-                        CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
-                        switch (option.value()) {
-                            case ng:
-                                pending.toggle_Pinyin_NG_Ending();
-                                break;
-                            case nl:
-                                pending.toggle_Pinyin_NL_Starting();
-                                break;
-                            case zcs_h:
-                                pending.toggle_Pinyin_SCZ_Starting();
-                                break;
-                        }
-
-                        start_InputCandidate_Choosing(pending, true);
-                        break;
-                    }
-                    case Filter_PinyinInputCandidate_stroke: {
-                        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
-
-                        do_InputCandidate_Filtering_ByStroke(key, option.value(), 1);
-                        break;
-                    }
-                }
+                start_InputCandidate_Choosing(pending, true);
                 break;
             }
         }
     }
 
     private void on_InputCandidates_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
+        UserFingerFlippingMsgData flippingData = (UserFingerFlippingMsgData) data;
 
+        // 增减过滤的笔画数
+        if (key instanceof CtrlKey && ((CtrlKey) key).getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
+            int increment = 1;
+            switch (flippingData.motion.direction) {
+                case down:
+                case right:
+                    increment = -1;
+                    break;
+            }
+
+            CtrlKey.TextOption option = (CtrlKey.TextOption) ((CtrlKey) key).getOption();
+
+            do_InputCandidate_Filtering_ByStroke(key, option.value(), increment);
+            return;
+        }
+
+        // 翻页
+        flip_Page_for_PagingState((PagingStateData<?>) this.state.data, flippingData);
         do_InputCandidate_Choosing();
     }
 

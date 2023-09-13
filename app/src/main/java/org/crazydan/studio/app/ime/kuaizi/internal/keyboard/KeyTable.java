@@ -142,7 +142,10 @@ public abstract class KeyTable {
 
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
                             KeyStyle.withIcon(R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.ConfirmInput, key_ctrl_ok_style);
+        ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
+                            KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
+                                              R.drawable.ic_left_hand_ok,
+                                              R.attr.key_ctrl_confirm_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 

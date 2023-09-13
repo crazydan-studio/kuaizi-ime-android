@@ -73,7 +73,7 @@ public class MathKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.LocateInputCursor).setColor(key_char_color);
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();

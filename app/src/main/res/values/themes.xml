@@ -52,9 +52,9 @@
         <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_space_fg_color">?attr/key_fg_color</item>
 
-        <item name="key_ctrl_locator_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_locator_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_locator_bg_color</item>
+        <item name="key_ctrl_locator_bg_color">?attr/key_highlight_fg_color</item>
+        <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_ok_bg_color</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_ctrl_ok_fg_color</item>
 
         <item name="key_ctrl_exit_bg_color">?attr/key_ctrl_space_bg_color</item>
@@ -70,17 +70,17 @@
         <item name="key_char_symbol_bg_color">?attr/key_bg_color</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
 
-        <item name="key_char_level_0_bg_color">#ffce4e48</item>
+        <item name="key_char_level_0_bg_color">#a8ce4e48</item>
         <item name="key_char_level_0_fg_color">#ffffffff</item>
-        <item name="key_char_level_1_bg_color">#ffcb6b54</item>
+        <item name="key_char_level_1_bg_color">#a8cb6b54</item>
         <item name="key_char_level_1_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_2_bg_color">#ff3395d4</item>
+        <item name="key_char_level_2_bg_color">#a83395d4</item>
         <item name="key_char_level_2_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_3_bg_color">#ff0c5c55</item>
+        <item name="key_char_level_3_bg_color">#a85f5e87</item>
         <item name="key_char_level_3_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_4_bg_color">#ff5f5e87</item>
+        <item name="key_char_level_4_bg_color">#a83b5978</item>
         <item name="key_char_level_4_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_5_bg_color">#ffc0d7f0</item>
+        <item name="key_char_level_5_bg_color">#a88ba8c8</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
     </style>
 
@@ -109,23 +109,23 @@
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_noop_fg_color">#ffa3a3a3</item>
         <item name="key_ctrl_switcher_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switcher_fg_color">#ffefefef</item>
+        <item name="key_ctrl_switcher_fg_color">#fffafafa</item>
 
         <item name="key_ctrl_backspace_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_backspace_fg_color">#ffed4c67</item>
         <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_space_fg_color">@color/color_white</item>
 
-        <item name="key_ctrl_locator_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_locator_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_locator_bg_color</item>
+        <item name="key_ctrl_locator_bg_color">?attr/key_highlight_fg_color</item>
+        <item name="key_ctrl_locator_fg_color">?attr/key_ctrl_switcher_fg_color</item>
+        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_ok_bg_color</item>
         <item name="key_ctrl_confirm_fg_color">?attr/key_ctrl_ok_fg_color</item>
 
         <item name="key_ctrl_exit_bg_color">?attr/key_ctrl_space_bg_color</item>
         <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
 
         <item name="key_ctrl_ok_bg_color">?attr/key_ctrl_switcher_bg_color</item>
-        <item name="key_ctrl_ok_fg_color">#ff4db6ac</item>
+        <item name="key_ctrl_ok_fg_color">#ff059669</item>
         <item name="key_ctrl_commit_bg_color">?attr/key_ctrl_ok_bg_color</item>
         <item name="key_ctrl_commit_fg_color">#ffea580c</item>
         <item name="key_ctrl_enter_bg_color">?attr/key_bg_color</item>
@@ -146,17 +146,17 @@
         <item name="key_char_level_4_fg_color">?attr/key_char_level_0_fg_color</item>
         <item name="key_char_level_5_bg_color">#ff3730a3</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>-->
-        <item name="key_char_level_0_bg_color">#ffce4e48</item>
+        <item name="key_char_level_0_bg_color">#68ce4e48</item>
         <item name="key_char_level_0_fg_color">#ffffffff</item>
-        <item name="key_char_level_1_bg_color">#ffcb6b54</item>
+        <item name="key_char_level_1_bg_color">#68cb6b54</item>
         <item name="key_char_level_1_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_2_bg_color">#ff3395d4</item>
+        <item name="key_char_level_2_bg_color">#683395d4</item>
         <item name="key_char_level_2_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_3_bg_color">#ff0c5c55</item>
+        <item name="key_char_level_3_bg_color">#685f5e87</item>
         <item name="key_char_level_3_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_4_bg_color">#ff5f5e87</item>
+        <item name="key_char_level_4_bg_color">#68c0d7f0</item>
         <item name="key_char_level_4_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_5_bg_color">#ffc0d7f0</item>
+        <item name="key_char_level_5_bg_color">#688ba8c8</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
     </style>
 </resources>
