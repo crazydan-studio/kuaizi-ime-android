@@ -116,7 +116,7 @@
                 android:name=".ui.guide.ExercisesMain"
                 android:exported="false"
                 android:label="@string/title_guide_exercises"
-                android:theme="@style/Theme.AppCompat">
+                android:theme="@style/Theme.MaterialComponents">
             <intent-filter>
                 <action android:name=".ui.guide.ExercisesMain" />
                 <category android:name="android.intent.category.DEFAULT" />

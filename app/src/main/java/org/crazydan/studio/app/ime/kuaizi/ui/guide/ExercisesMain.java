@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
+import java.util.List;
+
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.widget.EditText;
@@ -44,11 +46,10 @@ public class ExercisesMain extends FollowSystemThemeActivity implements InputMsg
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.guide_tour_activity);
+        setContentView(R.layout.guide_exercises_activity);
 
         this.editText = findViewById(R.id.text_input);
         this.editText.setClickable(false);
-        this.editText.setText("这是一段测试文本\nThis is a text for testing\n欢迎使用筷字输入法\nThanks for using Kuaizi Input Method");
 
         ImeInputView imeView = findViewById(R.id.ime_view);
         imeView.addInputMsgListener(this);
@@ -75,7 +76,12 @@ public class ExercisesMain extends FollowSystemThemeActivity implements InputMsg
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Committing: {
-                commitText(((InputListCommittingMsgData) data).text);
+                InputListCommittingMsgData d = (InputListCommittingMsgData) data;
+                commitText(d.text, d.replacements);
+                break;
+            }
+            case InputList_Revoking: {
+                revokeCommitting();
                 break;
             }
             case InputList_PairSymbol_Committing: {
@@ -122,9 +128,17 @@ public class ExercisesMain extends FollowSystemThemeActivity implements InputMsg
         }
     }
 
-    private void commitText(CharSequence text) {
+    private void commitText(CharSequence text, List<String> replacements) {
         int start = Math.min(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
         int end = Math.max(this.editText.getSelectionStart(), this.editText.getSelectionEnd());
+
+        // Note：假设替换字符的长度均相同
+        int replacementStartIndex = Math.max(0, start - text.length());
+        CharSequence raw = this.editText.getText().subSequence(replacementStartIndex, start);
+        if (replacements.contains(raw.toString())) {
+            this.editText.getText().replace(replacementStartIndex, start, text);
+            return;
+        }
 
         this.editText.getText().replace(start, end, text);
 
@@ -148,6 +162,10 @@ public class ExercisesMain extends FollowSystemThemeActivity implements InputMsg
             this.editText.setSelection(this.editText.getSelectionStart(),
                                        this.editText.getSelectionEnd() - right.length());
         }
+    }
+
+    private void revokeCommitting() {
+        undoInputChange();
     }
 
     private void backwardDeleteInput() {

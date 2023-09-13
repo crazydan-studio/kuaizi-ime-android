@@ -60,6 +60,9 @@
         Please click the button [%1$s]
         to configure to enable the input method.
     </string>
+    <string name="text_exercise_edit_text_placeholder">
+        Please follow the above instructions to operate the keyboard to input content.
+    </string>
 
     <string name="value_theme_light">Light</string>
     <string name="value_theme_night">Night</string>

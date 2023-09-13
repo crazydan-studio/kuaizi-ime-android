@@ -55,6 +55,9 @@
     <string name="msg_ime_should_be_enabled_first">
         筷字输入法还未启用，请先点击按钮【%1$s】以配置启用该输入法。
     </string>
+    <string name="text_exercise_edit_text_placeholder">
+        请按上述指导提示操作键盘输入内容
+    </string>
 
     <string name="value_theme_light">浅色主题</string>
     <string name="value_theme_night">深色主题</string>
