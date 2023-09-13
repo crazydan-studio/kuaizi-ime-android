@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg.user;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
  * {@link UserKeyMsg#KeyLongPressTick}消息数据
@@ -27,13 +26,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-17
  */
-public class UserLongPressTickMsgData extends UserKeyMsgData {
-    public final int tick;
+public class UserLongPressTickMsgData extends UserKeyTickMsgData {
     public final long duration;
 
     public UserLongPressTickMsgData(Key<?> target, int tick, long duration) {
-        super(target);
-        this.tick = tick;
+        super(target, tick);
         this.duration = duration;
     }
 }

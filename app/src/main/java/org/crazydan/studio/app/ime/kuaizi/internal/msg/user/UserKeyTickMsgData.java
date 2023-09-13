@@ -15,29 +15,20 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.user;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link InputMsg#InputList_Committing}消息数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-15
+ * @date 2023-09-13
  */
-public class InputListCommittingMsgData extends InputCommonMsgData {
-    public final CharSequence text;
-    public final List<String> replacements;
+public abstract class UserKeyTickMsgData extends UserKeyMsgData {
+    public final int tick;
 
-    public InputListCommittingMsgData(
-            Keyboard.KeyFactory keyFactory, CharSequence text, List<String> replacements
-    ) {
-        super(keyFactory);
-        this.text = text;
-        this.replacements = replacements != null ? replacements : new ArrayList<>();
+    public UserKeyTickMsgData(Key<?> target, int tick) {
+        super(target);
+        this.tick = tick;
     }
 }

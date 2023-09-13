@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
 
@@ -188,6 +189,11 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
         }
 
         UserKeyMsgData msgData = new UserKeyMsgData(targetKey);
+        if (data instanceof RecyclerViewGestureDetector.SingleTapGestureData) {
+            msgData = new UserSingleTapMsgData(targetKey,
+                                               ((RecyclerViewGestureDetector.SingleTapGestureData) data).tick);
+        }
+
         this.keyboardView.onUserKeyMsg(msg, msgData);
     }
 

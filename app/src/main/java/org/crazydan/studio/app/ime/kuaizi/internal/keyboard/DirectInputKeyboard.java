@@ -24,6 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 
 /**
  * 按键直接输入目标组件的键盘，
@@ -63,7 +64,8 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
                 // 单字符直接输入
                 play_InputtingSingleTick_Audio(key);
 
-                do_SingleKey_Inputting(key, getInputList().isEmpty());
+                boolean directInputting = getInputList().isEmpty();
+                start_SingleKey_Inputting(key, (UserSingleTapMsgData) data, directInputting);
                 break;
             }
         }

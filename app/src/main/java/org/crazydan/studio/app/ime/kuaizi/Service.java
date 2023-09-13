@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
+import java.util.List;
+
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
@@ -166,7 +168,8 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Committing: {
-                commitText(((InputListCommittingMsgData) data).text);
+                InputListCommittingMsgData d = (InputListCommittingMsgData) data;
+                commitText(d.text, d.replacements);
                 break;
             }
             case InputList_Revoking: {
@@ -283,13 +286,20 @@ public class Service extends InputMethodService implements InputMsgListener {
         super.onExtractTextContextMenuItem(android.R.id.redo);
     }
 
-    private void commitText(CharSequence text) {
+    private void commitText(CharSequence text, List<String> replacements) {
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
             return;
         }
 
-        if (text.length() == 1) {
+        // Note：假设替换字符的长度均相同
+        CharSequence raw = ic.getTextBeforeCursor(text.length(), 0);
+        // 替换字符
+        if (replacements.contains(raw.toString())) {
+            replaceTextBeforeCursor(text, raw.length());
+        }
+        // 输入字符
+        else if (text.length() == 1) {
             char ch = text.charAt(0);
             // 单个字符需以事件形式发送，才能被所有组件识别
             sendKeyChar(ch);
@@ -380,6 +390,22 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     /** 向指定位置添加文本 */
     private void addText(CharSequence text, int pos) {
+        replaceText(text, pos, pos);
+    }
+
+    /** 替换光标之前指定长度的文本 */
+    private void replaceTextBeforeCursor(CharSequence text, int length) {
+        ExtractedText extractedText = getExtractedText();
+        if (extractedText == null) {
+            return;
+        }
+
+        int start = extractedText.selectionStart;
+        replaceText(text, start - length, start);
+    }
+
+    /** 替换指定范围内的文本 */
+    private void replaceText(CharSequence text, int posStart, int posEnd) {
         if (text.length() == 0) {
             return;
         }
@@ -387,7 +413,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         InputConnection ic = getCurrentInputConnection();
         if (ic != null) {
             // 移动光标到指定位置
-            ic.setSelection(pos, pos);
+            ic.setSelection(posStart, posEnd);
 
             addText(text);
         }

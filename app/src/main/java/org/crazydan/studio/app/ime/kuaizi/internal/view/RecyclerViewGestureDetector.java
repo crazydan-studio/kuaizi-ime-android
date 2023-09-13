@@ -45,7 +45,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     /** 确定长按 tick 的超时时间 */
     private static final long LONG_PRESS_TICK_TIMEOUT_MILLS = 100;
     /** 确定双击的超时时间 */
-    private static final long DOUBLE_TAP_TIMEOUT_MILLS = 400;
+    private static final long DOUBLE_TAP_TIMEOUT_MILLS = 300;
     /** 确定滑动的超时时间 */
     private static final long FLIPPING_TIMEOUT_MILLS = 400;
 
@@ -56,7 +56,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
 
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
-    private GestureData latestSingleTap;
+    private SingleTapGestureData latestSingleTap;
     private ViewData prevViewData;
 
     /** 绑定到 {@link RecyclerView} 上 */
@@ -223,16 +223,22 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     private void onSingleTap(GestureData data) {
-        GestureData latestData = this.latestSingleTap;
-        this.latestSingleTap = data;
+        SingleTapGestureData tapData = new SingleTapGestureData(data, 0);
+
+        SingleTapGestureData latestTapData = this.latestSingleTap;
+        boolean isContinuousTap = latestTapData != null //
+                                  && data.timestamp - latestTapData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS;
+
+        if (isContinuousTap) {
+            tapData = new SingleTapGestureData(data, latestTapData.tick + 1);
+        }
+        this.latestSingleTap = tapData;
 
         // Note：双击也会触发两次单击事件，且均先于双击事件触发
-        triggerListeners(GestureType.SingleTap, data);
+        triggerListeners(GestureType.SingleTap, tapData);
 
-        if (latestData != null //
-            && data.timestamp - latestData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS) {
-            this.latestSingleTap = null; // 避免连续触发双击
-
+        // 仅连续单击中的第二次才触发双击事件
+        if (tapData.tick == 1) {
             triggerListeners(GestureType.DoubleTap, data);
         }
     }
@@ -398,19 +404,33 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         }
     }
 
-    public static class LongPressTickGestureData extends GestureData {
+    public static class TickGestureData extends GestureData {
         public final int tick;
+
+        public TickGestureData(GestureData g, int tick) {
+            super(g.x, g.y, g.timestamp);
+            this.tick = tick;
+        }
+    }
+
+    public static class LongPressTickGestureData extends TickGestureData {
         public final long duration;
 
         public LongPressTickGestureData(GestureData g, int tick, long duration) {
-            super(g.x, g.y, g.timestamp);
-            this.tick = tick;
+            super(g, tick);
             this.duration = duration;
         }
 
         /** 事件位置、tick、duration 不变，仅修改时间戳为当前时间 */
         public static LongPressTickGestureData newFrom(LongPressTickGestureData g) {
             return new LongPressTickGestureData(GestureData.newFrom(g), g.tick, g.duration);
+        }
+    }
+
+    public static class SingleTapGestureData extends TickGestureData {
+
+        public SingleTapGestureData(GestureData g, int tick) {
+            super(g, tick);
         }
     }
 

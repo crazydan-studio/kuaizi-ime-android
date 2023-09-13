@@ -69,19 +69,32 @@ public class CharKey extends BaseKey<CharKey> {
         return this;
     }
 
+    /** 是否有替代 */
+    public boolean hasReplacement() {
+        return this.replacements.size() > 1;
+    }
+
     /** 获取指定内容之后的可替换内容，循环获取，包括按键字符本身 */
     public String nextReplacement(String s) {
         int index = this.replacements.indexOf(s);
-        return index < 0 || index >= this.replacements.size() - 1
-               ? this.replacements.get(0)
-               : this.replacements.get(index + 1);
+        return getReplacement(index + 1);
+    }
+
+    /** 获取指定位置的可替换内容，循环获取，包括按键字符本身 */
+    public String getReplacement(int index) {
+        int total = this.replacements.size();
+        return index < 0 ? this.replacements.get(0) : this.replacements.get(index % total);
+    }
+
+    public List<String> getReplacements() {
+        return new ArrayList<>(this.replacements);
     }
 
     /** 判断是否可替换指定的按键 */
     public boolean canReplaceTheKey(Key<?> key) {
         if (!(key instanceof CharKey)
             // 只有自身，则不做替换
-            || this.replacements.size() <= 1) {
+            || !hasReplacement()) {
             return false;
         } else if (this.equals(key)) {
             return true;
@@ -92,9 +105,17 @@ public class CharKey extends BaseKey<CharKey> {
 
     @Override
     public boolean isLatin() {
-        return isNumber() //
-               || (this.text.length() == 1 //
-                   && Character.isLetter(this.text.charAt(0)));
+        if (isNumber()) {
+            return true;
+        }
+
+        for (int i = 0; i < this.text.length(); i++) {
+            char ch = this.text.charAt(i);
+            if (!Character.isLetterOrDigit(ch)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

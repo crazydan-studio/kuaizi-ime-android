@@ -581,6 +581,14 @@ public class InputList {
         return CollectionUtils.last(this.inputs);
     }
 
+    public CharInput getFirstCharInput() {
+        return CollectionUtils.first(getCharInputs());
+    }
+
+    public CharInput getLastCharInput() {
+        return CollectionUtils.last(getCharInputs());
+    }
+
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
     private void removeCharInput(Input input) {
         int index = input instanceof CharInput ? indexOf(input) : -1;

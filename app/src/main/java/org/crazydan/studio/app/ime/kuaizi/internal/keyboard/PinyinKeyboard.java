@@ -46,6 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
@@ -156,15 +157,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 单字符输入
                 play_InputtingSingleTick_Audio(key);
 
-                do_SingleKey_Inputting(key, false);
-                break;
-            }
-            case KeyDoubleTap: {
-                // 双击前已触发两次单击，故，不需再播放按键提示音
-                //play_InputtingSingleTick_Audio(key);
-
-                // TODO 双击切换字母按键的策略需调整：直输的输入也支持替换，通过判断是否有待撤回输入判断是否替换前序输入字母。单击事件增加是否为连续点击的标识以区分独立单击和双击中的单击
-                do_ReplacementKey_Inputting(key);
+                start_SingleKey_Inputting(key, (UserSingleTapMsgData) data, false);
                 break;
             }
         }
@@ -288,39 +281,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         flip_Page_for_PagingState((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
 
         do_InputCandidate_Choosing();
-    }
-
-    private void do_ReplacementKey_Inputting(CharKey key) {
-        CharInput input;
-
-        if (getInputList().hasEmptyPending()) {
-            Input selected = getInputList().getSelected();
-            // Note: 标点是单个输入的，故，需向前替换已输入的标点。
-            // 若当前选中的是标点，则也支持双击切换标点
-            Input preInput = selected.isSymbol() ? selected : getInputList().getInputBeforeSelected();
-
-            if (preInput != null && key.isSymbol() && preInput.isSymbol()) {
-                input = (CharInput) preInput;
-            } else {
-                return;
-            }
-        } else {
-            input = getInputList().getPending();
-        }
-
-        Key<?> lastKey = input.getLastKey();
-        if (!key.canReplaceTheKey(lastKey)) {
-            return;
-        }
-
-        CharKey lastCharKey = (CharKey) lastKey;
-        // Note: 在 Input 中的 key 可能不携带 replacement 信息，只能通过当前按键做判断
-        String newKeyText = key.nextReplacement(lastCharKey.getText());
-
-        CharKey newKey = KeyTable.alphabetKey(newKeyText);
-        input.replaceLatestKey(lastCharKey, newKey);
-
-        fire_and_Waiting_Continuous_InputChars_Inputting(key);
     }
 
     // >>>>>>>>> 滑屏输入
