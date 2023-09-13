@@ -343,17 +343,26 @@ public abstract class KeyTable {
     public static class Config {
         private final Keyboard.Config keyboardConfig;
         private final boolean hasInputs;
+        /** 是否有待撤回输入 */
+        private final boolean hasRevokingInputs;
         /** 是否已选中字符输入 */
         private final boolean charInputSelected;
 
-        public Config(Keyboard.Config keyboardConfig, boolean hasInputs, boolean charInputSelected) {
+        public Config(
+                Keyboard.Config keyboardConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
+        ) {
             this.keyboardConfig = keyboardConfig;
             this.hasInputs = hasInputs;
+            this.hasRevokingInputs = hasRevokingInputs;
             this.charInputSelected = charInputSelected;
         }
 
         public boolean hasInputs() {
             return this.hasInputs;
+        }
+
+        public boolean hasRevokingInputs() {
+            return this.hasRevokingInputs;
         }
 
         public boolean isCharInputSelected() {

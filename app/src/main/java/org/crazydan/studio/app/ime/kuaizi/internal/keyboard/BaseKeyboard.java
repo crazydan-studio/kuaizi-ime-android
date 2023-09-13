@@ -159,7 +159,10 @@ public abstract class BaseKeyboard implements Keyboard {
     protected abstract KeyFactory doGetKeyFactory();
 
     protected KeyTable.Config createKeyTableConfigure() {
-        return new KeyTable.Config(getConfig(), !getInputList().isEmpty(), !getInputList().isGapSelected());
+        return new KeyTable.Config(getConfig(),
+                                   !getInputList().isEmpty(),
+                                   getInputList().canBeRevoked(),
+                                   !getInputList().isGapSelected());
     }
 
     @Override
@@ -313,19 +316,25 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /**
-     * 当前输入设置唯一按键并直接{@link #commit_InputList_and_Waiting_Input() 提交输入列表}
+     * 当前输入设置唯一按键并直接{@link #commit_InputList(boolean) 提交输入列表（不可撤销）}，
+     * 并进入 {@link State.Type#Input_Waiting} 状态
      */
     protected void input_Only_Key_and_Commit_InputList(Key<?> key) {
         getInputList().newPending().appendKey(key);
 
-        commit_InputList_and_Waiting_Input();
+        goto_InitState();
+
+        commit_InputList(false);
     }
 
-    /** 提交输入列表，并进入 {@link State.Type#Input_Waiting} 状态 */
+    /**
+     * {@link #commit_InputList(boolean) 提交输入列表（可撤销）}，
+     * 并进入 {@link State.Type#Input_Waiting} 状态
+     */
     protected void commit_InputList_and_Waiting_Input() {
         goto_InitState();
 
-        commit_InputList();
+        commit_InputList(true);
     }
 
     /**
@@ -418,7 +427,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 否则，直接提交按键输入
         else {
-            commit_InputList();
+            commit_InputList(false);
         }
     }
 
@@ -428,12 +437,12 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 提交输入列表，且状态保持不变 */
-    protected void commit_InputList() {
-        commit_InputList(false);
+    protected void commit_InputList(boolean canBeRevoked) {
+        commit_InputList(canBeRevoked, false);
     }
 
     /** 提交输入列表，且状态保持不变 */
-    protected void commit_InputList(boolean isPairSymbol) {
+    protected void commit_InputList(boolean canBeRevoked, boolean isPairSymbol) {
         getInputList().confirmPending();
         if (getInputList().isEmpty()) {
             return;
@@ -443,7 +452,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (isPairSymbol) {
             List<CharInput> inputs = getInputList().getCharInputs();
-            getInputList().reset();
+            getInputList().commit(canBeRevoked);
 
             CharInput left = inputs.get(0);
             CharInput right = inputs.get(1);
@@ -454,8 +463,7 @@ public abstract class BaseKeyboard implements Keyboard {
                                                                          right.getText());
             fireInputMsg(InputMsg.InputList_PairSymbol_Committing, data);
         } else {
-            StringBuilder text = getInputList().getText();
-            getInputList().reset();
+            StringBuilder text = getInputList().commit(canBeRevoked);
 
             // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
             InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), text);
@@ -463,8 +471,26 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    /** 在 {@link #commit_InputList_and_Waiting_Input() 输入列表提交} 之前需要做的事情 */
+    /** 在 {@link #commit_InputList(boolean) 输入列表提交} 之前需要做的事情 */
     protected void before_Commit_InputList() {}
+
+    /** 撤回输入列表，且状态保持不变 */
+    protected void revoke_InputList() {
+        if (!getInputList().canBeRevoked()) {
+            return;
+        }
+
+        before_Revoke_InputList();
+
+        getInputList().revoke();
+
+        // Note：输入撤回按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
+        InputMsgData data = new InputCommonMsgData(getKeyFactory());
+        fireInputMsg(InputMsg.InputList_Revoking, data);
+    }
+
+    /** 在 {@link #revoke_InputList() 输入列表撤回提交} 之前需要做的事情 */
+    protected void before_Revoke_InputList() {}
 
     /**
      * 回删输入列表中的输入或输入目标中的内容，且状态保持不变
@@ -597,6 +623,11 @@ public abstract class BaseKeyboard implements Keyboard {
                                 return true;
                         }
                         break;
+                    }
+                    case RevokeInput: {
+                        play_InputtingSingleTick_Audio(key);
+                        revoke_InputList();
+                        return true;
                     }
                     case Backspace: {
                         play_InputtingSingleTick_Audio(key);
@@ -871,21 +902,29 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void do_InputTarget_Pasting() {
+        getInputList().cleanRevokes();
+
         InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Pasting, data);
     }
 
     private void do_InputTarget_Cutting() {
+        getInputList().cleanRevokes();
+
         InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Cutting, data);
     }
 
     private void do_InputTarget_Undoing() {
+        getInputList().cleanRevokes();
+
         InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Undoing, data);
     }
 
     private void do_InputTarget_Redoing() {
+        getInputList().cleanRevokes();
+
         InputMsgData data = new InputCommonMsgData();
         fireInputMsg(InputMsg.InputTarget_Redoing, data);
     }
@@ -964,7 +1003,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (isEmpty) {
             // 直接提交输入
-            commit_InputList();
+            commit_InputList(false);
         } else {
             // 连续输入
             if (getInputList().isGapSelected()) {
@@ -1062,7 +1101,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (isEmpty) {
             // 直接提交输入
-            commit_InputList(isPairSymbolKey);
+            commit_InputList(false, isPairSymbolKey);
         } else {
             // 连续输入
             if (getInputList().isGapSelected()) {
@@ -1141,6 +1180,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
+    /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */
     protected boolean do_Choosing_Input_in_InputList(CharInput input) {return false;}
     // >>>>>>>>>
 }

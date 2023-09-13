@@ -169,6 +169,10 @@ public class Service extends InputMethodService implements InputMsgListener {
                 commitText(((InputListCommittingMsgData) data).text);
                 break;
             }
+            case InputList_Revoking: {
+                revokeCommitting();
+                break;
+            }
             case InputList_PairSymbol_Committing: {
                 InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
                 commitText(d.left, d.right);
@@ -324,6 +328,10 @@ public class Service extends InputMethodService implements InputMsgListener {
         ic.setSelection(extractedText.selectionStart + offset, extractedText.selectionEnd + offset);
 
         ic.endBatchEdit();
+    }
+
+    private void revokeCommitting() {
+        undoInputChange();
     }
 
     private void sendKey(int code) {

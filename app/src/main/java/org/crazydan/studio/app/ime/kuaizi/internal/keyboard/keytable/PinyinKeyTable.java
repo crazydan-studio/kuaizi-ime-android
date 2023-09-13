@@ -112,7 +112,7 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(true),
+                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
                 symbolKey("，").withReplacements(","),
                 alphabetKey("sh").withReplacements("Sh", "SH"),
                 alphabetKey("ch").withReplacements("Ch", "CH"),

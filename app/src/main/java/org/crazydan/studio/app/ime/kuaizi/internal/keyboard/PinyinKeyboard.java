@@ -163,7 +163,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 双击前已触发两次单击，故，不需再播放按键提示音
                 //play_InputtingSingleTick_Audio(key);
 
-                // TODO 双击切换字母按键的策略需调整
+                // TODO 双击切换字母按键的策略需调整：直输的输入也支持替换，通过判断是否有待撤回输入判断是否替换前序输入字母。单击事件增加是否为连续点击的标识以区分独立单击和双击中的单击
                 do_ReplacementKey_Inputting(key);
                 break;
             }

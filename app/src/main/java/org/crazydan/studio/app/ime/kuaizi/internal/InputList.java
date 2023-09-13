@@ -33,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * {@link Keyboard 键盘}输入列表，含零个或多个{@link Input 输入对象}
@@ -48,6 +49,8 @@ public class InputList {
     private final Cursor cursor = new Cursor();
 
     private Input.Option option;
+    /** 已提交输入，用于撤回 */
+    private List<Input> committedInputs;
 
     public InputList() {
         reset();
@@ -76,16 +79,68 @@ public class InputList {
 
     /** 重置输入列表 */
     public void reset() {
+        doReset();
+
+        UserInputMsgData msgData = new UserInputMsgData(null);
+        onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
+    }
+
+    /**
+     * 提交输入列表
+     * <p/>
+     * 返回{@link #getText() 输入文本}，并{@link #reset() 重置}
+     */
+    public StringBuilder commit(boolean canBeRevoked) {
+        StringBuilder text = getText();
+
+        if (!canBeRevoked) {
+            reset();
+            return text;
+        }
+
+        boolean isEmpty = isEmpty();
+        List<Input> inputs = new ArrayList<>(this.inputs);
+        reset();
+
+        if (!isEmpty) {
+            this.committedInputs = inputs;
+        }
+
+        return text;
+    }
+
+    public boolean canBeRevoked() {
+        return this.committedInputs != null;
+    }
+
+    /** 撤回已提交的输入 */
+    public void revoke() {
+        if (this.committedInputs == null) {
+            return;
+        }
+
+        List<Input> inputs = this.committedInputs;
+        doReset();
+
+        this.inputs.clear();
+        this.inputs.addAll(inputs);
+        this.cursor.selected = CollectionUtils.last(this.inputs);
+    }
+
+    /** 清除待撤销数据 */
+    public void cleanRevokes() {
+        this.committedInputs = null;
+    }
+
+    private void doReset() {
         this.inputs.clear();
         this.cursor.reset();
         this.candidateWordsCache.clear();
 
         this.inputs.add(new GapInput());
-        this.cursor.selected = this.inputs.get(0);
+        this.cursor.selected = CollectionUtils.first(this.inputs);
         this.option = null;
-
-        UserInputMsgData msgData = new UserInputMsgData(null);
-        onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
+        this.committedInputs = null;
     }
 
     /** 缓存输入的候选字列表 */
@@ -519,11 +574,11 @@ public class InputList {
     }
 
     public Input getFirstInput() {
-        return this.inputs.size() > 0 ? this.inputs.get(0) : null;
+        return CollectionUtils.first(this.inputs);
     }
 
     public Input getLastInput() {
-        return this.inputs.size() > 0 ? this.inputs.get(this.inputs.size() - 1) : null;
+        return CollectionUtils.last(this.inputs);
     }
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
