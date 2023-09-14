@@ -523,7 +523,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 回删输入目标中的内容，且状态保持不变
      */
     protected void backspace_InputTarget() {
-        do_InputTarget_Edit(InputEditAction.backspace);
+        do_InputTarget_Editing(InputEditAction.backspace);
     }
 
     /** 为状态数据做翻页处理 */
@@ -913,7 +913,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     play_InputtingSingleTick_Audio(key);
 
                     CtrlKey.EditInputTargetOption option = (CtrlKey.EditInputTargetOption) key.getOption();
-                    do_InputTarget_Edit(option.value());
+                    do_InputTarget_Editing(option.value());
                 }
                 break;
             }
@@ -935,7 +935,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    private void do_InputTarget_Edit(InputEditAction action) {
+    private void do_InputTarget_Editing(InputEditAction action) {
         switch (action) {
             case noop:
             case copy:
