@@ -45,10 +45,6 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private InputList inputList;
     private List<Integer> inputHashes = new ArrayList<>();
 
-    public int getSelectedInputPosition() {
-        return this.inputList.getSelectedIndex();
-    }
-
     /** 更新输入列表，并对发生变更的输入发送变更消息，以仅对变化的输入做渲染 */
     public void updateInputList(InputList inputList) {
         this.inputList = inputList;

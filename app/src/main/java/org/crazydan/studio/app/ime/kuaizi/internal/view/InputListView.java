@@ -101,8 +101,34 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputList_PairSymbol_Committing:
                 this.adapter.updateInputList(this.inputList);
 
-                smoothScrollToPosition(this.adapter.getSelectedInputPosition());
+                int position = this.inputList.getSelectedIndex();
+                scrollToEnd(position);
                 break;
+        }
+    }
+
+    public void scrollToEnd(int position) {
+        View item = this.layoutManager.findViewByPosition(position);
+
+        int offset = 0;
+        if (item != null) {
+            int visibleWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
+            int itemWidth = item.getMeasuredWidth();
+
+            // 项目宽度超过可见区域宽度时，向可见区域的开始位置方向移动超出的部分，
+            // 以确保项目尾部始终在可见区域的结束位置处
+            if (itemWidth > visibleWidth) {
+                offset = -(itemWidth - visibleWidth);
+            }
+        }
+
+        // 不需要移动项目时，采用 scrollToPosition 以保持当前滚动位置不变：
+        // 在 offset 为 0 时，scrollToPositionWithOffset
+        // 会将项目移动到可见区域的开始位置处
+        if (offset == 0) {
+            this.layoutManager.scrollToPosition(position);
+        } else {
+            this.layoutManager.scrollToPositionWithOffset(position, offset);
         }
     }
 
