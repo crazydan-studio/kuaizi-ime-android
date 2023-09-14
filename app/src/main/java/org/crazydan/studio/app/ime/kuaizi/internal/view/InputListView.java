@@ -112,6 +112,7 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
         int offset = 0;
         if (item != null) {
+            // https://stackoverflow.com/questions/26580723/how-to-scroll-to-the-bottom-of-a-recyclerview-scrolltoposition-doesnt-work#answer-65990642
             int visibleWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
             int itemWidth = item.getMeasuredWidth();
 
