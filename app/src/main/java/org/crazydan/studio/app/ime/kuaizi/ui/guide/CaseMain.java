@@ -26,6 +26,7 @@ import android.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -33,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -89,10 +91,6 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
                 commitText(d.left, d.right);
                 break;
             }
-            case InputTarget_Backspacing: {
-                backwardDeleteInput();
-                break;
-            }
             case InputTarget_Cursor_Locating: {
                 locateInputCursor(((InputTargetCursorLocatingMsgData) data).anchor);
                 break;
@@ -101,24 +99,9 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
                 selectInputText(((InputTargetCursorLocatingMsgData) data).anchor);
                 break;
             }
-            case InputTarget_Copying: {
-                copyInputText();
-                break;
-            }
-            case InputTarget_Pasting: {
-                pasteInputText();
-                break;
-            }
-            case InputTarget_Cutting: {
-                cutInputText();
-                break;
-            }
-            case InputTarget_Undoing: {
-                undoInputChange();
-                break;
-            }
-            case InputTarget_Redoing: {
-                redoInputChange();
+            case InputTarget_Editing: {
+                InputTargetEditingMsgData d = (InputTargetEditingMsgData) data;
+                editInput(d.action);
                 break;
             }
             case IME_Switching: {
@@ -164,10 +147,6 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
         }
     }
 
-    private void revokeCommitting() {
-        undoInputChange();
-    }
-
     private void backwardDeleteInput() {
         sendKey(KeyEvent.KEYCODE_DEL);
     }
@@ -196,26 +175,6 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
         }
     }
 
-    private void copyInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.copy);
-    }
-
-    private void pasteInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.paste);
-    }
-
-    private void cutInputText() {
-        this.editText.onTextContextMenuItem(android.R.id.cut);
-    }
-
-    private void undoInputChange() {
-        this.editText.onTextContextMenuItem(android.R.id.undo);
-    }
-
-    private void redoInputChange() {
-        this.editText.onTextContextMenuItem(android.R.id.redo);
-    }
-
     private void selectInputText(Motion anchor) {
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -225,6 +184,33 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
         sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
         locateInputCursor(anchor);
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
+    }
+
+    private void editInput(InputEditAction action) {
+        switch (action) {
+            case backspace:
+                backwardDeleteInput();
+                break;
+            case copy:
+                this.editText.onTextContextMenuItem(android.R.id.copy);
+                break;
+            case paste:
+                this.editText.onTextContextMenuItem(android.R.id.paste);
+                break;
+            case cut:
+                this.editText.onTextContextMenuItem(android.R.id.cut);
+                break;
+            case redo:
+                this.editText.onTextContextMenuItem(android.R.id.redo);
+                break;
+            case undo:
+                this.editText.onTextContextMenuItem(android.R.id.undo);
+                break;
+        }
+    }
+
+    private void revokeCommitting() {
+        editInput(InputEditAction.undo);
     }
 
     private void sendKey(int code) {

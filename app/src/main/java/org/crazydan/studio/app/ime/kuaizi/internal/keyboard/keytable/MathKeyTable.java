@@ -76,7 +76,7 @@ public class MathKeyTable extends KeyTable {
         gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.LocateInputCursor);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
-        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
+        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
 
         int dataIndex = 0;

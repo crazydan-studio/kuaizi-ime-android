@@ -164,7 +164,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeyLongPressStart) {
-            if (key.getType() == CtrlKey.Type.CommitInputList) {
+            if (key.getType() == CtrlKey.Type.Commit_InputList) {
                 play_InputtingDoubleTick_Audio(key);
 
                 start_InputList_Committing_Option_Choosing();
@@ -256,25 +256,19 @@ public class PinyinKeyboard extends BaseKeyboard {
                 start_InputCandidate_Choosing(pending, true);
                 break;
             }
+            case Filter_PinyinInputCandidate_stroke: {
+                do_InputCandidate_Filtering_ByStroke(key, 1);
+                break;
+            }
         }
     }
 
     private void on_InputCandidates_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         UserFingerFlippingMsgData flippingData = (UserFingerFlippingMsgData) data;
 
-        // 增减过滤的笔画数
+        // 减去过滤的笔画数
         if (key instanceof CtrlKey && ((CtrlKey) key).getType() == CtrlKey.Type.Filter_PinyinInputCandidate_stroke) {
-            int increment = 1;
-            switch (flippingData.motion.direction) {
-                case down:
-                case right:
-                    increment = -1;
-                    break;
-            }
-
-            CtrlKey.TextOption option = (CtrlKey.TextOption) ((CtrlKey) key).getOption();
-
-            do_InputCandidate_Filtering_ByStroke(key, option.value(), increment);
+            do_InputCandidate_Filtering_ByStroke((CtrlKey) key, -1);
             return;
         }
 
@@ -374,9 +368,11 @@ public class PinyinKeyboard extends BaseKeyboard {
         do_InputCandidate_Choosing();
     }
 
-    private void do_InputCandidate_Filtering_ByStroke(Key<?> key, String strokeCode, int strokeIncrement) {
+    private void do_InputCandidate_Filtering_ByStroke(CtrlKey key, int strokeIncrement) {
         ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
-        if (stateData.addStroke(strokeCode, strokeIncrement)) {
+
+        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+        if (stateData.addStroke(option.value(), strokeIncrement)) {
             play_InputtingSingleTick_Audio(key);
         }
 
@@ -523,7 +519,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void on_InputList_Committing_Option_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeySingleTap: {
-                if (key.getType() == CtrlKey.Type.Option_CommitInputList) {
+                if (key.getType() == CtrlKey.Type.Commit_InputList_Option) {
                     play_InputtingSingleTick_Audio(key);
 
                     CtrlKey.CommitInputListOption.Option option
@@ -569,7 +565,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case KeyLongPressStart: {
-                if (key.getType() == CtrlKey.Type.CommitInputList) {
+                if (key.getType() == CtrlKey.Type.Commit_InputList) {
                     play_InputtingDoubleTick_Audio(key);
 
                     getInputList().setOption(null);

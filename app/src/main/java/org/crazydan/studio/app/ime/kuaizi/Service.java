@@ -31,6 +31,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -38,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
@@ -181,10 +183,6 @@ public class Service extends InputMethodService implements InputMsgListener {
                 commitText(d.left, d.right);
                 break;
             }
-            case InputTarget_Backspacing: {
-                backwardDeleteInput();
-                break;
-            }
             case InputTarget_Cursor_Locating: {
                 locateInputCursor((InputTargetCursorLocatingMsgData) data);
                 break;
@@ -193,24 +191,9 @@ public class Service extends InputMethodService implements InputMsgListener {
                 selectInputText((InputTargetCursorLocatingMsgData) data);
                 break;
             }
-            case InputTarget_Copying: {
-                copyInputText();
-                break;
-            }
-            case InputTarget_Pasting: {
-                pasteInputText();
-                break;
-            }
-            case InputTarget_Cutting: {
-                cutInputText();
-                break;
-            }
-            case InputTarget_Undoing: {
-                undoInputChange();
-                break;
-            }
-            case InputTarget_Redoing: {
-                redoInputChange();
+            case InputTarget_Editing: {
+                InputTargetEditingMsgData d = (InputTargetEditingMsgData) data;
+                editInput(d.action);
                 break;
             }
             case IME_Switching: {
@@ -266,24 +249,31 @@ public class Service extends InputMethodService implements InputMsgListener {
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void copyInputText() {
-        super.onExtractTextContextMenuItem(android.R.id.copy);
+    private void editInput(InputEditAction action) {
+        switch (action) {
+            case backspace:
+                backwardDeleteInput();
+                break;
+            case copy:
+                super.onExtractTextContextMenuItem(android.R.id.copy);
+                break;
+            case paste:
+                super.onExtractTextContextMenuItem(android.R.id.paste);
+                break;
+            case cut:
+                super.onExtractTextContextMenuItem(android.R.id.cut);
+                break;
+            case redo:
+                super.onExtractTextContextMenuItem(android.R.id.redo);
+                break;
+            case undo:
+                super.onExtractTextContextMenuItem(android.R.id.undo);
+                break;
+        }
     }
 
-    private void pasteInputText() {
-        super.onExtractTextContextMenuItem(android.R.id.paste);
-    }
-
-    private void cutInputText() {
-        super.onExtractTextContextMenuItem(android.R.id.cut);
-    }
-
-    private void undoInputChange() {
-        super.onExtractTextContextMenuItem(android.R.id.undo);
-    }
-
-    private void redoInputChange() {
-        super.onExtractTextContextMenuItem(android.R.id.redo);
+    private void revokeCommitting() {
+        editInput(InputEditAction.undo);
     }
 
     private void commitText(CharSequence text, List<String> replacements) {
@@ -338,10 +328,6 @@ public class Service extends InputMethodService implements InputMsgListener {
         ic.setSelection(extractedText.selectionStart + offset, extractedText.selectionEnd + offset);
 
         ic.endBatchEdit();
-    }
-
-    private void revokeCommitting() {
-        undoInputChange();
     }
 
     private void sendKey(int code) {

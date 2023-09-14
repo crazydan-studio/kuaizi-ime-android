@@ -87,7 +87,7 @@ public class LatinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("p").withReplacements("P"),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),

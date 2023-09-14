@@ -99,9 +99,9 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
+        ctrl_key_styles.put(CtrlKey.Type.Commit_InputList,
                             KeyStyle.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Option_CommitInputList, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Commit_InputList_Option, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
                             KeyStyle.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
@@ -151,11 +151,7 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
-        ctrl_key_styles.put(CtrlKey.Type.Undo, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Redo, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Cut, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Paste, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Copy, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Edit_InputTarget, key_ctrl_label_style);
     }
 
     protected final Config config;

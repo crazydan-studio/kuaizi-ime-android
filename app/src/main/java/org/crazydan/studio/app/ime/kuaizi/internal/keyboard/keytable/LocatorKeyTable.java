@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 
 /**
  * 光标定位功能 的按键布局
@@ -52,15 +53,25 @@ public class LocatorKeyTable extends KeyTable {
         gridKeys[2][5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey();
+        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
-        gridKeys[3][3] = ctrlKey(CtrlKey.Type.Cut).setLabel("剪切");
-        gridKeys[4][2] = ctrlKey(CtrlKey.Type.Redo).setLabel("重做");
-        gridKeys[4][3] = ctrlKey(CtrlKey.Type.Undo).setLabel("撤销");
-        gridKeys[4][4] = ctrlKey(CtrlKey.Type.Paste).setLabel("粘贴");
-        gridKeys[4][5] = ctrlKey(CtrlKey.Type.Copy).setLabel("复制");
+        CtrlKey.Type type = CtrlKey.Type.Edit_InputTarget;
+        CtrlKey.Option<?> option = new CtrlKey.EditInputTargetOption(InputEditAction.cut);
+        gridKeys[3][3] = ctrlKey(type).setOption(option).setLabel("剪切");
+
+        option = new CtrlKey.EditInputTargetOption(InputEditAction.redo);
+        gridKeys[4][2] = ctrlKey(type).setOption(option).setLabel("重做");
+
+        option = new CtrlKey.EditInputTargetOption(InputEditAction.undo);
+        gridKeys[4][3] = ctrlKey(type).setOption(option).setLabel("撤销");
+
+        option = new CtrlKey.EditInputTargetOption(InputEditAction.paste);
+        gridKeys[4][4] = ctrlKey(type).setOption(option).setLabel("粘贴");
+
+        option = new CtrlKey.EditInputTargetOption(InputEditAction.copy);
+        gridKeys[4][5] = ctrlKey(type).setOption(option).setLabel("复制");
 
         return gridKeys;
     }

@@ -41,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingEmojiS
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingSymbolStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.LocatingInputCursorStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -55,6 +56,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
@@ -521,7 +523,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 回删输入目标中的内容，且状态保持不变
      */
     protected void backspace_InputTarget() {
-        fireInputMsg(InputMsg.InputTarget_Backspacing, new InputCommonMsgData(getKeyFactory()));
+        do_InputTarget_Edit(InputEditAction.backspace);
     }
 
     /** 为状态数据做翻页处理 */
@@ -617,7 +619,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case LocateInputCursor:
                         return true;
                     // 在任意子键盘中提交输入，都直接回到初始键盘
-                    case CommitInputList: {
+                    case Commit_InputList: {
                         play_InputtingSingleTick_Audio(key);
                         commit_InputList_and_Waiting_Input();
                         return true;
@@ -907,54 +909,44 @@ public abstract class BaseKeyboard implements Keyboard {
     private void on_LocatingInputTargetCursor_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
             case KeySingleTap: {
-                switch (key.getType()) {
-                    case Redo:
-                        play_InputtingSingleTick_Audio(key);
+                if (key.getType() == CtrlKey.Type.Edit_InputTarget) {
+                    play_InputtingSingleTick_Audio(key);
 
-                        do_InputTarget_Redoing();
-                        break;
-                    case Undo:
-                        play_InputtingSingleTick_Audio(key);
-
-                        do_InputTarget_Undoing();
-                        break;
-                    case Cut:
-                        play_InputtingSingleTick_Audio(key);
-
-                        do_InputTarget_Cutting();
-                        break;
-                    case Paste:
-                        play_InputtingSingleTick_Audio(key);
-
-                        do_InputTarget_Pasting();
-                        break;
-                    case Copy:
-                        play_InputtingSingleTick_Audio(key);
-
-                        do_InputTarget_Copying();
-                        break;
+                    CtrlKey.EditInputTargetOption option = (CtrlKey.EditInputTargetOption) key.getOption();
+                    do_InputTarget_Edit(option.value());
                 }
                 break;
             }
             case FingerFlipping:
-                // Note: 仅在 按键 上的滑动才有效
-                if (key != null) {
-                    Motion motion = ((UserFingerFlippingMsgData) data).motion;
-                    switch (key.getType()) {
-                        case LocateInputCursor_Locator:
-                            play_InputtingSingleTick_Audio(key);
+                Motion motion = ((UserFingerFlippingMsgData) data).motion;
+                switch (key.getType()) {
+                    case LocateInputCursor_Locator:
+                        play_InputtingSingleTick_Audio(key);
 
-                            do_InputTarget_Cursor_Locating(key, motion);
-                            break;
-                        case LocateInputCursor_Selector:
-                            play_InputtingSingleTick_Audio(key);
+                        do_InputTarget_Cursor_Locating(key, motion);
+                        break;
+                    case LocateInputCursor_Selector:
+                        play_InputtingSingleTick_Audio(key);
 
-                            do_InputTarget_Selecting(key, motion);
-                            break;
-                    }
+                        do_InputTarget_Selecting(key, motion);
+                        break;
                 }
                 break;
         }
+    }
+
+    private void do_InputTarget_Edit(InputEditAction action) {
+        switch (action) {
+            case noop:
+            case copy:
+                // 无需清空待撤回输入数据
+                break;
+            default:
+                getInputList().cleanRevokes();
+        }
+
+        InputMsgData data = new InputTargetEditingMsgData(getKeyFactory(), action);
+        fireInputMsg(InputMsg.InputTarget_Editing, data);
     }
 
     private void do_InputTarget_Selecting(CtrlKey key, Motion motion) {
@@ -963,39 +955,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         InputMsgData data = new InputTargetCursorLocatingMsgData(key, stateData.getSelector());
         fireInputMsg(InputMsg.InputTarget_Selecting, data);
-    }
-
-    private void do_InputTarget_Copying() {
-        InputMsgData data = new InputCommonMsgData();
-        fireInputMsg(InputMsg.InputTarget_Copying, data);
-    }
-
-    private void do_InputTarget_Pasting() {
-        getInputList().cleanRevokes();
-
-        InputMsgData data = new InputCommonMsgData();
-        fireInputMsg(InputMsg.InputTarget_Pasting, data);
-    }
-
-    private void do_InputTarget_Cutting() {
-        getInputList().cleanRevokes();
-
-        InputMsgData data = new InputCommonMsgData();
-        fireInputMsg(InputMsg.InputTarget_Cutting, data);
-    }
-
-    private void do_InputTarget_Undoing() {
-        getInputList().cleanRevokes();
-
-        InputMsgData data = new InputCommonMsgData();
-        fireInputMsg(InputMsg.InputTarget_Undoing, data);
-    }
-
-    private void do_InputTarget_Redoing() {
-        getInputList().cleanRevokes();
-
-        InputMsgData data = new InputCommonMsgData();
-        fireInputMsg(InputMsg.InputTarget_Redoing, data);
     }
     // >>>>>>>>
 

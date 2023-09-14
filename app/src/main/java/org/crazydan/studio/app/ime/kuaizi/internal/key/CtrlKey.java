@@ -22,6 +22,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 
 /**
  * 控制{@link Key 按键}
@@ -117,10 +118,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 回删 */
         Backspace,
 
-        /** 提交输入列表 */
-        CommitInputList,
+        /** 提交 输入列表 */
+        Commit_InputList,
         /** 输入列表 提交选项 */
-        Option_CommitInputList,
+        Commit_InputList_Option,
 
         /** 丢弃当前输入 */
         DropInput,
@@ -140,26 +141,19 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         LocateInputCursor_Locator,
         /** 输入光标定位按钮 - 选择 */
         LocateInputCursor_Selector,
+        /** 编辑 输入目标 */
+        Edit_InputTarget,
 
         /** 回车 */
         Enter,
         /** 退出当前键盘 */
         Exit,
-        /** 复制 */
-        Copy,
-        /** 粘贴 */
-        Paste,
-        /** 剪切 */
-        Cut,
-        /** 撤销 */
-        Undo,
-        /** 重做 */
-        Redo,
 
         /** 切换输入法 */
         SwitchIME,
         /** 切换左右手模式 */
         SwitchHandMode,
+
         /** 切换至拼音键盘 */
         SwitchToPinyinKeyboard,
         /** 切换至拉丁文键盘 */
@@ -235,6 +229,12 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             with_pinyin,
             /** 繁简转换 */
             switch_simple_trad,
+        }
+    }
+
+    public static class EditInputTargetOption extends Option<InputEditAction> {
+        public EditInputTargetOption(InputEditAction value) {
+            super(value);
         }
     }
 }

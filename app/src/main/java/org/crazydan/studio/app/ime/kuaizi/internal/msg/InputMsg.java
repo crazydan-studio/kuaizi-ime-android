@@ -40,20 +40,10 @@ public enum InputMsg {
 
     /** 定位输入目标的光标 */
     InputTarget_Cursor_Locating,
-    /** 回删输入目标中的内容 */
-    InputTarget_Backspacing,
     /** 选择输入目标的内容 */
     InputTarget_Selecting,
-    /** 复制输入目标的内容 */
-    InputTarget_Copying,
-    /** 粘贴内容到输入目标 */
-    InputTarget_Pasting,
-    /** 剪切输入目标的内容 */
-    InputTarget_Cutting,
-    /** 撤销对输入目标的变更 */
-    InputTarget_Undoing,
-    /** 重做对输入目标的变更 */
-    InputTarget_Redoing,
+    /** 编辑输入目标 */
+    InputTarget_Editing,
 
     /** 输入法切换中 */
     IME_Switching,

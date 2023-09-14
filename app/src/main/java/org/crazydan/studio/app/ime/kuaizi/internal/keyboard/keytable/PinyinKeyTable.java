@@ -98,7 +98,7 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.LocateInputCursor),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("g").withReplacements("G"),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.CommitInputList) : enterCtrlKey(),
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
@@ -208,7 +208,7 @@ public class PinyinKeyTable extends KeyTable {
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.ConfirmInput);
-        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.CommitInputList);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.DropInput);
 
         // 部首过滤按键
@@ -320,12 +320,12 @@ public class PinyinKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.only_pinyin);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("仅拼音");
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel("仅拼音");
 
         option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.with_pinyin);
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("带拼音");
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel("带拼音");
 
-        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.CommitInputList);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
 
 //        option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
 //        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("简/繁");
