@@ -1,0 +1,30 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/8679008/input_cursor_move_icon -->
+    <path
+            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:pathData="m7.636,20.818 l0,-0.182a1,1 135,0 1,1 -1L9.909,19.636a1,1 135,0 0,1 -1L10.909,5.364a1,1 45,0 0,-1 -1L8.636,4.364a1,1 45,0 1,-1 -1L7.636,3.182a1,1 135,0 1,1 -1h6.727a1,1 45,0 1,1 1v0.182a1,1 135,0 1,-1 1h-1.273a1,1 135,0 0,-1 1L13.091,18.636a1,1 45,0 0,1 1h1.273a1,1 45,0 1,1 1v0.182a1,1 135,0 1,-1 1L8.636,21.818a1,1 45,0 1,-1 -1zM19.307,7.307 L23.293,11.293a1,1 90,0 1,0 1.414l-3.986,3.986a1,1 0,0 1,-1.414 0l-0.128,-0.128a1,1 90,0 1,0 -1.414l2.443,-2.443a1,1 90,0 0,0 -1.414l-2.443,-2.443a1,1 90,0 1,0 -1.414l0.128,-0.128a1,1 180,0 1,1.414 -0zM6.107,7.307 L6.235,7.435a1,1 90,0 1,0 1.414l-2.443,2.443a1,1 90,0 0,0 1.414l2.443,2.443a1,1 90,0 1,0 1.414l-0.128,0.128a1,1 180,0 1,-1.414 0L0.707,12.707a1,1 90,0 1,-0 -1.414L4.693,7.307a1,1 180,0 1,1.414 0z"
+            android:strokeWidth="0"
+            android:strokeColor="?attr/key_ctrl_locator_fg_color"
+            android:strokeLineCap="round" />
+</vector>

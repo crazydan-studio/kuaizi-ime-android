@@ -100,9 +100,7 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.CommitInputList,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_commit,
-                                              R.drawable.ic_left_hand_commit,
-                                              R.attr.key_ctrl_commit_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Option_CommitInputList, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
@@ -128,9 +126,9 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
-                            KeyStyle.withIcon(R.drawable.ic_pointer, R.attr.key_ctrl_locator_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Locator,
-                            KeyStyle.withIcon(R.drawable.ic_map_location_pin, R.attr.key_ctrl_locator_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Selector,
                             KeyStyle.withIcon(R.drawable.ic_right_hand_selection,
                                               R.drawable.ic_left_hand_selection,
