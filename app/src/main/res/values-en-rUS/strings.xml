@@ -21,12 +21,12 @@
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
     <string name="title_app_guide">Kuaizi Input Method</string>
+    <string name="title_app_guide_case">Kuaizi Input Method Guide</string>
     <string name="title_about_app">About the Kuaizi input method</string>
     <string name="title_about_team">About the development team</string>
     <string name="title_about_suggestion">Give us some suggestions</string>
     <string name="title_about_thanks">Thanks</string>
     <string name="title_about_change_log">Change log</string>
-    <string name="title_guide_exercises">Kuaizi Input Method Guide</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
@@ -34,7 +34,7 @@
 
     <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
     <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
-    <string name="btn_guide_try_exercises">Try Some Exercises First</string>
+    <string name="btn_guide_try_cases">Try Some Exercises First</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>

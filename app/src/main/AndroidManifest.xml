@@ -113,12 +113,13 @@
         </activity>
 
         <activity
-                android:name=".ui.guide.ExercisesMain"
+                android:name=".ui.guide.CaseMain"
                 android:exported="false"
-                android:label="@string/title_guide_exercises"
-                android:theme="@style/Theme.MaterialComponents">
+                android:label="@string/title_app_guide_case"
+                android:theme="@style/Theme.MaterialComponents"
+                android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name=".ui.guide.ExercisesMain" />
+                <action android:name=".ui.guide.CaseMain" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

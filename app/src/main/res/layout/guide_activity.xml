@@ -62,8 +62,8 @@
                 app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_guide_try_exercises"
-                android:text="@string/btn_guide_try_exercises"
+                android:id="@+id/btn_guide_try_cases"
+                android:text="@string/btn_guide_try_cases"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="256dp"

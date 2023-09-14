@@ -40,13 +40,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExercisesMain extends FollowSystemThemeActivity implements InputMsgListener {
+public class CaseMain extends FollowSystemThemeActivity implements InputMsgListener {
     private EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.guide_exercises_activity);
+        setContentView(R.layout.guide_case_activity);
 
         this.editText = findViewById(R.id.text_input);
         this.editText.setClickable(false);

@@ -21,12 +21,12 @@
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide">筷字输入法</string>
+    <string name="title_app_guide_case">筷字输入法使用练习</string>
     <string name="title_about_app">关于筷字输入法</string>
     <string name="title_about_team">关于开发团队</string>
     <string name="title_about_suggestion">意见与建议</string>
     <string name="title_about_thanks">感谢</string>
     <string name="title_about_change_log">变更日志</string>
-    <string name="title_guide_exercises">筷字输入法使用练习</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
@@ -34,7 +34,7 @@
 
     <string name="btn_guide_enable_ime">启用输入法</string>
     <string name="btn_guide_disable_ime">禁用输入法</string>
-    <string name="btn_guide_try_exercises">先练练手</string>
+    <string name="btn_guide_try_cases">先练练手</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
