@@ -30,6 +30,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 创建副本 */
     T copy();
 
+    /** 确认输入，一般用于包含 输入列表 的输入 */
+    void confirm();
+
     /** 是否为英文、数字或二者的组合输入 */
     boolean isLatin();
 
@@ -101,6 +104,10 @@ public interface Input<T extends Input<?>> extends ViewData {
      * @return 若为<code>null</code>，则表示未选择
      */
     InputWord getWord();
+
+    static boolean isEmpty(Input<?> input) {
+        return input == null || input.isEmpty();
+    }
 
     class Option {
         public final InputWord.NotationType wordNotationType;

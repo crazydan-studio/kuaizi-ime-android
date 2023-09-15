@@ -35,11 +35,11 @@ public class CharInputView extends InputView<CharInput> {
     }
 
     public void bind(
-            Input.Option option, CharInput input, CharInput pending, boolean selected
+            Input.Option option, CharInput data, CharInput pending, boolean selected
     ) {
-        super.bind(input);
+        super.bind(data);
 
-        showWord(option, pending != null ? pending : input, selected);
+        showWord(option, Input.isEmpty(pending) ? data : pending, selected);
         setSelectedBgColor(this.itemView, selected);
     }
 }

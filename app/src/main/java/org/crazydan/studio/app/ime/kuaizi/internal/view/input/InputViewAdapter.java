@@ -73,13 +73,15 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
         Input<?> input = this.inputList.getInputs().get(position);
         CharInput pending = this.inputList.getPendingOn(input);
-        Input<?> target = pending != null ? pending : input;
+        CharMathExprInput mathExprInput = determineMathExprInput(position);
 
         boolean selected = needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
 
-        if (target.isMathExpr()) {
-            ((CharMathExprInputView) view).bind(option, (CharMathExprInput) target);
+        if (mathExprInput != null) {
+            // Note：视图始终与待输入的算数输入绑定，
+            // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算数表达式中的字符
+            ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected);
         } else if (input instanceof CharInput) {
             ((CharInputView) view).bind(option, (CharInput) input, pending, selected);
         } else {
@@ -90,10 +92,9 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     @Override
     public int getItemViewType(int position) {
         Input<?> input = this.inputList.getInputs().get(position);
-        CharInput pending = this.inputList.getPendingOn(input);
-        Input<?> target = pending != null ? pending : input;
+        CharMathExprInput mathExprInput = determineMathExprInput(position);
 
-        if (target.isMathExpr()) {
+        if (mathExprInput != null) {
             return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
         } else if (input instanceof CharInput) {
             return VIEW_TYPE_CHAR_INPUT;
@@ -146,5 +147,24 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         }
 
         return selected;
+    }
+
+    private CharMathExprInput determineMathExprInput(int position) {
+        Input<?> input = this.inputList.getInputs().get(position);
+        CharInput pending = this.inputList.getPendingOn(input);
+
+        return isMathExprInput(pending)
+               // 待输入的算数不能为空，否则，原输入需为空，才能将待输入作为算数输入，
+               // 从而确保在未修改非算数输入时能够正常显示原始输入
+               && (!Input.isEmpty(pending) || Input.isEmpty(input)) //
+               ? (CharMathExprInput) pending //
+               : isMathExprInput(input)
+                 // 若算数输入 没有 被替换为非算数输入，则返回其自身
+                 && Input.isEmpty(pending) //
+                 ? (CharMathExprInput) input : null;
+    }
+
+    private boolean isMathExprInput(Input<?> input) {
+        return input != null && input.isMathExpr();
     }
 }

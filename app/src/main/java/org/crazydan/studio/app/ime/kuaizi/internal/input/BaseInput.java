@@ -53,6 +53,9 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
+    public void confirm() {}
+
+    @Override
     public boolean isLatin() {
         return !isPinyin() && test(Key::isLatin);
     }

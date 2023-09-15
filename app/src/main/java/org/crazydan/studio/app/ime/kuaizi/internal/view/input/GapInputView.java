@@ -50,10 +50,10 @@ public class GapInputView extends InputView<GapInput> {
         this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
-    public void bind(Input.Option option, GapInput input, CharInput pending, boolean needGapSpace, boolean selected) {
-        super.bind(input);
+    public void bind(Input.Option option, GapInput data, CharInput pending, boolean needGapSpace, boolean selected) {
+        super.bind(data);
 
-        boolean hasPending = pending != null && !pending.isEmpty();
+        boolean hasPending = !Input.isEmpty(pending);
         if (hasPending) {
             addSpaceMargin(this.pendingView, needGapSpace ? 2 : 1);
 

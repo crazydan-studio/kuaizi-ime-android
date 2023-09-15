@@ -167,7 +167,7 @@ public class InputList {
 
     /** 是否有空的待输入 */
     public boolean hasEmptyPending() {
-        return getPending() == null || getPending().isEmpty();
+        return Input.isEmpty(getPending());
     }
 
     public Input.Option getOption() {
@@ -176,19 +176,6 @@ public class InputList {
 
     public void setOption(Input.Option option) {
         this.option = option;
-    }
-
-    /** 创建副本 */
-    public InputList copy() {
-        InputList copied = new InputList();
-
-        copied.inputs.addAll(this.inputs.stream().map(Input::copy).collect(Collectors.toList()));
-
-        int selectedIndex = getSelectedIndex();
-        copied.cursor.selected = copied.inputs.get(selectedIndex);
-        copied.cursor.pending = this.cursor.pending != null ? this.cursor.pending.copy() : null;
-
-        return copied;
     }
 
     /**
@@ -272,13 +259,16 @@ public class InputList {
      * </ul>
      */
     public void confirmPending() {
-        CharInput pending = getPending();
         Input<?> selected = getSelected();
 
         int selectedIndex = getSelectedIndex();
-        if (pending == null || pending.isEmpty() || selectedIndex < 0) {
+        if (hasEmptyPending() || selectedIndex < 0) {
             return;
         }
+
+        CharInput pending = getPending();
+        // 先由待输入做其内部确认
+        pending.confirm();
 
         this.cursor.pending = null;
         if (selected instanceof CharInput) {
@@ -352,6 +342,11 @@ public class InputList {
         int selected = getSelectedIndex();
 
         newPendingOn(selected + 1);
+    }
+
+    /** 重置光标 */
+    public void resetCursor() {
+        this.cursor.reset();
     }
 
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
@@ -568,7 +563,8 @@ public class InputList {
             return !left.isSymbol();
         }
 
-        return left.isMathExpr() || right.isMathExpr();
+        // Note：算数表达式输入的开始和结果自带占位，故，不需要再添加空白占位
+        return false;
     }
 
     /** 是否需要添加 Gap 空格 */

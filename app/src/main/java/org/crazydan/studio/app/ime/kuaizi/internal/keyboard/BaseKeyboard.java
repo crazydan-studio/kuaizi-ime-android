@@ -1203,6 +1203,8 @@ public abstract class BaseKeyboard implements Keyboard {
             boolean hasPair = input instanceof CharInput && ((CharInput) input).hasPair();
 
             start_Symbol_Choosing(hasPair);
+        } else if (pending.isMathExpr()) {
+            switch_Keyboard(Type.Math);
         } else if (!do_Choosing_Input_in_InputList(pending)) {
             confirm_Pending_and_Waiting_Input();
         }

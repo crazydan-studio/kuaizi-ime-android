@@ -24,6 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * {@link CharMathExprInput} 的视图
@@ -31,19 +32,28 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-15
  */
-public class CharMathExprInputView extends InputView<CharMathExprInput> {
+public class CharMathExprInputView extends InputView<Input<?>> {
     private final InputListView inputListView;
+    private final View markerView;
 
     public CharMathExprInputView(@NonNull View itemView) {
         super(itemView);
 
         this.inputListView = itemView.findViewById(R.id.input_list);
+        this.markerView = itemView.findViewById(R.id.marker);
     }
 
-    public void bind(Input.Option option, CharMathExprInput input) {
-        super.bind(input);
+    public void bind(Input.Option option, Input<?> data, CharMathExprInput input, boolean selected) {
+        super.bind(data);
 
         InputList inputList = input.getInputList();
         this.inputListView.setInputList(inputList);
+
+        int markerBgColor = selected
+                            ? R.attr.input_char_math_expr_border_highlight_color
+                            : R.attr.input_char_math_expr_border_color;
+        setBackgroundColorByAttrId(this.markerView, markerBgColor);
+
+        ViewUtils.visible(this.markerView, !inputList.isEmpty());
     }
 }

@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
@@ -40,6 +41,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  * @date 2023-07-04
  */
 public class MathKeyboard extends BaseKeyboard {
+    private final UserInputMsgListener topUserInputMsgListener = this::onTopUserInputMsg;
+
+    private InputList mathInputList;
 
     @Override
     protected KeyFactory doGetKeyFactory() {
@@ -50,8 +54,33 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        if (msg == UserInputMsg.Cleaning_Inputs) {
-            super.onUserInputMsg(msg, data);
+        super.onUserInputMsg(msg, data);
+    }
+
+    public void onTopUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (msg) {
+            case Choosing_Input: {
+                Input<?> input = data.target;
+
+                // newPendingOn(input) 不会确认已选中的输入，
+                // 故，需强制确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
+                getTopInputList().confirmPending();
+                getTopInputList().newPendingOn(input);
+
+                // 仅处理算数表达式输入
+                if (!input.isMathExpr()) {
+                    super.switchTo_Previous_Keyboard();
+                } else {
+                    resetMathInputList();
+                }
+                break;
+            }
+            case Cleaning_Inputs: {
+                resetMathInputList();
+
+                clean_InputList();
+                break;
+            }
         }
     }
 
@@ -97,24 +126,80 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public InputList getInputList() {
-        InputList topInputList = super.getInputList();
+    protected void switchTo_Previous_Keyboard() {
+        // 在切换前，确保当前的算数输入列表已被确认，
+        getTopInputList().confirmPending();
+        // 并丢弃当前的算数输入 pending 以备用于输入其他字符
+        getTopInputList().newPending();
 
-        Input<?> pending = topInputList.getPending();
-        if (pending == null || !pending.isMathExpr()) {
-            topInputList.withPending(new CharMathExprInput());
-        }
-
-        CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
-        return input.getInputList();
+        super.switchTo_Previous_Keyboard();
     }
 
     @Override
-    protected void switchTo_Previous_Keyboard() {
-        // 确保在切换到其他键盘前，当前表达式输入均完成提交
-        getInputList().confirmPending();
+    public InputList getInputList() {
+        // 基类的输入列表操作均做用到算数输入列表上
+        return this.mathInputList;
+    }
 
-        super.switchTo_Previous_Keyboard();
+    @Override
+    public void destroy() {
+        dropMathInputList();
+        getTopInputList().removeUserInputMsgListener(this.topUserInputMsgListener);
+
+        super.destroy();
+    }
+
+    @Override
+    public void reset() {
+        resetMathInputList();
+
+        super.reset();
+    }
+
+    /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */
+    private void resetMathInputList() {
+        setInputList(getTopInputList());
+    }
+
+    private void dropMathInputList() {
+        if (this.mathInputList == null) {
+            return;
+        }
+
+        // 移除算数输入列表的监听
+        this.mathInputList.removeUserInputMsgListener(this);
+        this.mathInputList = null;
+    }
+
+    private InputList getTopInputList() {
+        return super.getInputList();
+    }
+
+    @Override
+    public void setInputList(InputList inputList) {
+        dropMathInputList();
+        super.setInputList(inputList);
+
+        // 算数键盘仅响应上层输入列表的特定事件
+        inputList.removeUserInputMsgListener(this);
+        inputList.addUserInputMsgListener(this.topUserInputMsgListener);
+
+        Input<?> selected = inputList.getSelected();
+        Input<?> pending = inputList.getPending();
+
+        if (pending == null || !pending.isMathExpr()) {
+            if (selected.isMathExpr()) {
+                inputList.newPendingOn(selected);
+            } else {
+                inputList.withPending(new CharMathExprInput());
+            }
+        }
+
+        // 在上层输入列表中绑定算数输入列表
+        CharMathExprInput input = (CharMathExprInput) inputList.getPending();
+
+        this.mathInputList = input.getInputList();
+        this.mathInputList.addUserInputMsgListener(this);
     }
 
     private void do_MathKey_Inputting(Key<?> key) {
@@ -122,18 +207,18 @@ public class MathKeyboard extends BaseKeyboard {
             getInputList().newPending();
         }
 
-        CharInput pending = getInputList().getPending();
-        pending.appendKey(key);
-
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Math_Dot:
                 case Math_Percent:
                     break;
                 default:
-                    getInputList().confirmPending();
+                    getInputList().newPending();
             }
         }
+
+        CharInput pending = getInputList().getPending();
+        pending.appendKey(key);
 
         fire_InputChars_Inputting(getKeyFactory(), key);
     }
