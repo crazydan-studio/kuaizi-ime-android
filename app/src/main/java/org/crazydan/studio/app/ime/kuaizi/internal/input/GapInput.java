@@ -31,33 +31,28 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class GapInput extends BaseInput {
+public class GapInput extends BaseInput<GapInput> {
 
     @Override
-    public void appendKey(Key<?> key) {
+    public GapInput copy() {
+        return new GapInput();
     }
 
     @Override
-    public void dropLastKey() {
-    }
+    public void appendKey(Key<?> key) {}
 
     @Override
-    public List<String> getChars() {
-        return new ArrayList<>();
-    }
+    public void dropLastKey() {}
 
     @Override
-    public boolean isSameWith(Object o) {
-        return equals(o);
-    }
+    public List<String> getChars() {return new ArrayList<>();}
 
     @Override
-    public boolean equals(Object o) {
-        return this == o;
-    }
+    public boolean isSameWith(Object o) {return equals(o);}
 
     @Override
-    public int hashCode() {
-        return System.identityHashCode(this);
-    }
+    public boolean equals(Object o) {return this == o;}
+
+    @Override
+    public int hashCode() {return System.identityHashCode(this);}
 }

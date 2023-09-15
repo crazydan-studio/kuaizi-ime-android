@@ -17,8 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
@@ -66,36 +70,71 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                // 单字符输入
-                play_InputtingSingleTick_Audio(key);
+        if (msg == UserKeyMsg.KeySingleTap) {// 单字符输入
+            play_InputtingSingleTick_Audio(key);
 
-                append_Key_for_Continuous_InputChars_Inputting(key);
-                break;
-            }
+            do_MathKey_Inputting(key);
         }
     }
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                play_InputtingSingleTick_Audio(key);
+        if (msg == UserKeyMsg.KeySingleTap) {
+            play_InputtingSingleTick_Audio(key);
 
-                switch (key.getType()) {
-                    case Math_Plus:
-                    case Math_Minus:
-                    case Math_Multiply:
-                    case Math_Divide:
-                    case Math_Equal:
-                    case Math_Dot:
-                    case Math_Percent: {
-                        append_Key_for_Continuous_InputChars_Inputting(key);
-                        break;
-                    }
+            switch (key.getType()) {
+                case Math_Plus:
+                case Math_Minus:
+                case Math_Multiply:
+                case Math_Divide:
+                case Math_Equal:
+                case Math_Dot:
+                case Math_Percent: {
+                    do_MathKey_Inputting(key);
+                    break;
                 }
-                break;
             }
         }
+    }
+
+    @Override
+    public InputList getInputList() {
+        InputList topInputList = super.getInputList();
+
+        Input<?> pending = topInputList.getPending();
+        if (pending == null || !pending.isMathExpr()) {
+            topInputList.withPending(new CharMathExprInput());
+        }
+
+        CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
+        return input.getInputList();
+    }
+
+    @Override
+    protected void switchTo_Previous_Keyboard() {
+        // 确保在切换到其他键盘前，当前表达式输入均完成提交
+        getInputList().confirmPending();
+
+        super.switchTo_Previous_Keyboard();
+    }
+
+    private void do_MathKey_Inputting(Key<?> key) {
+        if (getInputList().hasEmptyPending()) {
+            getInputList().newPending();
+        }
+
+        CharInput pending = getInputList().getPending();
+        pending.appendKey(key);
+
+        if (key instanceof CtrlKey) {
+            switch (((CtrlKey) key).getType()) {
+                case Math_Dot:
+                case Math_Percent:
+                    break;
+                default:
+                    getInputList().confirmPending();
+            }
+        }
+
+        fire_InputChars_Inputting(getKeyFactory(), key);
     }
 }

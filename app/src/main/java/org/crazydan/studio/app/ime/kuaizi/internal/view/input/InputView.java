@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class InputView<I extends Input> extends RecyclerViewHolder<I> {
+public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I> {
     private final TextView notationView;
     private final TextView wordView;
 

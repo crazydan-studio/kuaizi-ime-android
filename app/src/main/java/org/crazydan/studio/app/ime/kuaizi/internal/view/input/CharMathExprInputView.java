@@ -19,27 +19,31 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 
 /**
- * {@link CharInput} 的视图
+ * {@link CharMathExprInput} 的视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-09-15
  */
-public class CharInputView extends InputView<CharInput> {
+public class CharMathExprInputView extends InputView<CharMathExprInput> {
+    private final InputListView inputListView;
 
-    public CharInputView(@NonNull View itemView) {
+    public CharMathExprInputView(@NonNull View itemView) {
         super(itemView);
+
+        this.inputListView = itemView.findViewById(R.id.input_list);
     }
 
-    public void bind(
-            Input.Option option, CharInput input, CharInput pending, boolean selected
-    ) {
+    public void bind(Input.Option option, CharMathExprInput input) {
         super.bind(input);
 
-        showWord(option, pending != null ? pending : input, selected);
-        setSelectedBgColor(this.itemView, selected);
+        InputList inputList = input.getInputList();
+        this.inputListView.setInputList(inputList);
     }
 }

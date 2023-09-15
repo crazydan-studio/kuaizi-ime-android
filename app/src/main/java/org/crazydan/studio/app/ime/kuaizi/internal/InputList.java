@@ -45,12 +45,12 @@ public class InputList {
     private final Set<UserInputMsgListener> listeners = new HashSet<>();
     private final Map<String, Map<String, InputWord>> candidateWordsCache = new LinkedHashMap<>(50);
 
-    private final List<Input> inputs = new ArrayList<>();
+    private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
     private Input.Option option;
     /** 已提交输入，用于撤回 */
-    private List<Input> committedInputs;
+    private List<Input<?>> committedInputs;
 
     public InputList() {
         reset();
@@ -99,7 +99,7 @@ public class InputList {
         }
 
         boolean isEmpty = isEmpty();
-        List<Input> inputs = new ArrayList<>(this.inputs);
+        List<Input<?>> inputs = new ArrayList<>(this.inputs);
         reset();
 
         if (!isEmpty) {
@@ -119,7 +119,7 @@ public class InputList {
             return;
         }
 
-        List<Input> inputs = this.committedInputs;
+        List<Input<?>> inputs = this.committedInputs;
         doReset();
 
         this.inputs.clear();
@@ -178,20 +178,42 @@ public class InputList {
         this.option = option;
     }
 
+    /** 创建副本 */
+    public InputList copy() {
+        InputList copied = new InputList();
+
+        copied.inputs.addAll(this.inputs.stream().map(Input::copy).collect(Collectors.toList()));
+
+        int selectedIndex = getSelectedIndex();
+        copied.cursor.selected = copied.inputs.get(selectedIndex);
+        copied.cursor.pending = this.cursor.pending != null ? this.cursor.pending.copy() : null;
+
+        return copied;
+    }
+
+    /**
+     * 设置指定的待输入
+     * <p/>
+     * 自动确认当前的待输入
+     */
+    public CharInput withPending(CharInput input) {
+        // 先确认当前的待输入
+        confirmPending();
+
+        // 再更新待输入
+        this.cursor.pending = input;
+        return input;
+    }
+
     /**
      * 新建待输入
      * <p/>
      * 自动确认当前的待输入
      */
     public CharInput newPending() {
-        // 先确认当前的待输入
-        confirmPending();
-
-        // 再创建新的待输入
         CharInput input = new CharInput();
-        this.cursor.pending = input;
 
-        return input;
+        return withPending(input);
     }
 
     /**
@@ -203,7 +225,7 @@ public class InputList {
      * <li>选中该指定的输入；</li>
      * </ul>
      */
-    public void newPendingOn(Input input) {
+    public void newPendingOn(Input<?> input) {
         if (input == null || indexOf(input) < 0 //
             || (getSelected() == input //
                 && getPending() != null)) {
@@ -213,15 +235,13 @@ public class InputList {
         if (input instanceof GapInput) {
             // 在间隙位置，需要新建待输入，以插入新的输入
             newPending();
-            this.cursor.selected = input;
         } else {
             // 先确认当前的待输入，再将原输入复制一份做为待输入，
             // 从而可以对其进行输入替换，或做候选字修改
-            confirmPending();
-
-            this.cursor.selected = input;
-            this.cursor.pending = ((CharInput) input).copy();
+            withPending(((CharInput) input).copy());
         }
+
+        this.cursor.selected = input;
     }
 
     /**
@@ -238,7 +258,7 @@ public class InputList {
             return;
         }
 
-        Input input = this.inputs.get(inputIndex);
+        Input<?> input = this.inputs.get(inputIndex);
         newPendingOn(input);
     }
 
@@ -253,7 +273,7 @@ public class InputList {
      */
     public void confirmPending() {
         CharInput pending = getPending();
-        Input selected = getSelected();
+        Input<?> selected = getSelected();
 
         int selectedIndex = getSelectedIndex();
         if (pending == null || pending.isEmpty() || selectedIndex < 0) {
@@ -269,12 +289,12 @@ public class InputList {
             this.cursor.selected = pending;
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
-            Input gap = new GapInput();
+            Input<?> gap = new GapInput();
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         }
     }
 
-    /** 移动到下一个输入位置或尾部 */
+    /** 移动到下一个字符输入位置或尾部 */
     public void moveToNextCharInput() {
         int index = getSelectedIndex();
         int lastIndex = this.inputs.size() - 1;
@@ -283,7 +303,7 @@ public class InputList {
         }
 
         int nextIndex = index + 1;
-        Input next = this.inputs.get(nextIndex);
+        Input<?> next = this.inputs.get(nextIndex);
         if (next instanceof GapInput && nextIndex < lastIndex) {
             next = this.inputs.get(nextIndex + 1);
         }
@@ -298,7 +318,7 @@ public class InputList {
 
     /** 获取已选中输入的位置 */
     public int getSelectedIndex() {
-        Input selected = getSelected();
+        Input<?> selected = getSelected();
         return indexOf(selected);
     }
 
@@ -308,17 +328,17 @@ public class InputList {
     }
 
     /** 获取指定输入上的待输入 */
-    public CharInput getPendingOn(Input input) {
+    public CharInput getPendingOn(Input<?> input) {
         return getSelected() == input ? getPending() : null;
     }
 
     /** 获取已选中的输入 */
-    public Input getSelected() {
+    public Input<?> getSelected() {
         return this.cursor.selected;
     }
 
     /** 指定输入是否已选中 */
-    public boolean isSelected(Input input) {
+    public boolean isSelected(Input<?> input) {
         return getSelected() == input;
     }
 
@@ -336,7 +356,7 @@ public class InputList {
 
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
     public void clearPairOnSelected() {
-        Input selected = getSelected();
+        Input<?> selected = getSelected();
         if (selected instanceof CharInput) {
             ((CharInput) selected).clearPair();
         }
@@ -344,7 +364,7 @@ public class InputList {
 
     /** 删除当前选中的输入：对于光标位置，仅删除其正在输入的内容 */
     public void deleteSelected() {
-        Input selected = getSelected();
+        Input<?> selected = getSelected();
         if (selected instanceof CharInput) {
             deleteBackward();
         }
@@ -366,8 +386,8 @@ public class InputList {
             return;
         }
 
-        Input selected = getSelected();
-        Input current = getPending() != null ? getPending() : selected;
+        Input<?> selected = getSelected();
+        Input<?> current = getPending() != null ? getPending() : selected;
         // 逐字删除拉丁字符输入的最后一个字符
         if (current.isLatin() && current.getKeys().size() > 1) {
             current.dropLastKey();
@@ -378,7 +398,7 @@ public class InputList {
         if (selected instanceof GapInput) {
             if (selectedIndex > 0 && hasEmptyPending()) {
                 int prevIndex = selectedIndex - 1;
-                Input prev = this.inputs.get(prevIndex);
+                Input<?> prev = this.inputs.get(prevIndex);
 
                 if (prev.isLatin() && prev.getKeys().size() > 1) {
                     this.cursor.selected = prev;
@@ -408,7 +428,7 @@ public class InputList {
             // 且该光标所在位置由 被删除的配对字符输入 的后继 Gap 填充，
             // 故而，新光标位置不变但对应的 Gap 引用需更新
             selectedIndex = getSelectedIndex();
-            Input newSelected = this.inputs.get(selectedIndex + 1);
+            Input<?> newSelected = this.inputs.get(selectedIndex + 1);
 
             removeCharInput(selected);
 
@@ -418,7 +438,7 @@ public class InputList {
         }
     }
 
-    public List<Input> getInputs() {
+    public List<Input<?>> getInputs() {
         return this.inputs;
     }
 
@@ -444,7 +464,7 @@ public class InputList {
     }
 
     /** 获取指定输入之前的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
-    public List<List<InputWord>> getPinyinPhraseWordsBefore(Input untilToInput) {
+    public List<List<InputWord>> getPinyinPhraseWordsBefore(Input<?> untilToInput) {
         return getPinyinPhraseInputsBefore(untilToInput).stream()
                                                         .map(phrase -> phrase.stream()
                                                                              .map(Input::getWord)
@@ -457,11 +477,11 @@ public class InputList {
      * <p/>
      * 注：不包含参数本身
      */
-    public List<List<CharInput>> getPinyinPhraseInputsBefore(Input untilToInput) {
+    public List<List<CharInput>> getPinyinPhraseInputsBefore(Input<?> untilToInput) {
         List<List<CharInput>> list = new ArrayList<>();
 
         List<CharInput> phrase = new ArrayList<>();
-        for (Input input : this.inputs) {
+        for (Input<?> input : this.inputs) {
             if (untilToInput != null //
                 && (input == untilToInput //
                     || (getPending() == untilToInput //
@@ -487,7 +507,7 @@ public class InputList {
     }
 
     /** 获取已选中输入之前的输入 */
-    public Input getInputBeforeSelected() {
+    public Input<?> getInputBeforeSelected() {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex <= 0) {
             return null;
@@ -501,7 +521,7 @@ public class InputList {
      * 包含有效的输入时，才不为空
      */
     public boolean isEmpty() {
-        for (Input input : this.inputs) {
+        for (Input<?> input : this.inputs) {
             if (input instanceof CharInput && !input.isEmpty()) {
                 return false;
             }
@@ -515,7 +535,7 @@ public class InputList {
 
         int total = this.inputs.size();
         for (int i = 0; i < total; i++) {
-            Input input = this.inputs.get(i);
+            Input<?> input = this.inputs.get(i);
 
             sb.append(input.getText(this.option));
 
@@ -529,14 +549,14 @@ public class InputList {
     /** 是否需要添加 Gap 空格 */
     public boolean needGapSpace(int i) {
         int total = this.inputs.size();
-        Input input = i >= total || i < 0 ? null : this.inputs.get(i);
+        Input<?> input = i >= total || i < 0 ? null : this.inputs.get(i);
         if (!(input instanceof GapInput) || i == 0 || i == total - 1) {
             return false;
         }
 
         Input.Option option = this.option;
-        Input left = this.inputs.get(i - 1);
-        Input right = this.inputs.get(i + 1);
+        Input<?> left = this.inputs.get(i - 1);
+        Input<?> right = this.inputs.get(i + 1);
 
         if (left.isLatin()) {
             return !right.isSymbol();
@@ -548,24 +568,24 @@ public class InputList {
             return !left.isSymbol();
         }
 
-        return false;
+        return left.isMathExpr() || right.isMathExpr();
     }
 
     /** 是否需要添加 Gap 空格 */
-    public boolean needGapSpace(Input input) {
+    public boolean needGapSpace(Input<?> input) {
         int i = indexOf(input);
         return needGapSpace(i);
     }
 
     /** 获取指定输入的位置 */
-    public int indexOf(Input input) {
+    public int indexOf(Input<?> input) {
         if (input == null) {
             return -1;
         }
 
         // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
         for (int i = 0; i < this.inputs.size(); i++) {
-            Input ipt = this.inputs.get(i);
+            Input<?> ipt = this.inputs.get(i);
             if (ipt == input) {
                 return i;
             }
@@ -573,11 +593,11 @@ public class InputList {
         return -1;
     }
 
-    public Input getFirstInput() {
+    public Input<?> getFirstInput() {
         return CollectionUtils.first(this.inputs);
     }
 
-    public Input getLastInput() {
+    public Input<?> getLastInput() {
         return CollectionUtils.last(this.inputs);
     }
 
@@ -590,7 +610,7 @@ public class InputList {
     }
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
-    private void removeCharInput(Input input) {
+    private void removeCharInput(Input<?> input) {
         int index = input instanceof CharInput ? indexOf(input) : -1;
 
         removeCharInputAt(index);
@@ -609,7 +629,7 @@ public class InputList {
     }
 
     /** 删除配对符号的另一侧输入 */
-    private void removeCharInputPair(Input input) {
+    private void removeCharInputPair(Input<?> input) {
         if (input instanceof CharInput) {
             CharInput pairInput = ((CharInput) input).getPair();
 
@@ -623,15 +643,52 @@ public class InputList {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        InputList that = (InputList) o;
+        return this.inputs.equals(that.inputs) && this.cursor.equals(that.cursor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.inputs, this.cursor);
+    }
+
     private static class Cursor {
         /** 光标位置已选中的输入 */
-        private Input selected;
+        private Input<?> selected;
         /** 光标位置待插入的输入 */
         private CharInput pending;
 
         public void reset() {
             this.selected = null;
             this.pending = null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Cursor that = (Cursor) o;
+            return Objects.equals(this.selected, that.selected) //
+                   && Objects.equals(this.pending, that.pending);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.selected, this.pending);
         }
     }
 }

@@ -27,9 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  */
 public class UserInputMsgData {
     /** 消息目标输入 */
-    public final Input target;
+    public final Input<?> target;
 
-    public UserInputMsgData(Input target) {
+    public UserInputMsgData(Input<?> target) {
         this.target = target;
     }
 }

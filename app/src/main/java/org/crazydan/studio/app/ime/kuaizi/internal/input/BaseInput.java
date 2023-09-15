@@ -32,10 +32,25 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public abstract class BaseInput implements Input {
+public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     private final List<Key<?>> keys = new ArrayList<>();
 
     private InputWord word;
+
+    @Override
+    public T copy() {
+        T copied;
+        try {
+            copied = (T) getClass().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        getKeys().forEach(copied::appendKey);
+        copied.setWord(getWord());
+
+        return copied;
+    }
 
     @Override
     public boolean isLatin() {
@@ -55,6 +70,11 @@ public abstract class BaseInput implements Input {
     @Override
     public boolean isEmoji() {
         return this.word instanceof EmojiInputWord || test(Key::isEmoji);
+    }
+
+    @Override
+    public boolean isMathExpr() {
+        return false;
     }
 
     @Override

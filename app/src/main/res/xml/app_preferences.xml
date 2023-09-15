@@ -55,14 +55,18 @@
                 app:title="@string/label_disable_gliding_input_animation" />
     </PreferenceCategory>
 
+    <!--<PreferenceCategory app:title="用户数据">
+        &lt;!&ndash; 1. 数据备份；2. 导入数据；3. 数据同步/迁移，同网络内通过扫描二维码实现多端的差异数据同步； &ndash;&gt;
+    </PreferenceCategory>-->
+
     <PreferenceCategory app:title="@string/title_preference_about">
         <!-- https://stackoverflow.com/questions/7275015/android-start-activity-from-preferences-xml#answer-10441707 -->
         <PreferenceScreen android:title="@string/title_about_thanks">
             <intent android:action=".ui.about.AboutThanks" />
         </PreferenceScreen>
-        <PreferenceScreen android:title="@string/title_about_suggestion">
+        <!--<PreferenceScreen android:title="@string/title_about_suggestion">
             <intent android:action=".ui.about.AboutSuggestion" />
-        </PreferenceScreen>
+        </PreferenceScreen>-->
         <PreferenceScreen android:title="@string/title_about_app">
             <intent android:action=".ui.about.AboutApp" />
         </PreferenceScreen>
@@ -72,5 +76,8 @@
         <PreferenceScreen android:title="@string/title_about_change_log">
             <intent android:action=".ui.about.AboutChangeLog" />
         </PreferenceScreen>
+        <!--<PreferenceScreen android:title="应用协议">
+            <intent android:action=".ui.about.AboutChangeLog" />
+        </PreferenceScreen>-->
     </PreferenceCategory>
 </PreferenceScreen>

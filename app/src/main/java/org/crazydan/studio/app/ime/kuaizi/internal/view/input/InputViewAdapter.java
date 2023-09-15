@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 
@@ -41,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
+    private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
 
     private InputList inputList;
     private List<Integer> inputHashes = new ArrayList<>();
@@ -68,13 +70,17 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
         Input.Option option = this.inputList.getOption();
-        Input input = this.inputList.getInputs().get(position);
+
+        Input<?> input = this.inputList.getInputs().get(position);
         CharInput pending = this.inputList.getPendingOn(input);
+        Input<?> target = pending != null ? pending : input;
 
         boolean selected = needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
 
-        if (input instanceof CharInput) {
+        if (target.isMathExpr()) {
+            ((CharMathExprInputView) view).bind(option, (CharMathExprInput) target);
+        } else if (input instanceof CharInput) {
             ((CharInputView) view).bind(option, (CharInput) input, pending, selected);
         } else {
             ((GapInputView) view).bind(option, (GapInput) input, pending, needGapSpace, selected);
@@ -83,9 +89,13 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public int getItemViewType(int position) {
-        Input input = this.inputList.getInputs().get(position);
+        Input<?> input = this.inputList.getInputs().get(position);
+        CharInput pending = this.inputList.getPendingOn(input);
+        Input<?> target = pending != null ? pending : input;
 
-        if (input instanceof CharInput) {
+        if (target.isMathExpr()) {
+            return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
+        } else if (input instanceof CharInput) {
             return VIEW_TYPE_CHAR_INPUT;
         } else {
             return VIEW_TYPE_GAP_INPUT;
@@ -97,6 +107,8 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     public InputView<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CHAR_INPUT) {
             return new CharInputView(inflateHolderView(parent, R.layout.char_input_view));
+        } else if (viewType == VIEW_TYPE_CHAR_MATH_EXPR_INPUT) {
+            return new CharMathExprInputView(inflateHolderView(parent, R.layout.char_math_expr_input_view));
         } else {
             return new GapInputView(inflateHolderView(parent, R.layout.gap_input_view));
         }
@@ -110,7 +122,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         return this.inputList.getInputs().stream().map(input -> {
             Input.Option option = this.inputList.getOption();
             CharInput pending = this.inputList.getPendingOn(input);
-            Input target = pending != null ? pending : input;
+            Input<?> target = pending != null ? pending : input;
 
             boolean selected = needToBeSelected(input);
             boolean needGapSpace = this.inputList.needGapSpace(input);
@@ -123,7 +135,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         }).collect(Collectors.toList());
     }
 
-    private boolean needToBeSelected(Input input) {
+    private boolean needToBeSelected(Input<?> input) {
         boolean selected = this.inputList.isSelected(input);
 
         // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中

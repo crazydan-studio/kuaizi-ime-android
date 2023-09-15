@@ -389,7 +389,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         getInputList().confirmPending();
 
         // 继续选择下一个拼音输入的候选字
-        Input selected;
+        Input<?> selected;
         do {
             getInputList().moveToNextCharInput();
             selected = getInputList().getSelected();

@@ -25,7 +25,10 @@ import java.util.List;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public interface Input extends ViewData {
+public interface Input<T extends Input<?>> extends ViewData {
+
+    /** 创建副本 */
+    T copy();
 
     /** 是否为英文、数字或二者的组合输入 */
     boolean isLatin();
@@ -38,6 +41,9 @@ public interface Input extends ViewData {
 
     /** 是否为表情符号 */
     boolean isEmoji();
+
+    /** 是否为数学计算式 */
+    boolean isMathExpr();
 
     /** 是否为空输入 */
     boolean isEmpty();

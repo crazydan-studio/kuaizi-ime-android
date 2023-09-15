@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class CharInput extends BaseInput {
+public class CharInput extends BaseInput<CharInput> {
     private CharInput pair;
 
     public CharInput getPair() {
@@ -57,15 +57,6 @@ public class CharInput extends BaseInput {
 
     public boolean hasPair() {
         return this.pair != null;
-    }
-
-    public CharInput copy() {
-        CharInput input = new CharInput();
-        getKeys().forEach(input::appendKey);
-
-        input.setWord(getWord());
-
-        return input;
     }
 
     /** 是否为拼音 平/翘舌 开头 */

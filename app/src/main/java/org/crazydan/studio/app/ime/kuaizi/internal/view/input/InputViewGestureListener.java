@@ -49,7 +49,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
     }
 
     private void onSingleTap(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {
-        Input input = getInput(inputView);
+        Input<?> input = getInput(inputView);
         if (input == null) {
             if (data.x < this.inputListView.getPaddingStart()) {
                 input = this.inputListView.getFirstInput();
@@ -66,7 +66,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
         this.inputListView.onUserInputMsg(UserInputMsg.Choosing_Input, msgData);
     }
 
-    private Input getInput(InputView<?> inputView) {
+    private Input<?> getInput(InputView<?> inputView) {
         return inputView != null ? inputView.getData() : null;
     }
 }

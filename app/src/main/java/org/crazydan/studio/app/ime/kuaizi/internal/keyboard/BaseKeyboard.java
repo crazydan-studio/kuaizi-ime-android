@@ -813,7 +813,7 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        Input input;
+        Input<?> input;
         if (key.isSymbol()) {
             // Note：标点符号是独立输入，故，需替换当前位置的前一个标点符号输入
             input = getInputList().getInputBeforeSelected();
@@ -1143,7 +1143,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void prepare_for_PairSymbol_Inputting(Symbol.Pair symbol) {
-        Input selected = getInputList().getSelected();
+        Input<?> selected = getInputList().getSelected();
         CharInput pending = getInputList().newPending();
 
         String left = symbol.left;
@@ -1191,7 +1191,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>>>>
 
     // <<<<<<<<< 对输入列表的操作
-    protected void onChoosingInputMsg(Input input) {
+    protected void onChoosingInputMsg(Input<?> input) {
         getInputList().newPendingOn(input);
 
         // Note：输入过程中操作和处理的都是 pending
