@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -129,14 +130,14 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected void before_Commit_InputList() {
+    protected void before_Commit_InputList(InputList inputList) {
         if (getConfig().isUserInputDataDisabled()) {
             return;
         }
 
         // 本地更新用户选字频率
-        List<List<InputWord>> phrases = getInputList().getPinyinPhraseWords();
-        List<InputWord> emojis = getInputList().getEmojis();
+        List<List<InputWord>> phrases = inputList.getPinyinPhraseWords();
+        List<InputWord> emojis = inputList.getEmojis();
 
         this.pinyinDict.saveUsedData(phrases, emojis);
     }
@@ -156,7 +157,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 单字符输入
                 play_InputtingSingleTick_Audio(key);
 
-                start_SingleKey_Inputting(key, (UserSingleTapMsgData) data, false);
+                start_Single_Key_Inputting(key, (UserSingleTapMsgData) data, false);
                 break;
             }
         }

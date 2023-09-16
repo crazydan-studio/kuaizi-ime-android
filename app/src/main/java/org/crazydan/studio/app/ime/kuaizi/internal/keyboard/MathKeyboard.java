@@ -21,7 +21,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -50,6 +49,14 @@ public class MathKeyboard extends BaseKeyboard {
         MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfigure());
 
         return keyTable::createKeys;
+    }
+
+    @Override
+    protected KeyTable.Config createKeyTableConfigure() {
+        return new KeyTable.Config(getConfig(),
+                                   !getTopInputList().isEmpty(),
+                                   getTopInputList().canBeRevoked(),
+                                   !getInputList().isGapSelected());
     }
 
     @Override
@@ -91,37 +98,55 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         Key<?> key = data.target;
-        if (key instanceof CharKey) {
-            onCharKeyMsg(msg, (CharKey) key, data);
-        } else if (key instanceof CtrlKey) {
-            onCtrlKeyMsg(msg, (CtrlKey) key, data);
+        if (key instanceof CharKey //
+            || (key instanceof CtrlKey //
+                && ((CtrlKey) key).getType() == CtrlKey.Type.Math_Operator)) {
+            onMathKeyMsg(msg, key, data);
         }
     }
 
-    private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.KeySingleTap) {// 单字符输入
-            play_InputtingSingleTick_Audio(key);
+    @Override
+    protected boolean try_Common_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        if (msg == UserKeyMsg.KeySingleTap) {
+            switch (key.getType()) {
+                case Backspace: {
+                    play_InputtingSingleTick_Audio(key);
 
-            do_MathKey_Inputting(key);
+                    // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
+                    if (!getInputList().isEmpty()) {
+                        backspace_InputList_or_InputTarget(getInputList());
+                    } else {
+                        backspace_InputList_or_InputTarget(getTopInputList());
+                    }
+                    return true;
+                }
+                case Commit_InputList: {
+                    play_InputtingSingleTick_Audio(key);
+
+                    // 提交上层输入
+                    commit_InputList(getTopInputList(), true, false);
+                    // 并退出
+                    do_Exit();
+                    return true;
+                }
+                case Space: {
+                    play_InputtingSingleTick_Audio(key);
+
+                    // TODO 上层添加空格，并准备新的算数输入
+                    confirm_Input_Enter_or_Space(getTopInputList(), key);
+                    return true;
+                }
+            }
         }
+
+        return super.try_Common_OnCtrlKeyMsg(msg, key, data);
     }
 
-    private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeySingleTap) {
             play_InputtingSingleTick_Audio(key);
 
-            switch (key.getType()) {
-                case Math_Plus:
-                case Math_Minus:
-                case Math_Multiply:
-                case Math_Divide:
-                case Math_Equal:
-                case Math_Dot:
-                case Math_Percent: {
-                    do_MathKey_Inputting(key);
-                    break;
-                }
-            }
+            do_Single_Key_Inputting(key, false);
         }
     }
 
@@ -200,26 +225,5 @@ public class MathKeyboard extends BaseKeyboard {
 
         this.mathInputList = input.getInputList();
         this.mathInputList.addUserInputMsgListener(this);
-    }
-
-    private void do_MathKey_Inputting(Key<?> key) {
-        if (getInputList().hasEmptyPending()) {
-            getInputList().newPending();
-        }
-
-        if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).getType()) {
-                case Math_Dot:
-                case Math_Percent:
-                    break;
-                default:
-                    getInputList().newPending();
-            }
-        }
-
-        CharInput pending = getInputList().getPending();
-        pending.appendKey(key);
-
-        fire_InputChars_Inputting(getKeyFactory(), key);
     }
 }

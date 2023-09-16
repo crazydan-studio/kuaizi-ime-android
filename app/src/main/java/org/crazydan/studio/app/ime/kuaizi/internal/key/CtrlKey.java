@@ -61,13 +61,13 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this;
     }
 
+    public boolean isNoOp() {
+        return this.type == Type.NoOp;
+    }
+
     @Override
     public boolean isSymbol() {
         return this.type == Type.Space;
-    }
-
-    public boolean isNoOp() {
-        return this.type == Type.NoOp;
     }
 
     @Override
@@ -79,14 +79,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return "\n";
             case Filter_PinyinInputCandidate_stroke:
                 return getLabel().replaceAll("/.+$", "");
-            case Math_Plus:
-            case Math_Minus:
-            case Math_Multiply:
-            case Math_Divide:
-            case Math_Equal:
-                return " " + getLabel() + " ";
-            case Math_Dot:
-            case Math_Percent:
             default:
                 return getLabel();
         }
@@ -173,22 +165,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 切换标点符号分组 */
         Toggle_Symbol_Group,
 
-        /** 数学 = */
-        Math_Equal,
-        /** 数学 + */
-        Math_Plus,
-        /** 数学 - */
-        Math_Minus,
-        /** 数学 × */
-        Math_Multiply,
-        /** 数学 ÷ */
-        Math_Divide,
-        /** 数学 % */
-        Math_Percent,
-        /** 数学 () */
-        Math_Brackets,
-        /** 数学 . */
-        Math_Dot,
+        /** 数学运算符 */
+        Math_Operator,
     }
 
     public static abstract class Option<T> {
@@ -235,6 +213,31 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     public static class EditInputTargetOption extends Option<InputEditAction> {
         public EditInputTargetOption(InputEditAction value) {
             super(value);
+        }
+    }
+
+    public static class MathOperatorOption extends Option<MathOperatorOption.Operator> {
+        public MathOperatorOption(Operator value) {
+            super(value);
+        }
+
+        public enum Operator {
+            /** 数学 = */
+            equal,
+            /** 数学 + */
+            plus,
+            /** 数学 - */
+            minus,
+            /** 数学 × */
+            multiply,
+            /** 数学 ÷ */
+            divide,
+            /** 数学 % */
+            percent,
+            /** 数学 () */
+            brackets,
+            /** 数学 . */
+            dot,
         }
     }
 }

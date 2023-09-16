@@ -65,7 +65,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
                 play_InputtingSingleTick_Audio(key);
 
                 boolean directInputting = getInputList().isEmpty();
-                start_SingleKey_Inputting(key, (UserSingleTapMsgData) data, directInputting);
+                start_Single_Key_Inputting(key, (UserSingleTapMsgData) data, directInputting);
                 break;
             }
         }

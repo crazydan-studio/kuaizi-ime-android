@@ -69,7 +69,7 @@ public class CharKey extends BaseKey<CharKey> {
         return this;
     }
 
-    /** 是否有替代 */
+    /** 是否有替代字符 */
     public boolean hasReplacement() {
         return this.replacements.size() > 1;
     }

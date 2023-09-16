@@ -550,8 +550,8 @@ public class InputList {
         }
 
         Input.Option option = this.option;
-        Input<?> left = this.inputs.get(i - 1);
-        Input<?> right = this.inputs.get(i + 1);
+        Input<?> left = getPendingOrSelf(this.inputs.get(i - 1));
+        Input<?> right = getPendingOrSelf(this.inputs.get(i + 1));
 
         if (left.isLatin()) {
             return !right.isSymbol();
@@ -603,6 +603,11 @@ public class InputList {
 
     public CharInput getLastCharInput() {
         return CollectionUtils.last(getCharInputs());
+    }
+
+    /** 若存在则获取待输入，否则，返回输入自身 */
+    private Input<?> getPendingOrSelf(Input<?> input) {
+        return isSelected(input) ? getPending() : input;
     }
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */

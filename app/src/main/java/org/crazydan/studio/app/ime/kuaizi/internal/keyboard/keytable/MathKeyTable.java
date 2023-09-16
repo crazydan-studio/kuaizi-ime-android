@@ -57,14 +57,14 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
-                ctrlKey(CtrlKey.Type.Math_Equal).setLabel("="),
-                ctrlKey(CtrlKey.Type.Math_Dot).setLabel("."),
-                ctrlKey(CtrlKey.Type.Math_Plus).setLabel("+"),
-                ctrlKey(CtrlKey.Type.Math_Minus).setLabel("-"),
-                ctrlKey(CtrlKey.Type.Math_Multiply).setLabel("×"),
-                ctrlKey(CtrlKey.Type.Math_Divide).setLabel("÷"),
-                ctrlKey(CtrlKey.Type.Math_Brackets).setLabel("( )"),
-                ctrlKey(CtrlKey.Type.Math_Percent).setLabel("%"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.equal).setLabel("="),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.dot).setLabel("."),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.multiply).setLabel("×"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.divide).setLabel("÷"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.plus).setLabel("+"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.minus).setLabel("-"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.brackets).setLabel("( )"),
+                mathOpKey(CtrlKey.MathOperatorOption.Operator.percent).setLabel("%"),
                 };
 
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -112,5 +112,11 @@ public class MathKeyTable extends KeyTable {
                         coord(0, 6), coord(0, 5), coord(0, 4), coord(0, 3),
                         },
                 };
+    }
+
+    private CtrlKey mathOpKey(CtrlKey.MathOperatorOption.Operator operator) {
+        CtrlKey.MathOperatorOption option = new CtrlKey.MathOperatorOption(operator);
+
+        return ctrlKey(CtrlKey.Type.Math_Operator).setOption(option);
     }
 }
