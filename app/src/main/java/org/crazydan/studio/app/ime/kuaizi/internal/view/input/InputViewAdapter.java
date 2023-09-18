@@ -81,9 +81,9 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         if (mathExprInput != null) {
             // Note：视图始终与待输入的算数输入绑定，
             // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算数表达式中的字符
-            ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected);
+            ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, needGapSpace, selected);
         } else if (input instanceof CharInput) {
-            ((CharInputView) view).bind(option, (CharInput) input, pending, selected);
+            ((CharInputView) view).bind(option, (CharInput) input, pending, needGapSpace, selected);
         } else {
             ((GapInputView) view).bind(option, (GapInput) input, pending, needGapSpace, selected);
         }

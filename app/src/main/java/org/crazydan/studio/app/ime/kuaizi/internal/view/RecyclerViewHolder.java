@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -107,5 +110,20 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
     public void setScale(float scale) {
         this.itemView.setScaleX(scale);
         this.itemView.setScaleY(scale);
+    }
+
+    /** 背景色渐隐/显动画 */
+    public void fadeBackgroundColor(View view, int fromAttrId, int toAttrId) {
+        int fromColor = getColorByAttrId(fromAttrId);
+        int toColor = getColorByAttrId(toAttrId);
+
+        if (ViewUtils.getBackgroundColor(view) == toColor) {
+            return;
+        }
+
+        // https://stackoverflow.com/questions/5200811/in-android-how-do-i-smoothly-fade-the-background-from-one-color-to-another-ho#answer-14282231
+        ObjectAnimator fade = ObjectAnimator.ofObject(view, "backgroundColor", new ArgbEvaluator(), fromColor, toColor);
+        fade.setDuration(500);
+        fade.start();
     }
 }

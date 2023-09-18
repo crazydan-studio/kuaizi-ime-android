@@ -60,6 +60,13 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 获取最后一个按键 */
     Key<?> getLastKey();
 
+    /**
+     * 是否包含与指定按键相同的按键
+     * <p/>
+     * 通过 {@link #isSameWith} 判断按键是否相同
+     */
+    boolean hasSameKey(Key<?> key);
+
     /** 追加输入按键 */
     void appendKey(Key<?> key);
 

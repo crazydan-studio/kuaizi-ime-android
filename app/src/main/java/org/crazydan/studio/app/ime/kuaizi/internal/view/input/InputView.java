@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -25,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 
 /**
  * {@link Input 键盘输入}的视图
@@ -71,5 +73,12 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
 
         this.notationView.setText(notation);
         setSelectedTextColor(this.notationView, selected);
+    }
+
+    protected void addLeftSpaceMargin(View view, int times) {
+        int margin = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
+        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+
+        layout.leftMargin = margin * times;
     }
 }

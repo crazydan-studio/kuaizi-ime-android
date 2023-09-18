@@ -17,15 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
-import android.util.TypedValue;
 import android.view.View;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
-import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * {@link Keyboard 键盘}{@link CharKey 字符按键}的视图
@@ -33,44 +28,9 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class CharKeyView extends KeyView<CharKey, TextView> {
+public class CharKeyView extends BaseCharKeyView<CharKey> {
 
     public CharKeyView(@NonNull View itemView) {
         super(itemView);
-    }
-
-    public void bind(CharKey key, HexagonOrientation orientation) {
-        super.bind(key, orientation);
-
-        String label = key.getLabel();
-        this.fgView.setText(label);
-
-        int textSizeDimen;
-        if (key.isSymbol()) {
-            textSizeDimen = R.dimen.char_symbol_key_text_size;
-        } else {
-            switch (key.getLabel().length()) {
-                case 6:
-                    textSizeDimen = R.dimen.char_key_text_size_4d;
-                    break;
-                case 5:
-                case 4:
-                    textSizeDimen = R.dimen.char_key_text_size_3d;
-                    break;
-                case 3:
-                    textSizeDimen = R.dimen.char_key_text_size_2d;
-                    break;
-                case 2:
-                    textSizeDimen = R.dimen.char_key_text_size_1d;
-                    break;
-                default:
-                    textSizeDimen = R.dimen.char_key_text_size;
-            }
-        }
-        float textSize = ScreenUtils.pxFromDimension(getContext(), textSizeDimen);
-
-        this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-
-        setTextColorByAttrId(this.fgView, key.getColor().fg);
     }
 }

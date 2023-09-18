@@ -18,6 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import android.animation.ValueAnimator;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -40,6 +43,20 @@ public class ViewUtils {
     public static <T extends View> T hide(T view) {
         visible(view, false);
         return view;
+    }
+
+    public static boolean isVisible(View view) {
+        return view.getVisibility() == View.VISIBLE;
+    }
+
+    public static int getBackgroundColor(View view) {
+        Drawable background = view.getBackground();
+
+        // https://stackoverflow.com/questions/14779259/get-background-color-of-a-layout#answer-14779461
+        if (background instanceof ColorDrawable) {
+            return ((ColorDrawable) background).getColor();
+        }
+        return Color.TRANSPARENT;
     }
 
     public static void startAnimationOnce(View view, long duration, Animation... animations) {

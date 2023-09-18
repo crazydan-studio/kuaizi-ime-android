@@ -43,17 +43,19 @@ public class CharMathExprInputView extends InputView<Input<?>> {
         this.markerView = itemView.findViewById(R.id.marker);
     }
 
-    public void bind(Input.Option option, Input<?> data, CharMathExprInput input, boolean selected) {
+    public void bind(
+            Input.Option option, Input<?> data, CharMathExprInput input, boolean needGapSpace, boolean selected
+    ) {
         super.bind(data);
+        addLeftSpaceMargin(this.itemView, needGapSpace ? 2 : 0);
 
         InputList inputList = input.getInputList();
-        this.inputListView.setInputList(inputList);
+        this.inputListView.updateInputList(inputList);
 
-        int markerBgColor = selected
-                            ? R.attr.input_char_math_expr_border_highlight_color
-                            : R.attr.input_char_math_expr_border_color;
-        setBackgroundColorByAttrId(this.markerView, markerBgColor);
-
+        setBackgroundColorByAttrId(this.markerView,
+                                   selected
+                                   ? R.attr.input_char_math_expr_border_highlight_color
+                                   : R.attr.input_char_math_expr_border_color);
         ViewUtils.visible(this.markerView, !inputList.isEmpty());
     }
 }

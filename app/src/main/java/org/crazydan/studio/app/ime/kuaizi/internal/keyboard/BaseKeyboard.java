@@ -403,6 +403,8 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void confirm_Input_Enter_or_Space(InputList inputList, CtrlKey key) {
         boolean isEmpty = inputList.isEmpty();
 
+        // TODO 直输时，不需要通过 InputList 先添加 Key 再提交
+
         // 仅在输入列表为空时，才附加回车到输入列表，以便于向目标提交换行符
         if (isEmpty || key.getType() != CtrlKey.Type.Enter) {
             inputList.newPending().appendKey(key);
@@ -760,8 +762,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (key instanceof CharKey) {
             do_Single_CharKey_Inputting((CharKey) key);
-        } else if (key instanceof CtrlKey) {
-            do_Single_CtrlKey_Inputting((CtrlKey) key);
         }
     }
 
@@ -803,32 +803,6 @@ public abstract class BaseKeyboard implements Keyboard {
                 fire_and_Waiting_Continuous_InputChars_Inputting(key);
                 break;
             }
-        }
-    }
-
-    protected void do_Single_CtrlKey_Inputting(CtrlKey key) {
-        if (key.getType() == CtrlKey.Type.Math_Operator) {
-            do_Single_CtrlKey_MathOp_Inputting(key);
-        }
-    }
-
-    protected void do_Single_CtrlKey_MathOp_Inputting(CtrlKey key) {
-        CharInput pending = getInputList().getPending();
-
-        CtrlKey.MathOperatorOption.Operator operator = (CtrlKey.MathOperatorOption.Operator) key.getOption().value();
-        switch (operator) {
-            case dot:
-            case percent: {
-                if (!pending.isLatin()) {
-                    pending = getInputList().newPending();
-                }
-                pending.appendKey(key);
-
-                fire_and_Waiting_Continuous_InputChars_Inputting(key);
-                break;
-            }
-            default:
-                input_Only_Key_and_Confirm_Pending(key);
         }
     }
 

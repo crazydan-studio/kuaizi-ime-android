@@ -101,6 +101,16 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
+    public boolean hasSameKey(Key<?> key) {
+        for (Key<?> k : this.keys) {
+            if (k.isSameWith(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void appendKey(Key<?> key) {
         this.keys.add(key);
     }

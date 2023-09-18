@@ -30,9 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CharKey extends BaseKey<CharKey> {
+public class CharKey extends BaseCharKey<CharKey> {
     private final Type type;
-    private final String text;
     private final List<String> replacements;
 
     public static CharKey create(Type type, String text) {
@@ -40,23 +39,19 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     private CharKey(Type type, String text) {
+        super(text);
+
         this.type = type;
-        this.text = text;
         this.replacements = new ArrayList<>();
 
         // Note: 当前的文本字符也需加入替换列表，
         // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
-        withReplacements(this.text);
+        withReplacements(getText());
     }
 
     /** 按键{@link Type 类型} */
     public Type getType() {
         return this.type;
-    }
-
-    @Override
-    public String getText() {
-        return this.text;
     }
 
     /** 添加可替换内容，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等 */
@@ -104,21 +99,6 @@ public class CharKey extends BaseKey<CharKey> {
     }
 
     @Override
-    public boolean isLatin() {
-        if (isNumber()) {
-            return true;
-        }
-
-        for (int i = 0; i < this.text.length(); i++) {
-            char ch = this.text.charAt(i);
-            if (!Character.isLetterOrDigit(ch)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
     public boolean isNumber() {
         return this.type == Type.Number;
     }
@@ -143,7 +123,7 @@ public class CharKey extends BaseKey<CharKey> {
         }
 
         CharKey that = (CharKey) o;
-        return this.type == that.type && Objects.equals(this.text, that.text);
+        return this.type == that.type && Objects.equals(this.getText(), that.getText());
     }
 
     @NonNull

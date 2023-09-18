@@ -15,32 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 
 /**
- * {@link CharInput} 的视图
+ * {@link Keyboard 键盘}{@link MathOpKey 字符按键}的视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-09-18
  */
-public class CharInputView extends InputView<CharInput> {
+public class MathOpKeyView extends BaseCharKeyView<MathOpKey> {
 
-    public CharInputView(@NonNull View itemView) {
+    public MathOpKeyView(@NonNull View itemView) {
         super(itemView);
-    }
-
-    public void bind(
-            Input.Option option, CharInput data, CharInput pending, boolean needGapSpace, boolean selected
-    ) {
-        super.bind(data);
-        addLeftSpaceMargin(this.itemView, needGapSpace ? 1 : 0);
-
-        showWord(option, Input.isEmpty(pending) ? data : pending, selected);
-        setSelectedBgColor(this.itemView, selected);
     }
 }

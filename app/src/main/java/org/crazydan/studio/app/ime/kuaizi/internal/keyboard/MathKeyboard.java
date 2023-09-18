@@ -21,9 +21,11 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
@@ -98,15 +100,15 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         Key<?> key = data.target;
-        if (key instanceof CharKey //
-            || (key instanceof CtrlKey //
-                && ((CtrlKey) key).getType() == CtrlKey.Type.Math_Operator)) {
+        if (key instanceof CharKey || key instanceof MathOpKey) {
             onMathKeyMsg(msg, key, data);
         }
     }
 
     @Override
     protected boolean try_Common_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        InputList topInputList = getTopInputList();
+
         if (msg == UserKeyMsg.KeySingleTap) {
             switch (key.getType()) {
                 case Backspace: {
@@ -116,7 +118,7 @@ public class MathKeyboard extends BaseKeyboard {
                     if (!getInputList().isEmpty()) {
                         backspace_InputList_or_InputTarget(getInputList());
                     } else {
-                        backspace_InputList_or_InputTarget(getTopInputList());
+                        backspace_InputList_or_InputTarget(topInputList);
                     }
                     return true;
                 }
@@ -124,7 +126,7 @@ public class MathKeyboard extends BaseKeyboard {
                     play_InputtingSingleTick_Audio(key);
 
                     // 提交上层输入
-                    commit_InputList(getTopInputList(), true, false);
+                    commit_InputList(topInputList, true, false);
                     // 并退出
                     do_Exit();
                     return true;
@@ -132,8 +134,15 @@ public class MathKeyboard extends BaseKeyboard {
                 case Space: {
                     play_InputtingSingleTick_Audio(key);
 
-                    // TODO 上层添加空格，并准备新的算数输入
-                    confirm_Input_Enter_or_Space(getTopInputList(), key);
+                    // Note：对于上层 InputList 而言，当前正在输入的一定是算数输入
+                    topInputList.confirmPendingAndMoveToNextGapInput();
+
+                    confirm_Input_Enter_or_Space(topInputList, key);
+
+                    // 若不是直输空格，则新建算数输入
+                    if (!topInputList.isEmpty()) {
+                        newMatchExprInput(topInputList);
+                    }
                     return true;
                 }
             }
@@ -146,8 +155,47 @@ public class MathKeyboard extends BaseKeyboard {
         if (msg == UserKeyMsg.KeySingleTap) {
             play_InputtingSingleTick_Audio(key);
 
-            do_Single_Key_Inputting(key, false);
+            do_Single_MathKey_Inputting(key);
         }
+    }
+
+    private void do_Single_MathKey_Inputting(Key<?> key) {
+        InputList inputList = getInputList();
+
+        if (inputList.hasEmptyPending()) {
+            inputList.newPending();
+        }
+
+        CharInput pending = inputList.getPending();
+        if (key instanceof CharKey) {
+            Key<?> lastKey = pending.getLastKey();
+
+            // 百分号后面不能添加数字
+            if (lastKey instanceof MathOpKey //
+                && ((MathOpKey) lastKey).getType() == MathOpKey.Type.percent) {
+                inputList.confirmPendingAndMoveToNextGapInput();
+                pending = inputList.newPending();
+            }
+
+            pending.appendKey(key);
+        } else if (key instanceof MathOpKey) {
+            switch (((MathOpKey) key).getType()) {
+                case dot:
+                    // 一个输入中只能有一个小数点
+                    if (pending.hasSameKey(key)) {
+                        return;
+                    }
+                case percent:
+                    // 可连续添加多个百分号
+                    pending.appendKey(key);
+                    break;
+                default:
+                    inputList.newPending().appendKey(key);
+                    inputList.confirmPendingAndMoveToNextGapInput();
+            }
+        }
+
+        fire_and_Waiting_Continuous_InputChars_Inputting(key);
     }
 
     @Override
@@ -202,26 +250,30 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void setInputList(InputList inputList) {
+        newMatchExprInput(inputList);
+    }
+
+    private void newMatchExprInput(InputList topInputList) {
         dropMathInputList();
-        super.setInputList(inputList);
+        super.setInputList(topInputList);
 
         // 算数键盘仅响应上层输入列表的特定事件
-        inputList.removeUserInputMsgListener(this);
-        inputList.addUserInputMsgListener(this.topUserInputMsgListener);
+        topInputList.removeUserInputMsgListener(this);
+        topInputList.addUserInputMsgListener(this.topUserInputMsgListener);
 
-        Input<?> selected = inputList.getSelected();
-        Input<?> pending = inputList.getPending();
+        Input<?> selected = topInputList.getSelected();
+        Input<?> pending = topInputList.getPending();
 
         if (pending == null || !pending.isMathExpr()) {
             if (selected.isMathExpr()) {
-                inputList.newPendingOn(selected);
+                topInputList.newPendingOn(selected);
             } else {
-                inputList.withPending(new CharMathExprInput());
+                topInputList.withPending(new CharMathExprInput());
             }
         }
 
         // 在上层输入列表中绑定算数输入列表
-        CharMathExprInput input = (CharMathExprInput) inputList.getPending();
+        CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
 
         this.mathInputList = input.getInputList();
         this.mathInputList.addUserInputMsgListener(this);

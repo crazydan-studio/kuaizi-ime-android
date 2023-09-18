@@ -284,6 +284,18 @@ public class InputList {
         }
     }
 
+    /** 确认输入并移动到下一个 Gap 输入 */
+    public void confirmPendingAndMoveToNextGapInput() {
+        confirmPending();
+
+        if (!isGapSelected()) {
+            int index = getSelectedIndex();
+            Input<?> gap = this.inputs.get(index + 1);
+
+            newPendingOn(gap);
+        }
+    }
+
     /** 移动到下一个字符输入位置或尾部 */
     public void moveToNextCharInput() {
         int index = getSelectedIndex();
@@ -320,6 +332,13 @@ public class InputList {
     /** 获取指定输入上的待输入 */
     public CharInput getPendingOn(Input<?> input) {
         return getSelected() == input ? getPending() : null;
+    }
+
+    /** 获取指定输入上的非空待输入 */
+    public CharInput getNoneEmptyPendingOn(Input<?> input) {
+        CharInput pending = getPendingOn(input);
+
+        return Input.isEmpty(pending) ? null : pending;
     }
 
     /** 获取已选中的输入 */
@@ -544,16 +563,38 @@ public class InputList {
     /** 是否需要添加 Gap 空格 */
     public boolean needGapSpace(int i) {
         int total = this.inputs.size();
-        Input<?> input = i >= total || i < 0 ? null : this.inputs.get(i);
-        if (!(input instanceof GapInput) || i == 0 || i == total - 1) {
+        if (i <= 0 || i >= total) {
+            return false;
+        }
+
+        Input<?> input = this.inputs.get(i);
+        Input<?> left = this.inputs.get(i - 1);
+        Input<?> right = null;
+        if (!(input instanceof GapInput)) {
+            // Note：input 与其左侧的正在输入的 Gap 也需要检查空格（CharInput 左侧必然有一个 Gap）
+            if (!isSelected(left) || Input.isEmpty(getPending())) {
+                return false;
+            } else {
+                right = input;
+            }
+        }
+
+        left = getNoneEmptyPendingOrSelf(left);
+        if (right == null) {
+            // Note：Gap 需判断其上的待输入
+            Input<?> pendingOnGap = getNoneEmptyPendingOn(input);
+            right = pendingOnGap != null || i == total - 1
+                    ? pendingOnGap
+                    : getNoneEmptyPendingOrSelf(this.inputs.get(i + 1));
+        }
+        if (right == null) {
             return false;
         }
 
         Input.Option option = this.option;
-        Input<?> left = getPendingOrSelf(this.inputs.get(i - 1));
-        Input<?> right = getPendingOrSelf(this.inputs.get(i + 1));
-
-        if (left.isLatin()) {
+        if (left.isMathExpr() || right.isMathExpr()) {
+            return true;
+        } else if (left.isLatin()) {
             return !right.isSymbol();
         } else if (right.isLatin()) {
             return !left.isSymbol();
@@ -562,8 +603,6 @@ public class InputList {
         } else if (right.isTextOnlyWordNotation(option)) {
             return !left.isSymbol();
         }
-
-        // Note：算数表达式输入的开始和结果自带占位，故，不需要再添加空白占位
         return false;
     }
 
@@ -605,9 +644,10 @@ public class InputList {
         return CollectionUtils.last(getCharInputs());
     }
 
-    /** 若存在则获取待输入，否则，返回输入自身 */
-    private Input<?> getPendingOrSelf(Input<?> input) {
-        return isSelected(input) ? getPending() : input;
+    /** 若存在则获取非空待输入，否则，返回输入自身 */
+    private Input<?> getNoneEmptyPendingOrSelf(Input<?> input) {
+        Input<?> pending = getNoneEmptyPendingOn(input);
+        return pending != null ? pending : input;
     }
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */

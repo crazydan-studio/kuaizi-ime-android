@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
 
@@ -57,14 +58,14 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.equal).setLabel("="),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.dot).setLabel("."),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.multiply).setLabel("×"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.divide).setLabel("÷"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.plus).setLabel("+"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.minus).setLabel("-"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.brackets).setLabel("( )"),
-                mathOpKey(CtrlKey.MathOperatorOption.Operator.percent).setLabel("%"),
+                mathOpKey(MathOpKey.Type.equal, "="),
+                mathOpKey(MathOpKey.Type.dot, "."),
+                mathOpKey(MathOpKey.Type.multiply, "×"),
+                mathOpKey(MathOpKey.Type.divide, "÷"),
+                mathOpKey(MathOpKey.Type.plus, "+"),
+                mathOpKey(MathOpKey.Type.minus, "-"),
+                mathOpKey(MathOpKey.Type.brackets, "( )"),
+                mathOpKey(MathOpKey.Type.percent, "%"),
                 };
 
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -114,9 +115,7 @@ public class MathKeyTable extends KeyTable {
                 };
     }
 
-    private CtrlKey mathOpKey(CtrlKey.MathOperatorOption.Operator operator) {
-        CtrlKey.MathOperatorOption option = new CtrlKey.MathOperatorOption(operator);
-
-        return ctrlKey(CtrlKey.Type.Math_Operator).setOption(option);
+    private MathOpKey mathOpKey(MathOpKey.Type type, String text) {
+        return MathOpKey.create(type, text).setLabel(text);
     }
 }

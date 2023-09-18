@@ -209,7 +209,7 @@ public class ImeInputView extends FrameLayout
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
 
-        this.inputListView.setInputList(this.inputList);
+        this.inputListView.updateInputList(this.inputList);
 
         addInputMsgListener(this);
         addInputMsgListener(this.inputListView);

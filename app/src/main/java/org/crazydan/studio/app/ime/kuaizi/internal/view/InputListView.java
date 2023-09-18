@@ -73,10 +73,10 @@ public class InputListView extends RecyclerView implements InputMsgListener {
     public void reset() {
         this.gesture.reset();
 
-        setInputList(null);
+        updateInputList(null);
     }
 
-    public void setInputList(InputList inputList) {
+    public void updateInputList(InputList inputList) {
         this.inputList = inputList;
         this.adapter.updateInputList(this.inputList);
     }

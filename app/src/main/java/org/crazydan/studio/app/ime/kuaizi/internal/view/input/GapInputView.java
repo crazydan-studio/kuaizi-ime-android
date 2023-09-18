@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.animation.ValueAnimator;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -28,7 +27,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -55,7 +53,7 @@ public class GapInputView extends InputView<GapInput> {
 
         boolean hasPending = !Input.isEmpty(pending);
         if (hasPending) {
-            addSpaceMargin(this.pendingView, needGapSpace ? 2 : 1);
+            addLeftSpaceMargin(this.pendingView, needGapSpace ? 2 : 1);
 
             ViewUtils.hide(this.cursorView);
             ViewUtils.show(this.pendingView);
@@ -63,7 +61,7 @@ public class GapInputView extends InputView<GapInput> {
             showWord(option, pending, selected);
             setSelectedBgColor(this.pendingView, selected);
         } else {
-            addSpaceMargin(this.cursorView, needGapSpace ? 1 : 0);
+            addLeftSpaceMargin(this.cursorView, needGapSpace ? 1 : 0);
 
             ViewUtils.show(this.cursorView);
             ViewUtils.hide(this.pendingView);
@@ -99,12 +97,5 @@ public class GapInputView extends InputView<GapInput> {
         }
 
         this.blinkView.startAnimation(animationSet);
-    }
-
-    private void addSpaceMargin(View view, int times) {
-        int margin = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
-        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-
-        layout.leftMargin = margin * times;
     }
 }

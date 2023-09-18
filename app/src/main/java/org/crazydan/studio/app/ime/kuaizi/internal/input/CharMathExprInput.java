@@ -55,6 +55,7 @@ public class CharMathExprInput extends CharInput {
 
     @Override
     public StringBuilder getText(Option option) {
+        // TODO 对合法的计算式仅返回计算结果
         return this.inputList.getText();
     }
 
@@ -70,7 +71,6 @@ public class CharMathExprInput extends CharInput {
 
     @Override
     public void confirm() {
-        // TODO 得到计算结果
         this.inputList.confirmPending();
         // 不显示光标或已选中
         this.inputList.resetCursor();

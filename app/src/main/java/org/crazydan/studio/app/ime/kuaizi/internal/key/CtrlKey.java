@@ -164,9 +164,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Toggle_Emoji_Group,
         /** 切换标点符号分组 */
         Toggle_Symbol_Group,
-
-        /** 数学运算符 */
-        Math_Operator,
     }
 
     public static abstract class Option<T> {
@@ -213,31 +210,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     public static class EditInputTargetOption extends Option<InputEditAction> {
         public EditInputTargetOption(InputEditAction value) {
             super(value);
-        }
-    }
-
-    public static class MathOperatorOption extends Option<MathOperatorOption.Operator> {
-        public MathOperatorOption(Operator value) {
-            super(value);
-        }
-
-        public enum Operator {
-            /** 数学 = */
-            equal,
-            /** 数学 + */
-            plus,
-            /** 数学 - */
-            minus,
-            /** 数学 × */
-            multiply,
-            /** 数学 ÷ */
-            divide,
-            /** 数学 % */
-            percent,
-            /** 数学 () */
-            brackets,
-            /** 数学 . */
-            dot,
         }
     }
 }
