@@ -115,7 +115,11 @@ public class MathKeyTable extends KeyTable {
                 };
     }
 
-    private MathOpKey mathOpKey(MathOpKey.Type type, String text) {
+    private static MathOpKey mathOpKey(MathOpKey.Type type, String text) {
         return MathOpKey.create(type, text).setLabel(text);
+    }
+
+    public static MathOpKey bracketKey(String text) {
+        return mathOpKey(MathOpKey.Type.brackets, text);
     }
 }

@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
@@ -1144,22 +1145,28 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void prepare_for_PairSymbol_Inputting(Symbol.Pair symbol) {
-        Input<?> selected = getInputList().getSelected();
-        CharInput pending = getInputList().newPending();
-
         String left = symbol.left;
         String right = symbol.right;
 
-        SymbolKey leftKey = SymbolKey.create(Symbol.single(left));
-        SymbolKey rightKey = SymbolKey.create(Symbol.single(right));
+        prepare_for_PairKey_Inputting(getInputList(),
+                                      () -> SymbolKey.create(Symbol.single(left)),
+                                      () -> SymbolKey.create(Symbol.single(right)));
+    }
+
+    protected void prepare_for_PairKey_Inputting(InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right) {
+        Input<?> selected = inputList.getSelected();
+        CharInput pending = inputList.newPending();
+
+        Key<?> leftKey = left.get();
+        Key<?> rightKey = right.get();
 
         if (selected instanceof CharInput //
             && ((CharInput) selected).hasPair()) {
             CharInput leftInput = pending;
             CharInput rightInput = ((CharInput) selected).getPair();
-            int rightInputIndex = getInputList().indexOf(rightInput);
+            int rightInputIndex = inputList.indexOf(rightInput);
 
-            if (getInputList().getSelectedIndex() > rightInputIndex) {
+            if (inputList.getSelectedIndex() > rightInputIndex) {
                 leftInput = rightInput;
                 rightInput = pending;
             }
@@ -1172,21 +1179,21 @@ public abstract class BaseKeyboard implements Keyboard {
 
             // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
             if (selected instanceof CharInput) {
-                int selectedIndex = getInputList().getSelectedIndex();
-                getInputList().newPendingOn(selectedIndex + 1);
+                int selectedIndex = inputList.getSelectedIndex();
+                inputList.newPendingOn(selectedIndex + 1);
             } else {
-                getInputList().newPending();
+                inputList.newPending();
             }
 
-            CharInput rightInput = getInputList().getPending();
+            CharInput rightInput = inputList.getPending();
             rightInput.appendKey(rightKey);
 
             // 绑定配对符号的关联：由任意一方发起绑定即可
             rightInput.setPair(leftInput);
 
             // 确定右侧配对输入，并将光标移动到该输入左侧的 Gap 位置以确保光标在配对符号的中间位置
-            getInputList().confirmPending();
-            getInputList().newPendingOn(getInputList().getSelectedIndex() - 2);
+            inputList.confirmPending();
+            inputList.newPendingOn(inputList.getSelectedIndex() - 2);
         }
     }
     // >>>>>>>>>>>

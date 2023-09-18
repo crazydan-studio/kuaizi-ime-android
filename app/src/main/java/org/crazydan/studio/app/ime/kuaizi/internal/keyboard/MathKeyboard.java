@@ -189,6 +189,11 @@ public class MathKeyboard extends BaseKeyboard {
                     // 可连续添加多个百分号
                     pending.appendKey(key);
                     break;
+                case brackets:
+                    prepare_for_PairKey_Inputting(inputList,
+                                                  () -> MathKeyTable.bracketKey("("),
+                                                  () -> MathKeyTable.bracketKey(")"));
+                    break;
                 default:
                     inputList.newPending().appendKey(key);
                     inputList.confirmPendingAndMoveToNextGapInput();

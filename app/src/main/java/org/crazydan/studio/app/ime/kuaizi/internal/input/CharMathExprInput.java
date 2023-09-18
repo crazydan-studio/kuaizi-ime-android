@@ -55,7 +55,7 @@ public class CharMathExprInput extends CharInput {
 
     @Override
     public StringBuilder getText(Option option) {
-        // TODO 对合法的计算式仅返回计算结果
+        // TODO 对有效的计算式仅返回计算结果
         return this.inputList.getText();
     }
 

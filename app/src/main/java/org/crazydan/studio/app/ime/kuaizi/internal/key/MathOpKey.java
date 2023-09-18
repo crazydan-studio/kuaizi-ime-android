@@ -45,6 +45,8 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
     @Override
     public boolean isLatin() {
         switch (this.type) {
+            case brackets:
+                // 确保括号与数字和运算符之间都有空格
             case percent:
             case dot:
                 return true;
