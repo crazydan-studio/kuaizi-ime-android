@@ -55,6 +55,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
+    public boolean isMathOperator() {
+        return false;
+    }
+
+    @Override
     public boolean isDisabled() {
         return this.disabled;
     }

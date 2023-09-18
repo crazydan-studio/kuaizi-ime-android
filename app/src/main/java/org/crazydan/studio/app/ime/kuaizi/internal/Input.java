@@ -45,6 +45,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 是否为表情符号 */
     boolean isEmoji();
 
+    /** 是否为数学计算符 */
+    boolean isMathOperator();
+
     /** 是否为数学计算式 */
     boolean isMathExpr();
 

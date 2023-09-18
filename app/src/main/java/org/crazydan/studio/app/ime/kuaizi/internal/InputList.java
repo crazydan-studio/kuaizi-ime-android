@@ -598,6 +598,9 @@ public class InputList {
             return !right.isSymbol();
         } else if (right.isLatin()) {
             return !left.isSymbol();
+        } else if (left.isMathOperator() || right.isMathOperator()) {
+            // 数学运算符前后都有空格
+            return true;
         } else if (left.isTextOnlyWordNotation(option)) {
             return !right.isSymbol();
         } else if (right.isTextOnlyWordNotation(option)) {

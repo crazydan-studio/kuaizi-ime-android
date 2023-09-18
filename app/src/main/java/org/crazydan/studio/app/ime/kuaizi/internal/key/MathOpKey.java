@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
 import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+
 /**
  * 数学计算运算符按键
  *
@@ -42,12 +44,39 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
         return this.type;
     }
 
+    /** 是否为百/千/万分比 */
+    public boolean isPerxxx() {
+        switch (this.type) {
+            case percent:
+            case permill:
+            case permyriad:
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isMathOperator() {
+        switch (this.type) {
+            case percent:
+            case permill:
+            case permyriad:
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isSymbol() {
+        // 确保数字和非运算符之间无空格
+        return !isMathOperator();
+    }
+
     @Override
     public boolean isLatin() {
         switch (this.type) {
             case brackets:
                 // 确保括号与数字和运算符之间都有空格
-            case percent:
             case dot:
                 return true;
         }
@@ -66,6 +95,10 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
         return this.type == that.type && Objects.equals(this.getText(), that.getText());
     }
 
+    public static boolean isType(Key<?> key, Type type) {
+        return key instanceof MathOpKey && ((MathOpKey) key).getType() == type;
+    }
+
     public enum Type {
         /** 数学 = */
         equal,
@@ -77,8 +110,14 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
         multiply,
         /** 数学 ÷ */
         divide,
+
         /** 数学 % */
         percent,
+        /** 数学 ‰ */
+        permill,
+        /** 数学 ‱ */
+        permyriad,
+
         /** 数学 () */
         brackets,
         /** 数学 . */

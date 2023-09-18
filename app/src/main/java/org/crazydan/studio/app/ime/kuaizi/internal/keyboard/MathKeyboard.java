@@ -63,6 +63,15 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        // 数字、数学符号不做候选切换：支持更多符号时，可增加数学计算符的候选键盘
+        if (msg == UserInputMsg.Choosing_Input) {
+            Input<?> input = data.target;
+
+            getInputList().newPendingOn(input);
+            confirm_Pending_and_Waiting_Input();
+            return;
+        }
+
         super.onUserInputMsg(msg, data);
     }
 
@@ -167,27 +176,16 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         CharInput pending = inputList.getPending();
+
         if (key instanceof CharKey) {
-            Key<?> lastKey = pending.getLastKey();
-
-            // 百分号后面不能添加数字
-            if (lastKey instanceof MathOpKey //
-                && ((MathOpKey) lastKey).getType() == MathOpKey.Type.percent) {
-                inputList.confirmPendingAndMoveToNextGapInput();
-                pending = inputList.newPending();
-            }
-
             pending.appendKey(key);
         } else if (key instanceof MathOpKey) {
             switch (((MathOpKey) key).getType()) {
                 case dot:
-                    // 一个输入中只能有一个小数点
-                    if (pending.hasSameKey(key)) {
-                        return;
+                    // 一个输入中只能有一个符号
+                    if (!pending.hasSameKey(key)) {
+                        pending.appendKey(key);
                     }
-                case percent:
-                    // 可连续添加多个百分号
-                    pending.appendKey(key);
                     break;
                 case brackets:
                     prepare_for_PairKey_Inputting(inputList,

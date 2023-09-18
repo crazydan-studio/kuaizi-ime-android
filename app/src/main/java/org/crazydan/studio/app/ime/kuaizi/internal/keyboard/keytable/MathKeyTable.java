@@ -66,6 +66,8 @@ public class MathKeyTable extends KeyTable {
                 mathOpKey(MathOpKey.Type.minus, "-"),
                 mathOpKey(MathOpKey.Type.brackets, "( )"),
                 mathOpKey(MathOpKey.Type.percent, "%"),
+                mathOpKey(MathOpKey.Type.permill, "‰"),
+                mathOpKey(MathOpKey.Type.permyriad, "‱"),
                 };
 
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -111,6 +113,8 @@ public class MathKeyTable extends KeyTable {
                         coord(3, 4), coord(1, 5), coord(1, 4), coord(1, 3),
                         //
                         coord(0, 6), coord(0, 5), coord(0, 4), coord(0, 3),
+                        //
+                        coord(1, 2), coord(0, 2),
                         },
                 };
     }
