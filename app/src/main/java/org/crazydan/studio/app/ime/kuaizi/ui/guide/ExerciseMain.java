@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Bundle;
@@ -42,19 +43,25 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class CaseMain extends FollowSystemThemeActivity implements InputMsgListener {
+public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgListener {
     private EditText editText;
+
+    private ExerciseListView exerciseListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.guide_case_activity);
+        setContentView(R.layout.guide_exercise_main_activity);
 
-        this.editText = findViewById(R.id.text_input);
-        this.editText.setClickable(false);
+        this.exerciseListView = findViewById(R.id.exercise_list_view);
+        this.exerciseListView.adapter.bind(createExercises());
+        this.exerciseListView.active(1);
+
+//        this.editText = findViewById(R.id.text_input);
+//        this.editText.setClickable(false);
 
         ImeInputView imeView = findViewById(R.id.ime_view);
-        imeView.addInputMsgListener(this);
+//        imeView.addInputMsgListener(this);
         imeView.updateKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
     }
 
@@ -72,6 +79,19 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
 
         // 确保拼音字典库能够被及时关闭
         PinyinDictDB.getInstance().close();
+    }
+
+    private List<Exercise> createExercises() {
+        List<Exercise> exercises = new ArrayList<>();
+
+        exercises.add(Exercise.free("自由练习"));
+        exercises.add(Exercise.normal("拼音输入"));
+        exercises.add(Exercise.normal("文本编辑"));
+        exercises.add(Exercise.normal("字母切换"));
+        exercises.add(Exercise.normal("符号输入"));
+        exercises.add(Exercise.normal("计算输入"));
+
+        return exercises;
     }
 
     @Override

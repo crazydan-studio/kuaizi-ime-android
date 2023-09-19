@@ -21,7 +21,7 @@
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
     <string name="title_app_guide">Kuaizi Input Method</string>
-    <string name="title_app_guide_case">Kuaizi Input Method Guide</string>
+    <string name="title_app_guide_exercise">Kuaizi Input Method Guide</string>
     <string name="title_about_app">About the Kuaizi input method</string>
     <string name="title_about_team">About the development team</string>
     <string name="title_about_suggestion">Give us some suggestions</string>
@@ -34,7 +34,7 @@
 
     <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
     <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
-    <string name="btn_guide_try_cases">Try Some Exercises First</string>
+    <string name="btn_guide_try_exercises">Try Some Exercises First</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -60,7 +60,11 @@
         to configure to enable the input method.
     </string>
     <string name="text_exercise_edit_text_placeholder">
-        Please follow the above instructions to operate the keyboard to input content.
+        Please follow the above instructions
+        to operate the keyboard to input content
+    </string>
+    <string name="text_exercise_free_mode_edit_text_placeholder">
+        Please input any text for free exercises
     </string>
 
     <string name="value_theme_light">Light</string>

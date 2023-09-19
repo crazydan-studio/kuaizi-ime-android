@@ -18,34 +18,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="8dp">
 
-    <ScrollView
+    <TextView
+            android:id="@+id/title_view"
             android:layout_width="match_parent"
-            android:layout_height="128dp"
-            android:scrollbars="vertical"
-            android:fillViewport="true"
-            android:layout_margin="16dp">
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:gravity="center"
+            android:textColor="?attr/key_highlight_fg_color"
+            android:layout_marginBottom="12dp" />
 
-        <TextView
-                android:id="@+id/operation_guide_text"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:textSize="@dimen/about_activity_text_size" />
-    </ScrollView>
-
-    <org.crazydan.studio.app.ime.kuaizi.ui.view.NoImeEditText
-            android:id="@+id/text_input"
+    <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView
+            android:id="@+id/step_list_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:autofillHints=""
-            android:hint="@string/text_exercise_edit_text_placeholder" />
+            android:layout_margin="6dp" />
 
-    <include
-            layout="@layout/ime_input_view"
-            android:id="@+id/ime_view"
+    <org.crazydan.studio.app.ime.kuaizi.ui.view.NoImeEditText
+            android:id="@+id/text_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="80dp"
+            android:layout_marginHorizontal="6dp"
+            android:layout_marginBottom="6dp"
+            android:padding="12dp"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:autofillHints=""
+            android:hint="@string/text_exercise_edit_text_placeholder"
+            android:background="@drawable/bg_guide_box_border" />
 </LinearLayout>
