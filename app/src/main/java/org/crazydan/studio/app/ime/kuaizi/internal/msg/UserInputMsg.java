@@ -30,4 +30,6 @@ public enum UserInputMsg {
     Choosing_Input,
     /** 清空输入 */
     Cleaning_Inputs,
+    /** 撤销清空输入 */
+    Canceling_Cleaning_Inputs,
 }

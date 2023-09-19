@@ -31,10 +31,12 @@ public enum InputMsg {
 
     /** 输入列表清空中 */
     InputList_Cleaning,
+    /** 已清空输入列表撤销中 */
+    InputList_Cleaned_Canceling,
     /** 输入列表提交中：录入到目标输入组件中 */
     InputList_Committing,
     /** 已提交输入列表撤回中 */
-    InputList_Revoking,
+    InputList_Committed_Revoking,
     /** 输入列表中的 配对符号 提交中：录入到目标输入组件中 */
     InputList_PairSymbol_Committing,
 

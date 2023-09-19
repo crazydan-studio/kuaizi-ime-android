@@ -47,13 +47,13 @@ public class InputList {
 
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
+    /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
+    private Staged staged = Staged.none();
 
     private Input.Option option;
-    /** 已提交输入，用于撤回 */
-    private List<Input<?>> committedInputs;
 
     public InputList() {
-        reset();
+        reset(false);
     }
 
     /**
@@ -78,8 +78,8 @@ public class InputList {
     }
 
     /** 重置输入列表 */
-    public void reset() {
-        doReset();
+    public void reset(boolean canBeCanceled) {
+        this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         UserInputMsgData msgData = new UserInputMsgData(null);
         onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
@@ -88,59 +88,72 @@ public class InputList {
     /**
      * 提交输入列表
      * <p/>
-     * 返回{@link #getText() 输入文本}，并{@link #reset() 重置}
+     * 返回{@link #getText() 输入文本}，并{@link #reset 重置}
      */
     public StringBuilder commit(boolean canBeRevoked) {
         StringBuilder text = getText();
 
-        if (!canBeRevoked) {
-            reset();
-            return text;
-        }
-
-        boolean isEmpty = isEmpty();
-        List<Input<?>> inputs = new ArrayList<>(this.inputs);
-        reset();
-
-        if (!isEmpty) {
-            this.committedInputs = inputs;
-        }
+        this.staged = doReset(canBeRevoked ? Staged.Type.committed : Staged.Type.none);
 
         return text;
     }
 
-    public boolean canBeRevoked() {
-        return this.committedInputs != null;
+    /** 是否可撤回已提交输入 */
+    public boolean canRevokeCommit() {
+        return this.staged.type == Staged.Type.committed;
     }
 
     /** 撤回已提交的输入 */
-    public void revoke() {
-        if (this.committedInputs == null) {
-            return;
+    public void revokeCommit() {
+        if (canRevokeCommit()) {
+            Staged.restore(this, this.staged);
         }
-
-        List<Input<?>> inputs = this.committedInputs;
-        doReset();
-
-        this.inputs.clear();
-        this.inputs.addAll(inputs);
-        this.cursor.selected = CollectionUtils.last(this.inputs);
     }
 
-    /** 清除待撤销数据 */
-    public void cleanRevokes() {
-        this.committedInputs = null;
+    /** 清除 提交撤回数据 */
+    public void cleanCommitRevokes() {
+        if (canRevokeCommit()) {
+            this.staged = Staged.none();
+        }
     }
 
-    private void doReset() {
+    /** 是否可撤销已删除输入 */
+    public boolean canCancelDelete() {
+        return this.staged.type == Staged.Type.deleted;
+    }
+
+    /** 撤销已删除输入 */
+    public void cancelDelete() {
+        if (canCancelDelete()) {
+            Staged.restore(this, this.staged);
+
+            UserInputMsgData msgData = new UserInputMsgData(null);
+            onUserInputMsg(UserInputMsg.Canceling_Cleaning_Inputs, msgData);
+        }
+    }
+
+    /** 清除 删除撤销数据 */
+    public void cleanDeleteCancels() {
+        if (canCancelDelete()) {
+            this.staged = Staged.none();
+        }
+    }
+
+    /** 重置列表，并返回指定类型的暂存器（存储重置前的输入数据） */
+    private Staged doReset(Staged.Type stagedType) {
+        Staged staged = Staged.store(stagedType, this);
+
         this.inputs.clear();
         this.cursor.reset();
         this.candidateWordsCache.clear();
 
         this.inputs.add(new GapInput());
         this.cursor.selected = CollectionUtils.first(this.inputs);
+
         this.option = null;
-        this.committedInputs = null;
+        this.staged = Staged.none();
+
+        return staged;
     }
 
     /** 缓存输入的候选字列表 */
@@ -725,6 +738,14 @@ public class InputList {
             this.pending = null;
         }
 
+        public Cursor copy() {
+            Cursor cursor = new Cursor();
+            cursor.selected = this.selected;
+            cursor.pending = this.pending;
+
+            return cursor;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -742,6 +763,50 @@ public class InputList {
         @Override
         public int hashCode() {
             return Objects.hash(this.selected, this.pending);
+        }
+    }
+
+    private static class Staged {
+        public final Type type;
+        public final List<Input<?>> inputs;
+        public final Cursor cursor;
+
+        public static Staged none() {
+            return new Staged(Type.none, null, null);
+        }
+
+        public static Staged store(Type type, InputList inputList) {
+            // 为空的输入列表的无需暂存
+            if (type == Type.none || inputList.isEmpty()) {
+                return none();
+            }
+
+            return new Staged(type, new ArrayList<>(inputList.inputs), inputList.cursor.copy());
+        }
+
+        public static void restore(InputList inputList, Staged staged) {
+            if (staged.type == Type.none) {
+                return;
+            }
+
+            inputList.doReset(Type.none);
+
+            inputList.inputs.clear();
+            inputList.inputs.addAll(staged.inputs);
+            inputList.cursor.selected = staged.cursor.selected;
+            inputList.cursor.pending = staged.cursor.pending;
+        }
+
+        private Staged(Type type, List<Input<?>> inputs, Cursor cursor) {
+            this.type = type;
+            this.inputs = inputs;
+            this.cursor = cursor;
+        }
+
+        public enum Type {
+            none,
+            deleted,
+            committed,
         }
     }
 }

@@ -82,7 +82,7 @@ public class CaseMain extends FollowSystemThemeActivity implements InputMsgListe
                 commitText(d.text, d.replacements);
                 break;
             }
-            case InputList_Revoking: {
+            case InputList_Committed_Revoking: {
                 revokeCommitting();
                 break;
             }

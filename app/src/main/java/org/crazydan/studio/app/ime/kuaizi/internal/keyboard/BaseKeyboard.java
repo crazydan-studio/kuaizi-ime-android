@@ -165,7 +165,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected KeyTable.Config createKeyTableConfigure() {
         return new KeyTable.Config(getConfig(),
                                    !getInputList().isEmpty(),
-                                   getInputList().canBeRevoked(),
+                                   getInputList().canRevokeCommit(),
                                    !getInputList().isGapSelected());
     }
 
@@ -173,8 +173,11 @@ public abstract class BaseKeyboard implements Keyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case InputCandidate_Choosing:
-                if (msg == UserInputMsg.Cleaning_Inputs) {
-                    goto_InitState();
+                switch (msg) {
+                    case Cleaning_Inputs:
+                    case Canceling_Cleaning_Inputs:
+                        goto_InitState();
+                        break;
                 }
             case Input_Waiting:
             case Emoji_Choosing:
@@ -186,6 +189,10 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case Cleaning_Inputs: {
                         clean_InputList();
+                        break;
+                    }
+                    case Canceling_Cleaning_Inputs: {
+                        cancel_Cleaning_InputList();
                         break;
                     }
                 }
@@ -426,6 +433,11 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputList_Cleaning, new InputCommonMsgData(getKeyFactory()));
     }
 
+    /** 撤销清空输入列表，且状态保持不变 */
+    protected void cancel_Cleaning_InputList() {
+        fireInputMsg(InputMsg.InputList_Cleaned_Canceling, new InputCommonMsgData(getKeyFactory()));
+    }
+
     /** 提交输入列表，且状态保持不变 */
     protected void commit_InputList(InputList inputList, boolean canBeRevoked, boolean needToBeReplaced) {
         commit_InputList(inputList, canBeRevoked, needToBeReplaced, false);
@@ -474,22 +486,22 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void before_Commit_InputList(InputList inputList) {}
 
     /** 撤回输入列表，且状态保持不变 */
-    protected void revoke_InputList(InputList inputList) {
-        if (!inputList.canBeRevoked()) {
+    protected void revoke_Committed_InputList(InputList inputList) {
+        if (!inputList.canRevokeCommit()) {
             return;
         }
 
-        before_Revoke_InputList(inputList);
+        before_Revoke_Committed_InputList(inputList);
 
-        inputList.revoke();
+        inputList.revokeCommit();
 
         // Note：输入撤回按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
         InputMsgData data = new InputCommonMsgData(getKeyFactory());
-        fireInputMsg(InputMsg.InputList_Revoking, data);
+        fireInputMsg(InputMsg.InputList_Committed_Revoking, data);
     }
 
-    /** 在 {@link #revoke_InputList 输入列表撤回提交} 之前需要做的事情 */
-    protected void before_Revoke_InputList(InputList inputList) {}
+    /** 在 {@link #revoke_Committed_InputList 输入列表撤回提交} 之前需要做的事情 */
+    protected void before_Revoke_Committed_InputList(InputList inputList) {}
 
     /**
      * 回删输入列表中的输入或输入目标中的内容，且状态保持不变
@@ -497,7 +509,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 输入列表不为空时，在输入列表中做删除，否则，在输入目标中做删除
      */
     protected void backspace_InputList_or_InputTarget(InputList inputList) {
-        inputList.cleanRevokes();
+        inputList.cleanCommitRevokes();
 
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
@@ -636,7 +648,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case RevokeInput: {
                         play_InputtingSingleTick_Audio(key);
-                        revoke_InputList(getInputList());
+                        revoke_Committed_InputList(getInputList());
                         return true;
                     }
                     case Backspace: {
@@ -942,7 +954,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 // 无需清空待撤回输入数据
                 break;
             default:
-                getInputList().cleanRevokes();
+                getInputList().cleanCommitRevokes();
         }
 
         InputMsgData data = new InputTargetEditingMsgData(getKeyFactory(), action);

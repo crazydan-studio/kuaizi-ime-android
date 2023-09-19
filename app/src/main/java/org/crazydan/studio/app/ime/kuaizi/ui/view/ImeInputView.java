@@ -47,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMs
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -60,6 +61,7 @@ public class ImeInputView extends FrameLayout
     public KeyboardView keyboardView;
     public InputListView inputListView;
     private View inputListCleanBtnView;
+    private View inputListCleanCancelBtnView;
 
     private final InputList inputList;
     private Keyboard keyboard;
@@ -90,14 +92,15 @@ public class ImeInputView extends FrameLayout
     /** 开始输入 */
     public void startInput(Keyboard.Config config, boolean resetInputList) {
         if (resetInputList) {
-            this.inputList.reset();
+            this.inputList.reset(false);
         }
         updateKeyboard(config);
     }
 
     /** 结束输入 */
     public void finishInput() {
-        this.inputList.cleanRevokes();
+        this.inputList.cleanCommitRevokes();
+        this.inputList.cleanDeleteCancels();
 
         this.keyboard.reset();
     }
@@ -122,6 +125,11 @@ public class ImeInputView extends FrameLayout
                 break;
             }
             default: {
+                // 有新输入，则清空 删除撤销数据
+                if (!this.inputList.isEmpty()) {
+                    this.inputList.cleanDeleteCancels();
+                }
+
                 toggleShowInputListCleanBtn();
             }
         }
@@ -202,7 +210,9 @@ public class ImeInputView extends FrameLayout
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
         rootView.findViewById(R.id.settings).setOnClickListener(this::onShowPreferences);
+
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
+        this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
         toggleShowInputListCleanBtn();
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
@@ -276,16 +286,31 @@ public class ImeInputView extends FrameLayout
     }
 
     private void onCleanInputList(View v) {
-        this.inputList.reset();
+        this.inputList.reset(true);
+    }
+
+    private void onCancelCleanInputList(View v) {
+        this.inputList.cancelDelete();
     }
 
     private void toggleShowInputListCleanBtn() {
         if (this.inputList.isEmpty()) {
-            this.inputListCleanBtnView.setAlpha(0);
+            if (this.inputList.canCancelDelete()) {
+                ViewUtils.hide(this.inputListCleanBtnView);
+                ViewUtils.show(this.inputListCleanCancelBtnView);
+            } else {
+                ViewUtils.show(this.inputListCleanBtnView).setAlpha(0);
+                ViewUtils.hide(this.inputListCleanCancelBtnView);
+            }
+
             this.inputListCleanBtnView.setOnClickListener(null);
+            this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
         } else {
-            this.inputListCleanBtnView.setAlpha(1);
+            ViewUtils.show(this.inputListCleanBtnView).setAlpha(1);
+            ViewUtils.hide(this.inputListCleanCancelBtnView);
+
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
+            this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
     }
 

@@ -57,7 +57,7 @@ public class MathKeyboard extends BaseKeyboard {
     protected KeyTable.Config createKeyTableConfigure() {
         return new KeyTable.Config(getConfig(),
                                    !getTopInputList().isEmpty(),
-                                   getTopInputList().canBeRevoked(),
+                                   getTopInputList().canRevokeCommit(),
                                    !getInputList().isGapSelected());
     }
 
@@ -97,6 +97,12 @@ public class MathKeyboard extends BaseKeyboard {
                 resetMathInputList();
 
                 clean_InputList();
+                break;
+            }
+            case Canceling_Cleaning_Inputs: {
+                resetMathInputList();
+
+                cancel_Cleaning_InputList();
                 break;
             }
         }

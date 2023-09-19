@@ -76,6 +76,15 @@
                 android:id="@+id/clean_input_list"
                 android:src="@drawable/ic_clean"
                 android:background="?attr/input_bg_color" />
+
+        <ImageButton
+                android:layout_width="@dimen/input_list_icon_size"
+                android:layout_height="@dimen/input_list_icon_size"
+                android:layout_gravity="center"
+                android:layout_marginEnd="6dp"
+                android:id="@+id/cancel_clean_input_list"
+                android:src="@drawable/ic_restore"
+                android:background="?attr/input_bg_color" />
     </LinearLayout>
 
     <View
