@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
@@ -47,7 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwi
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
-import org.crazydan.studio.app.ime.kuaizi.ui.Preferences;
+import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -237,10 +236,6 @@ public class ImeInputView extends FrameLayout
                                                                      false);
         patchedConfig.setKeyClickedAudioDisabled(disableKeyClickedAudio);
 
-        boolean disablePinyinGlidingInputAnimation
-                = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_pinyin_gliding_input_animation, false);
-        patchedConfig.setGlidingInputAnimationDisabled(disablePinyinGlidingInputAnimation);
-
         boolean disableInputCandidatesPagingAudio
                 = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
         patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);
@@ -277,25 +272,7 @@ public class ImeInputView extends FrameLayout
     }
 
     private void onShowPreferences(View v) {
-        Context context = getContext();
-
-        Intent intent;
-//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-//            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置
-//            // Settings.ACTION_INPUT_METHOD_SETTINGS: 打开输入法设置
-//            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
-//        } else {
-        // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
-        intent = new Intent(context, Preferences.class);
-//        }
-
-        // If set then opens Settings Screen(Activity) as new activity.
-        // Otherwise, it will be opened in currently running activity.
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        context.startActivity(intent);
+        SystemUtils.showImePreferences(getContext());
     }
 
     private void onCleanInputList(View v) {

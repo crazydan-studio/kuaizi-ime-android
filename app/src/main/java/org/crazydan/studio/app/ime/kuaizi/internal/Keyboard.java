@@ -93,8 +93,6 @@ public interface Keyboard extends UserInputMsgListener {
     class Config {
         public static final String pref_key_disable_user_input_data = "disable_user_input_data";
         public static final String pref_key_disable_key_clicked_audio = "disable_key_clicked_audio";
-        public static final String pref_key_disable_pinyin_gliding_input_animation
-                = "disable_pinyin_gliding_input_animation";
         public static final String pref_key_disable_input_candidates_paging_audio
                 = "disable_input_candidates_paging_audio";
         public static final String pref_key_hand_mode = "hand_mode";
@@ -116,7 +114,6 @@ public interface Keyboard extends UserInputMsgListener {
 
         private boolean userInputDataDisabled;
         private boolean keyClickedAudioDisabled;
-        private boolean glidingInputAnimationDisabled;
         private boolean pagingAudioDisabled;
 
         public Config(Type type) {
@@ -134,7 +131,6 @@ public interface Keyboard extends UserInputMsgListener {
 
                 this.userInputDataDisabled = config.userInputDataDisabled;
                 this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
-                this.glidingInputAnimationDisabled = config.glidingInputAnimationDisabled;
                 this.pagingAudioDisabled = config.pagingAudioDisabled;
             }
         }
@@ -201,14 +197,6 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setKeyClickedAudioDisabled(boolean keyClickedAudioDisabled) {
             this.keyClickedAudioDisabled = keyClickedAudioDisabled;
-        }
-
-        public boolean isGlidingInputAnimationDisabled() {
-            return this.glidingInputAnimationDisabled;
-        }
-
-        public void setGlidingInputAnimationDisabled(boolean glidingInputAnimationDisabled) {
-            this.glidingInputAnimationDisabled = glidingInputAnimationDisabled;
         }
 
         public boolean isPagingAudioDisabled() {
