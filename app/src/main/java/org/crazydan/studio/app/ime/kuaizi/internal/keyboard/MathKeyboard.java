@@ -244,6 +244,14 @@ public class MathKeyboard extends BaseKeyboard {
         super.reset();
     }
 
+    @Override
+    protected void do_Exit() {
+        // 退出前，先移动光标至相邻 Gap
+        getTopInputList().confirmPendingAndMoveToNextGapInput();
+
+        super.do_Exit();
+    }
+
     /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */
     private void resetMathInputList() {
         setInputList(getTopInputList());
