@@ -193,9 +193,11 @@ public class MathKeyboard extends BaseKeyboard {
                                                   () -> MathKeyTable.bracketKey(")"));
                     break;
                 case equal:
-                    // 等号始终添加到输入列表的末尾
-                    inputList.confirmPending();
-                    inputList.moveToLastInput();
+                    // 除开头以外的位置，等号始终添加到输入列表的末尾
+                    if (inputList.getSelectedIndex() > 1) {
+                        inputList.confirmPending();
+                        inputList.moveToLastInput();
+                    }
                 default:
                     inputList.newPending().appendKey(key);
                     inputList.confirmPendingAndMoveToNextGapInput();
