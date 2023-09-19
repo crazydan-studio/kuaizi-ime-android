@@ -40,9 +40,24 @@ public class CollectionUtils {
                                           : c.stream().reduce((prev, next) -> next).orElse(null);
     }
 
+    /** 通过 对象引用 是否相等确定指定元素在列表中的位置 */
+    public static <T> int indexOfRef(List<T> list, T element) {
+        return indexOfRef(list, element, 0);
+    }
+
+    /** 通过 对象引用 是否相等确定指定元素在列表中的位置 */
+    public static <T> int indexOfRef(List<T> list, T element, int fromIndex) {
+        for (int i = fromIndex; i < list.size(); i++) {
+            if (list.get(i) == element) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     /** 返回的为新建的 List 实例，可直接做元素增删 */
     public static <T> List<T> subList(List<T> list, int start, int end) {
-        if (start >= list.size() || start >= end) {
+        if (start < 0 || end < 0 || start >= list.size() || start >= end) {
             return new ArrayList<>();
         }
         return new ArrayList<>(list.subList(start, Math.min(end, list.size())));

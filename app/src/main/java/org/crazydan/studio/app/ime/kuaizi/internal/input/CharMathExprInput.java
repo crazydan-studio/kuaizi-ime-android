@@ -79,7 +79,7 @@ public class CharMathExprInput extends CharInput {
             return this.inputList.getText();
         }
 
-        String text = String.format(Locale.getDefault(), "%.12f", result);
+        String text = String.format(Locale.getDefault(), "%.3f", result);
         text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
 
         StringBuilder sb;
@@ -211,14 +211,7 @@ public class CharMathExprInput extends CharInput {
                         break;
                     case brackets: {
                         int fromIndex = i;
-                        int toIndex = -1;
-                        for (int j = fromIndex; j < inputs.size(); j++) {
-                            if (inputs.get(j) == input.getPair()) {
-                                toIndex = j;
-                                break;
-                            }
-                        }
-
+                        int toIndex = CollectionUtils.indexOfRef(inputs, input.getPair(), fromIndex + 1);
                         if (toIndex < 0) {
                             break;
                         }

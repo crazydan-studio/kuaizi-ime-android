@@ -631,13 +631,7 @@ public class InputList {
         }
 
         // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
-        for (int i = 0; i < this.inputs.size(); i++) {
-            Input<?> ipt = this.inputs.get(i);
-            if (ipt == input) {
-                return i;
-            }
-        }
-        return -1;
+        return CollectionUtils.indexOfRef(this.inputs, input);
     }
 
     public Input<?> getFirstInput() {
@@ -658,10 +652,8 @@ public class InputList {
 
     /** 选中指定的输入 */
     private void select(Input<?> input) {
-        if (input != null) {
-            this.cursor.selected = input;
-            this.cursor.pending = null;
-        }
+        this.cursor.selected = input;
+        this.cursor.pending = null;
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */
