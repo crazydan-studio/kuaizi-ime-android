@@ -270,18 +270,21 @@ public class InputList {
         // 先由待输入做其内部确认
         pending.confirm();
 
-        this.cursor.pending = null;
+        Input<?> newSelected = selected;
         if (selected instanceof CharInput) {
             // 保持对配对符号的引用
             pending.setPair(((CharInput) selected).getPair());
 
             this.inputs.set(selectedIndex, pending);
-            this.cursor.selected = pending;
+
+            newSelected = pending;
         } else if (selected instanceof GapInput) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input<?> gap = new GapInput();
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         }
+
+        select(newSelected);
     }
 
     /** 确认输入并移动到下一个 Gap 输入 */
@@ -309,8 +312,15 @@ public class InputList {
         if (next instanceof GapInput && nextIndex < lastIndex) {
             next = this.inputs.get(nextIndex + 1);
         }
-        this.cursor.selected = next;
-        this.cursor.pending = null;
+
+        select(next);
+    }
+
+    /** 移动到尾部输入 */
+    public void moveToLastInput() {
+        Input<?> last = getLastInput();
+
+        select(last);
     }
 
     /** 丢弃待输入 */
@@ -447,8 +457,7 @@ public class InputList {
             removeCharInput(selected);
 
             // 再将当前光标后移
-            this.cursor.selected = newSelected;
-            this.cursor.pending = null;
+            select(newSelected);
         }
     }
 
@@ -645,6 +654,14 @@ public class InputList {
 
     public CharInput getLastCharInput() {
         return CollectionUtils.last(getCharInputs());
+    }
+
+    /** 选中指定的输入 */
+    private void select(Input<?> input) {
+        if (input != null) {
+            this.cursor.selected = input;
+            this.cursor.pending = null;
+        }
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */

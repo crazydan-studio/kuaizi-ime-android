@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -228,6 +229,12 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     public void setWord(InputWord word) {
         this.word = word;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return getText().toString();
     }
 
     @Override

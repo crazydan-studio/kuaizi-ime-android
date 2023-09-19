@@ -211,13 +211,23 @@ public class CharMathExprInput extends CharInput {
                         break;
                     case brackets: {
                         int fromIndex = i;
-                        int toIndex = inputs.indexOf(input.getPair());
-                        List<CharInput> subInputs = CollectionUtils.subList(inputs, fromIndex + 1, toIndex);
+                        int toIndex = -1;
+                        for (int j = fromIndex; j < inputs.size(); j++) {
+                            if (inputs.get(j) == input.getPair()) {
+                                toIndex = j;
+                                break;
+                            }
+                        }
 
+                        if (toIndex < 0) {
+                            break;
+                        }
+
+                        List<CharInput> subInputs = CollectionUtils.subList(inputs, fromIndex + 1, toIndex);
                         Double number = calculate(subInputs);
                         expr = Num.create(number);
 
-                        i += toIndex + 1;
+                        i = toIndex;
                         break;
                     }
                     default:
