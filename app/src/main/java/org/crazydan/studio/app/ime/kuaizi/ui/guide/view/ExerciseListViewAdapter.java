@@ -53,7 +53,7 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     public void onBindViewHolder(@NonNull ExerciseView view, int position) {
         Exercise exercise = this.data.get(position);
 
-        view.bind(exercise);
+        view.bind(exercise, position);
     }
 
     @NonNull

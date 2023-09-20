@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
+import java.util.Locale;
+
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -45,8 +47,9 @@ public class ExerciseView extends RecyclerView.ViewHolder {
         this.textView = itemView.findViewById(R.id.text_view);
     }
 
-    public void bind(Exercise exercise) {
-        this.titleView.setText(exercise.title);
+    public void bind(Exercise exercise, int position) {
+        String title = String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+        this.titleView.setText(title);
 
         if (this.stepListView != null) {
             this.stepListView.adapter.bind(exercise.steps);
