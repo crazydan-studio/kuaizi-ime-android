@@ -16,6 +16,11 @@
   -->
 
 <resources>
+    <declare-styleable name="RecyclerPageIndicatorView">
+        <attr name="dot_size" format="dimension" />
+        <attr name="dot_spacing" format="dimension" />
+    </declare-styleable>
+
     <declare-styleable name="keyboard_style">
         <attr name="keyboard_bg_color" format="color" />
         <attr name="keyboard_border_color" format="color" />

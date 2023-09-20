@@ -49,10 +49,6 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
     private InputList inputList;
 
-    public InputListView(Context context) {
-        this(context, null);
-    }
-
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewLayoutManager;
@@ -34,10 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewLayoutMa
 public class ExerciseListView extends RecyclerView {
     public final ExerciseListViewAdapter adapter;
 
-    public ExerciseListView(@NonNull Context context) {
-        this(context, null);
-    }
-
     public ExerciseListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
@@ -46,6 +43,13 @@ public class ExerciseListView extends RecyclerView {
 
         ExerciseListViewLayoutManager layoutManager = new ExerciseListViewLayoutManager(context);
         setLayoutManager(layoutManager);
+
+        // 以翻页形式切换项目至视图中心
+        // - 用RecyclerView打造一个轮播图: https://juejin.cn/post/6844903512447385613
+        // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置: https://cloud.tencent.com/developer/article/1041258
+        // - 用RecyclerView打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
+        // - RecyclerView实现Gallery画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
+        new PagerSnapHelper().attachToRecyclerView(this);
     }
 
     public void active(int position) {

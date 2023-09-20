@@ -16,15 +16,37 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
-            android:id="@+id/exercise_list_view"
+    <com.google.android.flexbox.FlexboxLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            app:flexWrap="nowrap"
+            app:flexDirection="column"
+            app:alignItems="center"
+            app:alignContent="stretch">
+
+        <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
+                android:id="@+id/exercise_list_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_flexGrow="1" />
+
+        <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
+                android:id="@+id/exercise_list_indicator_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_gravity="bottom"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:dot_spacing="4dp"
+                app:dot_size="12dp" />
+    </com.google.android.flexbox.FlexboxLayout>
 
     <include
             layout="@layout/ime_input_view"

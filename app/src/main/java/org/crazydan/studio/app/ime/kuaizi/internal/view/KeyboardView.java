@@ -58,10 +58,6 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
 
     private Keyboard keyboard;
 
-    public KeyboardView(@NonNull Context context) {
-        this(context, null);
-    }
-
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 

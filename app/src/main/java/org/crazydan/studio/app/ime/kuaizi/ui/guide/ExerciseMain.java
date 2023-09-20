@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbol
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
@@ -47,6 +48,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     private EditText editText;
 
     private ExerciseListView exerciseListView;
+    private RecyclerPageIndicatorView exerciseListIndicatorView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,10 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
 
         this.exerciseListView = findViewById(R.id.exercise_list_view);
         this.exerciseListView.adapter.bind(createExercises());
+
+        this.exerciseListIndicatorView = findViewById(R.id.exercise_list_indicator_view);
+        this.exerciseListIndicatorView.attachTo(this.exerciseListView);
+
         this.exerciseListView.active(1);
 
 //        this.editText = findViewById(R.id.text_input);

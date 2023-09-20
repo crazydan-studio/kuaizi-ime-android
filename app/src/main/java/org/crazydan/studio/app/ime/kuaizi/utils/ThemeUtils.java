@@ -17,9 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import java.util.function.Consumer;
+
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 
 /**
@@ -72,6 +76,21 @@ public class ThemeUtils {
             return true;
         }
         return false;
+    }
+
+    public static void applyStyledAttributes(
+            Context context, AttributeSet attrSet, int[] attrs, Consumer<TypedArray> apply
+    ) {
+        TypedArray typedArray = null;
+        try {
+            typedArray = context.obtainStyledAttributes(attrSet, attrs);
+
+            apply.accept(typedArray);
+        } finally {
+            if (typedArray != null) {
+                typedArray.recycle();
+            }
+        }
     }
 
     private static TypedValue getValue(Context context, int attrId) {

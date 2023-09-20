@@ -30,14 +30,4 @@ public class ExerciseStepListViewLayoutManager extends LinearLayoutManager {
     public ExerciseStepListViewLayoutManager(Context context) {
         super(context, RecyclerView.VERTICAL, false);
     }
-
-    @Override
-    public boolean canScrollHorizontally() {
-        return false;
-    }
-
-    @Override
-    public boolean canScrollVertically() {
-        return true;
-    }
 }

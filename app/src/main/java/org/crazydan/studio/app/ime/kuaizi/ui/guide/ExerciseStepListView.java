@@ -32,10 +32,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseStepListViewLayo
 public class ExerciseStepListView extends RecyclerView {
     public final ExerciseStepListViewAdapter adapter;
 
-    public ExerciseStepListView(@NonNull Context context) {
-        this(context, null);
-    }
-
     public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 

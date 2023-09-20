@@ -33,14 +33,4 @@ public class ExerciseListViewLayoutManager extends LinearLayoutManager {
     public ExerciseListViewLayoutManager(Context context) {
         super(context, RecyclerView.HORIZONTAL, false);
     }
-
-    @Override
-    public boolean canScrollHorizontally() {
-        return true;
-    }
-
-    @Override
-    public boolean canScrollVertically() {
-        return false;
-    }
 }

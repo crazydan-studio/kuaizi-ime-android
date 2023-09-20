@@ -120,6 +120,7 @@ public class Guide extends FollowSystemThemeActivity {
         if (isImeEnabled()) {
             SystemUtils.switchIme(getApplicationContext());
         } else {
+            // TODO 改为弹窗提示启用输入法
             String btnText = getResources().getString(R.string.btn_guide_enable_ime);
             String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, btnText);
 
