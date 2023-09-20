@@ -24,9 +24,9 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
-import android.widget.Toast;
 import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.Service;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
@@ -43,6 +43,11 @@ public class Guide extends FollowSystemThemeActivity {
     @Override
     protected boolean isActionBarEnabled() {
         return false;
+    }
+
+    @Override
+    protected int getDefaultTheme() {
+        return chooseTheme(R.style.Theme_KuaiziIME_Guide_Light, R.style.Theme_KuaiziIME_Guide_Night);
     }
 
     @Override
@@ -82,7 +87,7 @@ public class Guide extends FollowSystemThemeActivity {
         btnEnableIme.setOnClickListener(this::showImeSettings);
         btnTryExercises.setOnClickListener(this::tryExercises);
 
-        tryExercises(null);
+        //tryExercises();
     }
 
     private String getImeId() {
@@ -115,17 +120,31 @@ public class Guide extends FollowSystemThemeActivity {
         // 消除点击造成的切换影响
         updateSwitcher();
 
-        Context context = getApplicationContext();
-
         if (isImeEnabled()) {
-            SystemUtils.switchIme(getApplicationContext());
-        } else {
-            // TODO 改为弹窗提示启用输入法
-            String btnText = getResources().getString(R.string.btn_guide_enable_ime);
-            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, btnText);
+            Context context = getApplicationContext();
 
-            Toast.makeText(context, msgText, Toast.LENGTH_LONG).show();
+            SystemUtils.switchIme(context);
+        } else {
+            String appName = getResources().getString(R.string.app_name);
+            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, appName);
+
+            // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
+            // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
+            Context context = this; //new ContextThemeWrapper(this, themeResId);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+
+            builder.setTitle(R.string.title_tips)
+                   .setMessage(msgText)
+                   .setCancelable(false)
+                   .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
+                   .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
+                   .create()
+                   .show();
         }
+    }
+
+    private void showImeSettings() {
+        showImeSettings(null);
     }
 
     private void showImeSettings(View v) {
@@ -137,6 +156,10 @@ public class Guide extends FollowSystemThemeActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);
+    }
+
+    private void tryExercises() {
+        tryExercises(null);
     }
 
     private void tryExercises(View v) {

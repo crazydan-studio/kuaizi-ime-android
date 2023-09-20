@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
  * 支持根据系统暗黑主题设置窗口主题
@@ -30,16 +31,25 @@ public abstract class FollowSystemThemeActivity extends ActionBarSupportActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        int themeMode = getApplicationContext().getResources().getConfiguration().uiMode
-                        & Configuration.UI_MODE_NIGHT_MASK;
-
-        int themeResId = androidx.appcompat.R.style.Theme_AppCompat_Light;
-        if (themeMode == Configuration.UI_MODE_NIGHT_YES) {
-            themeResId = androidx.appcompat.R.style.Theme_AppCompat_DayNight;
-        }
-
+        int themeResId = getDefaultTheme();
         setTheme(themeResId);
 
         super.onCreate(savedInstanceState);
+    }
+
+    protected int getDefaultTheme() {
+        return chooseTheme(R.style.Theme_KuaiziIME_Light, R.style.Theme_KuaiziIME_Night);
+    }
+
+    protected int chooseTheme(int lightThemeResId, int nightThemeResId) {
+        int themeMode = getApplicationContext().getResources().getConfiguration().uiMode
+                        & Configuration.UI_MODE_NIGHT_MASK;
+
+        int themeResId = lightThemeResId;
+        if (themeMode == Configuration.UI_MODE_NIGHT_YES) {
+            themeResId = nightThemeResId;
+        }
+
+        return themeResId;
     }
 }

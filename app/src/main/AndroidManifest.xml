@@ -19,8 +19,7 @@
 
     <application
             android:icon="@drawable/ic_logo"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.KuaiziIME.Night">
+            android:label="@string/app_name">
         <service
                 android:name=".Service"
                 android:exported="false"
@@ -35,23 +34,24 @@
                     android:resource="@xml/method" />
         </service>
 
-        <!-- Start: 配置 -->
+        <!-- Start: 配置
+        Note：视图主题在 FollowSystemThemeActivity 中动态设置
+        -->
         <activity
                 android:name=".ui.Preferences"
                 android:exported="false"
                 android:label="@string/title_app_preferences"
-                android:theme="@style/Theme.AppCompat"
                 android:configChanges="uiMode">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name=".ui.Preferences" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <activity
                 android:name=".ui.about.AboutApp"
                 android:exported="false"
-                android:label="@string/title_about_app"
-                android:theme="@style/Theme.AppCompat">
+                android:label="@string/title_about_app">
             <intent-filter>
                 <action android:name=".ui.about.AboutApp" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -60,8 +60,7 @@
         <activity
                 android:name=".ui.about.AboutTeam"
                 android:exported="false"
-                android:label="@string/title_about_team"
-                android:theme="@style/Theme.AppCompat">
+                android:label="@string/title_about_team">
             <intent-filter>
                 <action android:name=".ui.about.AboutTeam" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -70,8 +69,7 @@
         <activity
                 android:name=".ui.about.AboutSuggestion"
                 android:exported="false"
-                android:label="@string/title_about_suggestion"
-                android:theme="@style/Theme.AppCompat">
+                android:label="@string/title_about_suggestion">
             <intent-filter>
                 <action android:name=".ui.about.AboutSuggestion" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -80,8 +78,7 @@
         <activity
                 android:name=".ui.about.AboutThanks"
                 android:exported="false"
-                android:label="@string/title_about_thanks"
-                android:theme="@style/Theme.AppCompat">
+                android:label="@string/title_about_thanks">
             <intent-filter>
                 <action android:name=".ui.about.AboutThanks" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -90,8 +87,7 @@
         <activity
                 android:name=".ui.about.AboutChangeLog"
                 android:exported="false"
-                android:label="@string/title_about_change_log"
-                android:theme="@style/Theme.AppCompat">
+                android:label="@string/title_about_change_log">
             <intent-filter>
                 <action android:name=".ui.about.AboutChangeLog" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -99,12 +95,13 @@
         </activity>
         <!-- End -->
 
-        <!-- Start: 指南 -->
+        <!-- Start: 使用指南
+        Note：视图主题在 FollowSystemThemeActivity 中动态设置
+        -->
         <activity
                 android:name=".ui.Guide"
                 android:exported="true"
                 android:label="@string/title_app_guide"
-                android:theme="@style/Theme.MaterialComponents"
                 android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

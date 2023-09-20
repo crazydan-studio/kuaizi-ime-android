@@ -27,6 +27,7 @@
     <string name="title_about_suggestion">Give us some suggestions</string>
     <string name="title_about_thanks">Thanks</string>
     <string name="title_about_change_log">Change log</string>
+    <string name="title_tips">Tips</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
@@ -35,6 +36,8 @@
     <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
     <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
     <string name="btn_guide_try_exercises">Try Some Exercises First</string>
+    <string name="btn_enable_right_now">Yes</string>
+    <string name="btn_enable_later">Later</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -55,9 +58,9 @@
         so it will have a certain effect on the inputting efficiency.
     </string>
     <string name="msg_ime_should_be_enabled_first">
-        The Kuaizi input method has not been enabled yet.
-        Please click the button [%1$s]
-        to configure to enable the input method.
+        %1$s has not been enabled (that is,
+        「%1$s」 has not been selected in the System Keyboards list),
+        so it cannot be activated.\n\nDo you want to enable it right now?
     </string>
     <string name="text_exercise_edit_text_placeholder">
         Please follow the above instructions

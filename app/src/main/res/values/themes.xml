@@ -17,11 +17,7 @@
 
 <resources>
 
-    <style name="Theme" />
-
-    <style name="Theme.KuaiziIME" />
-
-    <style name="Theme.KuaiziIME.Light">
+    <style name="Theme.KuaiziIME.Light" parent="Theme.AppCompat.Light">
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">#ffededed</item>
         <item name="keyboard_border_color">?attr/keyboard_divider_color</item>
@@ -86,7 +82,7 @@
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
     </style>
 
-    <style name="Theme.KuaiziIME.Night">
+    <style name="Theme.KuaiziIME.Night" parent="Theme.AppCompat.DayNight">
         <!-- 配色参考: https://codepen.io/kulpreets/pen/MKgqqB -->
         <!-- 键盘样式 -->
         <item name="keyboard_bg_color">#ff272b2c</item>
@@ -163,4 +159,58 @@
         <item name="key_char_level_5_bg_color">#688ba8c8</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
     </style>
+
+    <!-- Start: Guide 视图主题 -->
+    <style name="Theme.KuaiziIME.Guide" parent="Theme.MaterialComponents.NoActionBar" />
+
+    <style name="Theme.KuaiziIME.Guide.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
+        <item name="materialAlertDialogTheme">@style/Theme.KuaiziIME.Guide.AlertDialog.Light</item>
+    </style>
+
+    <style name="Theme.KuaiziIME.Guide.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
+        <item name="materialAlertDialogTheme">@style/Theme.KuaiziIME.Guide.AlertDialog.Night</item>
+    </style>
+
+    <style name="Theme.KuaiziIME.Guide.AlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/AlertDialog.Corner</item>
+    </style>
+
+    <style name="Theme.KuaiziIME.Guide.AlertDialog.Light" parent="Theme.KuaiziIME.Guide.AlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialog.Button.Positive.Light</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialog.Button.Negative.Light</item>
+    </style>
+
+    <style name="Theme.KuaiziIME.Guide.AlertDialog.Night" parent="Theme.KuaiziIME.Guide.AlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialog.Button.Positive.Night</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialog.Button.Negative.Night</item>
+    </style>
+
+    <style name="AlertDialog.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="AlertDialog.Button.Positive.Light" parent="AlertDialog.Button">
+        <item name="android:textColor">@android:color/holo_blue_dark</item>
+    </style>
+
+    <style name="AlertDialog.Button.Negative.Light" parent="AlertDialog.Button">
+        <item name="android:textColor">@android:color/holo_blue_light</item>
+    </style>
+
+    <style name="AlertDialog.Button.Positive.Night" parent="AlertDialog.Button">
+        <item name="android:textColor">@android:color/holo_blue_light</item>
+    </style>
+
+    <style name="AlertDialog.Button.Negative.Night" parent="AlertDialog.Button">
+        <item name="android:textColor">@android:color/holo_blue_dark</item>
+    </style>
+
+    <style name="AlertDialog.Corner" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+    <!-- End -->
 </resources>
