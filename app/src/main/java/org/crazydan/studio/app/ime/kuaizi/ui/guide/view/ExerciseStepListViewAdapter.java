@@ -40,19 +40,19 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public int getItemCount() {
-        return this.data.size();
+        return this.data != null ? this.data.size() : 0;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ExerciseStepView view, int position) {
         ExerciseStep step = this.data.get(position);
 
-        view.bind(step);
+        view.bind(step, position);
     }
 
     @NonNull
     @Override
     public ExerciseStepView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ExerciseStepView(inflateHolderView(parent, R.layout.guide_exercise_step_view));
+        return new ExerciseStepView(inflateItemView(parent, R.layout.guide_exercise_step_view));
     }
 }

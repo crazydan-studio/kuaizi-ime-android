@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.content.Context;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -79,34 +80,35 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     public void onBindViewHolder(@NonNull KeyView<?, ?> view, int position) {
         Key<?> key = this.keys.get(position);
 
-        if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).getType()) {
-                case Filter_PinyinInputCandidate_stroke:
-                    ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, this.orientation);
-                    break;
-                case Toggle_PinyinInput_spell:
-                    ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, this.orientation);
-                    break;
-                default:
-                    ((CtrlKeyView) view).bind((CtrlKey) key, this.orientation);
-            }
-        } else if (key instanceof InputWordKey) {
-            ((InputWordKeyView) view).bind((InputWordKey) key, this.orientation);
-        } else if (key instanceof SymbolKey) {
-            ((SymbolKeyView) view).bind((SymbolKey) key, this.orientation);
-        } else if (key instanceof MathOpKey) {
-            ((MathOpKeyView) view).bind((MathOpKey) key, this.orientation);
-        } else if (key == null) {
-            ((NullKeyView) view).bind();
-        } else {
-            ((CharKeyView) view).bind((CharKey) key, this.orientation);
-        }
+        bindKeyView(view, key, this.orientation);
     }
 
     @Override
     public int getItemViewType(int position) {
         Key<?> key = this.keys.get(position);
 
+        return getKeyViewType(key);
+    }
+
+    @NonNull
+    @Override
+    public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return createKeyView(parent.getContext(), parent, viewType);
+    }
+
+    /** 创建未附加到 root 上的按键视图 */
+    public static KeyView<?, ?> createKeyView(
+            Context context, ViewGroup root, Key<?> key, HexagonOrientation orientation
+    ) {
+        int itemType = getKeyViewType(key);
+        KeyView<?, ?> keyView = createKeyView(context, root, itemType);
+
+        bindKeyView(keyView, key, orientation);
+
+        return keyView;
+    }
+
+    private static int getKeyViewType(Key<?> key) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Filter_PinyinInputCandidate_stroke:
@@ -129,26 +131,53 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         }
     }
 
-    @NonNull
-    @Override
-    public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    /** 注：创建的视图未附加到 root 上 */
+    private static KeyView<?, ?> createKeyView(Context context, ViewGroup root, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
-            return new CtrlKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
+            return new CtrlKeyView(inflateItemView(context, root, R.layout.ctrl_key_view));
         } else if (viewType == VIEW_TYPE_FILTER_INPUT_WORD_KEY) {
-            return new CtrlFilterInputWordKeyView(inflateHolderView(parent, R.layout.ctrl_key_filter_input_word_view));
+            return new CtrlFilterInputWordKeyView(inflateItemView(context,
+                                                                  root,
+                                                                  R.layout.ctrl_key_filter_input_word_view));
         } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
-            return new CtrlToggleInputSpellKeyView(inflateHolderView(parent,
-                                                                     R.layout.ctrl_key_toggle_input_spell_view));
+            return new CtrlToggleInputSpellKeyView(inflateItemView(context,
+                                                                   root,
+                                                                   R.layout.ctrl_key_toggle_input_spell_view));
         } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
-            return new InputWordKeyView(inflateHolderView(parent, R.layout.input_word_key_view));
+            return new InputWordKeyView(inflateItemView(context, root, R.layout.input_word_key_view));
         } else if (viewType == VIEW_TYPE_SYMBOL_KEY) {
-            return new SymbolKeyView(inflateHolderView(parent, R.layout.char_key_view));
+            return new SymbolKeyView(inflateItemView(context, root, R.layout.char_key_view));
         } else if (viewType == VIEW_TYPE_MATH_OP_KEY) {
-            return new MathOpKeyView(inflateHolderView(parent, R.layout.char_key_view));
+            return new MathOpKeyView(inflateItemView(context, root, R.layout.char_key_view));
         } else if (viewType == VIEW_TYPE_NULL_KEY) {
-            return new NullKeyView(inflateHolderView(parent, R.layout.ctrl_key_view));
+            return new NullKeyView(inflateItemView(context, root, R.layout.ctrl_key_view));
         } else {
-            return new CharKeyView(inflateHolderView(parent, R.layout.char_key_view));
+            return new CharKeyView(inflateItemView(context, root, R.layout.char_key_view));
+        }
+    }
+
+    private static void bindKeyView(KeyView<?, ?> view, Key<?> key, HexagonOrientation orientation) {
+        if (key instanceof CtrlKey) {
+            switch (((CtrlKey) key).getType()) {
+                case Filter_PinyinInputCandidate_stroke:
+                    ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, orientation);
+                    break;
+                case Toggle_PinyinInput_spell:
+                    ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, orientation);
+                    break;
+                default:
+                    ((CtrlKeyView) view).bind((CtrlKey) key, orientation);
+            }
+        } else if (key instanceof InputWordKey) {
+            ((InputWordKeyView) view).bind((InputWordKey) key, orientation);
+        } else if (key instanceof SymbolKey) {
+            ((SymbolKeyView) view).bind((SymbolKey) key, orientation);
+        } else if (key instanceof MathOpKey) {
+            ((MathOpKeyView) view).bind((MathOpKey) key, orientation);
+        } else if (key == null) {
+            ((NullKeyView) view).bind();
+        } else {
+            ((CharKeyView) view).bind((CharKey) key, orientation);
         }
     }
 }

@@ -25,6 +25,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -41,6 +45,14 @@ public class ThemeUtils {
     /** 通过属性 id 获取字符串值 */
     public static String getStringByAttrId(Context context, int attrId) {
         return getValue(context, attrId).string.toString();
+    }
+
+    /** 构造资源视图并应用指定的主题样式 */
+    public static <T extends View> T inflate(ViewGroup root, int resId, int themeResId, boolean attachToRoot) {
+        // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
+        Context ctx = new ContextThemeWrapper(root.getContext(), themeResId);
+
+        return (T) LayoutInflater.from(ctx).inflate(resId, root, attachToRoot);
     }
 
     /** 应用阴影 */

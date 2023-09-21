@@ -17,8 +17,43 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep {}
+public class ExerciseStep {
+    public final String content;
+    public final Action action;
+    public final List<ExerciseStep> subs = new ArrayList<>();
+
+    public static ExerciseStep create(String content, Action action) {
+        return new ExerciseStep(content, action);
+    }
+
+    private ExerciseStep(String content, Action action) {
+        this.content = content;
+        this.action = action;
+    }
+
+    /** 返回当前对象本身 */
+    public ExerciseStep subStep(String content) {
+        return subStep(content, null);
+    }
+
+    /** 返回当前对象本身 */
+    public ExerciseStep subStep(String content, Action action) {
+        ExerciseStep step = create(content, action);
+        this.subs.add(step);
+
+        return this;
+    }
+
+    public interface Action {
+        void begin();
+
+        boolean end();
+    }
+}

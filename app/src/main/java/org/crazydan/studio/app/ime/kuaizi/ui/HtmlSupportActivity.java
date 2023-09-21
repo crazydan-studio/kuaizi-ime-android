@@ -18,15 +18,11 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.content.pm.PackageInfo;
-import android.text.Html;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.widget.ImageView;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -44,15 +40,9 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
 
     protected void setHtmlText(int viewResId, int htmlRawResId, Object... args) {
         String text = ResourceUtils.readString(getApplicationContext(), htmlRawResId, args);
-        text = text.replaceAll("(?m)^\\s+", "").replaceAll("\n", "");
-
-        // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
-        Spanned viewText = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
-
         TextView view = findViewById(viewResId);
-        view.setText(viewText);
-        // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
-        view.setMovementMethod(LinkMovementMethod.getInstance());
+
+        ViewUtils.setHtmlText(view, text, args);
     }
 
     protected void setIcon(int viewResId, int iconResId) {

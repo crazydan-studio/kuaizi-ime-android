@@ -60,9 +60,9 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     @Override
     public ExerciseView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_FREE_MODE) {
-            return new ExerciseView(inflateHolderView(parent, R.layout.guide_exercise_free_mode_view));
+            return new ExerciseView(inflateItemView(parent, R.layout.guide_exercise_free_mode_view));
         }
-        return new ExerciseView(inflateHolderView(parent, R.layout.guide_exercise_normal_mode_view));
+        return new ExerciseView(inflateItemView(parent, R.layout.guide_exercise_normal_mode_view));
     }
 
     @Override

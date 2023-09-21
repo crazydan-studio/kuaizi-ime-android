@@ -96,12 +96,15 @@
         <!-- End -->
 
         <!-- Start: 使用指南
-        Note：视图主题在 FollowSystemThemeActivity 中动态设置
+        Note：视图主题在 FollowSystemThemeActivity 中动态设置。
+              无 title 的视图需提前预设 *.NoActionBar 的主题，
+              否则在视图初始时依然会出现 title
         -->
         <activity
                 android:name=".ui.Guide"
                 android:exported="true"
                 android:label="@string/title_app_guide"
+                android:theme="@style/Theme.KuaiziIME.Guide"
                 android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

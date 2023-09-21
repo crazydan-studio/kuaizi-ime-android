@@ -21,32 +21,45 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <com.google.android.flexbox.FlexboxLayout
+
+    <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            app:flexWrap="nowrap"
-            app:flexDirection="column"
-            app:alignItems="center"
-            app:alignContent="stretch">
+            android:layout_weight="1">
 
-        <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
-                android:id="@+id/exercise_list_view"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                app:layout_flexGrow="1" />
+        <!-- 采用层叠布局 FrameLayout，以确保按键渲染的沙盒被后续视图覆盖 -->
+        <RelativeLayout
+                android:id="@+id/step_image_sandbox_view"
+                android:layout_width="51dp"
+                android:layout_height="51dp"
+                android:visibility="invisible" />
 
-        <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
-                android:id="@+id/exercise_list_indicator_view"
+        <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="6dp"
-                android:layout_gravity="bottom"
-                android:gravity="center"
-                android:orientation="horizontal"
-                app:dot_spacing="4dp"
-                app:dot_size="12dp" />
-    </com.google.android.flexbox.FlexboxLayout>
+                android:layout_height="match_parent"
+                app:flexWrap="nowrap"
+                app:flexDirection="column"
+                app:alignItems="center"
+                app:alignContent="stretch">
+
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
+                    android:id="@+id/exercise_list_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_flexGrow="1" />
+
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
+                    android:id="@+id/exercise_list_indicator_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="6dp"
+                    android:layout_gravity="bottom"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    app:dot_spacing="4dp"
+                    app:dot_size="12dp" />
+        </com.google.android.flexbox.FlexboxLayout>
+    </FrameLayout>
 
     <include
             layout="@layout/ime_input_view"

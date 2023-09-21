@@ -36,7 +36,10 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_margin="6dp" />
+            android:layout_margin="6dp"
+            android:paddingTop="4dp"
+            android:paddingHorizontal="12dp"
+            android:scrollbars="vertical" />
 
     <org.crazydan.studio.app.ime.kuaizi.ui.view.NoImeEditText
             android:id="@+id/text_view"

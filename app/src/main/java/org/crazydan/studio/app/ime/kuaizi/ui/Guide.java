@@ -87,7 +87,7 @@ public class Guide extends FollowSystemThemeActivity {
         btnEnableIme.setOnClickListener(this::showImeSettings);
         btnTryExercises.setOnClickListener(this::tryExercises);
 
-        //tryExercises();
+        tryExercises();
     }
 
     private String getImeId() {

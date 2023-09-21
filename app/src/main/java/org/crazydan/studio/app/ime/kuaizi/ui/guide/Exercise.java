@@ -42,8 +42,17 @@ public class Exercise {
         this.title = title;
     }
 
-    public void addStep(ExerciseStep step) {
+    public ExerciseStep addStep(String content) {
+        return addStep(content, null);
+    }
+
+    public ExerciseStep addStep(String content, ExerciseStep.Action action) {
+        return addStep(ExerciseStep.create(content, action));
+    }
+
+    public ExerciseStep addStep(ExerciseStep step) {
         this.steps.add(step);
+        return step;
     }
 
     public enum Mode {

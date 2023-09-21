@@ -24,8 +24,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
-import android.view.ContextThemeWrapper;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
@@ -47,6 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMs
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -262,10 +261,7 @@ public class ImeInputView extends FrameLayout
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        // https://stackoverflow.com/questions/65433795/unable-to-update-the-day-and-night-modes-in-android-with-window-manager-screens#answer-67340930
-        Context context = new ContextThemeWrapper(getContext(), themeResId);
-
-        return (T) LayoutInflater.from(context).inflate(resId, this);
+        return ThemeUtils.inflate(this, resId, themeResId, true);
     }
 
     private Keyboard createKeyboard(Keyboard.Type type) {

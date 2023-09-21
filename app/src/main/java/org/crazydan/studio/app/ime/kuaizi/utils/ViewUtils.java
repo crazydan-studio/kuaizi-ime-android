@@ -18,12 +18,21 @@
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import android.animation.ValueAnimator;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.widget.TextView;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -57,6 +66,38 @@ public class ViewUtils {
             return ((ColorDrawable) background).getColor();
         }
         return Color.TRANSPARENT;
+    }
+
+    public static void setHtmlText(TextView view, String text, Object... args) {
+        text = text.replaceAll("(?m)^\\s+", "").replaceAll("\n", "");
+
+        // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
+        Spanned html = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
+
+        view.setText(html);
+        // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
+        view.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    /**
+     * 将指定视图转换为指定尺寸的 {@link Drawable} 位图
+     * <p/>
+     * 注：若 <code>view</code> 为 layout 资源视图，
+     * 则其必须为已被主窗口布局的视图，不能为动态添加的视图
+     */
+    public static Drawable toDrawable(View view, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        // Note：必须调用 layout 进行布局，否则，其不会绘制视图
+        view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+        view.draw(canvas);
+
+        Drawable drawable = new BitmapDrawable(null, bitmap);
+        // Note：该边界设置会让图形按指定尺寸进行缩放
+        drawable.setBounds(0, 0, width, height);
+
+        return drawable;
     }
 
     public static void startAnimationOnce(View view, long duration, Animation... animations) {

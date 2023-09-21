@@ -18,6 +18,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="4dp">
 
+    <TextView
+            android:id="@+id/content_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:gravity="start" />
+
+    <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView
+            android:id="@+id/sub_step_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:scrollbars="none" />
 </LinearLayout>

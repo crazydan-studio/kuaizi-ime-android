@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 import java.util.List;
 import java.util.Objects;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +32,12 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<T> {
 
-    protected View inflateHolderView(ViewGroup parent, int viewResId) {
-        return LayoutInflater.from(parent.getContext()).inflate(viewResId, parent, false);
+    protected static View inflateItemView(ViewGroup parent, int itemViewResId) {
+        return inflateItemView(parent.getContext(), parent, itemViewResId);
+    }
+
+    protected static View inflateItemView(Context context, ViewGroup parent, int itemViewResId) {
+        return LayoutInflater.from(context).inflate(itemViewResId, parent, false);
     }
 
     protected <I> void updateItems(List<I> oldItems, List<I> newItems) {
