@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import android.content.Context;
@@ -86,6 +87,31 @@ public class ImeInputView extends FrameLayout
      */
     public void addInputMsgListener(InputMsgListener listener) {
         this.inputMsgListeners.add(listener);
+
+        if (this.keyboard != null) {
+            this.keyboard.addInputMsgListener(listener);
+        }
+    }
+
+    /** 按监听类型移除监听 */
+    public void removeInputMsgListenerByType(Class<?> cls) {
+        Iterator<InputMsgListener> it = this.inputMsgListeners.iterator();
+        while (it.hasNext()) {
+            InputMsgListener listener = it.next();
+            if (listener.getClass() != cls) {
+                continue;
+            }
+
+            it.remove();
+            if (this.keyboard != null) {
+                this.keyboard.removeInputMsgListener(listener);
+            }
+        }
+    }
+
+    /** 启动指定类型的键盘，并清空输入列表 */
+    public void startInput(Keyboard.Type type) {
+        startInput(new Keyboard.Config(type), true);
     }
 
     /** 开始输入 */

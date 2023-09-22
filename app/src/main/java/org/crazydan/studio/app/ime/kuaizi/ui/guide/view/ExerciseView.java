@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 import java.util.Locale;
 
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 public class ExerciseView extends RecyclerView.ViewHolder {
     private final TextView titleView;
     private final ExerciseStepListView stepListView;
-    private final EditText textView;
+    private final ExerciseEditText textView;
 
     public ExerciseView(@NonNull View itemView) {
         super(itemView);
@@ -45,6 +44,10 @@ public class ExerciseView extends RecyclerView.ViewHolder {
         this.titleView = itemView.findViewById(R.id.title_view);
         this.stepListView = itemView.findViewById(R.id.step_list_view);
         this.textView = itemView.findViewById(R.id.text_view);
+    }
+
+    public ExerciseEditText getTextView() {
+        return this.textView;
     }
 
     public void bind(Exercise exercise, int position) {

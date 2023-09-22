@@ -19,12 +19,14 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 
 /**
  * {@link Exercise 练习题}列表视图
@@ -34,6 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseListViewLayoutMa
  */
 public class ExerciseListView extends RecyclerView {
     public final ExerciseListViewAdapter adapter;
+
+    private ExerciseActiveListener exerciseActiveListener;
 
     public ExerciseListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -50,9 +54,38 @@ public class ExerciseListView extends RecyclerView {
         // - 用RecyclerView打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
         // - RecyclerView实现Gallery画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
         new PagerSnapHelper().attachToRecyclerView(this);
+
+        addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                ExerciseView exerciseView = getActive();
+                ExerciseActiveListener listener = ((ExerciseListView) recyclerView).exerciseActiveListener;
+
+                if (exerciseView == null || listener == null) {
+                    return;
+                }
+
+                listener.onActive(exerciseView);
+            }
+        });
     }
 
     public void active(int position) {
         smoothScrollToPosition(position);
+    }
+
+    public void setExerciseActiveListener(ExerciseActiveListener exerciseActiveListener) {
+        this.exerciseActiveListener = exerciseActiveListener;
+    }
+
+    public ExerciseView getActive() {
+        // Note：单页循环列表，始终只有一个有效的子视图，故而，始终取位置为 0 的子视图
+        View view = getChildAt(0);
+
+        return view != null ? (ExerciseView) getChildViewHolder(view) : null;
+    }
+
+    public interface ExerciseActiveListener {
+        void onActive(ExerciseView exerciseView);
     }
 }
