@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -38,6 +40,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 public class DynamicLayoutSandboxView extends BaseKeyboardView {
     private final Map<String, Key<?>> keys = new LinkedHashMap<>();
 
+    private final Map<String, Drawable> imageCache = new HashMap<>();
+
     public DynamicLayoutSandboxView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -46,7 +50,7 @@ public class DynamicLayoutSandboxView extends BaseKeyboardView {
     public <T> T withMutation(int themeResId, Supplier<T> mutation) {
         T result = mutation.get();
 
-        withNewTheme(themeResId);
+        updateWithTheme(themeResId);
 
         return result;
     }
@@ -56,7 +60,7 @@ public class DynamicLayoutSandboxView extends BaseKeyboardView {
         // 清空
         updateKeys(new Key[0][0], false);
 
-        withNewTheme(themeResId);
+        updateWithTheme(themeResId);
     }
 
     public String withKey(Key<?> key) {
@@ -73,13 +77,17 @@ public class DynamicLayoutSandboxView extends BaseKeyboardView {
     }
 
     public Drawable getImage(String code, int width, int height) {
-        Key<?> key = this.keys.get(code);
-        View view = getItemViewByKey(key);
+        String key = String.format(Locale.getDefault(), "%s:%d:%d", code, width, height);
 
-        return ViewUtils.toDrawable(view, width, height);
+        return this.imageCache.computeIfAbsent(key, (k) -> {
+            View view = getItemViewByKey(this.keys.get(code));
+            return ViewUtils.toDrawable(view, width, height);
+        });
     }
 
-    public void withNewTheme(int themeResId) {
+    public void updateWithTheme(int themeResId) {
+        this.imageCache.clear();
+
         updateKeys(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
     }
 }
