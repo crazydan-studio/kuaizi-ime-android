@@ -86,6 +86,10 @@ public class ViewUtils {
      * 则其必须为已被主窗口布局的视图，不能为动态添加的视图
      */
     public static Drawable toDrawable(View view, int width, int height) {
+        if (view == null) {
+            return null;
+        }
+
         Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 

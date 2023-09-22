@@ -258,6 +258,10 @@ public class ImeInputView extends FrameLayout
         return patchedConfig;
     }
 
+    public Keyboard.Config getKeyboardConfig() {
+        return this.keyboard != null ? this.keyboard.getConfig() : null;
+    }
+
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
@@ -313,10 +317,10 @@ public class ImeInputView extends FrameLayout
     private int getThemeResId() {
         String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, "night");
 
-        int themeResId = R.style.Theme_KuaiziIME_Night;
+        int themeResId = R.style.Theme_KuaiziIME_Light;
         switch (theme) {
-            case "light":
-                themeResId = R.style.Theme_KuaiziIME_Light;
+            case "night":
+                themeResId = R.style.Theme_KuaiziIME_Night;
                 break;
             case "follow_system":
                 int themeMode = getContext().getResources().getConfiguration().uiMode

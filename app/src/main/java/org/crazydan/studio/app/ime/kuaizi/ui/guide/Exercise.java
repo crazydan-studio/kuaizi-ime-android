@@ -29,17 +29,20 @@ public class Exercise {
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();
 
+    private final ExerciseStep.ImageGetter imageGetter;
+
     public static Exercise free(String title) {
-        return new Exercise(Mode.free, title);
+        return new Exercise(Mode.free, title, null);
     }
 
-    public static Exercise normal(String title) {
-        return new Exercise(Mode.normal, title);
+    public static Exercise normal(String title, ExerciseStep.ImageGetter imageGetter) {
+        return new Exercise(Mode.normal, title, imageGetter);
     }
 
-    private Exercise(Mode mode, String title) {
+    private Exercise(Mode mode, String title, ExerciseStep.ImageGetter imageGetter) {
         this.mode = mode;
         this.title = title;
+        this.imageGetter = imageGetter;
     }
 
     public ExerciseStep addStep(String content) {
@@ -47,7 +50,9 @@ public class Exercise {
     }
 
     public ExerciseStep addStep(String content, ExerciseStep.Action action) {
-        return addStep(ExerciseStep.create(content, action));
+        ExerciseStep step = ExerciseStep.create(content, action, this.imageGetter);
+
+        return addStep(step);
     }
 
     public ExerciseStep addStep(ExerciseStep step) {

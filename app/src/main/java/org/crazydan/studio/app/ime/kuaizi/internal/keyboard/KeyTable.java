@@ -200,6 +200,17 @@ public abstract class KeyTable {
         return size;
     }
 
+    public Key<?> findKeyByLabel(Key<?>[][] gridKeys, String label) {
+        for (Key<?>[] keys : gridKeys) {
+            for (Key<?> key : keys) {
+                if (key != null && label.equals(key.getLabel())) {
+                    return key;
+                }
+            }
+        }
+        return null;
+    }
+
     public CtrlKey enterCtrlKey() {
         return this.config.isSingleLineInput() //
                ? ctrlKey(CtrlKey.create(CtrlKey.Type.Enter), key_ctrl_ok_style) //
@@ -341,6 +352,10 @@ public abstract class KeyTable {
         private final boolean hasRevokingInputs;
         /** 是否已选中字符输入 */
         private final boolean charInputSelected;
+
+        public Config(Keyboard.Config keyboardConfig) {
+            this(keyboardConfig, false, false, false);
+        }
 
         public Config(
                 Keyboard.Config keyboardConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected

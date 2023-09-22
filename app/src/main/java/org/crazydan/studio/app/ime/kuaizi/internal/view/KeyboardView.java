@@ -19,10 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -33,12 +31,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
-import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * {@link Keyboard 键盘}视图
@@ -48,10 +42,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends RecyclerView implements InputMsgListener {
-    private final int keySpacing = 3;
-    private final KeyViewAdapter adapter;
-    private final KeyViewLayoutManager layoutManager;
+public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final KeyViewAnimator animator;
     private final AudioPlayer audioPlayer;
@@ -61,14 +52,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
-
-        this.adapter = new KeyViewAdapter(keyViewOrientation);
-        this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
         this.animator = new KeyViewAnimator();
-
-        setAdapter(this.adapter);
-        setLayoutManager(this.layoutManager);
         setItemAnimator(this.animator);
 
         this.audioPlayer = new AudioPlayer();
@@ -100,13 +84,7 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
         this.keyboard = keyboard;
         this.keyboard.addInputMsgListener(this);
 
-        Key<?>[][] keys = createKeys(this.keyboard.getKeyFactory());
-        int columns = keys[0].length;
-        int rows = keys.length;
-
-        this.layoutManager.configGrid(columns, rows, this.keySpacing);
-
-        updateKeys(keys);
+        updateKeys(this.keyboard.getKeyFactory());
     }
 
     /** 响应按键点击、双击等消息 */
@@ -157,49 +135,16 @@ public class KeyboardView extends RecyclerView implements InputMsgListener {
     }
 
     private void updateKeysByInputMsg(InputMsgData data) {
-        Keyboard.KeyFactory keyFactory = data.getKeyFactory();
+        updateKeys(data.getKeyFactory());
+    }
+
+    private void updateKeys(Keyboard.KeyFactory keyFactory) {
         if (keyFactory == null) {
             return;
         }
 
-        Key<?>[][] keys = createKeys(keyFactory);
-        updateKeys(keys);
-    }
+        Key<?>[][] keys = keyFactory.create();
 
-    private void updateKeys(Key<?>[][] keys) {
-        this.layoutManager.setReverse(this.keyboard.getConfig().isLeftHandMode());
-
-        this.adapter.updateKeys(keys);
-    }
-
-    private Key<?>[][] createKeys(Keyboard.KeyFactory keyFactory) {
-        return keyFactory.create();
-    }
-
-    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
-        View child = this.layoutManager.findChildViewUnderLoose(x, y);
-
-        return getVisibleKeyView(child);
-    }
-
-    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewUnder(float x, float y) {
-        View child = this.layoutManager.findChildViewUnder(x, y);
-
-        return getVisibleKeyView(child);
-    }
-
-    /** 找到指定坐标附近可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewNear(float x, float y) {
-        View child = this.layoutManager.findChildViewNear(x, y, this.keySpacing * 2);
-
-        return getVisibleKeyView(child);
-    }
-
-    private KeyView<?, ?> getVisibleKeyView(View view) {
-        KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
-
-        return keyView != null && !keyView.isHidden() ? keyView : null;
+        super.updateKeys(keys, this.keyboard.getConfig().isLeftHandMode());
     }
 }

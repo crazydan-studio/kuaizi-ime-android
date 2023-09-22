@@ -23,12 +23,10 @@ import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
@@ -52,7 +50,7 @@ public class ExerciseStepView extends RecyclerView.ViewHolder {
 
     public void bind(ExerciseStep step, int position) {
         String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content);
-        this.contentView.setText(html(text));
+        this.contentView.setText(html(step, text));
 
         if (step.subs.isEmpty()) {
             ViewUtils.hide(this.subStepListView);
@@ -63,17 +61,15 @@ public class ExerciseStepView extends RecyclerView.ViewHolder {
         }
     }
 
-    private Spanned html(String text) {
-        return Html.fromHtml(text,
-                             FROM_HTML_MODE_COMPACT,
-                             (source) -> getImage(ExerciseMain.sandboxView, source),
-                             null);
+    private Spanned html(ExerciseStep step, String text) {
+        return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> getImage(step, source), null);
     }
 
-    private Drawable getImage(ViewGroup sandboxView, String source) {
-        View view = sandboxView.getChildAt(0);
-        Drawable d = ViewUtils.toDrawable(view, 80, 80);
+    private Drawable getImage(ExerciseStep step, String source) {
+        if (step.imageGetter == null) {
+            return null;
+        }
 
-        return d;
+        return step.imageGetter.get(source, 80, 80);
     }
 }

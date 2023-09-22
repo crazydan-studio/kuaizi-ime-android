@@ -20,18 +20,16 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -41,36 +39,33 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
-import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
 public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgListener {
-    public static ViewGroup sandboxView;
-
     private EditText editText;
+    private ImeInputView imeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_exercise_main_activity);
 
-        sandboxView = findViewById(R.id.step_image_sandbox_view);
+        this.imeView = findViewById(R.id.ime_view);
+        this.imeView.updateKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
 
-        CharKey key = KeyTable.alphabetKey("k");
-        Context ctx = new ContextThemeWrapper(sandboxView.getContext(), R.style.Theme_KuaiziIME_Night);
-        KeyView<?, ?> keyView = KeyViewAdapter.createKeyView(ctx, sandboxView, key, HexagonOrientation.POINTY_TOP);
-        sandboxView.addView(keyView.itemView);
+        int imeThemeResId = this.imeView.getKeyboardConfig().getThemeResId();
+        DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
+        List<Exercise> exercises = sandboxView.withMutation(imeThemeResId, () -> createExercises(sandboxView));
 
         ExerciseListView listView = findViewById(R.id.exercise_list_view);
-        listView.adapter.bind(createExercises());
+        listView.adapter.bind(exercises);
 
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(listView);
@@ -79,10 +74,6 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
 
 //        this.editText = findViewById(R.id.text_input);
 //        this.editText.setClickable(false);
-
-        ImeInputView imeView = findViewById(R.id.ime_view);
-//        imeView.addInputMsgListener(this);
-        imeView.updateKeyboard(new Keyboard.Config(Keyboard.Type.Pinyin));
     }
 
     @Override
@@ -101,61 +92,79 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         PinyinDictDB.getInstance().close();
     }
 
-    private List<Exercise> createExercises() {
+    private List<Exercise> createExercises(DynamicLayoutSandboxView sandboxView) {
         List<Exercise> exercises = new ArrayList<>();
 
         Exercise exercise = Exercise.free("自由练习");
         exercises.add(exercise);
 
-        exercises.add(exercise_Pinyin_Inputting());
-
-        exercise = Exercise.normal("文本编辑");
+        exercise = exercise_Pinyin_Inputting(sandboxView);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("字母切换");
+        exercise = Exercise.normal("文本编辑", null);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("符号输入");
+        exercise = Exercise.normal("字母切换", null);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("计算输入");
+        exercise = Exercise.normal("符号输入", null);
+        exercises.add(exercise);
+
+        exercise = Exercise.normal("计算输入", null);
         exercises.add(exercise);
 
         return exercises;
     }
 
-    private Exercise exercise_Pinyin_Inputting() {
-        Exercise exercise = Exercise.normal("拼音输入");
+    private Exercise exercise_Pinyin_Inputting(DynamicLayoutSandboxView sandboxView) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_k = keyTable.level0CharKey("k");
+        Key<?> key_u = keyTable.level1CharKey("u");
+        Key<?> key_kuai = keyTable.level2CharKey(key_k.getText(), "uai");
+        Key<?> key_sh = keyTable.level0CharKey("sh");
+
+        Exercise exercise = Exercise.normal("拼音输入", sandboxView::getImage);
 
         exercise.addStep("本次练习输入：<big><b>筷字输入法</b></big>");
         exercise.addStep("输入 <b>筷(kuai)</b>：")
-                .subStep("请将手指放在下方键盘的按键 <img src=\"k\"/> 上，并让手指贴着屏幕从该按键上滑出", null)
-                .subStep("不释放手指，让手指滑到按键 <img src=\"u\"/> 上，再从该按键上滑出。"
-                         + "<b>注</b>：若滑出后碰到了其他按键，可以重新滑到 <img src=\"u\"/> 上再滑出", null)
-                .subStep("最后，将手指滑到按键 <img src=\"kuai\"/> 上以后，原地释放手指，完成该字的输入。"
+                .subStep("请将手指放在下方键盘的按键<img src=\""
+                         + sandboxView.withKey(key_k)
+                         + "\"/>上，并让手指贴着屏幕从该按键上滑出", null)
+                .subStep("不释放手指，让手指滑到按键<img src=\""
+                         + sandboxView.withKey(key_u)
+                         + "\"/>上，再从该按键上滑出。"
+                         + "<b>注</b>：若滑出后碰到了其他按键，可以重新滑到<img src=\""
+                         + sandboxView.withKey(key_u)
+                         + "\"/>上再滑出", null)
+                .subStep("最后，将手指滑到按键<img src=\""
+                         + sandboxView.withKey(key_kuai)
+                         + "\"/>上以后，原地释放手指，完成该字的输入。"
                          + "<b>注</b>：滑动过程中，手指可随意滑过其他按键，只要确保手指释放前的按键为最终待输入字的拼音即可",
                          null);
         exercise.addStep("暂时不管已经输入拼音的候选字是否正确，先继续按照上述过程输入其他几个字。"
-                         + "<b>注</b>：在输入 <b>输(shu)</b> 时，手指需从按键 <img src=\"sh\"/> 上滑出", null);
+                         + "<b>注</b>：在输入 <b>输(shu)</b> 时，手指需从按键<img src=\""
+                         + sandboxView.withKey(key_sh)
+                         + "\"/>上滑出", null);
         exercise.addStep("输入完成后，开始选择已输入拼音的候选字：")
-                .subStep("手指点击以选中按键上方输入框中的 <img src=\"筷(kuai)\"/> 字", null)
+                .subStep("手指点击以选中按键上方输入框中的<img src=\"筷(kuai)\"/>字", null)
                 .subStep("在出现的候选字列表区域，可快速向上或向下滑动手指进行翻页，并手指点击正确的候选字，以完成选字",
                          null)
-                .subStep("<b>提示</b>：若默认候选字已经是正确的，则可点击 <img src=\"ok\"/> 按键以确认该字；"
-                         + "<img src=\"submit\"/> 为输入提交按键，点击后会将当前输入提交至目标输入中；"
-                         + "<img src=\"delete\"/> 为删除当前拼音，点击后将从输入中删除拼音并回到拼音键盘以接受新的输入；")
+                .subStep("<b>提示</b>：若默认候选字已经是正确的，则可点击<img src=\"ok\"/>按键以确认该字；"
+                         + "<img src=\"submit\"/>为输入提交按键，点击后会将当前输入提交至目标输入中；"
+                         + "<img src=\"delete\"/>为删除当前拼音，点击后将从输入中删除拼音并回到拼音键盘以接受新的输入；")
                 .subStep("接着选择拼音 <b>zi</b> 的候选字", null)
-                .subStep("在该字的候选字列表中点击 <img src=\"z->zh\"/> 按键以切换该拼音的平/翘舌。"
+                .subStep("在该字的候选字列表中点击<img src=\"z->zh\"/>按键以切换该拼音的平/翘舌。"
                          + "<b>注</b>：确保最终拼音依然为 <b>zi</b>", null)
-                .subStep("点击候选字列表上方的 <img src=\"横\"/> 等笔画过滤按键，以按候选字所包含的笔画快速过滤出正确的候选字。"
+                .subStep("点击候选字列表上方的<img src=\"横\"/>等笔画过滤按键，以按候选字所包含的笔画快速过滤出正确的候选字。"
                          + "<b>注</b>：单击笔画过滤按键为增加笔画数，在按键上快速滑出为减少笔画数", null)
                 .subStep("继续完成后续拼音的候选字选择和确认操作");
         exercise.addStep("点击按键上方输入框的空白区域，使键盘输入光标移动到当前输入尾部", null);
-        exercise.addStep("点击键盘中的 <img src=\"submit\"/> 按键以提交当前输入至目标输入框中", null);
-        exercise.addStep("点击键盘中的 <img src=\"revoke\"/> 按键将已提交输入撤回。"
+        exercise.addStep("点击键盘中的<img src=\"submit\"/>按键以提交当前输入至目标输入框中", null);
+        exercise.addStep("点击键盘中的<img src=\"revoke\"/>按键将已提交输入撤回。"
                          + "<b>注</b>：这里仅用于演示对已提交输入的修订支持，本次练习不需要对其做修改", null);
-        exercise.addStep("长按键盘中的 <img src=\"submit\"/> 按键，再分别点击 <img src=\"带拼音\"/>"
-                         + " 等按键以切换提交输入的形式。<b>注</b>：长按 <img src=\"submit\"/> 按键可退出切换选择，"
+        exercise.addStep("长按键盘中的<img src=\"submit\"/>按键，再分别点击<img src=\"带拼音\"/>"
+                         + " 等按键以切换提交输入的形式。<b>注</b>：长按<img src=\"submit\"/>按键可退出切换选择，"
                          + "若直接点击该按键则将会以最终切换后的形式提交输入至目标输入框中", null);
         exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习", null);
 

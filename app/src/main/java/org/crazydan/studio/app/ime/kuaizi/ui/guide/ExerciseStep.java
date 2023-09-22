@@ -20,6 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.drawable.Drawable;
+
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
@@ -27,15 +29,18 @@ import java.util.List;
 public class ExerciseStep {
     public final String content;
     public final Action action;
+    public final ImageGetter imageGetter;
+
     public final List<ExerciseStep> subs = new ArrayList<>();
 
-    public static ExerciseStep create(String content, Action action) {
-        return new ExerciseStep(content, action);
+    public static ExerciseStep create(String content, Action action, ImageGetter imageGetter) {
+        return new ExerciseStep(content, action, imageGetter);
     }
 
-    private ExerciseStep(String content, Action action) {
+    private ExerciseStep(String content, Action action, ImageGetter imageGetter) {
         this.content = content;
         this.action = action;
+        this.imageGetter = imageGetter;
     }
 
     /** 返回当前对象本身 */
@@ -45,7 +50,7 @@ public class ExerciseStep {
 
     /** 返回当前对象本身 */
     public ExerciseStep subStep(String content, Action action) {
-        ExerciseStep step = create(content, action);
+        ExerciseStep step = create(content, action, this.imageGetter);
         this.subs.add(step);
 
         return this;
@@ -55,5 +60,9 @@ public class ExerciseStep {
         void begin();
 
         boolean end();
+    }
+
+    public interface ImageGetter {
+        Drawable get(String id, int width, int height);
     }
 }

@@ -21,17 +21,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
+    <!-- 采用层叠布局 FrameLayout，以确保按键布局沙盒能被后续视图遮盖 -->
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
 
-        <!-- 采用层叠布局 FrameLayout，以确保按键渲染的沙盒被后续视图覆盖 -->
-        <RelativeLayout
+        <!-- Note：按键视图无法通过动态构造得到绘制图形，
+        必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
+        -->
+        <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
                 android:id="@+id/step_image_sandbox_view"
-                android:layout_width="51dp"
-                android:layout_height="51dp"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/keyboard_view_height"
                 android:visibility="invisible" />
 
         <com.google.android.flexbox.FlexboxLayout

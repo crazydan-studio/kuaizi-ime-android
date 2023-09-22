@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
+import android.view.ContextThemeWrapper;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,21 +54,24 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
 
     private final HexagonOrientation orientation;
+
     private List<Key<?>> keys = new ArrayList<>();
+    private Integer themeResId;
 
     public KeyViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateKeys(Key<?>[][] keys) {
-        List<Key<?>> oldKeys = this.keys;
+    public void updateKeys(Key<?>[][] keys, Integer themeResId) {
+        this.themeResId = themeResId;
 
+        List<Key<?>> oldKeys = this.keys;
         this.keys = new ArrayList<>();
+
         for (Key<?>[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
         }
-
         updateItems(oldKeys, this.keys);
     }
 
@@ -93,19 +97,12 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     @NonNull
     @Override
     public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return createKeyView(parent.getContext(), parent, viewType);
-    }
+        Context context = parent.getContext();
+        if (this.themeResId != null) {
+            context = new ContextThemeWrapper(context, this.themeResId);
+        }
 
-    /** 创建未附加到 root 上的按键视图 */
-    public static KeyView<?, ?> createKeyView(
-            Context context, ViewGroup root, Key<?> key, HexagonOrientation orientation
-    ) {
-        int itemType = getKeyViewType(key);
-        KeyView<?, ?> keyView = createKeyView(context, root, itemType);
-
-        bindKeyView(keyView, key, orientation);
-
-        return keyView;
+        return createKeyView(context, parent, viewType);
     }
 
     private static int getKeyViewType(Key<?> key) {
