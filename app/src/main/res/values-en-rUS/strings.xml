@@ -58,9 +58,9 @@
         so it will have a certain effect on the inputting efficiency.
     </string>
     <string name="msg_ime_should_be_enabled_first">
-        %1$s has not been enabled (that is,
-        「%1$s」 has not been selected in the System Keyboards list),
-        so it cannot be activated.\n\nDo you want to enable it right now?
+        %1$s has not been enabled in the system, so it cannot be activated.
+        \n\nPlease select %1$s in the System Keyboards list first to enable it.
+        \n\nDo you want to enable it right now?
     </string>
     <string name="text_exercise_edit_text_placeholder">
         Please follow the above instructions

@@ -126,7 +126,7 @@ public class Guide extends FollowSystemThemeActivity {
             SystemUtils.switchIme(context);
         } else {
             String appName = getResources().getString(R.string.app_name);
-            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, appName);
+            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, appName).trim();
 
             // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
             // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
