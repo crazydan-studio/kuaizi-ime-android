@@ -25,8 +25,8 @@ import android.text.Spanned;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
@@ -37,7 +37,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepView extends RecyclerView.ViewHolder {
+public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
     private final TextView contentView;
     private final ExerciseStepListView subStepListView;
 
@@ -49,8 +49,10 @@ public class ExerciseStepView extends RecyclerView.ViewHolder {
     }
 
     public void bind(ExerciseStep step, int position) {
+        super.bind(step);
+
         String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content);
-        this.contentView.setText(html(step, text));
+        this.contentView.setText(html(step, step.isRunning() ? "<u><b>" + text + "</b></u>" : text));
 
         if (step.subs.isEmpty()) {
             ViewUtils.hide(this.subStepListView);

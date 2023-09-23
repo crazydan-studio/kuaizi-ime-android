@@ -181,24 +181,6 @@ public class PinyinKeyTable extends KeyTable {
         return keys;
     }
 
-    public CharKey level0CharKey(String level0Char) {
-        return alphabetKey(level0Char);
-    }
-
-    public CharKey level1CharKey(String level1Char) {
-        KeyColor color = key_char_special_color;
-
-        return alphabetKey(level1Char).setLevel(Key.Level.level_1).setColor(color);
-    }
-
-    public CharKey level2CharKey(String level0Char, String level2Char) {
-        String text = level2Char;
-        String label = level0Char + text;
-        KeyColor color = key_char_color;
-
-        return alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
-    }
-
     /** 候选字按键的分页大小 */
     public int getInputCandidateKeysPageSize() {
         return countGridSize(getInputCandidateLevelKeyCoords());
@@ -312,9 +294,7 @@ public class PinyinKeyTable extends KeyTable {
                     continue;
                 }
 
-                KeyColor color = key_input_word_level_colors[level];
-                InputWordKey key = InputWordKey.create(word).setColor(color);
-
+                InputWordKey key = inputWordKey(word, level);
                 // 禁用已被选中的候选字按键
                 if (word.equals(input.getWord())) {
                     key.setDisabled(true);
@@ -344,6 +324,30 @@ public class PinyinKeyTable extends KeyTable {
 //        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("简/繁");
 
         return gridKeys;
+    }
+
+    public CharKey level0CharKey(String level0Char) {
+        return alphabetKey(level0Char);
+    }
+
+    public CharKey level1CharKey(String level1Char) {
+        KeyColor color = key_char_special_color;
+
+        return alphabetKey(level1Char).setLevel(Key.Level.level_1).setColor(color);
+    }
+
+    public CharKey level2CharKey(String level0Char, String level2Char) {
+        String text = level2Char;
+        String label = level0Char + text;
+        KeyColor color = key_char_color;
+
+        return alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
+    }
+
+    public InputWordKey inputWordKey(InputWord word, int level) {
+        KeyColor color = key_input_word_level_colors[level];
+
+        return InputWordKey.create(word).setColor(color);
     }
 
     private GridCoord[][] getInputCandidateLevelKeyCoords() {

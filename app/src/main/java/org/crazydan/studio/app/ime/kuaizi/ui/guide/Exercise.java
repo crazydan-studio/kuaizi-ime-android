@@ -20,16 +20,25 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Exercise {
+public class Exercise implements ViewData, InputMsgListener {
     public final Mode mode;
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();
 
     private final ExerciseStep.ImageGetter imageGetter;
+
+    private boolean disableUserInputData;
+    private StepListener stepListener;
+    private ExerciseStep runningStep;
 
     public static Exercise free(String title) {
         return new Exercise(Mode.free, title, null);
@@ -43,6 +52,34 @@ public class Exercise {
         this.mode = mode;
         this.title = title;
         this.imageGetter = imageGetter;
+    }
+
+    public void reset() {
+        this.runningStep = null;
+        for (ExerciseStep step : this.steps) {
+            step.reset();
+        }
+    }
+
+    public void start() {
+        gotoNextStep();
+    }
+
+    @Override
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
+        ExerciseStep current = this.runningStep;
+        if (current == null) {
+            return;
+        }
+
+        boolean changed = current.onInputMsg(msg, data);
+        if (changed) {
+            fireStepListener(current);
+        }
+
+        if (changed && current.isFinished()) {
+            gotoNextStep();
+        }
     }
 
     public ExerciseStep addStep(String content) {
@@ -60,8 +97,59 @@ public class Exercise {
         return step;
     }
 
+    public boolean isDisableUserInputData() {
+        return this.disableUserInputData;
+    }
+
+    public void setDisableUserInputData(boolean disableUserInputData) {
+        this.disableUserInputData = disableUserInputData;
+    }
+
+    public void setStepListener(StepListener stepListener) {
+        this.stepListener = stepListener;
+    }
+
+    @Override
+    public boolean isSameWith(Object o) {
+        return false;
+    }
+
+    private void gotoNextStep() {
+        if (this.runningStep != null) {
+            this.runningStep.reset();
+        }
+
+        this.runningStep = nextRunnableStep(this.runningStep);
+        if (this.runningStep != null) {
+            this.runningStep.start();
+        }
+
+        fireStepListener(this.runningStep);
+    }
+
+    private void fireStepListener(ExerciseStep step) {
+        if (this.stepListener != null && step != null) {
+            this.stepListener.onStep(step, this.steps.indexOf(step));
+        }
+    }
+
+    private ExerciseStep nextRunnableStep(ExerciseStep prev) {
+        int start = this.steps.indexOf(prev);
+        for (int i = start + 1; i < this.steps.size(); i++) {
+            ExerciseStep step = this.steps.get(i);
+            if (step.isRunnable()) {
+                return step;
+            }
+        }
+        return null;
+    }
+
     public enum Mode {
         free,
         normal,
+    }
+
+    public interface StepListener {
+        void onStep(ExerciseStep step, int position);
     }
 }

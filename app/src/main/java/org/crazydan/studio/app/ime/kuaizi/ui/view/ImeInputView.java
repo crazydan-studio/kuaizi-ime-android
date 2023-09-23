@@ -66,6 +66,7 @@ public class ImeInputView extends FrameLayout
     private final InputList inputList;
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
+    private Boolean disableUserInputData;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -78,6 +79,14 @@ public class ImeInputView extends FrameLayout
         this.inputList = new InputList();
 
         bindViews();
+    }
+
+    public void setDisableUserInputData(boolean disableUserInputData) {
+        this.disableUserInputData = disableUserInputData;
+
+        if (this.keyboard != null) {
+            this.keyboard.getConfig().setUserInputDataDisabled(disableUserInputData);
+        }
     }
 
     /**
@@ -175,6 +184,10 @@ public class ImeInputView extends FrameLayout
         // 支持临时修改左右手模式
         if (this.keyboardHandMode != null) {
             patchedConfig.setHandMode(this.keyboardHandMode);
+        }
+        // 支持临时禁用对用户输入的记录
+        if (this.disableUserInputData != null) {
+            patchedConfig.setUserInputDataDisabled(this.disableUserInputData);
         }
 
         newKeyboard.setConfig(patchedConfig);

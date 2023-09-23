@@ -108,8 +108,12 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
     }
 
     public void setScale(float scale) {
-        this.itemView.setScaleX(scale);
-        this.itemView.setScaleY(scale);
+        setScale(this.itemView, scale);
+    }
+
+    public static void setScale(View view, float scale) {
+        view.setScaleX(scale);
+        view.setScaleY(scale);
     }
 
     /** 背景色渐隐/显动画 */

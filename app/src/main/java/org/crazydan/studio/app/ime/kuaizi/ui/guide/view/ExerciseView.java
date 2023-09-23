@@ -22,10 +22,11 @@ import java.util.Locale;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
 /**
  * {@link Exercise 练习题}视图
@@ -33,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseView extends RecyclerView.ViewHolder {
+public class ExerciseView extends RecyclerViewHolder<Exercise> {
     private final TextView titleView;
     private final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
@@ -46,16 +47,42 @@ public class ExerciseView extends RecyclerView.ViewHolder {
         this.textView = itemView.findViewById(R.id.text_view);
     }
 
-    public ExerciseEditText getTextView() {
-        return this.textView;
+    public void withIme(ImeInputView ime) {
+        Exercise exercise = getData();
+        exercise.reset();
+
+        ime.removeInputMsgListenerByType(this.textView.getClass());
+        ime.addInputMsgListener(this.textView);
+
+        ime.removeInputMsgListenerByType(exercise.getClass());
+        ime.addInputMsgListener(getData());
+
+        ime.setDisableUserInputData(exercise.isDisableUserInputData());
+
+        this.textView.requestFocus();
+
+        exercise.setStepListener((step, position) -> {
+            updateSteps();
+            this.stepListView.smoothScrollToPosition(position);
+        });
+        exercise.start();
     }
 
     public void bind(Exercise exercise, int position) {
+        super.bind(exercise);
+
         String title = String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
         this.titleView.setText(title);
 
-        if (this.stepListView != null) {
-            this.stepListView.adapter.bind(exercise.steps);
+        updateSteps();
+    }
+
+    private void updateSteps() {
+        if (this.stepListView == null) {
+            return;
         }
+
+        Exercise exercise = getData();
+        this.stepListView.adapter.bind(exercise.steps);
     }
 }

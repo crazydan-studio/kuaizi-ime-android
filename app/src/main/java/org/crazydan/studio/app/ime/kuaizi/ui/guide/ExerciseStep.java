@@ -21,17 +21,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.drawable.Drawable;
+import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep {
+public class ExerciseStep implements ViewData {
     public final String content;
     public final Action action;
     public final ImageGetter imageGetter;
 
     public final List<ExerciseStep> subs = new ArrayList<>();
+
+    private Status status;
 
     public static ExerciseStep create(String content, Action action, ImageGetter imageGetter) {
         return new ExerciseStep(content, action, imageGetter);
@@ -41,6 +46,30 @@ public class ExerciseStep {
         this.content = content;
         this.action = action;
         this.imageGetter = imageGetter;
+    }
+
+    public void reset() {
+        this.status = Status.noop;
+    }
+
+    public void start() {
+        this.status = Status.running;
+    }
+
+    public void restart() {
+        start();
+    }
+
+    public void finish() {
+        this.status = Status.finished;
+    }
+
+    public boolean onInputMsg(InputMsg msg, InputMsgData data) {
+        if (this.action == null) {
+            return false;
+        }
+
+        return this.action.onInputMsg(this, msg, data);
     }
 
     /** 返回当前对象本身 */
@@ -56,10 +85,31 @@ public class ExerciseStep {
         return this;
     }
 
-    public interface Action {
-        void begin();
+    public boolean isRunnable() {
+        return this.action != null;
+    }
 
-        boolean end();
+    public boolean isRunning() {
+        return this.status == Status.running;
+    }
+
+    public boolean isFinished() {
+        return this.status == Status.finished;
+    }
+
+    @Override
+    public boolean isSameWith(Object o) {
+        return false;
+    }
+
+    public interface Action {
+        boolean onInputMsg(ExerciseStep step, InputMsg msg, InputMsgData data);
+    }
+
+    public enum Status {
+        noop,
+        running,
+        finished,
     }
 
     public interface ImageGetter {
