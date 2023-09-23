@@ -17,9 +17,11 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Note：在 application 上设置默认主题，以便于 IDE 识别并处理 drawable 中引用的样式 -->
     <application
             android:icon="@drawable/ic_logo"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:theme="@style/Theme.KuaiziIME.Night">
         <service
                 android:name=".Service"
                 android:exported="false"

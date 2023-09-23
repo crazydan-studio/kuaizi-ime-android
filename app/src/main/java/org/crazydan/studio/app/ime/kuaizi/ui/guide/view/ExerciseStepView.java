@@ -23,12 +23,13 @@ import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
@@ -38,29 +39,23 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @date 2023-09-19
  */
 public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
+    private final ImageView pointerView;
     private final TextView contentView;
-    private final ExerciseStepListView subStepListView;
 
     public ExerciseStepView(@NonNull View itemView) {
         super(itemView);
 
+        this.pointerView = itemView.findViewById(R.id.pointer_view);
         this.contentView = itemView.findViewById(R.id.content_view);
-        this.subStepListView = itemView.findViewById(R.id.sub_step_list_view);
     }
 
     public void bind(ExerciseStep step, int position) {
         super.bind(step);
 
+        ViewUtils.visible(this.pointerView, step.isRunning());
+
         String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content);
-        this.contentView.setText(html(step, step.isRunning() ? "<u><b>" + text + "</b></u>" : text));
-
-        if (step.subs.isEmpty()) {
-            ViewUtils.hide(this.subStepListView);
-        } else {
-            ViewUtils.show(this.subStepListView);
-
-            this.subStepListView.adapter.bind(step.subs);
-        }
+        this.contentView.setText(html(step, step.isRunning() ? "<b>" + text + "</b>" : text));
     }
 
     private Spanned html(ExerciseStep step, String text) {
@@ -72,6 +67,7 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
             return null;
         }
 
-        return step.imageGetter.get(source, 80, 80);
+        int size = (int) ScreenUtils.pxFromDimension(this.itemView.getContext(), R.dimen.guide_exercise_step_icon_size);
+        return step.imageGetter.get(source, size, size);
     }
 }

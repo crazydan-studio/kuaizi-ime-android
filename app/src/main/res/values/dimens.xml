@@ -39,4 +39,6 @@
     <dimen name="input_spell_toggle_key_text_size">12sp</dimen>
     <dimen name="input_word_key_notation_text_size">10sp</dimen>
     <dimen name="input_word_key_word_text_size">16sp</dimen>
+
+    <dimen name="guide_exercise_step_icon_size">32dp</dimen>
 </resources>

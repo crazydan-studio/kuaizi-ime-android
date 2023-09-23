@@ -1,0 +1,28 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/8530657/hand_point_left_icon -->
+    <path
+            android:fillColor="?attr/key_highlight_fg_color"
+            android:pathData="m24,10.35c0,2.138 -1.77,3.9 -3.9,3.9h-1.671a4.366,4.366 0,0 1,-0.372 1.034c0.118,1.032 -0.164,2.108 -0.749,2.943 -0.053,2.46 -1.753,4.272 -4.685,4.272h-0.998c-2.815,0 -4.618,-1.875 -5.963,-1.875L5.537,20.625C5.267,20.857 4.902,21 4.5,21L1.5,21C0.672,21 0,20.396 0,19.65L0,8.85C0,8.104 0.672,7.5 1.5,7.5h3c0.402,0 0.767,0.143 1.037,0.375h0.126c0.326,0 0.697,-0.29 1.415,-1.109l0.006,-0.007 0.006,-0.007c0.415,-0.466 0.849,-0.977 1.212,-1.559 0.877,-1.418 1.425,-3.693 3.549,-3.693 2.669,0 4.313,1.654 4.313,3.9 0,0.376 -0.038,0.726 -0.102,1.05h4.04C22.214,6.45 24,8.236 24,10.35ZM21.75,10.35c0,-0.877 -0.786,-1.65 -1.65,-1.65h-7.425c0,-0.812 1.238,-1.65 1.238,-3.3 0,-1.238 -0.967,-1.65 -2.063,-1.65 -0.412,0 -0.958,1.533 -1.637,2.63C9.787,7.063 9.298,7.656 8.769,8.249 8.014,9.11 7.183,9.966 6,10.105v8.285c2.006,0.176 3.493,1.86 5.625,1.86h0.998c1.9,0 2.678,-1.04 2.372,-2.875 0.685,-0.375 1.132,-1.593 0.606,-2.514C16.509,14.007 16.435,12.688 15.833,12h4.267c0.889,0 1.65,-0.761 1.65,-1.65zM3,16.875c-0.621,0 -1.125,0.504 -1.125,1.125 0,0.621 0.504,1.125 1.125,1.125 0.621,0 1.125,-0.504 1.125,-1.125 0,-0.621 -0.504,-1.125 -1.125,-1.125z"
+            android:strokeWidth="0.0468751" />
+</vector>

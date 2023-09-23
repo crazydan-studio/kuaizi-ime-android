@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.graphics.drawable.Drawable;
 import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -33,8 +30,6 @@ public class ExerciseStep implements ViewData {
     public final String content;
     public final Action action;
     public final ImageGetter imageGetter;
-
-    public final List<ExerciseStep> subs = new ArrayList<>();
 
     private Status status;
 
@@ -70,19 +65,6 @@ public class ExerciseStep implements ViewData {
         }
 
         return this.action.onInputMsg(this, msg, data);
-    }
-
-    /** 返回当前对象本身 */
-    public ExerciseStep subStep(String content) {
-        return subStep(content, null);
-    }
-
-    /** 返回当前对象本身 */
-    public ExerciseStep subStep(String content, Action action) {
-        ExerciseStep step = create(content, action, this.imageGetter);
-        this.subs.add(step);
-
-        return this;
     }
 
     public boolean isRunnable() {
