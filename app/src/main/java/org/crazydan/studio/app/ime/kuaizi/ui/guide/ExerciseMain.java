@@ -19,21 +19,31 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Html;
+import android.view.Gravity;
+import android.widget.Toast;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -41,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
  */
 public class ExerciseMain extends FollowSystemThemeActivity {
     private ImeInputView imeView;
+    private ExerciseListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,19 +65,19 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
         List<Exercise> exercises = sandboxView.withMutation(imeThemeResId, () -> createExercises(sandboxView));
 
-        ExerciseListView listView = findViewById(R.id.exercise_list_view);
-        listView.adapter.bind(exercises);
+        this.listView = findViewById(R.id.exercise_list_view);
+        this.listView.adapter.bind(exercises);
 
-        listView.setExerciseActiveListener((exerciseView) -> {
+        this.listView.setExerciseActiveListener((exerciseView) -> {
             exerciseView.withIme(this.imeView);
 
             this.imeView.startInput(Keyboard.Type.Pinyin);
         });
 
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
-        indicatorView.attachTo(listView);
+        indicatorView.attachTo(this.listView);
 
-        listView.active(1);
+        this.listView.active(1);
     }
 
     @Override
@@ -120,67 +131,138 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_kuai = keyTable.level2CharKey(key_k.getText(), "uai");
         Key<?> key_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
+        String expectedAutoWord = "块";
+        String notSelectExpectedAutoWordMsgText = "请按照指导步骤选中键盘上方的候选字 <big><b>%s</b></big>";
+
         Exercise exercise = Exercise.normal("拼音单字输入", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
 
         exercise.addStep("本次练习输入：<b>筷(kuai)</b>；");
         exercise.addStep("<b>提示</b>：在滑屏过程中，手指可随意滑过其他按键，只需要确保手指释放前输入了完整的拼音即可；");
-        exercise.addStep("请将手指放在下方键盘的按键<img src=\""
+        exercise.addStep("input_k",
+                         "请将手指放在下方键盘的按键<img src=\""
                          + sandboxView.withKey(key_k)
-                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；", (step, msg, data) -> {
-            switch (msg) {
-                case InputChars_Inputting: {
-                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
-                    if (key != null && key.getLabel().equals("k")) {
-                        step.finish();
-                        return true;
-                    }
-                }
-            }
-            return false;
-        });
-        exercise.addStep("手指不离开屏幕，继续将手指滑到按键<img src=\""
-                         + sandboxView.withKey(key_u)
-                         + "\"/>上，再从该按键上滑出；", (step, msg, data) -> {
-            switch (msg) {
-                case InputChars_Inputting: {
-                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
-                    if (key != null && key.getLabel().equals("u")) {
-                        step.finish();
-                    } else {
-                        step.restart();
-                    }
-                    return true;
-                }
-            }
-            return false;
-        });
-        exercise.addStep("将手指滑到按键<img src=\"" + sandboxView.withKey(key_kuai) + "\"/>上，并就地释放手指；",
-                         (step, msg, data) -> {
+                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
+                         (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Inputting: {
                                      Key<?> key = ((InputCharsInputtingMsgData) data).current;
-                                     if (key != null && key.getLabel().equals("kuai")) {
-                                         step.finish();
+                                     if (key.getLabel().equals("k")) {
+                                         exercise.gotoNextStep();
                                      } else {
-                                         step.restart();
+                                         warning("请按照指导步骤从按键 <big><b>%s</b></big> 开始滑出", "k");
+                                     }
+                                     break;
+                                 }
+                                 case InputCandidate_Choosing: {
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     InputWord word = input.getWord();
+
+                                     if (word != null && expectedAutoWord.equals(word.getValue())) {
+                                         exercise.gotoStep("choose_correct_word");
+                                     } else {
+                                         warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
+                                     }
+                                     break;
+                                 }
+                             }
+                         });
+        exercise.addStep("input_u",
+                         "手指不要离开屏幕，继续将手指滑到按键<img src=\""
+                         + sandboxView.withKey(key_u)
+                         + "\"/>上，再从该按键上滑出；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputChars_Inputting: {
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                                     if (key.getLabel().equals("u")) {
+                                         exercise.gotoNextStep();
+                                     } else {
+                                         warning("请按照指导步骤滑到按键 <big><b>%s</b></big> 上", "u");
+                                     }
+                                     break;
+                                 }
+                             }
+                         });
+        exercise.addStep("input_kuai",
+                         "将手指滑到按键<img src=\"" + sandboxView.withKey(key_kuai) + "\"/>上，并就地释放手指；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputChars_Inputting: {
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                                     if (!key.getLabel().startsWith("ku")) {
+                                         exercise.gotoStep("input_u");
+
+                                         warning("请按照指导步骤滑到按键 <big><b>%s</b></big> 上，再从其上滑出", "u");
                                      }
                                      break;
                                  }
                                  case InputChars_InputtingEnd: {
-                                     return step.isFinished();
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                                     if (key != null && key.getLabel().equals("kuai")) {
+                                         exercise.gotoNextStep();
+                                     } else {
+                                         exercise.restart();
+                                         warning("当前输入的拼音与练习内容不符，请按照指导步骤重新输入");
+                                     }
+                                     break;
                                  }
                              }
-                             return false;
                          });
-        exercise.addStep("请点击键盘上方自动确定的候选字 <b>块</b>；", null);
-        exercise.addStep("在第一页候选字列表区域（可在该区域内上下翻页），点击正确的候选字 <img src=\""
+        exercise.addStep("select_auto_word",
+                         "请点击键盘上方自动确定的候选字 <b>" + expectedAutoWord + "</b>；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputCandidate_Choosing: {
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     InputWord word = input.getWord();
+
+                                     if (word != null && expectedAutoWord.equals(word.getValue())) {
+                                         exercise.gotoNextStep();
+                                     } else {
+                                         warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
+                                     }
+                                     break;
+                                 }
+                                 default: {
+                                     exercise.restart();
+                                     warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
+                                 }
+                             }
+                         });
+        exercise.addStep("choose_correct_word",
+                         "在第一页候选字列表区域（可在该区域内上下翻页），点击正确的候选字 <img src=\""
                          + sandboxView.withKey(key_candidate)
-                         + "\"/>；", null);
+                         + "\"/>；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputCandidate_Chosen: {
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     InputWord word = input.getWord();
+
+                                     if (word != null && candidate.getValue().equals(word.getValue())) {
+                                         exercise.gotoNextStep();
+                                     } else {
+                                         exercise.gotoStep("select_auto_word");
+                                         warning("当前选择的候选字与练习内容不符，请按照指导步骤选择 <big><b>%s</b></big>",
+                                                 candidate.getValue());
+                                     }
+                                     break;
+                                 }
+                             }
+                         });
         exercise.addStep("点击键盘中的提交按键<img src=\""
                          + sandboxView.withKey(key_commit)
-                         + "\"/>，将当前输入提交至目标输入框；", null);
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", null);
+                         + "\"/>，将当前输入提交至目标输入框；", (msg, data) -> {
+            switch (msg) {
+                case InputList_Committing: {
+                    exercise.restart();
+                    confirm();
+                    break;
+                }
+            }
+        });
+        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。");
 
 //        exercise.addStep("暂时不管已经输入拼音的候选字是否正确，先继续按照上述过程输入其他几个字。"
 //                         + "<b>注</b>：在输入 <b>输(shu)</b> 时，手指需从按键<img src=\""
@@ -209,5 +291,33 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 //        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习", null);
 
         return exercise;
+    }
+
+    private void warning(String msg, Object... args) {
+        String text = String.format(Locale.getDefault(), msg, args);
+
+        Toast toast = Toast.makeText(getApplicationContext(),
+                                     Html.fromHtml(text, FROM_HTML_MODE_COMPACT),
+                                     Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
+
+        toast.show();
+    }
+
+    private void confirm() {
+        // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
+        // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
+        Context context = this; //new ContextThemeWrapper(this, themeResId);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+
+        builder.setTitle(R.string.title_tips)
+               .setMessage(R.string.msg_guid_exercise_finished_confirm)
+               .setCancelable(false)
+               .setNegativeButton(R.string.btn_guide_exercise_try_again, (dialog, which) -> {})
+               .setPositiveButton(R.string.btn_guide_exercise_try_new_one, (dialog, which) -> {
+                   this.listView.activeNext();
+               })
+               .create()
+               .show();
     }
 }

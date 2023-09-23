@@ -90,7 +90,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void reset() {
-        end_InputChars_Inputting_and_Waiting_Input();
+        end_InputChars_Inputting_and_Waiting_Input(null);
     }
 
     @Override
@@ -261,26 +261,26 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 当前字符输入已完成，并进入 {@link State.Type#Input_Waiting} 状态 */
-    protected void end_InputChars_Inputting_and_Waiting_Input() {
+    protected void end_InputChars_Inputting_and_Waiting_Input(Key<?> key) {
         goto_InitState();
 
-        end_InputChars_Inputting();
+        end_InputChars_Inputting(key);
     }
 
     /**
-     * 当前输入设置唯一按键并{@link #confirm_Pending_and_Waiting_Input() 确认当前输入}
+     * 当前输入设置唯一按键并{@link #confirm_Pending_and_Waiting_Input 确认当前输入}
      */
     protected void input_Only_Key_and_Confirm_Pending(Key<?> key) {
         getInputList().newPending().appendKey(key);
 
-        confirm_Pending_and_Waiting_Input();
+        confirm_Pending_and_Waiting_Input(key);
     }
 
     /** 确认当前输入，并进入 {@link State.Type#Input_Waiting} 状态 */
-    protected void confirm_Pending_and_Waiting_Input() {
+    protected void confirm_Pending_and_Waiting_Input(Key<?> key) {
         goto_InitState();
 
-        confirm_Pending();
+        confirm_Pending(key);
     }
 
     /**
@@ -299,7 +299,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
 
-        confirm_Pending();
+        confirm_Pending(key);
     }
 
     /**
@@ -315,15 +315,11 @@ public abstract class BaseKeyboard implements Keyboard {
         confirm_CharInput_Pending_and_MoveTo_NextGapInput(key);
     }
 
-    protected void confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input() {
-        confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input(null);
-    }
-
     /** 确认当前输入，并移至下一个字符输入，再进入 {@link State.Type#Input_Waiting} 状态 */
-    protected void confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input() {
+    protected void confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input(Key<?> key) {
         goto_InitState();
 
-        confirm_Pending_and_MoveTo_NextCharInput();
+        confirm_Pending_and_MoveTo_NextCharInput(key);
     }
 
     /**
@@ -360,14 +356,14 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 回到前序状态 */
-    protected void back_To_Previous_State() {
+    protected void back_To_Previous_State(Key<?> key) {
         if (this.state.previous == null) {
-            end_InputChars_Inputting_and_Waiting_Input();
+            end_InputChars_Inputting_and_Waiting_Input(key);
             return;
         }
 
         this.state = this.state.previous;
-        end_InputChars_Inputting();
+        end_InputChars_Inputting(key);
     }
 
     /**
@@ -382,23 +378,23 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 当前字符输入已完成，且保持状态不变 */
-    protected void end_InputChars_Inputting() {
-        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCommonMsgData(getKeyFactory()));
+    protected void end_InputChars_Inputting(Key<?> key) {
+        fireInputMsg(InputMsg.InputChars_InputtingEnd, new InputCharsInputtingMsgData(getKeyFactory(), key));
     }
 
     /** 确认当前输入，且状态保持不变 */
-    protected void confirm_Pending() {
+    protected void confirm_Pending(Key<?> key) {
         getInputList().confirmPending();
 
-        end_InputChars_Inputting();
+        end_InputChars_Inputting(key);
     }
 
     /** 确认当前输入并移至下一个输入，且状态保持不变 */
-    protected void confirm_Pending_and_MoveTo_NextCharInput() {
+    protected void confirm_Pending_and_MoveTo_NextCharInput(Key<?> key) {
         getInputList().confirmPending();
         getInputList().moveToNextCharInput();
 
-        end_InputChars_Inputting();
+        end_InputChars_Inputting(key);
     }
 
     /**
@@ -420,7 +416,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // 输入列表不为空且不是 Enter 按键时，将空格添加到输入列表中
         if (!isEmpty && key.getType() != CtrlKey.Type.Enter) {
-            confirm_Pending();
+            confirm_Pending(key);
         }
         // 否则，直接提交按键输入
         else {
@@ -508,13 +504,13 @@ public abstract class BaseKeyboard implements Keyboard {
      * <p/>
      * 输入列表不为空时，在输入列表中做删除，否则，在输入目标中做删除
      */
-    protected void backspace_InputList_or_InputTarget(InputList inputList) {
+    protected void backspace_InputList_or_InputTarget(InputList inputList, Key<?> key) {
         inputList.cleanCommitRevokes();
 
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
 
-            end_InputChars_Inputting();
+            end_InputChars_Inputting(key);
         } else {
             backspace_InputTarget();
         }
@@ -576,11 +572,11 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 返回到原状态或前序键盘 */
-    protected void do_Exit() {
+    protected void do_Exit(Key<?> key) {
         if (this.state.previous == null) {
             switchTo_Previous_Keyboard();
         } else {
-            back_To_Previous_State();
+            back_To_Previous_State(key);
         }
     }
 
@@ -641,7 +637,7 @@ public abstract class BaseKeyboard implements Keyboard {
                                 play_InputtingSingleTick_Audio(key);
 
                                 getInputList().deleteSelected();
-                                end_InputChars_Inputting();
+                                end_InputChars_Inputting(key);
                                 return true;
                         }
                         break;
@@ -653,7 +649,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case Backspace: {
                         play_InputtingSingleTick_Audio(key);
-                        backspace_InputList_or_InputTarget(getInputList());
+                        backspace_InputList_or_InputTarget(getInputList(), key);
                         return true;
                     }
                     case Space:
@@ -665,7 +661,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     // 点击 退出 按钮，则退回到前序状态或原键盘
                     case Exit: {
                         play_InputtingSingleTick_Audio(key);
-                        do_Exit();
+                        do_Exit(key);
                         return true;
                     }
                     case SwitchIME: {
@@ -792,7 +788,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     if (!getInputList().isGapSelected()) {
                         getInputList().newPending().appendKey(key);
 
-                        confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input();
+                        confirm_Pending_and_MoveTo_NextCharInput_then_Waiting_Input(key);
                     }
                     // 否则，做追加
                     else {
@@ -880,11 +876,11 @@ public abstract class BaseKeyboard implements Keyboard {
                 prepare_for_PairSymbol_Inputting((Symbol.Pair) ((SymbolKey) key).getSymbol());
 
                 // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
-                confirm_Pending_and_Waiting_Input();
+                confirm_Pending_and_Waiting_Input(key);
             } else {
                 getInputList().newPending().appendKey(key);
 
-                confirm_Pending();
+                confirm_Pending(key);
             }
 
             return true;
@@ -1048,11 +1044,11 @@ public abstract class BaseKeyboard implements Keyboard {
         } else {
             // 连续输入
             if (inputList.isGapSelected()) {
-                confirm_Pending();
+                confirm_Pending(key);
             }
             // 替换输入
             else {
-                confirm_Pending_and_MoveTo_NextCharInput();
+                confirm_Pending_and_MoveTo_NextCharInput(key);
             }
         }
     }
@@ -1147,11 +1143,11 @@ public abstract class BaseKeyboard implements Keyboard {
         } else {
             // 连续输入
             if (inputList.isGapSelected()) {
-                confirm_Pending();
+                confirm_Pending(key);
             }
             // 替换输入
             else {
-                confirm_Pending_and_MoveTo_NextCharInput();
+                confirm_Pending_and_MoveTo_NextCharInput(key);
             }
         }
     }
@@ -1226,7 +1222,7 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (pending.isMathExpr()) {
             switch_Keyboard(Type.Math);
         } else if (!do_Choosing_Input_in_InputList(pending)) {
-            confirm_Pending_and_Waiting_Input();
+            confirm_Pending_and_Waiting_Input(null);
         }
     }
 

@@ -42,7 +42,7 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
         String text = ResourceUtils.readString(getApplicationContext(), htmlRawResId, args);
         TextView view = findViewById(viewResId);
 
-        ViewUtils.setHtmlText(view, text, args);
+        ViewUtils.setHtmlText(view, text);
     }
 
     protected void setIcon(int viewResId, int iconResId) {

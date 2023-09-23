@@ -68,7 +68,7 @@ public class MathKeyboard extends BaseKeyboard {
             Input<?> input = data.target;
 
             getInputList().newPendingOn(input);
-            confirm_Pending_and_Waiting_Input();
+            confirm_Pending_and_Waiting_Input(null);
             return;
         }
 
@@ -131,9 +131,9 @@ public class MathKeyboard extends BaseKeyboard {
 
                     // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
                     if (!getInputList().isEmpty()) {
-                        backspace_InputList_or_InputTarget(getInputList());
+                        backspace_InputList_or_InputTarget(getInputList(), key);
                     } else {
-                        backspace_InputList_or_InputTarget(topInputList);
+                        backspace_InputList_or_InputTarget(topInputList, key);
                     }
                     return true;
                 }
@@ -143,7 +143,7 @@ public class MathKeyboard extends BaseKeyboard {
                     // 提交上层输入
                     commit_InputList(topInputList, true, false);
                     // 并退出
-                    do_Exit();
+                    do_Exit(key);
                     return true;
                 }
                 case Space: {
@@ -245,11 +245,11 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected void do_Exit() {
+    protected void do_Exit(Key<?> key) {
         // 退出前，先移动光标至相邻 Gap
         getTopInputList().confirmPendingAndMoveToNextGapInput();
 
-        super.do_Exit();
+        super.do_Exit(key);
     }
 
     /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */

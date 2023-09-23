@@ -68,7 +68,7 @@ public class ViewUtils {
         return Color.TRANSPARENT;
     }
 
-    public static void setHtmlText(TextView view, String text, Object... args) {
+    public static void setHtmlText(TextView view, String text) {
         text = text.replaceAll("(?m)^\\s+", "").replaceAll("\n", "");
 
         // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML

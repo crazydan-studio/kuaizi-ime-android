@@ -74,6 +74,15 @@ public class ExerciseListView extends RecyclerView {
         smoothScrollToPosition(position);
     }
 
+    public void activeNext() {
+        int position = ((ExerciseListViewLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+        int total = getAdapter().getItemCount();
+
+        if (position < total - 1) {
+            active(position + 1);
+        }
+    }
+
     public void setExerciseActiveListener(ExerciseActiveListener exerciseActiveListener) {
         this.exerciseActiveListener = exerciseActiveListener;
     }

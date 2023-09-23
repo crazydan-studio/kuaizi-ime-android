@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -37,7 +38,7 @@ public class Exercise implements ViewData, InputMsgListener {
     private final ExerciseStep.ImageGetter imageGetter;
 
     private boolean disableUserInputData;
-    private StepListener stepListener;
+    private ProgressListener progressListener;
     private ExerciseStep runningStep;
 
     public static Exercise free(String title) {
@@ -54,15 +55,13 @@ public class Exercise implements ViewData, InputMsgListener {
         this.imageGetter = imageGetter;
     }
 
-    public void reset() {
-        this.runningStep = null;
-        for (ExerciseStep step : this.steps) {
-            step.reset();
-        }
-    }
-
     public void start() {
         gotoNextStep();
+    }
+
+    public void restart() {
+        doReset();
+        start();
     }
 
     @Override
@@ -72,14 +71,15 @@ public class Exercise implements ViewData, InputMsgListener {
             return;
         }
 
-        boolean changed = current.onInputMsg(msg, data);
-        if (changed) {
-            fireStepListener(current);
-        }
+        current.onInputMsg(msg, data);
+    }
 
-        if (changed && current.isFinished()) {
-            gotoNextStep();
-        }
+    public void gotoNextStep() {
+        gotoStep(nextRunnableStep(this.runningStep));
+    }
+
+    public void gotoStep(String name) {
+        gotoStep(getRunningStep(name));
     }
 
     public ExerciseStep addStep(String content) {
@@ -87,7 +87,11 @@ public class Exercise implements ViewData, InputMsgListener {
     }
 
     public ExerciseStep addStep(String content, ExerciseStep.Action action) {
-        ExerciseStep step = ExerciseStep.create(content, action, this.imageGetter);
+        return addStep(null, content, action);
+    }
+
+    public ExerciseStep addStep(String name, String content, ExerciseStep.Action action) {
+        ExerciseStep step = ExerciseStep.create(name, content, action, this.imageGetter);
 
         return addStep(step);
     }
@@ -105,8 +109,8 @@ public class Exercise implements ViewData, InputMsgListener {
         this.disableUserInputData = disableUserInputData;
     }
 
-    public void setStepListener(StepListener stepListener) {
-        this.stepListener = stepListener;
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -114,23 +118,39 @@ public class Exercise implements ViewData, InputMsgListener {
         return false;
     }
 
-    private void gotoNextStep() {
+    private void doReset() {
+        this.runningStep = null;
+        for (ExerciseStep step : this.steps) {
+            step.reset();
+        }
+    }
+
+    private void gotoStep(ExerciseStep step) {
         if (this.runningStep != null) {
             this.runningStep.reset();
         }
 
-        this.runningStep = nextRunnableStep(this.runningStep);
+        this.runningStep = step;
         if (this.runningStep != null) {
             this.runningStep.start();
         }
 
-        fireStepListener(this.runningStep);
+        fireProgressListener(this.runningStep);
     }
 
-    private void fireStepListener(ExerciseStep step) {
-        if (this.stepListener != null && step != null) {
-            this.stepListener.onStep(step, this.steps.indexOf(step));
+    private void fireProgressListener(ExerciseStep step) {
+        if (this.progressListener != null && step != null) {
+            this.progressListener.onStep(step, this.steps.indexOf(step));
         }
+    }
+
+    private ExerciseStep getRunningStep(String name) {
+        for (ExerciseStep step : this.steps) {
+            if (Objects.equals(step.name, name) && step.isRunnable()) {
+                return step;
+            }
+        }
+        return null;
     }
 
     private ExerciseStep nextRunnableStep(ExerciseStep prev) {
@@ -149,7 +169,7 @@ public class Exercise implements ViewData, InputMsgListener {
         normal,
     }
 
-    public interface StepListener {
+    public interface ProgressListener {
         void onStep(ExerciseStep step, int position);
     }
 }

@@ -49,7 +49,6 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
 
     public void withIme(ImeInputView ime) {
         Exercise exercise = getData();
-        exercise.reset();
 
         ime.removeInputMsgListenerByType(this.textView.getClass());
         ime.addInputMsgListener(this.textView);
@@ -61,11 +60,11 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
 
         this.textView.requestFocus();
 
-        exercise.setStepListener((step, position) -> {
+        exercise.setProgressListener((step, position) -> {
             updateSteps();
-            this.stepListView.smoothScrollToPosition(position);
+            scrollTo(position);
         });
-        exercise.start();
+        exercise.restart();
     }
 
     public void bind(Exercise exercise, int position) {
@@ -75,6 +74,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         this.titleView.setText(title);
 
         updateSteps();
+    }
+
+    private void scrollTo(int position) {
+        this.stepListView.smoothScrollToPosition(position);
     }
 
     private void updateSteps() {

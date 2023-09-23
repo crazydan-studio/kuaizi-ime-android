@@ -26,6 +26,9 @@ public enum InputMsg {
 
     /** 输入候选字选择中 */
     InputCandidate_Choosing,
+    /** 输入候选字已选择 */
+    InputCandidate_Chosen,
+
     /** 输入音效播放中 */
     InputAudio_Playing,
 

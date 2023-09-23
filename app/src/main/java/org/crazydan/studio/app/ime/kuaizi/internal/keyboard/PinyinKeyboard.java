@@ -44,7 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -201,7 +201,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
 
                 // 修改字符输入后，光标需后移以继续输入其他字符
-                confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input();
+                confirm_CharInput_Pending_and_MoveTo_NextGapInput_then_Waiting_Input(key);
                 break;
             }
         }
@@ -230,7 +230,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_InputtingSingleTick_Audio(key);
 
                 getInputList().deleteSelected();
-                confirm_Pending_and_Waiting_Input();
+                confirm_Pending_and_Waiting_Input(key);
                 break;
             }
             case ConfirmInput: {
@@ -275,7 +275,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // 翻页
         flip_Page_for_PagingState((PagingStateData<?>) this.state.data, flippingData);
-        do_InputCandidate_Choosing();
+
+        do_InputCandidate_Choosing(((ChoosingInputCandidateStateData) this.state.data).getInput());
     }
 
     // >>>>>>>>> 滑屏输入
@@ -366,7 +367,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         ChoosingInputCandidateStateData stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
         this.state = new State(State.Type.InputCandidate_Choosing, stateData);
 
-        do_InputCandidate_Choosing();
+        do_InputCandidate_Choosing(input);
     }
 
     private void do_InputCandidate_Filtering_ByStroke(CtrlKey key, int strokeIncrement) {
@@ -377,17 +378,22 @@ public class PinyinKeyboard extends BaseKeyboard {
             play_InputtingSingleTick_Audio(key);
         }
 
-        do_InputCandidate_Choosing();
+        do_InputCandidate_Choosing(stateData.getInput());
     }
 
-    private void do_InputCandidate_Choosing() {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), null);
+    private void do_InputCandidate_Choosing(CharInput input) {
+        InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
         fireInputMsg(InputMsg.InputCandidate_Choosing, data);
     }
 
     private void onConfirmSelectedInputCandidate() {
-        getInputList().getPending().getWord().setConfirmed(true);
+        CharInput pending = getInputList().getPending();
+
+        pending.getWord().setConfirmed(true);
         getInputList().confirmPending();
+
+        InputMsgData data = new InputCandidateChoosingMsgData(null, pending);
+        fireInputMsg(InputMsg.InputCandidate_Chosen, data);
 
         // 继续选择下一个拼音输入的候选字
         Input<?> selected;
@@ -514,7 +520,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void start_InputList_Committing_Option_Choosing() {
         this.state = new State(State.Type.InputList_Committing_Option_Choosing);
 
-        end_InputChars_Inputting();
+        end_InputChars_Inputting(null);
     }
 
     private void on_InputList_Committing_Option_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
@@ -561,7 +567,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     }
                     getInputList().setOption(newInputOption);
 
-                    end_InputChars_Inputting();
+                    end_InputChars_Inputting(key);
                 }
                 break;
             }
@@ -571,7 +577,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     getInputList().setOption(null);
 
-                    end_InputChars_Inputting_and_Waiting_Input();
+                    end_InputChars_Inputting_and_Waiting_Input(key);
                 }
                 break;
             }

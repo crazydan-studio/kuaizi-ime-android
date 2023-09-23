@@ -27,44 +27,38 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
  * @date 2023-09-19
  */
 public class ExerciseStep implements ViewData {
+    public final String name;
     public final String content;
     public final Action action;
     public final ImageGetter imageGetter;
 
-    private Status status;
+    private boolean running;
 
-    public static ExerciseStep create(String content, Action action, ImageGetter imageGetter) {
-        return new ExerciseStep(content, action, imageGetter);
+    public static ExerciseStep create(String name, String content, Action action, ImageGetter imageGetter) {
+        return new ExerciseStep(name, content, action, imageGetter);
     }
 
-    private ExerciseStep(String content, Action action, ImageGetter imageGetter) {
+    private ExerciseStep(String name, String content, Action action, ImageGetter imageGetter) {
+        this.name = name;
         this.content = content;
         this.action = action;
         this.imageGetter = imageGetter;
     }
 
     public void reset() {
-        this.status = Status.noop;
+        this.running = false;
     }
 
     public void start() {
-        this.status = Status.running;
+        this.running = true;
     }
 
-    public void restart() {
-        start();
-    }
-
-    public void finish() {
-        this.status = Status.finished;
-    }
-
-    public boolean onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onInputMsg(InputMsg msg, InputMsgData data) {
         if (this.action == null) {
-            return false;
+            return;
         }
 
-        return this.action.onInputMsg(this, msg, data);
+        this.action.onInputMsg(msg, data);
     }
 
     public boolean isRunnable() {
@@ -72,11 +66,7 @@ public class ExerciseStep implements ViewData {
     }
 
     public boolean isRunning() {
-        return this.status == Status.running;
-    }
-
-    public boolean isFinished() {
-        return this.status == Status.finished;
+        return this.running;
     }
 
     @Override
@@ -85,13 +75,7 @@ public class ExerciseStep implements ViewData {
     }
 
     public interface Action {
-        boolean onInputMsg(ExerciseStep step, InputMsg msg, InputMsgData data);
-    }
-
-    public enum Status {
-        noop,
-        running,
-        finished,
+        void onInputMsg(InputMsg msg, InputMsgData data);
     }
 
     public interface ImageGetter {

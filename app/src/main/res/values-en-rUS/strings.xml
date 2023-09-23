@@ -33,11 +33,13 @@
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
     <string name="label_input_word_key_trad_mark">繁</string>
 
+    <string name="btn_enable_right_now">Yes</string>
+    <string name="btn_enable_later">Later</string>
     <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
     <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
     <string name="btn_guide_try_exercises">Try Some Exercises First</string>
-    <string name="btn_enable_right_now">Yes</string>
-    <string name="btn_enable_later">Later</string>
+    <string name="btn_guide_exercise_try_again">Try Again</string>
+    <string name="btn_guide_exercise_try_new_one">Goto Next</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -68,6 +70,11 @@
     </string>
     <string name="text_exercise_free_mode_edit_text_placeholder">
         Please input any text for free exercises
+    </string>
+    <string name="msg_guid_exercise_finished_confirm">
+        Congratulations, you have successfully completed this exercise!
+        \n\nNow, you can choose to continue with the current exercise,
+        or start the next one.
     </string>
 
     <string name="value_theme_light">Light</string>
