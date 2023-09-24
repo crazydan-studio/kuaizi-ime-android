@@ -38,7 +38,7 @@ public abstract class FollowSystemThemeActivity extends ActionBarSupportActivity
     }
 
     protected int getDefaultTheme() {
-        return chooseTheme(R.style.Theme_KuaiziIME_Light, R.style.Theme_KuaiziIME_Night);
+        return chooseTheme(R.style.Theme_Kuaizi_App_Light, R.style.Theme_Kuaizi_App_Night);
     }
 
     protected int chooseTheme(int lightThemeResId, int nightThemeResId) {

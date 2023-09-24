@@ -46,11 +46,6 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     @Override
-    protected int getDefaultTheme() {
-        return chooseTheme(R.style.Theme_KuaiziIME_Guide_Light, R.style.Theme_KuaiziIME_Guide_Night);
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_activity);

@@ -134,11 +134,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         String expectedAutoWord = "块";
         String notSelectExpectedAutoWordMsgText = "请按照指导步骤选中键盘上方的候选字 <big><b>%s</b></big>";
 
-        Exercise exercise = Exercise.normal("拼音单字输入", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("拼音输入（基础）", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
 
         exercise.addStep("本次练习输入：<b>筷(kuai)</b>；");
-        exercise.addStep("<b>提示</b>：在滑屏过程中，手指可随意滑过其他按键，只需要确保手指释放前输入了完整的拼音即可；");
+        exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，只需要确保手指释放前输入了完整的拼音即可；");
         exercise.addStep("input_k",
                          "请将手指放在下方键盘的按键<img src=\""
                          + sandboxView.withKey(key_k)
@@ -209,31 +209,25 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                  }
                              }
                          });
-        exercise.addStep("select_auto_word",
-                         "请点击键盘上方自动确定的候选字 <b>" + expectedAutoWord + "</b>；",
-                         (msg, data) -> {
-                             switch (msg) {
-                                 case InputCandidate_Choosing: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
-                                     InputWord word = input.getWord();
+        exercise.addStep("select_auto_word", "请点击键盘上方的候选字 <b>" + expectedAutoWord + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputCandidate_Choosing: {
+                    CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                    InputWord word = input.getWord();
 
-                                     if (word != null && expectedAutoWord.equals(word.getValue())) {
-                                         exercise.gotoNextStep();
-                                     } else {
-                                         warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
-                                     }
-                                     break;
-                                 }
-                                 default: {
-                                     exercise.restart();
-                                     warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
-                                 }
-                             }
-                         });
+                    if (word != null && expectedAutoWord.equals(word.getValue())) {
+                        exercise.gotoNextStep();
+                    } else {
+                        warning(notSelectExpectedAutoWordMsgText, expectedAutoWord);
+                    }
+                    break;
+                }
+            }
+        });
         exercise.addStep("choose_correct_word",
-                         "在第一页候选字列表区域（可在该区域内上下翻页），点击正确的候选字 <img src=\""
+                         "在候选字列表区域点击正确的候选字<img src=\""
                          + sandboxView.withKey(key_candidate)
-                         + "\"/>；",
+                         + "\"/>（在该区域内可上下翻页）；",
                          (msg, data) -> {
                              switch (msg) {
                                  case InputCandidate_Chosen: {
@@ -256,13 +250,13 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>，将当前输入提交至目标输入框；", (msg, data) -> {
             switch (msg) {
                 case InputList_Committing: {
-                    exercise.restart();
-                    confirm();
+                    exercise.gotoNextStep();
+                    confirm(exercise);
                     break;
                 }
             }
         });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。");
+        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
 
 //        exercise.addStep("暂时不管已经输入拼音的候选字是否正确，先继续按照上述过程输入其他几个字。"
 //                         + "<b>注</b>：在输入 <b>输(shu)</b> 时，手指需从按键<img src=\""
@@ -304,7 +298,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         toast.show();
     }
 
-    private void confirm() {
+    private void confirm(Exercise exercise) {
         // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
         // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
         Context context = this; //new ContextThemeWrapper(this, themeResId);
@@ -313,7 +307,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         builder.setTitle(R.string.title_tips)
                .setMessage(R.string.msg_guid_exercise_finished_confirm)
                .setCancelable(false)
-               .setNegativeButton(R.string.btn_guide_exercise_try_again, (dialog, which) -> {})
+               .setNegativeButton(R.string.btn_guide_exercise_try_again, (dialog, which) -> {
+                   exercise.restart();
+               })
                .setPositiveButton(R.string.btn_guide_exercise_try_new_one, (dialog, which) -> {
                    this.listView.activeNext();
                })

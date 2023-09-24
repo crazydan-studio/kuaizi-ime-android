@@ -356,20 +356,20 @@ public class ImeInputView extends FrameLayout
     private int getThemeResId() {
         String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, "night");
 
-        int themeResId = R.style.Theme_KuaiziIME_Light;
+        int themeResId = R.style.Theme_Kuaizi_IME_Light;
         switch (theme) {
             case "night":
-                themeResId = R.style.Theme_KuaiziIME_Night;
+                themeResId = R.style.Theme_Kuaizi_IME_Night;
                 break;
             case "follow_system":
                 int themeMode = getContext().getResources().getConfiguration().uiMode
                                 & Configuration.UI_MODE_NIGHT_MASK;
                 switch (themeMode) {
                     case Configuration.UI_MODE_NIGHT_NO:
-                        themeResId = R.style.Theme_KuaiziIME_Light;
+                        themeResId = R.style.Theme_Kuaizi_IME_Light;
                         break;
                     case Configuration.UI_MODE_NIGHT_YES:
-                        themeResId = R.style.Theme_KuaiziIME_Night;
+                        themeResId = R.style.Theme_Kuaizi_IME_Night;
                         break;
                 }
                 break;

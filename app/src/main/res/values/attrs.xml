@@ -85,4 +85,8 @@
         <attr name="key_char_level_5_bg_color" format="color" />
         <attr name="key_char_level_5_fg_color" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="app_style">
+        <attr name="app_background_color" format="color" />
+    </declare-styleable>
 </resources>
