@@ -26,10 +26,10 @@ import android.provider.Settings;
 import android.view.View;
 import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.Service;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
@@ -121,20 +121,14 @@ public class Guide extends FollowSystemThemeActivity {
             SystemUtils.switchIme(context);
         } else {
             String appName = getResources().getString(R.string.app_name);
-            String msgText = getResources().getString(R.string.msg_ime_should_be_enabled_first, appName).trim();
 
-            // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
-            // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
-            Context context = this; //new ContextThemeWrapper(this, themeResId);
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-
-            builder.setTitle(R.string.title_tips)
-                   .setMessage(msgText)
-                   .setCancelable(false)
-                   .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
-                   .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
-                   .create()
-                   .show();
+            Alert.with(this)
+                 .setView(R.layout.guide_alert_view)
+                 .setTitle(R.string.title_tips)
+                 .setMessage(R.string.msg_ime_should_be_enabled_first, appName)
+                 .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
+                 .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
+                 .show();
         }
     }
 

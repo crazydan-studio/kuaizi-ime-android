@@ -21,12 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
 import android.widget.Toast;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -39,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTa
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
@@ -299,21 +298,16 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     }
 
     private void confirm(Exercise exercise) {
-        // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
-        // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
-        Context context = this; //new ContextThemeWrapper(this, themeResId);
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-
-        builder.setTitle(R.string.title_tips)
-               .setMessage(R.string.msg_guid_exercise_finished_confirm)
-               .setCancelable(false)
-               .setNegativeButton(R.string.btn_guide_exercise_try_again, (dialog, which) -> {
-                   exercise.restart();
-               })
-               .setPositiveButton(R.string.btn_guide_exercise_try_new_one, (dialog, which) -> {
-                   this.listView.activeNext();
-               })
-               .create()
-               .show();
+        Alert.with(this)
+             .setView(R.layout.guide_alert_view)
+             .setTitle(R.string.title_tips)
+             .setMessage(R.string.msg_guid_exercise_finished_confirm)
+             .setNegativeButton(R.string.btn_guide_exercise_try_again, (dialog, which) -> {
+                 exercise.restart();
+             })
+             .setPositiveButton(R.string.btn_guide_exercise_try_new_one, (dialog, which) -> {
+                 this.listView.activeNext();
+             })
+             .show();
     }
 }
