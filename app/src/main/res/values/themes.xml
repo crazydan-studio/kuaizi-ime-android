@@ -163,14 +163,16 @@
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />
 
     <style name="Theme.Kuaizi.App.Light" parent="Theme.MaterialComponents.Light">
-        <item name="app_background_color">#ffededed</item>
+        <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-39112674 -->
+        <item name="android:windowBackground">#ffededed</item>
 
         <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
         <item name="materialAlertDialogTheme">@style/Theme.Kuaizi.AlertDialog.Light</item>
     </style>
 
     <style name="Theme.Kuaizi.App.Night" parent="Theme.MaterialComponents.DayNight">
-        <item name="app_background_color">#ff272b2c</item>
+        <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-39112674 -->
+        <item name="android:windowBackground">#ff272b2c</item>
 
         <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
         <item name="materialAlertDialogTheme">@style/Theme.Kuaizi.AlertDialog.Night</item>
