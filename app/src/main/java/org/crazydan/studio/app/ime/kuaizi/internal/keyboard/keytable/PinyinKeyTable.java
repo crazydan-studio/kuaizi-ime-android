@@ -219,11 +219,7 @@ public class PinyinKeyTable extends KeyTable {
             String strokeCode = PinyinInputWord.getStrokeCode(stroke);
             Integer strokeCount = strokes.get(strokeCode);
 
-            String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
-            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_stroke;
-            CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
-
-            gridKeys[row][column] = ctrlKey(type).setOption(option).setLabel(label);
+            gridKeys[row][column] = strokeFilterKey(stroke, strokeCount);
         }
 
         // 拼音变换按键
@@ -312,16 +308,12 @@ public class PinyinKeyTable extends KeyTable {
 
         int index_end = getGridLastColumnIndex();
 
-        CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.only_pinyin);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel("仅拼音");
-
-        option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.with_pinyin);
-        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel("带拼音");
+        gridKeys[1][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.only_pinyin);
+        gridKeys[2][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
 
-//        option = new CtrlKey.CommitInputListOption(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
-//        gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Option_CommitInputList).setOption(option).setLabel("简/繁");
+//        gridKeys[4][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
 
         return gridKeys;
     }
@@ -348,6 +340,34 @@ public class PinyinKeyTable extends KeyTable {
         KeyColor color = key_input_word_level_colors[level];
 
         return InputWordKey.create(word).setColor(color);
+    }
+
+    public CtrlKey strokeFilterKey(String stroke, Integer strokeCount) {
+        String strokeCode = PinyinInputWord.getStrokeCode(stroke);
+        String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
+
+        CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_stroke;
+        CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
+
+        return ctrlKey(type).setOption(option).setLabel(label);
+    }
+
+    public CtrlKey commitOptionKey(CtrlKey.CommitInputListOption.Option opt) {
+        CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(opt);
+        String label = null;
+        switch (opt) {
+            case only_pinyin:
+                label = "仅拼音";
+                break;
+            case with_pinyin:
+                label = "带拼音";
+                break;
+            case switch_simple_trad:
+                label = "简/繁";
+                break;
+        }
+
+        return ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel(label);
     }
 
     private GridCoord[][] getInputCandidateLevelKeyCoords() {

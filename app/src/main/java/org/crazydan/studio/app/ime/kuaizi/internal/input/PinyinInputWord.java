@@ -84,6 +84,7 @@ public class PinyinInputWord extends InputWord {
             case "㇏":
                 code = "4";
                 break;
+            // 𠃋
             case "\uD840\uDCCB":
                 code = "5";
                 break;

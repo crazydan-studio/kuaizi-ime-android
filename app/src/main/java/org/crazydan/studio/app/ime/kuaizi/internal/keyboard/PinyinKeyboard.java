@@ -168,7 +168,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             if (key.getType() == CtrlKey.Type.Commit_InputList) {
                 play_InputtingDoubleTick_Audio(key);
 
-                start_InputList_Committing_Option_Choosing();
+                start_InputList_Committing_Option_Choosing(key);
             }
         }
     }
@@ -517,10 +517,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     // >>>>>>>>>>
 
     // >>>>>>>>> 对输入列表 提交选项 的操作
-    private void start_InputList_Committing_Option_Choosing() {
+    private void start_InputList_Committing_Option_Choosing(Key<?> key) {
         this.state = new State(State.Type.InputList_Committing_Option_Choosing);
 
-        end_InputChars_Inputting(null);
+        end_InputChars_Inputting(key);
     }
 
     private void on_InputList_Committing_Option_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
