@@ -108,7 +108,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise = exercise_Advance_Pinyin_Inputting(sandboxView);
         exercises.add(exercise);
 
-        exercise = exercise_Text_Edit(sandboxView);
+        exercise = exercise_Input_Edit(sandboxView);
         exercises.add(exercise);
 
         exercise = Exercise.normal("字母大小写输入", null);
@@ -651,7 +651,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         return exercise;
     }
 
-    private Exercise exercise_Text_Edit(DynamicLayoutSandboxView sandboxView) {
+    private Exercise exercise_Input_Edit(DynamicLayoutSandboxView sandboxView) {
         LocatorKeyTable keyTable = LocatorKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
         Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor);
@@ -660,7 +660,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(InputEditAction.copy);
         Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(InputEditAction.paste);
 
-        Exercise exercise = Exercise.normal("文本编辑", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("编辑输入内容", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
         exercise.setSampleText(getResources().getString(R.string.app_slogan));
 
