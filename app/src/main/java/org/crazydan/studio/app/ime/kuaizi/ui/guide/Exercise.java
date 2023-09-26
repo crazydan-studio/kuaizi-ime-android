@@ -38,6 +38,7 @@ public class Exercise implements ViewData, InputMsgListener {
     private final ExerciseStep.ImageGetter imageGetter;
 
     private boolean disableUserInputData;
+    private String sampleText;
     private ProgressListener progressListener;
     private ExerciseStep runningStep;
 
@@ -107,6 +108,14 @@ public class Exercise implements ViewData, InputMsgListener {
 
     public void setDisableUserInputData(boolean disableUserInputData) {
         this.disableUserInputData = disableUserInputData;
+    }
+
+    public String getSampleText() {
+        return this.sampleText;
+    }
+
+    public void setSampleText(String sampleText) {
+        this.sampleText = sampleText;
     }
 
     public void setProgressListener(ProgressListener progressListener) {

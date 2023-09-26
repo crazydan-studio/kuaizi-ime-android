@@ -18,6 +18,7 @@
 <resources>
     <string name="app_name">Kuaizi Input Method</string>
     <string name="app_name_with_version">Kuaizi Input Method v%1$s</string>
+    <string name="app_slogan">Kuaizi Input Method: Efficient editing requires a good and fast input method</string>
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
     <string name="title_app_guide">Kuaizi Input Method</string>

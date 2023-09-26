@@ -200,17 +200,6 @@ public abstract class KeyTable {
         return size;
     }
 
-    public Key<?> findKeyByLabel(Key<?>[][] gridKeys, String label) {
-        for (Key<?>[] keys : gridKeys) {
-            for (Key<?> key : keys) {
-                if (key != null && label.equals(key.getLabel())) {
-                    return key;
-                }
-            }
-        }
-        return null;
-    }
-
     public CtrlKey enterCtrlKey() {
         return this.config.isSingleLineInput() //
                ? ctrlKey(CtrlKey.create(CtrlKey.Type.Enter), key_ctrl_ok_style) //

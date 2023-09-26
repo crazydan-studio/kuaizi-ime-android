@@ -33,9 +33,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
@@ -101,6 +104,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Exercise exercise = Exercise.free("自由练习");
         exercises.add(exercise);
 
+        exercise = exercise_Basic_Introduce(sandboxView);
+        exercises.add(exercise);
+
         exercise = exercise_Basic_Pinyin_Inputting(sandboxView);
         exercises.add(exercise);
 
@@ -110,19 +116,77 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise = exercise_Advance_Pinyin_Inputting(sandboxView);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("文本编辑", null);
+        exercise = exercise_Text_Edit(sandboxView);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("字母切换", null);
+        exercise = Exercise.normal("字母大小写输入", null);
         exercises.add(exercise);
 
         exercise = Exercise.normal("符号输入", null);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("计算输入", null);
+        exercise = Exercise.normal("数学计算输入", null);
         exercises.add(exercise);
 
         return exercises;
+    }
+
+    private Exercise exercise_Basic_Introduce(DynamicLayoutSandboxView sandboxView) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.SwitchHandMode);
+        Key<?> key_ctrl_switch_math = keyTable.ctrlKey(CtrlKey.Type.SwitchToMathKeyboard);
+        Key<?> key_ctrl_switch_latin = keyTable.ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard);
+        Key<?> key_ctrl_switch_emoji = keyTable.ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard);
+        Key<?> key_ctrl_switch_symbol = keyTable.ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
+        Key<?> key_ctrl_input_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
+        Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor);
+        Key<?> key_ctrl_backspace = keyTable.ctrlKey(CtrlKey.Type.Backspace);
+        Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
+        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+
+        Exercise exercise = Exercise.normal("拼音键盘布局", sandboxView::getImage);
+        exercise.setDisableUserInputData(true);
+
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_hand_mode)
+                         + "\"/>为左右手输入模式切换按键，用于临时切换左右手模式；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_math)
+                         + "\"/>为计算器键盘切换按键，用于切换到计算器键盘以进行数学计算；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_latin)
+                         + "\"/>为拉丁文键盘切换按键，用于切换到拉丁文键盘以输入英文字母和数字；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_emoji)
+                         + "\"/>为表情输入键盘切换按键，用于切换到表情键盘以输入各类表情字符；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_symbol)
+                         + "\"/>为标点符号输入键盘切换按键，用于切换到标点符号键盘以输入各种标点符号；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_input_revoke)
+                         + "\"/>为已提交输入的撤回按键，用于将已提交输入撤回以重新修改输入；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_cursor_locate)
+                         + "\"/>为输入光标定位按键，在该按键上左右上下滑动可移动输入目标中的光标位置，"
+                         + "长按该按键将进入文本编辑模式；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_backspace)
+                         + "\"/>为向前删除输入的按键，单击可直接删除正在输入或目标输入框中的内容，"
+                         + "长按则可做连续删除；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_enter)
+                         + "\"/>、<img src=\""
+                         + sandboxView.withKey(key_ctrl_commit)
+                         + "\"/>为回车和输入提交按键，其将根据输入情况而变换图标和功能。"
+                         + "长按将连续输入换行或提供额外的输入提交选项；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_space)
+                         + "\"/>为空格输入按键，可向输入内容中添加空格。"
+                         + "长按则将输入连续空格；");
+
+        return exercise;
     }
 
     private Exercise exercise_Basic_Pinyin_Inputting(DynamicLayoutSandboxView sandboxView) {
@@ -381,7 +445,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>"
                          + "、<b>1</b>次<img src=\""
                          + sandboxView.withKey(key_ctrl_filter_na)
-                         + "\"/>（其包含点等变形笔画）"
+                         + "\"/>（其包含点、提等变形笔画）"
                          + "、<b>2</b>次<img src=\""
                          + sandboxView.withKey(key_ctrl_filter_zhe)
                          + "\"/>（其包含任意含折的笔画）"
@@ -444,7 +508,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + case_word.getValue()
                          + "("
                          + case_word.getNotation()
-                         + ")</b>，并带拼音提交和撤销输入提交；");
+                         + ")</b>，并带拼音提交和撤回已提交输入；");
         exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，只需要确保手指释放前输入了完整的拼音即可；");
         exercise.addStep("input_level_0",
                          "请将手指放在下方键盘的按键<img src=\""
@@ -590,6 +654,88 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 }
             }
         });
+        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
+
+        return exercise;
+    }
+
+    private Exercise exercise_Text_Edit(DynamicLayoutSandboxView sandboxView) {
+        LocatorKeyTable keyTable = LocatorKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor);
+        Key<?> key_ctrl_text_selector = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
+        Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
+        Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(InputEditAction.copy);
+        Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(InputEditAction.paste);
+
+        Exercise exercise = Exercise.normal("文本编辑", sandboxView::getImage);
+        exercise.setDisableUserInputData(true);
+        exercise.setSampleText(getResources().getString(R.string.app_slogan));
+
+        exercise.addStep("<b>提示</b>：光标移动和文本选择的范围与在按键上滑动的距离相关，"
+                         + "滑动距离越长，光标移动和文本选择范围将越大；");
+        exercise.addStep("请使用手指在输入光标定位按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_cursor_locate)
+                         + "\"/>上进行左/右/上/下滑动，并观察目标输入框中光标位置的变化；", (msg, data) -> {
+            switch (msg) {
+                case InputTarget_Cursor_Locating: {
+                    Key<?> key = ((InputTargetCursorLocatingMsgData) data).key;
+                    if (key.equals(key_ctrl_cursor_locate)) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("使用手指长按输入光标定位按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_cursor_locate)
+                         + "\"/>，在键盘发生变换后释放手指；", (msg, data) -> {
+            switch (msg) {
+                case InputTarget_Cursor_Locating: {
+                    Key<?> key = ((InputTargetCursorLocatingMsgData) data).key;
+                    if (key.equals(key_ctrl_cursor_locate)) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("使用手指在文本选择按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_text_selector)
+                         + "\"/>上进行左/右/上/下滑动，并观察文本的选择状态；", (msg, data) -> {
+            switch (msg) {
+                case InputTarget_Selecting: {
+                    Key<?> key = ((InputTargetCursorLocatingMsgData) data).key;
+                    if (key.equals(key_ctrl_text_selector)) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("尝试点击<img src=\""
+                         + sandboxView.withKey(key_ctrl_edit_copy)
+                         + "\"/>、<img src=\""
+                         + sandboxView.withKey(key_ctrl_edit_paste)
+                         + "\"/>等按键，"
+                         + "并观察文本的复制、粘贴、剪切、撤销和重做等操作的结果；", (msg, data) -> {
+            switch (msg) {
+                case InputTarget_Editing: {
+                    exercise.gotoNextStep();
+                    break;
+                }
+            }
+        });
+        exercise.addStep("点击退出按键<img src=\"" + sandboxView.withKey(key_ctrl_exit) + "\"/>以切换到原键盘；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputChars_InputtingEnd: {
+                                     exercise.gotoNextStep();
+                                     confirm(exercise);
+                                     break;
+                                 }
+                             }
+                         });
         exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
 
         return exercise;

@@ -57,22 +57,38 @@ public class LocatorKeyTable extends KeyTable {
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
-        CtrlKey.Type type = CtrlKey.Type.Edit_InputTarget;
-        CtrlKey.Option<?> option = new CtrlKey.EditInputTargetOption(InputEditAction.cut);
-        gridKeys[3][3] = ctrlKey(type).setOption(option).setLabel("剪切");
-
-        option = new CtrlKey.EditInputTargetOption(InputEditAction.redo);
-        gridKeys[4][2] = ctrlKey(type).setOption(option).setLabel("重做");
-
-        option = new CtrlKey.EditInputTargetOption(InputEditAction.undo);
-        gridKeys[4][3] = ctrlKey(type).setOption(option).setLabel("撤销");
-
-        option = new CtrlKey.EditInputTargetOption(InputEditAction.paste);
-        gridKeys[4][4] = ctrlKey(type).setOption(option).setLabel("粘贴");
-
-        option = new CtrlKey.EditInputTargetOption(InputEditAction.copy);
-        gridKeys[4][5] = ctrlKey(type).setOption(option).setLabel("复制");
+        gridKeys[3][3] = editCtrlKey(InputEditAction.cut);
+        gridKeys[4][2] = editCtrlKey(InputEditAction.redo);
+        gridKeys[4][3] = editCtrlKey(InputEditAction.undo);
+        gridKeys[4][4] = editCtrlKey(InputEditAction.paste);
+        gridKeys[4][5] = editCtrlKey(InputEditAction.copy);
 
         return gridKeys;
+    }
+
+    public CtrlKey editCtrlKey(InputEditAction action) {
+        CtrlKey.Type type = CtrlKey.Type.Edit_InputTarget;
+        CtrlKey.Option<?> option = new CtrlKey.EditInputTargetOption(action);
+
+        String label = null;
+        switch (action) {
+            case copy:
+                label = "复制";
+                break;
+            case paste:
+                label = "粘贴";
+                break;
+            case cut:
+                label = "剪切";
+                break;
+            case undo:
+                label = "撤销";
+                break;
+            case redo:
+                label = "重做";
+                break;
+        }
+
+        return ctrlKey(type).setOption(option).setLabel(label);
     }
 }

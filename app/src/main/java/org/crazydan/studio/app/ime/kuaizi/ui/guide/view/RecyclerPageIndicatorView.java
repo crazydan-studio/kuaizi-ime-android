@@ -78,11 +78,11 @@ public class RecyclerPageIndicatorView extends LinearLayout {
             return;
         }
 
-        createDots(adapter.getItemCount());
+        createDots(view, adapter.getItemCount());
         adapter.registerAdapterDataObserver(new DefaultAdapterDataObserver() {
             @Override
             public void onChanged() {
-                createDots(adapter.getItemCount());
+                createDots(view, adapter.getItemCount());
                 activeDot(view);
             }
         });
@@ -92,7 +92,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         removeAllViews();
     }
 
-    private void createDots(int count) {
+    private void createDots(RecyclerView recycler, int count) {
         int size = this.dotSize;
         if (size <= 0 || count <= 0) {
             clearDots();
@@ -113,7 +113,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         // 补充新增的
         else {
             for (int i = childCount; i < count; i++) {
-                View view = createDot(i == this.activeDot);
+                View view = createDot(recycler, i, i == this.activeDot);
                 addView(view);
             }
         }
@@ -149,7 +149,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         newActive.setBackgroundResource(R.drawable.bg_dot_full);
     }
 
-    private View createDot(boolean isActive) {
+    private View createDot(RecyclerView recycler, int position, boolean isActive) {
         int size = this.dotSize;
         int spacing = this.dotSpacing;
 
@@ -160,6 +160,8 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         View view = new View(getContext());
         view.setBackgroundResource(isActive ? R.drawable.bg_dot_full : R.drawable.bg_dot_hole);
         view.setLayoutParams(params);
+
+        view.setOnClickListener((v) -> recycler.smoothScrollToPosition(position));
 
         return view;
     }
