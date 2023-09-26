@@ -407,20 +407,20 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void confirm_Input_Enter_or_Space(InputList inputList, CtrlKey key) {
         boolean isEmpty = inputList.isEmpty();
 
-        // TODO 直输时，不需要通过 InputList 先添加 Key 再提交
-
-        // 仅在输入列表为空时，才附加回车到输入列表，以便于向目标提交换行符
-        if (isEmpty || key.getType() != CtrlKey.Type.Enter) {
+        if (isEmpty) {
+            switch (key.getType()) {
+                case Enter:
+                case Space:
+                    InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), key.getText());
+                    fireInputMsg(InputMsg.InputList_Committing, data);
+                    break;
+            }
+        }
+        // 输入列表不为空且不是 Enter 按键时，将其添加到输入列表中
+        else if (key.getType() != CtrlKey.Type.Enter) {
             inputList.newPending().appendKey(key);
-        }
 
-        // 输入列表不为空且不是 Enter 按键时，将空格添加到输入列表中
-        if (!isEmpty && key.getType() != CtrlKey.Type.Enter) {
             confirm_Pending(key);
-        }
-        // 否则，直接提交按键输入
-        else {
-            commit_InputList(inputList, false, false);
         }
     }
 

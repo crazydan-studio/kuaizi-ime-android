@@ -33,6 +33,10 @@ public class InputListCommittingMsgData extends InputCommonMsgData {
     public final CharSequence text;
     public final List<String> replacements;
 
+    public InputListCommittingMsgData(Keyboard.KeyFactory keyFactory, CharSequence text) {
+        this(keyFactory, text, null);
+    }
+
     public InputListCommittingMsgData(
             Keyboard.KeyFactory keyFactory, CharSequence text, List<String> replacements
     ) {

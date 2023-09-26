@@ -28,39 +28,39 @@ public enum SymbolGroup {
     han("中文", new Symbol[] {
             single("，"), single("。"), single("？"), single("！"), single("："), single("；"),
             //
-            single("·"), single("、"), single("×"), single("÷"),
+            single("·"), single("、"), single("‘"), single("’"), single("－"), single("——"),
             //
-            single("‘"), single("’"), pair("‘", "’"), single("“"), single("”"), pair("“", "”"),
+            pair("‘", "’"), single("“"), single("”"), pair("“", "”"), single("｜"), single("‖"),
             //
-            single("－"), single("——"), single("～"), single("＿＿"), single("﹏﹏"), single("……"),
+            single("（"), single("）"), pair("（", "）"), single("「"), single("」"), pair("「", "」"),
             //
-            single("︴"), single("｜"), single("‖"), single("〃"), single("¡"), single("¿"), single("→"),
+            single("《"), single("》"), pair("《", "》"), single("【"), single("】"), pair("【", "】"),
             //
-            single("¨"), single("˜"), single("ˉ"), single("―"), single("_"), single("﹍"), single("﹎"),
+            single("〈"), single("〉"), pair("〈", "〉"), single("［"), single("］"), pair("［", "］"),
             //
-            single("「"), single("」"), pair("「", "」"), single("『"), single("』"), pair("『", "』"),
+            single("＿＿"), single("﹏﹏"), single("～"),
             //
-            single("（"), single("）"), pair("（", "）"), single("〔"), single("〕"), pair("〔", "〕"),
+            single("……"), single("﹍"), single("﹎"), single("¨"), single("˜"), single("ˉ"),
             //
-            single("〈"), single("〉"), pair("〈", "〉"), single("《"), single("》"), pair("《", "》"),
+            single("〔"), single("〕"), pair("〔", "〕"), single("﹛"), single("﹜"), pair("﹛", "﹜"),
             //
-            single("［"), single("］"), pair("［", "］"), single("【"), single("】"), pair("【", "】"),
+            single("『"), single("』"), pair("『", "』"), single("〖"), single("〗"), pair("〖", "〗"),
             //
-            single("﹛"), single("﹜"), pair("﹛", "﹜"), single("〖"), single("〗"), pair("〖", "〗"),
+            single("‹"), single("›"), pair("‹", "›"),
             //
-            single("〝"), single("〞"), pair("〝", "〞"), single("‹"), single("›"), pair("‹", "›"),
+            single("︴"), single("〃"), single("¡"), single("¿"), single("→"),
+            //
+            single("〝"), single("〞"), pair("〝", "〞"),
             //
             single("﹁"), single("﹂"), single("﹃"), single("﹄"),
             //
-            single("￣"), single("＿"), single("﹋"), single("﹏"), single("︵"), single("︶"),
+            single("―"), single("_"), single("￣"), single("＿"),
+            //
+            single("﹋"), single("﹏"), single("︵"), single("︶"),
             //
             single("︷"), single("︸"), single("︿"), single("﹀"), single("︹"), single("︺"),
             //
             single("︽"), single("︾"), single("︻"), single("︼"), single("ˆ"), single("ˇ"),
-            //
-            single("✓"), single("√"), single("☒"), single("✗"), single("✘"),
-            //
-            single("ㄨ"), single("✕"), single("╳"), single("メ"), single("ン"), single("х"),
             }),
     /** 拉丁文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
     latin("英文", new Symbol[] {
@@ -115,6 +115,10 @@ public enum SymbolGroup {
             single("㏒"), single("㏕"), single("‱"), single("∫"), single("∬"), single("∭"),
             //
             single("∮"), single("∯"), single("∰"), single("∱"), single("∲"), single("∳"),
+            //
+            single("✓"), single("√"), single("☒"), single("✗"), single("✘"),
+            //
+            single("ㄨ"), single("✕"), single("╳"), single("メ"), single("ン"), single("х"),
             }),
     /**
      * 箭头符号：https://tool.lmeee.com/fuhao/jiantou

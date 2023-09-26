@@ -351,13 +351,20 @@ public class PinyinKeyboard extends BaseKeyboard {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getInputCandidateKeysPageSize();
 
-        if (!topBestCandidates.isEmpty() && topBestCandidates.size() < candidateMap.size()) {
-            // 最佳 top 候选字独立占用第一页，不够一页时以 null 占位
-            CollectionUtils.fillToSize(topBestCandidates, null, pageSize);
-
-            allCandidates.addAll(0, topBestCandidates);
-        } else if (topBestCandidates.size() == candidateMap.size()) {
+        if (topBestCandidates.size() == allCandidates.size()) {
             allCandidates = topBestCandidates;
+        } else if (!topBestCandidates.isEmpty()) {
+            // 若只有一页，则合并最佳候选字并确保其在最前面位置
+            if (allCandidates.size() <= pageSize) {
+                allCandidates.removeAll(topBestCandidates);
+
+                allCandidates.addAll(0, topBestCandidates);
+            } else if (topBestCandidates.size() < allCandidates.size()) {
+                // 最佳候选字独立占用第一页，不够一页时以 null 占位
+                CollectionUtils.fillToSize(topBestCandidates, null, pageSize);
+
+                allCandidates.addAll(0, topBestCandidates);
+            }
         }
 
         if (inputChanged) {
