@@ -161,7 +161,10 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         view.setBackgroundResource(isActive ? R.drawable.bg_dot_full : R.drawable.bg_dot_hole);
         view.setLayoutParams(params);
 
-        view.setOnClickListener((v) -> recycler.smoothScrollToPosition(position));
+        view.setOnClickListener((v) -> {
+            activeDot(position);
+            recycler.smoothScrollToPosition(position);
+        });
 
         return view;
     }

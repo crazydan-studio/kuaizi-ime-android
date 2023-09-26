@@ -60,7 +60,7 @@
                     android:gravity="center"
                     android:orientation="horizontal"
                     app:dot_spacing="4dp"
-                    app:dot_size="12dp" />
+                    app:dot_size="14dp" />
         </com.google.android.flexbox.FlexboxLayout>
     </FrameLayout>
 

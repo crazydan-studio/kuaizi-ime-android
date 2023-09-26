@@ -53,12 +53,13 @@ public class ExerciseListView extends RecyclerView {
         // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置: https://cloud.tencent.com/developer/article/1041258
         // - 用RecyclerView打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
         // - RecyclerView实现Gallery画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
-        new PagerSnapHelper().attachToRecyclerView(this);
+        PagerSnapHelper pager = new PagerSnapHelper();
+        pager.attachToRecyclerView(this);
 
         addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                ExerciseView exerciseView = getActive();
+                ExerciseView exerciseView = getActive(pager);
                 ExerciseActiveListener listener = ((ExerciseListView) recyclerView).exerciseActiveListener;
 
                 if (exerciseView == null || listener == null) {
@@ -87,9 +88,9 @@ public class ExerciseListView extends RecyclerView {
         this.exerciseActiveListener = exerciseActiveListener;
     }
 
-    public ExerciseView getActive() {
-        // Note：单页循环列表，始终只有一个有效的子视图，故而，始终取位置为 0 的子视图
-        View view = getChildAt(0);
+    public ExerciseView getActive(PagerSnapHelper pager) {
+        // https://stackoverflow.com/questions/43305295/how-to-get-the-center-item-after-recyclerview-snapped-it-to-center#answer-43305341
+        View view = pager.findSnapView(getLayoutManager());
 
         return view != null ? (ExerciseView) getChildViewHolder(view) : null;
     }

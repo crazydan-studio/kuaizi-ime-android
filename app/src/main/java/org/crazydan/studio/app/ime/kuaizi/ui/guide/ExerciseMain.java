@@ -79,9 +79,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(this.listView);
 
-        // Note：在子项目较多时，RecyclerView 布局子项目会比较耗时，
-        // 因此，激活子项目需延迟一定时间才会生效
-        this.listView.post(() -> this.listView.active(1));
+        this.listView.active(1);
     }
 
     @Override
@@ -90,14 +88,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         PinyinDictDB.getInstance().open(getApplicationContext());
 
         super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        // 确保拼音字典库能够被及时关闭
-        PinyinDictDB.getInstance().close();
     }
 
     private List<Exercise> createExercises(DynamicLayoutSandboxView sandboxView) {
