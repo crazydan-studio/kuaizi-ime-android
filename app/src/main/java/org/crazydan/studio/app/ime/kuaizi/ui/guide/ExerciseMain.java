@@ -79,7 +79,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(this.listView);
 
-        this.listView.active(1);
+        // Note：在子项目较多时，RecyclerView 布局子项目会比较耗时，
+        // 因此，激活子项目需延迟一定时间才会生效
+        this.listView.post(() -> this.listView.active(1));
     }
 
     @Override
