@@ -247,11 +247,11 @@ public abstract class KeyTable {
         return charKey(CharKey.Type.Alphabet, text);
     }
 
-    public static CharKey numberKey(String text) {
+    public CharKey numberKey(String text) {
         return charKey(CharKey.Type.Number, text);
     }
 
-    public static CharKey emojiKey(String text) {
+    public CharKey emojiKey(String text) {
         return charKey(CharKey.Type.Emoji, text).setColor(key_char_emoji_color);
     }
 

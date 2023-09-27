@@ -411,6 +411,9 @@ public abstract class BaseKeyboard implements Keyboard {
             switch (key.getType()) {
                 case Enter:
                 case Space:
+                    // Note：直输换行和回车后，不再支持输入撤回
+                    inputList.cleanCommitRevokes();
+
                     InputMsgData data = new InputListCommittingMsgData(getKeyFactory(), key.getText());
                     fireInputMsg(InputMsg.InputList_Committing, data);
                     break;
@@ -419,8 +422,9 @@ public abstract class BaseKeyboard implements Keyboard {
         // 输入列表不为空且不是 Enter 按键时，将其添加到输入列表中
         else if (key.getType() != CtrlKey.Type.Enter) {
             inputList.newPending().appendKey(key);
+            getInputList().confirmPending();
 
-            confirm_Pending(key);
+            fire_InputChars_Inputting(getKeyFactory(), key);
         }
     }
 
@@ -846,10 +850,11 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note: 在 Input 中的 key 可能不携带 replacement 信息，只能通过当前按键做判断
         String newKeyText = key.nextReplacement(lastCharKey.getText());
 
-        CharKey newKey = KeyTable.alphabetKey(newKeyText);
+        // Note: 按键类型需保留，字符间是否需空格将通过字符类型进行判断
+        CharKey newKey = lastCharKey.isSymbol() ? KeyTable.symbolKey(newKeyText) : KeyTable.alphabetKey(newKeyText);
         input.replaceLatestKey(lastCharKey, newKey);
 
-        fire_and_Waiting_Continuous_InputChars_Inputting(key);
+        fire_and_Waiting_Continuous_InputChars_Inputting(newKey);
     }
 
     protected boolean try_Single_Key_Inputting(Key<?> key) {

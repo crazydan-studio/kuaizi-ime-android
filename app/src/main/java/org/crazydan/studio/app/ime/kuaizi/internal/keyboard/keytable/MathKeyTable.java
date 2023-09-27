@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
@@ -58,16 +59,16 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
-                mathOpKey(MathOpKey.Type.equal, "="),
-                mathOpKey(MathOpKey.Type.dot, "."),
-                mathOpKey(MathOpKey.Type.multiply, "×"),
-                mathOpKey(MathOpKey.Type.divide, "÷"),
-                mathOpKey(MathOpKey.Type.plus, "+"),
-                mathOpKey(MathOpKey.Type.minus, "-"),
-                mathOpKey(MathOpKey.Type.brackets, "( )"),
-                mathOpKey(MathOpKey.Type.percent, "%"),
-                mathOpKey(MathOpKey.Type.permill, "‰"),
-                mathOpKey(MathOpKey.Type.permyriad, "‱"),
+                mathOpKey(MathOpKey.Type.equal),
+                mathOpKey(MathOpKey.Type.dot),
+                mathOpKey(MathOpKey.Type.multiply),
+                mathOpKey(MathOpKey.Type.divide),
+                mathOpKey(MathOpKey.Type.plus),
+                mathOpKey(MathOpKey.Type.minus),
+                mathOpKey(MathOpKey.Type.brackets),
+                mathOpKey(MathOpKey.Type.percent),
+                mathOpKey(MathOpKey.Type.permill),
+                mathOpKey(MathOpKey.Type.permyriad),
                 };
 
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -117,6 +118,53 @@ public class MathKeyTable extends KeyTable {
                         coord(1, 2), coord(0, 2),
                         },
                 };
+    }
+
+    @Override
+    public CharKey numberKey(String text) {
+        KeyColor color = key_char_color;
+
+        return super.numberKey(text).setColor(color);
+    }
+
+    public MathOpKey mathOpKey(MathOpKey.Type type) {
+        KeyColor color = key_char_special_color;
+
+        String text = null;
+        switch (type) {
+            case equal:
+                text = "=";
+                break;
+            case dot:
+                text = ".";
+                break;
+            case multiply:
+                text = "×";
+                break;
+            case divide:
+                text = "÷";
+                break;
+            case plus:
+                text = "+";
+                break;
+            case minus:
+                text = "-";
+                break;
+            case brackets:
+                text = "( )";
+                break;
+            case percent:
+                text = "%";
+                break;
+            case permill:
+                text = "‰";
+                break;
+            case permyriad:
+                text = "‱";
+                break;
+        }
+
+        return mathOpKey(type, text).setColor(color);
     }
 
     private static MathOpKey mathOpKey(MathOpKey.Type type, String text) {
