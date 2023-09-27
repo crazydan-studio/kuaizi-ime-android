@@ -152,8 +152,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         SwitchToLatinKeyboard,
         /** 切换至数学键盘 */
         SwitchToMathKeyboard,
-        /** 切换至数字键盘 */
-        SwitchToNumberKeyboard,
 
         /** 切换至标点符号键盘 */
         SwitchToSymbolKeyboard,

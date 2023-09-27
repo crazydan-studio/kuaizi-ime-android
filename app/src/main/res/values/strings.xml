@@ -19,6 +19,9 @@
     <string name="app_name">筷字输入法</string>
     <string name="app_name_with_version">筷字输入法 v%1$s</string>
     <string name="app_slogan">筷字输入法：高效编辑需要又好又快的输入法</string>
+    <string name="app_copyright">
+        © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
+    </string>
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide">筷字输入法</string>

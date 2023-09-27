@@ -24,7 +24,15 @@ import java.util.Locale;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -46,6 +54,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMs
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -56,8 +65,17 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @date 2023-09-11
  */
 public class ExerciseMain extends FollowSystemThemeActivity {
+    private DrawerLayout drawerLayout;
+    private NavigationView exerciseNavView;
+
     private ImeInputView imeView;
-    private ExerciseListView listView;
+    private ExerciseListView exerciseListView;
+
+//    @Override
+//    protected boolean isActionBarEnabled() {
+//        // 使用自定义的 toolbar
+//        return false;
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,19 +89,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
         List<Exercise> exercises = sandboxView.withMutation(imeThemeResId, () -> createExercises(sandboxView));
 
-        this.listView = findViewById(R.id.exercise_list_view);
-        this.listView.adapter.bind(exercises);
-
-        this.listView.setExerciseActiveListener((exerciseView) -> {
-            exerciseView.withIme(this.imeView);
-
-            this.imeView.startInput(Keyboard.Type.Pinyin);
-        });
-
-        RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
-        indicatorView.attachTo(this.listView);
-
-        this.listView.active(1);
+        initDrawer(exercises);
+        initExerciseList(exercises);
     }
 
     @Override
@@ -92,6 +99,119 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         PinyinDictDB.getInstance().open(getApplicationContext());
 
         super.onStart();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        int menuToUse = R.menu.guide_exercise_main_top_bar_menu;
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(menuToUse, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        toggleDrawer();
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        // 关闭侧边栏或返回到前一个窗口
+        if (!closeDrawer()) {
+            super.onBackPressed();
+        }
+    }
+
+    /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
+    private int getDrawerGravity() {
+        if (this.imeView.getKeyboardConfig().getHandMode() == Keyboard.HandMode.Left) {
+            return GravityCompat.START;
+        }
+        return GravityCompat.END;
+    }
+
+    private void toggleDrawer() {
+        if (!closeDrawer()) {
+            this.drawerLayout.openDrawer(getDrawerGravity());
+        }
+    }
+
+    private boolean closeDrawer() {
+        int drawerGravity = getDrawerGravity();
+        // Note：只能根据 NavigationView 的 layout_gravity 设置决定侧边栏的显示位置
+        if (this.drawerLayout.isDrawerOpen(drawerGravity)) {
+            this.drawerLayout.closeDrawer(drawerGravity);
+            return true;
+        }
+        return false;
+    }
+
+    private void initDrawer(List<Exercise> exercises) {
+        this.drawerLayout = findViewById(R.id.drawer_layout);
+        this.exerciseNavView = findViewById(R.id.nav_view);
+
+        // 设置侧边栏打开位置
+        DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) this.exerciseNavView.getLayoutParams();
+        layoutParams.gravity = getDrawerGravity();
+        this.exerciseNavView.setLayoutParams(layoutParams);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+//        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, this.drawerLayout, toolbar, 0, 0);
+//        drawerToggle.setDrawerIndicatorEnabled(false);
+//        this.drawerLayout.addDrawerListener(drawerToggle);
+//        drawerToggle.syncState();
+
+        // https://stackoverflow.com/questions/18547277/how-to-set-navigation-drawer-to-be-opened-from-right-to-left#answer-50799607
+        // 通过编码方式在指定位置弹出侧边栏
+        // - 该设定必须放在 ActionBarDrawerToggle 初始化之后，
+        //   以覆盖 ActionBarDrawerToggle 对其的默认设置
+        toolbar.setNavigationOnClickListener((v) -> toggleDrawer());
+
+        Menu menu = this.exerciseNavView.getMenu();
+        for (int i = 0; i < exercises.size(); i++) {
+            Exercise exercise = exercises.get(i);
+            String title = ExerciseView.createTitle(exercise, i);
+
+            menu.add(Menu.NONE, i + 10, i, title).setCheckable(true);
+        }
+        this.exerciseNavView.setNavigationItemSelectedListener((item) -> {
+            activeExercise(item.getOrder());
+            closeDrawer();
+
+            return true;
+        });
+    }
+
+    private void activeDrawerNavItem(int position) {
+        this.exerciseNavView.setCheckedItem(position + 10);
+    }
+
+    private void activeExercise(int position) {
+        activeDrawerNavItem(position);
+        this.exerciseListView.active(position);
+    }
+
+    private void initExerciseList(List<Exercise> exercises) {
+        this.exerciseListView = findViewById(R.id.exercise_list_view);
+        this.exerciseListView.adapter.bind(exercises);
+
+        this.exerciseListView.setExerciseActiveListener((exerciseView) -> {
+            int position = exercises.indexOf(exerciseView.getData());
+            activeDrawerNavItem(position);
+
+            exerciseView.withIme(this.imeView);
+            this.imeView.startInput(Keyboard.Type.Pinyin);
+        });
+
+        RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
+        indicatorView.attachTo(this.exerciseListView);
+
+        activeExercise(1);
     }
 
     private List<Exercise> createExercises(DynamicLayoutSandboxView sandboxView) {
@@ -130,16 +250,19 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.SwitchHandMode);
         Key<?> key_ctrl_switch_math = keyTable.ctrlKey(CtrlKey.Type.SwitchToMathKeyboard);
         Key<?> key_ctrl_switch_latin = keyTable.ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard);
+        Key<?> key_ctrl_switch_pinyin = keyTable.ctrlKey(CtrlKey.Type.SwitchToPinyinKeyboard);
         Key<?> key_ctrl_switch_emoji = keyTable.ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard);
         Key<?> key_ctrl_switch_symbol = keyTable.ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
         Key<?> key_ctrl_input_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
+        Key<?> key_ctrl_input_drop = keyTable.ctrlKey(CtrlKey.Type.DropInput);
+        Key<?> key_ctrl_input_confirm = keyTable.ctrlKey(CtrlKey.Type.ConfirmInput);
         Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor);
         Key<?> key_ctrl_backspace = keyTable.ctrlKey(CtrlKey.Type.Backspace);
         Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
 
-        Exercise exercise = Exercise.normal("拼音键盘布局", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("功能按键简介", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
 
         exercise.addStep("<img src=\""
@@ -147,26 +270,30 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>为左右手输入模式切换按键，用于临时切换左右手模式；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_switch_math)
-                         + "\"/>为计算器键盘切换按键，用于切换到计算器键盘以进行数学计算；");
+                         + "\"/>为计算器键盘切换按键，用于切换到计算式输入键盘；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_switch_latin)
-                         + "\"/>为拉丁文键盘切换按键，用于切换到拉丁文键盘以输入英文字母和数字；");
+                         + "\"/>为拉丁文键盘切换按键，用于从拼音键盘切换到英文和数字输入键盘；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_pinyin)
+                         + "\"/>为拼音键盘切换按键，用于从拉丁文键盘切换到拼音键盘。"
+                         + "<b>注</b>：仅在切换到拉丁文键盘后，该按键才会显示；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_switch_emoji)
-                         + "\"/>为表情输入键盘切换按键，用于切换到表情键盘以输入各类表情字符；");
+                         + "\"/>为表情键盘切换按键，用于切换到表情输入键盘；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_switch_symbol)
-                         + "\"/>为标点符号输入键盘切换按键，用于切换到标点符号键盘以输入各种标点符号；");
+                         + "\"/>为标点符号键盘切换按键，用于切换到标点符号输入键盘；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_input_revoke)
                          + "\"/>为已提交输入的撤回按键，用于将已提交输入撤回以重新修改输入；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_cursor_locate)
-                         + "\"/>为输入光标定位按键，在该按键上左右上下滑动可移动输入目标中的光标位置，"
-                         + "长按该按键将进入文本编辑模式；");
+                         + "\"/>为输入光标定位按键，在该按键上左/右/上/下滑动可移动目标输入框中的光标位置，"
+                         + "长按该按键则将进入文本编辑模式；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_backspace)
-                         + "\"/>为向前删除输入的按键，单击可直接删除正在输入或目标输入框中的内容，"
+                         + "\"/>为（向前）删除按键，单击可直接删除正在输入或目标输入框中的内容，"
                          + "长按则可做连续删除；");
         exercise.addStep("<img src=\""
                          + sandboxView.withKey(key_ctrl_enter)
@@ -178,6 +305,13 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + sandboxView.withKey(key_ctrl_space)
                          + "\"/>为空格输入按键，可向输入内容中添加空格。"
                          + "长按则将输入连续空格；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_input_drop)
+                         + "\"/>为候选字删除按键，用于删除选中的拼音候选字，以便于重新输入新拼音；");
+        exercise.addStep("<img src=\""
+                         + sandboxView.withKey(key_ctrl_input_confirm)
+                         + "\"/>为候选字确认按键，在拼音候选字选字过程中，"
+                         + "对于正确的候选字可点击该按键进行确认，再自动切换到后一个拼音上进行选字；");
 
         return exercise;
     }
@@ -748,7 +882,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
-        Exercise exercise = Exercise.normal("字母大小写输入", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("字母输入变换", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
 
         exercise.addStep("本次练习输入 <b>Be Happy!</b>；");
@@ -1122,7 +1256,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                  exercise.restart();
              })
              .setPositiveButton(R.string.btn_guide_exercise_try_new_one, (dialog, which) -> {
-                 this.listView.activeNext();
+                 this.exerciseListView.activeNext();
              })
              .show();
     }

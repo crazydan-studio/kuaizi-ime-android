@@ -688,11 +688,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(Type.Pinyin);
                         return true;
                     }
-                    case SwitchToNumberKeyboard: {
-                        play_InputtingSingleTick_Audio(key);
-                        switch_Keyboard(Type.Number);
-                        return true;
-                    }
                     case SwitchToMathKeyboard: {
                         play_InputtingSingleTick_Audio(key);
                         switch_Keyboard(Type.Math);

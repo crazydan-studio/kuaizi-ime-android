@@ -47,6 +47,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         this.textView = itemView.findViewById(R.id.text_view);
     }
 
+    public static String createTitle(Exercise exercise, int position) {
+        return String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+    }
+
     public void withIme(ImeInputView ime) {
         Exercise exercise = getData();
 
@@ -71,7 +75,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
     public void bind(Exercise exercise, int position) {
         super.bind(exercise);
 
-        String title = String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+        String title = createTitle(exercise, position);
         this.titleView.setText(title);
 
         updateSteps();

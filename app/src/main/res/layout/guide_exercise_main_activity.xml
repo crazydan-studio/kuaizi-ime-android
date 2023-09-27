@@ -15,58 +15,91 @@
   ~ limitations under the License.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/app_background_color">
+        android:fitsSystemWindows="false">
 
-    <!-- 采用层叠布局 FrameLayout，以确保按键布局沙盒能被后续视图遮盖 -->
-    <FrameLayout
+    <!-- Note: fitsSystemWindows 用于控制窗口是否占满整个屏幕 -->
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:fitsSystemWindows="false"
+            android:background="?attr/app_background_color">
 
-        <!-- Note：按键视图无法通过动态构造得到绘制图形，
-        必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
-        -->
-        <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
-                android:id="@+id/step_image_sandbox_view"
+        <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/keyboard_view_height"
-                android:visibility="invisible" />
+                android:layout_height="wrap_content">
 
-        <com.google.android.flexbox.FlexboxLayout
+            <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- 采用层叠布局 FrameLayout，以确保按键布局沙盒能被后续视图遮盖 -->
+        <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:flexWrap="nowrap"
-                app:flexDirection="column"
-                app:alignItems="center"
-                app:alignContent="stretch">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
-                    android:id="@+id/exercise_list_view"
+            <!-- Note：按键视图无法通过动态构造得到绘制图形，
+            必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
+            -->
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
+                    android:id="@+id/step_image_sandbox_view"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    app:layout_flexGrow="1" />
+                    android:layout_height="@dimen/keyboard_view_height"
+                    android:visibility="invisible" />
 
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
-                    android:id="@+id/exercise_list_indicator_view"
+            <com.google.android.flexbox.FlexboxLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="6dp"
-                    android:layout_gravity="bottom"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    app:dot_spacing="4dp"
-                    app:dot_size="14dp" />
-        </com.google.android.flexbox.FlexboxLayout>
-    </FrameLayout>
+                    android:layout_height="match_parent"
+                    app:flexWrap="nowrap"
+                    app:flexDirection="column"
+                    app:alignItems="center"
+                    app:alignContent="stretch">
 
-    <include
-            layout="@layout/ime_input_view"
-            android:id="@+id/ime_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-</LinearLayout>
+                <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
+                        android:id="@+id/exercise_list_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        app:layout_flexGrow="1" />
+
+                <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
+                        android:id="@+id/exercise_list_indicator_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="6dp"
+                        android:layout_gravity="bottom"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        app:dot_spacing="4dp"
+                        app:dot_size="14dp" />
+            </com.google.android.flexbox.FlexboxLayout>
+        </FrameLayout>
+
+        <include
+                layout="@layout/ime_input_view"
+                android:id="@+id/ime_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Note：必须放在主视图之后，否则，其列表项将无法点击
+    https://stackoverflow.com/questions/62436886/navigation-view-menu-item-doesnt-respond-to-any-click#answer-62439907
+    -->
+    <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            app:headerLayout="@layout/guide_exercise_main_nav_view"
+            app:itemTextColor="@color/menu_item_text_color"
+            app:itemBackground="@android:color/transparent" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

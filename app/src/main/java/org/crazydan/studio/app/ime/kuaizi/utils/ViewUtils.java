@@ -69,14 +69,19 @@ public class ViewUtils {
     }
 
     public static void setHtmlText(TextView view, String text) {
-        text = text.replaceAll("(?m)^\\s+", "").replaceAll("\n", "");
-
         // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
-        Spanned html = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
-
+        Spanned html = parseHtml(text);
         view.setText(html);
+
         // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
         view.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    public static Spanned parseHtml(String text) {
+        text = text.replaceAll("(?m)(^\\s+|\\s+$)", "").replaceAll("\n", "");
+
+        // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
+        return Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
     }
 
     /**
