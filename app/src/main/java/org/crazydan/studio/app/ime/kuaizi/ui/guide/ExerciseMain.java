@@ -32,13 +32,17 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
@@ -108,16 +112,13 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise = exercise_Advance_Pinyin_Inputting(sandboxView);
         exercises.add(exercise);
 
-        exercise = exercise_Input_Edit(sandboxView);
+        exercise = exercise_Input_Editting(sandboxView);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("字母大小写输入", null);
+        exercise = exercise_Char_Inputting(sandboxView);
         exercises.add(exercise);
 
-        exercise = Exercise.normal("符号输入", null);
-        exercises.add(exercise);
-
-        exercise = Exercise.normal("数学计算输入", null);
+        exercise = exercise_Math_Inputting(sandboxView);
         exercises.add(exercise);
 
         return exercises;
@@ -651,7 +652,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         return exercise;
     }
 
-    private Exercise exercise_Input_Edit(DynamicLayoutSandboxView sandboxView) {
+    private Exercise exercise_Input_Editting(DynamicLayoutSandboxView sandboxView) {
         LocatorKeyTable keyTable = LocatorKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
         Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.LocateInputCursor);
@@ -660,7 +661,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(InputEditAction.copy);
         Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(InputEditAction.paste);
 
-        Exercise exercise = Exercise.normal("编辑输入内容", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("输入内容编辑", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
         exercise.setSampleText(getResources().getString(R.string.app_slogan));
 
@@ -668,7 +669,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "滑动距离越长，光标移动和文本选择范围将越大；");
         exercise.addStep("请使用手指在输入光标定位按键<img src=\""
                          + sandboxView.withKey(key_ctrl_cursor_locate)
-                         + "\"/>上进行左/右/上/下滑动，并观察目标输入框中光标位置的变化；", (msg, data) -> {
+                         + "\"/>上进行左/右/上/下快速滑动，并观察目标输入框中光标位置的变化；", (msg, data) -> {
             switch (msg) {
                 case InputTarget_Cursor_Locating: {
                     Key<?> key = ((InputTargetCursorLocatingMsgData) data).key;
@@ -694,7 +695,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         });
         exercise.addStep("使用手指在文本选择按键<img src=\""
                          + sandboxView.withKey(key_ctrl_text_selector)
-                         + "\"/>上进行左/右/上/下滑动，并观察文本的选择状态；", (msg, data) -> {
+                         + "\"/>上进行左/右/上/下快速滑动，并观察文本的选择状态；", (msg, data) -> {
             switch (msg) {
                 case InputTarget_Selecting: {
                     Key<?> key = ((InputTargetCursorLocatingMsgData) data).key;
@@ -728,6 +729,374 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                  }
                              }
                          });
+        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
+
+        return exercise;
+    }
+
+    private Exercise exercise_Char_Inputting(DynamicLayoutSandboxView sandboxView) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_char_b = keyTable.level0CharKey("b");
+        Key<?> key_char_e = keyTable.level0CharKey("e");
+        Key<?> key_char_h = keyTable.level0CharKey("h");
+        Key<?> key_char_a = keyTable.level0CharKey("a");
+        Key<?> key_char_p = keyTable.level0CharKey("p");
+        Key<?> key_char_y = keyTable.level0CharKey("y");
+        Key<?> key_symbol_tanhao = PinyinKeyTable.symbolKey("！");
+        Key<?> key_ctrl_switch_latin = keyTable.ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard);
+        Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+
+        Exercise exercise = Exercise.normal("字母大小写输入", sandboxView::getImage);
+        exercise.setDisableUserInputData(true);
+
+        exercise.addStep("本次练习输入 <b>Be Happy!</b>；");
+        exercise.addStep("<b>提示</b>：单击字母或标点符号按键将输入其字符本身，"
+                         + "双击字母按键将做其大小写转换，而双击标点符号按键则将做中英文符号转换。"
+                         + "您也可以点击按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_latin)
+                         + "\"/>切换到拉丁文键盘，通过同样的方式输入练习内容。"
+                         + "不同的是，拉丁文键盘的输入是直接提交至输入目标中的；");
+        exercise.addStep("请双击按键<img src=\""
+                         + sandboxView.withKey(key_char_b)
+                         + "\"/>以输入大写字母 <b>"
+                         + key_char_b.getText().toUpperCase()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_b.getText().toUpperCase())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_char_e)
+                         + "\"/>以输入小写字母 <b>"
+                         + key_char_e.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_e.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\"" + sandboxView.withKey(key_ctrl_space) + "\"/>以输入空格；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputChars_Inputting: {
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                                     if (key.getText().equals(key_ctrl_space.getText())) {
+                                         exercise.gotoNextStep();
+                                     }
+                                     break;
+                                 }
+                             }
+                         });
+        exercise.addStep("请双击按键<img src=\""
+                         + sandboxView.withKey(key_char_h)
+                         + "\"/>以输入大写字母 <b>"
+                         + key_char_h.getText().toUpperCase()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_h.getText().toUpperCase())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_char_a)
+                         + "\"/>以输入小写字母 <b>"
+                         + key_char_a.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_a.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_char_p)
+                         + "\"/>以输入小写字母 <b>"
+                         + key_char_p.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_p.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_char_p)
+                         + "\"/>以输入小写字母 <b>"
+                         + key_char_p.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_p.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_char_y)
+                         + "\"/>以输入小写字母 <b>"
+                         + key_char_y.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_char_y.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请双击按键<img src=\""
+                         + sandboxView.withKey(key_symbol_tanhao)
+                         + "\"/>以输入英文标点 <b>!</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals("!")) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("点击输入提交按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_commit)
+                         + "\"/>以将输入内容提交至目标输入框中；", (msg, data) -> {
+            switch (msg) {
+                case InputList_Committing: {
+                    exercise.gotoNextStep();
+                    confirm(exercise);
+                    break;
+                }
+            }
+        });
+        exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
+
+        return exercise;
+    }
+
+    private Exercise exercise_Math_Inputting(DynamicLayoutSandboxView sandboxView) {
+        MathKeyTable keyTable = MathKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_number_3 = keyTable.numberKey("3");
+        Key<?> key_number_2 = keyTable.numberKey("2");
+        Key<?> key_number_1 = keyTable.numberKey("1");
+        Key<?> key_op_multiply = keyTable.mathOpKey(MathOpKey.Type.multiply);
+        Key<?> key_op_plus = keyTable.mathOpKey(MathOpKey.Type.plus);
+        Key<?> key_op_equal = keyTable.mathOpKey(MathOpKey.Type.equal);
+        Key<?> key_op_brackets = keyTable.mathOpKey(MathOpKey.Type.brackets);
+        Key<?> key_ctrl_switch_math = keyTable.ctrlKey(CtrlKey.Type.SwitchToMathKeyboard);
+        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
+
+        Exercise exercise = Exercise.normal("数学计算输入", sandboxView::getImage);
+        exercise.setDisableUserInputData(true);
+
+        exercise.addStep("本次练习输入 <b>3 × (2 + 1) =</b>；");
+        exercise.addStep("请点击按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_math)
+                         + "\"/>以切换到计算器键盘；", (msg, data) -> {
+            switch (msg) {
+                case Keyboard_Switching: {
+                    Keyboard.Type type = ((KeyboardSwitchingMsgData) data).target;
+                    if (type == Keyboard.Type.Math) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_number_3)
+                         + "\"/>以输入数字 <b>"
+                         + key_number_3.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_number_3.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_op_multiply)
+                         + "\"/>以输入运算符 <b>"
+                         + key_op_multiply.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_op_multiply.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\"" + sandboxView.withKey(key_op_brackets) + "\"/>以输入括号；",
+                         (msg, data) -> {
+                             switch (msg) {
+                                 case InputChars_Inputting: {
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                                     if (key.getText().equals(key_op_brackets.getText())) {
+                                         exercise.gotoNextStep();
+                                     }
+                                     break;
+                                 }
+                             }
+                         });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_number_2)
+                         + "\"/>以输入数字 <b>"
+                         + key_number_2.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_number_2.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_op_plus)
+                         + "\"/>以输入运算符 <b>"
+                         + key_op_plus.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_op_plus.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_number_1)
+                         + "\"/>以输入数字 <b>"
+                         + key_number_1.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_number_1.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请单击按键<img src=\""
+                         + sandboxView.withKey(key_op_equal)
+                         + "\"/>以输入运算符 <b>"
+                         + key_op_equal.getText()
+                         + "</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_op_equal.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请点击输入提交按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_commit)
+                         + "\"/>以将输入内容提交至目标输入框中，"
+                         + "并观察输入的计算式中是否包含最终的运算结果；", (msg, data) -> {
+            switch (msg) {
+                case InputList_Committing: {
+                    exercise.gotoNextStep();
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请点击按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_switch_math)
+                         + "\"/>以切换到计算器键盘；", (msg, data) -> {
+            switch (msg) {
+                case Keyboard_Switching: {
+                    Keyboard.Type type = ((KeyboardSwitchingMsgData) data).target;
+                    if (type == Keyboard.Type.Math) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请点击按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_enter)
+                         + "\"/>以向目标输入框中输入换行符；", (msg, data) -> {
+            switch (msg) {
+                case InputList_Committing: {
+                    CharSequence text = ((InputListCommittingMsgData) data).text;
+                    if (text.equals(key_ctrl_enter.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请按照以上步骤输入 <b>= 3 × (2 + 1)</b>；", (msg, data) -> {
+            switch (msg) {
+                case InputChars_Inputting: {
+                    Key<?> key = ((InputCharsInputtingMsgData) data).current;
+                    if (key.getText().equals(key_number_1.getText())) {
+                        exercise.gotoNextStep();
+                    }
+                    break;
+                }
+            }
+        });
+        exercise.addStep("请点击输入提交按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_commit)
+                         + "\"/>以将输入内容提交至目标输入框中，"
+                         + "并观察输入的计算式中是否包含最终的运算结果；", (msg, data) -> {
+            switch (msg) {
+                case InputList_Committing: {
+                    exercise.gotoNextStep();
+                    confirm(exercise);
+                    break;
+                }
+            }
+        });
         exercise.addStep("本次练习已结束，您可以开始后续练习或者继续当前练习。", (msg, data) -> {});
 
         return exercise;
