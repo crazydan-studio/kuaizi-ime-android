@@ -53,6 +53,7 @@
     <!-- Settings Preferences -->
     <string name="label_disable_user_input_data">DO NOT SAVE user inputting data</string>
     <string name="label_disable_key_clicked_audio">Disable the key clicked audio</string>
+    <string name="label_disable_key_animation">Disable the key animation</string>
     <string name="label_disable_paging_audio">Disable the paging audio</string>
     <string name="label_switch_theme">Switch the keyboard theme</string>
     <string name="label_switch_hand_mode">Switch the keyboard hand mode</string>

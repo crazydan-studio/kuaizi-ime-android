@@ -53,6 +53,7 @@
     <!-- Settings Preferences -->
     <string name="label_disable_user_input_data">禁止记录用户输入</string>
     <string name="label_disable_key_clicked_audio">禁用按键音效</string>
+    <string name="label_disable_key_animation">禁用按键动画</string>
     <string name="label_disable_paging_audio">禁用翻页音效</string>
     <string name="label_switch_theme">切换键盘主题样式</string>
     <string name="label_switch_hand_mode">切换键盘左右手模式</string>

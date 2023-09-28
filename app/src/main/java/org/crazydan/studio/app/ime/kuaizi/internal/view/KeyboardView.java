@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdatedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 
@@ -102,6 +103,15 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
             }
             case InputChars_Inputting: {
                 onInputtingCharsMsg((InputCharsInputtingMsgData) data);
+                break;
+            }
+            case Keyboard_Config_Updated: {
+                Keyboard.Config config = ((KeyboardConfigUpdatedMsgData) data).after;
+                if (config.isKeyAnimationDisabled()) {
+                    setItemAnimator(null);
+                } else {
+                    setItemAnimator(this.animator);
+                }
                 break;
             }
         }

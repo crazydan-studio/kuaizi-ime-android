@@ -58,6 +58,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdatedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
@@ -79,8 +80,15 @@ public abstract class BaseKeyboard implements Keyboard {
     private InputList inputList;
 
     @Override
-    public void setConfig(Config config) {
-        this.config = config;
+    public void setConfig(Config newConfig) {
+        Config oldConfig = this.config;
+        this.config = newConfig;
+
+        if (newConfig.equals(oldConfig)) {
+            return;
+        }
+
+        fireInputMsg(InputMsg.Keyboard_Config_Updated, new KeyboardConfigUpdatedMsgData(oldConfig, newConfig));
     }
 
     @Override

@@ -19,6 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /** 输入消息 */
 public enum InputMsg {
+    /** 键盘配置已更新 */
+    Keyboard_Config_Updated,
+
     /** 字符输入进行中 */
     InputChars_Inputting,
     /** 字符输入已结束 */

@@ -284,6 +284,10 @@ public class ImeInputView extends FrameLayout
                                                                      false);
         patchedConfig.setKeyClickedAudioDisabled(disableKeyClickedAudio);
 
+        boolean disableKeyAnimation = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_key_animation,
+                                                                  false);
+        patchedConfig.setKeyAnimationDisabled(disableKeyAnimation);
+
         boolean disableInputCandidatesPagingAudio
                 = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
         patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);

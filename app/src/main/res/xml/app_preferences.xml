@@ -47,6 +47,10 @@
                 app:title="@string/label_disable_key_clicked_audio" />
 
         <SwitchPreferenceCompat
+                app:key="disable_key_animation"
+                app:title="@string/label_disable_key_animation" />
+
+        <SwitchPreferenceCompat
                 app:key="disable_input_candidates_paging_audio"
                 app:title="@string/label_disable_paging_audio" />
     </PreferenceCategory>
