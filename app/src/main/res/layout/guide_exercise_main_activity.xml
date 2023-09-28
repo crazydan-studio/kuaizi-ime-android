@@ -28,18 +28,9 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:fitsSystemWindows="false"
-            android:background="?attr/app_background_color">
+            android:background="?attr/app_bg_color">
 
-        <com.google.android.material.appbar.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize" />
-
-        </com.google.android.material.appbar.AppBarLayout>
+        <include layout="@layout/app_actionbar" />
 
         <!-- 采用层叠布局 FrameLayout，以确保按键布局沙盒能被后续视图遮盖 -->
         <FrameLayout

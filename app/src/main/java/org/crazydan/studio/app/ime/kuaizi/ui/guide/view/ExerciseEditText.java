@@ -45,6 +45,7 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         super(context, attrs);
 
         // 禁止获取焦点时弹出系统输入法
+        // Note：需同时在 activity 的配置上添加 android:windowSoftInputMode="stateAlwaysHidden"
         setShowSoftInputOnFocus(false);
     }
 

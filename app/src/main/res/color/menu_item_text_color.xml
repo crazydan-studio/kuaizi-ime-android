@@ -16,6 +16,6 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true" android:color="#e600bcd4" />
-    <item android:state_checked="false" android:color="@android:color/white" />
+    <item android:state_checked="true" android:color="?android:attr/colorAccent" />
+    <item android:state_checked="false" android:color="?android:attr/textColorPrimary" />
 </selector>

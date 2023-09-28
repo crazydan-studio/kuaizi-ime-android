@@ -18,26 +18,31 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
-import androidx.appcompat.app.ActionBar;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-07
  */
 public abstract class ActionBarSupportActivity extends AppCompatActivity {
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            if (isActionBarEnabled()) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-            } else {
-                actionBar.hide();
-            }
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+
+        if (isActionBarEnabled()) {
+            prepareActionBar();
+        } else if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
         }
     }
 
@@ -48,6 +53,25 @@ public abstract class ActionBarSupportActivity extends AppCompatActivity {
             onBackPressed();
         }
         return true;
+    }
+
+    protected void prepareActionBar() {
+        // https://medium.com/swlh/how-to-create-custom-appbar-actionbar-toolbar-in-android-studio-java-61907fa1e44
+        this.toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(this.toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // 标题居中控制：设置自定义视图的文本内容，并禁用 toolbar 的默认标题
+        // https://stackoverflow.com/questions/26533510/android-toolbar-center-title-and-custom-font#answer-38175403
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        TextView titleView = this.toolbar.findViewById(R.id.toolbar_title);
+        titleView.setText(getTitle());
+    }
+
+    protected Toolbar getToolbar() {
+        return this.toolbar;
     }
 
     protected boolean isActionBarEnabled() {

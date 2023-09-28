@@ -87,6 +87,9 @@
     </declare-styleable>
 
     <declare-styleable name="app_style">
-        <attr name="app_background_color" format="color" />
+        <attr name="app_white_color" format="color" />
+
+        <attr name="app_bg_color" format="color" />
+        <attr name="app_actionbar_bg_color" format="color" />
     </declare-styleable>
 </resources>

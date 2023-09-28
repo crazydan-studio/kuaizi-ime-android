@@ -163,22 +163,40 @@
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />
 
     <style name="Theme.Kuaizi.App.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="app_background_color">#ffededed</item>
+        <item name="app_white_color">#ffededed</item>
+
+        <item name="app_bg_color">#ffededed</item>
+        <item name="app_actionbar_bg_color">#ff1976d2</item>
+
+        <!-- 链接等高亮颜色 -->
+        <item name="colorAccent">#e600bcd4</item>
+        <!-- ActionBar 中的导航图标颜色 -->
+        <item name="colorControlNormal">?attr/app_white_color</item>
+
         <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
         -->
-        <item name="android:windowBackground">?attr/app_background_color</item>
+        <item name="android:windowBackground">?attr/app_bg_color</item>
 
         <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
         <item name="materialAlertDialogTheme">@style/Theme.Kuaizi.AlertDialog.Light</item>
     </style>
 
     <style name="Theme.Kuaizi.App.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="app_background_color">#ff272b2c</item>
+        <item name="app_white_color">#ffededed</item>
+
+        <item name="app_bg_color">#ff272b2c</item>
+        <item name="app_actionbar_bg_color">#93000000</item>
+
+        <!-- 链接等高亮颜色 -->
+        <item name="colorAccent">#e600bcd4</item>
+        <!-- ActionBar 中的导航图标颜色 -->
+        <item name="colorControlNormal">?attr/app_white_color</item>
+
         <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
         -->
-        <item name="android:windowBackground">?attr/app_background_color</item>
+        <item name="android:windowBackground">?attr/homeAsUpIndicator</item>
 
         <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
         <item name="materialAlertDialogTheme">@style/Theme.Kuaizi.AlertDialog.Night</item>

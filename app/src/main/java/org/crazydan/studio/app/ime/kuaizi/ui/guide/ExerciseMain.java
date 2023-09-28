@@ -25,10 +25,9 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -71,12 +70,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private ImeInputView imeView;
     private ExerciseListView exerciseListView;
 
-//    @Override
-//    protected boolean isActionBarEnabled() {
-//        // 使用自定义的 toolbar
-//        return false;
-//    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,22 +92,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         PinyinDictDB.getInstance().open(getApplicationContext());
 
         super.onStart();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        int menuToUse = R.menu.guide_exercise_main_top_bar_menu;
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(menuToUse, menu);
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        toggleDrawer();
-        return true;
     }
 
     @Override
@@ -154,17 +131,22 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.exerciseNavView = findViewById(R.id.nav_view);
 
         // 设置侧边栏打开位置
+        int drawerGravity = getDrawerGravity();
         DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) this.exerciseNavView.getLayoutParams();
-        layoutParams.gravity = getDrawerGravity();
+        layoutParams.gravity = drawerGravity;
         this.exerciseNavView.setLayoutParams(layoutParams);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        Toolbar toolbar = getToolbar();
+        // 确保侧边栏的唤出按钮的位置与输入法的左右手模式相同
+        if (drawerGravity == GravityCompat.END) {
+            toolbar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        } else {
+            toolbar.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        }
 
-//        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, this.drawerLayout, toolbar, 0, 0);
-//        drawerToggle.setDrawerIndicatorEnabled(false);
-//        this.drawerLayout.addDrawerListener(drawerToggle);
-//        drawerToggle.syncState();
+        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, this.drawerLayout, toolbar, 0, 0);
+        this.drawerLayout.addDrawerListener(drawerToggle);
+        drawerToggle.syncState();
 
         // https://stackoverflow.com/questions/18547277/how-to-set-navigation-drawer-to-be-opened-from-right-to-left#answer-50799607
         // 通过编码方式在指定位置弹出侧边栏
