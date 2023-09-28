@@ -31,6 +31,8 @@
     <string name="title_about_suggestion">意见与建议</string>
     <string name="title_about_thanks">感谢</string>
     <string name="title_about_change_log">变更日志</string>
+    <string name="title_about_service_agreement">服务协议</string>
+    <string name="title_about_copyright">版权声明</string>
     <string name="title_tips">友情提示</string>
 
     <string name="label_method_subtype_generic">%s</string>

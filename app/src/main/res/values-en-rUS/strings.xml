@@ -31,6 +31,8 @@
     <string name="title_about_suggestion">Give us some suggestions</string>
     <string name="title_about_thanks">Thanks</string>
     <string name="title_about_change_log">Change log</string>
+    <string name="title_about_service_agreement">Service agreement</string>
+    <string name="title_about_copyright">Copyright</string>
     <string name="title_tips">Tips</string>
 
     <string name="label_method_subtype_generic">%s</string>

@@ -96,6 +96,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+                android:name=".ui.about.ServiceAgreement"
+                android:exported="false"
+                android:label="@string/title_about_service_agreement">
+            <intent-filter>
+                <action android:name=".ui.about.ServiceAgreement" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.Copyright"
+                android:exported="false"
+                android:label="@string/title_about_copyright">
+            <intent-filter>
+                <action android:name=".ui.about.Copyright" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <!-- End -->
 
         <!-- Start: 使用指南

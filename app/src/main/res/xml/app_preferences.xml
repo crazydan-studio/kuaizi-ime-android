@@ -76,8 +76,11 @@
         <PreferenceScreen android:title="@string/title_about_change_log">
             <intent android:action=".ui.about.AboutChangeLog" />
         </PreferenceScreen>
-        <!--<PreferenceScreen android:title="应用协议">
-            <intent android:action=".ui.about.AboutChangeLog" />
-        </PreferenceScreen>-->
+        <PreferenceScreen android:title="@string/title_about_service_agreement">
+            <intent android:action=".ui.about.ServiceAgreement" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/title_about_copyright">
+            <intent android:action=".ui.about.Copyright" />
+        </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>
