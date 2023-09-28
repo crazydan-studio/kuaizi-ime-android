@@ -325,7 +325,7 @@ public class ImeInputView extends FrameLayout
     }
 
     private void onShowPreferences(View v) {
-        SystemUtils.showImePreferences(getContext());
+        SystemUtils.showAppPreferences(getContext());
     }
 
     private void onCleanInputList(View v) {

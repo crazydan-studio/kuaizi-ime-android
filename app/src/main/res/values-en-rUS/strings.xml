@@ -39,8 +39,7 @@
 
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
-    <string name="btn_guide_enable_ime">Enable Kuaizi Input Method</string>
-    <string name="btn_guide_disable_ime">Disable Kuaizi Input Method</string>
+    <string name="btn_guide_show_preferences">Open Kuaizi Input Method Preferences</string>
     <string name="btn_guide_try_exercises">Try Some Exercises First</string>
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Goto Next</string>

@@ -107,8 +107,16 @@ public class SystemUtils {
         }
     }
 
-    /** 显示输入法的配置页面 */
-    public static void showImePreferences(Context context) {
+    /** 显示输入法的系统配置页面 */
+    public static void showImeSettings(Context context) {
+        Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(intent);
+    }
+
+    /** 显示应用的配置页面 */
+    public static void showAppPreferences(Context context) {
         Intent intent;
 //        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
 //            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置

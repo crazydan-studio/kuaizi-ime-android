@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
 import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.button.MaterialButton;
@@ -70,19 +69,11 @@ public class Guide extends FollowSystemThemeActivity {
 
         updateSwitcher();
 
-        MaterialButton btnEnableIme = findViewById(R.id.btn_guide_enable_ime);
+        MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         MaterialButton btnTryExercises = findViewById(R.id.btn_guide_try_exercises);
 
-        if (isImeEnabled()) {
-            btnEnableIme.setText(R.string.btn_guide_disable_ime);
-        } else {
-            btnEnableIme.setText(R.string.btn_guide_enable_ime);
-        }
-
-        btnEnableIme.setOnClickListener(this::showImeSettings);
+        btnShowPreferences.setOnClickListener(this::showPreferences);
         btnTryExercises.setOnClickListener(this::tryExercises);
-
-        tryExercises();
     }
 
     private String getImeId() {
@@ -133,22 +124,15 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     private void showImeSettings() {
-        showImeSettings(null);
-    }
-
-    private void showImeSettings(View v) {
         Context context = getApplicationContext();
 
-        Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
-        // If set then opens Settings Screen(Activity) as new activity.
-        // Otherwise, it will be opened in currently running activity.
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        context.startActivity(intent);
+        SystemUtils.showImeSettings(context);
     }
 
-    private void tryExercises() {
-        tryExercises(null);
+    private void showPreferences(View v) {
+        Context context = getApplicationContext();
+
+        SystemUtils.showAppPreferences(context);
     }
 
     private void tryExercises(View v) {

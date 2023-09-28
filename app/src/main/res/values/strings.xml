@@ -39,8 +39,7 @@
 
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
-    <string name="btn_guide_enable_ime">启用输入法</string>
-    <string name="btn_guide_disable_ime">禁用输入法</string>
+    <string name="btn_guide_show_preferences">配置输入法</string>
     <string name="btn_guide_try_exercises">先练练手</string>
     <string name="btn_guide_exercise_try_again">继续当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
