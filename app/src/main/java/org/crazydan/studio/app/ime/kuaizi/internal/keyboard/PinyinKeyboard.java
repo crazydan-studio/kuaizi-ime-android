@@ -426,16 +426,14 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
      */
     private void determineNotConfirmedInputWordsBefore(CharInput input) {
-        // Note: top 取 0 以避免查询单字
-        BestCandidateWords best = getTopBestCandidateWords(input, 0);
-
-        String[] phrase = CollectionUtils.first(best.phrases);
-        if (phrase == null || phrase.length < 2) {
+        List<CharInput> inputs = CollectionUtils.last(getInputList().getPinyinPhraseInputsBefore(input));
+        if (inputs == null || inputs.isEmpty()) {
             return;
         }
 
-        List<CharInput> inputs = CollectionUtils.last(getInputList().getPinyinPhraseInputsBefore(input));
-        if (inputs == null || inputs.size() + 1 < phrase.length) {
+        // Note: top 取 0 以避免查询单字
+        BestCandidateWords best = getTopBestCandidateWords(input, 0);
+        if (best.phrases.isEmpty()) {
             return;
         }
 
@@ -443,19 +441,45 @@ public class PinyinKeyboard extends BaseKeyboard {
         // Note: phrase 为倒序匹配，故，前序 输入集 需倒置
         Collections.reverse(inputs);
 
-        for (int i = 0; i < phrase.length; i++) {
+        String[] bestMatchedPhrase = new String[0];
+        for (String[] phrase : best.phrases) {
+            int matchedSize = 0;
+            for (int i = 0; i < phrase.length && i < inputs.size(); i++) {
+                String phraseWordId = phrase[i];
+                InputWord inputWord = inputs.get(i).getWord();
+
+                // 对于已确认的字，需要做确切匹配
+                if (inputWord.isConfirmed()) {
+                    matchedSize += inputWord.getUid().equals(phraseWordId) ? 1 : 0;
+                }
+                // 对于根据短语自动确定的字，需要存在更长的匹配短语
+                else if (inputWord.isFromPhrase()) {
+                    matchedSize += i + 1 < phrase.length ? 1 : 0;
+                } else {
+                    matchedSize += 1;
+                }
+            }
+
+            if (matchedSize > 1 && matchedSize > bestMatchedPhrase.length) {
+                bestMatchedPhrase = phrase;
+            }
+        }
+
+        for (int i = 0; i < bestMatchedPhrase.length && i < inputs.size(); i++) {
             CharInput target = inputs.get(i);
             if (target.getWord().isConfirmed()) {
                 continue;
             }
 
-            String pinyinWordId = phrase[i];
+            String wordId = bestMatchedPhrase[i];
             Map<String, InputWord> candidateMap = getInputCandidateWords(target);
-            InputWord word = candidateMap.get(pinyinWordId);
+            InputWord word = candidateMap.get(wordId);
 
             // Note：可能存在用户数据与内置字典数据不一致的情况
             if (word != null) {
                 target.setWord(word);
+                // Note：word 为缓存数据，不可直接修改其状态
+                target.getWord().setSource(InputWord.Source.phrase);
             }
         }
     }

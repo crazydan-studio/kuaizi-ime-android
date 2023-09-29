@@ -30,27 +30,37 @@ import androidx.annotation.NonNull;
 public class InputWord {
     /** 唯一 id，对应持久化标识 */
     private final String uid;
+    private final String value;
+    private final String notation;
 
     /** 是否已确认 */
     private boolean confirmed;
-
-    private final String value;
-    private final String notation;
-    private final String variant;
+    /** 候选字来源 */
+    private Source source = Source.single;
+    /** 字的变体 */
+    private String variant;
 
     public InputWord(String uid, String value) {
         this(uid, value, null);
     }
 
     public InputWord(String uid, String value, String notation) {
-        this(uid, value, notation, null);
-    }
-
-    public InputWord(String uid, String value, String notation, String variant) {
         this.uid = uid;
         this.value = value;
         this.notation = notation;
-        this.variant = variant;
+    }
+
+    protected void copy(InputWord target, InputWord source) {
+        target.setSource(source.getSource());
+        target.setConfirmed(source.isConfirmed());
+        target.setVariant(source.getVariant());
+    }
+
+    public InputWord copy() {
+        InputWord copied = new InputWord(getUid(), getValue(), getNotation());
+        copy(copied, this);
+
+        return copied;
     }
 
     public String getUid() {
@@ -63,6 +73,18 @@ public class InputWord {
 
     public void setConfirmed(boolean confirmed) {
         this.confirmed = confirmed;
+    }
+
+    public Source getSource() {
+        return this.source != null ? this.source : Source.single;
+    }
+
+    public boolean isFromPhrase() {
+        return getSource() == Source.phrase;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 
     public String getValue() {
@@ -79,6 +101,10 @@ public class InputWord {
 
     public String getVariant() {
         return this.variant;
+    }
+
+    public void setVariant(String variant) {
+        this.variant = variant;
     }
 
     @NonNull
@@ -114,5 +140,13 @@ public class InputWord {
         replacing,
         /** 跟随 {@link InputWord} */
         following,
+    }
+
+    /** 来源 */
+    public enum Source {
+        /** 单字 */
+        single,
+        /** 短语中的字 */
+        phrase,
     }
 }

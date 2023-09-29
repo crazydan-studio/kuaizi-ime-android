@@ -53,6 +53,21 @@ public class PinyinInputWord extends InputWord {
         }
     }
 
+    @Override
+    public PinyinInputWord copy() {
+        PinyinInputWord copied = new PinyinInputWord(getUid(),
+                                                     getValue(),
+                                                     getNotation(),
+                                                     getCharsId(),
+                                                     isTraditional(),
+                                                     null);
+        copy(copied, this);
+
+        copied.strokes.putAll(this.strokes);
+
+        return copied;
+    }
+
     public String getCharsId() {
         return this.charsId;
     }

@@ -310,10 +310,9 @@ public class PinyinKeyTable extends KeyTable {
 
         gridKeys[1][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.only_pinyin);
         gridKeys[2][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin);
+        gridKeys[4][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
-
-//        gridKeys[4][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
 
         return gridKeys;
     }

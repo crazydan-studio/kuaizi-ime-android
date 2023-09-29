@@ -227,8 +227,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
         return this.word;
     }
 
+    /**
+     * 注：入参会被复制，以确保后续修改 {@link InputWord} 状态时，不会影响原数据
+     */
     public void setWord(InputWord word) {
-        this.word = word;
+        this.word = word != null ? word.copy() : null;
     }
 
     @NonNull

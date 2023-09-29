@@ -30,4 +30,12 @@ public class EmojiInputWord extends InputWord {
     public EmojiInputWord(String uid, String value) {
         super(uid, value);
     }
+
+    @Override
+    public EmojiInputWord copy() {
+        EmojiInputWord copied = new EmojiInputWord(getUid(), getValue());
+        copy(copied, this);
+
+        return copied;
+    }
 }
