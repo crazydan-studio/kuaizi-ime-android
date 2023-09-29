@@ -33,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -212,6 +213,14 @@ public class PinyinKeyboard extends BaseKeyboard {
             play_InputtingSingleTick_Audio(key);
 
             InputWord word = key.getWord();
+            // 候选字列表中的表情作为新增插入
+            if (word instanceof EmojiInputWord) {
+                getInputList().confirmPendingAndMoveToNextGapInput();
+
+                InputWordKey emojiKey = InputWordKey.create(word);
+                getInputList().getPending().appendKey(emojiKey);
+            }
+
             getInputList().getPending().setWord(word);
 
             onConfirmSelectedInputCandidate();
@@ -342,14 +351,14 @@ public class PinyinKeyboard extends BaseKeyboard {
     // <<<<<<<<< 对输入候选字的操作
 
     /** 进入候选字选择状态，并处理候选字翻页 */
-    private void start_InputCandidate_Choosing(CharInput input, boolean inputChanged) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-
-        List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, 18);
-
+    private void start_InputCandidate_Choosing(CharInput input, boolean pinyinChanged) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getInputCandidateKeysPageSize();
+        int bestTop = 17;
+
+        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+        List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
+        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, bestTop, pageSize);
 
         if (topBestCandidates.size() == allCandidates.size()) {
             allCandidates = topBestCandidates;
@@ -357,18 +366,19 @@ public class PinyinKeyboard extends BaseKeyboard {
             // 若只有一页，则合并最佳候选字并确保其在最前面位置
             if (allCandidates.size() <= pageSize) {
                 allCandidates.removeAll(topBestCandidates);
-
                 allCandidates.addAll(0, topBestCandidates);
-            } else if (topBestCandidates.size() < allCandidates.size()) {
-                // 最佳候选字独立占用第一页，不够一页时以 null 占位
-                CollectionUtils.fillToSize(topBestCandidates, null, pageSize);
+
+                allCandidates = reorderTopBestCandidateWordsAndEmojis(allCandidates, bestTop, pageSize);
+            } else {
+                topBestCandidates = reorderTopBestCandidateWordsAndEmojis(topBestCandidates, bestTop, pageSize);
 
                 allCandidates.addAll(0, topBestCandidates);
             }
         }
 
-        if (inputChanged) {
-            determineNotConfirmedInputWord(input, () -> topBestCandidates);
+        if (pinyinChanged) {
+            List<InputWord> finalTopBestCandidates = topBestCandidates;
+            determineNotConfirmedInputWord(input, () -> finalTopBestCandidates);
         }
 
         ChoosingInputCandidateStateData stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
@@ -490,7 +500,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入中实时调用
      */
     private void determineNotConfirmedInputWord(CharInput input) {
-        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1));
+        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1, 0));
     }
 
     /** 在滑屏输入中，以及拼音纠正切换中被调用 */
@@ -510,14 +520,22 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top) {
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top, int pageSize) {
         BestCandidateWords best = getTopBestCandidateWords(input, top);
         if (best.words.isEmpty()) {
             return new ArrayList<>();
         }
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-        return best.words.stream().map(candidateMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+        List<InputWord> words = best.words.stream()
+                                          .map(candidateMap::get)
+                                          .filter(Objects::nonNull)
+                                          .collect(Collectors.toList());
+
+        // Note：最佳候选字与表情组成一页
+        words.addAll(CollectionUtils.subList(best.emojis, 0, pageSize - top));
+
+        return words;
     }
 
     /**
@@ -544,6 +562,34 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> prevPhrase = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
 
         return this.pinyinDict.findTopBestCandidateWords(input, top, prevPhrase, getConfig().isUserInputDataDisabled());
+    }
+
+    /**
+     * 重新排序最佳候选字和表情符号列表，
+     * 确保表情符号和候选字各自独占特定区域，
+     * 并填充 <code>null</code> 以占满一页
+     */
+    private List<InputWord> reorderTopBestCandidateWordsAndEmojis(
+            List<InputWord> candidates, int wordCount, int pageSize
+    ) {
+        List<InputWord> results = new ArrayList<>(pageSize);
+
+        int emojiCount = pageSize - wordCount;
+        List<InputWord> emojis = new ArrayList<>(emojiCount);
+        candidates.forEach((candidate) -> {
+            if (candidate instanceof EmojiInputWord) {
+                emojis.add(candidate);
+            } else {
+                results.add(candidate);
+            }
+        });
+
+        CollectionUtils.fillToSize(results, null, wordCount);
+        CollectionUtils.fillToSize(emojis, null, emojiCount);
+
+        results.addAll(emojis);
+
+        return results;
     }
     // >>>>>>>>>>
 
