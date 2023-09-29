@@ -602,7 +602,12 @@ public class PinyinDictDB {
         return emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
             int a1Weight = emojiAndWeightMap.get(a1.getUid());
             int a2Weight = emojiAndWeightMap.get(a2.getUid());
-            return Integer.compare(a2Weight, a1Weight);
+            int order = Integer.compare(a2Weight, a1Weight);
+            // Note：相邻 id 的表情更有可能在同一个分组内，
+            // 故而，对匹配度相同的表情采用 id 排序
+            return order != 0 //
+                   ? order //
+                   : Integer.compare(Integer.parseInt(a1.getUid()), Integer.parseInt(a2.getUid()));
         }).collect(Collectors.toList());
     }
 
