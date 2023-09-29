@@ -537,17 +537,18 @@ public class PinyinDictDB {
 
         Map<String, InputWord> emojiMap = new HashMap<>();
         doSQLiteQuery(db, "emoji", new String[] {
-                              "id_", "value_", "keyword_id_", "keyword_word_spell_link_id_", "keyword_word_index_"
+                              "id_", "value_", "keyword_index_", "keyword_word_spell_link_id_", "keyword_word_index_"
                       }, //
                       "keyword_word_spell_link_id_ in (" //
                       + phraseWordUidList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
                       + ")", //
                       phraseWordUidList.toArray(new String[0]), //
-                      "keyword_id_ asc, keyword_word_index_ desc", //
+                      "id_ asc, keyword_index_ asc, keyword_word_index_ desc", //
                       (cursor) -> {
                           String emojiId = cursor.getString(0);
                           String emojiValue = cursor.getString(1);
-                          String emojiKeywordId = cursor.getString(2);
+                          // 表情的关键字唯一标识由 表情 id 和 关键字的序号 组合而成
+                          String emojiKeywordId = emojiId + ":" + cursor.getString(2);
                           String emojiKeywordWordUid = cursor.getString(3);
                           String emojiKeywordWordIndex = cursor.getString(4);
 
