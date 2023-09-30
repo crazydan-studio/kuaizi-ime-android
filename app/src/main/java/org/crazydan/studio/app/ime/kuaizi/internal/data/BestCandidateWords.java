@@ -20,8 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-
 /**
  * 最佳候选字
  *
@@ -41,8 +39,6 @@ public class BestCandidateWords {
      * 也与已确认的字是相同的
      */
     public final List<String[]> phrases;
-    /** 通过短语匹配到的表情 */
-    public final List<InputWord> emojis = new ArrayList<>();
 
     public BestCandidateWords() {
         this(new ArrayList<>(), new ArrayList<>());

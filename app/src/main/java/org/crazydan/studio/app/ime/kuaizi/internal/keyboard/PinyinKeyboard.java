@@ -354,31 +354,37 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void start_InputCandidate_Choosing(CharInput input, boolean pinyinChanged) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getInputCandidateKeysPageSize();
-        int bestTop = 17;
+        int bestCandidatesTop = 17;
+        int bestEmojisTop = pageSize - bestCandidatesTop;
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, bestTop, pageSize);
+        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, bestCandidatesTop);
 
-        if (topBestCandidates.size() == allCandidates.size()) {
-            allCandidates = topBestCandidates;
-        } else if (!topBestCandidates.isEmpty()) {
-            // 若只有一页，则合并最佳候选字并确保其在最前面位置
+        // 拼音修正后，需更新其自动确定的候选字
+        if (pinyinChanged) {
+            List<InputWord> finalTopBestCandidates = topBestCandidates;
+            determineNotConfirmedInputWord(input, () -> finalTopBestCandidates);
+        }
+
+        // Note：以最新确定的输入候选字做为表情的关键字查询条件
+        List<InputWord> topBestEmojis = getTopBestEmojis(input, bestEmojisTop);
+        topBestCandidates.addAll(topBestEmojis);
+
+        if (!topBestCandidates.isEmpty()) {
+            // 若只有一页，则合并最佳候选字，并确保最佳候选字在最前面位置
             if (allCandidates.size() <= pageSize) {
                 allCandidates.removeAll(topBestCandidates);
                 allCandidates.addAll(0, topBestCandidates);
 
-                allCandidates = reorderTopBestCandidateWordsAndEmojis(allCandidates, bestTop, pageSize);
+                allCandidates = reorderTopBestCandidateWordsAndEmojis(allCandidates, bestCandidatesTop, pageSize);
             } else {
-                topBestCandidates = reorderTopBestCandidateWordsAndEmojis(topBestCandidates, bestTop, pageSize);
+                topBestCandidates = reorderTopBestCandidateWordsAndEmojis(topBestCandidates,
+                                                                          bestCandidatesTop,
+                                                                          pageSize);
 
                 allCandidates.addAll(0, topBestCandidates);
             }
-        }
-
-        if (pinyinChanged) {
-            List<InputWord> finalTopBestCandidates = topBestCandidates;
-            determineNotConfirmedInputWord(input, () -> finalTopBestCandidates);
         }
 
         ChoosingInputCandidateStateData stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
@@ -500,7 +506,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入中实时调用
      */
     private void determineNotConfirmedInputWord(CharInput input) {
-        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1, 0));
+        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1));
     }
 
     /** 在滑屏输入中，以及拼音纠正切换中被调用 */
@@ -520,22 +526,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top, int pageSize) {
+    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top) {
         BestCandidateWords best = getTopBestCandidateWords(input, top);
         if (best.words.isEmpty()) {
             return new ArrayList<>();
         }
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(input);
-        List<InputWord> words = best.words.stream()
-                                          .map(candidateMap::get)
-                                          .filter(Objects::nonNull)
-                                          .collect(Collectors.toList());
 
-        // Note：最佳候选字与表情组成一页
-        words.addAll(CollectionUtils.subList(best.emojis, 0, pageSize - top));
-
-        return words;
+        return best.words.stream().map(candidateMap::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /**
@@ -564,6 +563,12 @@ public class PinyinKeyboard extends BaseKeyboard {
         return this.pinyinDict.findTopBestCandidateWords(input, top, prevPhrase, getConfig().isUserInputDataDisabled());
     }
 
+    private List<InputWord> getTopBestEmojis(CharInput input, int top) {
+        List<InputWord> prevPhrase = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
+
+        return this.pinyinDict.findTopBestEmojisMatchedPhrase(input, top, prevPhrase);
+    }
+
     /**
      * 重新排序最佳候选字和表情符号列表，
      * 确保表情符号和候选字各自独占特定区域，
@@ -585,6 +590,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         });
 
         CollectionUtils.fillToSize(results, null, wordCount);
+
+        // Note：在候选字不够一页时，最佳候选字会与剩余的候选字合并，
+        // 故而可能会超过最佳候选字的显示数量，因此，需更新表情符号可填充数
+        emojiCount = pageSize - results.size();
         CollectionUtils.fillToSize(emojis, null, emojiCount);
 
         results.addAll(emojis);

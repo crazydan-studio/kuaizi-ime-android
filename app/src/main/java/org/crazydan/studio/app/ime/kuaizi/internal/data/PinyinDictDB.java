@@ -305,11 +305,12 @@ public class PinyinDictDB {
             topBest.phrases.addAll(appBest.phrases);
         }
 
-        // Note：若 top 不大于 1，则表示是在滑屏输入中，此时，无需匹配表情符号
-        List<InputWord> bestEmojis = top > 1 ? findPinyinPhraseEmojisFromAppDB(input, prevPhrase) : new ArrayList<>();
-        topBest.emojis.addAll(bestEmojis);
-
         return topBest;
+    }
+
+    /** 根据拼音输入分析得出最靠前的 <code>top</code> 个匹配的表情 */
+    public List<InputWord> findTopBestEmojisMatchedPhrase(CharInput input, int top, List<InputWord> prevPhrase) {
+        return findEmojisMatchedPhraseFromAppDB(input, top, prevPhrase);
     }
 
     /** 获取表情符号 */
@@ -524,7 +525,7 @@ public class PinyinDictDB {
         return map;
     }
 
-    private List<InputWord> findPinyinPhraseEmojisFromAppDB(CharInput input, List<InputWord> prevPhrase) {
+    private List<InputWord> findEmojisMatchedPhraseFromAppDB(CharInput input, int top, List<InputWord> prevPhrase) {
         SQLiteDatabase db = getAppDB();
 
         List<String> phraseWordUidList = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.toList());
@@ -599,7 +600,7 @@ public class PinyinDictDB {
             });
         });
 
-        return emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
+        List<InputWord> emojiList = emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
             int a1Weight = emojiAndWeightMap.get(a1.getUid());
             int a2Weight = emojiAndWeightMap.get(a2.getUid());
             int order = Integer.compare(a2Weight, a1Weight);
@@ -609,6 +610,8 @@ public class PinyinDictDB {
                    ? order //
                    : Integer.compare(Integer.parseInt(a1.getUid()), Integer.parseInt(a2.getUid()));
         }).collect(Collectors.toList());
+
+        return CollectionUtils.subList(emojiList, 0, top);
     }
 
     private void doSaveUsedPhrase(List<InputWord> phrase) {
