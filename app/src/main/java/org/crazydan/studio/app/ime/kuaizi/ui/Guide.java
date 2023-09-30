@@ -29,6 +29,7 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.Service;
+import org.crazydan.studio.app.ime.kuaizi.ui.about.SoftwareServiceAgreement;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
@@ -78,12 +79,14 @@ public class Guide extends FollowSystemThemeActivity {
 
         MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         MaterialButton btnTryExercises = findViewById(R.id.btn_guide_try_exercises);
+        MaterialButton btnShowSoftwareServiceAgreement = findViewById(R.id.btn_guide_show_software_service_agreement);
 
         btnShowPreferences.setOnClickListener(this::showPreferences);
         btnTryExercises.setOnClickListener(this::tryExercises);
+        btnShowSoftwareServiceAgreement.setOnClickListener(this::showSoftwareServiceAgreement);
 
         if (!isAlphaUserAgreementConfirmed()) {
-            showAlphaAgreementConfirmWindow();
+            showAlphaUserAgreementConfirmWindow();
         }
     }
 
@@ -138,6 +141,12 @@ public class Guide extends FollowSystemThemeActivity {
         SystemUtils.showAppPreferences(context);
     }
 
+    private void showSoftwareServiceAgreement(View v) {
+        Context context = getApplicationContext();
+
+        SystemUtils.showActivity(context, SoftwareServiceAgreement.class);
+    }
+
     private void tryExercises(View v) {
         Context context = getApplicationContext();
 
@@ -148,7 +157,7 @@ public class Guide extends FollowSystemThemeActivity {
         context.startActivity(intent);
     }
 
-    private void showAlphaAgreementConfirmWindow() {
+    private void showAlphaUserAgreementConfirmWindow() {
         String appName = getResources().getString(R.string.app_name);
 
         Alert.with(this)

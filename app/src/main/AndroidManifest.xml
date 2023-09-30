@@ -97,11 +97,11 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.about.ServiceAgreement"
+                android:name=".ui.about.SoftwareServiceAgreement"
                 android:exported="false"
-                android:label="@string/title_about_service_agreement">
+                android:label="@string/title_about_software_service_agreement">
             <intent-filter>
-                <action android:name=".ui.about.ServiceAgreement" />
+                <action android:name=".ui.about.SoftwareServiceAgreement" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

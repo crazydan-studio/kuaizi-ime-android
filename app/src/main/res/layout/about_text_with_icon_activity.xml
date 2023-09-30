@@ -46,8 +46,7 @@
             <TextView
                     android:id="@+id/about_text"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:textSize="@dimen/about_activity_text_size" />
         </ScrollView>
     </LinearLayout>

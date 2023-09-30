@@ -131,6 +131,11 @@ public class SystemUtils {
 
     /** 显示应用的配置页面 */
     public static void showAppPreferences(Context context) {
+        showActivity(context, Preferences.class);
+    }
+
+    /** 显示指定的 activity */
+    public static void showActivity(Context context, Class<?> activityCls) {
         Intent intent;
 //        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
 //            // Settings.ACTION_LOCALE_SETTINGS: 打开语言设置
@@ -138,7 +143,7 @@ public class SystemUtils {
 //            intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
 //        } else {
         // https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr#answer-43707264
-        intent = new Intent(context, Preferences.class);
+        intent = new Intent(context, activityCls);
 //        }
 
         // If set then opens Settings Screen(Activity) as new activity.
