@@ -76,23 +76,14 @@ public class Guide extends FollowSystemThemeActivity {
         btnTryExercises.setOnClickListener(this::tryExercises);
     }
 
-    private String getImeId() {
-        // 输入法 Id 组成：<application package name>/<service android:name>
-        return String.format("%s/.%s", getApplicationContext().getPackageName(), Service.class.getSimpleName());
-    }
-
     private boolean isImeEnabled() {
-        String imeId = getImeId();
         Context context = getApplicationContext();
-
-        return SystemUtils.isEnabledIme(context, imeId);
+        return SystemUtils.isEnabledIme(context, Service.class);
     }
 
     private boolean isImeDefault() {
-        String imeId = getImeId();
         Context context = getApplicationContext();
-
-        return SystemUtils.isDefaultIme(context, imeId);
+        return SystemUtils.isDefaultIme(context, Service.class);
     }
 
     private void updateSwitcher() {
@@ -112,11 +103,12 @@ public class Guide extends FollowSystemThemeActivity {
             SystemUtils.switchIme(context);
         } else {
             String appName = getResources().getString(R.string.app_name);
+            String appNameShown = getResources().getString(R.string.app_name_shown);
 
             Alert.with(this)
                  .setView(R.layout.guide_alert_view)
                  .setTitle(R.string.title_tips)
-                 .setMessage(R.string.msg_ime_should_be_enabled_first, appName)
+                 .setMessage(R.string.msg_ime_should_be_enabled_first, appName, appNameShown)
                  .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
                  .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
                  .show();

@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.tencent.vasdolly'
 }
 
 android {
@@ -7,17 +8,36 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "org.crazydan.studio.app.ime.kuaizi"
+        applicationId 'org.crazydan.studio.app.ime.kuaizi'
         minSdk 25
         targetSdk 33
         // https://developer.android.com/studio/publish/versioning
         versionCode 100
-        versionName "1.0.0"
+        versionName '1.0.0'
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+    // 显式启用在 buildTypes 中对 buildConfigField 的使用支持
+    // https://stackoverflow.com/questions/74634321/fixing-the-build-type-contains-custom-buildconfig-fields-but-the-feature-is-di#answer-74634322
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
+        // 开发调试版本
+        debug {
+            // 应用 id 添加调试信息后缀
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+
+            //minifyEnabled true
+            //shrinkResources true
+            zipAlignEnabled true
+
+            buildConfigField('String', 'BUILD_TYPE', '"debug"')
+        }
+        // 正式发布版本
         release {
             // https://juejin.cn/post/6844904103131234311
             // 是否进行混淆
@@ -36,11 +56,19 @@ android {
             // 开启zipAlign可以让安装包中的资源按4字节对齐，这样可以减少应用在运行时的内存消耗
             zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField('String', 'BUILD_TYPE', '"release"')
         }
-        debug {
-            //minifyEnabled true
-            //shrinkResources true
-            zipAlignEnabled true
+        // 内测版本
+        alpha {
+            // 复用 release 配置
+            initWith release
+
+            applicationIdSuffix '.alpha'
+            versionNameSuffix '-alpha'
+
+            // https://developer.android.com/build/gradle-tips#share-custom-fields-and-resource-values-with-your-app-code
+            buildConfigField('String', 'BUILD_TYPE', '"alpha"')
         }
     }
     compileOptions {
@@ -50,8 +78,10 @@ android {
 }
 
 dependencies {
+    implementation 'com.tencent.vasdolly:helper:3.0.6'
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.preference:preference:1.2.1'
     implementation 'com.google.android.material:material:1.9.0'
     // https://jitpack.io/#Hexworks/Mixite/2020.1.0
     // https://github.com/Hexworks/mixite

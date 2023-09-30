@@ -78,20 +78,28 @@ public class SystemUtils {
     }
 
     /** 检查输入法是否为系统默认输入法 */
-    public static boolean isDefaultIme(Context context, String imeId) {
+    public static boolean isDefaultIme(Context context, Class<?> imeServiceCls) {
+        // Note：当应用的 id 与服务的包名相同时，输入法的 id 将采用简称模式，否则，为全路径模式
+        String imeId = String.format("%s/.%s", context.getPackageName(), imeServiceCls.getSimpleName());
+        String imeIdFull = String.format("%s/%s", context.getPackageName(), imeServiceCls.getName());
+
         // https://stackoverflow.com/questions/2744729/how-to-determine-the-current-ime-in-android#answer-4256571
         String defaultImeId = Settings.Secure.getString(context.getContentResolver(),
                                                         Settings.Secure.DEFAULT_INPUT_METHOD);
 
-        return defaultImeId.equals(imeId);
+        return defaultImeId.equals(imeId) || defaultImeId.equals(imeIdFull);
     }
 
     /** 检查输入法是否已启用 */
-    public static boolean isEnabledIme(Context context, String imeId) {
+    public static boolean isEnabledIme(Context context, Class<?> imeServiceCls) {
+        String pkgName = context.getPackageName();
         InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         for (InputMethodInfo info : manager.getEnabledInputMethodList()) {
-            if (info.getId().equals(imeId)) {
+            String serviceName = info.getServiceName();
+            if (info.getPackageName().equals(pkgName) //
+                && (serviceName.equals(imeServiceCls.getSimpleName()) //
+                    || serviceName.equals(imeServiceCls.getName()))) {
                 return true;
             }
         }

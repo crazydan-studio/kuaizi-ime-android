@@ -17,6 +17,7 @@
 
 <resources>
     <string name="app_name">筷字输入法</string>
+    <string name="app_name_shown">@string/app_name</string>
     <string name="app_name_with_version">筷字输入法 v%1$s</string>
     <string name="app_slogan">筷字输入法：高效编辑需要又好又快的输入法</string>
     <string name="app_copyright">
@@ -24,7 +25,6 @@
     </string>
 
     <string name="title_app_preferences">筷字输入法设置</string>
-    <string name="title_app_guide">筷字输入法</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
     <string name="title_about_app">关于筷字输入法</string>
     <string name="title_about_team">关于开发团队</string>
@@ -63,7 +63,13 @@
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
     </string>
     <string name="msg_ime_should_be_enabled_first">
-        %1$s在系统中还未启用，故而无法激活其使用。\n\n请先在系统输入法可选列表中选中「%1$s」以启用该输入法。\n\n是否现在就去启用？
+        &lt;p>&lt;b>%1$s&lt;/b> 在系统中还未被启用，因此，无法激活其使用。&lt;/p>
+        &lt;br/>
+        &lt;p>请在系统输入法可选列表中选中
+        &amp;#160;&lt;span style="color:#ed4c67;">%2$s&lt;/span>
+        &amp;#160;以启用该输入法。&lt;/p>
+        &lt;br/>
+        &lt;p>是否现在就去启用？&lt;/p>
     </string>
     <string name="text_exercise_edit_text_placeholder">
         请按上述指导步骤操作键盘输入内容
@@ -72,7 +78,9 @@
         请输入任意内容进行自由练习
     </string>
     <string name="msg_guid_exercise_finished_confirm">
-        恭喜您，您已成功完成本次练习！\n\n您现在可以选择继续当前练习，或者开始下一个练习。
+        &lt;p>恭喜您，您已成功完成本次练习！&lt;/p>
+        &lt;br/>
+        &lt;p>您现在可以选择继续当前练习，或者开始下一个练习。&lt;/p>
     </string>
 
     <string name="value_theme_light">浅色主题</string>

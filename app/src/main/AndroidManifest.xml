@@ -20,7 +20,7 @@
     <!-- Note：在 application 上设置默认主题，以便于 IDE 识别并处理 drawable 中引用的样式 -->
     <application
             android:icon="@drawable/ic_logo"
-            android:label="@string/app_name"
+            android:label="@string/app_name_shown"
             android:theme="@style/Theme.Kuaizi.IME.Night"
             android:supportsRtl="true">
         <service
@@ -124,7 +124,6 @@
         <activity
                 android:name=".ui.Guide"
                 android:exported="true"
-                android:label="@string/title_app_guide"
                 android:theme="@style/Theme.Kuaizi.App"
                 android:configChanges="uiMode">
             <intent-filter>

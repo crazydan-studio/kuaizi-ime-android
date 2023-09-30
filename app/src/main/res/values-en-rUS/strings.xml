@@ -17,6 +17,7 @@
 
 <resources>
     <string name="app_name">Kuaizi Input Method</string>
+    <string name="app_name_shown">@string/app_name</string>
     <string name="app_name_with_version">Kuaizi Input Method v%1$s</string>
     <string name="app_slogan">Kuaizi Input Method: Efficient editing requires a good and fast input method</string>
     <string name="app_copyright">
@@ -24,7 +25,6 @@
     </string>
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
-    <string name="title_app_guide">Kuaizi Input Method</string>
     <string name="title_app_guide_exercise">Kuaizi Input Method Guide</string>
     <string name="title_about_app">About the Kuaizi Input Method</string>
     <string name="title_about_team">About the development team</string>
@@ -66,9 +66,14 @@
         so it will have a certain effect on the inputting efficiency.
     </string>
     <string name="msg_ime_should_be_enabled_first">
-        %1$s has not been enabled in the system, so it cannot be activated.
-        \n\nPlease select %1$s in the System Keyboards list first to enable it.
-        \n\nDo you want to enable it right now?
+        &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,
+        &amp;#160;so it cannot be activated.&lt;/p>
+        &lt;br/>
+        &lt;p>Please first select
+        &amp;#160;&lt;span style="color:#ed4c67;">%2$s&lt;/span>&amp;#160;
+        in the System Keyboards list to enable it.&lt;/p>
+        &lt;br/>
+        &lt;p>Do you want to enable it right now?&lt;/p>
     </string>
     <string name="text_exercise_edit_text_placeholder">
         Please follow the above instructions
@@ -78,9 +83,10 @@
         Please input any text for free exercises
     </string>
     <string name="msg_guid_exercise_finished_confirm">
-        Congratulations, you have successfully completed this exercise!
-        \n\nNow, you can choose to continue with the current exercise,
-        or start the next one.
+        &lt;p>Congratulations, you have successfully completed this exercise!&lt;/p>
+        &lt;br/>
+        &lt;p>Now, you can choose to continue with the current exercise,
+        &amp;#160;or start the next one.&lt;/p>
     </string>
 
     <string name="value_theme_light">Light</string>

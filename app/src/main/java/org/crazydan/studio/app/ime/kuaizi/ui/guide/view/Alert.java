@@ -26,6 +26,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -95,7 +96,7 @@ public class Alert {
         android.widget.Button positiveBtnView = this.view.findViewById(R.id.positive_btn_view);
 
         titleView.setText(this.title);
-        messageView.setText(this.message);
+        messageView.setText(ViewUtils.parseHtml(this.message.toString()));
 
         // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
         // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
