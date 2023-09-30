@@ -1,0 +1,81 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/3319603/agrement_document_loan_apply_paper_report_sheet_icon -->
+    <path
+            android:pathData="M12,12m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0"
+            android:fillColor="#8DAF4A" />
+    <path
+            android:pathData="M10.313,18.675L13.162,15.825"
+            android:fillColor="#8DAF4A" />
+    <path
+            android:pathData="M14.025,16.912 L12.075,14.963 18.563,8.475c0.525,-0.525 1.388,-0.525 1.912,0l0.075,0.075c0.525,0.525 0.525,1.388 0,1.912z"
+            android:fillColor="#F7A90B" />
+    <path
+            android:pathData="M13.992,13.004l1.962,1.962l-0.795,0.795l-1.962,-1.962z"
+            android:fillColor="#EB5151" />
+    <path
+            android:pathData="M4.8,19.763l11.063,0l0,-4.688l1.125,-1.088l0,6.862l-12.188,0z"
+            android:fillColor="#E8DCCA" />
+    <path
+            android:pathData="M15.862,15.075l0,4.688l-12.188,0l0,-16.05l12.188,0l0,7.425l-3.825,3.825l1.988,1.95z"
+            android:fillColor="#FFFFFF" />
+    <path
+            android:pathData="M6.487,7.013m-1.65,0a1.65,1.65 0,1 1,3.3 0a1.65,1.65 0,1 1,-3.3 0"
+            android:fillColor="#00A8EA" />
+    <path
+            android:pathData="M6.487,11.737m-1.65,0a1.65,1.65 0,1 1,3.3 0a1.65,1.65 0,1 1,-3.3 0"
+            android:fillColor="#33D3F4" />
+    <path
+            android:pathData="M6.487,16.425m-1.65,0a1.65,1.65 0,1 1,3.3 0a1.65,1.65 0,1 1,-3.3 0"
+            android:fillColor="#00A8EA" />
+    <path
+            android:pathData="M16.987,4.8l0,5.25l-1.125,1.088l0,-6.338z"
+            android:fillColor="#E8DCCA" />
+    <path
+            android:pathData="M12.45,15.375 L10.5,16.537c0,0 0.3,1.65 -0.188,2.137l2.738,-2.738z"
+            android:fillColor="#474E5E" />
+    <path
+            android:pathData="m13.05,15.938 l-2.738,2.738l0,0c0.563,-0.563 2.137,-0.188 2.137,-0.188l1.162,-1.95z"
+            android:fillColor="#2E3545" />
+    <path
+            android:pathData="m12.862,16.125 l-2.325,2.4c-0.075,0.038 -0.15,0.113 -0.225,0.15 0.075,-0.075 0.113,-0.113 0.15,-0.225l0,0z"
+            android:fillColor="#FFFFFF" />
+    <path
+            android:pathData="M11.85,17.138m-0.337,0a0.337,0.337 0,1 1,0.675 0a0.337,0.337 0,1 1,-0.675 0"
+            android:fillColor="#FFFFFF" />
+    <path
+            android:pathData="m16.537,13.65c-0.075,0 -0.188,-0.038 -0.262,-0.113 -0.15,-0.15 -0.15,-0.375 0,-0.525l3.075,-3.075c0.15,-0.15 0.375,-0.15 0.525,0 0.15,0.15 0.15,0.375 0,0.525l-3.075,3.075c-0.075,0.075 -0.188,0.113 -0.262,0.113z"
+            android:fillColor="#FACC20" />
+    <path
+            android:pathData="M9.788,6.075l5.175,0l0,0.638l-5.175,0z"
+            android:fillColor="#CACBCE" />
+    <path
+            android:pathData="M9.788,7.35l3.262,0l0,0.638l-3.262,0z"
+            android:fillColor="#B3B4B7" />
+    <path
+            android:pathData="M9.788,10.763l5.175,0l0,0.638l-5.175,0z"
+            android:fillColor="#CACBCE" />
+    <path
+            android:pathData="M9.788,12.075l3.262,0l0,0.638l-3.262,0z"
+            android:fillColor="#B3B4B7" />
+</vector>

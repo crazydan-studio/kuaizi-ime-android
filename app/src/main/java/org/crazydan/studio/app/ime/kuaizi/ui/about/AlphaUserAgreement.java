@@ -22,12 +22,12 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.ui.HtmlSupportActivity;
 
 /**
- * 服务协议
+ * 内测用户协议
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-29
+ * @date 2023-09-30
  */
-public class ServiceAgreement extends HtmlSupportActivity {
+public class AlphaUserAgreement extends HtmlSupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class ServiceAgreement extends HtmlSupportActivity {
 
         String appName = getAppName();
 
-        setIcon(R.id.about_icon, R.drawable.ic_agreement);
-        setHtmlText(R.id.about_text, R.raw.text_about_service_agreement, appName);
+        setIcon(R.id.about_icon, R.drawable.ic_alpha_user_agrement);
+        setHtmlText(R.id.about_text, R.raw.text_about_alpha_user_agreement, appName);
     }
 }

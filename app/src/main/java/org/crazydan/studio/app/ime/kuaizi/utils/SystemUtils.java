@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.provider.Settings;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.ui.Preferences;
 
 /**
@@ -75,6 +76,11 @@ public class SystemUtils {
         }
 
         return version;
+    }
+
+    /** 当前应用是否为 alpha 版本 */
+    public static boolean isAlphaVersion() {
+        return "alpha".equals(BuildConfig.BUILD_TYPE);
     }
 
     /** 检查输入法是否为系统默认输入法 */

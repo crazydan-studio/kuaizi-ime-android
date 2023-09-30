@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.HtmlSupportActivity;
  * 版权声明
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-07
+ * @date 2023-09-29
  */
 public class Copyright extends HtmlSupportActivity {
 

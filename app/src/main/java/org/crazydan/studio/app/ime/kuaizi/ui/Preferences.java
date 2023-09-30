@@ -19,8 +19,11 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
  * 输入法配置界面
@@ -48,6 +51,14 @@ public class Preferences extends FollowSystemThemeActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences, rootKey);
+
+            if (!SystemUtils.isAlphaVersion()) {
+                // https://stackoverflow.com/questions/2240326/remove-hide-a-preference-from-the-screen#answer-45274037
+                PreferenceCategory category = findPreference("category_about");
+                PreferenceScreen about = findPreference("about_alpha_user_agreement");
+
+                category.removePreference(about);
+            }
         }
     }
 }

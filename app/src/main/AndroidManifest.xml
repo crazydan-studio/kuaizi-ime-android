@@ -114,6 +114,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+                android:name=".ui.about.AlphaUserAgreement"
+                android:exported="false"
+                android:label="@string/title_about_alpha_user_agreement">
+            <intent-filter>
+                <action android:name=".ui.about.AlphaUserAgreement" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <!-- End -->
 
         <!-- Start: 使用指南

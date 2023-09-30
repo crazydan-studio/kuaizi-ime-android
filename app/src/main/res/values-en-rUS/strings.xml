@@ -33,6 +33,7 @@
     <string name="title_about_change_log">Change log</string>
     <string name="title_about_service_agreement">Service agreement</string>
     <string name="title_about_copyright">Copyright</string>
+    <string name="title_about_alpha_user_agreement">User Agreement of Alpha</string>
     <string name="title_tips">Tips</string>
 
     <string name="label_method_subtype_generic">%s</string>
@@ -41,6 +42,8 @@
 
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
+    <string name="btn_guide_confirm_alpha_user_agreement">OK, I agree the agreement.</string>
+    <string name="btn_guide_reject_alpha_user_agreement">NO, I reject the agreement.</string>
     <string name="btn_guide_show_preferences">Open Kuaizi Input Method Preferences</string>
     <string name="btn_guide_try_exercises">Try Some Exercises First</string>
     <string name="btn_guide_exercise_try_again">Try Again</string>

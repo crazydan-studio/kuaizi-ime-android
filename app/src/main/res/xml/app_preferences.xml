@@ -59,7 +59,9 @@
         &lt;!&ndash; 1. 数据备份；2. 导入数据；3. 数据同步/迁移，同网络内通过扫描二维码实现多端的差异数据同步； &ndash;&gt;
     </PreferenceCategory>-->
 
-    <PreferenceCategory app:title="@string/title_preference_about">
+    <PreferenceCategory
+            app:key="category_about"
+            app:title="@string/title_preference_about">
         <!-- https://stackoverflow.com/questions/7275015/android-start-activity-from-preferences-xml#answer-10441707 -->
         <PreferenceScreen android:title="@string/title_about_thanks">
             <intent android:action=".ui.about.AboutThanks" />
@@ -81,6 +83,11 @@
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_copyright">
             <intent android:action=".ui.about.Copyright" />
+        </PreferenceScreen>
+        <PreferenceScreen
+                app:key="about_alpha_user_agreement"
+                android:title="@string/title_about_alpha_user_agreement">
+            <intent android:action=".ui.about.AlphaUserAgreement" />
         </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -20,12 +20,14 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -74,6 +76,11 @@ public class Alert {
         return setMessage(message.trim());
     }
 
+    public Alert setRawMessage(int rawResId, Object... args) {
+        String message = ResourceUtils.readString(this.context, rawResId, args);
+        return setMessage(message.trim());
+    }
+
     public Alert setMessage(CharSequence message) {
         this.message = message;
         return this;
@@ -96,7 +103,11 @@ public class Alert {
         android.widget.Button positiveBtnView = this.view.findViewById(R.id.positive_btn_view);
 
         titleView.setText(this.title);
-        messageView.setText(ViewUtils.parseHtml(this.message.toString()));
+        if (this.message instanceof Spanned) {
+            messageView.setText(this.message);
+        } else {
+            messageView.setText(ViewUtils.parseHtml(this.message.toString()));
+        }
 
         // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
         // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727

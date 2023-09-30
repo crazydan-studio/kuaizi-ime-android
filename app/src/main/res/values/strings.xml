@@ -33,6 +33,7 @@
     <string name="title_about_change_log">变更日志</string>
     <string name="title_about_service_agreement">服务协议</string>
     <string name="title_about_copyright">版权声明</string>
+    <string name="title_about_alpha_user_agreement">内测用户协议</string>
     <string name="title_tips">友情提示</string>
 
     <string name="label_method_subtype_generic">%s</string>
@@ -41,6 +42,8 @@
 
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
+    <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议要求</string>
+    <string name="btn_guide_reject_alpha_user_agreement">反对，我拒绝该协议要求</string>
     <string name="btn_guide_show_preferences">配置输入法</string>
     <string name="btn_guide_try_exercises">先练练手</string>
     <string name="btn_guide_exercise_try_again">继续当前练习</string>
