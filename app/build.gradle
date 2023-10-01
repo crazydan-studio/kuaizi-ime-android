@@ -31,9 +31,9 @@ android {
             applicationIdSuffix '.debug'
             versionNameSuffix '-debug'
 
-            //minifyEnabled true
-            //shrinkResources true
-            zipAlignEnabled true
+            //minifyEnabled false
+            //shrinkResources false
+            //zipAlignEnabled true
 
             buildConfigField('String', 'BUILD_TYPE', '"debug"')
         }
@@ -61,7 +61,6 @@ android {
         }
         // 内测版本
         alpha {
-            // 复用 release 配置
             initWith release
 
             applicationIdSuffix '.alpha'
@@ -77,8 +76,39 @@ android {
     }
 }
 
+android.applicationVariants.all { variant ->
+    // 修改 APK 输出路径，统一放在 build/outputs/apk 下
+    // https://stackoverflow.com/questions/46985530/change-apk-output-folder-in-gradle-4-1#answer-46987692
+    // https://stackoverflow.com/questions/54206898/variantoutput-getpackageapplication-is-obsolete#answer-56164030
+    variant.outputs.all {
+        def baseOutputDir = "${project.buildDir.absolutePath}/outputs/apk/${variant.buildType.name}"
+        def projectName = rootProject.name.replaceAll('\\s+', '_')
+        def versionName = variant.versionName
+
+        outputFileName = "${projectName}-${versionName}.apk"
+        variant.packageApplicationProvider.get().outputDirectory = new File(baseOutputDir)
+    }
+}
+// Note：以下代码不能放在 android 中初始化
+android.buildTypes.all { buildType ->
+    // 统一配置 APK 签署证书
+    // https://developer.android.com/build/gradle-tips#sign-your-app
+    // https://stackoverflow.com/questions/17040494/signing-product-flavors-with-gradle#answer-65811638
+    def keystorePropsFile = new File("${rootProject.rootDir.absolutePath}/keystore/${buildType.name}.properties")
+    if (keystorePropsFile.exists()) {
+        def keystoreProps = new Properties()
+        keystoreProps.load(new FileInputStream(keystorePropsFile))
+
+        buildType.signingConfig = android.signingConfigs.create("${buildType.name}")
+        buildType.signingConfig.storeFile = new File(keystoreProps['storeFile'])
+        buildType.signingConfig.storePassword = keystoreProps['storePassword']
+        buildType.signingConfig.keyAlias = keystoreProps['keyAlias']
+        buildType.signingConfig.keyPassword = keystoreProps['keyPassword']
+    }
+}
+
 dependencies {
-    implementation 'com.tencent.vasdolly:helper:3.0.6'
+    //implementation 'com.tencent.vasdolly:helper:3.0.6'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.preference:preference:1.2.1'
