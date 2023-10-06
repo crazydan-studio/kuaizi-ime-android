@@ -107,6 +107,10 @@ public class InputWord {
         this.variant = variant;
     }
 
+    public boolean hasVariant() {
+        return this.variant != null;
+    }
+
     @NonNull
     @Override
     public String toString() {

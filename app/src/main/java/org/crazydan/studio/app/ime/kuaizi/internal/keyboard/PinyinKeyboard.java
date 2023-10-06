@@ -84,7 +84,28 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                stateData.getPageStart());
             }
             case InputList_Committing_Option_Choose_Doing: {
-                return keyTable::createInputListCommittingOptionKeys;
+                boolean hasNotation = false;
+                boolean hasVariant = false;
+
+                for (CharInput input : getInputList().getCharInputs()) {
+                    InputWord word = input.getWord();
+                    if (word == null) {
+                        continue;
+                    }
+
+                    if (word.hasNotation()) {
+                        hasNotation = true;
+                    }
+                    if (word.hasVariant()) {
+                        hasVariant = true;
+                    }
+                }
+
+                boolean finalHasNotation = hasNotation;
+                boolean finalHasVariant = hasVariant;
+                return () -> keyTable.createInputListCommittingOptionKeys(getInputList().getOption(),
+                                                                          finalHasNotation,
+                                                                          finalHasVariant);
             }
             default: {
                 return keyTable::createKeys;

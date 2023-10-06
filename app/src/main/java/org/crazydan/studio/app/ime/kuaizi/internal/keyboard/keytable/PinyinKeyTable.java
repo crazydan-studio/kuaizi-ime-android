@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
@@ -304,14 +305,22 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建 输入列表 提交选项 按键 */
-    public Key<?>[][] createInputListCommittingOptionKeys() {
+    public Key<?>[][] createInputListCommittingOptionKeys(
+            Input.Option currentOption, boolean hasNotation, boolean hasVariant
+    ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
+        boolean isOnlyPinyin = currentOption != null
+                               && currentOption.wordNotationType == InputWord.NotationType.replacing;
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[1][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.only_pinyin);
-        gridKeys[2][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin);
-        gridKeys[4][index_end] = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad);
+        gridKeys[1][index_end]
+                = commitOptionKey(CtrlKey.CommitInputListOption.Option.only_pinyin).setDisabled(!hasNotation);
+        gridKeys[2][index_end]
+                = commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin).setDisabled(!hasNotation);
+        gridKeys[4][index_end]
+                = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad).setDisabled(!hasVariant
+                                                                                                       || isOnlyPinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
 
