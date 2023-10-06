@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -128,8 +129,12 @@ public class ChoosingInputCandidateStateData extends PagingStateData<InputWord> 
     }
 
     private boolean matched(InputWord word) {
-        // 占位用，不做过滤
-        if (!(word instanceof PinyinInputWord)) {
+        // 表情符号不做匹配
+        if (word instanceof EmojiInputWord) {
+            return false;
+        }
+        // 占位用的，不做过滤
+        else if (word == null) {
             return true;
         }
 

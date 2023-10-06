@@ -351,7 +351,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     // <<<<<<<<< 对输入候选字的操作
 
     /** 进入候选字选择状态，并处理候选字翻页 */
-    private void start_InputCandidate_Choosing(CharInput input, boolean pinyinChanged) {
+    private void start_InputCandidate_Choosing(CharInput input, boolean inputPinyinChanged) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getInputCandidateKeysPageSize();
         int bestCandidatesTop = 17;
@@ -362,7 +362,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, bestCandidatesTop);
 
         // 拼音修正后，需更新其自动确定的候选字
-        if (pinyinChanged) {
+        if (inputPinyinChanged) {
             List<InputWord> finalTopBestCandidates = topBestCandidates;
             determineNotConfirmedInputWord(input, () -> finalTopBestCandidates);
         }
