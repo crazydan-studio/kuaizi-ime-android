@@ -68,6 +68,7 @@ public class MathKeyboard extends BaseKeyboard {
             Input<?> input = data.target;
 
             getInputList().newPendingOn(input);
+
             confirm_Pending_and_Goto_Init_State(null);
             return;
         }
@@ -138,10 +139,22 @@ public class MathKeyboard extends BaseKeyboard {
                     return true;
                 }
                 case Commit_InputList: {
+                    play_SingleTick_InputAudio(key);
+
                     // 提交上层输入
                     commit_InputList(topInputList, true, false);
-                    // 并退出
+
+                    // 若是在 内嵌键盘 内提交，则需新建算数输入，以接收新的输入
+                    if (this.state.previous != null) {
+                        newMatchExprInput(topInputList);
+                    }
+                    // 否则，若是在不同类型的键盘内提交，
+                    // 则在回到前序键盘前，需先移动光标至相邻 Gap
+                    else {
+                        topInputList.confirmPendingAndMoveToNextGapInput();
+                    }
                     exit(key);
+
                     return true;
                 }
                 case Space: {
@@ -240,14 +253,6 @@ public class MathKeyboard extends BaseKeyboard {
         resetMathInputList();
 
         super.reset();
-    }
-
-    @Override
-    protected void exit(Key<?> key) {
-        // 退出前，先移动光标至相邻 Gap
-        getTopInputList().confirmPendingAndMoveToNextGapInput();
-
-        super.exit(key);
     }
 
     /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */

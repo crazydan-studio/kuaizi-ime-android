@@ -207,6 +207,8 @@ public class CharMathExprInput extends CharInput {
                 expr = Num.create(input);
             } else {
                 switch (type) {
+                    // 若有多余的小数点和等号，则为无效算式
+                    case equal:
                     case dot:
                         break;
                     case brackets: {
