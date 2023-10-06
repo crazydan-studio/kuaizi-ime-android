@@ -17,21 +17,24 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputTarget_Editing}消息数据
+ * {@link InputMsg#InputChars_Input_Doing}
+ * 和 {@link InputMsg#InputChars_Input_Done}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-14
+ * @date 2023-07-06
  */
-public class InputTargetEditingMsgData extends InputCommonMsgData {
-    public final InputEditAction action;
+public class InputCharsInputMsgData extends InputCommonMsgData {
+    /** 当前输入按键 */
+    public final Key<?> key;
 
-    public InputTargetEditingMsgData(Keyboard.KeyFactory keyFactory, InputEditAction action) {
+    public InputCharsInputMsgData(Keyboard.KeyFactory keyFactory, Key<?> key) {
         super(keyFactory);
-        this.action = action;
+        this.key = key;
     }
 }

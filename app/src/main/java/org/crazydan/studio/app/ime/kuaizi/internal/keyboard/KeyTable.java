@@ -103,31 +103,23 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList_Option, key_ctrl_label_style);
 
-        ctrl_key_styles.put(CtrlKey.Type.SwitchIME,
+        ctrl_key_styles.put(CtrlKey.Type.Switch_IME,
                             KeyStyle.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchHandMode,
+        ctrl_key_styles.put(CtrlKey.Type.Switch_HandMode,
                             KeyStyle.withIcon(R.drawable.ic_switch_to_left_hand,
                                               R.drawable.ic_switch_to_right_hand,
                                               R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToMathKeyboard,
-                            KeyStyle.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToLatinKeyboard,
-                            KeyStyle.withIcon(R.drawable.ic_switch_zi_to_a, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToPinyinKeyboard,
-                            KeyStyle.withIcon(R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToSymbolKeyboard,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Keyboard,
                             KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.SwitchToEmojiKeyboard,
+        ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Keyboard,
                             KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
-        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor,
+        ctrl_key_styles.put(CtrlKey.Type.Editor_Cursor_Locator,
                             KeyStyle.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Locator,
-                            KeyStyle.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.LocateInputCursor_Selector,
+        ctrl_key_styles.put(CtrlKey.Type.Editor_Range_Selector,
                             KeyStyle.withIcon(R.drawable.ic_right_hand_selection,
                                               R.drawable.ic_left_hand_selection,
                                               R.attr.key_ctrl_locator_bg_color));
@@ -204,8 +196,31 @@ public abstract class KeyTable {
                : ctrlKey(CtrlKey.Type.Enter);
     }
 
+    public CtrlKey keyboardSwitchKey(Keyboard.Type type) {
+        CtrlKey.Option<?> option = new CtrlKey.KeyboardSwitchOption(type);
+
+        KeyStyle style = null;
+        switch (type) {
+            case Math:
+                style = KeyStyle.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color);
+                break;
+            case Latin:
+                style = KeyStyle.withIcon(R.drawable.ic_switch_zi_to_a, R.attr.key_ctrl_switcher_bg_color);
+                break;
+            case Pinyin:
+                style = KeyStyle.withIcon(R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color);
+                break;
+        }
+
+        return ctrlKey(CtrlKey.Type.Switch_Keyboard, style).setOption(option);
+    }
+
     public CtrlKey ctrlKey(CtrlKey.Type type) {
         return ctrlKey(CtrlKey.create(type));
+    }
+
+    public CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style) {
+        return ctrlKey(ctrlKey(type), style);
     }
 
     public CtrlKey ctrlKey(CtrlKey key) {

@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link State.Type#Input_Slipping}的状态数据
+ * {@link State.Type#Input_Slip_Doing}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-15

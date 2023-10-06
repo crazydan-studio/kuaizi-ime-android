@@ -17,51 +17,61 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+
 /** 输入消息 */
 public enum InputMsg {
-    /** 键盘配置已更新 */
-    Keyboard_Config_Updated,
-
-    /** 字符输入进行中 */
-    InputChars_Inputting,
+    /** 字符输入中 */
+    InputChars_Input_Doing,
     /** 字符输入已结束 */
-    InputChars_InputtingEnd,
+    InputChars_Input_Done,
 
     /** 输入候选字选择中 */
-    InputCandidate_Choosing,
+    InputCandidate_Choose_Doing,
     /** 输入候选字已选择 */
-    InputCandidate_Chosen,
+    InputCandidate_Choose_Done,
 
     /** 输入音效播放中 */
-    InputAudio_Playing,
+    InputAudio_Play_Doing,
 
-    /** 输入列表清空中 */
-    InputList_Cleaning,
-    /** 已清空输入列表撤销中 */
-    InputList_Cleaned_Canceling,
-    /** 输入列表提交中：录入到目标输入组件中 */
-    InputList_Committing,
+    /** 输入列表光标已移动 */
+    InputList_Cursor_Move_Done,
+    /** 输入列表的{@link InputList#getPending 待输入}已丢弃 */
+    InputList_Pending_Drop_Done,
+    /** 输入列表的{@link InputList#getSelected 当前选中的输入}已删除 */
+    InputList_Selected_Delete_Done,
+    /** 输入列表已清空 */
+    InputList_Clean_Done,
+    /** 已撤销对输入列表的清空操作 */
+    InputList_Cleaned_Cancel_Done,
+    /** 输入列表提交中：将输入内容写入到 目标编辑器 中 */
+    InputList_Commit_Doing,
     /** 已提交输入列表撤回中 */
-    InputList_Committed_Revoking,
-    /** 输入列表中的 配对符号 提交中：录入到目标输入组件中 */
-    InputList_PairSymbol_Committing,
+    InputList_Committed_Revoke_Doing,
+    /** 输入列表中的 配对符号 提交中：将输入内容写入到 目标编辑器 中 */
+    InputList_PairSymbol_Commit_Doing,
 
-    /** 定位输入目标的光标 */
-    InputTarget_Cursor_Locating,
-    /** 选择输入目标的内容 */
-    InputTarget_Selecting,
-    /** 编辑输入目标 */
-    InputTarget_Editing,
+    /** 定位 目标编辑器 的光标 */
+    Editor_Cursor_Locate_Doing,
+    /** 选择 目标编辑器 的内容 */
+    Editor_Range_Select_Doing,
+    /** 编辑 目标编辑器 */
+    Editor_Edit_Doing,
+
+    /** 键盘状态已更新 */
+    Keyboard_State_Change_Done,
+    /** 键盘配置已更新 */
+    Keyboard_Config_Update_Done,
+    /** 键盘左右手模式切换中 */
+    Keyboard_HandMode_Switch_Done,
+    /** 键盘切换中 */
+    Keyboard_Switch_Doing,
 
     /** 输入法切换中 */
-    IME_Switching,
-    /** 键盘切换中 */
-    Keyboard_Switching,
-    /** 左右手模式切换中 */
-    HandMode_Switching,
+    IME_Switch_Doing,
 
     /** 表情符号选择中 */
-    Emoji_Choosing,
+    Emoji_Choose_Doing,
     /** 标点符号选择中 */
-    Symbol_Choosing,
+    Symbol_Choose_Doing,
 }

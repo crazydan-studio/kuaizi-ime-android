@@ -82,7 +82,7 @@ public class InputList {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         UserInputMsgData msgData = new UserInputMsgData(null);
-        onUserInputMsg(UserInputMsg.Cleaning_Inputs, msgData);
+        onUserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
     }
 
     /**
@@ -128,7 +128,7 @@ public class InputList {
             Staged.restore(this, this.staged);
 
             UserInputMsgData msgData = new UserInputMsgData(null);
-            onUserInputMsg(UserInputMsg.Canceling_Cleaning_Inputs, msgData);
+            onUserInputMsg(UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
         }
     }
 
@@ -312,7 +312,7 @@ public class InputList {
         }
     }
 
-    /** 移动到下一个字符输入位置或尾部 */
+    /** 移动光标到下一个字符输入位置或尾部 */
     public void moveToNextCharInput() {
         int index = getSelectedIndex();
         int lastIndex = this.inputs.size() - 1;

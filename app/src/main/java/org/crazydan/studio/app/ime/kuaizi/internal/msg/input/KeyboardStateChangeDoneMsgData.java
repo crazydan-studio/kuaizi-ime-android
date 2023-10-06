@@ -17,24 +17,24 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputList_PairSymbol_Commit_Doing}消息数据
+ * {@link InputMsg#Keyboard_State_Change_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-29
+ * @date 2023-10-06
  */
-public class InputListPairSymbolCommittingMsgData extends InputCommonMsgData {
-    public final CharSequence left;
-    public final CharSequence right;
+public class KeyboardStateChangeDoneMsgData extends InputCommonMsgData {
+    /** 更新后的状态 */
+    public final State state;
 
-    public InputListPairSymbolCommittingMsgData(
-            Keyboard.KeyFactory keyFactory, CharSequence left, CharSequence right
-    ) {
-        super(keyFactory);
-        this.left = left;
-        this.right = right;
+    public KeyboardStateChangeDoneMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, State state) {
+        super(keyFactory, key);
+
+        this.state = state;
     }
 }

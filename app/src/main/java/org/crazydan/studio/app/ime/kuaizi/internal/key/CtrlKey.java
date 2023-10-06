@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 
@@ -127,12 +128,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 在候选字状态下根据笔画过滤候选字 */
         Filter_PinyinInputCandidate_stroke,
 
-        /** 输入光标定位按钮 */
-        LocateInputCursor,
-        /** 输入光标定位按钮 - 定位 */
-        LocateInputCursor_Locator,
-        /** 输入光标定位按钮 - 选择 */
-        LocateInputCursor_Selector,
+        /** 定位目标编辑器光标 */
+        Editor_Cursor_Locator,
+        /** 选择目标编辑器内容 */
+        Editor_Range_Selector,
         /** 编辑 输入目标 */
         Edit_InputTarget,
 
@@ -142,21 +141,16 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Exit,
 
         /** 切换输入法 */
-        SwitchIME,
+        Switch_IME,
         /** 切换左右手模式 */
-        SwitchHandMode,
-
-        /** 切换至拼音键盘 */
-        SwitchToPinyinKeyboard,
-        /** 切换至拉丁文键盘 */
-        SwitchToLatinKeyboard,
-        /** 切换至数学键盘 */
-        SwitchToMathKeyboard,
+        Switch_HandMode,
+        /** 切换键盘 */
+        Switch_Keyboard,
 
         /** 切换至标点符号键盘 */
-        SwitchToSymbolKeyboard,
+        Toggle_Symbol_Keyboard,
         /** 切换至表情键盘 */
-        SwitchToEmojiKeyboard,
+        Toggle_Emoji_Keyboard,
 
         /** 切换表情符号分组 */
         Toggle_Emoji_Group,
@@ -176,8 +170,14 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         public TextOption(String value) {super(value);}
     }
 
-    public static class SymbolGroupOption extends Option<SymbolGroup> {
-        public SymbolGroupOption(SymbolGroup value) {super(value);}
+    public static class KeyboardSwitchOption extends Option<Keyboard.Type> {
+        public KeyboardSwitchOption(Keyboard.Type value) {
+            super(value);
+        }
+    }
+
+    public static class SymbolGroupToggleOption extends Option<SymbolGroup> {
+        public SymbolGroupToggleOption(SymbolGroup value) {super(value);}
     }
 
     public static class PinyinSpellToggleOption extends Option<PinyinSpellToggleOption.Toggle> {
@@ -205,8 +205,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         }
     }
 
-    public static class EditInputTargetOption extends Option<InputEditAction> {
-        public EditInputTargetOption(InputEditAction value) {
+    public static class EditEditorOption extends Option<InputEditAction> {
+        public EditEditorOption(InputEditAction value) {
             super(value);
         }
     }

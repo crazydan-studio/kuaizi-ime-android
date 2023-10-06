@@ -25,6 +25,7 @@ import java.util.Map;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
@@ -59,7 +60,7 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createKeys() {
         return (Key<?>[][]) new Key[][] {
                 new Key[] {
-                        ctrlKey(CtrlKey.Type.SwitchHandMode),
+                        ctrlKey(CtrlKey.Type.Switch_HandMode),
                         // 😂
                         emojiKey("\uD83D\uDE02"),
                         symbolKey("！").withReplacements("!"),
@@ -70,7 +71,7 @@ public class PinyinKeyTable extends KeyTable {
                         level0CharKey("a").withReplacements("A"),
                         } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToMathKeyboard),
+                keyboardSwitchKey(Keyboard.Type.Math),
                 symbolKey("？").withReplacements("?"),
                 level0CharKey("d").withReplacements("D"),
                 level0CharKey("b").withReplacements("B"),
@@ -80,7 +81,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("e").withReplacements("E"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToLatinKeyboard),
+                keyboardSwitchKey(Keyboard.Type.Latin),
                 // 😄
                 emojiKey("\uD83D\uDE04"),
                 symbolKey("；").withReplacements(";"),
@@ -91,17 +92,17 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToEmojiKeyboard),
+                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
                 symbolKey("：").withReplacements(":"),
                 level0CharKey("s").withReplacements("S"),
                 level0CharKey("t").withReplacements("T"),
-                ctrlKey(CtrlKey.Type.LocateInputCursor),
+                ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
                 level0CharKey("r").withReplacements("R"),
                 level0CharKey("g").withReplacements("G"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard),
+                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 // 😉
                 emojiKey("\uD83D\uDE09"),
                 symbolKey("。").withReplacements("."),

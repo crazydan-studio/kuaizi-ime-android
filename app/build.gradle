@@ -77,6 +77,10 @@ android {
 }
 
 android.applicationVariants.all { variant ->
+    if (variant.buildType.name == 'debug') {
+        return
+    }
+
     // 修改 APK 输出路径，统一放在 build/outputs/apk 下
     // https://stackoverflow.com/questions/46985530/change-apk-output-folder-in-gradle-4-1#answer-46987692
     // https://stackoverflow.com/questions/54206898/variantoutput-getpackageapplication-is-obsolete#answer-56164030
@@ -99,7 +103,7 @@ android.buildTypes.all { buildType ->
         def keystoreProps = new Properties()
         keystoreProps.load(new FileInputStream(keystorePropsFile))
 
-        buildType.signingConfig = android.signingConfigs.create("${buildType.name}")
+        buildType.signingConfig = android.signingConfigs.create(buildType.name)
         buildType.signingConfig.storeFile = new File(keystoreProps['storeFile'])
         buildType.signingConfig.storePassword = keystoreProps['storePassword']
         buildType.signingConfig.keyAlias = keystoreProps['keyAlias']

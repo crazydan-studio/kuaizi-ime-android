@@ -23,25 +23,24 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
- * {@link InputMsg#InputTarget_Cursor_Locating}消息数据
+ * {@link InputMsg#Editor_Range_Select_Doing}
+ * 和 {@link InputMsg#Editor_Cursor_Locate_Doing}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-18
  */
-public class InputTargetCursorLocatingMsgData extends InputCommonMsgData {
+public class EditorCursorMovingMsgData extends InputCommonMsgData {
     /** 锚点信息 */
     public final Motion anchor;
 
-    /** 触发消息的按键 */
-    public final Key<?> key;
-
-    public InputTargetCursorLocatingMsgData(Key<?> key, Motion anchor) {
+    public EditorCursorMovingMsgData(Key<?> key, Motion anchor) {
         this(null, key, anchor);
     }
 
-    public InputTargetCursorLocatingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
-        super(keyFactory);
-        this.key = key;
+    public EditorCursorMovingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
+        super(keyFactory, key);
+
         this.anchor = anchor;
     }
 }

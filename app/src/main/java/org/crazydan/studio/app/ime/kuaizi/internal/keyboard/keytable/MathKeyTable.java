@@ -76,8 +76,8 @@ public class MathKeyTable extends KeyTable {
         int index_begin = getGridFirstColumnIndex();
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.Switch_HandMode);
+        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();

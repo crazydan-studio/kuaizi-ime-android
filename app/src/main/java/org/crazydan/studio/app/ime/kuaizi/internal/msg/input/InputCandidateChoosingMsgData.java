@@ -22,7 +22,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputCandidate_Choosing} 消息数据
+ * {@link InputMsg#InputCandidate_Choose_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-23

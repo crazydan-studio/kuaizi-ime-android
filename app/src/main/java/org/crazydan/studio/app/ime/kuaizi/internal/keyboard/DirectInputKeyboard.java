@@ -39,7 +39,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         // Note: 在输入列表为空且消息为非输入列表清空消息时，直输键盘无预处理过程，故不对输入列表事件做响应
-        if (!getInputList().isEmpty() || msg == UserInputMsg.Cleaning_Inputs) {
+        if (!getInputList().isEmpty() || msg == UserInputMsg.Inputs_Clean_Done) {
             super.onUserInputMsg(msg, data);
         }
     }
@@ -62,7 +62,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeySingleTap: {
                 // 单字符直接输入
-                play_InputtingSingleTick_Audio(key);
+                play_SingleTick_InputAudio(key);
 
                 boolean directInputting = getInputList().isEmpty();
                 start_Single_Key_Inputting(key, (UserSingleTapMsgData) data, directInputting);

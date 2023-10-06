@@ -29,9 +29,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdatedMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 
@@ -97,16 +96,12 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputAudio_Playing: {
-                onPlayingInputAudioMsg((InputAudioPlayingMsgData) data);
+            case InputAudio_Play_Doing: {
+                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) data);
                 break;
             }
-            case InputChars_Inputting: {
-                onInputtingCharsMsg((InputCharsInputtingMsgData) data);
-                break;
-            }
-            case Keyboard_Config_Updated: {
-                Keyboard.Config config = ((KeyboardConfigUpdatedMsgData) data).after;
+            case Keyboard_Config_Update_Done: {
+                Keyboard.Config config = ((KeyboardConfigUpdateDoneMsgData) data).after;
                 if (config.isKeyAnimationDisabled()) {
                     setItemAnimator(null);
                 } else {
@@ -119,10 +114,7 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
         updateKeysByInputMsg(data);
     }
 
-    private void onInputtingCharsMsg(InputCharsInputtingMsgData data) {
-    }
-
-    private void onPlayingInputAudioMsg(InputAudioPlayingMsgData data) {
+    private void on_InputAudio_Play_Doing_Msg(InputAudioPlayDoingMsgData data) {
         Keyboard.Config config = this.keyboard.getConfig();
 
         switch (data.audioType) {

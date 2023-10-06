@@ -18,22 +18,23 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputChars_Inputting}消息数据
+ * {@link InputMsg#InputList_Selected_Delete_Done}
+ * 和 {@link InputMsg#InputList_Pending_Drop_Done}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-10-06
  */
-public class InputCharsInputtingMsgData extends InputCommonMsgData {
-    /** 当前按键 */
-    public final Key<?> current;
+public class InputListInputDeletedMsgData extends InputCommonMsgData {
+    public final CharInput deleted;
 
-    public InputCharsInputtingMsgData(Keyboard.KeyFactory keyFactory, Key<?> current) {
-        super(keyFactory);
+    public InputListInputDeletedMsgData(Key<?> key, CharInput deleted) {
+        super(key);
 
-        this.current = current;
+        this.deleted = deleted;
     }
 }

@@ -17,21 +17,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#Keyboard_Switching}消息数据
+ * {@link InputMsg#Keyboard_Switch_Doing}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-27
  */
-public class KeyboardSwitchingMsgData extends InputCommonMsgData {
+public class KeyboardSwitchDoingMsgData extends InputCommonMsgData {
     public final Keyboard.Type source;
     public final Keyboard.Type target;
 
-    public KeyboardSwitchingMsgData(Keyboard.Type source, Keyboard.Type target) {
-        super(null);
+    public KeyboardSwitchDoingMsgData(Key<?> key, Keyboard.Type source, Keyboard.Type target) {
+        super(key);
+
         this.source = source;
         this.target = target;
     }

@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link State.Type#Emoji_Choosing}的状态数据
+ * {@link State.Type#Emoji_Choose_Doing}的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26

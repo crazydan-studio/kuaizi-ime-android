@@ -64,11 +64,11 @@ public class MathKeyboard extends BaseKeyboard {
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         // 数字、数学符号不做候选切换：支持更多符号时，可增加数学计算符的候选键盘
-        if (msg == UserInputMsg.Choosing_Input) {
+        if (msg == UserInputMsg.Input_Choose_Doing) {
             Input<?> input = data.target;
 
             getInputList().newPendingOn(input);
-            confirm_Pending_and_Waiting_Input(null);
+            confirm_Pending_and_Goto_Init_State(null);
             return;
         }
 
@@ -77,7 +77,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     public void onTopUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (msg) {
-            case Choosing_Input: {
+            case Input_Choose_Doing: {
                 Input<?> input = data.target;
 
                 // newPendingOn(input) 不会确认已选中的输入，
@@ -87,22 +87,22 @@ public class MathKeyboard extends BaseKeyboard {
 
                 // 仅处理算数表达式输入
                 if (!input.isMathExpr()) {
-                    super.switchTo_Previous_Keyboard();
+                    super.switchTo_Previous_Keyboard(null);
                 } else {
                     resetMathInputList();
                 }
                 break;
             }
-            case Cleaning_Inputs: {
+            case Inputs_Clean_Done: {
                 resetMathInputList();
 
-                clean_InputList();
+                fire_InputList_Clean_Done();
                 break;
             }
-            case Canceling_Cleaning_Inputs: {
+            case Inputs_Cleaned_Cancel_Done: {
                 resetMathInputList();
 
-                cancel_Cleaning_InputList();
+                fire_InputList_Cleaned_Cancel_Done();
                 break;
             }
         }
@@ -127,27 +127,25 @@ public class MathKeyboard extends BaseKeyboard {
         if (msg == UserKeyMsg.KeySingleTap) {
             switch (key.getType()) {
                 case Backspace: {
-                    play_InputtingSingleTick_Audio(key);
+                    play_SingleTick_InputAudio(key);
 
                     // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
                     if (!getInputList().isEmpty()) {
-                        backspace_InputList_or_InputTarget(getInputList(), key);
+                        backspace_InputList_or_Editor(getInputList(), key);
                     } else {
-                        backspace_InputList_or_InputTarget(topInputList, key);
+                        backspace_InputList_or_Editor(topInputList, key);
                     }
                     return true;
                 }
                 case Commit_InputList: {
-                    play_InputtingSingleTick_Audio(key);
-
                     // 提交上层输入
                     commit_InputList(topInputList, true, false);
                     // 并退出
-                    do_Exit(key);
+                    exit(key);
                     return true;
                 }
                 case Space: {
-                    play_InputtingSingleTick_Audio(key);
+                    play_SingleTick_InputAudio(key);
 
                     // Note：对于上层 InputList 而言，当前正在输入的一定是算数输入
                     topInputList.confirmPendingAndMoveToNextGapInput();
@@ -168,7 +166,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeySingleTap) {
-            play_InputtingSingleTick_Audio(key);
+            play_SingleTick_InputAudio(key);
 
             do_Single_MathKey_Inputting(key);
         }
@@ -210,17 +208,17 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        fire_and_Waiting_Continuous_InputChars_Inputting(key);
+        fire_InputChars_Input_Doing(key);
     }
 
     @Override
-    protected void switchTo_Previous_Keyboard() {
+    protected void switchTo_Previous_Keyboard(Key<?> key) {
         // 在切换前，确保当前的算数输入列表已被确认，
         getTopInputList().confirmPending();
         // 并丢弃当前的算数输入 pending 以备用于输入其他字符
         getTopInputList().newPending();
 
-        super.switchTo_Previous_Keyboard();
+        super.switchTo_Previous_Keyboard(key);
     }
 
     @Override
@@ -245,11 +243,11 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected void do_Exit(Key<?> key) {
+    protected void exit(Key<?> key) {
         // 退出前，先移动光标至相邻 Gap
         getTopInputList().confirmPendingAndMoveToNextGapInput();
 
-        super.do_Exit(key);
+        super.exit(key);
     }
 
     /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */

@@ -18,19 +18,20 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#HandMode_Switching}消息数据
+ * {@link InputMsg#Editor_Edit_Doing}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-23
+ * @date 2023-09-14
  */
-public class KeyboardHandModeSwitchingMsgData extends InputCommonMsgData {
-    public final Keyboard.HandMode mode;
+public class EditorEditDoingMsgData extends InputCommonMsgData {
+    public final InputEditAction action;
 
-    public KeyboardHandModeSwitchingMsgData(Keyboard.KeyFactory keyFactory, Keyboard.HandMode mode) {
+    public EditorEditDoingMsgData(Keyboard.KeyFactory keyFactory, InputEditAction action) {
         super(keyFactory);
-        this.mode = mode;
+        this.action = action;
     }
 }

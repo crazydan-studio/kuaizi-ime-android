@@ -26,10 +26,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-21
  */
 public enum UserInputMsg {
-    /** 选择输入 */
-    Choosing_Input,
-    /** 清空输入 */
-    Cleaning_Inputs,
-    /** 撤销清空输入 */
-    Canceling_Cleaning_Inputs,
+    /** 输入选择中 */
+    Input_Choose_Doing,
+    /** 输入已清空 */
+    Inputs_Clean_Done,
+    /** 已撤销对输入的清空操作 */
+    Inputs_Cleaned_Cancel_Done,
 }

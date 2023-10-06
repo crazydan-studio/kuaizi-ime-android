@@ -38,8 +38,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
@@ -169,34 +169,34 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputList_Committing: {
+            case InputList_Commit_Doing: {
                 InputListCommittingMsgData d = (InputListCommittingMsgData) data;
                 commitText(d.text, d.replacements);
                 break;
             }
-            case InputList_Committed_Revoking: {
+            case InputList_Committed_Revoke_Doing: {
                 revokeCommitting();
                 break;
             }
-            case InputList_PairSymbol_Committing: {
+            case InputList_PairSymbol_Commit_Doing: {
                 InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
                 commitText(d.left, d.right);
                 break;
             }
-            case InputTarget_Cursor_Locating: {
-                locateInputCursor((InputTargetCursorLocatingMsgData) data);
+            case Editor_Cursor_Locate_Doing: {
+                locateInputCursor((EditorCursorMovingMsgData) data);
                 break;
             }
-            case InputTarget_Selecting: {
-                selectInputText((InputTargetCursorLocatingMsgData) data);
+            case Editor_Range_Select_Doing: {
+                selectInputText((EditorCursorMovingMsgData) data);
                 break;
             }
-            case InputTarget_Editing: {
-                InputTargetEditingMsgData d = (InputTargetEditingMsgData) data;
+            case Editor_Edit_Doing: {
+                EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
                 editInput(d.action);
                 break;
             }
-            case IME_Switching: {
+            case IME_Switch_Doing: {
                 switchIme();
                 break;
             }
@@ -212,7 +212,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         SystemUtils.switchIme(getApplicationContext());
     }
 
-    private void locateInputCursor(InputTargetCursorLocatingMsgData data) {
+    private void locateInputCursor(EditorCursorMovingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -237,7 +237,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void selectInputText(InputTargetCursorLocatingMsgData data) {
+    private void selectInputText(EditorCursorMovingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;

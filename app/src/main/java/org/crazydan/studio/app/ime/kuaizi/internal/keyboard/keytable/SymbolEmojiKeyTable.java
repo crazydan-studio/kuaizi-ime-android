@@ -75,7 +75,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         gridKeys[2][index_end] = this.config.isCharInputSelected()
                                  ? ctrlKey(CtrlKey.Type.DropInput)
                                  : ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
@@ -151,7 +151,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         gridKeys[2][index_end] = this.config.isCharInputSelected()
                                  ? ctrlKey(CtrlKey.Type.DropInput)
                                  : ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
@@ -164,7 +164,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
             int row = keyCoord.row;
             int column = keyCoord.column;
-            CtrlKey.Option<?> option = new CtrlKey.SymbolGroupOption(SymbolGroup.values()[j]);
+            CtrlKey.Option<?> option = new CtrlKey.SymbolGroupToggleOption(SymbolGroup.values()[j]);
 
             gridKeys[row][column] = ctrlKey(CtrlKey.Type.Toggle_Symbol_Group).setOption(option)
                                                                              .setLabel(group)

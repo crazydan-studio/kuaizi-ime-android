@@ -25,16 +25,16 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link State.Type#Symbol_Choosing}的状态数据
+ * {@link State.Type#Symbol_Choose_Doing} 状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-24
  */
-public class ChoosingSymbolStateData extends PagingStateData<Symbol> {
+public class SymbolChooseDoingStateData extends PagingStateData<Symbol> {
     private final boolean onlyPair;
     private SymbolGroup group = SymbolGroup.han;
 
-    public ChoosingSymbolStateData(int pageSize, boolean onlyPair) {
+    public SymbolChooseDoingStateData(int pageSize, boolean onlyPair) {
         super(pageSize);
         this.onlyPair = onlyPair;
     }

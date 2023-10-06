@@ -41,8 +41,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
@@ -143,9 +143,9 @@ public class ImeInputView extends FrameLayout
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case Keyboard_Switching: {
-                Keyboard.Type source = ((KeyboardSwitchingMsgData) data).source;
-                Keyboard.Type target = ((KeyboardSwitchingMsgData) data).target;
+            case Keyboard_Switch_Doing: {
+                Keyboard.Type source = ((KeyboardSwitchDoingMsgData) data).source;
+                Keyboard.Type target = ((KeyboardSwitchDoingMsgData) data).target;
 
                 Keyboard.Config config = new Keyboard.Config(target, this.keyboard.getConfig());
                 config.setSwitchFromType(source);
@@ -153,9 +153,9 @@ public class ImeInputView extends FrameLayout
                 updateKeyboard(config);
                 break;
             }
-            case HandMode_Switching: {
+            case Keyboard_HandMode_Switch_Done: {
                 // Note：仅记录切换到的模式以便于切换到其他类型键盘时按该模式绘制按键
-                this.keyboardHandMode = ((KeyboardHandModeSwitchingMsgData) data).mode;
+                this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) data).mode;
                 break;
             }
             default: {

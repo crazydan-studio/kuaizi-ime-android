@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 
@@ -26,17 +27,33 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
  */
 public class InputCommonMsgData implements InputMsgData {
     private final Keyboard.KeyFactory keyFactory;
+    /** 触发按键 */
+    private final Key<?> key;
 
     public InputCommonMsgData() {
-        this(null);
+        this(null, null);
     }
 
     public InputCommonMsgData(Keyboard.KeyFactory keyFactory) {
+        this(keyFactory, null);
+    }
+
+    public InputCommonMsgData(Key<?> key) {
+        this(null, key);
+    }
+
+    public InputCommonMsgData(Keyboard.KeyFactory keyFactory, Key<?> key) {
         this.keyFactory = keyFactory;
+        this.key = key;
     }
 
     @Override
     public Keyboard.KeyFactory getKeyFactory() {
         return this.keyFactory;
+    }
+
+    @Override
+    public Key<?> getKey() {
+        return this.key;
     }
 }

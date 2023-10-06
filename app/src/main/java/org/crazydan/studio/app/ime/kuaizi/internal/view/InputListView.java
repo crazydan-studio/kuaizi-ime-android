@@ -86,17 +86,21 @@ public class InputListView extends RecyclerView implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case Keyboard_Switching:
-            case InputChars_Inputting:
-            case InputChars_InputtingEnd:
-            case InputCandidate_Choosing:
-            case Emoji_Choosing:
-            case Symbol_Choosing:
-            case InputList_Cleaning:
-            case InputList_Cleaned_Canceling:
-            case InputList_Committed_Revoking:
-            case InputList_Committing:
-            case InputList_PairSymbol_Committing:
+            case Keyboard_Switch_Doing:
+            case Keyboard_State_Change_Done:
+            case InputChars_Input_Doing:
+            case InputChars_Input_Done:
+            case InputCandidate_Choose_Doing:
+            case Emoji_Choose_Doing:
+            case Symbol_Choose_Doing:
+            case InputList_Clean_Done:
+            case InputList_Cursor_Move_Done:
+            case InputList_Pending_Drop_Done:
+            case InputList_Selected_Delete_Done:
+            case InputList_Cleaned_Cancel_Done:
+            case InputList_Committed_Revoke_Doing:
+            case InputList_Commit_Doing:
+            case InputList_PairSymbol_Commit_Doing:
                 this.adapter.updateInputList(this.inputList);
 
                 int position = this.inputList.getSelectedIndex();

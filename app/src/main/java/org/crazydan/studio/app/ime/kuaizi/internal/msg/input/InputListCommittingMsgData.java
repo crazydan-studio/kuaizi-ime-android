@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputList_Committing}消息数据
+ * {@link InputMsg#InputList_Commit_Doing}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-15
@@ -32,10 +32,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 public class InputListCommittingMsgData extends InputCommonMsgData {
     public final CharSequence text;
     public final List<String> replacements;
-
-    public InputListCommittingMsgData(Keyboard.KeyFactory keyFactory, CharSequence text) {
-        this(keyFactory, text, null);
-    }
 
     public InputListCommittingMsgData(
             Keyboard.KeyFactory keyFactory, CharSequence text, List<String> replacements

@@ -75,11 +75,11 @@ public class NumberKeyTable extends KeyTable {
         int index_mid = getGridMiddleColumnIndex();
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.SwitchHandMode);
-        gridKeys[4][index_begin] = ctrlKey(CtrlKey.Type.SwitchToSymbolKeyboard);
+        gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.Switch_HandMode);
+        gridKeys[4][index_begin] = ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.LocateInputCursor);
+        gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[3][index_end] = enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
 

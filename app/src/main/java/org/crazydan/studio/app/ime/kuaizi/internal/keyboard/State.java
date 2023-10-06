@@ -46,23 +46,23 @@ public class State {
 
     public enum Type {
         /** 待输入 */
-        Input_Waiting,
+        InputChars_Input_Waiting,
         /** 滑屏输入中 */
-        Input_Slipping,
+        Input_Slip_Doing,
         /** 输入列表 提交选项 选择中 */
-        InputList_Committing_Option_Choosing,
+        InputList_Committing_Option_Choose_Doing,
 
-        /** 输入组件光标定位：含移动光标和文本选择 */
-        InputTarget_Cursor_Locating,
+        /** 对 目标编辑器 的编辑操作：含移动光标和文本选择等操作 */
+        Editor_Edit_Doing,
 
         /** 输入候选字选择中 */
-        InputCandidate_Choosing,
+        InputCandidate_Choose_Doing,
 
         /** 表情符号选择中 */
-        Emoji_Choosing,
+        Emoji_Choose_Doing,
 
         /** 符号（标点、表情）选择中 */
-        Symbol_Choosing,
+        Symbol_Choose_Doing,
     }
 
     public interface Data {}

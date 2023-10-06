@@ -17,26 +17,21 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputAudio_Playing}消息数据
+ * {@link InputMsg#Keyboard_Config_Update_Done}消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-17
+ * @date 2023-09-28
  */
-public class InputAudioPlayingMsgData extends InputCommonMsgData {
-    public final AudioType audioType;
+public class KeyboardConfigUpdateDoneMsgData extends InputCommonMsgData {
+    public final Keyboard.Config before;
+    public final Keyboard.Config after;
 
-    public InputAudioPlayingMsgData(AudioType audioType) {
-        super(null);
-
-        this.audioType = audioType;
-    }
-
-    public enum AudioType {
-        SingleTick,
-        DoubleTick,
-        PageFlip,
+    public KeyboardConfigUpdateDoneMsgData(Keyboard.Config before, Keyboard.Config after) {
+        this.before = before;
+        this.after = after;
     }
 }

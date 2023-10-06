@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 
 /**
@@ -29,4 +30,7 @@ public interface InputMsgData {
 
     /** 获取按键生成器，以便于重新布局按键 */
     Keyboard.KeyFactory getKeyFactory();
+
+    /** 触发按键 */
+    Key<?> getKey();
 }

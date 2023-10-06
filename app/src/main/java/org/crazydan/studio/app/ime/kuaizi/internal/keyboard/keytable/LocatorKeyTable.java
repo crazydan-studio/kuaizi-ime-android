@@ -49,8 +49,8 @@ public class LocatorKeyTable extends KeyTable {
 
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[2][2] = ctrlKey(CtrlKey.Type.LocateInputCursor_Selector);
-        gridKeys[2][5] = ctrlKey(CtrlKey.Type.LocateInputCursor_Locator);
+        gridKeys[2][2] = ctrlKey(CtrlKey.Type.Editor_Range_Selector);
+        gridKeys[2][5] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
@@ -68,7 +68,7 @@ public class LocatorKeyTable extends KeyTable {
 
     public CtrlKey editCtrlKey(InputEditAction action) {
         CtrlKey.Type type = CtrlKey.Type.Edit_InputTarget;
-        CtrlKey.Option<?> option = new CtrlKey.EditInputTargetOption(action);
+        CtrlKey.Option<?> option = new CtrlKey.EditEditorOption(action);
 
         String label = null;
         switch (action) {

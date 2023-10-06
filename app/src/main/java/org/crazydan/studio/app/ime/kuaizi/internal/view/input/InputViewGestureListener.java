@@ -55,7 +55,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
         }
 
         UserInputMsgData msgData = new UserInputMsgData(input);
-        this.inputListView.onUserInputMsg(UserInputMsg.Choosing_Input, msgData);
+        this.inputListView.onUserInputMsg(UserInputMsg.Input_Choose_Doing, msgData);
     }
 
     private Input<?> determineInput(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {

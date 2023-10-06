@@ -30,8 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetCursorLocatingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputTargetEditingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 
 /**
  * 用于筷字输入法使用练习的编辑框
@@ -52,30 +52,30 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case InputList_Committing: {
+            case InputList_Commit_Doing: {
                 InputListCommittingMsgData d = (InputListCommittingMsgData) data;
                 commitText(d.text, d.replacements);
                 break;
             }
-            case InputList_Committed_Revoking: {
+            case InputList_Committed_Revoke_Doing: {
                 revokeCommitting();
                 break;
             }
-            case InputList_PairSymbol_Committing: {
+            case InputList_PairSymbol_Commit_Doing: {
                 InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
                 commitText(d.left, d.right);
                 break;
             }
-            case InputTarget_Cursor_Locating: {
-                locateInputCursor(((InputTargetCursorLocatingMsgData) data).anchor);
+            case Editor_Cursor_Locate_Doing: {
+                locateInputCursor(((EditorCursorMovingMsgData) data).anchor);
                 break;
             }
-            case InputTarget_Selecting: {
-                selectInputText(((InputTargetCursorLocatingMsgData) data).anchor);
+            case Editor_Range_Select_Doing: {
+                selectInputText(((EditorCursorMovingMsgData) data).anchor);
                 break;
             }
-            case InputTarget_Editing: {
-                InputTargetEditingMsgData d = (InputTargetEditingMsgData) data;
+            case Editor_Edit_Doing: {
+                EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
                 editInput(d.action);
                 break;
             }
