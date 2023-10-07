@@ -57,6 +57,7 @@
 
     <!-- Settings Preferences -->
     <string name="label_disable_user_input_data">DO NOT SAVE User Inputting Data</string>
+    <string name="label_adapt_desktop_swipe_up_gesture">Adapt System Swipe Up Gesture</string>
     <string name="label_disable_key_clicked_audio">Disable the Key Clicked Audio</string>
     <string name="label_disable_key_animation">Disable the Key Animation</string>
     <string name="label_disable_paging_audio">Disable the Paging Audio</string>
@@ -68,6 +69,11 @@
         which caused by analyzing the inputting words in the input method.
         However, it will reduce the words matching accuracy of the input method,
         so it will have a certain effect on the inputting efficiency.
+    </string>
+    <string name="desc_adapt_desktop_swipe_up_gesture">
+        If the system uses a swipe-up gesture to return to the desktop,
+        the enough blank space should be added at the bottom of the input keyboard
+        to avoid conflict between the keyboard swipe inputting and the system swipe-up gesture.
     </string>
     <string name="msg_ime_should_be_enabled_first">
         &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,

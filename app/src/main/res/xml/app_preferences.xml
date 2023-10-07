@@ -39,6 +39,11 @@
                 app:key="disable_user_input_data"
                 app:title="@string/label_disable_user_input_data"
                 app:summary="@string/desc_disable_user_input_data" />
+
+        <SwitchPreferenceCompat
+                app:key="adapt_desktop_swipe_up_gesture"
+                app:title="@string/label_adapt_desktop_swipe_up_gesture"
+                app:summary="@string/desc_adapt_desktop_swipe_up_gesture" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/title_preference_performance">

@@ -28,6 +28,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.widget.TextView;
@@ -56,6 +57,11 @@ public class ViewUtils {
 
     public static boolean isVisible(View view) {
         return view.getVisibility() == View.VISIBLE;
+    }
+
+    public static void setHeight(View view, int height) {
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.height = height;
     }
 
     public static int getBackgroundColor(View view) {

@@ -96,6 +96,7 @@ public interface Keyboard extends UserInputMsgListener {
         public static final String pref_key_disable_key_animation = "disable_key_animation";
         public static final String pref_key_disable_input_candidates_paging_audio
                 = "disable_input_candidates_paging_audio";
+        public static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
         public static final String pref_key_hand_mode = "hand_mode";
         public static final String pref_key_theme = "theme";
 
@@ -117,6 +118,7 @@ public interface Keyboard extends UserInputMsgListener {
         private boolean keyClickedAudioDisabled;
         private boolean keyAnimationDisabled;
         private boolean pagingAudioDisabled;
+        private boolean desktopSwipeUpGestureAdapted;
 
         public Config(Type type) {
             this.type = type;
@@ -135,6 +137,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
                 this.keyAnimationDisabled = config.keyAnimationDisabled;
                 this.pagingAudioDisabled = config.pagingAudioDisabled;
+                this.desktopSwipeUpGestureAdapted = config.desktopSwipeUpGestureAdapted;
             }
         }
 
@@ -216,6 +219,14 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setPagingAudioDisabled(boolean pagingAudioDisabled) {
             this.pagingAudioDisabled = pagingAudioDisabled;
+        }
+
+        public boolean isDesktopSwipeUpGestureAdapted() {
+            return this.desktopSwipeUpGestureAdapted;
+        }
+
+        public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
+            this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
         }
     }
 

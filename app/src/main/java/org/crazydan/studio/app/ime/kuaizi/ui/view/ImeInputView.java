@@ -45,6 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwi
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
@@ -210,7 +211,8 @@ public class ImeInputView extends FrameLayout
         this.keyboard.setConfig(newConfig);
 
         // 主题发生变化，重新绑定视图
-        if (oldConfig.getThemeResId() != newConfig.getThemeResId()) {
+        if (oldConfig.getThemeResId() != newConfig.getThemeResId()
+            || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()) {
             bindViews();
         }
         // Note: 仅需更新视图，无需更新监听等
@@ -244,7 +246,8 @@ public class ImeInputView extends FrameLayout
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
-        int themeResId = this.keyboard != null ? this.keyboard.getConfig().getThemeResId() : getThemeResId();
+        Keyboard.Config config = this.keyboard != null ? this.keyboard.getConfig() : null;
+        int themeResId = config != null ? config.getThemeResId() : getThemeResId();
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
         rootView.findViewById(R.id.settings).setOnClickListener(this::onShowPreferences);
@@ -264,7 +267,23 @@ public class ImeInputView extends FrameLayout
         bindKeyboard(this.keyboard);
     }
 
+    private void addBottomSpacing(View rootView, boolean needSpacing) {
+        float height = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
+        height -= this.keyboardView.getBottomSpacing();
+
+        View bottomSpacingView = rootView.findViewById(R.id.bottom_spacing_view);
+        if (needSpacing && height > 0) {
+            ViewUtils.show(bottomSpacingView);
+            ViewUtils.setHeight(bottomSpacingView, (int) height);
+        } else {
+            ViewUtils.hide(bottomSpacingView);
+        }
+    }
+
     private void bindKeyboard(Keyboard keyboard) {
+        Keyboard.Config config = keyboard != null ? keyboard.getConfig() : null;
+        addBottomSpacing(this, config != null && config.isDesktopSwipeUpGestureAdapted());
+
         if (keyboard != null) {
             keyboard.setInputList(this.inputList);
             this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
@@ -291,6 +310,10 @@ public class ImeInputView extends FrameLayout
         boolean disableInputCandidatesPagingAudio
                 = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
         patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);
+
+        boolean desktopSwipeUpGestureAdapted
+                = this.preferences.getBoolean(Keyboard.Config.pref_key_adapt_desktop_swipe_up_gesture, false);
+        patchedConfig.setDesktopSwipeUpGestureAdapted(desktopSwipeUpGestureAdapted);
 
         Keyboard.HandMode handMode = getHandMode();
         patchedConfig.setHandMode(handMode);

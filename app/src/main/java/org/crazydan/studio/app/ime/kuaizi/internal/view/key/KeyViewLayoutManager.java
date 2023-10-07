@@ -67,6 +67,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private double gridPaddingLeft;
     /** 网格顶部空白 */
     private double gridPaddingTop;
+    /** 网格底部空白 */
+    private double gridPaddingBottom;
 
     private boolean reverse;
     private HexagonalGrid<SatelliteData> grid;
@@ -151,6 +153,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             double paddingY = (h - h_used) / 2;
             if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
                 this.gridPaddingTop = paddingY;
+                this.gridPaddingBottom = paddingY;
             } else {
                 this.gridPaddingLeft = paddingY;
             }
@@ -163,6 +166,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 this.gridPaddingLeft = paddingX;
             } else {
                 this.gridPaddingTop = paddingX;
+                this.gridPaddingBottom = paddingX;
             }
         } else {
             radius = r1;
@@ -180,6 +184,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                .setRadius(radius);
 
         return builder.build();
+    }
+
+    public double getGridPaddingBottom() {
+        return this.gridPaddingBottom;
     }
 
     /**

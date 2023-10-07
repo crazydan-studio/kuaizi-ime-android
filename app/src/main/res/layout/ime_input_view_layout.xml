@@ -34,10 +34,10 @@
             android:orientation="horizontal">
 
         <ImageButton
-                android:layout_width="@dimen/input_list_icon_size"
-                android:layout_height="@dimen/input_list_icon_size"
+                android:layout_width="@dimen/input_list_button_icon_size"
+                android:layout_height="@dimen/input_list_button_icon_size"
                 android:layout_gravity="center"
-                android:layout_marginStart="@dimen/input_list_button_padding"
+                android:layout_marginStart="@dimen/input_list_button_spacing"
                 android:id="@+id/settings"
                 android:src="@drawable/ic_settings"
                 android:background="?attr/input_bg_color" />
@@ -69,19 +69,19 @@
                 android:background="?attr/keyboard_divider_color" />
 
         <ImageButton
-                android:layout_width="@dimen/input_list_icon_size"
-                android:layout_height="@dimen/input_list_icon_size"
+                android:layout_width="@dimen/input_list_button_icon_size"
+                android:layout_height="@dimen/input_list_button_icon_size"
                 android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/input_list_button_padding"
+                android:layout_marginEnd="@dimen/input_list_button_spacing"
                 android:id="@+id/clean_input_list"
                 android:src="@drawable/ic_clean"
                 android:background="?attr/input_bg_color" />
 
         <ImageButton
-                android:layout_width="@dimen/input_list_icon_size"
-                android:layout_height="@dimen/input_list_icon_size"
+                android:layout_width="@dimen/input_list_button_icon_size"
+                android:layout_height="@dimen/input_list_button_icon_size"
                 android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/input_list_button_padding"
+                android:layout_marginEnd="@dimen/input_list_button_spacing"
                 android:id="@+id/cancel_clean_input_list"
                 android:src="@drawable/ic_restore"
                 android:background="?attr/input_bg_color" />
@@ -97,4 +97,10 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/keyboard_view_height"
             android:layout_margin="4dp" />
+
+    <View
+            android:id="@+id/bottom_spacing_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone" />
 </LinearLayout>

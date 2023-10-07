@@ -68,6 +68,10 @@ public abstract class BaseKeyboardView extends RecyclerView {
         this.adapter.updateKeys(keys, themeResId);
     }
 
+    public double getBottomSpacing() {
+        return this.layoutManager.getGridPaddingBottom();
+    }
+
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
     public KeyView<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
         View child = this.layoutManager.findChildViewUnderLoose(x, y);
