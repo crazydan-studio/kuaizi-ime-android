@@ -65,9 +65,11 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private int gridRows;
     /** 网格左部空白 */
     private double gridPaddingLeft;
+    /** 网格右部最大空白：配置数据，用于确保按键最靠近右手 */
+    private double gridMaxPaddingRight;
     /** 网格顶部空白 */
     private double gridPaddingTop;
-    /** 网格底部空白 */
+    /** 网格底部空白：实际剩余空间 */
     private double gridPaddingBottom;
 
     private boolean reverse;
@@ -81,10 +83,11 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         this.reverse = reverse;
     }
 
-    public void configGrid(int columns, int rows, int itemSpacingInDp) {
+    public void configGrid(int columns, int rows, int itemSpacingInDp, int gridMaxPaddingRight) {
         this.gridColumns = columns;
         this.gridRows = rows;
         this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacingInDp);
+        this.gridMaxPaddingRight = gridMaxPaddingRight;
     }
 
     @Override
@@ -146,24 +149,27 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
         // 计算左上角的空白偏移量
         this.gridPaddingLeft = this.gridPaddingTop = 0;
+        this.gridPaddingBottom = 0;
         if (compare < 0) {
             radius = r1;
 
             double h_used = 2 * radius + (m - 1) * cos_30 * (2 * radius * cos_30);
-            double paddingY = (h - h_used) / 2;
+            double h_left = h - h_used;
+            double paddingY = h_left / 2;
             if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
                 this.gridPaddingTop = paddingY;
                 this.gridPaddingBottom = paddingY;
             } else {
-                this.gridPaddingLeft = paddingY;
+                this.gridPaddingLeft = Math.max(0, h_left - this.gridMaxPaddingRight);
             }
         } else if (compare > 0) {
             radius = r2;
 
             double w_used = (2 * n + 1) * radius * cos_30;
-            double paddingX = (w - w_used) / 2;
+            double w_left = w - w_used;
+            double paddingX = w_left / 2;
             if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
-                this.gridPaddingLeft = paddingX;
+                this.gridPaddingLeft = Math.max(0, w_left - this.gridMaxPaddingRight);
             } else {
                 this.gridPaddingTop = paddingX;
                 this.gridPaddingBottom = paddingX;

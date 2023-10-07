@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
 
-import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -52,18 +51,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     private Keyboard.Config imeKeyboardConfig;
 
     private int prevFieldId;
-
-    /** 在横竖屏转换、字体大小等发生变更时调用 */
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            this.imeKeyboardConfig.setOrientation(Keyboard.Orientation.Landscape);
-        } else {
-            this.imeKeyboardConfig.setOrientation(Keyboard.Orientation.Portrait);
-        }
-
-        super.onConfigurationChanged(newConfig);
-    }
 
     /**
      * 启动输入，先于 {@link #onCreateInputView()} 和

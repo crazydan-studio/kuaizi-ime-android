@@ -23,10 +23,12 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -62,7 +64,8 @@ public abstract class BaseKeyboardView extends RecyclerView {
     }
 
     protected void updateKeys(Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode) {
-        this.layoutManager.configGrid(columns, rows, this.keySpacing);
+        int gridMaxPaddingRight = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);
+        this.layoutManager.configGrid(columns, rows, this.keySpacing, gridMaxPaddingRight);
         this.layoutManager.setReverse(isLeftHandMode);
 
         this.adapter.updateKeys(keys, themeResId);

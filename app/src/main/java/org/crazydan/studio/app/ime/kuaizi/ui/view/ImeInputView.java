@@ -282,7 +282,11 @@ public class ImeInputView extends FrameLayout
 
     private void bindKeyboard(Keyboard keyboard) {
         Keyboard.Config config = keyboard != null ? keyboard.getConfig() : null;
-        addBottomSpacing(this, config != null && config.isDesktopSwipeUpGestureAdapted());
+        // Note：仅竖屏模式下需要添加底部空白
+        addBottomSpacing(this,
+                         config != null
+                         && config.isDesktopSwipeUpGestureAdapted()
+                         && config.getOrientation() == Keyboard.Orientation.Portrait);
 
         if (keyboard != null) {
             keyboard.setInputList(this.inputList);
@@ -320,6 +324,12 @@ public class ImeInputView extends FrameLayout
 
         int themeResId = getThemeResId();
         patchedConfig.setThemeResId(themeResId);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            patchedConfig.setOrientation(Keyboard.Orientation.Landscape);
+        } else {
+            patchedConfig.setOrientation(Keyboard.Orientation.Portrait);
+        }
 
         return patchedConfig;
     }
