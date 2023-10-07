@@ -38,9 +38,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.ChoosingInputCandidateStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCandidateChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCharsSlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.SlippingInputStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
@@ -60,11 +60,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected KeyFactory doGetKeyFactory() {
+        InputList inputList = getInputList();
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
 
         switch (this.state.type) {
-            case Input_Slip_Doing: {
-                SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
+            case InputChars_Slip_Doing: {
+                InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
+                if (stateData.getLevel0Key() == null) {
+                    return null;
+                }
 
                 return () -> keyTable.createNextCharKeys(stateData.getLevel0Key().getText(),
                                                          stateData.getLevel1Key() != null ? stateData.getLevel1Key()
@@ -75,8 +79,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                          stateData.getLevel2NextChars());
             }
             case InputCandidate_Choose_Doing: {
-                ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
-                CharInput input = stateData.getInput();
+                InputCandidateChooseDoingStateData stateData = (InputCandidateChooseDoingStateData) this.state.data;
+                CharInput input = stateData.getTarget();
 
                 return () -> keyTable.createInputCandidateKeys(input,
                                                                stateData.getPagingData(),
@@ -87,7 +91,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 boolean hasNotation = false;
                 boolean hasVariant = false;
 
-                for (CharInput input : getInputList().getCharInputs()) {
+                for (CharInput input : inputList.getCharInputs()) {
                     InputWord word = input.getWord();
                     if (word == null) {
                         continue;
@@ -103,7 +107,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 boolean finalHasNotation = hasNotation;
                 boolean finalHasVariant = hasVariant;
-                return () -> keyTable.createInputListCommittingOptionKeys(getInputList().getOption(),
+                return () -> keyTable.createInputListCommittingOptionKeys(inputList.getOption(),
                                                                           finalHasNotation,
                                                                           finalHasVariant);
             }
@@ -121,23 +125,23 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Key<?> key = data.target;
         switch (this.state.type) {
-            case Input_Slip_Doing: {
-                on_SlippingInput_UserKeyMsg(msg, key, data);
+            case InputChars_Slip_Doing: {
+                on_InputChars_Slip_Doing_UserKey_Msg(msg, key, data);
                 break;
             }
             case InputCandidate_Choose_Doing: {
                 if (msg == UserKeyMsg.FingerFlipping) {
-                    on_InputCandidates_PageFlippingMsg(msg, key, data);
+                    on_InputCandidate_Choose_Doing_PageFlipping_Msg(msg, key, data);
                 } else if (key instanceof InputWordKey && !key.isDisabled()) {
-                    on_InputCandidates_InputWordKeyMsg(msg, (InputWordKey) key, data);
+                    on_InputCandidate_Choose_Doing_InputWordKey_Msg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
-                    on_InputCandidates_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                    on_InputCandidate_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
                 }
                 break;
             }
             case InputList_Committing_Option_Choose_Doing: {
                 if (key instanceof CtrlKey) {
-                    on_InputList_Committing_Option_CtrlKeyMsg(msg, (CtrlKey) key, data);
+                    on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
                 }
                 break;
             }
@@ -147,6 +151,36 @@ public class PinyinKeyboard extends BaseKeyboard {
                 } else if (key instanceof CtrlKey) {
                     onCtrlKeyMsg(msg, (CtrlKey) key, data);
                 }
+            }
+        }
+    }
+
+    private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
+        InputList inputList = getInputList();
+
+        switch (msg) {
+            case FingerMovingStart: {
+                // 开始滑屏输入
+                if (key.getType() == CharKey.Type.Alphabet) {
+                    play_DoubleTick_InputAudio(key);
+                    start_InputChars_Slipping(inputList, key);
+                }
+                break;
+            }
+            case KeySingleTap: {
+                // 单字符输入
+                play_SingleTick_InputAudio(key);
+                start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, false);
+                break;
+            }
+        }
+    }
+
+    private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        if (msg == UserKeyMsg.KeyLongPressStart) {
+            if (key.getType() == CtrlKey.Type.Commit_InputList) {
+                play_DoubleTick_InputAudio(key);
+                start_InputList_Committing_Option_Choosing(key);
             }
         }
     }
@@ -164,42 +198,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.pinyinDict.saveUsedData(phrases, emojis);
     }
 
-    private void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case FingerMovingStart: {
-                // 开始滑屏输入
-                if (key.getType() == CharKey.Type.Alphabet) {
-                    play_DoubleTick_InputAudio(key);
+    private void on_InputChars_Slip_Doing_UserKey_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        InputList inputList = getInputList();
 
-                    start_SlippingInput(key);
-                }
-                break;
-            }
-            case KeySingleTap: {
-                // 单字符输入
-                play_SingleTick_InputAudio(key);
-
-                start_Single_Key_Inputting(key, (UserSingleTapMsgData) data, false);
-                break;
-            }
-        }
-    }
-
-    private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.KeyLongPressStart) {
-            if (key.getType() == CtrlKey.Type.Commit_InputList) {
-                play_DoubleTick_InputAudio(key);
-
-                start_InputList_Committing_Option_Choosing(key);
-            }
-        }
-    }
-
-    private void on_SlippingInput_UserKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         switch (msg) {
             case FingerMoving: {
                 // 添加拼音后继字母
-                CharInput pending = getInputList().getPending();
+                CharInput pending = inputList.getPending();
 
                 // Note: 拼音不存在重复字母相邻的情况
                 Key<?> lastKey = pending.getLastKey();
@@ -208,21 +213,21 @@ public class PinyinKeyboard extends BaseKeyboard {
                     && !key.isSameWith(lastKey)) {
                     play_DoubleTick_InputAudio(key);
 
-                    do_SlippingInput(pending, key);
+                    do_InputChars_Slipping(inputList, pending, key);
                 }
                 break;
             }
             case FingerMovingEnd: {
-                CharInput pending = getInputList().getPending();
+                CharInput pending = inputList.getPending();
 
                 // 无候选字的输入，视为无效输入，直接丢弃
                 if (!pending.hasWord()) {
-                    drop_Pending(key);
+                    drop_Pending(inputList, key);
                 } else {
-                    determineNotConfirmedInputWordsBefore(pending);
+                    determine_NotConfirmed_InputWords_Before(inputList, pending);
 
                     // 确认字符输入后，光标需后移以继续输入其他字符
-                    confirm_Pending_and_MoveTo_NextGapInput(key);
+                    confirm_Pending_and_MoveTo_NextGapInput(inputList, key);
                 }
 
                 change_State_to_Init();
@@ -231,43 +236,48 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_InputCandidates_InputWordKeyMsg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
+    private void on_InputCandidate_Choose_Doing_InputWordKey_Msg(
+            UserKeyMsg msg, InputWordKey key, UserKeyMsgData data
+    ) {
+        InputList inputList = getInputList();
+
         if (msg == UserKeyMsg.KeySingleTap) {// 确认候选字
             play_SingleTick_InputAudio(key);
 
             InputWord word = key.getWord();
             // 候选字列表中的表情作为新增插入
             if (word instanceof EmojiInputWord) {
-                getInputList().confirmPendingAndMoveToNextGapInput();
+                inputList.confirmPendingAndMoveToNextGapInput();
 
                 InputWordKey emojiKey = InputWordKey.create(word);
-                getInputList().getPending().appendKey(emojiKey);
+                inputList.getPending().appendKey(emojiKey);
             }
 
-            getInputList().getPending().setWord(word);
+            inputList.getPending().setWord(word);
 
-            onConfirmSelectedInputCandidate();
+            confirm_Selected_InputCandidate(inputList);
         }
     }
 
-    private void on_InputCandidates_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    private void on_InputCandidate_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         if (msg != UserKeyMsg.KeySingleTap) {
             return;
         }
 
-        CharInput pending = getInputList().getPending();
+        InputList inputList = getInputList();
+        CharInput pending = inputList.getPending();
         // 丢弃或变更拼音
         switch (key.getType()) {
             case DropInput: {
                 play_SingleTick_InputAudio(key);
 
-                delete_Selected_Input(key);
+                delete_Selected_Input(inputList, key);
                 change_State_to_Init();
                 break;
             }
             case ConfirmInput: {
                 play_SingleTick_InputAudio(key);
-                onConfirmSelectedInputCandidate();
+                confirm_Selected_InputCandidate(inputList);
                 break;
             }
             case Toggle_PinyinInput_spell: {
@@ -286,7 +296,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         break;
                 }
 
-                start_InputCandidate_Choosing(pending, true);
+                start_InputCandidate_Choosing(inputList, pending, true);
                 break;
             }
             case Filter_PinyinInputCandidate_stroke: {
@@ -296,7 +306,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_InputCandidates_PageFlippingMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+    private void on_InputCandidate_Choose_Doing_PageFlipping_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         UserFingerFlippingMsgData flippingData = (UserFingerFlippingMsgData) data;
 
         // 减去过滤的笔画数
@@ -308,19 +318,19 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 翻页
         update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, flippingData);
 
-        do_InputCandidate_Choosing(((ChoosingInputCandidateStateData) this.state.data).getInput());
+        fire_InputCandidate_Choose_Doing(((InputCandidateChooseDoingStateData) this.state.data).getTarget());
     }
 
     // >>>>>>>>> 滑屏输入
-    private void start_SlippingInput(Key<?> key) {
-        this.state = new State(State.Type.Input_Slip_Doing, new SlippingInputStateData());
+    private void start_InputChars_Slipping(InputList inputList, Key<?> key) {
+        change_State_To(key, new State(State.Type.InputChars_Slip_Doing, new InputCharsSlipDoingStateData()));
 
-        CharInput pending = getInputList().newPending();
-        do_SlippingInput(pending, key);
+        CharInput pending = inputList.newPending();
+        do_InputChars_Slipping(inputList, pending, key);
     }
 
-    private void do_SlippingInput(CharInput input, Key<?> currentKey) {
-        SlippingInputStateData stateData = ((SlippingInputStateData) this.state.data);
+    private void do_InputChars_Slipping(InputList inputList, CharInput input, Key<?> currentKey) {
+        InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
         Key.Level currentKeyLevel = currentKey.getLevel();
 
         // 添加后继字母，
@@ -365,7 +375,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         // 并确定候选字
-        determineNotConfirmedInputWord(input);
+        determine_NotConfirmed_InputWord(inputList, input);
 
         fire_InputChars_Input_Doing(currentKey);
     }
@@ -374,24 +384,24 @@ public class PinyinKeyboard extends BaseKeyboard {
     // <<<<<<<<< 对输入候选字的操作
 
     /** 进入候选字选择状态，并处理候选字翻页 */
-    private void start_InputCandidate_Choosing(CharInput input, boolean inputPinyinChanged) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
+    private void start_InputCandidate_Choosing(InputList inputList, CharInput input, boolean inputPinyinChanged) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
         int pageSize = keyTable.getInputCandidateKeysPageSize();
         int bestCandidatesTop = 17;
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(input, bestCandidatesTop);
+        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(inputList, input, bestCandidatesTop);
 
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
             List<InputWord> finalTopBestCandidates = topBestCandidates;
-            determineNotConfirmedInputWord(input, () -> finalTopBestCandidates);
+            determine_NotConfirmed_InputWord(inputList, input, () -> finalTopBestCandidates);
         }
 
         // Note：以最新确定的输入候选字做为表情的关键字查询条件
-        List<InputWord> topBestEmojis = getTopBestEmojis(input, bestEmojisTop);
+        List<InputWord> topBestEmojis = getTopBestEmojis(inputList, input, bestEmojisTop);
         topBestCandidates.addAll(topBestEmojis);
 
         if (!topBestCandidates.isEmpty()) {
@@ -400,60 +410,68 @@ public class PinyinKeyboard extends BaseKeyboard {
                 allCandidates.removeAll(topBestCandidates);
                 allCandidates.addAll(0, topBestCandidates);
 
-                allCandidates = reorderTopBestCandidateWordsAndEmojis(allCandidates, bestCandidatesTop, pageSize);
+                allCandidates = reorder_TopBest_CandidateWords_and_Emojis(allCandidates, bestCandidatesTop, pageSize);
             } else {
-                topBestCandidates = reorderTopBestCandidateWordsAndEmojis(topBestCandidates,
-                                                                          bestCandidatesTop,
-                                                                          pageSize);
+                topBestCandidates = reorder_TopBest_CandidateWords_and_Emojis(topBestCandidates,
+                                                                              bestCandidatesTop,
+                                                                              pageSize);
 
                 allCandidates.addAll(0, topBestCandidates);
             }
         }
 
-        ChoosingInputCandidateStateData stateData = new ChoosingInputCandidateStateData(input, allCandidates, pageSize);
-        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
+        InputCandidateChooseDoingStateData stateData = new InputCandidateChooseDoingStateData(input,
+                                                                                              allCandidates,
+                                                                                              pageSize);
+        change_State_To(null, new State(State.Type.InputCandidate_Choose_Doing, stateData));
 
-        do_InputCandidate_Choosing(input);
+        fire_InputCandidate_Choose_Doing(input);
     }
 
     private void do_InputCandidate_Filtering_ByStroke(CtrlKey key, int strokeIncrement) {
-        ChoosingInputCandidateStateData stateData = (ChoosingInputCandidateStateData) this.state.data;
+        InputCandidateChooseDoingStateData stateData = (InputCandidateChooseDoingStateData) this.state.data;
 
         CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
         if (stateData.addStroke(option.value(), strokeIncrement)) {
             play_SingleTick_InputAudio(key);
         }
 
-        do_InputCandidate_Choosing(stateData.getInput());
+        fire_InputCandidate_Choose_Doing(stateData.getTarget());
     }
 
-    private void do_InputCandidate_Choosing(CharInput input) {
+    private void fire_InputCandidate_Choose_Doing(CharInput input) {
         InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+
         fireInputMsg(InputMsg.InputCandidate_Choose_Doing, data);
     }
 
-    private void onConfirmSelectedInputCandidate() {
-        CharInput pending = getInputList().getPending();
+    private void fire_InputCandidate_Choose_Done(CharInput input) {
+        InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+
+        fireInputMsg(InputMsg.InputCandidate_Choose_Done, data);
+    }
+
+    private void confirm_Selected_InputCandidate(InputList inputList) {
+        CharInput pending = inputList.getPending();
 
         pending.getWord().setConfirmed(true);
-        getInputList().confirmPending();
+        inputList.confirmPending();
 
-        InputMsgData data = new InputCandidateChoosingMsgData(null, pending);
-        fireInputMsg(InputMsg.InputCandidate_Choose_Done, data);
+        fire_InputCandidate_Choose_Done(pending);
 
         // 继续选择下一个拼音输入的候选字
         Input<?> selected;
         do {
-            getInputList().moveToNextCharInput();
-            selected = getInputList().getSelected();
-        } while (selected != null && !selected.isPinyin() && selected != getInputList().getLastInput());
+            inputList.moveToNextCharInput();
+            selected = inputList.getSelected();
+        } while (selected != null && !selected.isPinyin() && selected != inputList.getLastInput());
 
         // Note：前序已确认，则继续自动确认下一个拼音输入
         if (selected != null && selected.isPinyin()) {
-            determineNotConfirmedInputWordsBefore((CharInput) selected);
+            determine_NotConfirmed_InputWords_Before(inputList, (CharInput) selected);
         }
 
-        start_Input_Choosing(selected);
+        start_Input_Choosing(inputList, selected);
     }
 
     /**
@@ -464,14 +482,14 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入完成后，对未确认前序的候选字按匹配的最佳短语进行调整，
      * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
      */
-    private void determineNotConfirmedInputWordsBefore(CharInput input) {
-        List<CharInput> inputs = CollectionUtils.last(getInputList().getPinyinPhraseInputsBefore(input));
+    private void determine_NotConfirmed_InputWords_Before(InputList inputList, CharInput input) {
+        List<CharInput> inputs = CollectionUtils.last(inputList.getPinyinPhraseInputsBefore(input));
         if (inputs == null || inputs.isEmpty()) {
             return;
         }
 
         // Note: top 取 0 以避免查询单字
-        BestCandidateWords best = getTopBestCandidateWords(input, 0);
+        BestCandidateWords best = getTopBestCandidateWords(inputList, input, 0);
         if (best.phrases.isEmpty()) {
             return;
         }
@@ -511,7 +529,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
 
             String wordId = bestMatchedPhrase[i];
-            Map<String, InputWord> candidateMap = getInputCandidateWords(target);
+            Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, target);
             InputWord word = candidateMap.get(wordId);
 
             // Note：可能存在用户数据与内置字典数据不一致的情况
@@ -528,13 +546,15 @@ public class PinyinKeyboard extends BaseKeyboard {
      * <p/>
      * 在滑屏输入中实时调用
      */
-    private void determineNotConfirmedInputWord(CharInput input) {
-        determineNotConfirmedInputWord(input, () -> getTopBestInputCandidateWords(input, 1));
+    private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
+        determine_NotConfirmed_InputWord(inputList, input, () -> getTopBestInputCandidateWords(inputList, input, 1));
     }
 
     /** 在滑屏输入中，以及拼音纠正切换中被调用 */
-    private void determineNotConfirmedInputWord(CharInput input, Supplier<List<InputWord>> topBestCandidatesGetter) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+    private void determine_NotConfirmed_InputWord(
+            InputList inputList, CharInput input, Supplier<List<InputWord>> topBestCandidatesGetter
+    ) {
+        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
 
         if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
             List<InputWord> topBestCandidates = topBestCandidatesGetter.get();
@@ -549,13 +569,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private List<InputWord> getTopBestInputCandidateWords(CharInput input, int top) {
-        BestCandidateWords best = getTopBestCandidateWords(input, top);
+    private List<InputWord> getTopBestInputCandidateWords(InputList inputList, CharInput input, int top) {
+        BestCandidateWords best = getTopBestCandidateWords(inputList, input, top);
         if (best.words.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Map<String, InputWord> candidateMap = getInputCandidateWords(input);
+        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
 
         return best.words.stream().map(candidateMap::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
@@ -567,27 +587,27 @@ public class PinyinKeyboard extends BaseKeyboard {
      *
      * @return 不为 <code>null</code>
      */
-    private Map<String, InputWord> getInputCandidateWords(CharInput input) {
-        Map<String, InputWord> words = getInputList().getCachedCandidateWords(input);
+    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
+        Map<String, InputWord> words = inputList.getCachedCandidateWords(input);
 
         if (words == null) {
             List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
-            getInputList().cacheCandidateWords(input, candidates);
+            inputList.cacheCandidateWords(input, candidates);
 
-            words = getInputList().getCachedCandidateWords(input);
+            words = inputList.getCachedCandidateWords(input);
         }
         return words;
     }
 
-    private BestCandidateWords getTopBestCandidateWords(CharInput input, int top) {
+    private BestCandidateWords getTopBestCandidateWords(InputList inputList, CharInput input, int top) {
         // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> prevPhrase = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
+        List<InputWord> prevPhrase = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
 
         return this.pinyinDict.findTopBestCandidateWords(input, top, prevPhrase, getConfig().isUserInputDataDisabled());
     }
 
-    private List<InputWord> getTopBestEmojis(CharInput input, int top) {
-        List<InputWord> prevPhrase = CollectionUtils.last(getInputList().getPinyinPhraseWordsBefore(input));
+    private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {
+        List<InputWord> prevPhrase = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
 
         return this.pinyinDict.findTopBestEmojisMatchedPhrase(input, top, prevPhrase);
     }
@@ -597,7 +617,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 确保表情符号和候选字各自独占特定区域，
      * 并填充 <code>null</code> 以占满一页
      */
-    private List<InputWord> reorderTopBestCandidateWordsAndEmojis(
+    private List<InputWord> reorder_TopBest_CandidateWords_and_Emojis(
             List<InputWord> candidates, int wordCount, int pageSize
     ) {
         List<InputWord> results = new ArrayList<>(pageSize);
@@ -627,22 +647,26 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // >>>>>>>>> 对输入列表 提交选项 的操作
     private void start_InputList_Committing_Option_Choosing(Key<?> key) {
-        this.state = new State(State.Type.InputList_Committing_Option_Choose_Doing);
-
-        fire_InputChars_Input_Done(key);
+        change_State_To(key, new State(State.Type.InputList_Committing_Option_Choose_Doing));
     }
 
-    private void on_InputList_Committing_Option_CtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    private void on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(
+            UserKeyMsg msg, CtrlKey key, UserKeyMsgData data
+    ) {
+        InputList inputList = getInputList();
+
         switch (msg) {
             case KeySingleTap: {
                 if (key.getType() == CtrlKey.Type.Commit_InputList_Option) {
                     play_SingleTick_InputAudio(key);
 
-                    CtrlKey.CommitInputListOption.Option option
-                            = ((CtrlKey.CommitInputListOption) key.getOption()).value();
+                    CtrlKey.InputListCommitOption.Option option
+                            = ((CtrlKey.InputListCommitOption) key.getOption()).value();
 
-                    Input.Option oldInputOption = getInputList().getOption();
-                    oldInputOption = oldInputOption != null ? oldInputOption : new Input.Option(null, false);
+                    Input.Option oldInputOption = inputList.getOption();
+                    if (oldInputOption == null) {
+                        oldInputOption = new Input.Option(null, false);
+                    }
 
                     Input.Option newInputOption = null;
                     switch (option) {
@@ -674,7 +698,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                             break;
                         }
                     }
-                    getInputList().setOption(newInputOption);
+                    inputList.setOption(newInputOption);
 
                     fire_InputChars_Input_Done(key);
                 }
@@ -684,7 +708,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (key.getType() == CtrlKey.Type.Commit_InputList) {
                     play_DoubleTick_InputAudio(key);
 
-                    getInputList().setOption(null);
+                    inputList.setOption(null);
 
                     change_State_to_Init(key);
                 }
@@ -698,10 +722,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 在输入列表中选中拼音输入的候选字 */
     @Override
-    protected boolean do_Choosing_Input_in_InputList(CharInput input) {
+    protected boolean do_Input_Choosing(InputList inputList, CharInput input) {
         // 仅当待输入为拼音时才进入候选字模式
         if (input.isPinyin()) {
-            start_InputCandidate_Choosing(input, false);
+            start_InputCandidate_Choosing(inputList, input, false);
             return true;
         }
         return false;

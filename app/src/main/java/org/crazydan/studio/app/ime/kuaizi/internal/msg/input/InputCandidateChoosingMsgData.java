@@ -22,16 +22,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputCandidate_Choose_Doing} 消息数据
+ * {@link InputMsg#InputCandidate_Choose_Doing}
+ * 和 {@link InputMsg#InputCandidate_Choose_Done}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-23
  */
 public class InputCandidateChoosingMsgData extends InputCommonMsgData {
-    public final CharInput input;
+    public final CharInput target;
 
-    public InputCandidateChoosingMsgData(Keyboard.KeyFactory keyFactory, CharInput input) {
+    public InputCandidateChoosingMsgData(Keyboard.KeyFactory keyFactory, CharInput target) {
         super(keyFactory);
-        this.input = input;
+        this.target = target;
     }
 }

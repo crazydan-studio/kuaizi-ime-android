@@ -52,7 +52,7 @@ public enum InputMsg {
     InputList_PairSymbol_Commit_Doing,
 
     /** 定位 目标编辑器 的光标 */
-    Editor_Cursor_Locate_Doing,
+    Editor_Cursor_Move_Doing,
     /** 选择 目标编辑器 的内容 */
     Editor_Range_Select_Doing,
     /** 编辑 目标编辑器 */

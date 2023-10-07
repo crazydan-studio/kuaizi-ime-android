@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
@@ -59,15 +60,13 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     }
 
     protected void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        switch (msg) {
-            case KeySingleTap: {
-                // 单字符直接输入
-                play_SingleTick_InputAudio(key);
+        InputList inputList = getInputList();
 
-                boolean directInputting = getInputList().isEmpty();
-                start_Single_Key_Inputting(key, (UserSingleTapMsgData) data, directInputting);
-                break;
-            }
+        if (msg == UserKeyMsg.KeySingleTap) {// 单字符直接输入
+            play_SingleTick_InputAudio(key);
+
+            boolean isDirectInputting = inputList.isEmpty();
+            start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, isDirectInputting);
         }
     }
 

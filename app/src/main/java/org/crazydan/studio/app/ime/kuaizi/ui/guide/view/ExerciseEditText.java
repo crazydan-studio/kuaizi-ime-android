@@ -23,15 +23,15 @@ import android.content.Context;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommitDoingMsgData;
 
 /**
  * 用于筷字输入法使用练习的编辑框
@@ -53,30 +53,30 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Commit_Doing: {
-                InputListCommittingMsgData d = (InputListCommittingMsgData) data;
+                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
-                revokeCommitting();
+                revokeTextCommitting();
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
+                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) data;
                 commitText(d.left, d.right);
                 break;
             }
-            case Editor_Cursor_Locate_Doing: {
-                locateInputCursor(((EditorCursorMovingMsgData) data).anchor);
+            case Editor_Cursor_Move_Doing: {
+                moveCursor(((EditorCursorMovingMsgData) data).anchor);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectInputText(((EditorCursorMovingMsgData) data).anchor);
+                selectText(((EditorCursorMovingMsgData) data).anchor);
                 break;
             }
             case Editor_Edit_Doing: {
                 EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
-                editInput(d.action);
+                editEditor(d.action);
                 break;
             }
         }
@@ -127,11 +127,11 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         }
     }
 
-    private void backwardDeleteInput() {
+    private void backspace() {
         sendKey(KeyEvent.KEYCODE_DEL);
     }
 
-    private void locateInputCursor(Motion anchor) {
+    private void moveCursor(Motion anchor) {
         if (anchor == null || anchor.distance <= 0) {
             return;
         }
@@ -155,21 +155,21 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         }
     }
 
-    private void selectInputText(Motion anchor) {
+    private void selectText(Motion anchor) {
         if (anchor == null || anchor.distance <= 0) {
             return;
         }
 
         // Note: 通过 shift + 方向键 的方式进行文本选择
         sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
-        locateInputCursor(anchor);
+        moveCursor(anchor);
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editInput(InputEditAction action) {
+    private void editEditor(EditorEditAction action) {
         switch (action) {
             case backspace:
-                backwardDeleteInput();
+                backspace();
                 break;
             case copy:
                 onTextContextMenuItem(android.R.id.copy);
@@ -189,8 +189,8 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         }
     }
 
-    private void revokeCommitting() {
-        editInput(InputEditAction.undo);
+    private void revokeTextCommitting() {
+        editEditor(EditorEditAction.undo);
     }
 
     private void sendKey(int code) {

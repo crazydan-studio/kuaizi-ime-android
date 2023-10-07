@@ -315,11 +315,11 @@ public class PinyinKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[1][index_end]
-                = commitOptionKey(CtrlKey.CommitInputListOption.Option.only_pinyin).setDisabled(!hasNotation);
+                = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin).setDisabled(!hasNotation);
         gridKeys[2][index_end]
-                = commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin).setDisabled(!hasNotation);
+                = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin).setDisabled(!hasNotation);
         gridKeys[4][index_end]
-                = commitOptionKey(CtrlKey.CommitInputListOption.Option.switch_simple_trad).setDisabled(!hasVariant
+                = commitOptionKey(CtrlKey.InputListCommitOption.Option.switch_simple_trad).setDisabled(!hasVariant
                                                                                                        || isOnlyPinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
@@ -361,8 +361,8 @@ public class PinyinKeyTable extends KeyTable {
         return ctrlKey(type).setOption(option).setLabel(label);
     }
 
-    public CtrlKey commitOptionKey(CtrlKey.CommitInputListOption.Option opt) {
-        CtrlKey.Option<?> option = new CtrlKey.CommitInputListOption(opt);
+    public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt) {
+        CtrlKey.Option<?> option = new CtrlKey.InputListCommitOption(opt);
         String label = null;
         switch (opt) {
             case only_pinyin:

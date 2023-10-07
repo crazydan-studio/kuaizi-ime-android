@@ -18,19 +18,19 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#Editor_Edit_Doing}消息数据
+ * {@link InputMsg#Editor_Edit_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-14
  */
 public class EditorEditDoingMsgData extends InputCommonMsgData {
-    public final InputEditAction action;
+    public final EditorEditAction action;
 
-    public EditorEditDoingMsgData(Keyboard.KeyFactory keyFactory, InputEditAction action) {
+    public EditorEditDoingMsgData(Keyboard.KeyFactory keyFactory, EditorEditAction action) {
         super(keyFactory);
         this.action = action;
     }

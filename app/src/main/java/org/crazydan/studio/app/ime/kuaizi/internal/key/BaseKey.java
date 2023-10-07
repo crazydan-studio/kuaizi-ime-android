@@ -32,6 +32,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private Integer iconResId;
 
     private boolean disabled;
+    private boolean clickable;
     private KeyColor color = KeyColor.none();
 
     @Override
@@ -67,6 +68,17 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     @Override
     public K setDisabled(boolean disabled) {
         this.disabled = disabled;
+        return (K) this;
+    }
+
+    @Override
+    public boolean isClickable() {
+        return this.clickable;
+    }
+
+    @Override
+    public K setClickable(boolean clickable) {
+        this.clickable = clickable;
         return (K) this;
     }
 

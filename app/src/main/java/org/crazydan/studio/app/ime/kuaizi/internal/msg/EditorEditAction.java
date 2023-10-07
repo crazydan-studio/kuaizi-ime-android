@@ -15,26 +15,28 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
-
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 /**
- * {@link InputMsg#InputChars_Input_Doing}
- * 和 {@link InputMsg#InputChars_Input_Done}
- * 消息数据
+ * 编辑器的编辑动作
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-09-14
  */
-public class InputCharsInputMsgData extends InputCommonMsgData {
-    /** 当前输入按键 */
-    public final Key<?> key;
+public enum EditorEditAction {
+    /** 无操作 */
+    noop,
 
-    public InputCharsInputMsgData(Keyboard.KeyFactory keyFactory, Key<?> key) {
-        super(keyFactory);
-        this.key = key;
-    }
+    /** 回删 */
+    backspace,
+    /** 复制 */
+    copy,
+    /** 粘贴 */
+    paste,
+    /** 剪切 */
+    cut,
+    /** 撤销 */
+    undo,
+    /** 重做 */
+    redo,
 }

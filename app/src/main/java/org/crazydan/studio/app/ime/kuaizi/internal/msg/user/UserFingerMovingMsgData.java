@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link UserKeyMsg#FingerMoving}消息数据
+ * {@link UserKeyMsg#FingerMoving} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06

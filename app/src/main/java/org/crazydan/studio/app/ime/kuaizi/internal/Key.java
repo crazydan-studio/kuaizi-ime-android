@@ -46,6 +46,12 @@ public interface Key<K extends Key<?>> extends ViewData {
     /** 设置为禁用 */
     K setDisabled(boolean disabled);
 
+    /** 是否可点击 */
+    boolean isClickable();
+
+    /** 设置为可点击 */
+    K setClickable(boolean clickable);
+
     /**
      * 获取按键对应的文本字符
      * <p/>

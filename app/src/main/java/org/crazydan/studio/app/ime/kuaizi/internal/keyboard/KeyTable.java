@@ -141,7 +141,7 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
-        ctrl_key_styles.put(CtrlKey.Type.Edit_InputTarget, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);
     }
 
     protected final Config config;
@@ -241,6 +241,14 @@ public abstract class KeyTable {
             }
 
             color = style.color;
+        }
+
+        switch (key.getType()) {
+            case NoOp:
+            case Editor_Cursor_Locator:
+            case Editor_Range_Selector:
+                key.setClickable(false);
+                break;
         }
 
         return key.setIconResId(icon).setColor(color);

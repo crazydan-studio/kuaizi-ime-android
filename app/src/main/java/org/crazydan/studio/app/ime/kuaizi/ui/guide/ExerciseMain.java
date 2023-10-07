@@ -44,10 +44,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
@@ -323,7 +323,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_0.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -333,7 +333,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputCandidate_Choose_Doing: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -352,7 +352,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_1.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -368,7 +368,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (!key.getLabel().startsWith(key_level_2.getLabel().substring(0, 2))) {
                                          exercise.gotoStep("input_level_1");
 
@@ -378,7 +378,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputChars_Input_Done: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key != null && key.getLabel().equals(key_level_2.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -392,7 +392,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("select_auto_word", "请点击键盘上方的候选字 <b>" + expectedAutoWord + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputCandidate_Choose_Doing: {
-                    CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                    CharInput input = ((InputCandidateChoosingMsgData) data).target;
                     InputWord word = input.getWord();
 
                     if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -411,7 +411,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputCandidate_Choose_Done: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && case_word.getValue().equals(word.getValue())) {
@@ -475,7 +475,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_0.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -485,7 +485,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputCandidate_Choose_Doing: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -504,7 +504,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (!key.getLabel().equals(key_level_1.getLabel())) {
                                          warning("请按照指导步骤滑到按键 <big><b>%s</b></big> 上，再从其上滑出",
                                                  key_level_1.getLabel());
@@ -512,7 +512,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputChars_Input_Done: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_1.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -526,7 +526,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("select_auto_word", "请点击键盘上方的候选字 <b>" + expectedAutoWord + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputCandidate_Choose_Doing: {
-                    CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                    CharInput input = ((InputCandidateChoosingMsgData) data).target;
                     InputWord word = input.getWord();
 
                     if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -563,7 +563,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputCandidate_Choose_Done: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && case_word.getValue().equals(word.getValue())) {
@@ -604,7 +604,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key<?> key_ctrl_commit_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
         Key<?> key_ctrl_commit_opt_with_pinyin
-                = keyTable.commitOptionKey(CtrlKey.CommitInputListOption.Option.with_pinyin);
+                = keyTable.commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin);
 
         String expectedAutoWord = "自";
         String notSelectExpectedAutoWordMsgText = "请按照指导步骤选中键盘上方的候选字 <big><b>%s</b></big>";
@@ -625,7 +625,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_0.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -635,7 +635,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputCandidate_Choose_Doing: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -654,7 +654,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (!key.getLabel().equals(key_level_1.getLabel())) {
                                          warning("请按照指导步骤滑到按键 <big><b>%s</b></big> 上，再从其上滑出",
                                                  key_level_1.getLabel());
@@ -662,7 +662,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      break;
                                  }
                                  case InputChars_Input_Done: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getLabel().equals(key_level_1.getLabel())) {
                                          exercise.gotoNextStep();
                                      } else {
@@ -676,7 +676,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("select_auto_word", "请点击键盘上方的候选字 <b>" + expectedAutoWord + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputCandidate_Choose_Doing: {
-                    CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                    CharInput input = ((InputCandidateChoosingMsgData) data).target;
                     InputWord word = input.getWord();
 
                     if (word != null && expectedAutoWord.equals(word.getValue())) {
@@ -693,7 +693,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputCandidate_Choose_Done: {
-                                     CharInput input = ((InputCandidateChoosingMsgData) data).input;
+                                     CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                      InputWord word = input.getWord();
 
                                      if (word != null && case_word.getValue().equals(word.getValue())) {
@@ -712,7 +712,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>，进入提交选项界面；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Done: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key != null && key.equals(key_ctrl_commit)) {
                         exercise.gotoNextStep();
                     } else {
@@ -728,7 +728,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "<b>注</b>：可多次点击做形式切换；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Done: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key != null && key.equals(key_ctrl_commit_opt_with_pinyin)) {
                         exercise.gotoNextStep();
                     } else {
@@ -773,8 +773,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_cursor_locate = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         Key<?> key_ctrl_text_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
         Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
-        Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(InputEditAction.copy);
-        Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(InputEditAction.paste);
+        Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(EditorEditAction.copy);
+        Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(EditorEditAction.paste);
 
         Exercise exercise = Exercise.normal("输入内容编辑", sandboxView::getImage);
         exercise.setDisableUserInputData(true);
@@ -786,7 +786,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + sandboxView.withKey(key_ctrl_cursor_locate)
                          + "\"/>上进行左/右/上/下快速滑动，并观察目标输入框中光标位置的变化；", (msg, data) -> {
             switch (msg) {
-                case Editor_Cursor_Locate_Doing: {
+                case Editor_Cursor_Move_Doing: {
                     Key<?> key = data.getKey();
                     if (key.equals(key_ctrl_cursor_locate)) {
                         exercise.gotoNextStep();
@@ -799,7 +799,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + sandboxView.withKey(key_ctrl_cursor_locate)
                          + "\"/>，在键盘发生变换后释放手指；", (msg, data) -> {
             switch (msg) {
-                case Editor_Cursor_Locate_Doing: {
+                case Editor_Cursor_Move_Doing: {
                     Key<?> key = data.getKey();
                     if (key.equals(key_ctrl_cursor_locate)) {
                         exercise.gotoNextStep();
@@ -880,7 +880,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_b.getText().toUpperCase())) {
                         exercise.gotoNextStep();
                     }
@@ -895,7 +895,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_e.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -907,7 +907,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getText().equals(key_ctrl_space.getText())) {
                                          exercise.gotoNextStep();
                                      }
@@ -922,7 +922,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_h.getText().toUpperCase())) {
                         exercise.gotoNextStep();
                     }
@@ -937,7 +937,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_a.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -952,7 +952,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_p.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -967,7 +967,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_p.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -982,7 +982,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_char_y.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -995,7 +995,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>以输入英文标点 <b>!</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals("!")) {
                         exercise.gotoNextStep();
                     }
@@ -1057,7 +1057,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_number_3.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1072,7 +1072,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_op_multiply.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1084,7 +1084,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          (msg, data) -> {
                              switch (msg) {
                                  case InputChars_Input_Doing: {
-                                     Key<?> key = ((InputCharsInputMsgData) data).key;
+                                     Key<?> key = ((InputCharsInputtingMsgData) data).key;
                                      if (key.getText().equals(key_op_brackets.getText())) {
                                          exercise.gotoNextStep();
                                      }
@@ -1099,7 +1099,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_number_2.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1114,7 +1114,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_op_plus.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1129,7 +1129,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_number_1.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1144,7 +1144,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_op_equal.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1181,7 +1181,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>以向目标输入框中输入换行符；", (msg, data) -> {
             switch (msg) {
                 case InputList_Commit_Doing: {
-                    CharSequence text = ((InputListCommittingMsgData) data).text;
+                    CharSequence text = ((InputListCommitDoingMsgData) data).text;
                     if (text.equals(key_ctrl_enter.getText())) {
                         exercise.gotoNextStep();
                     }
@@ -1192,7 +1192,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("请按照以上步骤输入 <b>= 3 × (2 + 1)</b>；", (msg, data) -> {
             switch (msg) {
                 case InputChars_Input_Doing: {
-                    Key<?> key = ((InputCharsInputMsgData) data).key;
+                    Key<?> key = ((InputCharsInputtingMsgData) data).key;
                     if (key.getText().equals(key_number_1.getText())) {
                         exercise.gotoNextStep();
                     }

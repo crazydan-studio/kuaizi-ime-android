@@ -103,7 +103,9 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
     private void onPressStart(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         if (isAvailableKeyView(keyView)) {
-            keyView.touchDown();
+            if (keyView.getData().isClickable()) {
+                keyView.touchDown();
+            }
         }
 
         onUserKeyMsg(UserKeyMsg.KeyPressStart, keyView, data);
@@ -111,7 +113,9 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
 
     private void onPressEnd(KeyView<?, ?> keyView, RecyclerViewGestureDetector.GestureData data) {
         if (isAvailableKeyView(keyView)) {
-            keyView.touchUp();
+            if (keyView.getData().isClickable()) {
+                keyView.touchUp();
+            }
         }
 
         onUserKeyMsg(UserKeyMsg.KeyPressEnd, keyView, data);

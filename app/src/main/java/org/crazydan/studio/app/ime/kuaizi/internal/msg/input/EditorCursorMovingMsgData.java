@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**
  * {@link InputMsg#Editor_Range_Select_Doing}
- * 和 {@link InputMsg#Editor_Cursor_Locate_Doing}
+ * 和 {@link InputMsg#Editor_Cursor_Move_Doing}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -33,10 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 public class EditorCursorMovingMsgData extends InputCommonMsgData {
     /** 锚点信息 */
     public final Motion anchor;
-
-    public EditorCursorMovingMsgData(Key<?> key, Motion anchor) {
-        this(null, key, anchor);
-    }
 
     public EditorCursorMovingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, Motion anchor) {
         super(keyFactory, key);

@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * 输入编辑动作
+ * {@link InputMsg#InputList_Commit_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-14
+ * @date 2023-07-15
  */
-public enum InputEditAction {
-    /** 无操作 */
-    noop,
+public class InputListCommitDoingMsgData extends InputCommonMsgData {
+    public final CharSequence text;
+    public final List<String> replacements;
 
-    /** 回删 */
-    backspace,
-    /** 复制 */
-    copy,
-    /** 粘贴 */
-    paste,
-    /** 剪切 */
-    cut,
-    /** 撤销 */
-    undo,
-    /** 重做 */
-    redo,
+    public InputListCommitDoingMsgData(
+            Keyboard.KeyFactory keyFactory, CharSequence text, List<String> replacements
+    ) {
+        super(keyFactory);
+        this.text = text;
+        this.replacements = replacements != null ? replacements : new ArrayList<>();
+    }
 }

@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link UserKeyMsg#FingerFlipping}消息数据
+ * {@link UserKeyMsg#FingerFlipping} 消息数据
  * <p/>
  * 注：<ul>
  * <li>{@link #target} 为滑动开始所按下的按键；</li>

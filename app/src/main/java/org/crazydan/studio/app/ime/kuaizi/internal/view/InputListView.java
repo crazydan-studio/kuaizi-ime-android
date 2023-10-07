@@ -91,16 +91,17 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputChars_Input_Doing:
             case InputChars_Input_Done:
             case InputCandidate_Choose_Doing:
+            case InputCandidate_Choose_Done:
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing:
-            case InputList_Clean_Done:
             case InputList_Cursor_Move_Done:
             case InputList_Pending_Drop_Done:
             case InputList_Selected_Delete_Done:
+            case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done:
-            case InputList_Committed_Revoke_Doing:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
+            case InputList_Committed_Revoke_Doing:
                 this.adapter.updateInputList(this.inputList);
 
                 int position = this.inputList.getSelectedIndex();

@@ -31,11 +31,15 @@ public class State {
     public final State previous;
 
     public State(Type type) {
-        this(type, null);
+        this(type, null, null);
     }
 
     public State(Type type, Data data) {
         this(type, data, null);
+    }
+
+    public State(Type type, State previous) {
+        this(type, null, previous);
     }
 
     public State(Type type, Data data, State previous) {
@@ -48,7 +52,7 @@ public class State {
         /** 待输入 */
         InputChars_Input_Waiting,
         /** 滑屏输入中 */
-        Input_Slip_Doing,
+        InputChars_Slip_Doing,
         /** 输入列表 提交选项 选择中 */
         InputList_Committing_Option_Choose_Doing,
 

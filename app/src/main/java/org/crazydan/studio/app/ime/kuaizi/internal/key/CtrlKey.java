@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 
 /**
  * 控制{@link Key 按键}
@@ -128,12 +128,12 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 在候选字状态下根据笔画过滤候选字 */
         Filter_PinyinInputCandidate_stroke,
 
-        /** 定位目标编辑器光标 */
+        /** 定位 目标编辑器 光标 */
         Editor_Cursor_Locator,
-        /** 选择目标编辑器内容 */
+        /** 选择 目标编辑器 内容 */
         Editor_Range_Selector,
-        /** 编辑 输入目标 */
-        Edit_InputTarget,
+        /** 编辑 目标编辑器 */
+        Edit_Editor,
 
         /** 回车 */
         Enter,
@@ -190,8 +190,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         }
     }
 
-    public static class CommitInputListOption extends Option<CommitInputListOption.Option> {
-        public CommitInputListOption(Option value) {
+    public static class InputListCommitOption extends Option<InputListCommitOption.Option> {
+        public InputListCommitOption(Option value) {
             super(value);
         }
 
@@ -205,8 +205,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         }
     }
 
-    public static class EditEditorOption extends Option<InputEditAction> {
-        public EditEditorOption(InputEditAction value) {
+    public static class EditorEditOption extends Option<EditorEditAction> {
+        public EditorEditOption(EditorEditAction value) {
             super(value);
         }
     }

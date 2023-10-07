@@ -17,27 +17,24 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputList_Commit_Doing}消息数据
+ * {@link InputMsg#InputChars_Input_Doing}
+ * 和 {@link InputMsg#InputChars_Input_Done}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-15
+ * @date 2023-07-06
  */
-public class InputListCommittingMsgData extends InputCommonMsgData {
-    public final CharSequence text;
-    public final List<String> replacements;
+public class InputCharsInputtingMsgData extends InputCommonMsgData {
+    /** 当前输入按键 */
+    public final Key<?> key;
 
-    public InputListCommittingMsgData(
-            Keyboard.KeyFactory keyFactory, CharSequence text, List<String> replacements
-    ) {
+    public InputCharsInputtingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key) {
         super(keyFactory);
-        this.text = text;
-        this.replacements = replacements != null ? replacements : new ArrayList<>();
+        this.key = key;
     }
 }

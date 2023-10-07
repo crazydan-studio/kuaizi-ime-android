@@ -31,15 +31,15 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputEditAction;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommittingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommittingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
@@ -170,30 +170,30 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Commit_Doing: {
-                InputListCommittingMsgData d = (InputListCommittingMsgData) data;
+                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
-                revokeCommitting();
+                revokeTextCommitting();
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                InputListPairSymbolCommittingMsgData d = (InputListPairSymbolCommittingMsgData) data;
+                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) data;
                 commitText(d.left, d.right);
                 break;
             }
-            case Editor_Cursor_Locate_Doing: {
-                locateInputCursor((EditorCursorMovingMsgData) data);
+            case Editor_Cursor_Move_Doing: {
+                moveCursor((EditorCursorMovingMsgData) data);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectInputText((EditorCursorMovingMsgData) data);
+                selectText((EditorCursorMovingMsgData) data);
                 break;
             }
             case Editor_Edit_Doing: {
                 EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
-                editInput(d.action);
+                editEditor(d.action);
                 break;
             }
             case IME_Switch_Doing: {
@@ -203,7 +203,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void backwardDeleteInput() {
+    private void backspace() {
         // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
         sendKey(KeyEvent.KEYCODE_DEL);
     }
@@ -212,7 +212,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         SystemUtils.switchIme(getApplicationContext());
     }
 
-    private void locateInputCursor(EditorCursorMovingMsgData data) {
+    private void moveCursor(EditorCursorMovingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -237,7 +237,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void selectInputText(EditorCursorMovingMsgData data) {
+    private void selectText(EditorCursorMovingMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -245,14 +245,14 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         // Note: 通过 shift + 方向键 的方式进行文本选择
         sendKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT);
-        locateInputCursor(data);
+        moveCursor(data);
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editInput(InputEditAction action) {
+    private void editEditor(EditorEditAction action) {
         switch (action) {
             case backspace:
-                backwardDeleteInput();
+                backspace();
                 break;
             case copy:
                 super.onExtractTextContextMenuItem(android.R.id.copy);
@@ -272,8 +272,8 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void revokeCommitting() {
-        editInput(InputEditAction.undo);
+    private void revokeTextCommitting() {
+        editEditor(EditorEditAction.undo);
     }
 
     private void commitText(CharSequence text, List<String> replacements) {

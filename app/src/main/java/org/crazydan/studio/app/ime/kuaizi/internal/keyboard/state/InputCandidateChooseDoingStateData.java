@@ -37,25 +37,25 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class ChoosingInputCandidateStateData extends PagingStateData<InputWord> {
-    private final CharInput input;
+public class InputCandidateChooseDoingStateData extends PagingStateData<InputWord> {
+    private final CharInput target;
     private final List<InputWord> candidates;
     private final Map<String, Integer> strokes;
 
     private List<InputWord> cachedFilterCandidates;
 
-    public ChoosingInputCandidateStateData(CharInput input, List<InputWord> candidates, int pageSize) {
+    public InputCandidateChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
         super(pageSize);
 
-        this.input = input;
+        this.target = target;
         this.candidates = candidates;
 
         this.strokes = new HashMap<>();
         this.cachedFilterCandidates = candidates;
     }
 
-    public CharInput getInput() {
-        return this.input;
+    public CharInput getTarget() {
+        return this.target;
     }
 
     @Override
