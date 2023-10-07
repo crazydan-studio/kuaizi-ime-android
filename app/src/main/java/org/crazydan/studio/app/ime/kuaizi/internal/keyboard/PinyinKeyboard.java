@@ -66,17 +66,20 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
                 InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
-                if (stateData.getLevel0Key() == null) {
+
+                String level0Char = stateData.getLevel0Key() != null ? stateData.getLevel0Key().getText() : null;
+                if (level0Char == null) {
                     return null;
                 }
 
-                return () -> keyTable.createNextCharKeys(stateData.getLevel0Key().getText(),
-                                                         stateData.getLevel1Key() != null ? stateData.getLevel1Key()
-                                                                                                     .getText() : null,
-                                                         stateData.getLevel2Key() != null ? stateData.getLevel2Key()
-                                                                                                     .getText() : null,
-                                                         stateData.getLevel1NextChars(),
-                                                         stateData.getLevel2NextChars());
+                String level1Char = stateData.getLevel1Key() != null ? stateData.getLevel1Key().getText() : null;
+                String level2Char = stateData.getLevel2Key() != null ? stateData.getLevel2Key().getText() : null;
+
+                return (NoAnimationKeyFactory) () -> keyTable.createNextCharKeys(level0Char,
+                                                                                 level1Char,
+                                                                                 level2Char,
+                                                                                 stateData.getLevel1NextChars(),
+                                                                                 stateData.getLevel2NextChars());
             }
             case InputCandidate_Choose_Doing: {
                 InputCandidateChooseDoingStateData stateData = (InputCandidateChooseDoingStateData) this.state.data;
@@ -220,15 +223,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case FingerMovingEnd: {
                 CharInput pending = inputList.getPending();
 
-                // 无候选字的输入，视为无效输入，直接丢弃
-                if (!pending.hasWord()) {
-                    drop_Pending(inputList, key);
-                } else {
-                    determine_NotConfirmed_InputWords_Before(inputList, pending);
-
-                    // 确认字符输入后，光标需后移以继续输入其他字符
-                    confirm_Pending_and_MoveTo_NextGapInput(inputList, key);
-                }
+                end_InputChars_Slipping(inputList, pending, key);
 
                 change_State_to_Init();
                 break;
@@ -378,6 +373,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         determine_NotConfirmed_InputWord(inputList, input);
 
         fire_InputChars_Input_Doing(currentKey);
+    }
+
+    private void end_InputChars_Slipping(InputList inputList, CharInput input, Key<?> key) {
+        // 无候选字的输入，视为无效输入，直接丢弃
+        if (!input.hasWord()) {
+            drop_Pending(inputList, key);
+        } else {
+            determine_NotConfirmed_InputWords_Before(inputList, input);
+
+            // 确认字符输入后，光标需后移以继续输入其他字符
+            confirm_Pending_and_MoveTo_NextGapInput(inputList, key);
+        }
     }
     // >>>>>>>>>>>>
 

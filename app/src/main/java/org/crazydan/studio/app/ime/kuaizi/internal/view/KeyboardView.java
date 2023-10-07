@@ -147,6 +147,15 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
 
         Key<?>[][] keys = keyFactory.create();
 
+        boolean animationDisabled = keyFactory instanceof Keyboard.NoAnimationKeyFactory;
+        if (animationDisabled) {
+            setItemAnimator(null);
+            // Note：post 的参数是在当前渲染线程执行完毕后再调用的，
+            // 因此，在无动效的按键渲染完毕后可以恢复原动画设置，
+            // 确保其他需要动画的按键能够正常显示动画效果
+            post(() -> setItemAnimator(this.animator));
+        }
+
         super.updateKeys(keys, this.keyboard.getConfig().isLeftHandMode());
     }
 }

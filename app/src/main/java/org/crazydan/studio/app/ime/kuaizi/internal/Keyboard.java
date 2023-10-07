@@ -89,6 +89,9 @@ public interface Keyboard extends UserInputMsgListener {
         Key<?>[][] create();
     }
 
+    /** 无动效的按键生成器 */
+    interface NoAnimationKeyFactory extends KeyFactory {}
+
     /** 键盘配置 */
     class Config {
         public static final String pref_key_disable_user_input_data = "disable_user_input_data";
