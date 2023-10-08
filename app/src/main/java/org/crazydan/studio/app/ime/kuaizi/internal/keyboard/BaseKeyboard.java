@@ -83,7 +83,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
     protected State getInitState() {
-        return new State(State.Type.InputChars_Input_Waiting);
+        return new State(State.Type.InputChars_Input_Waiting, this.state);
     }
 
     @Override

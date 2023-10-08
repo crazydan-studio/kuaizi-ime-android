@@ -115,6 +115,13 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                           finalHasVariant);
             }
             default: {
+                State previous = this.state.previous;
+
+                // Note：滑屏输入结束后，恢复按键布局也需禁用动效
+                if (previous != null //
+                    && previous.type == State.Type.InputChars_Slip_Doing) {
+                    return (NoAnimationKeyFactory) keyTable::createKeys;
+                }
                 return keyTable::createKeys;
             }
         }
