@@ -356,7 +356,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
         Moving,
         /** 结束移动 */
         MovingEnd,
-        /** 滑动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
+        /** 翻动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
         Flipping,
     }
 

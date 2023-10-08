@@ -114,6 +114,10 @@ public class CharKey extends BaseCharKey<CharKey> {
         return this.type == Type.Symbol;
     }
 
+    public boolean isAlphabet() {
+        return this.type == Type.Alphabet;
+    }
+
     @Override
     public boolean isSameWith(Object o) {
         if (o == null || getClass() != o.getClass()) {

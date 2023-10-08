@@ -17,24 +17,19 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * {@link InputMsg#InputList_Selected_Delete_Done}
- * 和 {@link InputMsg#InputList_Pending_Drop_Done}
- * 消息数据
+ * {@link InputMsg#Input_Choose_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-06
+ * @date 2023-10-08
  */
-public class InputListInputDeletedMsgData extends InputCommonMsgData {
-    public final CharInput target;
+public class InputChooseDoneMsgData extends InputCommonMsgData {
+    public final Input<?> target;
 
-    public InputListInputDeletedMsgData(Key<?> key, CharInput target) {
-        super(key);
-
+    public InputChooseDoneMsgData(Input<?> target) {
         this.target = target;
     }
 }

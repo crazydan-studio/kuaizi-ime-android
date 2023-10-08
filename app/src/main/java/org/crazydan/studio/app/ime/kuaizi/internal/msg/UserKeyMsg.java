@@ -44,6 +44,6 @@ public enum UserKeyMsg {
     FingerMoving,
     /** 手指移动结束 */
     FingerMovingEnd,
-    /** 手指滑动 */
+    /** 手指翻动 */
     FingerFlipping,
 }

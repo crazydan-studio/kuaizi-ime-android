@@ -55,6 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingM
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputChooseDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListInputDeletedMsgData;
@@ -281,6 +282,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputCommonMsgData(getKeyFactory(), key);
 
         fireInputMsg(msg, data);
+    }
+
+    /** 触发 {@link InputMsg#Input_Choose_Done} 消息 */
+    protected void fire_Input_Choose_Done(Input<?> input) {
+        InputMsgData data = new InputChooseDoneMsgData(input);
+
+        fireInputMsg(InputMsg.Input_Choose_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
@@ -1246,6 +1254,8 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (!do_Input_Choosing(inputList, pending)) {
             confirm_Pending_and_Goto_Init_State(inputList, null);
         }
+
+        fire_Input_Choose_Done(input);
     }
 
     /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */

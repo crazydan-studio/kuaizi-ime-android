@@ -17,8 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -174,6 +176,51 @@ public class PinyinKeyTable extends KeyTable {
 
             boolean disabled = text != null && text.equals(level2Char);
             keys[row][column].setDisabled(disabled);
+        }
+
+        return keys;
+    }
+
+    /** 按韵母起始字母以此按行创建按键 */
+    public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
+        Key<?>[][] keys = createEmptyGrid();
+
+        Map<String, GridCoord[]> charCoords = getFullCharKeyCoords();
+
+        GridCoord[] remainingCoords = charCoords.remove("");
+        List<String> remainingChars = new ArrayList<>();
+
+        restChars.forEach((key, list) -> {
+            GridCoord[] coords = charCoords.get(key);
+            if (coords == null) {
+                remainingChars.addAll(list);
+                return;
+            }
+
+            for (int i = 0; i < list.size(); i++) {
+                String restChar = list.get(i);
+                if (i >= coords.length) {
+                    remainingChars.add(restChar);
+                    continue;
+                }
+
+                GridCoord keyCoord = coords[i];
+
+                int row = keyCoord.row;
+                int column = keyCoord.column;
+
+                keys[row][column] = level2CharKey(startChar, restChar);
+            }
+        });
+
+        for (int i = 0; i < remainingChars.size(); i++) {
+            String restChar = remainingChars.get(i);
+            GridCoord keyCoord = remainingCoords[i];
+
+            int row = keyCoord.row;
+            int column = keyCoord.column;
+
+            keys[row][column] = level2CharKey(startChar, restChar);
         }
 
         return keys;
@@ -421,5 +468,31 @@ public class PinyinKeyTable extends KeyTable {
                     };
         }
         return coords;
+    }
+
+    private Map<String, GridCoord[]> getFullCharKeyCoords() {
+        Map<String, GridCoord[]> map = new LinkedHashMap<>();
+
+        map.put("a", new GridCoord[] {});
+        map.put("e", new GridCoord[] {});
+        map.put("o", new GridCoord[] {});
+        map.put("u", new GridCoord[] {});
+        map.put("i", new GridCoord[] {});
+        // 其他拼音的按键布局位置
+        map.put("", new GridCoord[] {});
+
+        int index_end = getGridLastColumnIndex();
+        int row = 0;
+        for (Map.Entry<String, GridCoord[]> entry : map.entrySet()) {
+            GridCoord[] coords = new GridCoord[index_end + 1];
+            for (int i = 0, column = index_end; column >= 0; column--, i++) {
+                coords[i] = coord(row, column);
+            }
+            entry.setValue(coords);
+
+            row += 1;
+        }
+
+        return map;
     }
 }

@@ -34,6 +34,7 @@ public class InputCandidateChoosingMsgData extends InputCommonMsgData {
 
     public InputCandidateChoosingMsgData(Keyboard.KeyFactory keyFactory, CharInput target) {
         super(keyFactory);
+
         this.target = target;
     }
 }

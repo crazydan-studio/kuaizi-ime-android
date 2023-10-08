@@ -49,10 +49,14 @@ public class State {
     }
 
     public enum Type {
-        /** 待输入 */
+        /** 待输入：初始状态 */
         InputChars_Input_Waiting,
+
         /** 滑屏输入中 */
         InputChars_Slip_Doing,
+        /** 翻动输入中：通过在首字母按键上做翻动（快速滑出按键）触发翻动输入 */
+        InputChars_Flip_Doing,
+
         /** 输入列表 提交选项 选择中 */
         InputList_Committing_Option_Choose_Doing,
 

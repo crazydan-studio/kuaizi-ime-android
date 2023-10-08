@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
+package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import java.util.List;
+import java.util.Map;
+
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link InputMsg#InputList_Selected_Delete_Done}
- * 和 {@link InputMsg#InputList_Pending_Drop_Done}
- * 消息数据
+ * {@link State.Type#InputChars_Flip_Doing} 的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-06
+ * @date 2023-10-08
  */
-public class InputListInputDeletedMsgData extends InputCommonMsgData {
-    public final CharInput target;
+public class InputCharsFlipDoingStateData implements State.Data {
+    public final String startChar;
+    public final Map<String, List<String>> restChars;
 
-    public InputListInputDeletedMsgData(Key<?> key, CharInput target) {
-        super(key);
-
-        this.target = target;
+    public InputCharsFlipDoingStateData(String startChar, Map<String, List<String>> restChars) {
+        this.startChar = startChar;
+        this.restChars = restChars;
     }
 }

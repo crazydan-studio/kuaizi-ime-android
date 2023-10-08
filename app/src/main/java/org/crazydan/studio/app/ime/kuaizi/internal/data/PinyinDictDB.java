@@ -190,6 +190,27 @@ public class PinyinDictDB {
         }).collect(Collectors.toSet());
     }
 
+    /**
+     * 查找以指定字母开头的拼音
+     *
+     * @return 参数为<code>null</code>或为空时，返回空集合
+     */
+    public Collection<String> findCharsStartsWith(String startChar) {
+        if (startChar == null || startChar.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return this.pinyinCharsAndIdCache.keySet().stream().filter(chars -> {
+            if (chars.length() >= startChar.length() //
+                && chars.startsWith(startChar)) {
+                // 平翘舌需相同
+                return !(chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh"))
+                       || startChar.startsWith(chars.substring(0, 2));
+            }
+            return false;
+        }).collect(Collectors.toList());
+    }
+
     /** 获取指定拼音的候选字 */
     public List<InputWord> getCandidateWords(CharInput input) {
         SQLiteDatabase db = getAppDB();
