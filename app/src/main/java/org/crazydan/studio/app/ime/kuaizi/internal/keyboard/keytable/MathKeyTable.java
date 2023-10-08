@@ -105,15 +105,25 @@ public class MathKeyTable extends KeyTable {
         return new GridCoord[][] {
                 // number
                 new GridCoord[] {
-                        coord(3, 5), coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3),
+                        coord(3, 5), coord(2, 6),
                         //
-                        coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(3, 3),
+                        coord(2, 5), coord(2, 4),
+                        //
+                        coord(2, 3), coord(4, 6),
+                        //
+                        coord(4, 5), coord(4, 4),
+                        //
+                        coord(4, 3), coord(3, 3),
                         },
                 // expression
                 new GridCoord[] {
-                        coord(3, 4), coord(1, 5), coord(1, 4), coord(1, 3),
+                        coord(3, 4), coord(1, 5),
                         //
-                        coord(0, 6), coord(0, 5), coord(0, 4), coord(0, 3),
+                        coord(1, 4), coord(1, 3),
+                        //
+                        coord(0, 6), coord(0, 5),
+                        //
+                        coord(0, 4), coord(0, 3),
                         //
                         coord(1, 2), coord(0, 2),
                         },

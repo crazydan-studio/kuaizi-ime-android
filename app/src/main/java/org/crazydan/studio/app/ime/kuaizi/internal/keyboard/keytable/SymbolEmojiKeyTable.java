@@ -203,34 +203,15 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
     private GridCoord[] getGroupKeyCoords() {
         return new GridCoord[] {
-                coord(1, 7), coord(0, 7), coord(0, 6), coord(0, 5), coord(0, 4),
+                coord(1, 7), coord(0, 7),
                 //
-                coord(0, 3), coord(0, 2), coord(0, 1), coord(1, 0), coord(2, 0),
-                };
-    }
-
-    private GridCoord[][] getLevelKeyCoords() {
-        return new GridCoord[][] {
-                // level 1
-                new GridCoord[] {
-                        coord(1, 6), coord(1, 5), coord(1, 4), coord(1, 3), coord(1, 2), coord(1, 1),
-                        },
-                // level 2
-                new GridCoord[] {
-                        coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3), coord(2, 2), coord(2, 1),
-                        },
-                // level 3
-                new GridCoord[] {
-                        coord(3, 6), coord(3, 5), coord(3, 3), coord(3, 2), coord(3, 1),
-                        },
-                // level 4
-                new GridCoord[] {
-                        coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(4, 2), coord(4, 1),
-                        },
-                // level 5
-                new GridCoord[] {
-                        coord(5, 6), coord(5, 5), coord(5, 4), coord(5, 3), coord(5, 2), coord(5, 1),
-                        },
+                coord(0, 6), coord(0, 5),
+                //
+                coord(0, 4), coord(0, 3),
+                //
+                coord(0, 2), coord(0, 1),
+                //
+                coord(1, 0), coord(2, 0),
                 };
     }
 }

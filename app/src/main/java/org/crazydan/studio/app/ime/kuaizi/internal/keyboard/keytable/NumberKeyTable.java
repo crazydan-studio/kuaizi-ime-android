@@ -104,15 +104,27 @@ public class NumberKeyTable extends KeyTable {
         return new GridCoord[][] {
                 // level 1
                 new GridCoord[] {
-                        coord(3, 5), coord(2, 6), coord(2, 5), coord(2, 4), coord(2, 3),
+                        coord(3, 5), coord(2, 6),
                         //
-                        coord(4, 6), coord(4, 5), coord(4, 4), coord(4, 3), coord(3, 3),
+                        coord(2, 5), coord(2, 4),
+                        //
+                        coord(2, 3), coord(4, 6),
+                        //
+                        coord(4, 5), coord(4, 4),
+                        //
+                        coord(4, 3), coord(3, 3),
                         },
                 // level 2
                 new GridCoord[] {
-                        coord(3, 1), coord(2, 1), coord(3, 0), coord(4, 1), coord(2, 2),
+                        coord(3, 1), coord(2, 1),
                         //
-                        coord(3, 2), coord(4, 2), coord(1, 0), coord(1, 1), coord(1, 2),
+                        coord(3, 0), coord(4, 1),
+                        //
+                        coord(2, 2), coord(3, 2),
+                        //
+                        coord(4, 2), coord(1, 0),
+                        //
+                        coord(1, 1), coord(1, 2),
                         },
                 };
     }
