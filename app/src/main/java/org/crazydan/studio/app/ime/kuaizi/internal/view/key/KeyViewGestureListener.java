@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
@@ -204,7 +205,7 @@ public class KeyViewGestureListener implements RecyclerViewGestureDetector.Liste
     private boolean isAvailableKeyView(KeyView<?, ?> keyView) {
         return keyView != null //
                && (!(keyView instanceof CtrlKeyView) //
-                   || !((CtrlKeyView) keyView).getData().isNoOp()) //
+                   || !(CtrlKey.isNoOp(keyView.getData()))) //
                && !keyView.getData().isDisabled();
     }
 }

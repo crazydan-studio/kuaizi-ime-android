@@ -194,16 +194,9 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
-            case InputCandidate_Choose_Doing:
-                switch (msg) {
-                    case Inputs_Clean_Done:
-                    case Inputs_Cleaned_Cancel_Done:
-                        change_State_to_Init();
-                        break;
-                }
             case InputChars_Input_Waiting:
             case Emoji_Choose_Doing:
-            case Symbol_Choose_Doing:
+            case Symbol_Choose_Doing: {
                 switch (msg) {
                     case Input_Choose_Doing: {
                         start_Input_Choosing(data.target);
@@ -219,6 +212,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                 }
                 break;
+            }
         }
     }
 
@@ -638,7 +632,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void fire_InputAudio_Play_Doing(Key<?> key, InputAudioPlayDoingMsgData.AudioType audioType) {
-        if (key instanceof CtrlKey && ((CtrlKey) key).isNoOp()) {
+        if (CtrlKey.isNoOp(key)) {
             return;
         }
 

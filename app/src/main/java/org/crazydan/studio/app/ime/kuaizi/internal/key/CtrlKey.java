@@ -44,6 +44,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(type);
     }
 
+    public static boolean isNoOp(Key<?> key) {
+        return key instanceof CtrlKey && ((CtrlKey) key).isNoOp();
+    }
+
     private CtrlKey(Type type) {
         this.type = type;
     }

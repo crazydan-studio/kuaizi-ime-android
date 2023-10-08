@@ -38,6 +38,10 @@ public class CharKey extends BaseCharKey<CharKey> {
         return new CharKey(type, text);
     }
 
+    public static boolean isAlphabet(Key<?> key) {
+        return key instanceof CharKey && ((CharKey) key).isAlphabet();
+    }
+
     private CharKey(Type type, String text) {
         super(text);
 

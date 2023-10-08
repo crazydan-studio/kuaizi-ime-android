@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCharsSlip
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
@@ -131,12 +132,32 @@ public class PinyinKeyboard extends BaseKeyboard {
                     switch (previous.type) {
                         case InputChars_Slip_Doing:
                         case InputChars_Flip_Doing:
+                            // Note：将前序状态置空，以确保按键动画仅在前后状态变化时被禁用一次
+                            this.state = new State(this.state.type, this.state.data);
+
                             return (NoAnimationKeyFactory) keyTable::createKeys;
                     }
                 }
                 return keyTable::createKeys;
             }
         }
+    }
+
+    @Override
+    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (this.state.type) {
+            case InputCandidate_Choose_Doing:
+            case InputChars_Flip_Doing: {
+                if (msg == UserInputMsg.Inputs_Clean_Done) {
+                    fire_InputList_Clean_Done();
+                    change_State_to_Init();
+                    return;
+                }
+                break;
+            }
+        }
+
+        super.onUserInputMsg(msg, data);
     }
 
     @Override
@@ -187,7 +208,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case FingerMovingStart: {
                 // 开始滑屏输入
-                if (key.isAlphabet()) {
+                if (CharKey.isAlphabet(key)) {
                     play_DoubleTick_InputAudio(key);
                     start_InputChars_Slipping(inputList, key);
                 }
@@ -251,10 +272,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                 change_State_to_Init();
                 break;
             }
+            // Note：翻动手势发生在 FingerMovingStart（滑屏输入开始）之后，
+            // FingerMovingEnd（滑屏输入结束）之前，
+            // 故而，需要在滑屏输入状态下开始翻动输入
             case FingerFlipping: {
                 CharInput pending = inputList.getPending();
 
-                // 开始翻动输入
+                // 开始翻动输入。注意，若滑屏输入在较短时间内完成也会触发翻动事件，
+                // 故，仅针对录入了一个字符的情况
                 if (pending.getKeys().size() == 1) {
                     CharKey firstKey = (CharKey) pending.getFirstKey();
 
@@ -447,7 +472,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         InputCharsFlipDoingStateData stateData = new InputCharsFlipDoingStateData(startChar, restChars);
-
         change_State_To(key, new State(State.Type.InputChars_Flip_Doing, stateData));
 
         // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，以此对先触发的滑屏输入做替换
@@ -460,10 +484,14 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void end_InputChars_Flipping(InputList inputList, CharInput input, Key<?> key) {
-        input.appendKey(key);
-
         // 先确认当前输入的候选字
-        determine_NotConfirmed_InputWord(inputList, input);
+        if (!CharKey.isAlphabet(key)) {
+            input.setWord(null);
+        } else {
+            input.appendKey(key);
+            determine_NotConfirmed_InputWord(inputList, input);
+        }
+
         // 再结束输入
         end_InputChars_Inputting(inputList, input, key);
     }
@@ -472,20 +500,34 @@ public class PinyinKeyboard extends BaseKeyboard {
         Collection<String> filteredChars = this.pinyinDict.findCharsStartsWith(startChar);
 
         Map<String, List<String>> restChars = new HashMap<>();
+
         filteredChars.forEach((chars) -> {
             String sub = "";
-            String prefix = "";
+            String prefix;
 
-            if (!chars.equals(startChar)) {
-                sub = chars.substring(startChar.length());
-                prefix = sub.substring(0, 1);
+            switch (startChar) {
+                case "a":
+                case "e":
+                case "o":
+                case "i":
+                case "u": {
+                    sub = chars.substring(startChar.length());
+                    prefix = startChar;
+                    break;
+                }
+                default:
+                    if (!chars.equals(startChar)) {
+                        sub = chars.substring(startChar.length());
+                        prefix = sub.substring(0, 1);
+                    } else {
+                        prefix = startChar;
+                    }
             }
 
             restChars.computeIfAbsent(prefix, (k) -> new ArrayList<>()).add(sub);
         });
 
-        // 按长度升序排序
-        restChars.forEach((k, list) -> list.sort(Comparator.comparingInt(String::length)));
+        restChars.forEach((k, list) -> list.sort(String::compareTo));
 
         return restChars;
     }

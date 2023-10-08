@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -185,37 +184,20 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
         Key<?>[][] keys = createEmptyGrid();
 
-        Map<String, GridCoord[]> charCoords = getFullCharKeyCoords();
+        String[] charOrders = new String[] { "m", "n", "g", "ü", "i", "a", "e", "u", "o" };
+        GridCoord[] gridCoords = getFullCharKeyCoords();
 
-        GridCoord[] remainingCoords = charCoords.remove("");
-        List<String> remainingChars = new ArrayList<>();
-
-        restChars.forEach((key, list) -> {
-            GridCoord[] coords = charCoords.get(key);
-            if (coords == null) {
-                remainingChars.addAll(list);
-                return;
+        List<String> restCharList = new ArrayList<>();
+        for (String order : charOrders) {
+            List<String> list = restChars.get(order);
+            if (list != null) {
+                restCharList.addAll(list);
             }
+        }
 
-            for (int i = 0; i < list.size(); i++) {
-                String restChar = list.get(i);
-                if (i >= coords.length) {
-                    remainingChars.add(restChar);
-                    continue;
-                }
-
-                GridCoord keyCoord = coords[i];
-
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                keys[row][column] = level2CharKey(startChar, restChar);
-            }
-        });
-
-        for (int i = 0; i < remainingChars.size(); i++) {
-            String restChar = remainingChars.get(i);
-            GridCoord keyCoord = remainingCoords[i];
+        for (int i = 0; i < restCharList.size(); i++) {
+            String restChar = restCharList.get(i);
+            GridCoord keyCoord = gridCoords[i];
 
             int row = keyCoord.row;
             int column = keyCoord.column;
@@ -470,29 +452,44 @@ public class PinyinKeyTable extends KeyTable {
         return coords;
     }
 
-    private Map<String, GridCoord[]> getFullCharKeyCoords() {
-        Map<String, GridCoord[]> map = new LinkedHashMap<>();
-
-        map.put("a", new GridCoord[] {});
-        map.put("e", new GridCoord[] {});
-        map.put("o", new GridCoord[] {});
-        map.put("u", new GridCoord[] {});
-        map.put("i", new GridCoord[] {});
-        // 其他拼音的按键布局位置
-        map.put("", new GridCoord[] {});
-
-        int index_end = getGridLastColumnIndex();
-        int row = 0;
-        for (Map.Entry<String, GridCoord[]> entry : map.entrySet()) {
-            GridCoord[] coords = new GridCoord[index_end + 1];
-            for (int i = 0, column = index_end; column >= 0; column--, i++) {
-                coords[i] = coord(row, column);
-            }
-            entry.setValue(coords);
-
-            row += 1;
-        }
-
-        return map;
+    private GridCoord[] getFullCharKeyCoords() {
+        return new GridCoord[] {
+                // row 0
+                coord(0, 7), coord(0, 6),
+                //
+                coord(0, 5), coord(0, 4),
+                //
+                coord(0, 3),
+                // row 1
+                coord(1, 7), coord(1, 6),
+                //
+                coord(1, 5), coord(1, 4),
+                //
+                coord(1, 3),
+                // row 2
+                coord(2, 7), coord(2, 6),
+                //
+                coord(2, 5), coord(2, 4),
+                //
+                coord(2, 3),
+                // row 3
+                coord(3, 7), coord(3, 6),
+                //
+                coord(3, 5), coord(3, 4),
+                //
+                coord(3, 3),
+                // row 4
+                coord(4, 7), coord(4, 6),
+                //
+                coord(4, 5), coord(4, 4),
+                //
+                coord(4, 3),
+                // row 5
+                coord(5, 7), coord(5, 6),
+                //
+                coord(5, 5), coord(5, 4),
+                //
+                coord(5, 3),
+                };
     }
 }
