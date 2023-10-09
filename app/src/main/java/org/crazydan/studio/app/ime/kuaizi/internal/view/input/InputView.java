@@ -37,12 +37,14 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I> {
     private final TextView notationView;
     private final TextView wordView;
+    private final TextView completionView;
 
     public InputView(@NonNull View itemView) {
         super(itemView);
 
         this.notationView = itemView.findViewById(R.id.notation_view);
         this.wordView = itemView.findViewById(R.id.word_view);
+        this.completionView = itemView.findViewById(R.id.completion_view);
     }
 
     protected void setSelectedBgColor(View view, boolean selected) {
@@ -59,6 +61,7 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
         InputWord word = input.getWord();
         String value = word != null ? word.getValue() : String.join("", input.getChars());
         String notation = word != null ? word.getNotation() : null;
+        String completion = input.getCompletion();
 
         if (option != null && word != null) {
             value = input.getText(option).toString();
@@ -73,6 +76,8 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
 
         this.notationView.setText(notation);
         setSelectedTextColor(this.notationView, selected);
+
+        this.completionView.setText(completion);
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

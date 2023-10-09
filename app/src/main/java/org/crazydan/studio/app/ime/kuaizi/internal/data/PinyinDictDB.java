@@ -380,6 +380,25 @@ public class PinyinDictDB {
         return new Emojis(groups);
     }
 
+    /** 查找以指定参数开头且权重最大的拉丁文 */
+    public String findBestMatchedLatin(String text) {
+        if (!isValidUsedLatin(text)) {
+            return null;
+        }
+
+        SQLiteDatabase db = getUserDB();
+
+        List<String> matched = doSQLiteQuery(db, "used_latin", //
+                                             new String[] { "value_" }, //
+                                             "weight_ > 0 and value_ like ?", //
+                                             new String[] { text + "%" }, //
+                                             "weight_ desc", //
+                                             "1", //
+                                             (cursor) -> cursor.getString(0));
+
+        return matched.isEmpty() ? null : matched.get(0);
+    }
+
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
     public void saveUserInputData(UserInputData data) {
         if (data.isEmpty()) {
@@ -698,13 +717,16 @@ public class PinyinDictDB {
         doSaveUsedEmojis(db, emojis, true);
     }
 
+    /** 保存拉丁文的使用频率等信息 */
     private void doSaveUsedLatins(Set<String> latins) {
-        if (latins.isEmpty()) {
+        // 仅针对长单词
+        Set<String> validLatins = latins.stream().filter(this::isValidUsedLatin).collect(Collectors.toSet());
+        if (validLatins.isEmpty()) {
             return;
         }
 
         SQLiteDatabase db = getUserDB();
-        doSaveUsedLatins(db, latins, true);
+        doSaveUsedLatins(db, validLatins, true);
     }
 
     /** 撤销 {@link #doSaveUsedPhrase} */
@@ -821,6 +843,10 @@ public class PinyinDictDB {
         }
 
         return String.valueOf(sum) + phrase.size();
+    }
+
+    private boolean isValidUsedLatin(String text) {
+        return text != null && text.length() > 3;
     }
 
     /**

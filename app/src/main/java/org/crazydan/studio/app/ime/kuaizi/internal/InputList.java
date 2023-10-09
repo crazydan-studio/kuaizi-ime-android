@@ -191,6 +191,11 @@ public class InputList {
         this.option = option;
     }
 
+    /** 设置自动补全的字符 */
+    public void withCompletionText(String completionText) {
+        this.cursor.newCompletion(completionText);
+    }
+
     /**
      * 设置指定的待输入
      * <p/>
@@ -201,7 +206,8 @@ public class InputList {
         confirmPending();
 
         // 再更新待输入
-        this.cursor.pending = input;
+        this.cursor.newPending(input);
+
         return input;
     }
 
@@ -338,7 +344,7 @@ public class InputList {
 
     /** 丢弃待输入 */
     public void dropPending() {
-        this.cursor.pending = null;
+        this.cursor.dropPending();
     }
 
     /** 获取已选中输入的位置 */
@@ -406,7 +412,7 @@ public class InputList {
             deleteBackward();
         }
 
-        this.cursor.pending = null;
+        this.cursor.dropPending();
     }
 
     /**
@@ -438,7 +444,7 @@ public class InputList {
                 Input<?> prev = this.inputs.get(prevIndex);
 
                 if (prev.isLatin() && prev.getKeys().size() > 1) {
-                    this.cursor.selected = prev;
+                    select(prev);
                 } else {
                     removeCharInputPair(prev);
 
@@ -447,7 +453,7 @@ public class InputList {
                     // 且其所在位置由 被删除的配对字符输入 的后继 Gap 填充，
                     // 故而，新光标位置不变但对应的 Gap 引用需更新
                     if (getSelectedIndex() < 0) {
-                        this.cursor.selected = this.inputs.get(selectedIndex);
+                        select(this.inputs.get(selectedIndex));
                     }
 
                     removeCharInput(prev);
@@ -675,8 +681,7 @@ public class InputList {
 
     /** 选中指定的输入 */
     private void select(Input<?> input) {
-        this.cursor.selected = input;
-        this.cursor.pending = null;
+        this.cursor.newSelect(input);
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */
@@ -749,11 +754,33 @@ public class InputList {
         }
 
         public Cursor copy() {
-            Cursor cursor = new Cursor();
-            cursor.selected = this.selected;
-            cursor.pending = this.pending;
+            return copyTo(new Cursor());
+        }
 
-            return cursor;
+        public Cursor copyTo(Cursor target) {
+            target.selected = this.selected;
+            target.pending = this.pending;
+
+            return target;
+        }
+
+        public void newSelect(Input<?> input) {
+            this.selected = input;
+            this.pending = null;
+        }
+
+        public void newPending(CharInput input) {
+            this.pending = input;
+        }
+
+        public void dropPending() {
+            newPending(null);
+        }
+
+        public void newCompletion(String completion) {
+            if (this.pending != null) {
+                this.pending.setCompletion(completion);
+            }
         }
 
         @Override
@@ -803,8 +830,8 @@ public class InputList {
 
             inputList.inputs.clear();
             inputList.inputs.addAll(staged.inputs);
-            inputList.cursor.selected = staged.cursor.selected;
-            inputList.cursor.pending = staged.cursor.pending;
+
+            staged.cursor.copyTo(inputList.cursor);
         }
 
         private Staged(Type type, List<Input<?>> inputs, Cursor cursor) {

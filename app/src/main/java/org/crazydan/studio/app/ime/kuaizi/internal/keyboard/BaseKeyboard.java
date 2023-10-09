@@ -550,6 +550,8 @@ public abstract class BaseKeyboard implements Keyboard {
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
 
+            do_Update_CompletionText(inputList);
+
             fire_InputChars_Input_Done(key);
         } else {
             do_Editor_Editing(inputList, EditorEditAction.backspace);
@@ -893,6 +895,8 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 pending.appendKey(key);
 
+                do_Update_CompletionText(inputList);
+
                 fire_InputChars_Input_Doing(key);
                 break;
             }
@@ -981,6 +985,17 @@ public abstract class BaseKeyboard implements Keyboard {
         key.getReplacements().forEach(newKey::withReplacements);
 
         commit_InputList_with_SingleKey_Only(inputList, newKey, true);
+    }
+
+    private void do_Update_CompletionText(InputList inputList) {
+        CharInput pending = inputList.getPending();
+        if (pending == null) {
+            return;
+        }
+
+        String completion = this.pinyinDict.findBestMatchedLatin(pending.getText().toString());
+
+        inputList.withCompletionText(completion);
     }
     // >>>>>>
 

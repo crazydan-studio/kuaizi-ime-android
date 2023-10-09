@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
@@ -32,6 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  */
 public class CharInput extends BaseInput<CharInput> {
     private CharInput pair;
+    /** 输入的自动补全字符 */
+    private String completion;
 
     public CharInput getPair() {
         return this.pair;
@@ -57,6 +60,14 @@ public class CharInput extends BaseInput<CharInput> {
 
     public boolean hasPair() {
         return this.pair != null;
+    }
+
+    public String getCompletion() {
+        return this.completion;
+    }
+
+    public void setCompletion(String completion) {
+        this.completion = completion;
     }
 
     /** 是否为拼音 平/翘舌 开头 */
@@ -138,5 +149,20 @@ public class CharInput extends BaseInput<CharInput> {
     protected void replaceCharKeyText(CharKey key, int keyIndex, String keyText) {
         getKeys().remove(keyIndex);
         getKeys().add(keyIndex, CharKey.create(key.getType(), keyText).setLabel(keyText));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        CharInput that = (CharInput) o;
+        return Objects.equals(this.completion, that.completion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.completion);
     }
 }
