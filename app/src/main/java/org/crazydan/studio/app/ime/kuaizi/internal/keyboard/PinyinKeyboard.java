@@ -249,6 +249,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         this.pinyinDict.saveUsedData(phrases, emojis);
     }
 
+    @Override
+    protected void before_Revoke_Committed_InputList(InputList inputList) {
+        if (getConfig().isUserInputDataDisabled()) {
+            return;
+        }
+
+        // TODO 降低短语及字的权重
+    }
+
     private void on_InputChars_Slip_Doing_UserKey_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         InputList inputList = getInputList();
 

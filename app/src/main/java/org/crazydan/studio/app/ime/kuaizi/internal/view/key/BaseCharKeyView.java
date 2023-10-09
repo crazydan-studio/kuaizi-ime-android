@@ -48,8 +48,8 @@ public abstract class BaseCharKeyView<T extends BaseCharKey<?>> extends KeyView<
         int textDimen;
         if (key.isSymbol()) {
             textDimen = R.dimen.char_symbol_key_text_size;
-        } else if (key.getTextDimensionId() != null) {
-            textDimen = key.getTextDimensionId();
+        } else if (key.getLabelDimensionId() != null) {
+            textDimen = key.getLabelDimensionId();
         } else {
             switch (key.getLabel().length()) {
                 case 6:

@@ -186,7 +186,7 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
         Key<?>[][] keys = createEmptyGrid();
 
-        String[] charOrders = new String[] { "m", "n", "g", "ü", "a", "e", "u", "o", "i" };
+        String[] charOrders = new String[] { "m", "n", "g", "a", "o", "e", "i", "u", "ü" };
         GridCoord[] gridCoords = getFullCharKeyCoords();
 
         List<String> restCharList = new ArrayList<>();
@@ -371,10 +371,15 @@ public class PinyinKeyTable extends KeyTable {
         String label = level0Char + text;
         KeyColor color = key_char_color;
 
+        int labelDimension = R.dimen.char_key_text_size_3d;
+        if (label.length() > 5) {
+            labelDimension = R.dimen.char_key_text_size_4d;
+        }
+
         return alphabetKey(text).setLevel(Key.Level.level_2)
                                 .setLabel(label)
                                 .setColor(color)
-                                .setTextDimensionId(R.dimen.char_key_text_size_3d);
+                                .setLabelDimensionId(labelDimension);
     }
 
     public InputWordKey inputWordKey(InputWord word, int level) {
