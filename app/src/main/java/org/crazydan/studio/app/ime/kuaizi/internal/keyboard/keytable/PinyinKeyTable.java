@@ -19,10 +19,12 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
@@ -184,7 +186,7 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
         Key<?>[][] keys = createEmptyGrid();
 
-        String[] charOrders = new String[] { "m", "n", "g", "ü", "i", "a", "e", "u", "o" };
+        String[] charOrders = new String[] { "m", "n", "g", "ü", "a", "e", "u", "o", "i" };
         GridCoord[] gridCoords = getFullCharKeyCoords();
 
         List<String> restCharList = new ArrayList<>();
@@ -194,6 +196,8 @@ public class PinyinKeyTable extends KeyTable {
                 restCharList.addAll(list);
             }
         }
+        // 再按字符长度升序排列
+        restCharList.sort(Comparator.comparing(String::length));
 
         for (int i = 0; i < restCharList.size(); i++) {
             String restChar = restCharList.get(i);
@@ -367,7 +371,10 @@ public class PinyinKeyTable extends KeyTable {
         String label = level0Char + text;
         KeyColor color = key_char_color;
 
-        return alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
+        return alphabetKey(text).setLevel(Key.Level.level_2)
+                                .setLabel(label)
+                                .setColor(color)
+                                .setTextDimensionId(R.dimen.char_key_text_size_3d);
     }
 
     public InputWordKey inputWordKey(InputWord word, int level) {

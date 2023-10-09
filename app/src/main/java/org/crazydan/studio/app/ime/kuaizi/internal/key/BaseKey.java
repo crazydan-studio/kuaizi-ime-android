@@ -30,6 +30,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private String label;
     private Level level = Level.level_0;
     private Integer iconResId;
+    private Integer textDimensionId;
 
     private boolean disabled;
     private boolean clickable;
@@ -121,6 +122,17 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
+    public Integer getTextDimensionId() {
+        return this.textDimensionId;
+    }
+
+    @Override
+    public K setTextDimensionId(Integer textDimensionId) {
+        this.textDimensionId = textDimensionId;
+        return (K) this;
+    }
+
+    @Override
     public KeyColor getColor() {
         return this.color;
     }
@@ -142,11 +154,13 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
 
         BaseKey<?> that = (BaseKey<?>) o;
         return Objects.equals(this.getIconResId(), that.getIconResId())
-               && Objects.equals(this.getLabel(),
-                                 that.getLabel())
+               && Objects.equals(this.getTextDimensionId(),
+                                 that.getTextDimensionId())
+               && Objects.equals(this.getLabel(), that.getLabel())
                && Objects.equals(this.getText(), that.getText())
                && Objects.equals(this.getLevel(), that.getLevel())
                && this.disabled == that.disabled
+               && this.clickable == that.clickable
                && Objects.equals(this.color.fg, that.color.fg)
                && Objects.equals(this.color.bg, that.color.bg);
     }
@@ -154,10 +168,12 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     @Override
     public int hashCode() {
         return Objects.hash(this.getIconResId(),
+                            this.getTextDimensionId(),
                             this.getLabel(),
                             this.getText(),
                             this.getLevel(),
                             this.disabled,
+                            this.clickable,
                             this.color.fg,
                             this.color.bg);
     }

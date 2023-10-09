@@ -77,6 +77,12 @@ public interface Key<K extends Key<?>> extends ViewData {
     /** 设置按键上显示的图标资源 id */
     K setIconResId(Integer iconResId);
 
+    /** 获取文本尺寸资源 id */
+    Integer getTextDimensionId();
+
+    /** 设置文本尺寸资源 id */
+    K setTextDimensionId(Integer textDimensionId);
+
     /** 获取按键配色 */
     KeyColor getColor();
 

@@ -45,29 +45,31 @@ public abstract class BaseCharKeyView<T extends BaseCharKey<?>> extends KeyView<
         String label = key.getLabel();
         this.fgView.setText(label);
 
-        int textSizeDimen;
+        int textDimen;
         if (key.isSymbol()) {
-            textSizeDimen = R.dimen.char_symbol_key_text_size;
+            textDimen = R.dimen.char_symbol_key_text_size;
+        } else if (key.getTextDimensionId() != null) {
+            textDimen = key.getTextDimensionId();
         } else {
             switch (key.getLabel().length()) {
                 case 6:
-                    textSizeDimen = R.dimen.char_key_text_size_4d;
+                    textDimen = R.dimen.char_key_text_size_4d;
                     break;
                 case 5:
                 case 4:
-                    textSizeDimen = R.dimen.char_key_text_size_3d;
+                    textDimen = R.dimen.char_key_text_size_3d;
                     break;
                 case 3:
-                    textSizeDimen = R.dimen.char_key_text_size_2d;
+                    textDimen = R.dimen.char_key_text_size_2d;
                     break;
                 case 2:
-                    textSizeDimen = R.dimen.char_key_text_size_1d;
+                    textDimen = R.dimen.char_key_text_size_1d;
                     break;
                 default:
-                    textSizeDimen = R.dimen.char_key_text_size;
+                    textDimen = R.dimen.char_key_text_size;
             }
         }
-        float textSize = ScreenUtils.pxFromDimension(getContext(), textSizeDimen);
+        float textSize = ScreenUtils.pxFromDimension(getContext(), textDimen);
 
         this.fgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 

@@ -147,6 +147,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
+                if (msg == UserInputMsg.Input_Choose_Doing) {
+                    start_Input_Choosing(data.target);
+                    break;
+                }
             case InputChars_Flip_Doing: {
                 if (msg == UserInputMsg.Inputs_Clean_Done) {
                     fire_InputList_Clean_Done();

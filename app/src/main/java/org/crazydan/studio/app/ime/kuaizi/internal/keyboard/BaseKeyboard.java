@@ -1227,7 +1227,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>>>>
 
     // <<<<<<<<< 对输入列表的操作
-    private void start_Input_Choosing(Input<?> input) {
+    protected void start_Input_Choosing(Input<?> input) {
         start_Input_Choosing(getInputList(), input);
     }
 
