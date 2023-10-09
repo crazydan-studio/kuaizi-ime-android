@@ -529,15 +529,15 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        before_Revoke_Committed_InputList(inputList);
-
         inputList.revokeCommit();
+
+        after_Revoke_Committed_InputList(inputList);
 
         fire_Common_InputMsg(InputMsg.InputList_Committed_Revoke_Doing, key);
     }
 
-    /** 在 {@link #revoke_Committed_InputList} 之前需要做的事情 */
-    protected void before_Revoke_Committed_InputList(InputList inputList) {}
+    /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
+    protected void after_Revoke_Committed_InputList(InputList inputList) {}
 
     /**
      * 回删输入列表中的输入或 目标编辑器 的内容

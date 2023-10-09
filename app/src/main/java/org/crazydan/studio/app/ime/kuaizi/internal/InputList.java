@@ -494,6 +494,16 @@ public class InputList {
                           .collect(Collectors.toList());
     }
 
+    /** 获取拉丁文输入 */
+    public Set<String> getLatins() {
+        return getInputs().stream()
+                          .filter(Input::isLatin)
+                          .map(Input::getText)
+                          .filter(Objects::nonNull)
+                          .map(StringBuilder::toString)
+                          .collect(Collectors.toSet());
+    }
+
     /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
     public List<List<InputWord>> getPinyinPhraseWords() {
         return getPinyinPhraseWordsBefore(null);

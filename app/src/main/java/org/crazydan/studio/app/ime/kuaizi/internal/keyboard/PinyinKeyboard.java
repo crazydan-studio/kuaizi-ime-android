@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
@@ -238,24 +240,12 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void before_Commit_InputList(InputList inputList) {
-        if (getConfig().isUserInputDataDisabled()) {
-            return;
-        }
-
-        // 本地更新用户选字频率
-        List<List<InputWord>> phrases = inputList.getPinyinPhraseWords();
-        List<InputWord> emojis = inputList.getEmojis();
-
-        this.pinyinDict.saveUsedData(phrases, emojis);
+        doWithUserInputData(inputList, this.pinyinDict::saveUserInputData);
     }
 
     @Override
-    protected void before_Revoke_Committed_InputList(InputList inputList) {
-        if (getConfig().isUserInputDataDisabled()) {
-            return;
-        }
-
-        // TODO 降低短语及字的权重
+    protected void after_Revoke_Committed_InputList(InputList inputList) {
+        doWithUserInputData(inputList, this.pinyinDict::revokeSavedUserInputData);
     }
 
     private void on_InputChars_Slip_Doing_UserKey_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
@@ -896,4 +886,24 @@ public class PinyinKeyboard extends BaseKeyboard {
         return false;
     }
     // >>>>>>>>>
+
+    // <<<<<<<<<< 对用户输入数据的处理
+    private void doWithUserInputData(InputList inputList, UserInputDataHandler handler) {
+        if (getConfig().isUserInputDataDisabled()) {
+            return;
+        }
+
+        List<List<InputWord>> phrases = inputList.getPinyinPhraseWords();
+        List<InputWord> emojis = inputList.getEmojis();
+        Set<String> latins = inputList.getLatins();
+
+        UserInputData data = new UserInputData(phrases, emojis, latins);
+
+        handler.handle(data);
+    }
+
+    private interface UserInputDataHandler {
+        void handle(UserInputData data);
+    }
+    // >>>>>>>>>>
 }

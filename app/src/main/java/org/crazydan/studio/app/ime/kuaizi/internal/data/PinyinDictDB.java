@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -379,14 +381,28 @@ public class PinyinDictDB {
     }
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
-    public void saveUsedData(List<List<InputWord>> phrases, List<InputWord> emojis) {
-        if (phrases.isEmpty() && emojis.isEmpty()) {
+    public void saveUserInputData(UserInputData data) {
+        if (data.isEmpty()) {
             return;
         }
 
         this.executor.execute(() -> {
-            phrases.forEach(this::doSaveUsedPhrase);
-            doSaveUsedEmojis(emojis);
+            data.phrases.forEach(this::doSaveUsedPhrase);
+            doSaveUsedEmojis(data.emojis);
+            doSaveUsedLatins(data.latins);
+        });
+    }
+
+    /** 对 {@link #saveUserInputData} 的撤销处理（异步） */
+    public void revokeSavedUserInputData(UserInputData data) {
+        if (data.isEmpty()) {
+            return;
+        }
+
+        this.executor.execute(() -> {
+            data.phrases.forEach(this::undoSaveUsedPhrase);
+            undoSaveUsedEmojis(data.emojis);
+            undoSaveUsedLatins(data.latins);
         });
     }
 
@@ -636,71 +652,36 @@ public class PinyinDictDB {
     }
 
     private void doSaveUsedPhrase(List<InputWord> phrase) {
-        SQLiteDatabase db = getUserDB();
+        if (phrase.isEmpty()) {
+            return;
+        }
 
-        doSaveUsedWordInPhrase(phrase);
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedWordInPhrase(db, phrase, true);
 
         if (phrase.size() < 2) {
             return;
         }
 
-        int sum = 0;
-        for (int i = 0; i < phrase.size(); i++) {
-            InputWord word = phrase.get(i);
-            int code = Integer.parseInt(word.getUid() + i);
-            sum += code;
-        }
-        String phraseValue = String.valueOf(sum) + phrase.size();
-
-        Map<String, Integer> existDataMap = new HashMap<>();
-        doSQLiteQuery(db, "used_phrase", new String[] {
-                              "value_", "weight_"
-                      }, //
-                      "value_ = ?", new String[] { phraseValue }, //
-                      (cursor) -> {
-                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
-                          return null;
-                      });
-
-        boolean phraseNotExist = existDataMap.isEmpty();
-
-        doSQLiteSave(db,
-                     "insert into used_phrase (weight_, value_) values (?, ?)",
-                     "update used_phrase set weight_ = ? where value_ = ?",
-                     (insert, update) -> {
-                         int weight = existDataMap.getOrDefault(phraseValue, 0) + 1;
-                         if (phraseNotExist) {
-                             insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
-                             insert.execute();
-                         } else {
-                             update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), phraseValue });
-                             update.execute();
-                         }
-                     });
-
-        if (!phraseNotExist) {
+        String phraseCode = calculatePhraseCode(phrase);
+        boolean isNew = doSaveUsedPhrase(db, phraseCode, true);
+        if (!isNew) {
             return;
         }
 
         // 保存短语中的字
-        List<String> idList = doSQLiteQuery(db, "used_phrase", //
-                                            new String[] { "id_" }, "value_ = ?", //
-                                            new String[] { phraseValue }, //
-                                            (cursor) -> cursor.getString(0));
-        String phraseId = idList.get(0);
-
         doSQLiteSave(db,
                      "insert into"
                      + " used_phrase_pinyin_word"
                      + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
-                     + " values (?, ?, ?, ?)",
+                     + " values ((select id_ from used_phrase where value_ = ?), ?, ?, ?)",
                      null,
-                     (insert, update) -> {
+                     (insert, _ignore) -> {
                          for (int i = 0; i < phrase.size(); i++) {
                              InputWord word = phrase.get(i);
 
                              insert.bindAllArgsAsStrings(new String[] {
-                                     phraseId, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
+                                     phraseCode, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
                              });
                              insert.execute();
                          }
@@ -708,89 +689,193 @@ public class PinyinDictDB {
     }
 
     /** 保存短语中字的使用频率等信息 */
-    private void doSaveUsedWordInPhrase(List<InputWord> phrase) {
-        SQLiteDatabase db = getUserDB();
+    private void doSaveUsedEmojis(List<InputWord> emojis) {
+        if (emojis.isEmpty()) {
+            return;
+        }
 
-        // TODO 返回短语 id，以便于输入撤回后从数据库中减少权重
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedEmojis(db, emojis, true);
+    }
+
+    private void doSaveUsedLatins(Set<String> latins) {
+        if (latins.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedLatins(db, latins, true);
+    }
+
+    /** 撤销 {@link #doSaveUsedPhrase} */
+    private void undoSaveUsedPhrase(List<InputWord> phrase) {
+        if (phrase.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedWordInPhrase(db, phrase, false);
+
+        if (phrase.size() < 2) {
+            return;
+        }
+
+        String phraseCode = calculatePhraseCode(phrase);
+        doSaveUsedPhrase(db, phraseCode, false);
+    }
+
+    /** 撤销 {@link #doSaveUsedEmojis} */
+    private void undoSaveUsedEmojis(List<InputWord> emojis) {
+        if (emojis.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedEmojis(db, emojis, false);
+    }
+
+    /** 撤销 {@link #doSaveUsedLatins} */
+    private void undoSaveUsedLatins(Set<String> latins) {
+        if (latins.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getUserDB();
+        doSaveUsedLatins(db, latins, false);
+    }
+
+    /** @return 若为新增，则返回 <code>true</code>，否则，返回 <code>false</code> */
+    private boolean doSaveUsedPhrase(SQLiteDatabase db, String phraseCode, boolean shouldIncreaseWeight) {
+        Map<String, Integer> oldDataMap = doUpdateDataWeight(db,
+                                                             "used_phrase",
+                                                             "value_",
+                                                             Collections.singleton(phraseCode),
+                                                             null,
+                                                             "insert into used_phrase (weight_, value_) values (?, ?)",
+                                                             "update used_phrase set weight_ = ? where value_ = ?",
+                                                             new String[] {
+                                                                     "delete from used_phrase_pinyin_word"
+                                                                     + " where source_id_ in (select id_ from used_phrase where weight_ = 0)",
+                                                                     "delete from used_phrase where weight_ = 0"
+                                                             },
+                                                             shouldIncreaseWeight);
+        return !oldDataMap.containsKey(phraseCode);
+    }
+
+    /** 保存短语中字的使用频率等信息 */
+    private void doSaveUsedWordInPhrase(SQLiteDatabase db, List<InputWord> phrase, boolean shouldIncreaseWeight) {
         Map<String, String> idAndTargetCharsIdMap = phrase.stream()
                                                           .collect(Collectors.toMap(InputWord::getUid,
                                                                                     (word) -> ((PinyinInputWord) word).getCharsId(),
                                                                                     (v1, v2) -> v1));
 
-        Map<String, Integer> existDataMap = new HashMap<>();
-        doSQLiteQuery(db,
-                      "used_pinyin_word",
-                      new String[] { "id_", "weight_" },
-                      "id_ in (" + idAndTargetCharsIdMap.keySet()
-                                                        .stream()
-                                                        .map((id) -> "?")
-                                                        .collect(Collectors.joining(", ")) + ")",
-                      idAndTargetCharsIdMap.keySet().toArray(new String[0]),
-                      (cursor) -> {
-                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
-                          return null;
-                      });
-
-        doSQLiteSave(db,
-                     "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
-                     "update used_pinyin_word set weight_ = ? where id_ = ?",
-                     (insert, update) -> {
-                         idAndTargetCharsIdMap.forEach((id, charsId) -> {
-                             int weight = existDataMap.getOrDefault(id, 0) + 1;
-
-                             if (existDataMap.containsKey(id)) {
-                                 update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
-                                 update.execute();
-                             } else {
-                                 insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id, charsId });
-                                 insert.execute();
-                             }
-                         });
-                     });
+        doUpdateDataWeight(db,
+                           "used_pinyin_word",
+                           "id_",
+                           idAndTargetCharsIdMap.keySet(),
+                           (id) -> new String[] { idAndTargetCharsIdMap.get(id) },
+                           "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
+                           "update used_pinyin_word set weight_ = ? where id_ = ?",
+                           new String[] { "delete from used_pinyin_word where weight_ = 0" },
+                           shouldIncreaseWeight);
     }
 
-    /** 保存短语中字的使用频率等信息 */
-    private void doSaveUsedEmojis(List<InputWord> emojis) {
-        SQLiteDatabase db = getUserDB();
-        if (emojis.isEmpty()) {
-            return;
-        }
-
+    private void doSaveUsedEmojis(SQLiteDatabase db, List<InputWord> emojis, boolean shouldIncreaseWeight) {
         Set<String> dataIdSet = emojis.stream().map(InputWord::getUid).collect(Collectors.toSet());
 
-        Map<String, Integer> existDataMap = new HashMap<>();
-        doSQLiteQuery(db,
-                      "used_emoji",
-                      new String[] { "id_", "weight_" },
-                      "id_ in (" + dataIdSet.stream().map((id) -> "?").collect(Collectors.joining(", ")) + ")",
-                      dataIdSet.toArray(new String[0]),
-                      (cursor) -> {
-                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
-                          return null;
-                      });
+        doUpdateDataWeight(db,
+                           "used_emoji",
+                           "id_",
+                           dataIdSet,
+                           null,
+                           "insert into used_emoji (weight_, id_) values (?, ?)",
+                           "update used_emoji set weight_ = ? where id_ = ?",
+                           new String[] { "delete from used_emoji where weight_ = 0" },
+                           shouldIncreaseWeight);
+    }
 
-        doSQLiteSave(db,
-                     "insert into used_emoji (weight_, id_) values (?, ?)",
-                     "update used_emoji set weight_ = ? where id_ = ?",
-                     (insert, update) -> {
-                         dataIdSet.forEach((id) -> {
-                             int weight = existDataMap.getOrDefault(id, 0) + 1;
-
-                             if (existDataMap.containsKey(id)) {
-                                 update.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
-                                 update.execute();
-                             } else {
-                                 insert.bindAllArgsAsStrings(new String[] { String.valueOf(weight), id });
-                                 insert.execute();
-                             }
-                         });
-                     });
+    private void doSaveUsedLatins(SQLiteDatabase db, Set<String> latins, boolean shouldIncreaseWeight) {
+        doUpdateDataWeight(db,
+                           "used_latin",
+                           "value_",
+                           latins,
+                           null,
+                           "insert into used_latin (weight_, value_) values (?, ?)",
+                           "update used_latin set weight_ = ? where value_ = ?",
+                           new String[] { "delete from used_latin where weight_ = 0" },
+                           shouldIncreaseWeight);
     }
 
     private String getPinyinCharsId(CharInput input) {
         String pinyinChars = String.join("", input.getChars());
 
         return this.pinyinCharsAndIdCache.get(pinyinChars);
+    }
+
+    private String calculatePhraseCode(List<InputWord> phrase) {
+        int sum = 0;
+        for (int i = 0; i < phrase.size(); i++) {
+            InputWord word = phrase.get(i);
+            int code = Integer.parseInt(word.getUid() + i);
+            sum += code;
+        }
+
+        return String.valueOf(sum) + phrase.size();
+    }
+
+    /**
+     * 更新数据权重，并将权重为 0 的数据删除
+     *
+     * @return 返回更新前的数据唯一标识和权重映射数据
+     */
+    private Map<String, Integer> doUpdateDataWeight(
+            SQLiteDatabase db, String weightTable, String dataIdField, Collection<String> dataIds,
+            Function<String, String[]> insertExtraArgsSupplier, String insertSQL, String updateSQL, String[] deleteSQLs,
+            boolean shouldIncreaseWeight
+    ) {
+        Map<String, Integer> existDataMap = new HashMap<>();
+        doSQLiteQuery(db,
+                      weightTable,
+                      new String[] { dataIdField, "weight_" },
+                      dataIdField + " in (" + dataIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) + ")",
+                      dataIds.toArray(new String[0]),
+                      (cursor) -> {
+                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
+                          return null;
+                      });
+
+        doSQLiteSave(db, insertSQL, updateSQL, (insert, update) -> {
+            dataIds.forEach((dataId) -> {
+                int dataWeight = existDataMap.getOrDefault(dataId, 0);
+
+                if (shouldIncreaseWeight) {
+                    dataWeight += 1;
+                } else {
+                    dataWeight = Math.max(0, dataWeight - 1);
+                }
+
+                if (existDataMap.containsKey(dataId)) {
+                    update.bindAllArgsAsStrings(new String[] { String.valueOf(dataWeight), dataId });
+                    update.execute();
+                } else {
+                    String[] args = new String[] { String.valueOf(dataWeight), dataId };
+                    if (insertExtraArgsSupplier != null) {
+                        String[] extraArgs = insertExtraArgsSupplier.apply(dataId);
+
+                        args = Stream.concat(Arrays.stream(args), Arrays.stream(extraArgs)).toArray(String[]::new);
+                    }
+
+                    insert.bindAllArgsAsStrings(args);
+                    insert.execute();
+                }
+            });
+        });
+
+        for (String deleteSQL : deleteSQLs) {
+            doSQLiteSave(db, deleteSQL, null, (delete, _ignore) -> delete.execute());
+        }
+
+        return existDataMap;
     }
 
     private static SQLiteDatabase openSQLite(File file, boolean readonly) {
@@ -890,13 +975,13 @@ public class PinyinDictDB {
         }
     }
 
-    private void doSQLiteSave(SQLiteDatabase db, String insertSQL, String updateSQL, SQLiteSaver saver) {
+    private void doSQLiteSave(SQLiteDatabase db, String sql_1, String sql_2, SQLiteSaver saver) {
         db.beginTransaction();
         try {
-            SQLiteStatement insert = insertSQL != null ? db.compileStatement(insertSQL) : null;
-            SQLiteStatement update = updateSQL != null ? db.compileStatement(updateSQL) : null;
+            SQLiteStatement sql_1_statement = sql_1 != null ? db.compileStatement(sql_1) : null;
+            SQLiteStatement sql_2_statement = sql_2 != null ? db.compileStatement(sql_2) : null;
 
-            saver.save(insert, update);
+            saver.save(sql_1_statement, sql_2_statement);
 
             db.setTransactionSuccessful();
         } finally {
@@ -967,6 +1052,7 @@ public class PinyinDictDB {
 
     private void initUserDB(SQLiteDatabase db) {
         String[] clauses = new String[] {
+                //
                 "CREATE TABLE\n"
                 + "    IF NOT EXISTS used_pinyin_word (\n"
                 // -- id_, target_chars_id_ 与内置字典中的 link_word_with_pinyin 表的数据保持一致
@@ -1030,6 +1116,17 @@ public class PinyinDictDB {
                 + "        weight_ INTEGER DEFAULT 0\n" //
                 + "    );",
                 "CREATE INDEX IF NOT EXISTS idx_used_emoji ON used_emoji (weight_);",
+                //
+                "CREATE TABLE\n" //
+                + "    IF NOT EXISTS used_latin (\n" //
+                + "        id_ INTEGER NOT NULL PRIMARY KEY,\n"
+                // -- 拉丁文内容
+                + "        value_ TEXT NOT NULL,\n"
+                // -- 按使用频率等排序的权重
+                + "        weight_ INTEGER DEFAULT 0,\n" //
+                + "        UNIQUE (value_)\n" //
+                + "    );",
+                "CREATE INDEX IF NOT EXISTS idx_used_latin ON used_latin (weight_, value_);",
                 };
 
         for (String clause : clauses) {
@@ -1064,6 +1161,6 @@ public class PinyinDictDB {
     }
 
     private interface SQLiteSaver {
-        void save(SQLiteStatement insert, SQLiteStatement update);
+        void save(SQLiteStatement statement_1, SQLiteStatement statement_2);
     }
 }
