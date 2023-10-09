@@ -63,12 +63,12 @@ public class LatinKeyTable extends KeyTable {
                 , new Key[] {
                 numberKey("6"),
                 numberKey("1"),
-                alphabetKey("i").withReplacements("I"),
                 alphabetKey("j").withReplacements("J"),
                 alphabetKey("m").withReplacements("M"),
                 alphabetKey("u").withReplacements("U"),
                 alphabetKey("g").withReplacements("G"),
                 alphabetKey("f").withReplacements("F"),
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 keyboardSwitchKey(Keyboard.Type.Pinyin),
@@ -78,7 +78,7 @@ public class LatinKeyTable extends KeyTable {
                 alphabetKey("n").withReplacements("N"),
                 alphabetKey("h").withReplacements("H"),
                 alphabetKey("l").withReplacements("L"),
-                ctrlKey(CtrlKey.Type.Backspace),
+                alphabetKey("i").withReplacements("I"),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
@@ -94,11 +94,11 @@ public class LatinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 numberKey("9"),
                 numberKey("4"),
+                alphabetKey("v").withReplacements("V"),
                 alphabetKey("r").withReplacements("R"),
                 alphabetKey("x").withReplacements("X"),
                 alphabetKey("t").withReplacements("T"),
                 alphabetKey("s").withReplacements("S"),
-                ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 symbolKey("#"),
@@ -108,7 +108,7 @@ public class LatinKeyTable extends KeyTable {
                 alphabetKey("z").withReplacements("Z"),
                 alphabetKey("k").withReplacements("K"),
                 alphabetKey("y").withReplacements("Y"),
-                alphabetKey("v").withReplacements("V"),
+                ctrlKey(CtrlKey.Type.Space),
                 },
                 };
 

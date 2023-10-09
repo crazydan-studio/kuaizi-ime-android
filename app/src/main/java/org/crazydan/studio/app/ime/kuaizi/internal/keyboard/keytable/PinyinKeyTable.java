@@ -70,7 +70,7 @@ public class PinyinKeyTable extends KeyTable {
                         level0CharKey("i").withReplacements("I"),
                         level0CharKey("u").withReplacements("U"),
                         level0CharKey("o").withReplacements("O"),
-                        level0CharKey("a").withReplacements("A"),
+                        level0CharKey("j").withReplacements("J"),
                         } //
                 , new Key[] {
                 keyboardSwitchKey(Keyboard.Type.Math),
@@ -79,8 +79,8 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("b").withReplacements("B"),
                 level0CharKey("x").withReplacements("X"),
                 level0CharKey("q").withReplacements("Q"),
-                level0CharKey("j").withReplacements("J"),
-                level0CharKey("e").withReplacements("E"),
+                level0CharKey("a").withReplacements("A"),
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 keyboardSwitchKey(Keyboard.Type.Latin),
@@ -91,7 +91,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("l").withReplacements("L"),
                 level0CharKey("y").withReplacements("Y"),
                 level0CharKey("p").withReplacements("P"),
-                ctrlKey(CtrlKey.Type.Backspace),
+                level0CharKey("e").withReplacements("E"),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
@@ -100,7 +100,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("t").withReplacements("T"),
                 ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
                 level0CharKey("r").withReplacements("R"),
-                level0CharKey("g").withReplacements("G"),
+                level0CharKey("h").withReplacements("H"),
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
@@ -111,8 +111,8 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("c").withReplacements("C"),
                 level0CharKey("z").withReplacements("Z"),
                 level0CharKey("f").withReplacements("F"),
+                level0CharKey("n").withReplacements("N"),
                 level0CharKey("k").withReplacements("K"),
-                ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
@@ -120,9 +120,9 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("sh").withReplacements("Sh", "SH"),
                 level0CharKey("ch").withReplacements("Ch", "CH"),
                 level0CharKey("zh").withReplacements("Zh", "ZH"),
-                level0CharKey("n").withReplacements("N"),
+                level0CharKey("g").withReplacements("G"),
                 level0CharKey("w").withReplacements("W"),
-                level0CharKey("h").withReplacements("H"),
+                ctrlKey(CtrlKey.Type.Space),
                 },
                 };
     }
