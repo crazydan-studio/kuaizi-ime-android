@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
@@ -178,7 +179,7 @@ public class InputList {
         return this.candidateWordsCache.get(inputChars);
     }
 
-    /** 是否有空的待输入 */
+    /** 当前的待输入是否为空 */
     public boolean hasEmptyPending() {
         return Input.isEmpty(getPending());
     }
@@ -191,155 +192,170 @@ public class InputList {
         this.option = option;
     }
 
-    /**
-     * 设置指定的待输入
-     * <p/>
-     * 自动确认当前的待输入
-     */
-    public CharInput withPending(CharInput input) {
-        // 先确认当前的待输入
-        confirmPending();
-
-        // 再更新待输入
-        this.cursor.newPending(input);
-
-        return input;
-    }
-
-    /**
-     * 新建待输入
-     * <p/>
-     * 自动确认当前的待输入
-     */
+    /** 重新创建当前输入的待输入（不确认已有的待输入） */
     public CharInput newPending() {
         CharInput input = new CharInput();
 
         return withPending(input);
     }
 
-    /**
-     * 在指定输入上新建待输入
-     * <p/>
-     * 注：<ul>
-     * <li>若指定输入已选中且其待输入未确认，则不做处理；</li>
-     * <li>自动确认当前的待输入；</li>
-     * <li>选中该指定的输入；</li>
-     * </ul>
-     */
-    public void newPendingOn(Input<?> input) {
-        if (input == null || indexOf(input) < 0 //
-            || (getSelected() == input //
-                && getPending() != null)) {
-            return;
-        }
+    /** 将当前的待输入设置为指定输入（不确认已有的待输入） */
+    public CharInput withPending(CharInput input) {
+        this.cursor.withPending(input);
 
-        if (input.isGap()) {
-            // 在间隙位置，需要新建待输入，以插入新的输入
-            newPending();
-        } else {
-            // 先确认当前的待输入，再将原输入复制一份做为待输入，
-            // 从而可以对其进行输入替换，或做候选字修改
-            withPending(((CharInput) input).copy());
-        }
-
-        this.cursor.selected = input;
+        return input;
     }
 
     /**
-     * 在指定输入上新建待输入
-     * <p/>
-     * 注：<ul>
-     * <li>若指定输入已选中且其待输入未确认，则不做处理；</li>
-     * <li>自动确认当前的待输入；</li>
-     * <li>选中该指定的输入；</li>
-     * </ul>
-     */
-    public void newPendingOn(int inputIndex) {
-        if (inputIndex < 0 || inputIndex >= this.inputs.size()) {
-            return;
-        }
-
-        Input<?> input = this.inputs.get(inputIndex);
-        newPendingOn(input);
-    }
-
-    /**
-     * 确认待输入
+     * 确认当前待输入，再后移光标，并在新位置新建待输入
      * <p/>
      * <ul>
-     * <li>原位置为字符输入时，直接原地替换；</li>
-     * <li>原位置为间隙时，插入待输入，并将光标移到新输入的后面；</li>
-     * <li>无待输入或待输入为空时，不做处理；</li>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入，并将光标后移；</li>
+     * <li>原位置为字符输入时，将其替换为待输入，并将光标后移到相邻 Gap；</li>
      * </ul>
      */
-    public void confirmPending() {
-        Input<?> selected = getSelected();
+    public void confirmPendingAndSelectNext() {
+        confirmPendingAndSelectByOffset(1);
+    }
 
+    /**
+     * 确认当前待输入，再后移光标到指定的偏移位置，并在该位置新建待输入
+     * <p/>
+     * <ul>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入，并将光标后移到指定偏移位置；</li>
+     * <li>原位置为字符输入时，将其替换为待输入，并将光标后移到指定偏移位置；</li>
+     * </ul>
+     */
+    public void confirmPendingAndSelectByOffset(int offset) {
         int selectedIndex = getSelectedIndex();
         if (hasEmptyPending() || selectedIndex < 0) {
             return;
         }
 
+        int confirmedPendingIndex = confirmPending();
+
+        Input<?> newSelected = this.inputs.get(confirmedPendingIndex + offset);
+        doSelect(newSelected);
+    }
+
+    /**
+     * 确认当前待输入，并返回确认后的{@link #getSelectedIndex() 当前输入位置}
+     * <p/>
+     * <ul>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入；</li>
+     * <li>原位置为字符输入时，将其替换为待输入；</li>
+     * </ul>
+     */
+    public int confirmPending() {
+        int selectedIndex = getSelectedIndex();
+        if (hasEmptyPending() || selectedIndex < 0) {
+            return selectedIndex;
+        }
+
+        Input<?> selected = getSelected();
         CharInput pending = getPending();
         // 先由待输入做其内部确认
         pending.confirm();
 
-        Input<?> newSelected = selected;
         if (selected.isGap()) {
-            // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
+            // Note: 新的 Gap 位置自动后移，故无需更新光标的选中对象
             Input<?> gap = new GapInput();
+
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         } else {
             // 保持对配对符号的引用
             pending.setPair(((CharInput) selected).getPair());
 
             this.inputs.set(selectedIndex, pending);
-
-            newSelected = pending;
         }
 
-        select(newSelected);
+        doSelect(pending);
+
+        return getSelectedIndex();
     }
 
-    /** 确认输入并移动到下一个 Gap 输入 */
-    public void confirmPendingAndMoveToNextGapInput() {
-        confirmPending();
+    /**
+     * 选中指定的输入
+     * <p/>
+     * 注：<ul>
+     * <li>若指定输入已选中，则不做处理；</li>
+     * <li>自动确认当前的待输入；</li>
+     * </ul>
+     */
+    public void select(Input<?> input) {
+        int index = indexOf(input);
 
-        if (!isGapSelected()) {
-            int index = getSelectedIndex();
-            Input<?> gap = this.inputs.get(index + 1);
-
-            newPendingOn(gap);
-        }
+        select(index);
     }
 
-    /** 移动光标到下一个字符输入位置或尾部 */
-    public void moveToNextCharInput() {
-        int index = getSelectedIndex();
-        int lastIndex = this.inputs.size() - 1;
-        if (index >= lastIndex) {
+    /**
+     * 选中指定位置的输入
+     * <p/>
+     * 注：<ul>
+     * <li>若指定输入已选中，则不做处理；</li>
+     * <li>自动确认当前的待输入；</li>
+     * </ul>
+     */
+    public void select(int index) {
+        if (index < 0 || index >= this.inputs.size()) {
             return;
         }
 
-        int nextIndex = index + 1;
-        Input<?> next = this.inputs.get(nextIndex);
-        if (next.isGap() && nextIndex < lastIndex) {
-            next = this.inputs.get(nextIndex + 1);
+        Input<?> input = this.inputs.get(index);
+        if (isSelected(input)) {
+            return;
         }
 
-        select(next);
+        confirmPendingAndSelectNext();
+
+        doSelect(input);
     }
 
-    /** 移动到尾部输入 */
-    public void moveToLastInput() {
+    /**
+     * 从当前位置向后选中匹配到的第一个输入
+     * <p/>
+     * 若未匹配到输入，则不做任何处理
+     */
+    public Input<?> selectNextFirstMatched(Predicate<Input<?>> filter) {
+        int index = getSelectedIndex();
+        int lastIndex = this.inputs.size() - 1;
+        if (index >= lastIndex) {
+            return null;
+        }
+
+        for (int i = index + 1; i <= lastIndex; i++) {
+            Input<?> next = this.inputs.get(i);
+
+            if (filter.test(next)) {
+                doSelect(next);
+
+                return next;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 选中最后一个输入
+     * <p/>
+     * 若已选中最后一个输入，则不做处理
+     */
+    public void selectLast() {
         Input<?> last = getLastInput();
 
-        select(last);
+        if (isSelected(last)) {
+            return;
+        }
+
+        doSelect(last);
     }
 
-    /** 丢弃待输入 */
+    /** 丢弃当前的待输入 */
     public void dropPending() {
-        this.cursor.dropPending();
+        newPending();
     }
 
     /** 获取已选中输入的位置 */
@@ -380,15 +396,8 @@ public class InputList {
         return getSelected().isGap();
     }
 
-    /** 选中后继输入 */
-    public void selectNext() {
-        int selected = getSelectedIndex();
-
-        newPendingOn(selected + 1);
-    }
-
-    /** 重置光标 */
-    public void resetCursor() {
+    /** 丢弃已选择输入，光标处于游离态 */
+    public void dropSelected() {
         this.cursor.reset();
     }
 
@@ -401,7 +410,7 @@ public class InputList {
         }
     }
 
-    /** 删除当前选中的输入：对于光标位置，仅删除其正在输入的内容 */
+    /** 删除当前选中的输入：对于 Gap 位置，仅删除其正在输入的内容 */
     public void deleteSelected() {
         Input<?> selected = getSelected();
 
@@ -409,7 +418,7 @@ public class InputList {
             deleteBackward();
         }
 
-        this.cursor.dropPending();
+        dropPending();
     }
 
     /**
@@ -441,7 +450,7 @@ public class InputList {
                 Input<?> prev = this.inputs.get(prevIndex);
 
                 if (prev.isLatin() && prev.getKeys().size() > 1) {
-                    select(prev);
+                    doSelect(prev);
                 } else {
                     removeCharInputPair(prev);
 
@@ -450,7 +459,7 @@ public class InputList {
                     // 且其所在位置由 被删除的配对字符输入 的后继 Gap 填充，
                     // 故而，新光标位置不变但对应的 Gap 引用需更新
                     if (getSelectedIndex() < 0) {
-                        select(this.inputs.get(selectedIndex));
+                        doSelect(this.inputs.get(selectedIndex));
                     }
 
                     removeCharInput(prev);
@@ -473,7 +482,7 @@ public class InputList {
             removeCharInput(selected);
 
             // 再将当前光标后移
-            select(newSelected);
+            doSelect(newSelected);
         }
     }
 
@@ -676,9 +685,9 @@ public class InputList {
         return CollectionUtils.last(getCharInputs());
     }
 
-    /** 选中指定的输入 */
-    private void select(Input<?> input) {
-        this.cursor.newSelect(input);
+    /** 选中指定的输入，并为其新建待输入（空白输入或原输入的副本） */
+    private void doSelect(Input<?> input) {
+        this.cursor.select(input);
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */
@@ -761,18 +770,20 @@ public class InputList {
             return target;
         }
 
-        public void newSelect(Input<?> input) {
+        /**
+         * 选中指定输入，并将其复制一份作为其待输入，
+         * 若输入为 Gap，则为其创建空的待输入
+         */
+        public void select(Input<?> input) {
+            CharInput pending = input.isGap() ? new CharInput() : ((CharInput) input).copy();
+
             this.selected = input;
 
-            newPending(input.isGap() ? null : ((CharInput) input).copy());
+            withPending(pending);
         }
 
-        public void newPending(CharInput input) {
+        public void withPending(CharInput input) {
             this.pending = input;
-        }
-
-        public void dropPending() {
-            newPending(null);
         }
 
         @Override

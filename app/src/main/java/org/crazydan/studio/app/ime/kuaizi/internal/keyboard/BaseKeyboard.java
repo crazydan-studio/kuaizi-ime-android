@@ -278,13 +278,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(msg, data);
     }
 
-    /** 触发 {@link InputMsg#Input_Choose_Done} 消息 */
-    protected void fire_Input_Choose_Done(Input<?> input) {
-        InputMsgData data = new InputChooseDoneMsgData(input);
-
-        fireInputMsg(InputMsg.Input_Choose_Done, data);
-    }
-
     /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key) {
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key);
@@ -299,6 +292,13 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputChars_Input_Done, data);
     }
 
+    /** 触发 {@link InputMsg#InputList_Input_Choose_Done} 消息 */
+    protected void fire_InputList_Input_Choose_Done(Input<?> input) {
+        InputMsgData data = new InputChooseDoneMsgData(input);
+
+        fireInputMsg(InputMsg.InputList_Input_Choose_Done, data);
+    }
+
     /** 触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
     protected void fire_InputList_Selected_Delete_Done(Key<?> key, CharInput input) {
         InputMsgData data = new InputListInputDeletedMsgData(key, input);
@@ -311,11 +311,6 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputListInputDeletedMsgData(key, input);
 
         fireInputMsg(InputMsg.InputList_Pending_Drop_Done, data);
-    }
-
-    /** 触发 {@link InputMsg#InputList_Cursor_Move_Done} 消息 */
-    protected void fire_InputList_Cursor_Move_Done() {
-        fire_Common_InputMsg(InputMsg.InputList_Cursor_Move_Done);
     }
 
     /** 触发 {@link InputMsg#InputList_Clean_Done} 消息 */
@@ -379,11 +374,70 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    /** {@link #confirm_Pending 确认当前输入}，并{@link #change_State_to_Init 进入初始状态} */
-    protected void confirm_Pending_and_Goto_Init_State(InputList inputList, Key<?> key) {
-        confirm_Pending(inputList, key);
+    /** {@link #confirm_InputList_Pending 确认当前输入}，并{@link #change_State_to_Init 进入初始状态} */
+    protected void confirm_InputList_Pending_and_Goto_Init_State(InputList inputList, Key<?> key) {
+        confirm_InputList_Pending(inputList, key);
 
         change_State_to_Init();
+    }
+
+    /** 确认待输入，并触发 {@link InputMsg#InputChars_Input_Done} 消息 */
+    protected void confirm_InputList_Pending(InputList inputList, Key<?> key) {
+        inputList.confirmPendingAndSelectNext();
+
+        fire_InputChars_Input_Done(key);
+    }
+
+    /** 仅{@link #confirm_InputList_Pending 确认}只有唯一按键的输入 */
+    protected void confirm_InputList_Input_with_SingleKey_Only(InputList inputList, Key<?> key) {
+        inputList.newPending().appendKey(key);
+
+        confirm_InputList_Pending(inputList, key);
+    }
+
+    /**
+     * 确认回车或空格的控制按键输入
+     * <p/>
+     * 为回车时，直接提交当前输入或在 目标编辑器 中输入换行；
+     * 为空格时，当输入列表为空时，直接向 目标编辑器 输入空格，
+     * 否则，将空格附加到输入列表中
+     */
+    protected void confirm_InputList_Input_Enter_or_Space(InputList inputList, CtrlKey key) {
+        boolean isDirectInputting = inputList.isEmpty();
+
+        if (isDirectInputting) {
+            switch (key.getType()) {
+                case Enter:
+                case Space:
+                    // Note：直输回车和空格后，不再支持输入撤回
+                    inputList.cleanCommitRevokes();
+
+                    fire_InputList_Commit_Doing(key.getText(), null);
+                    break;
+            }
+        }
+        // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
+        else if (key.getType() == CtrlKey.Type.Space) {
+            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+        }
+    }
+
+    /** 删除已选中的输入，并触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
+    protected void delete_InputList_Selected(InputList inputList, Key<?> key) {
+        CharInput input = inputList.getPending();
+
+        inputList.deleteSelected();
+
+        fire_InputList_Selected_Delete_Done(key, input);
+    }
+
+    /** 删除待输入，并触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
+    protected void drop_InputList_Pending(InputList inputList, Key<?> key) {
+        CharInput input = inputList.getPending();
+
+        inputList.dropPending();
+
+        fire_InputList_Pending_Drop_Done(key, input);
     }
 
     /**
@@ -401,88 +455,6 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.newPending().appendKey(key);
 
         commit_InputList(inputList, false, needToBeReplaced);
-    }
-
-    /** 删除已选中的输入，并触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
-    protected void delete_Selected_Input(InputList inputList, Key<?> key) {
-        CharInput input = inputList.getPending();
-
-        inputList.deleteSelected();
-
-        fire_InputList_Selected_Delete_Done(key, input);
-    }
-
-    /** 删除待输入，并触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
-    protected void drop_Pending(InputList inputList, Key<?> key) {
-        CharInput input = inputList.getPending();
-
-        inputList.dropPending();
-
-        fire_InputList_Pending_Drop_Done(key, input);
-    }
-
-    /** 确认待输入，并触发 {@link InputMsg#InputChars_Input_Done} 消息 */
-    protected void confirm_Pending(InputList inputList, Key<?> key) {
-        inputList.confirmPending();
-
-        fire_InputChars_Input_Done(key);
-    }
-
-    /** {@link #confirm_Pending 确认当前输入}并移到下一个字符输入上 */
-    protected void confirm_Pending_and_MoveTo_NextCharInput(InputList inputList, Key<?> key) {
-        confirm_Pending(inputList, key);
-
-        inputList.moveToNextCharInput();
-
-        fire_InputList_Cursor_Move_Done();
-    }
-
-    /** {@link #confirm_Pending 确认待输入}并移到相邻的 Gap 输入上 */
-    protected void confirm_Pending_and_MoveTo_NextGapInput(InputList inputList, Key<?> key) {
-        confirm_Pending(inputList, key);
-
-        if (!inputList.isGapSelected()) {
-            inputList.selectNext();
-
-            fire_InputList_Cursor_Move_Done();
-        }
-    }
-
-    /** 仅{@link #confirm_Pending 确认}只有唯一按键的输入 */
-    protected void confirm_Input_with_SingleKey_Only(InputList inputList, Key<?> key) {
-        inputList.newPending().appendKey(key);
-
-        confirm_Pending(inputList, key);
-    }
-
-    /**
-     * 确认回车或空格的控制按键输入
-     * <p/>
-     * 为回车时，直接提交当前输入或在 目标编辑器 中输入换行；
-     * 为空格时，当输入列表为空时，直接向 目标编辑器 输入空格，
-     * 否则，将空格附加到输入列表中
-     */
-    protected void confirm_Input_Enter_or_Space(InputList inputList, CtrlKey key) {
-        boolean isDirectInputting = inputList.isEmpty();
-
-        if (isDirectInputting) {
-            switch (key.getType()) {
-                case Enter:
-                case Space:
-                    // Note：直输回车和空格后，不再支持输入撤回
-                    inputList.cleanCommitRevokes();
-
-                    fire_InputList_Commit_Doing(key.getText(), null);
-                    break;
-            }
-        }
-        // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
-        else if (key.getType() == CtrlKey.Type.Space) {
-            if (!inputList.isGapSelected()) {
-                inputList.confirmPendingAndMoveToNextGapInput();
-            }
-            confirm_Input_with_SingleKey_Only(inputList, key);
-        }
     }
 
     /** 提交输入列表 */
@@ -676,7 +648,7 @@ public abstract class BaseKeyboard implements Keyboard {
                             case Emoji_Choose_Doing:
                             case Symbol_Choose_Doing:
                                 play_SingleTick_InputAudio(key);
-                                delete_Selected_Input(inputList, key);
+                                delete_InputList_Selected(inputList, key);
                                 return true;
                         }
                         break;
@@ -694,7 +666,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Space:
                     case Enter: {
                         play_SingleTick_InputAudio(key);
-                        confirm_Input_Enter_or_Space(inputList, key);
+                        confirm_InputList_Input_Enter_or_Space(inputList, key);
                         return true;
                     }
                     // 点击 退出 按钮，则退回到前序状态或原键盘
@@ -849,10 +821,6 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        if (inputList.hasEmptyPending()) {
-            inputList.newPending();
-        }
-
         // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
         inputList.clearPairOnSelected();
 
@@ -875,14 +843,11 @@ public abstract class BaseKeyboard implements Keyboard {
                 boolean isDirectInputting = inputList.isEmpty();
 
                 if (!isDirectInputting) {
-                    inputList.newPending().appendKey(key);
+                    inputList.confirmPendingAndSelectNext();
 
-                    // 已选中的是 字符输入，则在确认后跳到下一个 字符输入
-                    if (!inputList.isGapSelected()) {
-                        confirm_Pending_and_MoveTo_NextCharInput(inputList, key);
-                    } else {
-                        confirm_Pending(inputList, key);
-                    }
+                    inputList.getPending().appendKey(key);
+
+                    confirm_InputList_Pending(inputList, key);
                 } else {
                     // 单个标点、表情，直接提交输入
                     commit_InputList_with_SingleKey_Only(inputList, key, false);
@@ -954,24 +919,17 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput pending = inputList.getPending();
 
         if (!isDirectInputting //
-            && !inputList.hasEmptyPending() //
+            && !pending.isEmpty() //
             && pending.isLatin()) {
-            // 对于新增的拉丁字符输入，需先提交，再录入新按键
-            if (inputList.isGapSelected()) {
-                inputList.confirmPending();
-            }
-            // 对于修改为拉丁字符的输入，将光标移到其后继输入（实际为 Gap）
-            else {
-                inputList.selectNext();
-            }
+            inputList.confirmPendingAndSelectNext();
 
             if (key instanceof SymbolKey && ((SymbolKey) key).isPair()) {
                 prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) ((SymbolKey) key).getSymbol());
 
                 // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
-                confirm_Pending_and_Goto_Init_State(inputList, key);
+                confirm_InputList_Pending_and_Goto_Init_State(inputList, key);
             } else {
-                confirm_Input_with_SingleKey_Only(inputList, key);
+                confirm_InputList_Input_with_SingleKey_Only(inputList, key);
             }
 
             return true;
@@ -1082,14 +1040,7 @@ public abstract class BaseKeyboard implements Keyboard {
             // 直接提交输入
             commit_InputList(inputList, false, false);
         } else {
-            // 连续输入
-            if (inputList.isGapSelected()) {
-                confirm_Pending(inputList, key);
-            }
-            // 替换输入
-            else {
-                confirm_Pending_and_MoveTo_NextCharInput(inputList, key);
-            }
+            confirm_InputList_Pending(inputList, key);
         }
     }
     // >>>>>>>>
@@ -1177,14 +1128,7 @@ public abstract class BaseKeyboard implements Keyboard {
             // 直接提交输入
             commit_InputList(inputList, false, false, isPairSymbolKey);
         } else {
-            // 连续输入
-            if (inputList.isGapSelected()) {
-                confirm_Pending(inputList, key);
-            }
-            // 替换输入
-            else {
-                confirm_Pending_and_MoveTo_NextCharInput(inputList, key);
-            }
+            confirm_InputList_Pending(inputList, key);
         }
 
         // Note：非连续输入的情况下，配对符号输入后不再做连续输入，键盘状态重置为初始状态
@@ -1226,13 +1170,7 @@ public abstract class BaseKeyboard implements Keyboard {
             CharInput leftInput = pending;
             leftInput.appendKey(leftKey);
 
-            // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
-            if (!selected.isGap()) {
-                int selectedIndex = inputList.getSelectedIndex();
-                inputList.newPendingOn(selectedIndex + 1);
-            } else {
-                inputList.newPending();
-            }
+            inputList.confirmPendingAndSelectNext();
 
             CharInput rightInput = inputList.getPending();
             rightInput.appendKey(rightKey);
@@ -1240,9 +1178,8 @@ public abstract class BaseKeyboard implements Keyboard {
             // 绑定配对符号的关联：由任意一方发起绑定即可
             rightInput.setPair(leftInput);
 
-            // 确定右侧配对输入，并将光标移动到该输入左侧的 Gap 位置以确保光标在配对符号的中间位置
-            inputList.confirmPending();
-            inputList.newPendingOn(inputList.getSelectedIndex() - 2);
+            // 确认右侧的配对输入，并将光标移动到 右配对输入 的左侧 Gap 位置以确保光标在配对符号的中间位置
+            inputList.confirmPendingAndSelectByOffset(-1);
         }
     }
     // >>>>>>>>>>>
@@ -1253,11 +1190,12 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void start_Input_Choosing(InputList inputList, Input<?> input) {
-        inputList.newPendingOn(input);
+        inputList.select(input);
 
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
 
+        // TODO 对于修改输入，不能通过点击输入列表中的输入进行确认？
         // Note：仅点选输入时才应用自动补全的内容
         pending.applyCompletion();
 
@@ -1272,13 +1210,13 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (!do_Input_Choosing(inputList, pending)) {
             // 在选择输入时，对于新输入，需先确认其 pending
             if (input.isGap()) {
-                confirm_Pending_and_Goto_Init_State(inputList, null);
+                confirm_InputList_Pending_and_Goto_Init_State(inputList, null);
             } else {
                 change_State_to_Init();
             }
         }
 
-        fire_Input_Choose_Done(input);
+        fire_InputList_Input_Choose_Done(input);
     }
 
     /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */

@@ -94,7 +94,7 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputCandidate_Choose_Done:
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing:
-            case InputList_Cursor_Move_Done:
+            case InputList_Input_Choose_Done:
             case InputList_Pending_Drop_Done:
             case InputList_Selected_Delete_Done:
             case InputList_Clean_Done:

@@ -107,8 +107,8 @@ public class CharMathExprInput extends CharInput {
     @Override
     public void confirm() {
         this.inputList.confirmPending();
-        // 不显示光标或已选中
-        this.inputList.resetCursor();
+
+        this.inputList.dropSelected();
     }
 
     @Override

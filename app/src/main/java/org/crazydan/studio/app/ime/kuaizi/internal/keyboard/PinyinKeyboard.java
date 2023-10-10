@@ -185,7 +185,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case InputCandidate_Choose_Doing: {
                 if (msg == UserKeyMsg.FingerFlipping) {
                     on_InputCandidate_Choose_Doing_PageFlipping_Msg(msg, key, data);
-                } else if (key instanceof InputWordKey && !key.isDisabled()) {
+                } else if (key instanceof InputWordKey) {
                     on_InputCandidate_Choose_Doing_InputWordKey_Msg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_InputCandidate_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
@@ -309,18 +309,23 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void on_InputCandidate_Choose_Doing_InputWordKey_Msg(
             UserKeyMsg msg, InputWordKey key, UserKeyMsgData data
     ) {
+        if (key.isDisabled()) {
+            return;
+        }
+
         InputList inputList = getInputList();
 
         if (msg == UserKeyMsg.KeySingleTap) {// 确认候选字
             play_SingleTick_InputAudio(key);
 
             InputWord word = key.getWord();
-            // 候选字列表中的表情作为新增插入
-            if (word instanceof EmojiInputWord) {
-                inputList.confirmPendingAndMoveToNextGapInput();
 
-                InputWordKey emojiKey = InputWordKey.create(word);
-                inputList.getPending().appendKey(emojiKey);
+            // 候选字列表中的表情作为新增插入，不对当前候选字做替换
+            if (word instanceof EmojiInputWord) {
+                inputList.confirmPendingAndSelectNext();
+
+                InputWordKey wordKey = InputWordKey.create(word);
+                inputList.getPending().appendKey(wordKey);
             }
 
             inputList.getPending().setWord(word);
@@ -341,7 +346,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case DropInput: {
                 play_SingleTick_InputAudio(key);
 
-                delete_Selected_Input(inputList, key);
+                delete_InputList_Selected(inputList, key);
                 change_State_to_Init();
                 break;
             }
@@ -457,11 +462,11 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void end_InputChars_Inputting(InputList inputList, CharInput input, Key<?> key) {
         // 无候选字的输入，视为无效输入，直接丢弃
         if (!input.hasWord()) {
-            drop_Pending(inputList, key);
+            drop_InputList_Pending(inputList, key);
         } else {
             determine_NotConfirmed_InputWords_Before(inputList, input);
-            // 确认字符输入后，光标需后移以继续输入其他字符
-            confirm_Pending_and_MoveTo_NextGapInput(inputList, key);
+
+            confirm_InputList_Pending(inputList, key);
         }
     }
     // >>>>>>>>>>>>
@@ -478,8 +483,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         change_State_To(key, new State(State.Type.InputChars_Flip_Doing, stateData));
 
         // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，以此对先触发的滑屏输入做替换
-        inputList.dropPending();
-
         CharInput pending = inputList.newPending();
         pending.appendKey(key);
 
@@ -610,20 +613,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         CharInput pending = inputList.getPending();
 
         pending.getWord().setConfirmed(true);
-        inputList.confirmPending();
+        inputList.confirmPendingAndSelectNext();
 
         fire_InputCandidate_Choose_Done(pending);
 
         // 继续选择下一个拼音输入的候选字
-        Input<?> selected;
-        do {
-            inputList.moveToNextCharInput();
-            selected = inputList.getSelected();
-        } while (selected != null && !selected.isPinyin() && selected != inputList.getLastInput());
+        Input<?> selected = inputList.selectNextFirstMatched(Input::isPinyin);
 
         // Note：前序已确认，则继续自动确认下一个拼音输入
-        if (selected != null && selected.isPinyin()) {
+        if (selected != null) {
             determine_NotConfirmed_InputWords_Before(inputList, (CharInput) selected);
+        } else {
+            inputList.selectLast();
         }
 
         start_Input_Choosing(inputList, selected);

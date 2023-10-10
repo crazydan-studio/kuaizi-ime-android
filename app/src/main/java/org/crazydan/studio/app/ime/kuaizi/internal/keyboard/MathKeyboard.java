@@ -68,9 +68,9 @@ public class MathKeyboard extends BaseKeyboard {
             InputList inputList = getInputList();
             Input<?> input = data.target;
 
-            inputList.newPendingOn(input);
+            inputList.select(input);
 
-            confirm_Pending_and_Goto_Init_State(inputList, null);
+            confirm_InputList_Pending_and_Goto_Init_State(inputList, null);
             return;
         }
 
@@ -85,8 +85,8 @@ public class MathKeyboard extends BaseKeyboard {
 
                 // newPendingOn(input) 不会确认已选中的输入，
                 // 故，需强制确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
-                topInputList.confirmPending();
-                topInputList.newPendingOn(input);
+                topInputList.confirmPendingAndSelectNext();
+                topInputList.select(input);
 
                 // 仅处理算数表达式输入
                 if (!input.isMathExpr()) {
@@ -152,9 +152,9 @@ public class MathKeyboard extends BaseKeyboard {
                         newMatchExprInput(topInputList);
                     }
                     // 否则，若是在不同类型的键盘内提交，
-                    // 则在回到前序键盘前，需先移动光标至相邻 Gap
+                    // 则在回到前序键盘前，需先确认待输入
                     else {
-                        topInputList.confirmPendingAndMoveToNextGapInput();
+                        topInputList.confirmPendingAndSelectNext();
                     }
                     exit(key);
 
@@ -164,9 +164,9 @@ public class MathKeyboard extends BaseKeyboard {
                     play_SingleTick_InputAudio(key);
 
                     // Note：对于上层 InputList 而言，当前正在输入的一定是算数输入
-                    topInputList.confirmPendingAndMoveToNextGapInput();
+                    topInputList.confirmPendingAndSelectNext();
 
-                    confirm_Input_Enter_or_Space(topInputList, key);
+                    confirm_InputList_Input_Enter_or_Space(topInputList, key);
 
                     // 若不是直输空格，则新建算数输入
                     if (!topInputList.isEmpty()) {
@@ -191,10 +191,6 @@ public class MathKeyboard extends BaseKeyboard {
     private void do_Single_MathKey_Inputting(Key<?> key) {
         InputList mathInputList = getMathInputList();
 
-        if (mathInputList.hasEmptyPending()) {
-            mathInputList.newPending();
-        }
-
         CharInput pending = mathInputList.getPending();
 
         if (key instanceof CharKey) {
@@ -216,11 +212,14 @@ public class MathKeyboard extends BaseKeyboard {
                     // 除开头以外的位置，等号始终添加到输入列表的末尾
                     if (mathInputList.getSelectedIndex() > 1) {
                         mathInputList.confirmPending();
-                        mathInputList.moveToLastInput();
+
+                        mathInputList.selectLast();
                     }
                 default:
-                    mathInputList.newPending().appendKey(key);
-                    mathInputList.confirmPendingAndMoveToNextGapInput();
+                    mathInputList.confirmPendingAndSelectNext();
+
+                    mathInputList.getPending().appendKey(key);
+                    mathInputList.confirmPendingAndSelectNext();
             }
         }
 
@@ -231,10 +230,9 @@ public class MathKeyboard extends BaseKeyboard {
     protected void switchTo_Previous_Keyboard(Key<?> key) {
         InputList topInputList = getTopInputList();
 
-        // 在切换前，确保当前的算数输入列表已被确认，
-        topInputList.confirmPending();
-        // 并丢弃当前的算数输入 pending 以备用于输入其他字符
-        topInputList.newPending();
+        // 在切换前，确保当前的算数输入列表已被确认
+        // Note：新位置的待输入为普通输入，可接受非算数输入，故，不需要处理
+        topInputList.confirmPendingAndSelectNext();
 
         super.switchTo_Previous_Keyboard(key);
     }
@@ -299,14 +297,16 @@ public class MathKeyboard extends BaseKeyboard {
         topInputList.addUserInputMsgListener(this.topUserInputMsgListener);
 
         Input<?> selected = topInputList.getSelected();
-        Input<?> pending = topInputList.getPending();
+        CharInput pending = topInputList.getPending();
 
         if (pending == null || !pending.isMathExpr()) {
             if (selected.isMathExpr()) {
-                topInputList.newPendingOn(selected);
+                pending = ((CharMathExprInput) selected).copy();
             } else {
-                topInputList.withPending(new CharMathExprInput());
+                pending = new CharMathExprInput();
             }
+
+            topInputList.withPending(pending);
         }
 
         // 在上层输入列表中绑定算数输入列表

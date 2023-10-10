@@ -24,9 +24,6 @@ public enum InputMsg {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
 
-    /** 输入已选择 */
-    Input_Choose_Done,
-
     /** 字符输入中 */
     InputChars_Input_Doing,
     /** 字符输入已结束 */
@@ -37,8 +34,8 @@ public enum InputMsg {
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
 
-    /** 输入列表光标已移动 */
-    InputList_Cursor_Move_Done,
+    /** 输入列表中的输入已选择 */
+    InputList_Input_Choose_Done,
     /** 输入列表的{@link InputList#getPending 待输入}已丢弃 */
     InputList_Pending_Drop_Done,
     /** 输入列表的{@link InputList#getSelected 当前选中的输入}已删除 */
