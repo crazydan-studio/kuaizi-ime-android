@@ -390,8 +390,10 @@ public class PinyinDictDB {
 
         List<String> matched = doSQLiteQuery(db, "used_latin", //
                                              new String[] { "value_" }, //
-                                             "weight_ > 0 and value_ like ?", //
-                                             new String[] { text + "%" }, //
+                                             // like 为大小写不敏感的匹配，glob 为大小写敏感匹配
+                                             // https://www.sqlitetutorial.net/sqlite-glob/
+                                             "weight_ > 0 and value_ glob ?", //
+                                             new String[] { text + "*" }, //
                                              "weight_ desc", //
                                              "1", //
                                              (cursor) -> cursor.getString(0));

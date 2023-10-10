@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -27,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
  * {@link Input 键盘输入}的视图
@@ -38,6 +40,7 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
     private final TextView notationView;
     private final TextView wordView;
     private final TextView completionView;
+    private final ImageView spaceView;
 
     public InputView(@NonNull View itemView) {
         super(itemView);
@@ -45,6 +48,7 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
         this.notationView = itemView.findViewById(R.id.notation_view);
         this.wordView = itemView.findViewById(R.id.word_view);
         this.completionView = itemView.findViewById(R.id.completion_view);
+        this.spaceView = itemView.findViewById(R.id.space_view);
     }
 
     protected void setSelectedBgColor(View view, boolean selected) {
@@ -70,8 +74,15 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
             }
         }
 
-        this.wordView.setText(value);
-        setSelectedTextColor(this.wordView, selected);
+        if (input.isSpace()) {
+            this.wordView.setText(null);
+            ViewUtils.show(this.spaceView);
+        } else {
+            this.wordView.setText(value);
+            setSelectedTextColor(this.wordView, selected);
+
+            ViewUtils.hide(this.spaceView);
+        }
 
         this.notationView.setText(notation);
         setSelectedTextColor(this.notationView, selected);

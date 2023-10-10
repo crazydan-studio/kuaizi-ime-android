@@ -36,6 +36,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 是否为占位输入 */
     boolean isGap();
 
+    /** 是否为空格输入 */
+    boolean isSpace();
+
     /** 是否为英文、数字或二者的组合输入 */
     boolean isLatin();
 

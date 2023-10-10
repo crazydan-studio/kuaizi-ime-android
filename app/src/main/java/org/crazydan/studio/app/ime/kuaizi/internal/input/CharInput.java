@@ -74,8 +74,7 @@ public class CharInput extends BaseInput<CharInput> {
         return this.completion != null;
     }
 
-    @Override
-    public void confirm() {
+    public void applyCompletion() {
         if (!hasCompletion()) {
             return;
         }
@@ -83,6 +82,11 @@ public class CharInput extends BaseInput<CharInput> {
         replaceKeys(this.completion.getKeys());
         setWord(this.completion.getWord());
 
+        setCompletion(null);
+    }
+
+    @Override
+    public void confirm() {
         setCompletion(null);
     }
 

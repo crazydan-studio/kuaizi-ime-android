@@ -478,6 +478,9 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
         else if (key.getType() == CtrlKey.Type.Space) {
+            if (!inputList.isGapSelected()) {
+                inputList.confirmPendingAndMoveToNextGapInput();
+            }
             confirm_Input_with_SingleKey_Only(inputList, key);
         }
     }
@@ -1206,7 +1209,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Key<?> leftKey = left.get();
         Key<?> rightKey = right.get();
 
-        if (selected instanceof CharInput //
+        if (!selected.isGap() //
             && ((CharInput) selected).hasPair()) {
             CharInput leftInput = pending;
             CharInput rightInput = ((CharInput) selected).getPair();
@@ -1224,7 +1227,7 @@ public abstract class BaseKeyboard implements Keyboard {
             leftInput.appendKey(leftKey);
 
             // 若当前输入不是 Gap，则其右侧的配对符号需在其右侧的 Gap 中录入
-            if (selected instanceof CharInput) {
+            if (!selected.isGap()) {
                 int selectedIndex = inputList.getSelectedIndex();
                 inputList.newPendingOn(selectedIndex + 1);
             } else {
@@ -1255,10 +1258,13 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
 
+        // Note：仅点选输入时才应用自动补全的内容
+        pending.applyCompletion();
+
         if (pending.isEmoji()) {
             start_Emoji_Choosing(null);
         } else if (pending.isSymbol()) {
-            boolean hasPair = input instanceof CharInput && ((CharInput) input).hasPair();
+            boolean hasPair = !input.isGap() && ((CharInput) input).hasPair();
 
             start_Symbol_Choosing(null, hasPair);
         } else if (pending.isMathExpr()) {

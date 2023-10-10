@@ -25,6 +25,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
  */
 public interface Key<K extends Key<?>> extends ViewData {
 
+    /** 是否为空格 */
+    boolean isSpace();
+
     /** 是否为英文或数字 */
     boolean isLatin();
 

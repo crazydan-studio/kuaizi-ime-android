@@ -62,6 +62,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
+    public boolean isSpace() {
+        return test(Key::isSpace);
+    }
+
+    @Override
     public boolean isLatin() {
         return !isPinyin() && test(Key::isLatin);
     }

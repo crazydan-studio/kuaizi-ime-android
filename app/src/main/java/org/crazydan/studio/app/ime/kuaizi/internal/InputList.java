@@ -285,17 +285,17 @@ public class InputList {
         pending.confirm();
 
         Input<?> newSelected = selected;
-        if (selected instanceof CharInput) {
+        if (selected.isGap()) {
+            // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
+            Input<?> gap = new GapInput();
+            this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
+        } else {
             // 保持对配对符号的引用
             pending.setPair(((CharInput) selected).getPair());
 
             this.inputs.set(selectedIndex, pending);
 
             newSelected = pending;
-        } else if (selected.isGap()) {
-            // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
-            Input<?> gap = new GapInput();
-            this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         }
 
         select(newSelected);
@@ -395,7 +395,8 @@ public class InputList {
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
     public void clearPairOnSelected() {
         Input<?> selected = getSelected();
-        if (selected instanceof CharInput) {
+
+        if (!selected.isGap()) {
             ((CharInput) selected).clearPair();
         }
     }
@@ -403,7 +404,8 @@ public class InputList {
     /** 删除当前选中的输入：对于光标位置，仅删除其正在输入的内容 */
     public void deleteSelected() {
         Input<?> selected = getSelected();
-        if (selected instanceof CharInput) {
+
+        if (!selected.isGap()) {
             deleteBackward();
         }
 
@@ -481,7 +483,7 @@ public class InputList {
 
     public List<CharInput> getCharInputs() {
         return getInputs().stream()
-                          .filter(input -> input instanceof CharInput)
+                          .filter(input -> !input.isGap())
                           .map(input -> ((CharInput) input))
                           .collect(Collectors.toList());
     }
@@ -569,7 +571,7 @@ public class InputList {
      */
     public boolean isEmpty() {
         for (Input<?> input : this.inputs) {
-            if (input instanceof CharInput && !input.isEmpty()) {
+            if (!input.isGap() && !input.isEmpty()) {
                 return false;
             }
         }
@@ -687,7 +689,7 @@ public class InputList {
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
     private void removeCharInput(Input<?> input) {
-        int index = input instanceof CharInput ? indexOf(input) : -1;
+        int index = !input.isGap() ? indexOf(input) : -1;
 
         removeCharInputAt(index);
     }
@@ -706,7 +708,7 @@ public class InputList {
 
     /** 删除配对符号的另一侧输入 */
     private void removeCharInputPair(Input<?> input) {
-        if (input instanceof CharInput) {
+        if (!input.isGap()) {
             CharInput pairInput = ((CharInput) input).getPair();
 
             int pairInputIndex = indexOf(pairInput);

@@ -37,6 +37,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private KeyColor color = KeyColor.none();
 
     @Override
+    public boolean isSpace() {
+        return false;
+    }
+
+    @Override
     public boolean isLatin() {
         return false;
     }

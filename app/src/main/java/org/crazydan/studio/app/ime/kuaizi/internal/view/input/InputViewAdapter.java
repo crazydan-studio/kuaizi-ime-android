@@ -90,10 +90,10 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
                                                 needGapSpace,
                                                 isFirstGapPendingMathExpr,
                                                 selected);
-        } else if (input instanceof CharInput) {
-            ((CharInputView) view).bind(option, (CharInput) input, pending, needGapSpace, selected);
-        } else {
+        } else if (input.isGap()) {
             ((GapInputView) view).bind(option, (GapInput) input, pending, needGapSpace, selected);
+        } else {
+            ((CharInputView) view).bind(option, (CharInput) input, pending, needGapSpace, selected);
         }
     }
 
@@ -104,10 +104,10 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
         if (mathExprInput != null) {
             return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
-        } else if (input instanceof CharInput) {
-            return VIEW_TYPE_CHAR_INPUT;
-        } else {
+        } else if (input.isGap()) {
             return VIEW_TYPE_GAP_INPUT;
+        } else {
+            return VIEW_TYPE_CHAR_INPUT;
         }
     }
 
@@ -148,7 +148,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         boolean selected = this.inputList.isSelected(input);
 
         // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中
-        if (!selected && input instanceof CharInput && ((CharInput) input).hasPair()) {
+        if (!selected && !input.isGap() && ((CharInput) input).hasPair()) {
             if (this.inputList.isSelected(((CharInput) input).getPair())) {
                 selected = true;
             }
