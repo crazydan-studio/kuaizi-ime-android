@@ -25,7 +25,6 @@
 
         <item name="input_bg_color">?attr/keyboard_bg_color</item>
         <item name="input_fg_color">?attr/key_fg_color</item>
-        <item name="input_completion_fg_color">#68616161</item>
         <item name="input_selection_bg_color">#ffdadada</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
@@ -92,7 +91,6 @@
 
         <item name="input_bg_color">?attr/keyboard_bg_color</item>
         <item name="input_fg_color">?attr/key_fg_color</item>
-        <item name="input_completion_fg_color">#6871d4fe</item>
         <item name="input_selection_bg_color">#ff334155</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>

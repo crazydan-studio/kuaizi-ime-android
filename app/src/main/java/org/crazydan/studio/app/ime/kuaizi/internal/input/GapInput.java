@@ -39,6 +39,11 @@ public class GapInput extends BaseInput<GapInput> {
     }
 
     @Override
+    public boolean isGap() {
+        return true;
+    }
+
+    @Override
     public void appendKey(Key<?> key) {}
 
     @Override

@@ -34,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  * @date 2023-07-06
  */
 public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
-    private final List<Key<?>> keys = new ArrayList<>();
+    private List<Key<?>> keys = new ArrayList<>();
 
     private InputWord word;
 
@@ -55,6 +55,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public void confirm() {}
+
+    @Override
+    public boolean isGap() {
+        return false;
+    }
 
     @Override
     public boolean isLatin() {
@@ -232,6 +237,10 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
      */
     public void setWord(InputWord word) {
         this.word = word != null ? word.copy() : null;
+    }
+
+    protected void replaceKeys(List<Key<?>> keys) {
+        this.keys = keys;
     }
 
     @NonNull

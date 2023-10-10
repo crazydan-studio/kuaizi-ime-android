@@ -33,6 +33,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 确认输入，一般用于包含 输入列表 的输入 */
     void confirm();
 
+    /** 是否为占位输入 */
+    boolean isGap();
+
     /** 是否为英文、数字或二者的组合输入 */
     boolean isLatin();
 

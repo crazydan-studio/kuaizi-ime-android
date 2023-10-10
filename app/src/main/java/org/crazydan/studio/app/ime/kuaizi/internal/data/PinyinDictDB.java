@@ -382,7 +382,7 @@ public class PinyinDictDB {
 
     /** 查找以指定参数开头且权重最大的拉丁文 */
     public String findBestMatchedLatin(String text) {
-        if (!isValidUsedLatin(text)) {
+        if (text == null || text.length() < 3) {
             return null;
         }
 

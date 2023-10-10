@@ -191,11 +191,6 @@ public class InputList {
         this.option = option;
     }
 
-    /** 设置自动补全的字符 */
-    public void withCompletionText(String completionText) {
-        this.cursor.newCompletion(completionText);
-    }
-
     /**
      * 设置指定的待输入
      * <p/>
@@ -238,7 +233,7 @@ public class InputList {
             return;
         }
 
-        if (input instanceof GapInput) {
+        if (input.isGap()) {
             // 在间隙位置，需要新建待输入，以插入新的输入
             newPending();
         } else {
@@ -297,7 +292,7 @@ public class InputList {
             this.inputs.set(selectedIndex, pending);
 
             newSelected = pending;
-        } else if (selected instanceof GapInput) {
+        } else if (selected.isGap()) {
             // Note: 新的间隙位置自动后移，故无需更新光标的选中对象
             Input<?> gap = new GapInput();
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
@@ -328,7 +323,7 @@ public class InputList {
 
         int nextIndex = index + 1;
         Input<?> next = this.inputs.get(nextIndex);
-        if (next instanceof GapInput && nextIndex < lastIndex) {
+        if (next.isGap() && nextIndex < lastIndex) {
             next = this.inputs.get(nextIndex + 1);
         }
 
@@ -382,7 +377,7 @@ public class InputList {
 
     /** 当前选中的是否为光标位 */
     public boolean isGapSelected() {
-        return getSelected() instanceof GapInput;
+        return getSelected().isGap();
     }
 
     /** 选中后继输入 */
@@ -438,7 +433,7 @@ public class InputList {
         }
 
         // 删除当前光标之前的 输入和占位
-        if (selected instanceof GapInput) {
+        if (selected.isGap()) {
             if (selectedIndex > 0 && hasEmptyPending()) {
                 int prevIndex = selectedIndex - 1;
                 Input<?> prev = this.inputs.get(prevIndex);
@@ -543,7 +538,7 @@ public class InputList {
 
             if (input.isPinyin()) {
                 phrase.add((CharInput) input);
-            } else if (!(input instanceof GapInput)) {
+            } else if (!input.isGap()) {
                 if (!phrase.isEmpty()) {
                     list.add(phrase);
                 }
@@ -608,7 +603,7 @@ public class InputList {
         Input<?> input = this.inputs.get(i);
         Input<?> left = this.inputs.get(i - 1);
         Input<?> right = null;
-        if (!(input instanceof GapInput)) {
+        if (!input.isGap()) {
             // Note：input 与其左侧的正在输入的 Gap 也需要检查空格（CharInput 左侧必然有一个 Gap）
             if (!isSelected(left) || Input.isEmpty(getPending())) {
                 return false;
@@ -766,7 +761,8 @@ public class InputList {
 
         public void newSelect(Input<?> input) {
             this.selected = input;
-            this.pending = null;
+
+            newPending(input.isGap() ? null : ((CharInput) input).copy());
         }
 
         public void newPending(CharInput input) {
@@ -775,12 +771,6 @@ public class InputList {
 
         public void dropPending() {
             newPending(null);
-        }
-
-        public void newCompletion(String completion) {
-            if (this.pending != null) {
-                this.pending.setCompletion(completion);
-            }
         }
 
         @Override

@@ -40,13 +40,14 @@
             android:layout_height="0dp"
             app:layout_flexGrow="1">
 
+        <!-- 自动补全的文字颜色与正在输入的一致，仅通过透明度区分 -->
         <TextView
                 android:id="@+id/completion_view"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:textSize="@dimen/char_input_word_text_size"
                 android:gravity="center"
-                android:textColor="?attr/input_completion_fg_color" />
+                android:alpha=".5" />
 
         <TextView
                 android:id="@+id/word_view"

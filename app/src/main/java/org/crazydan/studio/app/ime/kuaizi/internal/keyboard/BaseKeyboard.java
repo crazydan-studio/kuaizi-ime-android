@@ -550,7 +550,7 @@ public abstract class BaseKeyboard implements Keyboard {
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
 
-            do_Update_CompletionText(inputList);
+            do_Pending_Latin_Completion_Updating(inputList);
 
             fire_InputChars_Input_Done(key);
         } else {
@@ -895,7 +895,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 pending.appendKey(key);
 
-                do_Update_CompletionText(inputList);
+                do_Pending_Latin_Completion_Updating(inputList);
 
                 fire_InputChars_Input_Doing(key);
                 break;
@@ -933,11 +933,10 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         CharKey lastCharKey = (CharKey) lastKey;
-        // Note: 在 Input 中的 key 可能不携带 replacement 信息，只能通过当前按键做判断
+        // Note: 在 Input 中的按键可能不携带 replacement 信息，只能通过当前按键做判断
         String newKeyText = key.nextReplacement(lastCharKey.getText());
+        CharKey newKey = key.createReplacementKey(newKeyText);
 
-        // Note: 按键类型需保留，因为，字符间是否需要空格是通过字符类型进行判断的
-        CharKey newKey = lastCharKey.isSymbol() ? KeyTable.symbolKey(newKeyText) : KeyTable.alphabetKey(newKeyText);
         input.replaceLatestKey(lastCharKey, newKey);
 
         fire_InputChars_Input_Doing(newKey);
@@ -978,24 +977,28 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void do_Single_CharKey_Replacement_Committing(InputList inputList, CharKey key, int replacementIndex) {
-        String newKeyText = key.getReplacement(replacementIndex);
-        CharKey newKey = KeyTable.alphabetKey(newKeyText);
-
-        // Note：新 key 需附带替换列表，以便于在替换 目标编辑器 内容时进行可替换性判断
-        key.getReplacements().forEach(newKey::withReplacements);
+        CharKey newKey = key.createReplacementKey(replacementIndex);
 
         commit_InputList_with_SingleKey_Only(inputList, newKey, true);
     }
 
-    private void do_Update_CompletionText(InputList inputList) {
+    private void do_Pending_Latin_Completion_Updating(InputList inputList) {
         CharInput pending = inputList.getPending();
-        if (pending == null) {
+        if (pending == null || !pending.isLatin()) {
             return;
         }
 
-        String completion = this.pinyinDict.findBestMatchedLatin(pending.getText().toString());
+        String completionText = this.pinyinDict.findBestMatchedLatin(pending.getText().toString());
+        List<CharKey> keys = CharKey.from(completionText);
 
-        inputList.withCompletionText(completion);
+        if (keys.isEmpty()) {
+            pending.setCompletion(null);
+        } else {
+            CharInput completion = new CharInput();
+            keys.forEach(completion::appendKey);
+
+            pending.setCompletion(completion);
+        }
     }
     // >>>>>>
 
@@ -1261,7 +1264,12 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (pending.isMathExpr()) {
             switch_Keyboard(Type.Math, null);
         } else if (!do_Input_Choosing(inputList, pending)) {
-            confirm_Pending_and_Goto_Init_State(inputList, null);
+            // 在选择输入时，对于新输入，需先确认其 pending
+            if (input.isGap()) {
+                confirm_Pending_and_Goto_Init_State(inputList, null);
+            } else {
+                change_State_to_Init();
+            }
         }
 
         fire_Input_Choose_Done(input);

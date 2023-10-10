@@ -309,7 +309,7 @@ public abstract class KeyTable {
         return ctrlKey(CtrlKey.noop().setLabel(label));
     }
 
-    public static CharKey alphabetKey(String text) {
+    public CharKey alphabetKey(String text) {
         return charKey(CharKey.Type.Alphabet, text);
     }
 
@@ -321,7 +321,7 @@ public abstract class KeyTable {
         return charKey(CharKey.Type.Emoji, text).setColor(key_char_emoji_color);
     }
 
-    public static CharKey symbolKey(String text) {
+    public CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
     }
 

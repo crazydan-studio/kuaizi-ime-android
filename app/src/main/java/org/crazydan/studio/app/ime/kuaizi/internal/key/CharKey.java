@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
  */
 public class CharKey extends BaseCharKey<CharKey> {
     private final Type type;
-    private final List<String> replacements;
+    private List<String> replacements;
 
     public static CharKey create(Type type, String text) {
         return new CharKey(type, text);
@@ -40,6 +40,30 @@ public class CharKey extends BaseCharKey<CharKey> {
 
     public static boolean isAlphabet(Key<?> key) {
         return key instanceof CharKey && ((CharKey) key).isAlphabet();
+    }
+
+    public static List<CharKey> from(String text) {
+        if (text == null) {
+            return new ArrayList<>();
+        }
+
+        List<CharKey> keys = new ArrayList<>(text.length());
+
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+
+            CharKey key;
+            if (Character.isDigit(ch)) {
+                key = new CharKey(Type.Number, String.valueOf(ch));
+            } else if (Character.isLetter(ch)) {
+                key = new CharKey(Type.Alphabet, String.valueOf(ch));
+            } else {
+                continue;
+            }
+
+            keys.add(key);
+        }
+        return keys;
     }
 
     private CharKey(Type type, String text) {
@@ -100,6 +124,27 @@ public class CharKey extends BaseCharKey<CharKey> {
         }
 
         return this.replacements.contains(key.getText());
+    }
+
+    /** 根据指定位置的可替换内容，创建替换按键 */
+    public CharKey createReplacementKey(int index) {
+        String replacement = getReplacement(index);
+
+        return createReplacementKey(replacement);
+    }
+
+    /** 根据指定的可替换内容，创建替换按键 */
+    public CharKey createReplacementKey(String replacement) {
+        // Note: 按键类型需保留，因为，字符间是否需要空格是通过字符类型进行判断的
+        CharKey key = new CharKey(getType(), replacement);
+
+        key.setLabel(replacement);
+
+        // Note：新 key 需附带替换列表（以共享方式减少内存消耗），
+        // 以便于在替换 目标编辑器 内容时进行可替换性判断
+        key.replacements = this.replacements;
+
+        return key;
     }
 
     @Override

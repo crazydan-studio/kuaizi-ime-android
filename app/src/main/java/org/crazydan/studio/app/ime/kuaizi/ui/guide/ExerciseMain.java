@@ -858,7 +858,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_char_a = keyTable.level0CharKey("a");
         Key<?> key_char_p = keyTable.level0CharKey("p");
         Key<?> key_char_y = keyTable.level0CharKey("y");
-        Key<?> key_symbol_tanhao = PinyinKeyTable.symbolKey("！");
+        Key<?> key_symbol_tanhao = keyTable.symbolKey("！");
         Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin);
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);

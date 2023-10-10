@@ -61,7 +61,6 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
         InputWord word = input.getWord();
         String value = word != null ? word.getValue() : String.join("", input.getChars());
         String notation = word != null ? word.getNotation() : null;
-        String completion = input.getCompletion();
 
         if (option != null && word != null) {
             value = input.getText(option).toString();
@@ -77,7 +76,12 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
         this.notationView.setText(notation);
         setSelectedTextColor(this.notationView, selected);
 
-        this.completionView.setText(completion);
+        if (input.hasCompletion()) {
+            this.completionView.setText(input.getCompletion().getText());
+            setSelectedTextColor(this.completionView, selected);
+        } else {
+            this.completionView.setText(null);
+        }
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

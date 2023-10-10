@@ -33,8 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  */
 public class CharInput extends BaseInput<CharInput> {
     private CharInput pair;
-    /** 输入的自动补全字符 */
-    private String completion;
+    /** 输入的自动补全 */
+    private CharInput completion;
 
     public CharInput getPair() {
         return this.pair;
@@ -62,12 +62,28 @@ public class CharInput extends BaseInput<CharInput> {
         return this.pair != null;
     }
 
-    public String getCompletion() {
+    public CharInput getCompletion() {
         return this.completion;
     }
 
-    public void setCompletion(String completion) {
+    public void setCompletion(CharInput completion) {
         this.completion = completion;
+    }
+
+    public boolean hasCompletion() {
+        return this.completion != null;
+    }
+
+    @Override
+    public void confirm() {
+        if (!hasCompletion()) {
+            return;
+        }
+
+        replaceKeys(this.completion.getKeys());
+        setWord(this.completion.getWord());
+
+        setCompletion(null);
     }
 
     /** 是否为拼音 平/翘舌 开头 */
