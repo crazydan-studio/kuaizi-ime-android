@@ -47,6 +47,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
  * @date 2023-06-29
  */
 public class Service extends InputMethodService implements InputMsgListener {
+    private View candidatesView;
+
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
 
@@ -80,6 +82,13 @@ public class Service extends InputMethodService implements InputMsgListener {
         this.imeView.addInputMsgListener(this);
 
         return this.imeView;
+    }
+
+    @Override
+    public View onCreateCandidatesView() {
+        this.candidatesView = this.imeView.getInputCompletionsView();
+
+        return this.candidatesView;
     }
 
     /** 每次弹出键盘时调用 */
@@ -123,7 +132,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         int prevFieldId = this.prevFieldId;
         this.prevFieldId = attribute.fieldId;
 
-        this.imeView.startInput(config, prevFieldId != attribute.fieldId);
+        startImeInput(config, prevFieldId != attribute.fieldId);
     }
 
     /** 响应系统对子键盘类型的修改 */
@@ -141,7 +150,20 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         this.imeKeyboardConfig = new Keyboard.Config(keyboardType, config);
-        this.imeView.startInput(this.imeKeyboardConfig, false);
+        startImeInput(this.imeKeyboardConfig, false);
+    }
+
+    private void startImeInput(Keyboard.Config config, boolean resetInputList) {
+        setCandidatesViewShown(false);
+
+        // 确保主题变化后的视图更新
+        View candidatesView = this.imeView.getInputCompletionsView();
+        if (this.candidatesView != candidatesView) {
+            setCandidatesView(candidatesView);
+            this.candidatesView = candidatesView;
+        }
+
+        this.imeView.startInput(config, resetInputList);
     }
 
     /** 输入结束隐藏键盘 */
@@ -149,6 +171,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onFinishInput() {
         super.onFinishInput();
 
+        setCandidatesViewShown(false);
         if (this.imeView != null) {
             this.imeView.finishInput();
         }
@@ -156,7 +179,13 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
+        setCandidatesViewShown(false);
+
         switch (msg) {
+            case InputChars_Input_Doing: {
+                setCandidatesViewShown(this.imeView.hasInputCompletion());
+                break;
+            }
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);

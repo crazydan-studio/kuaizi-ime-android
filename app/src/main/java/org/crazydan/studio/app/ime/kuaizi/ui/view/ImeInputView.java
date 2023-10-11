@@ -43,6 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
@@ -59,8 +60,10 @@ public class ImeInputView extends FrameLayout
     private final SharedPreferences preferences;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
 
-    public KeyboardView keyboardView;
-    public InputListView inputListView;
+    private KeyboardView keyboardView;
+    private InputListView inputListView;
+    private InputCompletionsView inputCompletionsView;
+
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
 
@@ -80,6 +83,10 @@ public class ImeInputView extends FrameLayout
         this.inputList = new InputList();
 
         bindViews();
+    }
+
+    public InputCompletionsView getInputCompletionsView() {
+        return this.inputCompletionsView;
     }
 
     public void setDisableUserInputData(boolean disableUserInputData) {
@@ -138,6 +145,11 @@ public class ImeInputView extends FrameLayout
         this.inputList.cleanDeleteCancels();
 
         this.keyboard.reset();
+    }
+
+    /** 是否有输入自动补全 */
+    public boolean hasInputCompletion() {
+        return this.inputList.hasCompletion();
     }
 
     /** 响应键盘输入消息 */
@@ -236,6 +248,9 @@ public class ImeInputView extends FrameLayout
         if (this.inputListView != null) {
             this.inputListView.reset();
         }
+        if (this.inputCompletionsView != null) {
+            this.inputCompletionsView.reset();
+        }
 
         this.inputMsgListeners.remove(this);
         this.inputMsgListeners.remove(this.inputListView);
@@ -258,8 +273,10 @@ public class ImeInputView extends FrameLayout
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
+        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
 
         this.inputListView.updateInputList(this.inputList);
+        this.inputCompletionsView.setInputList(this.inputList);
 
         addInputMsgListener(this);
         addInputMsgListener(this.inputListView);
@@ -341,6 +358,10 @@ public class ImeInputView extends FrameLayout
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
+        return inflateWithTheme(resId, themeResId, true);
+    }
+
+    private <T extends View> T inflateWithTheme(int resId, int themeResId, boolean attachToRoot) {
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         return ThemeUtils.inflate(this, resId, themeResId, true);

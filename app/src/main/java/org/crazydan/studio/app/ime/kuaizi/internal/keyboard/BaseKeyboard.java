@@ -114,10 +114,14 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
-        // 主动进入已选中输入的选择处理状态
-        Input<?> selected = getInputList().getSelected();
-        if (!Input.isEmpty(selected)) {
-            start_Input_Choosing(selected);
+        // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
+        // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
+        if (getConfig().getSwitchFromType() == Type.Math) {
+            Input<?> selected = getInputList().getSelected();
+
+            if (!Input.isEmpty(selected)) {
+                start_Input_Choosing(selected);
+            }
         }
     }
 
