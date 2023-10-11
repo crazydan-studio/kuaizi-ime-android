@@ -23,18 +23,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 
 /**
- * 光标定位功能 的按键布局
+ * 目标编辑器 编辑按键布局
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31
  */
-public class LocatorKeyTable extends KeyTable {
+public class EditorEditKeyTable extends KeyTable {
 
-    public static LocatorKeyTable create(Config config) {
-        return new LocatorKeyTable(config);
+    public static EditorEditKeyTable create(Config config) {
+        return new EditorEditKeyTable(config);
     }
 
-    protected LocatorKeyTable(Config config) {
+    protected EditorEditKeyTable(Config config) {
         super(config);
     }
 

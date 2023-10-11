@@ -125,6 +125,10 @@ public interface Input<T extends Input<?>> extends ViewData {
         return input == null || input.isEmpty();
     }
 
+    static boolean isGap(Input<?> input) {
+        return input != null && input.isGap();
+    }
+
     class Option {
         public final InputWord.NotationType wordNotationType;
         /** 是否使用候选字变体 */

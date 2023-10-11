@@ -148,8 +148,9 @@ public class InputList {
         this.cursor.reset();
         this.candidateWordsCache.clear();
 
-        this.inputs.add(new GapInput());
-        this.cursor.selected = CollectionUtils.first(this.inputs);
+        Input<?> gap = new GapInput();
+        this.inputs.add(gap);
+        doSelect(gap);
 
         this.option = null;
         this.staged = Staged.none();
@@ -234,10 +235,37 @@ public class InputList {
             return;
         }
 
-        int confirmedPendingIndex = confirmPending();
+        int confirmedPendingIndex = doConfirmPending();
 
         Input<?> newSelected = this.inputs.get(confirmedPendingIndex + offset);
         doSelect(newSelected);
+    }
+
+    /**
+     * 确认当前待输入，并选中指定输入
+     * <p/>
+     * <ul>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入，并选中指定输入；</li>
+     * <li>原位置为字符输入时，将其替换为待输入，并选中指定输入；</li>
+     * </ul>
+     */
+    public void confirmPendingAndSelect(Input<?> input) {
+        confirmPending();
+        select(input);
+    }
+
+    /**
+     * 确认当前待输入
+     * <p/>
+     * <ul>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入；</li>
+     * <li>原位置为字符输入时，将其替换为待输入；</li>
+     * </ul>
+     */
+    public void confirmPending() {
+        doConfirmPending();
     }
 
     /**
@@ -249,7 +277,7 @@ public class InputList {
      * <li>原位置为字符输入时，将其替换为待输入；</li>
      * </ul>
      */
-    public int confirmPending() {
+    private int doConfirmPending() {
         int selectedIndex = getSelectedIndex();
         if (hasEmptyPending() || selectedIndex < 0) {
             return selectedIndex;
@@ -342,15 +370,16 @@ public class InputList {
      * 选中最后一个输入
      * <p/>
      * 若已选中最后一个输入，则不做处理
+     *
+     * @return 返回选中的输入
      */
-    public void selectLast() {
+    public Input<?> selectLast() {
         Input<?> last = getLastInput();
 
-        if (isSelected(last)) {
-            return;
+        if (!isSelected(last)) {
+            doSelect(last);
         }
-
-        doSelect(last);
+        return last;
     }
 
     /** 丢弃当前的待输入 */
@@ -393,7 +422,7 @@ public class InputList {
 
     /** 当前选中的是否为光标位 */
     public boolean isGapSelected() {
-        return getSelected().isGap();
+        return Input.isGap(getSelected());
     }
 
     /** 丢弃已选择输入，光标处于游离态 */
@@ -405,7 +434,7 @@ public class InputList {
     public void clearPairOnSelected() {
         Input<?> selected = getSelected();
 
-        if (!selected.isGap()) {
+        if (!Input.isGap(selected)) {
             ((CharInput) selected).clearPair();
         }
     }
@@ -414,7 +443,7 @@ public class InputList {
     public void deleteSelected() {
         Input<?> selected = getSelected();
 
-        if (!selected.isGap()) {
+        if (!Input.isGap(selected)) {
             deleteBackward();
         }
 
@@ -436,7 +465,8 @@ public class InputList {
         }
 
         Input<?> selected = getSelected();
-        Input<?> current = getPending() != null ? getPending() : selected;
+        Input<?> pending = getPending();
+        Input<?> current = !Input.isEmpty(pending) ? pending : selected;
         // 逐字删除拉丁字符输入的最后一个字符
         if (current.isLatin() && current.getKeys().size() > 1) {
             current.dropLastKey();
@@ -627,7 +657,7 @@ public class InputList {
         if (right == null) {
             // Note：Gap 需判断其上的待输入
             Input<?> pendingOnGap = getNoneEmptyPendingOn(input);
-            right = pendingOnGap != null || i == total - 1
+            right = !Input.isEmpty(pendingOnGap) || i == total - 1
                     ? pendingOnGap
                     : getNoneEmptyPendingOrSelf(this.inputs.get(i + 1));
         }
@@ -698,7 +728,7 @@ public class InputList {
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
     private void removeCharInput(Input<?> input) {
-        int index = !input.isGap() ? indexOf(input) : -1;
+        int index = !Input.isGap(input) ? indexOf(input) : -1;
 
         removeCharInputAt(index);
     }
@@ -717,7 +747,7 @@ public class InputList {
 
     /** 删除配对符号的另一侧输入 */
     private void removeCharInputPair(Input<?> input) {
-        if (!input.isGap()) {
+        if (!Input.isGap(input)) {
             CharInput pairInput = ((CharInput) input).getPair();
 
             int pairInputIndex = indexOf(pairInput);
@@ -775,7 +805,7 @@ public class InputList {
          * 若输入为 Gap，则为其创建空的待输入
          */
         public void select(Input<?> input) {
-            CharInput pending = input.isGap() ? new CharInput() : ((CharInput) input).copy();
+            CharInput pending = Input.isGap(input) ? new CharInput() : ((CharInput) input).copy();
 
             this.selected = input;
 

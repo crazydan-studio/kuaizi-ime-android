@@ -33,7 +33,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private Integer labelDimensionId;
 
     private boolean disabled;
-    private boolean clickable;
+    private boolean clickable = true;
     private KeyColor color = KeyColor.none();
 
     @Override

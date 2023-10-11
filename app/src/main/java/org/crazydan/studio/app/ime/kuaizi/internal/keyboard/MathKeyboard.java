@@ -68,9 +68,9 @@ public class MathKeyboard extends BaseKeyboard {
             InputList inputList = getInputList();
             Input<?> input = data.target;
 
-            inputList.select(input);
+            inputList.confirmPendingAndSelect(input);
 
-            confirm_InputList_Pending_and_Goto_Init_State(inputList, null);
+            change_State_to_Init();
             return;
         }
 
@@ -83,10 +83,8 @@ public class MathKeyboard extends BaseKeyboard {
                 InputList topInputList = getTopInputList();
                 Input<?> input = data.target;
 
-                // newPendingOn(input) 不会确认已选中的输入，
-                // 故，需强制确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
-                topInputList.confirmPendingAndSelectNext();
-                topInputList.select(input);
+                // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
+                topInputList.confirmPendingAndSelect(input);
 
                 // 仅处理算数表达式输入
                 if (!input.isMathExpr()) {

@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.LocatorKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.EditorEditKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.EditorEditDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.EmojiChooseDoingStateData;
@@ -84,6 +84,9 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
     protected State getInitState() {
+        if (this.state.type == State.Type.InputChars_Input_Waiting) {
+            return new State(State.Type.InputChars_Input_Waiting);
+        }
         return new State(State.Type.InputChars_Input_Waiting, this.state);
     }
 
@@ -151,7 +154,7 @@ public abstract class BaseKeyboard implements Keyboard {
     public KeyFactory getKeyFactory() {
         switch (this.state.type) {
             case Editor_Edit_Doing: {
-                LocatorKeyTable keyTable = LocatorKeyTable.create(createKeyTableConfigure());
+                EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfigure());
 
                 return keyTable::createKeys;
             }
@@ -418,6 +421,9 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
         else if (key.getType() == CtrlKey.Type.Space) {
+            // Note：空格不替换当前输入
+            inputList.confirmPendingAndSelectNext();
+
             confirm_InputList_Input_with_SingleKey_Only(inputList, key);
         }
     }
@@ -834,8 +840,6 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void do_Single_CharKey_Inputting(InputList inputList, CharKey key) {
-        CharInput pending = inputList.getPending();
-
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emoji:
@@ -843,7 +847,8 @@ public abstract class BaseKeyboard implements Keyboard {
                 boolean isDirectInputting = inputList.isEmpty();
 
                 if (!isDirectInputting) {
-                    inputList.confirmPendingAndSelectNext();
+                    // Note：被选中的输入直接对其做替换
+                    inputList.newPending();
 
                     inputList.getPending().appendKey(key);
 
@@ -857,6 +862,8 @@ public abstract class BaseKeyboard implements Keyboard {
             // 字母、数字可连续输入
             case Number:
             case Alphabet: {
+                CharInput pending = inputList.getPending();
+
                 // Note：非拉丁字符输入不可连续输入，直接对其做替换
                 if (!pending.isLatin()) {
                     pending = inputList.newPending();
@@ -881,7 +888,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         Input<?> input;
         if (key.isSymbol()) {
-            // Note：标点符号是独立输入，故，需替换当前位置的前一个标点符号输入
+            // Note：标点符号是独立输入，故，需替换当前位置的前一个标点符号输入（当前输入必然为 Gap）
             input = inputList.getInputBeforeSelected();
 
             // 对输入列表为空时的标点符号直输输入进行替换
@@ -945,7 +952,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void do_Pending_Latin_Completion_Updating(InputList inputList) {
         CharInput pending = inputList.getPending();
-        if (pending == null || !pending.isLatin()) {
+        if (Input.isEmpty(pending) || !pending.isLatin()) {
             return;
         }
 
@@ -1194,10 +1201,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
-
-        // TODO 对于修改输入，不能通过点击输入列表中的输入进行确认？
-        // Note：仅点选输入时才应用自动补全的内容
-        pending.applyCompletion();
 
         if (pending.isEmoji()) {
             start_Emoji_Choosing(null);
