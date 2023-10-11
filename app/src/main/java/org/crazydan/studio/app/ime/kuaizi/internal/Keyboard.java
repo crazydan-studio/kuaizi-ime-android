@@ -39,6 +39,9 @@ public interface Keyboard extends UserInputMsgListener {
 
     void setInputList(InputList inputList);
 
+    /** 启动 */
+    void start();
+
     /** 重置状态 */
     void reset();
 
@@ -62,7 +65,7 @@ public interface Keyboard extends UserInputMsgListener {
     enum Type {
         /** 汉语拼音键盘 */
         Pinyin,
-        /** 数学键盘：支持数学计算 */
+        /** 算数键盘：支持数学计算 */
         Math,
         /** 拉丁文键盘：含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件 */
         Latin,

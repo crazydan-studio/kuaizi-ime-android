@@ -208,26 +208,26 @@ public class InputList {
     }
 
     /**
-     * 确认当前待输入，再后移光标，并在新位置新建待输入
+     * {@link #confirmPending() 确认当前待输入}，再后移光标，并在新位置新建待输入
      * <p/>
-     * <ul>
-     * <li>待输入为空时，不做处理；</li>
-     * <li>原位置为 Gap 时，插入待输入，并将光标后移；</li>
-     * <li>原位置为字符输入时，将其替换为待输入，并将光标后移到相邻 Gap；</li>
-     * </ul>
+     * 即，{@link #confirmPendingAndSelectByOffset} 的参数为 <code>1</code>
      */
     public void confirmPendingAndSelectNext() {
         confirmPendingAndSelectByOffset(1);
     }
 
     /**
-     * 确认当前待输入，再后移光标到指定的偏移位置，并在该位置新建待输入
+     * {@link #confirmPending() 确认当前待输入}，再前移光标，并在新位置新建待输入
      * <p/>
-     * <ul>
-     * <li>待输入为空时，不做处理；</li>
-     * <li>原位置为 Gap 时，插入待输入，并将光标后移到指定偏移位置；</li>
-     * <li>原位置为字符输入时，将其替换为待输入，并将光标后移到指定偏移位置；</li>
-     * </ul>
+     * 即，{@link #confirmPendingAndSelectByOffset} 的参数为 <code>-1</code>
+     */
+    public void confirmPendingAndSelectPrevious() {
+        confirmPendingAndSelectByOffset(-1);
+    }
+
+    /**
+     * {@link #confirmPending() 确认当前待输入}，
+     * 再后移光标到指定的偏移位置，并在该位置新建待输入
      */
     public void confirmPendingAndSelectByOffset(int offset) {
         int selectedIndex = getSelectedIndex();
@@ -241,18 +241,16 @@ public class InputList {
         doSelect(newSelected);
     }
 
-    /**
-     * 确认当前待输入，并选中指定输入
-     * <p/>
-     * <ul>
-     * <li>待输入为空时，不做处理；</li>
-     * <li>原位置为 Gap 时，插入待输入，并选中指定输入；</li>
-     * <li>原位置为字符输入时，将其替换为待输入，并选中指定输入；</li>
-     * </ul>
-     */
+    /** {@link #confirmPending() 确认当前待输入}，并{@link #select(Input) 选中指定输入} */
     public void confirmPendingAndSelect(Input<?> input) {
         confirmPending();
         select(input);
+    }
+
+    /** {@link #confirmPending() 确认当前待输入}，并{@link #selectLast() 选中最后一个输入} */
+    public void confirmPendingAndSelectLast() {
+        confirmPending();
+        selectLast();
     }
 
     /**
@@ -305,14 +303,7 @@ public class InputList {
         return getSelectedIndex();
     }
 
-    /**
-     * 选中指定的输入
-     * <p/>
-     * 注：<ul>
-     * <li>若指定输入已选中，则不做处理；</li>
-     * <li>自动确认当前的待输入；</li>
-     * </ul>
-     */
+    /** {@link #select(int) 选中指定的输入} */
     public void select(Input<?> input) {
         int index = indexOf(input);
 
@@ -444,7 +435,7 @@ public class InputList {
         Input<?> selected = getSelected();
 
         if (!Input.isGap(selected)) {
-            deleteBackward();
+            doDeleteBackward(false);
         }
 
         dropPending();
@@ -459,6 +450,18 @@ public class InputList {
      * 若为其他输入，则直接删除该输入
      */
     public void deleteBackward() {
+        doDeleteBackward(true);
+    }
+
+    /**
+     * 回删输入
+     * <p/>
+     * 若当前为光标位，则删除其前面的输入；
+     * 若当前为拉丁字符输入，则从其尾部逐字删除该输入；
+     * 若当前为配对符号输入，则同时删除其另一侧的符号输入；
+     * 若为其他输入，则直接删除该输入
+     */
+    private void doDeleteBackward(boolean byStep) {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {
             return;
@@ -468,7 +471,7 @@ public class InputList {
         Input<?> pending = getPending();
         Input<?> current = !Input.isEmpty(pending) ? pending : selected;
         // 逐字删除拉丁字符输入的最后一个字符
-        if (current.isLatin() && current.getKeys().size() > 1) {
+        if (byStep && current.isLatin() && current.getKeys().size() > 1) {
             current.dropLastKey();
             return;
         }

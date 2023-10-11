@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -217,14 +218,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (CharKey.isAlphabet(key)) {
                     play_DoubleTick_InputAudio(key);
 
-                    // 对于新增输入，先做提交，再录入
-                    if (inputList.isGapSelected()) {
-                        inputList.confirmPendingAndSelectNext();
-                    }
-                    // 对于修改输入，则直接对其做替换
-                    else {
-                        inputList.newPending();
-                    }
+                    confirm_or_New_InputList_Pending(inputList);
 
                     CharInput pending = inputList.getPending();
 
@@ -412,7 +406,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // >>>>>>>>> 滑屏输入
     private void start_InputChars_Slipping(InputList inputList, CharInput pending, Key<?> key) {
-        change_State_To(key, new State(State.Type.InputChars_Slip_Doing, new InputCharsSlipDoingStateData()));
+        State state = new State(State.Type.InputChars_Slip_Doing,
+                                new InputCharsSlipDoingStateData(),
+                                createInitState());
+        change_State_To(key, state);
 
         do_InputChars_Slipping(inputList, pending, key);
     }
@@ -445,7 +442,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 startChar += currentKey.getText();
 
                 Collection<String> nextChars = this.pinyinDict.findNextChar(Key.Level.level_2, startChar);
-                List<String> level2NextChars = nextChars.stream().sorted().collect(Collectors.toList());
+                // 第二级后继字母先按字符顺序排列，再按字符长度升序排列
+                List<String> level2NextChars = nextChars.stream()
+                                                        .sorted(String::compareTo)
+                                                        .sorted(Comparator.comparing(String::length))
+                                                        .collect(Collectors.toList());
 
                 stateData.setLevel1Key(currentKey);
 
@@ -493,7 +494,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         InputCharsFlipDoingStateData stateData = new InputCharsFlipDoingStateData(startChar, restChars);
-        change_State_To(key, new State(State.Type.InputChars_Flip_Doing, stateData));
+        State state = new State(State.Type.InputChars_Flip_Doing, stateData, createInitState());
+        change_State_To(key, state);
 
         // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，以此对先触发的滑屏输入做替换
         CharInput pending = inputList.newPending();
@@ -594,7 +596,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputCandidateChooseDoingStateData stateData = new InputCandidateChooseDoingStateData(input,
                                                                                               allCandidates,
                                                                                               pageSize);
-        change_State_To(null, new State(State.Type.InputCandidate_Choose_Doing, stateData));
+        State state = new State(State.Type.InputCandidate_Choose_Doing, stateData, createInitState());
+        change_State_To(null, state);
 
         fire_InputCandidate_Choose_Doing(input);
     }
@@ -816,7 +819,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // >>>>>>>>> 对输入列表 提交选项 的操作
     private void start_InputList_Committing_Option_Choosing(Key<?> key) {
-        change_State_To(key, new State(State.Type.InputList_Committing_Option_Choose_Doing));
+        State state = new State(State.Type.InputList_Committing_Option_Choose_Doing, createInitState());
+        change_State_To(key, state);
     }
 
     private void on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(

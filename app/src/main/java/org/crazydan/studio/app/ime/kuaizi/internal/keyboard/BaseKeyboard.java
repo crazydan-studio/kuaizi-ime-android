@@ -85,9 +85,13 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
     protected State getInitState() {
         if (this.state.type == State.Type.InputChars_Input_Waiting) {
-            return new State(State.Type.InputChars_Input_Waiting);
+            return createInitState();
         }
         return new State(State.Type.InputChars_Input_Waiting, this.state);
+    }
+
+    protected State createInitState() {
+        return new State(State.Type.InputChars_Input_Waiting);
     }
 
     @Override
@@ -109,6 +113,15 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
+    public void start() {
+        // 主动进入已选中输入的选择处理状态
+        Input<?> selected = getInputList().getSelected();
+        if (!Input.isEmpty(selected)) {
+            start_Input_Choosing(selected);
+        }
+    }
+
+    @Override
     public void reset() {
         change_State_to_Init();
     }
@@ -121,6 +134,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         this.inputMsgListeners.clear();
         this.config = null;
+        this.inputList = null;
     }
 
     public InputList getInputList() {
@@ -304,14 +318,14 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
     protected void fire_InputList_Selected_Delete_Done(Key<?> key, CharInput input) {
-        InputMsgData data = new InputListInputDeletedMsgData(key, input);
+        InputMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
 
         fireInputMsg(InputMsg.InputList_Selected_Delete_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
     protected void fire_InputList_Pending_Drop_Done(Key<?> key, CharInput input) {
-        InputMsgData data = new InputListInputDeletedMsgData(key, input);
+        InputMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
 
         fireInputMsg(InputMsg.InputList_Pending_Drop_Done, data);
     }
@@ -370,10 +384,19 @@ public abstract class BaseKeyboard implements Keyboard {
      * 若无前序状态，则回到初始状态
      */
     protected void change_State_to_Previous(Key<?> key) {
-        if (this.state.previous == null) {
+        State state = this.state;
+        State previous = state.previous;
+
+        // 跳过与当前状态的类型相同的前序状态
+        while (previous != null && previous.type == state.type) {
+            state = previous;
+            previous = state.previous;
+        }
+
+        if (previous == null) {
             change_State_to_Init(key);
         } else {
-            change_State_To(key, this.state.previous);
+            change_State_To(key, previous);
         }
     }
 
@@ -389,6 +412,21 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.confirmPendingAndSelectNext();
 
         fire_InputChars_Input_Done(key);
+    }
+
+    /**
+     * 对于 Gap 输入先提交其待输入，并选中后继 Gap；
+     * 而对于已存在的输入，则直接新建待输入以做替换输入
+     */
+    protected void confirm_or_New_InputList_Pending(InputList inputList) {
+        // 对于新增输入，先做提交，再录入
+        if (inputList.isGapSelected()) {
+            inputList.confirmPendingAndSelectNext();
+        }
+        // 对于修改输入，则直接对其做替换
+        else {
+            inputList.newPending();
+        }
     }
 
     /** 仅{@link #confirm_InputList_Pending 确认}只有唯一按键的输入 */
@@ -923,25 +961,22 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         boolean isDirectInputting = inputList.isEmpty();
-        CharInput pending = inputList.getPending();
-
-        if (!isDirectInputting //
-            && !pending.isEmpty() //
-            && pending.isLatin()) {
-            inputList.confirmPendingAndSelectNext();
-
-            if (key instanceof SymbolKey && ((SymbolKey) key).isPair()) {
-                prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) ((SymbolKey) key).getSymbol());
-
-                // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
-                confirm_InputList_Pending_and_Goto_Init_State(inputList, key);
-            } else {
-                confirm_InputList_Input_with_SingleKey_Only(inputList, key);
-            }
-
-            return true;
+        if (isDirectInputting) {
+            return false;
         }
-        return false;
+
+        if (key instanceof SymbolKey && ((SymbolKey) key).isPair()) {
+            prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) ((SymbolKey) key).getSymbol());
+
+            // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
+            confirm_InputList_Pending_and_Goto_Init_State(inputList, key);
+        } else {
+            confirm_or_New_InputList_Pending(inputList);
+
+            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+        }
+
+        return true;
     }
 
     protected void do_Single_CharKey_Replacement_Committing(InputList inputList, CharKey key, int replacementIndex) {
@@ -978,7 +1013,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
 
         EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
-        State state = new State(State.Type.Emoji_Choose_Doing, stateData, this.state);
+        State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());
         change_State_To(key, state);
 
         String group = null;
@@ -1058,7 +1093,7 @@ public abstract class BaseKeyboard implements Keyboard {
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pageSize, onlyPair);
-        State state = new State(State.Type.Symbol_Choose_Doing, stateData, this.state);
+        State state = new State(State.Type.Symbol_Choose_Doing, stateData, createInitState());
         change_State_To(key, state);
 
         SymbolGroup group = SymbolGroup.latin;
@@ -1155,17 +1190,19 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected void prepare_for_PairKey_Inputting(InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right) {
         Input<?> selected = inputList.getSelected();
-        CharInput pending = inputList.newPending();
 
         Key<?> leftKey = left.get();
         Key<?> rightKey = right.get();
 
-        if (!selected.isGap() //
-            && ((CharInput) selected).hasPair()) {
+        // 用新的配对符号替换原配对符号
+        if (!selected.isGap() && ((CharInput) selected).hasPair()) {
+            CharInput pending = inputList.newPending();
+
             CharInput leftInput = pending;
             CharInput rightInput = ((CharInput) selected).getPair();
-            int rightInputIndex = inputList.indexOf(rightInput);
 
+            int rightInputIndex = inputList.indexOf(rightInput);
+            // 交换左右顺序
             if (inputList.getSelectedIndex() > rightInputIndex) {
                 leftInput = rightInput;
                 rightInput = pending;
@@ -1174,10 +1211,22 @@ public abstract class BaseKeyboard implements Keyboard {
             leftInput.replaceLastKey(leftKey);
             rightInput.replaceLastKey(rightKey);
         } else {
-            CharInput leftInput = pending;
+            // 对于非空的待输入，对其做配对符号包裹
+            boolean wrapSelected = !inputList.hasEmptyPending() && !selected.isSymbol();
+            if (wrapSelected) {
+                // 选中被包裹输入的左侧 Gap
+                inputList.confirmPendingAndSelectPrevious();
+            }
+
+            CharInput leftInput = inputList.getPending();
             leftInput.appendKey(leftKey);
 
-            inputList.confirmPendingAndSelectNext();
+            if (wrapSelected) {
+                // 选中被包裹输入的右侧 Gap：左符号+Gap+被包裹输入+右符号
+                inputList.confirmPendingAndSelectByOffset(3);
+            } else {
+                inputList.confirmPendingAndSelectNext();
+            }
 
             CharInput rightInput = inputList.getPending();
             rightInput.appendKey(rightKey);
@@ -1186,7 +1235,7 @@ public abstract class BaseKeyboard implements Keyboard {
             rightInput.setPair(leftInput);
 
             // 确认右侧的配对输入，并将光标移动到 右配对输入 的左侧 Gap 位置以确保光标在配对符号的中间位置
-            inputList.confirmPendingAndSelectByOffset(-1);
+            inputList.confirmPendingAndSelectPrevious();
         }
     }
     // >>>>>>>>>>>

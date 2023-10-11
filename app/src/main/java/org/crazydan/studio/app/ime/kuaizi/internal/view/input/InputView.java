@@ -39,7 +39,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I> {
     private final TextView notationView;
     private final TextView wordView;
-    private final TextView completionView;
     private final ImageView spaceView;
 
     public InputView(@NonNull View itemView) {
@@ -47,7 +46,6 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
 
         this.notationView = itemView.findViewById(R.id.notation_view);
         this.wordView = itemView.findViewById(R.id.word_view);
-        this.completionView = itemView.findViewById(R.id.completion_view);
         this.spaceView = itemView.findViewById(R.id.space_view);
     }
 
@@ -86,13 +84,6 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
 
         this.notationView.setText(notation);
         setSelectedTextColor(this.notationView, selected);
-
-        if (input.hasCompletion()) {
-            this.completionView.setText(input.getCompletion().getText());
-            setSelectedTextColor(this.completionView, selected);
-        } else {
-            this.completionView.setText(null);
-        }
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

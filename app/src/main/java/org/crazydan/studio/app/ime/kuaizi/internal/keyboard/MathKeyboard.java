@@ -34,9 +34,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
 /**
- * {@link Keyboard.Type#Math 数学键盘}
+ * {@link Keyboard.Type#Math 算数键盘}
  * <p/>
  * 含数字、计算符号等
+ * <p/>
+ * 算数键盘涉及对 {@link InputList} 的嵌套处理，
+ * 故而，必须采用独立的子键盘模式，而不能采用嵌入模式
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-04
@@ -69,6 +72,8 @@ public class MathKeyboard extends BaseKeyboard {
             Input<?> input = data.target;
 
             inputList.confirmPendingAndSelect(input);
+            // 对输入的修改均做替换输入
+            inputList.newPending();
 
             change_State_to_Init();
             return;
@@ -208,15 +213,17 @@ public class MathKeyboard extends BaseKeyboard {
                     break;
                 case equal:
                     // 除开头以外的位置，等号始终添加到输入列表的末尾
-                    if (mathInputList.getSelectedIndex() > 1) {
-                        mathInputList.confirmPending();
-
-                        mathInputList.selectLast();
+                    if (!mathInputList.isGapSelected() || mathInputList.getSelectedIndex() > 1) {
+                        mathInputList.confirmPendingAndSelectLast();
                     }
+                    // Note：等号需按 default 逻辑添加至输入列表末尾
+                    //break;
                 default:
                     mathInputList.confirmPendingAndSelectNext();
 
                     mathInputList.getPending().appendKey(key);
+
+                    // Note：单算数符号不支持追加输入
                     mathInputList.confirmPendingAndSelectNext();
             }
         }

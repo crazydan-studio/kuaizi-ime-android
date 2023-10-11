@@ -233,9 +233,10 @@ public class PinyinKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
+        gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.DropInput);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.ConfirmInput);
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
-        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.DropInput);
+        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
         // 部首过滤按键
         String[] filterStrokes = PinyinInputWord.getStrokeNames();
@@ -429,39 +430,51 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
     private GridCoord[] getLevel2KeyCoords(int keySize) {
-        GridCoord[] coords;
-        if (keySize <= 2) {
-            coords = new GridCoord[] {
-                    coord(4, 3), coord(5, 3),
-                    };
-        } else if (keySize == 3) {
-            coords = new GridCoord[] {
-                    coord(3, 2), coord(4, 3),
-                    //
-                    coord(5, 3),
-                    };
-        } else if (keySize <= 6) {
-            coords = new GridCoord[] {
-                    coord(2, 2), coord(3, 2),
-                    //
-                    coord(4, 3), coord(5, 3),
-                    //
-                    coord(4, 2), coord(5, 2),
-                    };
-        } else {
-            coords = new GridCoord[] {
-                    coord(2, 2), coord(3, 2),
-                    //
-                    coord(4, 3), coord(5, 3),
-                    //
-                    coord(3, 1), coord(4, 2),
-                    //
-                    coord(5, 2), coord(3, 3),
-                    //
-                    coord(4, 4),
-                    };
-        }
-        return coords;
+//        GridCoord[] coords;
+//        if (keySize <= 2) {
+//            coords = new GridCoord[] {
+//                    coord(4, 3), coord(5, 3),
+//                    };
+//        } else if (keySize == 3) {
+//            coords = new GridCoord[] {
+//                    coord(3, 2), coord(4, 3),
+//                    //
+//                    coord(5, 3),
+//                    };
+//        } else if (keySize <= 6) {
+//            coords = new GridCoord[] {
+//                    coord(2, 2), coord(3, 2),
+//                    //
+//                    coord(4, 3), coord(5, 3),
+//                    //
+//                    coord(4, 2), coord(5, 2),
+//                    };
+//        } else {
+//            coords = new GridCoord[] {
+//                    coord(2, 2), coord(3, 2),
+//                    //
+//                    coord(4, 3), coord(5, 3),
+//                    //
+//                    coord(3, 1), coord(4, 2),
+//                    //
+//                    coord(5, 2), coord(3, 3),
+//                    //
+//                    coord(4, 4),
+//                    };
+//        }
+//        return coords;
+
+        return new GridCoord[] {
+                coord(3, 3), coord(4, 4),
+                //
+                coord(5, 3), coord(4, 3),
+                //
+                coord(3, 2), coord(2, 2),
+                //
+                coord(3, 1), coord(4, 2),
+                //
+                coord(5, 2),
+                };
     }
 
     private GridCoord[] getFullCharKeyCoords() {

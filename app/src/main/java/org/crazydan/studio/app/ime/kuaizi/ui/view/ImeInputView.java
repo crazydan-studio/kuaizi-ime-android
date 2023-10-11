@@ -290,6 +290,8 @@ public class ImeInputView extends FrameLayout
 
         if (keyboard != null) {
             keyboard.setInputList(this.inputList);
+            keyboard.start();
+
             this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
 
             this.keyboardView.updateKeyboard(keyboard);

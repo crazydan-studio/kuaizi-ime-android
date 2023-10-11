@@ -34,7 +34,6 @@
             android:gravity="center"
             android:textColor="?attr/input_fg_color" />
 
-    <!-- 采用层叠布局 FrameLayout，以确保输入内容在自动补全内容之上 -->
     <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
@@ -48,15 +47,6 @@
                 android:layout_marginBottom="2dp"
                 android:src="@drawable/ic_space"
                 android:visibility="gone" />
-
-        <!-- 自动补全的文字颜色与正在输入的一致，仅通过透明度区分 -->
-        <TextView
-                android:id="@+id/completion_view"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:textSize="@dimen/char_input_word_text_size"
-                android:gravity="center"
-                android:alpha=".5" />
 
         <TextView
                 android:id="@+id/word_view"

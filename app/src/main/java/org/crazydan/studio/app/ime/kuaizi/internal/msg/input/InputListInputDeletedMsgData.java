@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
@@ -32,8 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 public class InputListInputDeletedMsgData extends InputCommonMsgData {
     public final CharInput target;
 
-    public InputListInputDeletedMsgData(Key<?> key, CharInput target) {
-        super(key);
+    public InputListInputDeletedMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, CharInput target) {
+        super(keyFactory, key);
 
         this.target = target;
     }
