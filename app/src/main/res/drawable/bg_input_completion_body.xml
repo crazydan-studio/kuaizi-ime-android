@@ -1,0 +1,42 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="15.107dp"
+        android:height="16dp"
+        android:viewportWidth="3.9971"
+        android:viewportHeight="4.2333">
+    <path
+            android:pathData="m2.3967,0.0279c-0.6478,0 -1.2832,0.3148 -1.5446,0.9018 -0.1138,-0.0608 -0.2413,-0.0966 -0.3762,-0.0966 -0.1647,0 -0.3183,0.0522 -0.448,0.1406V4.2039c0.0088,0.0002 0.0175,0.0015 0.0264,0.0016H3.9424c0.0091,-0 0.0179,-0.0013 0.0269,-0.0016V0.801C3.6363,0.2797 3.1212,0.0279 2.3967,0.0279Z"
+            android:strokeWidth="0.05582708"
+            android:fillColor="#ffffff"
+            android:strokeColor="#000000" />
+    <path
+            android:pathData="m0.057,0.9872 l-0.0573,0.0323 0,3.1593H0.0592Z"
+            android:strokeLineJoin="miter"
+            android:strokeWidth="0.264583"
+            android:fillColor="#ffffff"
+            android:strokeColor="#00000000"
+            android:strokeLineCap="butt" />
+    <path
+            android:pathData="m3.9381,0.8058 l0.0612,0.0823 0.0002,3.2907h-0.0629z"
+            android:strokeLineJoin="miter"
+            android:strokeWidth="0.264583"
+            android:fillColor="#ffffff"
+            android:strokeColor="#00000000"
+            android:strokeLineCap="butt" />
+</vector>

@@ -38,23 +38,15 @@ public class CompletionView extends RecyclerViewHolder<CompletionInput> {
 
     public CompletionView(@NonNull View itemView) {
         super(itemView);
-
-//        CompletionViewBgDrawable drawable = new CompletionViewBgDrawable();
-//
-//        int bgColor = getColorByAttrId(R.attr.input_bg_color);
-//        drawable.setFillColor(bgColor);
-//        drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
-//
-//        this.itemView.setBackground(drawable);
     }
 
     @Override
     public void bind(CompletionInput data) {
         super.bind(data);
 
-        ((ViewGroup) this.itemView).removeAllViews();
+//        ((ViewGroup) this.itemView).removeAllViews();
 
-        data.inputs.forEach(this::createInputView);
+//        data.inputs.forEach(this::createInputView);
     }
 
     private void createInputView(CharInput input) {
