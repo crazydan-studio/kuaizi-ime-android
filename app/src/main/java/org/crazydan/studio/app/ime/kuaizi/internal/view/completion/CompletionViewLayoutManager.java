@@ -15,24 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.completion;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import android.content.Context;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 
 /**
- * 用户对{@link Input 输入}的操作消息
+ * {@link CompletionInput} 的{@link RecyclerView}布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-21
+ * @date 2023-10-12
  */
-public enum UserInputMsg {
-    /** 输入选择中 */
-    Input_Choose_Doing,
-    /** 输入已清空 */
-    Inputs_Clean_Done,
-    /** 已撤销对输入的清空操作 */
-    Inputs_Cleaned_Cancel_Done,
+public class CompletionViewLayoutManager extends LinearLayoutManager {
 
-    /** 输入自动补全选择中 */
-    Input_Completion_Choose_Doing,
+    public CompletionViewLayoutManager(Context context) {
+        super(context, RecyclerView.HORIZONTAL, false);
+    }
 }

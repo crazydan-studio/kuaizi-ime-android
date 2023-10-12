@@ -14,12 +14,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:layout_marginHorizontal="8dp"
+        android:background="@drawable/bg_input_completion">
 
-<!--
-    在 InputMethodService#setCandidatesView 中会将候选视图的布局高度设置为 wrap_content，
-    所以，需要在 InputCompletionsView 的子视图 input_completion_view.xml 上设置高度才会生效
--->
-<org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="2dp" />
+</LinearLayout>

@@ -17,10 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 
 /**
@@ -33,8 +34,17 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
  */
 public class CharInput extends BaseInput<CharInput> {
     private CharInput pair;
-    /** 输入的自动补全 */
-    private CharInput completion;
+
+    /** 输入补全 */
+    private List<CompletionInput> completions = new ArrayList<>();
+
+    public static CharInput from(List<Key<?>> keys) {
+        CharInput input = new CharInput();
+
+        input.replaceKeys(keys);
+
+        return input;
+    }
 
     public CharInput getPair() {
         return this.pair;
@@ -62,32 +72,32 @@ public class CharInput extends BaseInput<CharInput> {
         return this.pair != null;
     }
 
-    public CharInput getCompletion() {
-        return this.completion;
+    public List<CompletionInput> getCompletions() {
+        return this.completions;
     }
 
-    public void setCompletion(CharInput completion) {
-        this.completion = completion;
+    public void addCompletion(CompletionInput completion) {
+        this.completions.add(completion);
     }
 
-    public boolean hasCompletion() {
-        return this.completion != null;
+    public boolean hasCompletions() {
+        return !this.completions.isEmpty();
     }
 
-    public void applyCompletion() {
-        if (!hasCompletion()) {
-            return;
-        }
+    public void clearCompletions() {
+        this.completions = new ArrayList<>();
+    }
 
-        replaceKeys(this.completion.getKeys());
-        setWord(this.completion.getWord());
+    public void applyCompletion(CompletionInput completion) {
+        CharInput input = completion.inputs.get(0);
 
-        setCompletion(null);
+        replaceKeys(input.getKeys());
+        setWord(input.getWord());
     }
 
     @Override
     public void confirm() {
-        setCompletion(null);
+        clearCompletions();
     }
 
     /** 是否为拼音 平/翘舌 开头 */
@@ -169,20 +179,5 @@ public class CharInput extends BaseInput<CharInput> {
     protected void replaceCharKeyText(CharKey key, int keyIndex, String keyText) {
         getKeys().remove(keyIndex);
         getKeys().add(keyIndex, CharKey.create(key.getType(), keyText).setLabel(keyText));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        CharInput that = (CharInput) o;
-        return Objects.equals(this.completion, that.completion);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.completion);
     }
 }

@@ -72,6 +72,13 @@
                         app:dot_spacing="4dp"
                         app:dot_size="14dp" />
             </com.google.android.flexbox.FlexboxLayout>
+
+            <LinearLayout
+                    android:id="@+id/ime_completions_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="bottom" />
         </FrameLayout>
 
         <include

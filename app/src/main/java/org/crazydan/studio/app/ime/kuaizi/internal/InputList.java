@@ -193,9 +193,9 @@ public class InputList {
         this.option = option;
     }
 
-    /** 是否有自动补全输入 */
-    public boolean hasCompletion() {
-        return !hasEmptyPending() && getPending().hasCompletion();
+    /** 是否有输入补全 */
+    public boolean hasCompletions() {
+        return !hasEmptyPending() && getPending().hasCompletions();
     }
 
     /** 重新创建当前输入的待输入（不确认已有的待输入） */

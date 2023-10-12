@@ -32,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.data.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -995,17 +996,20 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        String completionText = this.pinyinDict.findBestMatchedLatin(pending.getText().toString());
-        List<CharKey> keys = CharKey.from(completionText);
+        List<String> bestLatins = this.pinyinDict.findTopBestMatchedLatin(pending.getText().toString(), 5);
 
-        if (keys.isEmpty()) {
-            pending.setCompletion(null);
-        } else {
-            CharInput completion = new CharInput();
-            keys.forEach(completion::appendKey);
+        pending.clearCompletions();
+        bestLatins.forEach((latin) -> {
+            List<Key<?>> keys = CharKey.from(latin+"asdasdfasdfadf");
 
-            pending.setCompletion(completion);
-        }
+            if (!keys.isEmpty()) {
+                CharInput input = CharInput.from(keys);
+                CompletionInput completion = new CompletionInput();
+                completion.add(input);
+
+                pending.addCompletion(completion);
+            }
+        });
     }
     // >>>>>>
 

@@ -43,17 +43,19 @@
                 android:id="@+id/space_view"
                 android:layout_width="12dp"
                 android:layout_height="8dp"
-                android:layout_gravity="bottom"
                 android:layout_marginBottom="2dp"
+                android:layout_gravity="bottom"
+                android:gravity="center"
                 android:src="@drawable/ic_space"
                 android:visibility="gone" />
 
         <TextView
                 android:id="@+id/word_view"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:textSize="@dimen/char_input_word_text_size"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:gravity="center"
+                android:textSize="@dimen/char_input_word_text_size"
                 android:textColor="?attr/input_fg_color" />
     </FrameLayout>
 </com.google.android.flexbox.FlexboxLayout>

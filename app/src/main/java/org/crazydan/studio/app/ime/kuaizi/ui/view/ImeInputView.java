@@ -147,9 +147,9 @@ public class ImeInputView extends FrameLayout
         this.keyboard.reset();
     }
 
-    /** 是否有输入自动补全 */
-    public boolean hasInputCompletion() {
-        return this.inputList.hasCompletion();
+    /** 是否有输入补全 */
+    public boolean hasInputCompletions() {
+        return this.inputList.hasCompletions();
     }
 
     /** 响应键盘输入消息 */
@@ -254,6 +254,7 @@ public class ImeInputView extends FrameLayout
 
         this.inputMsgListeners.remove(this);
         this.inputMsgListeners.remove(this.inputListView);
+        this.inputMsgListeners.remove(this.inputCompletionsView);
     }
 
     private void bindViews() {
@@ -280,6 +281,7 @@ public class ImeInputView extends FrameLayout
 
         addInputMsgListener(this);
         addInputMsgListener(this.inputListView);
+        addInputMsgListener(this.inputCompletionsView);
 
         bindKeyboard(this.keyboard);
     }
@@ -364,7 +366,7 @@ public class ImeInputView extends FrameLayout
     private <T extends View> T inflateWithTheme(int resId, int themeResId, boolean attachToRoot) {
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        return ThemeUtils.inflate(this, resId, themeResId, true);
+        return ThemeUtils.inflate(this, resId, themeResId, attachToRoot);
     }
 
     private Keyboard createKeyboard(Keyboard.Type type) {

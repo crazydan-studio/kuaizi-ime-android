@@ -380,10 +380,10 @@ public class PinyinDictDB {
         return new Emojis(groups);
     }
 
-    /** 查找以指定参数开头且权重最大的拉丁文 */
-    public String findBestMatchedLatin(String text) {
+    /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
+    public List<String> findTopBestMatchedLatin(String text, int top) {
         if (text == null || text.length() < 3) {
-            return null;
+            return new ArrayList<>();
         }
 
         SQLiteDatabase db = getUserDB();
@@ -395,10 +395,10 @@ public class PinyinDictDB {
                                              "weight_ > 0 and value_ glob ?", //
                                              new String[] { text + "*" }, //
                                              "weight_ desc", //
-                                             "1", //
+                                             String.valueOf(top), //
                                              (cursor) -> cursor.getString(0));
 
-        return matched.isEmpty() ? null : matched.get(0);
+        return matched;
     }
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */

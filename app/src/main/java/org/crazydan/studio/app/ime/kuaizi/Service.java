@@ -179,13 +179,10 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        setCandidatesViewShown(false);
+        boolean needToShowCandidates = msg == InputMsg.InputChars_Input_Doing && this.imeView.hasInputCompletions();
+        setCandidatesViewShown(needToShowCandidates);
 
         switch (msg) {
-            case InputChars_Input_Doing: {
-                setCandidatesViewShown(this.imeView.hasInputCompletion());
-                break;
-            }
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);

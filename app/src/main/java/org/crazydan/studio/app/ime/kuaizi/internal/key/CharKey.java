@@ -42,12 +42,12 @@ public class CharKey extends BaseCharKey<CharKey> {
         return key instanceof CharKey && ((CharKey) key).isAlphabet();
     }
 
-    public static List<CharKey> from(String text) {
+    public static List<Key<?>> from(String text) {
         if (text == null) {
             return new ArrayList<>();
         }
 
-        List<CharKey> keys = new ArrayList<>(text.length());
+        List<Key<?>> keys = new ArrayList<>(text.length());
 
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);

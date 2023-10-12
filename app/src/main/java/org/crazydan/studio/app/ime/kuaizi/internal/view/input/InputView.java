@@ -82,8 +82,12 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
             ViewUtils.hide(this.spaceView);
         }
 
-        this.notationView.setText(notation);
-        setSelectedTextColor(this.notationView, selected);
+        if (notation != null) {
+            ViewUtils.show(this.notationView).setText(notation);
+            setSelectedTextColor(this.notationView, selected);
+        } else {
+            ViewUtils.hide(this.notationView);
+        }
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

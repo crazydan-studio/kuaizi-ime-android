@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.input;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 
 /**
- * 用户对{@link Input 输入}的操作消息
+ * {@link Input 输入}补全
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-21
+ * @date 2023-10-12
  */
-public enum UserInputMsg {
-    /** 输入选择中 */
-    Input_Choose_Doing,
-    /** 输入已清空 */
-    Inputs_Clean_Done,
-    /** 已撤销对输入的清空操作 */
-    Inputs_Cleaned_Cancel_Done,
+public class CompletionInput extends BaseInput<GapInput> {
+    public final List<CharInput> inputs = new ArrayList<>();
 
-    /** 输入自动补全选择中 */
-    Input_Completion_Choose_Doing,
+    public void add(CharInput input) {
+        this.inputs.add(input);
+    }
 }
