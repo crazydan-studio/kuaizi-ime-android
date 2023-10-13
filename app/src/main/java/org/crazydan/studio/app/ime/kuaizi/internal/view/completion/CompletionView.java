@@ -18,10 +18,13 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.completion;
 
 import android.graphics.Color;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
@@ -38,6 +41,11 @@ public class CompletionView extends RecyclerViewHolder<CompletionInput> {
 
     public CompletionView(@NonNull View itemView) {
         super(itemView);
+
+        Drawable drawable = new TileDrawable(ContextCompat.getDrawable(getContext(),
+                                                                       R.drawable.bg_input_completion_body),
+                                             Shader.TileMode.REPEAT);
+        itemView.findViewById(R.id.bg_view).setBackground(drawable);
     }
 
     @Override
