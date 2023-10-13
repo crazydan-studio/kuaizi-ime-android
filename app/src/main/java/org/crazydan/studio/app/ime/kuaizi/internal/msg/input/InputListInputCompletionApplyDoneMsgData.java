@@ -15,24 +15,21 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.msg;
+package org.crazydan.studio.app.ime.kuaizi.internal.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 
 /**
- * 用户对{@link Input 输入}的操作消息
+ * {@link InputMsg#InputList_Input_Completion_Apply_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-21
+ * @date 2023-10-13
  */
-public enum UserInputMsg {
-    /** 输入选择中 */
-    Input_Choose_Doing,
-    /** 输入已清空 */
-    Inputs_Clean_Done,
-    /** 已撤销对输入的清空操作 */
-    Inputs_Cleaned_Cancel_Done,
+public class InputListInputCompletionApplyDoneMsgData extends InputCommonMsgData {
+    public final CompletionInput completion;
 
-    /** 输入补全选择中 */
-    Input_Completion_Choose_Doing,
+    public InputListInputCompletionApplyDoneMsgData(CompletionInput completion) {
+        this.completion = completion;
+    }
 }

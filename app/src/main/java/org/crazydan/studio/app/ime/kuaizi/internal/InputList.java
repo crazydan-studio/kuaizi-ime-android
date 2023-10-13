@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
@@ -196,6 +197,11 @@ public class InputList {
     /** 是否有输入补全 */
     public boolean hasCompletions() {
         return !hasEmptyPending() && getPending().hasCompletions();
+    }
+
+    /** 应用输入补全 */
+    public void applyCompletion(CompletionInput completion) {
+        getPending().applyCompletion(completion);
     }
 
     /** 重新创建当前输入的待输入（不确认已有的待输入） */

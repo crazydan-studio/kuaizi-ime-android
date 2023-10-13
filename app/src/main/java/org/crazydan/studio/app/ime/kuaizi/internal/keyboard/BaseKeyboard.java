@@ -59,6 +59,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputting
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputChooseDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListInputCompletionApplyDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListInputDeletedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
@@ -222,6 +223,11 @@ public abstract class BaseKeyboard implements Keyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case InputChars_Input_Waiting:
+                if (msg == UserInputMsg.Input_Completion_Choose_Doing) {
+                    CompletionInput completion = (CompletionInput) data.target;
+                    start_Input_Completion_applying(completion);
+                    break;
+                }
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing: {
                 switch (msg) {
@@ -324,6 +330,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputChooseDoneMsgData(input);
 
         fireInputMsg(InputMsg.InputList_Input_Choose_Done, data);
+    }
+
+    /** 触发 {@link InputMsg#InputList_Input_Completion_Apply_Done} 消息 */
+    protected void fire_InputList_Input_Completion_Apply_Done(CompletionInput completion) {
+        InputMsgData data = new InputListInputCompletionApplyDoneMsgData(completion);
+
+        fireInputMsg(InputMsg.InputList_Input_Completion_Apply_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
@@ -581,7 +594,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
             do_Pending_Latin_Completion_Updating(inputList);
 
-            fire_InputChars_Input_Done(key);
+            fire_InputChars_Input_Doing(key);
         } else {
             do_Editor_Editing(inputList, EditorEditAction.backspace);
         }
@@ -994,6 +1007,17 @@ public abstract class BaseKeyboard implements Keyboard {
 
         commit_InputList_with_SingleKey_Only(inputList, newKey, true);
     }
+    // >>>>>>
+
+    // <<<<<<< 对输入补全的处理
+    protected void start_Input_Completion_applying(CompletionInput completion) {
+        InputList inputList = getInputList();
+
+        inputList.applyCompletion(completion);
+        inputList.confirmPendingAndSelectNext();
+
+        fire_InputList_Input_Completion_Apply_Done(completion);
+    }
 
     private void do_Pending_Latin_Completion_Updating(InputList inputList) {
         CharInput pending = inputList.getPending();
@@ -1005,7 +1029,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         pending.clearCompletions();
         bestLatins.forEach((latin) -> {
-            List<Key<?>> keys = CharKey.from(latin + "asdasdfasdfadf");
+            List<Key<?>> keys = CharKey.from(latin);
 
             if (!keys.isEmpty()) {
                 CharInput input = CharInput.from(keys);
