@@ -17,17 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.completion;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
 
 /**
@@ -37,9 +36,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
  * @date 2023-10-12
  */
 public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
+    private final CompletionViewLayoutManager manager;
+
     private List<CompletionInput> completions;
 
-    public CompletionViewAdapter() {
+    public CompletionViewAdapter(CompletionViewLayoutManager manager) {
+        this.manager = manager;
+
 //        this.completions = new ArrayList<>();
 //
 //        for (String s : new String[] {
@@ -47,16 +50,13 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
 //        }) {
 //            CompletionInput completion = new CompletionInput();
 //
-//            for (int i = 0; i < s.length(); i++) {
-//                String ch = s.charAt(i) + "";
-//                List<Key<?>> keys = CharKey.from(ch);
-//                if (!keys.isEmpty()) {
-//                    CharInput input = CharInput.from(keys);
+//            List<Key<?>> keys = CharKey.from(s);
+//            if (!keys.isEmpty()) {
+//                CharInput input = CharInput.from(keys);
 //
-//                    completion.add(input);
-//                }
+//                completion.add(input);
+//                this.completions.add(completion);
 //            }
-//            this.completions.add(completion);
 //        }
     }
 
@@ -76,11 +76,32 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
         CompletionInput completion = this.completions.get(position);
 
         view.bind(completion);
+
+        view.getScrollView().setOnTouchListener(this::handleScrollViewEvent);
     }
 
     @NonNull
     @Override
     public CompletionView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new CompletionView(inflateItemView(parent, R.layout.input_completion_view));
+    }
+
+    private boolean handleScrollViewEvent(View view, MotionEvent event) {
+        boolean canScrollCompletion = ((HorizontalScrollView) view).canScrollHorizontally(-1)
+                                      || ((HorizontalScrollView) view).canScrollHorizontally(1);
+
+        // https://stackoverflow.com/questions/29426858/scrollview-inside-a-recyclerview-android/68506793#answer-68506793
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                this.manager.enableScroll(!canScrollCompletion);
+                return true;
+            }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                this.manager.enableScroll(true);
+                return true;
+            }
+        }
+        return false;
     }
 }

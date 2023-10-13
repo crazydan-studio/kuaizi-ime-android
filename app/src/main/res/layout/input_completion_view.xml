@@ -17,27 +17,29 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="92dp"
         android:layout_height="32dp"
-        android:gravity="bottom"
         android:paddingHorizontal="12dp"
         android:paddingTop="6dp"
         android:layout_marginHorizontal="8dp"
-        android:background="@drawable/bg_input_completion"
-        android:orientation="vertical">
+        android:background="@drawable/bg_input_completion">
 
-    <ScrollView
+    <!-- Note: scaleX/Y 的设置不能放在 ScrollView 的子布局上，
+    否则，子布局的起始位置会存在明显的偏移
+    -->
+    <HorizontalScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="bottom"
             android:fillViewport="true"
-            android:scrollbars="horizontal">
+            android:scrollbars="none"
+            android:scaleX=".8"
+            android:scaleY=".8">
 
         <LinearLayout
                 android:id="@+id/inputs_view"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|bottom"
-                android:orientation="horizontal"
-                android:gravity="bottom"
-                android:scaleX=".8"
-                android:scaleY=".8" />
-    </ScrollView>
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal|bottom"
+                android:orientation="horizontal" />
+    </HorizontalScrollView>
 </LinearLayout>

@@ -116,11 +116,12 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             int top = (int) Math.round(y - radius);
             int right = (int) Math.round(x + radius);
             int bottom = (int) Math.round(y + radius);
+            int viewSize = (int) Math.round(radius * 2);
 
             // 按按键半径调整按键视图的宽高
             View view = recycler.getViewForPosition(i++);
             ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-            layoutParams.height = layoutParams.width = (int) Math.round(radius * 2);
+            layoutParams.height = layoutParams.width = viewSize;
 
             addView(view);
             measureChildWithMargins(view, 0, 0);

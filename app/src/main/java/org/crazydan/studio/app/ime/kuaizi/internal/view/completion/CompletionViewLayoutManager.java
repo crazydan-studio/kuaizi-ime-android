@@ -29,8 +29,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
  * @date 2023-10-12
  */
 public class CompletionViewLayoutManager extends LinearLayoutManager {
+    private boolean scrollEnabled = true;
 
     public CompletionViewLayoutManager(Context context) {
         super(context, RecyclerView.HORIZONTAL, false);
+    }
+
+    @Override
+    public boolean canScrollHorizontally() {
+        return this.scrollEnabled;
+    }
+
+    public void enableScroll(boolean enabled) {
+        this.scrollEnabled = enabled;
     }
 }

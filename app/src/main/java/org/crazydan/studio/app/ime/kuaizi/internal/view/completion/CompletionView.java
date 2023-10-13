@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
@@ -35,12 +36,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
  * @date 2023-10-12
  */
 public class CompletionView extends RecyclerViewHolder<CompletionInput> {
+    private final HorizontalScrollView scrollView;
     private final ViewGroup inputsView;
 
     public CompletionView(@NonNull View itemView) {
         super(itemView);
 
         this.inputsView = itemView.findViewById(R.id.inputs_view);
+        this.scrollView = itemView.findViewById(R.id.scroll_view);
+    }
+
+    public HorizontalScrollView getScrollView() {
+        return this.scrollView;
     }
 
     @Override

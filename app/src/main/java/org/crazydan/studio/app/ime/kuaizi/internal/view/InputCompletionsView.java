@@ -51,11 +51,11 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
     public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        this.adapter = new CompletionViewAdapter();
-        setAdapter(this.adapter);
-
         CompletionViewLayoutManager layoutManager = new CompletionViewLayoutManager(context);
         setLayoutManager(layoutManager);
+
+        this.adapter = new CompletionViewAdapter(layoutManager);
+        setAdapter(this.adapter);
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
         gesture.bind(this) //
