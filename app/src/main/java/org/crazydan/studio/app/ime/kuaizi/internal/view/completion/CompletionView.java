@@ -18,13 +18,10 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.completion;
 
 import android.graphics.Color;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
@@ -38,23 +35,21 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
  * @date 2023-10-12
  */
 public class CompletionView extends RecyclerViewHolder<CompletionInput> {
+    private final ViewGroup inputsView;
 
     public CompletionView(@NonNull View itemView) {
         super(itemView);
 
-        Drawable drawable = new TileDrawable(ContextCompat.getDrawable(getContext(),
-                                                                       R.drawable.bg_input_completion_body),
-                                             Shader.TileMode.REPEAT);
-        itemView.findViewById(R.id.bg_view).setBackground(drawable);
+        this.inputsView = itemView.findViewById(R.id.inputs_view);
     }
 
     @Override
     public void bind(CompletionInput data) {
         super.bind(data);
 
-//        ((ViewGroup) this.itemView).removeAllViews();
+        this.inputsView.removeAllViews();
 
-//        data.inputs.forEach(this::createInputView);
+        data.inputs.forEach(this::createInputView);
     }
 
     private void createInputView(CharInput input) {
@@ -73,6 +68,6 @@ public class CompletionView extends RecyclerViewHolder<CompletionInput> {
         // 采用 itemView 的背景
         inputView.setBackgroundColor(Color.TRANSPARENT);
 
-        ((ViewGroup) this.itemView).addView(inputView);
+        this.inputsView.addView(inputView);
     }
 }

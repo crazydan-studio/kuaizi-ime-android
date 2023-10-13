@@ -84,8 +84,13 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.imeCompletionsView = findViewById(R.id.ime_completions_view);
         this.imeCompletionsView.addView(this.imeView.getInputCompletionsView());
         this.imeView.addInputMsgListener((msg, data) -> {
-            boolean shown = true;//msg == InputMsg.InputChars_Input_Doing && this.imeView.hasInputCompletions();
+            if (msg == InputMsg.Keyboard_Theme_Update_Done) {
+                this.imeCompletionsView.removeAllViews();
+                this.imeCompletionsView.addView(this.imeView.getInputCompletionsView());
+                return;
+            }
 
+            boolean shown = true;//msg == InputMsg.InputChars_Input_Doing && this.imeView.hasInputCompletions();
             ViewUtils.visible(this.imeCompletionsView, shown);
         });
 
@@ -197,6 +202,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             int position = exercises.indexOf(exerciseView.getData());
             activeDrawerNavItem(position);
 
+            // TODO 调试用代码
             ViewUtils.show(this.imeCompletionsView);
 
             exerciseView.withIme(this.imeView);

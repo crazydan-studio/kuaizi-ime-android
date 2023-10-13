@@ -226,6 +226,8 @@ public class ImeInputView extends FrameLayout
         if (oldConfig.getThemeResId() != newConfig.getThemeResId()
             || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()) {
             bindViews();
+
+            this.keyboard.onThemeUpdated();
         }
         // Note: 仅需更新视图，无需更新监听等
         else if (oldConfig.getHandMode() != newConfig.getHandMode()) {

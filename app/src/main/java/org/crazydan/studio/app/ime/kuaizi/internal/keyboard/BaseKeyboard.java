@@ -162,6 +162,11 @@ public abstract class BaseKeyboard implements Keyboard {
         this.inputMsgListeners.remove(listener);
     }
 
+    @Override
+    public void onThemeUpdated() {
+        fireInputMsg(InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
+    }
+
     /** 触发 {@link InputMsg} 消息 */
     public void fireInputMsg(InputMsg msg, InputMsgData data) {
         // Note: 存在在监听未执行完毕便移除监听的情况，故，在监听列表的副本中执行监听
@@ -1000,7 +1005,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         pending.clearCompletions();
         bestLatins.forEach((latin) -> {
-            List<Key<?>> keys = CharKey.from(latin+"asdasdfasdfadf");
+            List<Key<?>> keys = CharKey.from(latin + "asdasdfasdfadf");
 
             if (!keys.isEmpty()) {
                 CharInput input = CharInput.from(keys);

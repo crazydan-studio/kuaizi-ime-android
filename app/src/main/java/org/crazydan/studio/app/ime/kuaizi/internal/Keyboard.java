@@ -48,6 +48,9 @@ public interface Keyboard extends UserInputMsgListener {
     /** 销毁 */
     void destroy();
 
+    /** 键盘主题已更新 */
+    void onThemeUpdated();
+
     /** 处理{@link UserKeyMsg 按键消息} */
     void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
 

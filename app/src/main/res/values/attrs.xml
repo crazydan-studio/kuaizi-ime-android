@@ -30,6 +30,8 @@
         <attr name="input_fg_color" format="color" />
         <attr name="input_selection_bg_color" format="color" />
         <attr name="input_selection_fg_color" format="color" />
+        <attr name="input_completions_bg_color" format="color" />
+        <attr name="input_completions_fg_color" format="color" />
         <attr name="input_char_math_expr_border_color" format="color" />
         <attr name="input_char_math_expr_border_highlight_color" format="color" />
 

@@ -45,7 +45,6 @@
                 android:layout_height="8dp"
                 android:layout_marginBottom="2dp"
                 android:layout_gravity="bottom"
-                android:gravity="center"
                 android:src="@drawable/ic_space"
                 android:visibility="gone" />
 
@@ -54,7 +53,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:gravity="center"
                 android:textSize="@dimen/char_input_word_text_size"
                 android:textColor="?attr/input_fg_color" />
     </FrameLayout>

@@ -27,6 +27,8 @@
         <item name="input_fg_color">?attr/key_fg_color</item>
         <item name="input_selection_bg_color">#ffdadada</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
+        <item name="input_completions_bg_color">?attr/input_selection_bg_color</item>
+        <item name="input_completions_fg_color">?attr/input_selection_fg_color</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
@@ -93,6 +95,8 @@
         <item name="input_fg_color">?attr/key_fg_color</item>
         <item name="input_selection_bg_color">#ff334155</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
+        <item name="input_completions_bg_color">?attr/key_bg_color</item>
+        <item name="input_completions_fg_color">?attr/key_highlight_fg_color</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 

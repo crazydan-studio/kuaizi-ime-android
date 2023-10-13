@@ -42,7 +42,9 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
 public class ViewUtils {
 
     public static void visible(View view, boolean shown) {
-        view.setVisibility(shown ? View.VISIBLE : View.GONE);
+        if (view != null) {
+            view.setVisibility(shown ? View.VISIBLE : View.GONE);
+        }
     }
 
     public static <T extends View> T show(T view) {

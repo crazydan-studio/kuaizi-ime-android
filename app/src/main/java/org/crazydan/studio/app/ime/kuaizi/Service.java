@@ -47,8 +47,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
  * @date 2023-06-29
  */
 public class Service extends InputMethodService implements InputMsgListener {
-    private View candidatesView;
-
     private ImeInputView imeView;
     private Keyboard.Config imeKeyboardConfig;
 
@@ -86,9 +84,7 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     @Override
     public View onCreateCandidatesView() {
-        this.candidatesView = this.imeView.getInputCompletionsView();
-
-        return this.candidatesView;
+        return this.imeView.getInputCompletionsView();
     }
 
     /** 每次弹出键盘时调用 */
@@ -156,13 +152,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     private void startImeInput(Keyboard.Config config, boolean resetInputList) {
         setCandidatesViewShown(false);
 
-        // 确保主题变化后的视图更新
-        View candidatesView = this.imeView.getInputCompletionsView();
-        if (this.candidatesView != candidatesView) {
-            setCandidatesView(candidatesView);
-            this.candidatesView = candidatesView;
-        }
-
         this.imeView.startInput(config, resetInputList);
     }
 
@@ -183,6 +172,12 @@ public class Service extends InputMethodService implements InputMsgListener {
         setCandidatesViewShown(needToShowCandidates);
 
         switch (msg) {
+            case Keyboard_Theme_Update_Done: {
+                // 确保主题变化后的视图更新
+                View candidatesView = this.imeView.getInputCompletionsView();
+                setCandidatesView(candidatesView);
+                break;
+            }
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);

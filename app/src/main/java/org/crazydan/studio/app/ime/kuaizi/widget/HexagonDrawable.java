@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
+package org.crazydan.studio.app.ime.kuaizi.widget;
 
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -30,12 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * 绘制正六边形样式的{@link KeyView 按键视图}
+ * 正六边形绘图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyViewDrawable extends Drawable {
+public class HexagonDrawable extends Drawable {
     private final Paint paint;
     private final Path path;
     private final HexagonOrientation orientation;
@@ -44,7 +44,7 @@ public class KeyViewDrawable extends Drawable {
     private String border;
     private String shadow;
 
-    public KeyViewDrawable(HexagonOrientation orientation) {
+    public HexagonDrawable(HexagonOrientation orientation) {
         this.paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         this.path = new Path();
         this.orientation = orientation;

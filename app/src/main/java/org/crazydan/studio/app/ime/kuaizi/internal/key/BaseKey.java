@@ -33,7 +33,6 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     private Integer labelDimensionId;
 
     private boolean disabled;
-    private boolean clickable = true;
     private KeyColor color = KeyColor.none();
 
     @Override
@@ -74,17 +73,6 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     @Override
     public K setDisabled(boolean disabled) {
         this.disabled = disabled;
-        return (K) this;
-    }
-
-    @Override
-    public boolean isClickable() {
-        return this.clickable;
-    }
-
-    @Override
-    public K setClickable(boolean clickable) {
-        this.clickable = clickable;
         return (K) this;
     }
 
@@ -165,7 +153,6 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
                && Objects.equals(this.getText(), that.getText())
                && Objects.equals(this.getLevel(), that.getLevel())
                && this.disabled == that.disabled
-               && this.clickable == that.clickable
                && Objects.equals(this.color.fg, that.color.fg)
                && Objects.equals(this.color.bg, that.color.bg);
     }
@@ -178,7 +165,6 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
                             this.getText(),
                             this.getLevel(),
                             this.disabled,
-                            this.clickable,
                             this.color.fg,
                             this.color.bg);
     }

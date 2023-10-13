@@ -292,7 +292,6 @@ public abstract class KeyTable {
             case NoOp:
             case Editor_Cursor_Locator:
             case Editor_Range_Selector:
-                key.setClickable(false);
                 break;
         }
 

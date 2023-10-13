@@ -88,6 +88,8 @@ public class Guide extends FollowSystemThemeActivity {
         if (!isAlphaUserAgreementConfirmed()) {
             showAlphaUserAgreementConfirmWindow();
         }
+
+        tryExercises(null);
     }
 
     private boolean isImeEnabled() {
