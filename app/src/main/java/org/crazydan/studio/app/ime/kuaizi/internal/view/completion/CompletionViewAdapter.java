@@ -42,22 +42,6 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
 
     public CompletionViewAdapter(CompletionViewLayoutManager manager) {
         this.manager = manager;
-
-//        this.completions = new ArrayList<>();
-//
-//        for (String s : new String[] {
-//                "阿克", "国", "Android", "Loooooooooooooooooooooooong", "长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长"
-//        }) {
-//            CompletionInput completion = new CompletionInput();
-//
-//            List<Key<?>> keys = CharKey.from(s);
-//            if (!keys.isEmpty()) {
-//                CharInput input = CharInput.from(keys);
-//
-//                completion.add(input);
-//                this.completions.add(completion);
-//            }
-//        }
     }
 
     public void updateDataList(List<CompletionInput> completions) {

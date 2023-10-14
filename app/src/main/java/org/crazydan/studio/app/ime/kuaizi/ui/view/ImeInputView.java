@@ -25,8 +25,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
@@ -62,6 +64,7 @@ public class ImeInputView extends FrameLayout
 
     private KeyboardView keyboardView;
     private InputListView inputListView;
+    private PopupWindow inputCompletionsPopup;
     private InputCompletionsView inputCompletionsView;
 
     private View inputListCleanBtnView;
@@ -83,10 +86,6 @@ public class ImeInputView extends FrameLayout
         this.inputList = new InputList();
 
         bindViews();
-    }
-
-    public InputCompletionsView getInputCompletionsView() {
-        return this.inputCompletionsView;
     }
 
     public void setDisableUserInputData(boolean disableUserInputData) {
@@ -150,6 +149,9 @@ public class ImeInputView extends FrameLayout
     /** 响应键盘输入消息 */
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
+        boolean completionsShown = this.inputList.hasCompletions();
+        showInputCompletionsPopup(completionsShown);
+
         switch (msg) {
             case Keyboard_Switch_Doing: {
                 Keyboard.Type source = ((KeyboardSwitchDoingMsgData) data).source;
@@ -239,6 +241,8 @@ public class ImeInputView extends FrameLayout
             this.inputMsgListeners.forEach(this.keyboard::removeInputMsgListener);
         }
 
+        destroyInputCompletionsPopup();
+
         if (this.keyboardView != null) {
             this.keyboardView.reset();
         }
@@ -271,7 +275,9 @@ public class ImeInputView extends FrameLayout
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
-        this.inputCompletionsView = rootView.findViewById(R.id.completions_view);
+
+        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
+        prepareInputCompletionsPopup(this.inputCompletionsView);
 
         this.inputListView.updateInputList(this.inputList);
         this.inputCompletionsView.setInputList(this.inputList);
@@ -377,6 +383,55 @@ public class ImeInputView extends FrameLayout
             default:
                 return new PinyinKeyboard();
         }
+    }
+
+    private void prepareInputCompletionsPopup(InputCompletionsView completionsView) {
+        destroyInputCompletionsPopup();
+
+        PopupWindow window = this.inputCompletionsPopup = new PopupWindow();
+
+        window.setClippingEnabled(false);
+        window.setBackgroundDrawable(null);
+        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        window.setContentView(completionsView);
+    }
+
+    private void showInputCompletionsPopup(boolean shown) {
+        PopupWindow window = this.inputCompletionsPopup;
+
+        if (!shown) {
+            window.dismiss();
+            return;
+        } else if (window.isShowing()) {
+            return;
+        }
+
+        // https://android.googlesource.com/platform/packages/inputmethods/PinyinIME/+/40056ae7c2757681d88d2e226c4681281bd07129/src/com/android/inputmethod/pinyin/PinyinIME.java#1247
+        // https://stackoverflow.com/questions/3514392/android-ime-showing-a-custom-pop-up-dialog-like-swype-keyboard-which-can-ente#answer-32858312
+        // Note：自动补全视图的高度和宽度是固定的，故而，只用取一次
+        int width = getMeasuredWidth();
+        int height = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.input_completions_view_height);
+
+        window.setWidth(width);
+        window.setHeight(height);
+
+        // 放置于被布局的键盘之上
+        View parent = this;
+        int[] location = new int[2];
+        parent.getLocationInWindow(location);
+
+        int x = location[0];
+        int y = location[1] - window.getHeight();
+
+        post(() -> window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y));
+    }
+
+    private void destroyInputCompletionsPopup() {
+        if (this.inputCompletionsPopup != null) {
+            this.inputCompletionsPopup.dismiss();
+        }
+        this.inputCompletionsPopup = null;
     }
 
     private void onShowPreferences(View v) {

@@ -161,12 +161,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case Keyboard_Theme_Update_Done: {
-                // 确保主题变化后的视图更新
-                View candidatesView = this.imeView.getInputCompletionsView();
-                setCandidatesView(candidatesView);
-                break;
-            }
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
                 commitText(d.text, d.replacements);
