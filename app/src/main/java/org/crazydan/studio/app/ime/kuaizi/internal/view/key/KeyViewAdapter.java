@@ -131,25 +131,25 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     /** 注：创建的视图未附加到 root 上 */
     private static KeyView<?, ?> createKeyView(Context context, ViewGroup root, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
-            return new CtrlKeyView(inflateItemView(context, root, R.layout.ctrl_key_view));
+            return new CtrlKeyView(inflateItemView(context, root, R.layout.key_ctrl_view));
         } else if (viewType == VIEW_TYPE_FILTER_INPUT_WORD_KEY) {
             return new CtrlFilterInputWordKeyView(inflateItemView(context,
                                                                   root,
-                                                                  R.layout.ctrl_key_filter_input_word_view));
+                                                                  R.layout.key_ctrl_filter_input_word_view));
         } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
             return new CtrlToggleInputSpellKeyView(inflateItemView(context,
                                                                    root,
-                                                                   R.layout.ctrl_key_toggle_input_spell_view));
+                                                                   R.layout.key_ctrl_toggle_input_spell_view));
         } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
-            return new InputWordKeyView(inflateItemView(context, root, R.layout.input_word_key_view));
+            return new InputWordKeyView(inflateItemView(context, root, R.layout.key_char_input_word_view));
         } else if (viewType == VIEW_TYPE_SYMBOL_KEY) {
-            return new SymbolKeyView(inflateItemView(context, root, R.layout.char_key_view));
+            return new SymbolKeyView(inflateItemView(context, root, R.layout.key_char_view));
         } else if (viewType == VIEW_TYPE_MATH_OP_KEY) {
-            return new MathOpKeyView(inflateItemView(context, root, R.layout.char_key_view));
+            return new MathOpKeyView(inflateItemView(context, root, R.layout.key_char_view));
         } else if (viewType == VIEW_TYPE_NULL_KEY) {
-            return new NullKeyView(inflateItemView(context, root, R.layout.ctrl_key_view));
+            return new NullKeyView(inflateItemView(context, root, R.layout.key_ctrl_view));
         } else {
-            return new CharKeyView(inflateItemView(context, root, R.layout.char_key_view));
+            return new CharKeyView(inflateItemView(context, root, R.layout.key_char_view));
         }
     }
 

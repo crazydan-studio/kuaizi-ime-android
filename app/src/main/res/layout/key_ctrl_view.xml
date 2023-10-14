@@ -15,10 +15,12 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+<!-- 层叠布局，按先后顺序自下而上堆叠子布局
+Note：其高宽会动态设置，此处可设置任意值
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <ImageView
             android:id="@+id/bg_view"
@@ -26,23 +28,18 @@
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
 
-    <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/fg_view"
+    <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:translationY="2sp"
-            app:flexWrap="nowrap"
-            app:flexDirection="column"
-            app:alignItems="center"
-            app:alignContent="center">
+            android:layout_height="match_parent">
 
-        <TextView
-                android:id="@+id/sub_text_view"
+        <!-- 控制按钮图标 -->
+        <ImageView
+                android:id="@+id/fg_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/ctrl_key_sub_text_size" />
+                android:layout_centerInParent="true" />
 
+        <!-- 控制按钮文本 -->
         <TextView
                 android:id="@+id/fg_text_view"
                 android:layout_width="wrap_content"
@@ -50,6 +47,6 @@
                 android:layout_centerInParent="true"
                 android:textSize="@dimen/ctrl_key_text_size"
                 android:textStyle="bold" />
-    </com.google.android.flexbox.FlexboxLayout>
+    </RelativeLayout>
 
-</RelativeLayout>
+</FrameLayout>

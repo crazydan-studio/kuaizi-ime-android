@@ -114,11 +114,11 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     @Override
     public InputView<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CHAR_INPUT) {
-            return new CharInputView(inflateItemView(parent, R.layout.char_input_view));
+            return new CharInputView(inflateItemView(parent, R.layout.input_char_view));
         } else if (viewType == VIEW_TYPE_CHAR_MATH_EXPR_INPUT) {
-            return new CharMathExprInputView(inflateItemView(parent, R.layout.char_math_expr_input_view));
+            return new CharMathExprInputView(inflateItemView(parent, R.layout.input_char_math_expr_view));
         } else {
-            return new GapInputView(inflateItemView(parent, R.layout.gap_input_view));
+            return new GapInputView(inflateItemView(parent, R.layout.input_gap_view));
         }
     }
 

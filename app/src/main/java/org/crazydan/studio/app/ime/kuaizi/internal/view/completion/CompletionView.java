@@ -62,7 +62,7 @@ public class CompletionView extends RecyclerViewHolder<CompletionInput> {
     private void createInputView(CharInput input) {
         // Note：若设置了 root，则返回值也为该 root，
         // 这里需直接处理 R.layout.char_input_view 视图，故设置为 null
-        View inputView = LayoutInflater.from(getContext()).inflate(R.layout.char_input_view, null);
+        View inputView = LayoutInflater.from(getContext()).inflate(R.layout.input_char_view, null);
 
         // Note：在 layout xml 中设置的布局不会生效，需显式设置
         ViewGroup.MarginLayoutParams layoutParams

@@ -46,7 +46,7 @@
 
     <!-- 光标位置的待输入 -->
     <include
-            layout="@layout/char_input_view"
+            layout="@layout/input_char_view"
             android:id="@+id/pending_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

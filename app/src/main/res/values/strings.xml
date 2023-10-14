@@ -26,8 +26,8 @@
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
-    <string name="title_about_app">关于筷字输入法</string>
-    <string name="title_about_team">关于开发团队</string>
+    <string name="title_about_app">筷字输入法</string>
+    <string name="title_about_team">开发团队</string>
     <string name="title_about_suggestion">意见与建议</string>
     <string name="title_about_thanks">感谢</string>
     <string name="title_about_change_log">变更日志</string>

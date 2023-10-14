@@ -15,9 +15,12 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+<!-- 层叠布局，按先后顺序自下而上堆叠子布局
+Note：其高宽会动态设置，此处可设置任意值
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <ImageView
             android:id="@+id/bg_view"
@@ -25,21 +28,17 @@
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
 
-    <!-- 控制图形设置为按键大小的 50% -->
-    <ImageView
-            android:id="@+id/fg_view"
+    <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:scaleX=".5"
-            android:scaleY=".5" />
-    <!-- 用于显示文本类型的控制按钮 -->
-    <TextView
-            android:id="@+id/fg_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:textSize="@dimen/ctrl_key_text_size"
-            android:textStyle="bold" />
+            android:layout_height="match_parent">
 
-</RelativeLayout>
+        <TextView
+                android:id="@+id/fg_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textSize="@dimen/char_key_text_size"
+                android:textStyle="bold" />
+    </RelativeLayout>
+
+</FrameLayout>

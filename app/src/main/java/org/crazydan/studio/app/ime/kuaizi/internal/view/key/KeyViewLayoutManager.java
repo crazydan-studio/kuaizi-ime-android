@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewLayoutManager;
@@ -116,12 +117,28 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             int top = (int) Math.round(y - radius);
             int right = (int) Math.round(x + radius);
             int bottom = (int) Math.round(y + radius);
-            int viewSize = (int) Math.round(radius * 2);
+
+            float minSize = ScreenUtils.dpToPx(52);
+            int actualSize = (int) Math.round(radius * 2);
 
             // 按按键半径调整按键视图的宽高
             View view = recycler.getViewForPosition(i++);
             ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-            layoutParams.height = layoutParams.width = viewSize;
+            layoutParams.height = layoutParams.width = actualSize;
+
+            if (actualSize < minSize) {
+                float scale = actualSize / minSize;
+
+                for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
+                    View child = ((ViewGroup) view).getChildAt(j);
+                    if (child.getId() == R.id.bg_view) {
+                        continue;
+                    }
+
+                    child.setScaleX(scale);
+                    child.setScaleY(scale);
+                }
+            }
 
             addView(view);
             measureChildWithMargins(view, 0, 0);
