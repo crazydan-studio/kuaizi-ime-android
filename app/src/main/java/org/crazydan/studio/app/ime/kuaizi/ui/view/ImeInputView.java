@@ -241,7 +241,7 @@ public class ImeInputView extends FrameLayout
             this.inputMsgListeners.forEach(this.keyboard::removeInputMsgListener);
         }
 
-        destroyInputCompletionsPopup();
+        resetInputCompletionsPopup();
 
         if (this.keyboardView != null) {
             this.keyboardView.reset();
@@ -386,9 +386,9 @@ public class ImeInputView extends FrameLayout
     }
 
     private void prepareInputCompletionsPopup(InputCompletionsView completionsView) {
-        destroyInputCompletionsPopup();
+        resetInputCompletionsPopup();
 
-        PopupWindow window = this.inputCompletionsPopup = new PopupWindow();
+        PopupWindow window = this.inputCompletionsPopup;
 
         window.setClippingEnabled(false);
         window.setBackgroundDrawable(null);
@@ -401,7 +401,10 @@ public class ImeInputView extends FrameLayout
         PopupWindow window = this.inputCompletionsPopup;
 
         if (!shown) {
-            window.dismiss();
+            // Note：必须延后关闭窗口，否则，
+            // 若直接关闭，点击事件会被再次发送，
+            // 造成 CompletionViewGestureListener 触发两次补全事件
+            post(window::dismiss);
             return;
         } else if (window.isShowing()) {
             return;
@@ -427,11 +430,12 @@ public class ImeInputView extends FrameLayout
         post(() -> window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y));
     }
 
-    private void destroyInputCompletionsPopup() {
+    private void resetInputCompletionsPopup() {
         if (this.inputCompletionsPopup != null) {
             this.inputCompletionsPopup.dismiss();
+        } else {
+            this.inputCompletionsPopup = new PopupWindow();
         }
-        this.inputCompletionsPopup = null;
     }
 
     private void onShowPreferences(View v) {
