@@ -22,6 +22,12 @@
         android:orientation="vertical"
         android:background="?attr/keyboard_bg_color">
 
+    <include
+            layout="@layout/input_completions_view"
+            android:id="@+id/completions_view"
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
+
     <View
             android:id="@+id/top_border"
             android:layout_width="match_parent"

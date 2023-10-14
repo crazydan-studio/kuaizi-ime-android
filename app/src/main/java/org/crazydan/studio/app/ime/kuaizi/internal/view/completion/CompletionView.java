@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
+import org.crazydan.studio.app.ime.kuaizi.widget.ShadowDrawable;
 
 /**
  * {@link CompletionInput} 的视图
@@ -44,6 +45,10 @@ public class CompletionView extends RecyclerViewHolder<CompletionInput> {
 
         this.inputsView = itemView.findViewById(R.id.inputs_view);
         this.scrollView = itemView.findViewById(R.id.scroll_view);
+
+        String shadow = getStringByAttrId(R.attr.input_completions_shadow_style);
+        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
+        this.itemView.setBackground(bg);
     }
 
     public HorizontalScrollView getScrollView() {

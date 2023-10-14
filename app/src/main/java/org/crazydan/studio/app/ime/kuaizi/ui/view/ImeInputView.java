@@ -147,11 +147,6 @@ public class ImeInputView extends FrameLayout
         this.keyboard.reset();
     }
 
-    /** 是否有输入补全 */
-    public boolean hasInputCompletions() {
-        return this.inputList.hasCompletions();
-    }
-
     /** 响应键盘输入消息 */
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
@@ -276,7 +271,7 @@ public class ImeInputView extends FrameLayout
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
-        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
+        this.inputCompletionsView = rootView.findViewById(R.id.completions_view);
 
         this.inputListView.updateInputList(this.inputList);
         this.inputCompletionsView.setInputList(this.inputList);

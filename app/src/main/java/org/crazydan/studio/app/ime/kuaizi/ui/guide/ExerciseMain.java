@@ -26,7 +26,6 @@ import android.text.Html;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
@@ -46,7 +45,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.EditorEditK
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -57,7 +55,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
@@ -70,7 +67,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private NavigationView exerciseNavView;
 
     private ImeInputView imeView;
-    private LinearLayout imeCompletionsView;
     private ExerciseListView exerciseListView;
 
     @Override
@@ -80,19 +76,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
-
-        this.imeCompletionsView = findViewById(R.id.ime_completions_view);
-        this.imeCompletionsView.addView(this.imeView.getInputCompletionsView());
-        this.imeView.addInputMsgListener((msg, data) -> {
-            if (msg == InputMsg.Keyboard_Theme_Update_Done) {
-                this.imeCompletionsView.removeAllViews();
-                this.imeCompletionsView.addView(this.imeView.getInputCompletionsView());
-                return;
-            }
-
-            boolean shown = msg == InputMsg.InputChars_Input_Doing && this.imeView.hasInputCompletions();
-            ViewUtils.visible(this.imeCompletionsView, shown);
-        });
 
         int imeThemeResId = this.imeView.getKeyboardConfig().getThemeResId();
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
@@ -201,8 +184,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.exerciseListView.setExerciseActiveListener((exerciseView) -> {
             int position = exercises.indexOf(exerciseView.getData());
             activeDrawerNavItem(position);
-
-            ViewUtils.hide(this.imeCompletionsView);
 
             exerciseView.withIme(this.imeView);
             this.imeView.startInput(Keyboard.Type.Pinyin);

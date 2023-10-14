@@ -29,6 +29,7 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import org.crazydan.studio.app.ime.kuaizi.widget.Shadow;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -57,17 +58,12 @@ public class ThemeUtils {
 
     /** 应用阴影 */
     public static void applyShadow(Paint paint, String shadow) {
-        if (shadow == null || shadow.trim().isEmpty()) {
+        Shadow s = Shadow.parse(shadow);
+        if (s == null) {
             return;
         }
 
-        String[] splits = shadow.trim().split("\\s+");
-        int dx = ScreenUtils.dpToPx(Integer.parseInt(splits[0]));
-        int dy = ScreenUtils.dpToPx(Integer.parseInt(splits[1]));
-        int radius = ScreenUtils.dpToPx(Integer.parseInt(splits[2]));
-        int color = Color.parseColor(splits[3]);
-
-        paint.setShadowLayer(radius, dx, dy, color);
+        paint.setShadowLayer(s.radius, s.dx, s.dy, s.color);
     }
 
     /** 应用边框 */

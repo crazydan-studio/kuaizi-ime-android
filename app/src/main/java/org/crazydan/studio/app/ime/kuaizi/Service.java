@@ -82,11 +82,6 @@ public class Service extends InputMethodService implements InputMsgListener {
         return this.imeView;
     }
 
-    @Override
-    public View onCreateCandidatesView() {
-        return this.imeView.getInputCompletionsView();
-    }
-
     /** 每次弹出键盘时调用 */
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
@@ -150,8 +145,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void startImeInput(Keyboard.Config config, boolean resetInputList) {
-        setCandidatesViewShown(false);
-
         this.imeView.startInput(config, resetInputList);
     }
 
@@ -160,7 +153,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onFinishInput() {
         super.onFinishInput();
 
-        setCandidatesViewShown(false);
         if (this.imeView != null) {
             this.imeView.finishInput();
         }
@@ -168,9 +160,6 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        boolean needToShowCandidates = msg == InputMsg.InputChars_Input_Doing && this.imeView.hasInputCompletions();
-        setCandidatesViewShown(needToShowCandidates);
-
         switch (msg) {
             case Keyboard_Theme_Update_Done: {
                 // 确保主题变化后的视图更新
