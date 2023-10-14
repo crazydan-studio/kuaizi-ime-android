@@ -1014,6 +1014,7 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = getInputList();
 
         inputList.applyCompletion(completion);
+        // Note：待输入的补全数据将在 confirm 时清除
         inputList.confirmPendingAndSelectNext();
 
         fire_InputList_Input_Completion_Apply_Done(completion);
