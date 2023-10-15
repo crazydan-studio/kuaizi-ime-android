@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
@@ -44,6 +45,10 @@ public class CharInput extends BaseInput<CharInput> {
         input.replaceKeys(keys);
 
         return input;
+    }
+
+    public static CharInput from(Key<?>... keys) {
+        return from(Arrays.asList(keys));
     }
 
     public CharInput getPair() {

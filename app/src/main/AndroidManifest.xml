@@ -50,6 +50,15 @@
         </activity>
 
         <activity
+                android:name=".ui.ThemeSettings"
+                android:exported="false"
+                android:label="@string/label_choose_theme">
+            <intent-filter>
+                <action android:name=".ui.ThemeSettings" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
                 android:name=".ui.about.AboutApp"
                 android:exported="false"
                 android:label="@string/title_about_app">

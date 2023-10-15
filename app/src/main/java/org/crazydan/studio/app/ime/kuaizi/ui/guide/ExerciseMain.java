@@ -77,7 +77,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
 
-        int imeThemeResId = this.imeView.getKeyboardConfig().getThemeResId();
+        Keyboard.ThemeType theme = this.imeView.getKeyboardConfig().getTheme();
+        int imeThemeResId = Keyboard.Config.getThemeResId(getApplicationContext(), theme);
+
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
         List<Exercise> exercises = sandboxView.withMutation(imeThemeResId, () -> createExercises(sandboxView));
 

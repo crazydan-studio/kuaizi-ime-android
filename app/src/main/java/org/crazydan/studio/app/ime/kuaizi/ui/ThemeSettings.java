@@ -15,30 +15,20 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view;
+package org.crazydan.studio.app.ime.kuaizi.ui;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import android.os.Bundle;
+import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
- * 可显示 HTML 内容的 {@link android.widget.TextView TextView}
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-27
+ * @date 2023-10-15
  */
-public class HtmlTextView extends androidx.appcompat.widget.AppCompatTextView {
+public class ThemeSettings extends FollowSystemThemeActivity {
 
-    public HtmlTextView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-
-        // https://gist.github.com/carlol/ab791a5f21cf9e58028db2668619aabe
-        setHtmlText(getText().toString());
-    }
-
-    public void setHtmlText(String text) {
-        ViewUtils.setHtmlText(this, text);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.app_theme_activity);
     }
 }

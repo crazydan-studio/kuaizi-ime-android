@@ -18,15 +18,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="@string/title_preference_basic">
-        <!-- useSimpleSummaryProvider 为 true 时，在标签下方将显示设置的值 -->
-        <ListPreference
-                app:key="theme"
-                app:title="@string/label_choose_theme"
-                app:entries="@array/theme_entries"
-                app:entryValues="@array/theme_values"
-                app:defaultValue="night"
-                app:useSimpleSummaryProvider="true" />
+        <PreferenceScreen android:title="@string/label_choose_theme">
+            <intent android:action=".ui.ThemeSettings" />
+        </PreferenceScreen>
 
+        <!-- useSimpleSummaryProvider 为 true 时，在标签下方将显示设置的值 -->
         <ListPreference
                 app:key="hand_mode"
                 app:title="@string/label_switch_hand_mode"

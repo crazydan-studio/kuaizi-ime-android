@@ -67,7 +67,7 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
             return null;
         }
 
-        int size = (int) ScreenUtils.pxFromDimension(this.itemView.getContext(), R.dimen.guide_exercise_step_icon_size);
+        int size = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
         return step.imageGetter.get(source, size, size);
     }
 }

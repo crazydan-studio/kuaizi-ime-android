@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
+import android.content.Context;
+import android.content.res.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
@@ -128,8 +131,8 @@ public interface Keyboard extends UserInputMsgListener {
         private Orientation orientation = Orientation.Portrait;
         /** 左右手模式 */
         private HandMode handMode = HandMode.Right;
-        /** 主题资源 id */
-        private int themeResId;
+        /** 主题类型 */
+        private ThemeType theme;
 
         private boolean userInputDataDisabled;
         private boolean keyClickedAudioDisabled;
@@ -198,12 +201,16 @@ public interface Keyboard extends UserInputMsgListener {
             return getHandMode() == HandMode.Left;
         }
 
-        public int getThemeResId() {
-            return this.themeResId;
+        public ThemeType getTheme() {
+            return this.theme;
         }
 
-        public void setThemeResId(int themeResId) {
-            this.themeResId = themeResId;
+        public void setTheme(ThemeType theme) {
+            this.theme = theme;
+        }
+
+        public void setTheme(String theme) {
+            this.theme = theme != null ? ThemeType.valueOf(theme) : null;
         }
 
         public boolean isUserInputDataDisabled() {
@@ -244,6 +251,48 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
             this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
+        }
+
+        public static int getThemeResId(Context context, Keyboard.ThemeType theme) {
+            int themeResId = R.style.Theme_Kuaizi_IME_Light;
+            if (theme == null) {
+                return themeResId;
+            }
+
+            switch (theme) {
+                case night:
+                    themeResId = R.style.Theme_Kuaizi_IME_Night;
+                    break;
+                case follow_system:
+                    int themeMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                    switch (themeMode) {
+                        case Configuration.UI_MODE_NIGHT_NO:
+                            themeResId = R.style.Theme_Kuaizi_IME_Light;
+                            break;
+                        case Configuration.UI_MODE_NIGHT_YES:
+                            themeResId = R.style.Theme_Kuaizi_IME_Night;
+                            break;
+                    }
+                    break;
+            }
+            return themeResId;
+        }
+    }
+
+    enum ThemeType {
+        light(R.string.value_theme_light),
+        night(R.string.value_theme_night),
+        follow_system(R.string.value_theme_follow_system),
+        ;
+
+        private final int labelResId;
+
+        ThemeType(int labelResId) {
+            this.labelResId = labelResId;
+        }
+
+        public int getLabelResId() {
+            return this.labelResId;
         }
     }
 }

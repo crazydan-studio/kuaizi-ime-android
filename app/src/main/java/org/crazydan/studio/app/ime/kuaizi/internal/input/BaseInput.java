@@ -245,7 +245,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     protected void replaceKeys(List<Key<?>> keys) {
-        this.keys = keys;
+        this.keys = new ArrayList<>(keys);
     }
 
     @NonNull

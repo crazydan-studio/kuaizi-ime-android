@@ -82,7 +82,11 @@ public class ImeInputView extends FrameLayout
 
         this.inputList = new InputList();
 
-        bindViews();
+        relayoutViews();
+    }
+
+    public InputList getInputList() {
+        return this.inputList;
     }
 
     public void setDisableUserInputData(boolean disableUserInputData) {
@@ -177,7 +181,7 @@ public class ImeInputView extends FrameLayout
     }
 
     /** 根据配置更新键盘：设计键盘切换等 */
-    public void updateKeyboard(Keyboard.Config config) {
+    private void updateKeyboard(Keyboard.Config config) {
         Keyboard oldKeyboard = this.keyboard;
 
         Keyboard newKeyboard = createKeyboard(config.getType());
@@ -214,12 +218,17 @@ public class ImeInputView extends FrameLayout
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
+
+        updateKeyboardConfig(newConfig);
+    }
+
+    public void updateKeyboardConfig(Keyboard.Config newConfig) {
+        Keyboard.Config oldConfig = this.keyboard.getConfig();
         this.keyboard.setConfig(newConfig);
 
         // 主题发生变化，重新绑定视图
-        if (oldConfig.getThemeResId() != newConfig.getThemeResId()
-            || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()) {
-            bindViews();
+        if (needToRelayoutViews(oldConfig, newConfig)) {
+            relayoutViews();
 
             this.keyboard.onThemeUpdated();
         }
@@ -255,13 +264,15 @@ public class ImeInputView extends FrameLayout
         this.inputMsgListeners.remove(this.inputCompletionsView);
     }
 
-    private void bindViews() {
+    private void relayoutViews() {
         reset();
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
         Keyboard.Config config = this.keyboard != null ? this.keyboard.getConfig() : null;
-        int themeResId = config != null ? config.getThemeResId() : getThemeResId();
+        Keyboard.ThemeType theme = config != null ? config.getTheme() : null;
+        int themeResId = Keyboard.Config.getThemeResId(getContext(), theme);
+
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
         rootView.findViewById(R.id.settings).setOnClickListener(this::onShowPreferences);
@@ -284,6 +295,11 @@ public class ImeInputView extends FrameLayout
         addInputMsgListener(this.inputCompletionsView);
 
         bindKeyboard(this.keyboard);
+    }
+
+    private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
+        return oldConfig.getTheme() != newConfig.getTheme()
+               || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted();
     }
 
     private void addBottomSpacing(View rootView, boolean needSpacing) {
@@ -343,8 +359,8 @@ public class ImeInputView extends FrameLayout
         Keyboard.HandMode handMode = getHandMode();
         patchedConfig.setHandMode(handMode);
 
-        int themeResId = getThemeResId();
-        patchedConfig.setThemeResId(themeResId);
+        String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, null);
+        patchedConfig.setTheme(theme);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             patchedConfig.setOrientation(Keyboard.Orientation.Landscape);
@@ -466,31 +482,6 @@ public class ImeInputView extends FrameLayout
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
             this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
-    }
-
-    private int getThemeResId() {
-        String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, "night");
-
-        int themeResId = R.style.Theme_Kuaizi_IME_Light;
-        switch (theme) {
-            case "night":
-                themeResId = R.style.Theme_Kuaizi_IME_Night;
-                break;
-            case "follow_system":
-                int themeMode = getContext().getResources().getConfiguration().uiMode
-                                & Configuration.UI_MODE_NIGHT_MASK;
-                switch (themeMode) {
-                    case Configuration.UI_MODE_NIGHT_NO:
-                        themeResId = R.style.Theme_Kuaizi_IME_Light;
-                        break;
-                    case Configuration.UI_MODE_NIGHT_YES:
-                        themeResId = R.style.Theme_Kuaizi_IME_Night;
-                        break;
-                }
-                break;
-        }
-
-        return themeResId;
     }
 
     private Keyboard.HandMode getHandMode() {

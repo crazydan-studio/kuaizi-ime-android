@@ -45,7 +45,7 @@
                 android:textColor="?attr/app_white_color"
                 android:textSize="20sp" />
 
-        <org.crazydan.studio.app.ime.kuaizi.ui.view.HtmlTextView
+        <org.crazydan.studio.app.ime.kuaizi.widget.HtmlTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_copyright"
