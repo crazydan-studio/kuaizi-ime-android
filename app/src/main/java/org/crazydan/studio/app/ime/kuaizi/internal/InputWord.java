@@ -79,12 +79,12 @@ public class InputWord {
         return this.source != null ? this.source : Source.single;
     }
 
-    public boolean isFromPhrase() {
-        return getSource() == Source.phrase;
-    }
-
     public void setSource(Source source) {
         this.source = source;
+    }
+
+    public boolean isFromPhrase() {
+        return getSource() == Source.phrase;
     }
 
     public String getValue() {

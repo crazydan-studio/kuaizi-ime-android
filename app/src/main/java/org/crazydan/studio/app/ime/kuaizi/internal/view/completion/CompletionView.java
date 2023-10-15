@@ -26,9 +26,9 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.widget.ShadowDrawable;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link CompletionInput} 的视图

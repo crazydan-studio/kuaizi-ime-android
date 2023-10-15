@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
  */
 public interface Keyboard extends UserInputMsgListener {
 
-    void setConfig(Config config);
-
     Config getConfig();
+
+    void setConfig(Config config);
 
     KeyFactory getKeyFactory();
 
@@ -82,6 +82,14 @@ public interface Keyboard extends UserInputMsgListener {
         Portrait,
         /** 横向 */
         Landscape,
+    }
+
+    /** 左右手模式 */
+    enum HandMode {
+        /** 左手模式 */
+        Left,
+        /** 右手模式 */
+        Right,
     }
 
     /** 按键生成器 */
@@ -237,13 +245,5 @@ public interface Keyboard extends UserInputMsgListener {
         public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
             this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
         }
-    }
-
-    /** 左右手模式 */
-    enum HandMode {
-        /** 左手模式 */
-        Left,
-        /** 右手模式 */
-        Right,
     }
 }

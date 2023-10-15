@@ -23,10 +23,10 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link Exercise 练习题}视图

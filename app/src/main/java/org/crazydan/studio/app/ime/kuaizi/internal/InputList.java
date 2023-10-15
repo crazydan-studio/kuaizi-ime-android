@@ -855,6 +855,12 @@ public class InputList {
         public final List<Input<?>> inputs;
         public final Cursor cursor;
 
+        private Staged(Type type, List<Input<?>> inputs, Cursor cursor) {
+            this.type = type;
+            this.inputs = inputs;
+            this.cursor = cursor;
+        }
+
         public static Staged none() {
             return new Staged(Type.none, null, null);
         }
@@ -879,12 +885,6 @@ public class InputList {
             inputList.inputs.addAll(staged.inputs);
 
             staged.cursor.copyTo(inputList.cursor);
-        }
-
-        private Staged(Type type, List<Input<?>> inputs, Cursor cursor) {
-            this.type = type;
-            this.inputs = inputs;
-            this.cursor = cursor;
         }
 
         public enum Type {

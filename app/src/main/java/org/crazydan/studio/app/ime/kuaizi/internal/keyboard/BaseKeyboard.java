@@ -74,9 +74,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
     protected final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
-
+    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
     private Config config;
@@ -97,6 +96,11 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
+    public Config getConfig() {
+        return this.config;
+    }
+
+    @Override
     public void setConfig(Config newConfig) {
         Config oldConfig = this.config;
         this.config = newConfig;
@@ -107,11 +111,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         InputMsgData data = new KeyboardConfigUpdateDoneMsgData(oldConfig, newConfig);
         fireInputMsg(InputMsg.Keyboard_Config_Update_Done, data);
-    }
-
-    @Override
-    public Config getConfig() {
-        return this.config;
     }
 
     @Override

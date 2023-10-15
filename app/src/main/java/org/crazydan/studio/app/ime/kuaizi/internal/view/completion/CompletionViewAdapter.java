@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
 
 /**
  * {@link CompletionInput} 的{@link RecyclerView}适配器

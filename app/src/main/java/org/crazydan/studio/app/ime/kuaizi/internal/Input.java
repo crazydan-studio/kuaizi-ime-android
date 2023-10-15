@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
+
 /**
  * {@link Keyboard 键盘}输入对象，包含零个或多个字符
  *
@@ -26,6 +28,14 @@ import java.util.List;
  * @date 2023-06-28
  */
 public interface Input<T extends Input<?>> extends ViewData {
+
+    static boolean isEmpty(Input<?> input) {
+        return input == null || input.isEmpty();
+    }
+
+    static boolean isGap(Input<?> input) {
+        return input != null && input.isGap();
+    }
 
     /** 创建副本 */
     T copy();
@@ -120,14 +130,6 @@ public interface Input<T extends Input<?>> extends ViewData {
      * @return 若为<code>null</code>，则表示未选择
      */
     InputWord getWord();
-
-    static boolean isEmpty(Input<?> input) {
-        return input == null || input.isEmpty();
-    }
-
-    static boolean isGap(Input<?> input) {
-        return input != null && input.isGap();
-    }
 
     class Option {
         public final InputWord.NotationType wordNotationType;

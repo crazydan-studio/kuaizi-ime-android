@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgD
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
  * {@link Keyboard 键盘}{@link Key 按键}的手势监听器

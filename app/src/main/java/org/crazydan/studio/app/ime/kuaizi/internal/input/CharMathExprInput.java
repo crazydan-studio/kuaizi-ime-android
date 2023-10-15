@@ -49,151 +49,6 @@ public class CharMathExprInput extends CharInput {
         this.inputList = inputList;
     }
 
-    public InputList getInputList() {
-        return this.inputList;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this.inputList.isEmpty();
-    }
-
-    @Override
-    public StringBuilder getText(Option option) {
-        List<CharInput> inputs = this.inputList.getCharInputs();
-        boolean hasFirstEqual = isEqualOp(CollectionUtils.first(inputs));
-        boolean hasLastEqual = isEqualOp(CollectionUtils.last(inputs));
-
-        Double result = null;
-        if (hasFirstEqual || hasLastEqual) {
-            if (hasFirstEqual) {
-                inputs.remove(0);
-            } else {
-                inputs.remove(inputs.size() - 1);
-            }
-
-            result = calculate(inputs);
-        }
-
-        if (result == null) {
-            return this.inputList.getText();
-        }
-
-        String text = String.format(Locale.getDefault(), "%.3f", result);
-        text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
-
-        StringBuilder sb;
-        if (hasLastEqual) {
-            sb = this.inputList.getText();
-            sb.append(" ");
-        } else {
-            sb = new StringBuilder();
-        }
-        sb.append(text);
-
-        return sb;
-    }
-
-    @Override
-    public CharInput copy() {
-        // Note：
-        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
-        // - 只有新建 pending 时才会做复制操作，
-        //   此时，对算数表达式的原输入或 pending 做修改操作都是等效的，
-        //   不需要通过副本规避
-        return new CharMathExprInput(getInputList());
-    }
-
-    @Override
-    public void confirm() {
-        this.inputList.confirmPending();
-
-        this.inputList.dropSelected();
-    }
-
-    @Override
-    public boolean isMathExpr() {
-        return true;
-    }
-
-    // <<<<<<<<< CharInput 接口覆盖
-    @Override
-    public boolean isLatin() {return false;}
-
-    @Override
-    public boolean isPinyin() {return false;}
-
-    @Override
-    public boolean isSymbol() {return false;}
-
-    @Override
-    public boolean isEmoji() {return false;}
-
-    @Override
-    public List<Key<?>> getKeys() {return new ArrayList<>();}
-
-    @Override
-    public Key<?> getFirstKey() {return null;}
-
-    @Override
-    public Key<?> getLastKey() {return null;}
-
-    @Override
-    public void appendKey(Key<?> key) {}
-
-    @Override
-    public void dropLastKey() {}
-
-    @Override
-    public void replaceKeyAfterLevel(Key.Level level, Key<?> newKey) {}
-
-    @Override
-    public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {}
-
-    @Override
-    public void replaceLastKey(Key<?> newKey) {}
-
-    @Override
-    public List<String> getChars() {return new ArrayList<>();}
-
-    @Override
-    public boolean isTextOnlyWordNotation(Option option) {return false;}
-
-    @Override
-    public boolean hasWord() {return false;}
-
-    @Override
-    public InputWord getWord() {return null;}
-
-    @Override
-    public void setWord(InputWord word) {}
-    // >>>>>>>
-
-    // <<<<<<<<< 相同性检查
-    @Override
-    public boolean isSameWith(Object o) {
-        return equals(o);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        CharMathExprInput that = (CharMathExprInput) o;
-        return this.inputList.equals(that.inputList);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.inputList);
-    }
-    // >>>>>>>>
-
     /** @return 若计算式有效，则返回计算结果，否则，返回 null */
     private static Double calculate(List<CharInput> inputs) {
         List<Expr> exprs = new ArrayList<>(inputs.size());
@@ -321,10 +176,157 @@ public class CharMathExprInput extends CharInput {
         return getOpType(input) == MathOpKey.Type.equal;
     }
 
+    public InputList getInputList() {
+        return this.inputList;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.inputList.isEmpty();
+    }
+
+    @Override
+    public StringBuilder getText(Option option) {
+        List<CharInput> inputs = this.inputList.getCharInputs();
+        boolean hasFirstEqual = isEqualOp(CollectionUtils.first(inputs));
+        boolean hasLastEqual = isEqualOp(CollectionUtils.last(inputs));
+
+        Double result = null;
+        if (hasFirstEqual || hasLastEqual) {
+            if (hasFirstEqual) {
+                inputs.remove(0);
+            } else {
+                inputs.remove(inputs.size() - 1);
+            }
+
+            result = calculate(inputs);
+        }
+
+        if (result == null) {
+            return this.inputList.getText();
+        }
+
+        String text = String.format(Locale.getDefault(), "%.3f", result);
+        text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
+
+        StringBuilder sb;
+        if (hasLastEqual) {
+            sb = this.inputList.getText();
+            sb.append(" ");
+        } else {
+            sb = new StringBuilder();
+        }
+        sb.append(text);
+
+        return sb;
+    }
+
+    @Override
+    public CharInput copy() {
+        // Note：
+        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
+        // - 只有新建 pending 时才会做复制操作，
+        //   此时，对算数表达式的原输入或 pending 做修改操作都是等效的，
+        //   不需要通过副本规避
+        return new CharMathExprInput(getInputList());
+    }
+
+    @Override
+    public void confirm() {
+        this.inputList.confirmPending();
+
+        this.inputList.dropSelected();
+    }
+
+    @Override
+    public boolean isMathExpr() {
+        return true;
+    }
+
+    // <<<<<<<<< CharInput 接口覆盖
+    @Override
+    public boolean isLatin() {return false;}
+
+    @Override
+    public boolean isPinyin() {return false;}
+
+    @Override
+    public boolean isSymbol() {return false;}
+
+    @Override
+    public boolean isEmoji() {return false;}
+
+    @Override
+    public List<Key<?>> getKeys() {return new ArrayList<>();}
+
+    @Override
+    public Key<?> getFirstKey() {return null;}
+
+    @Override
+    public Key<?> getLastKey() {return null;}
+
+    @Override
+    public void appendKey(Key<?> key) {}
+
+    @Override
+    public void dropLastKey() {}
+
+    @Override
+    public void replaceKeyAfterLevel(Key.Level level, Key<?> newKey) {}
+
+    @Override
+    public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {}
+
+    @Override
+    public void replaceLastKey(Key<?> newKey) {}
+    // >>>>>>>
+
+    @Override
+    public List<String> getChars() {return new ArrayList<>();}
+
+    @Override
+    public boolean isTextOnlyWordNotation(Option option) {return false;}
+
+    @Override
+    public boolean hasWord() {return false;}
+    // >>>>>>>>
+
+    @Override
+    public InputWord getWord() {return null;}
+
+    @Override
+    public void setWord(InputWord word) {}
+
+    // <<<<<<<<< 相同性检查
+    @Override
+    public boolean isSameWith(Object o) {
+        return equals(o);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        CharMathExprInput that = (CharMathExprInput) o;
+        return this.inputList.equals(that.inputList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.inputList);
+    }
+
     private interface Expr {}
 
     private static class Num implements Expr {
         public final Double value;
+
+        private Num(Double value) {this.value = value;}
 
         public static Num create(Double number) {
             return number != null ? new Num(number) : null;
@@ -376,8 +378,6 @@ public class CharMathExprInput extends CharInput {
             double number = Double.parseDouble(sb.toString());
             return create(number);
         }
-
-        private Num(Double value) {this.value = value;}
     }
 
     private static class Op implements Expr {
@@ -389,9 +389,11 @@ public class CharMathExprInput extends CharInput {
         /** 结合性 */
         public final Associativity associativity;
 
-        public enum Associativity {
-            left,
-            right,
+        private Op(MathOpKey.Type type, int args, int priority, Associativity associativity) {
+            this.type = type;
+            this.args = args;
+            this.priority = priority;
+            this.associativity = associativity;
         }
 
         public static Op create(MathOpKey.Type type) {
@@ -417,13 +419,6 @@ public class CharMathExprInput extends CharInput {
                     break;
             }
             return new Op(type, args, priority, associativity);
-        }
-
-        private Op(MathOpKey.Type type, int args, int priority, Associativity associativity) {
-            this.type = type;
-            this.args = args;
-            this.priority = priority;
-            this.associativity = associativity;
         }
 
         /** 当前运算符 是否 优先于 指定的运算符 */
@@ -475,6 +470,11 @@ public class CharMathExprInput extends CharInput {
                 }
             }
             return result;
+        }
+
+        public enum Associativity {
+            left,
+            right,
         }
     }
 }

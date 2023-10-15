@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +30,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 
 /**

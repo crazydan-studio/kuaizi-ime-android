@@ -31,12 +31,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
  */
 public class NumberKeyTable extends KeyTable {
 
-    public static NumberKeyTable create(Config config) {
-        return new NumberKeyTable(config);
-    }
-
     protected NumberKeyTable(Config config) {
         super(config);
+    }
+
+    public static NumberKeyTable create(Config config) {
+        return new NumberKeyTable(config);
     }
 
     @Override

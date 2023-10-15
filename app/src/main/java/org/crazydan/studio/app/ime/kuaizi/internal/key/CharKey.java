@@ -34,6 +34,17 @@ public class CharKey extends BaseCharKey<CharKey> {
     private final Type type;
     private List<String> replacements;
 
+    private CharKey(Type type, String text) {
+        super(text);
+
+        this.type = type;
+        this.replacements = new ArrayList<>();
+
+        // Note: 当前的文本字符也需加入替换列表，
+        // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
+        withReplacements(getText());
+    }
+
     public static CharKey create(Type type, String text) {
         return new CharKey(type, text);
     }
@@ -64,17 +75,6 @@ public class CharKey extends BaseCharKey<CharKey> {
             keys.add(key);
         }
         return keys;
-    }
-
-    private CharKey(Type type, String text) {
-        super(text);
-
-        this.type = type;
-        this.replacements = new ArrayList<>();
-
-        // Note: 当前的文本字符也需加入替换列表，
-        // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
-        withReplacements(getText());
     }
 
     /** 按键{@link Type 类型} */

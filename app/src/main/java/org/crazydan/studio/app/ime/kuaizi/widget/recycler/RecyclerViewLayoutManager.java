@@ -15,16 +15,29 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal;
+package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
+
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * 视图数据，用于判断数据是否相同
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-28
+ * @date 2023-07-07
  */
-public interface ViewData {
+public abstract class RecyclerViewLayoutManager extends RecyclerView.LayoutManager {
 
-    /** 判定排除视图展示相关的配置信息后的数据是否依然相同 */
-    boolean isSameWith(Object o);
+    @Override
+    public RecyclerView.LayoutParams generateDefaultLayoutParams() {
+        return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    }
+
+    @Override
+    public boolean canScrollHorizontally() {
+        return false;
+    }
+
+    @Override
+    public boolean canScrollVertically() {
+        return false;
+    }
 }

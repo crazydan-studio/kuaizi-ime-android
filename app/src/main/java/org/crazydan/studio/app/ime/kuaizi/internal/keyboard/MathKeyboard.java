@@ -249,6 +249,11 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
+    public void setInputList(InputList inputList) {
+        newMatchExprInput(inputList);
+    }
+
+    @Override
     public void destroy() {
         InputList topInputList = getTopInputList();
 
@@ -286,11 +291,6 @@ public class MathKeyboard extends BaseKeyboard {
 
     private InputList getTopInputList() {
         return super.getInputList();
-    }
-
-    @Override
-    public void setInputList(InputList inputList) {
-        newMatchExprInput(inputList);
     }
 
     private void newMatchExprInput(InputList topInputList) {

@@ -36,6 +36,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
     private Option<?> option;
 
+    private CtrlKey(Type type) {
+        this.type = type;
+    }
+
     public static CtrlKey noop() {
         return create(Type.NoOp);
     }
@@ -46,10 +50,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
     public static boolean isNoOp(Key<?> key) {
         return key instanceof CtrlKey && ((CtrlKey) key).isNoOp();
-    }
-
-    private CtrlKey(Type type) {
-        this.type = type;
     }
 
     /** 按钮{@link Type 类型} */

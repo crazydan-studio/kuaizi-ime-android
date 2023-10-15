@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -42,18 +42,18 @@ public class Exercise implements ViewData, InputMsgListener {
     private ProgressListener progressListener;
     private ExerciseStep runningStep;
 
+    private Exercise(Mode mode, String title, ExerciseStep.ImageGetter imageGetter) {
+        this.mode = mode;
+        this.title = title;
+        this.imageGetter = imageGetter;
+    }
+
     public static Exercise free(String title) {
         return new Exercise(Mode.free, title, null);
     }
 
     public static Exercise normal(String title, ExerciseStep.ImageGetter imageGetter) {
         return new Exercise(Mode.normal, title, imageGetter);
-    }
-
-    private Exercise(Mode mode, String title, ExerciseStep.ImageGetter imageGetter) {
-        this.mode = mode;
-        this.title = title;
-        this.imageGetter = imageGetter;
     }
 
     public void start() {

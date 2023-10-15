@@ -30,14 +30,18 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 public class MathOpKey extends BaseCharKey<MathOpKey> {
     private final Type type;
 
-    public static MathOpKey create(Type type, String text) {
-        return new MathOpKey(type, text);
-    }
-
     private MathOpKey(Type type, String text) {
         super(text);
 
         this.type = type;
+    }
+
+    public static MathOpKey create(Type type, String text) {
+        return new MathOpKey(type, text);
+    }
+
+    public static boolean isType(Key<?> key, Type type) {
+        return key instanceof MathOpKey && ((MathOpKey) key).getType() == type;
     }
 
     public Type getType() {
@@ -93,10 +97,6 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
 
         MathOpKey that = (MathOpKey) o;
         return this.type == that.type && Objects.equals(this.getText(), that.getText());
-    }
-
-    public static boolean isType(Key<?> key, Type type) {
-        return key instanceof MathOpKey && ((MathOpKey) key).getType() == type;
     }
 
     public enum Type {

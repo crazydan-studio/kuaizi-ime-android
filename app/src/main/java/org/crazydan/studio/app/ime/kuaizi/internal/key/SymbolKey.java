@@ -30,12 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Symbol;
 public class SymbolKey extends BaseKey<SymbolKey> {
     private final Symbol symbol;
 
-    public static SymbolKey create(Symbol symbol) {
-        return new SymbolKey(symbol);
-    }
-
     private SymbolKey(Symbol symbol) {
         this.symbol = symbol;
+    }
+
+    public static SymbolKey create(Symbol symbol) {
+        return new SymbolKey(symbol);
     }
 
     public Symbol getSymbol() {

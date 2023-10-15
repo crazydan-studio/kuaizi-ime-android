@@ -37,32 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
  * @date 2023-07-06
  */
 public abstract class KeyTable {
-    /** 字母按键调色板 */
-    private static final Map<List<String>, KeyColor> char_key_color_palette = new HashMap<>();
-    /** 控制按键样式：图标+背景色 */
-    private static final Map<CtrlKey.Type, KeyStyle> ctrl_key_styles = new HashMap<>();
-
-    private static final KeyColor key_char_level_0_color = KeyColor.create(R.attr.key_char_level_0_fg_color,
-                                                                           R.attr.key_char_level_0_bg_color);
-    private static final KeyColor key_char_level_1_color = KeyColor.create(R.attr.key_char_level_1_fg_color,
-                                                                           R.attr.key_char_level_1_bg_color);
-    private static final KeyColor key_char_level_2_color = KeyColor.create(R.attr.key_char_level_2_fg_color,
-                                                                           R.attr.key_char_level_2_bg_color);
-    private static final KeyColor key_char_level_3_color = KeyColor.create(R.attr.key_char_level_3_fg_color,
-                                                                           R.attr.key_char_level_3_bg_color);
-    private static final KeyColor key_char_level_4_color = KeyColor.create(R.attr.key_char_level_4_fg_color,
-                                                                           R.attr.key_char_level_4_bg_color);
-    private static final KeyColor key_char_level_5_color = KeyColor.create(R.attr.key_char_level_5_fg_color,
-                                                                           R.attr.key_char_level_5_bg_color);
-
-    /** {@link InputWordKey 候选字}按键的配色 */
-    protected static final KeyColor[] key_input_word_level_colors = new KeyColor[] {
-            key_char_level_0_color,
-            key_char_level_1_color,
-            key_char_level_2_color,
-            key_char_level_3_color,
-            key_char_level_4_color,
-            };
     /** {@link CharKey} 按键的配色 */
     protected static final KeyColor key_char_color = KeyColor.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** 特殊的 {@link CharKey} 按键的配色 */
@@ -73,6 +47,30 @@ public abstract class KeyTable {
                                                                             R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
     protected static final KeyColor key_char_emoji_color = key_char_symbol_color;
+    /** 字母按键调色板 */
+    private static final Map<List<String>, KeyColor> char_key_color_palette = new HashMap<>();
+    /** 控制按键样式：图标+背景色 */
+    private static final Map<CtrlKey.Type, KeyStyle> ctrl_key_styles = new HashMap<>();
+    private static final KeyColor key_char_level_0_color = KeyColor.create(R.attr.key_char_level_0_fg_color,
+                                                                           R.attr.key_char_level_0_bg_color);
+    private static final KeyColor key_char_level_1_color = KeyColor.create(R.attr.key_char_level_1_fg_color,
+                                                                           R.attr.key_char_level_1_bg_color);
+    private static final KeyColor key_char_level_2_color = KeyColor.create(R.attr.key_char_level_2_fg_color,
+                                                                           R.attr.key_char_level_2_bg_color);
+    private static final KeyColor key_char_level_3_color = KeyColor.create(R.attr.key_char_level_3_fg_color,
+                                                                           R.attr.key_char_level_3_bg_color);
+    private static final KeyColor key_char_level_4_color = KeyColor.create(R.attr.key_char_level_4_fg_color,
+                                                                           R.attr.key_char_level_4_bg_color);
+    /** {@link InputWordKey 候选字}按键的配色 */
+    protected static final KeyColor[] key_input_word_level_colors = new KeyColor[] {
+            key_char_level_0_color,
+            key_char_level_1_color,
+            key_char_level_2_color,
+            key_char_level_3_color,
+            key_char_level_4_color,
+            };
+    private static final KeyColor key_char_level_5_color = KeyColor.create(R.attr.key_char_level_5_fg_color,
+                                                                           R.attr.key_char_level_5_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -150,6 +148,33 @@ public abstract class KeyTable {
         this.config = config;
     }
 
+    protected static <T> int countGridSize(T[][] grid) {
+        int size = 0;
+
+        for (T[] row : grid) {
+            size += row.length;
+        }
+        return size;
+    }
+
+    private static CharKey charKey(CharKey.Type type, String text) {
+        return charKey(CharKey.create(type, text).setLabel(text));
+    }
+
+    private static CharKey charKey(CharKey key) {
+        KeyColor color = null;
+
+        for (Map.Entry<List<String>, KeyColor> entry : char_key_color_palette.entrySet()) {
+            KeyColor keyColor = entry.getValue();
+            if (entry.getKey().contains(key.getText().toLowerCase())) {
+                color = keyColor;
+                break;
+            }
+        }
+
+        return key.setColor(color);
+    }
+
     /** 创建{@link GridCoord 网格坐标} */
     public GridCoord coord(int row, int column) {
         return new GridCoord(row, column);
@@ -179,15 +204,6 @@ public abstract class KeyTable {
             return length / 2;
         }
         return length / 2 + 1;
-    }
-
-    protected static <T> int countGridSize(T[][] grid) {
-        int size = 0;
-
-        for (T[] row : grid) {
-            size += row.length;
-        }
-        return size;
     }
 
     protected GridCoord[][] getLevelKeyCoords() {
@@ -322,24 +338,6 @@ public abstract class KeyTable {
 
     public CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
-    }
-
-    private static CharKey charKey(CharKey.Type type, String text) {
-        return charKey(CharKey.create(type, text).setLabel(text));
-    }
-
-    private static CharKey charKey(CharKey key) {
-        KeyColor color = null;
-
-        for (Map.Entry<List<String>, KeyColor> entry : char_key_color_palette.entrySet()) {
-            KeyColor keyColor = entry.getValue();
-            if (entry.getKey().contains(key.getText().toLowerCase())) {
-                color = keyColor;
-                break;
-            }
-        }
-
-        return key.setColor(color);
     }
 
     private static class KeyStyle {

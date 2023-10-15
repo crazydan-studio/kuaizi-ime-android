@@ -39,6 +39,13 @@ public class Shadow {
     public final float radius;
     public final int color;
 
+    public Shadow(int dx, int dy, int radius, int color) {
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius;
+        this.color = color;
+    }
+
     public static Shadow parse(String shadow) {
         if (shadow == null || shadow.trim().isEmpty()) {
             return null;
@@ -51,13 +58,6 @@ public class Shadow {
         int color = Color.parseColor(splits[3]);
 
         return new Shadow(dx, dy, radius, color);
-    }
-
-    public Shadow(int dx, int dy, int radius, int color) {
-        this.dx = dx;
-        this.dy = dy;
-        this.radius = radius;
-        this.color = color;
     }
 
     public Bitmap attachTo(Drawable drawable, int dstWidth, int dstHeight) {

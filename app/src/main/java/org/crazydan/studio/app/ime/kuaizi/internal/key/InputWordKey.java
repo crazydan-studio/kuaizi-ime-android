@@ -31,12 +31,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 public class InputWordKey extends BaseKey<InputWordKey> {
     private final InputWord word;
 
-    public static InputWordKey create(InputWord word) {
-        return new InputWordKey(word);
-    }
-
     private InputWordKey(InputWord word) {
         this.word = word;
+    }
+
+    public static InputWordKey create(InputWord word) {
+        return new InputWordKey(word);
     }
 
     @Override

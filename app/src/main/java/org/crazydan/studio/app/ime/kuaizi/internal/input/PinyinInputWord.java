@@ -53,33 +53,6 @@ public class PinyinInputWord extends InputWord {
         }
     }
 
-    @Override
-    public PinyinInputWord copy() {
-        PinyinInputWord copied = new PinyinInputWord(getUid(),
-                                                     getValue(),
-                                                     getNotation(),
-                                                     getCharsId(),
-                                                     isTraditional(),
-                                                     null);
-        copy(copied, this);
-
-        copied.strokes.putAll(this.strokes);
-
-        return copied;
-    }
-
-    public String getCharsId() {
-        return this.charsId;
-    }
-
-    public boolean isTraditional() {
-        return this.traditional;
-    }
-
-    public Map<String, Integer> getStrokes() {
-        return this.strokes;
-    }
-
     public static String[] getStrokeNames() {
         return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" };
     }
@@ -105,5 +78,32 @@ public class PinyinInputWord extends InputWord {
                 break;
         }
         return code;
+    }
+
+    @Override
+    public PinyinInputWord copy() {
+        PinyinInputWord copied = new PinyinInputWord(getUid(),
+                                                     getValue(),
+                                                     getNotation(),
+                                                     getCharsId(),
+                                                     isTraditional(),
+                                                     null);
+        copy(copied, this);
+
+        copied.strokes.putAll(this.strokes);
+
+        return copied;
+    }
+
+    public String getCharsId() {
+        return this.charsId;
+    }
+
+    public boolean isTraditional() {
+        return this.traditional;
+    }
+
+    public Map<String, Integer> getStrokes() {
+        return this.strokes;
     }
 }

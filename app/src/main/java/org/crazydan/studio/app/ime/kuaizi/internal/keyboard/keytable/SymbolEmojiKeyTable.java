@@ -38,12 +38,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
  */
 public class SymbolEmojiKeyTable extends KeyTable {
 
-    public static SymbolEmojiKeyTable create(Config config) {
-        return new SymbolEmojiKeyTable(config);
-    }
-
     protected SymbolEmojiKeyTable(Config config) {
         super(config);
+    }
+
+    public static SymbolEmojiKeyTable create(Config config) {
+        return new SymbolEmojiKeyTable(config);
     }
 
     @Override

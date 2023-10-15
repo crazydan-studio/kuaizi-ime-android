@@ -23,8 +23,8 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.widget.HexagonDrawable;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

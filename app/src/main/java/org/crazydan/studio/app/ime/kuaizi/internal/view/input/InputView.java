@@ -26,9 +26,9 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link Input 键盘输入}的视图

@@ -34,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -60,49 +60,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
     public KeyViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
-    }
-
-    /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateKeys(Key<?>[][] keys, Integer themeResId) {
-        this.themeResId = themeResId;
-
-        List<Key<?>> oldKeys = this.keys;
-        this.keys = new ArrayList<>();
-
-        for (Key<?>[] key : keys) {
-            this.keys.addAll(Arrays.asList(key));
-        }
-        updateItems(oldKeys, this.keys);
-    }
-
-    @Override
-    public int getItemCount() {
-        return this.keys.size();
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull KeyView<?, ?> view, int position) {
-        Key<?> key = this.keys.get(position);
-
-        bindKeyView(view, key, this.orientation);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        Key<?> key = this.keys.get(position);
-
-        return getKeyViewType(key);
-    }
-
-    @NonNull
-    @Override
-    public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        if (this.themeResId != null) {
-            context = new ContextThemeWrapper(context, this.themeResId);
-        }
-
-        return createKeyView(context, parent, viewType);
     }
 
     private static int getKeyViewType(Key<?> key) {
@@ -176,5 +133,48 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         } else {
             ((CharKeyView) view).bind((CharKey) key, orientation);
         }
+    }
+
+    /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
+    public void updateKeys(Key<?>[][] keys, Integer themeResId) {
+        this.themeResId = themeResId;
+
+        List<Key<?>> oldKeys = this.keys;
+        this.keys = new ArrayList<>();
+
+        for (Key<?>[] key : keys) {
+            this.keys.addAll(Arrays.asList(key));
+        }
+        updateItems(oldKeys, this.keys);
+    }
+
+    @Override
+    public int getItemCount() {
+        return this.keys.size();
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull KeyView<?, ?> view, int position) {
+        Key<?> key = this.keys.get(position);
+
+        bindKeyView(view, key, this.orientation);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        Key<?> key = this.keys.get(position);
+
+        return getKeyViewType(key);
+    }
+
+    @NonNull
+    @Override
+    public KeyView<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        if (this.themeResId != null) {
+            context = new ContextThemeWrapper(context, this.themeResId);
+        }
+
+        return createKeyView(context, parent, viewType);
     }
 }

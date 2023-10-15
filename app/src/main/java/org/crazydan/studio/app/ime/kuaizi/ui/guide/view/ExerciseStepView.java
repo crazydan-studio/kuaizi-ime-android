@@ -27,10 +27,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 

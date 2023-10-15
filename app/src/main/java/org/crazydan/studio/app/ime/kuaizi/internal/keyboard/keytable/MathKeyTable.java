@@ -33,12 +33,20 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
  */
 public class MathKeyTable extends KeyTable {
 
+    protected MathKeyTable(Config config) {
+        super(config);
+    }
+
     public static MathKeyTable create(Config config) {
         return new MathKeyTable(config);
     }
 
-    protected MathKeyTable(Config config) {
-        super(config);
+    private static MathOpKey mathOpKey(MathOpKey.Type type, String text) {
+        return MathOpKey.create(type, text).setLabel(text);
+    }
+
+    public static MathOpKey bracketKey(String text) {
+        return mathOpKey(MathOpKey.Type.brackets, text);
     }
 
     @Override
@@ -175,13 +183,5 @@ public class MathKeyTable extends KeyTable {
         }
 
         return mathOpKey(type, text).setColor(color);
-    }
-
-    private static MathOpKey mathOpKey(MathOpKey.Type type, String text) {
-        return MathOpKey.create(type, text).setLabel(text);
-    }
-
-    public static MathOpKey bracketKey(String text) {
-        return mathOpKey(MathOpKey.Type.brackets, text);
     }
 }

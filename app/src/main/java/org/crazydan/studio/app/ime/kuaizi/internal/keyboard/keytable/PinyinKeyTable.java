@@ -47,12 +47,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
  */
 public class PinyinKeyTable extends KeyTable {
 
-    public static PinyinKeyTable create(Config config) {
-        return new PinyinKeyTable(config);
-    }
-
     protected PinyinKeyTable(Config config) {
         super(config);
+    }
+
+    public static PinyinKeyTable create(Config config) {
+        return new PinyinKeyTable(config);
     }
 
     @Override

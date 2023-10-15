@@ -18,9 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -34,15 +34,15 @@ public class ExerciseStep implements ViewData {
 
     private boolean running;
 
-    public static ExerciseStep create(String name, String content, Action action, ImageGetter imageGetter) {
-        return new ExerciseStep(name, content, action, imageGetter);
-    }
-
     private ExerciseStep(String name, String content, Action action, ImageGetter imageGetter) {
         this.name = name;
         this.content = content;
         this.action = action;
         this.imageGetter = imageGetter;
+    }
+
+    public static ExerciseStep create(String name, String content, Action action, ImageGetter imageGetter) {
+        return new ExerciseStep(name, content, action, imageGetter);
     }
 
     public void reset() {

@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
  * {@link InputListView} 的手势监听器

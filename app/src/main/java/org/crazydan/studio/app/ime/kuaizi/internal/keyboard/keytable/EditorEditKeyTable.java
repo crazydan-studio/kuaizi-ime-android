@@ -30,12 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
  */
 public class EditorEditKeyTable extends KeyTable {
 
-    public static EditorEditKeyTable create(Config config) {
-        return new EditorEditKeyTable(config);
-    }
-
     protected EditorEditKeyTable(Config config) {
         super(config);
+    }
+
+    public static EditorEditKeyTable create(Config config) {
+        return new EditorEditKeyTable(config);
     }
 
     @Override

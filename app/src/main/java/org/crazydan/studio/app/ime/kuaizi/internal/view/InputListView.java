@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
  * 输入列表视图

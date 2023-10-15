@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
+
 /**
  * {@link Keyboard 键盘}按键
  *

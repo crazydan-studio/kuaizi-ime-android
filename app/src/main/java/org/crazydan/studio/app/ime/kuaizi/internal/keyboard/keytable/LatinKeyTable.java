@@ -32,12 +32,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
  */
 public class LatinKeyTable extends KeyTable {
 
-    public static LatinKeyTable create(Config config) {
-        return new LatinKeyTable(config);
-    }
-
     protected LatinKeyTable(Config config) {
         super(config);
+    }
+
+    public static LatinKeyTable create(Config config) {
+        return new LatinKeyTable(config);
     }
 
     @Override

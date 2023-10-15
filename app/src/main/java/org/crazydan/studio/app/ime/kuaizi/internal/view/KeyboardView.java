@@ -33,6 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoing
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
+import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
  * {@link Keyboard 键盘}视图

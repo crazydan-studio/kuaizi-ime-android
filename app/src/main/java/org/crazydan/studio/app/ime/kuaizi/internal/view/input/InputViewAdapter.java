@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
 
 /**
  * {@link Input 输入}的{@link RecyclerView}适配器

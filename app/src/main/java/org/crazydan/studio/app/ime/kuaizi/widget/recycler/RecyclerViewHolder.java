@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view;
+package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.internal.ViewData;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
@@ -38,6 +37,11 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
 
     public RecyclerViewHolder(@NonNull View itemView) {
         super(itemView);
+    }
+
+    public static void setScale(View view, float scale) {
+        view.setScaleX(scale);
+        view.setScaleY(scale);
     }
 
     public T getData() {
@@ -109,11 +113,6 @@ public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerVie
 
     public void setScale(float scale) {
         setScale(this.itemView, scale);
-    }
-
-    public static void setScale(View view, float scale) {
-        view.setScaleX(scale);
-        view.setScaleY(scale);
     }
 
     /** 背景色渐隐/显动画 */

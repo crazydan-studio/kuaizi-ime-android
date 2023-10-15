@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionVie
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
  * 输入补全列表视图

@@ -32,6 +32,14 @@ public class Symbol {
         this.text = text;
     }
 
+    public static Symbol single(String text) {
+        return new Symbol(text);
+    }
+
+    public static Symbol pair(String left, String right) {
+        return new Symbol.Pair(left, right);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -48,14 +56,6 @@ public class Symbol {
     @Override
     public int hashCode() {
         return Objects.hash(this.text);
-    }
-
-    public static Symbol single(String text) {
-        return new Symbol(text);
-    }
-
-    public static Symbol pair(String left, String right) {
-        return new Symbol.Pair(left, right);
     }
 
     /** 配对的标点符号，含左右两个符号 */

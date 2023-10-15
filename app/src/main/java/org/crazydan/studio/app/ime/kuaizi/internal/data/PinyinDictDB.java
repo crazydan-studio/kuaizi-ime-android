@@ -84,11 +84,108 @@ public class PinyinDictDB {
     private Map<String, String> pinyinCharsAndIdCache;
     // >>>>>>>>>>>>>
 
+    private PinyinDictDB() {
+    }
+
     public static PinyinDictDB getInstance() {
         return instance;
     }
 
-    private PinyinDictDB() {
+    private static SQLiteDatabase openSQLite(File file, boolean readonly) {
+        if (!file.exists() && !readonly) {
+            return SQLiteDatabase.openOrCreateDatabase(file, null);
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+            SQLiteDatabase.OpenParams.Builder builder = new SQLiteDatabase.OpenParams.Builder();
+
+            if (!readonly) {
+                builder.setOpenFlags(SQLiteDatabase.OPEN_READWRITE);
+            } else {
+                builder.setOpenFlags(SQLiteDatabase.OPEN_READONLY);
+            }
+
+            return SQLiteDatabase.openDatabase(file, builder.build());
+        } else {
+            return SQLiteDatabase.openDatabase(file.getPath(),
+                                               null,
+                                               readonly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE);
+        }
+    }
+
+    private static void closeSQLite(SQLiteDatabase db) {
+        if (db != null) {
+            db.close();
+        }
+    }
+
+    private static void copySQLite(Context context, File targetDBFile, int dbRawResId, int dbHashRawResId) {
+        String dbHash = FileUtils.read(context, dbHashRawResId, true);
+
+        File targetDBHashFile = new File(targetDBFile.getPath() + ".hash");
+        String targetHash = FileUtils.read(targetDBHashFile, true);
+
+        if (dbHash != null && Objects.equals(dbHash, targetHash)) {
+            return;
+        }
+
+        try {
+            FileUtils.copy(context, dbRawResId, targetDBFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (dbHash != null) {
+            try {
+                FileUtils.write(targetDBHashFile, dbHash);
+            } catch (IOException ignore) {
+            }
+        }
+    }
+
+    private static <T> List<T> doSQLiteQuery(
+            SQLiteDatabase db, String table, String[] columns, String where, String[] params,
+            Function<Cursor, T> creator
+    ) {
+        return doSQLiteQuery(db, table, columns, where, params, null, creator);
+    }
+
+    private static <T> List<T> doSQLiteQuery(
+            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
+            Function<Cursor, T> creator
+    ) {
+        return doSQLiteQuery(db, table, columns, where, params, orderBy, null, creator);
+    }
+
+    private static <T> List<T> doSQLiteQuery(
+            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
+            String limit, Function<Cursor, T> creator
+    ) {
+        return doSQLiteQuery(db, table, columns, where, params, null, orderBy, limit, creator);
+    }
+
+    private static <T> List<T> doSQLiteQuery(
+            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String groupBy,
+            String orderBy, String limit, Function<Cursor, T> creator
+    ) {
+        try (
+                Cursor cursor = db.query(table, columns, where, params, groupBy, null, orderBy, limit)
+        ) {
+            if (cursor == null) {
+                return new ArrayList<>();
+            }
+
+            List<T> list = new ArrayList<>(cursor.getCount());
+            while (cursor.moveToNext()) {
+                T data = creator.apply(cursor);
+
+                if (data != null) {
+                    list.add(data);
+                }
+            }
+
+            return list;
+        }
     }
 
     private File getAppDBFile(Context context) {
@@ -904,103 +1001,6 @@ public class PinyinDictDB {
         }
 
         return existDataMap;
-    }
-
-    private static SQLiteDatabase openSQLite(File file, boolean readonly) {
-        if (!file.exists() && !readonly) {
-            return SQLiteDatabase.openOrCreateDatabase(file, null);
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
-            SQLiteDatabase.OpenParams.Builder builder = new SQLiteDatabase.OpenParams.Builder();
-
-            if (!readonly) {
-                builder.setOpenFlags(SQLiteDatabase.OPEN_READWRITE);
-            } else {
-                builder.setOpenFlags(SQLiteDatabase.OPEN_READONLY);
-            }
-
-            return SQLiteDatabase.openDatabase(file, builder.build());
-        } else {
-            return SQLiteDatabase.openDatabase(file.getPath(),
-                                               null,
-                                               readonly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE);
-        }
-    }
-
-    private static void closeSQLite(SQLiteDatabase db) {
-        if (db != null) {
-            db.close();
-        }
-    }
-
-    private static void copySQLite(Context context, File targetDBFile, int dbRawResId, int dbHashRawResId) {
-        String dbHash = FileUtils.read(context, dbHashRawResId, true);
-
-        File targetDBHashFile = new File(targetDBFile.getPath() + ".hash");
-        String targetHash = FileUtils.read(targetDBHashFile, true);
-
-        if (dbHash != null && Objects.equals(dbHash, targetHash)) {
-            return;
-        }
-
-        try {
-            FileUtils.copy(context, dbRawResId, targetDBFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (dbHash != null) {
-            try {
-                FileUtils.write(targetDBHashFile, dbHash);
-            } catch (IOException ignore) {
-            }
-        }
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params,
-            Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, null, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
-            Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, orderBy, null, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
-            String limit, Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, null, orderBy, limit, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String groupBy,
-            String orderBy, String limit, Function<Cursor, T> creator
-    ) {
-        try (
-                Cursor cursor = db.query(table, columns, where, params, groupBy, null, orderBy, limit)
-        ) {
-            if (cursor == null) {
-                return new ArrayList<>();
-            }
-
-            List<T> list = new ArrayList<>(cursor.getCount());
-            while (cursor.moveToNext()) {
-                T data = creator.apply(cursor);
-
-                if (data != null) {
-                    list.add(data);
-                }
-            }
-
-            return list;
-        }
     }
 
     private void doSQLiteSave(SQLiteDatabase db, String sql_1, String sql_2, SQLiteSaver saver) {

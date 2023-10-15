@@ -61,16 +61,13 @@ public class ImeInputView extends FrameLayout
         implements InputMsgListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private final SharedPreferences preferences;
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
-
+    private final InputList inputList;
     private KeyboardView keyboardView;
     private InputListView inputListView;
     private PopupWindow inputCompletionsPopup;
     private InputCompletionsView inputCompletionsView;
-
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
-
-    private final InputList inputList;
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;

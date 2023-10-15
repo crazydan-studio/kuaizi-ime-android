@@ -43,12 +43,12 @@ public class Alert {
     private Button negativeBtn;
     private Button positiveBtn;
 
-    public static Alert with(Activity context) {
-        return new Alert(context);
-    }
-
     private Alert(Context context) {
         this.context = context;
+    }
+
+    public static Alert with(Activity context) {
+        return new Alert(context);
     }
 
     public Alert setView(int resId) {
