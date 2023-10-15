@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.theme;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -26,10 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -40,44 +35,18 @@ public class ThemeConfigListView extends RecyclerView {
     public ThemeConfigListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        RecyclerView.Adapter<ThemeConfigView> adapter = new ThemeConfigViewAdapter(createData());
+        // 滚动嵌套处理：
+        // https://stackoverflow.com/questions/27083091/recyclerview-inside-scrollview-is-not-working#answer-37338715
+        setNestedScrollingEnabled(true);
+
+        RecyclerView.Adapter<ThemeConfigView> adapter = new ThemeConfigViewAdapter();
         setAdapter(adapter);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context, RecyclerView.VERTICAL, false);
         setLayoutManager(layoutManager);
     }
 
-    private List<ThemeConfig> createData() {
-        List<CharInput> samples = new ArrayList<>();
-
-        InputWord[] words = new InputWord[] {
-                new InputWord("kuai", "筷", "kuài"),
-                new InputWord("zi", "字", "zì"),
-                new InputWord("shu", "输", "shū"),
-                new InputWord("ru", "入", "rù"),
-                new InputWord("fa", "法", "fǎ"),
-                };
-        for (InputWord word : words) {
-            CharInput input = CharInput.from(InputWordKey.create(word));
-            input.setWord(word);
-
-            samples.add(input);
-        }
-
-        List<ThemeConfig> data = new ArrayList<>();
-
-        ThemeConfig theme = new ThemeConfig(Keyboard.ThemeType.follow_system);
-        theme.setSamples(samples);
-        data.add(theme);
-
-        theme = new ThemeConfig(Keyboard.ThemeType.light);
-        theme.setSamples(samples);
-        data.add(theme);
-
-        theme = new ThemeConfig(Keyboard.ThemeType.night);
-        theme.setSamples(samples);
-        data.add(theme);
-
-        return data;
+    public void updateData(List<ThemeConfig> data) {
+        ((ThemeConfigViewAdapter) getAdapter()).updateData(data);
     }
 }

@@ -52,7 +52,7 @@
         <activity
                 android:name=".ui.ThemeSettings"
                 android:exported="false"
-                android:label="@string/label_choose_theme">
+                android:label="@string/label_config_theme">
             <intent-filter>
                 <action android:name=".ui.ThemeSettings" />
                 <category android:name="android.intent.category.DEFAULT" />

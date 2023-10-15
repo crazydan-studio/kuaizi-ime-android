@@ -71,6 +71,7 @@ public class ImeInputView extends FrameLayout
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;
+    private boolean disableSharedPreferencesUpdatedListener;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -89,12 +90,16 @@ public class ImeInputView extends FrameLayout
         return this.inputList;
     }
 
-    public void setDisableUserInputData(boolean disableUserInputData) {
-        this.disableUserInputData = disableUserInputData;
+    public void setDisableUserInputData(boolean disabled) {
+        this.disableUserInputData = disabled;
 
         if (this.keyboard != null) {
-            this.keyboard.getConfig().setUserInputDataDisabled(disableUserInputData);
+            this.keyboard.getConfig().setUserInputDataDisabled(disabled);
         }
+    }
+
+    public void setDisableSharedPreferencesUpdatedListener(boolean disabled) {
+        this.disableSharedPreferencesUpdatedListener = disabled;
     }
 
     /**
@@ -216,6 +221,10 @@ public class ImeInputView extends FrameLayout
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (this.disableSharedPreferencesUpdatedListener) {
+            return;
+        }
+
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 
@@ -352,14 +361,13 @@ public class ImeInputView extends FrameLayout
                 = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
         patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);
 
-        boolean desktopSwipeUpGestureAdapted
-                = this.preferences.getBoolean(Keyboard.Config.pref_key_adapt_desktop_swipe_up_gesture, false);
+        boolean desktopSwipeUpGestureAdapted = Keyboard.Config.isDesktopSwipeUpGestureAdapted(this.preferences);
         patchedConfig.setDesktopSwipeUpGestureAdapted(desktopSwipeUpGestureAdapted);
 
-        Keyboard.HandMode handMode = getHandMode();
+        Keyboard.HandMode handMode = Keyboard.Config.getHandMode(this.preferences);
         patchedConfig.setHandMode(handMode);
 
-        String theme = this.preferences.getString(Keyboard.Config.pref_key_theme, null);
+        Keyboard.ThemeType theme = Keyboard.Config.getTheme(this.preferences);
         patchedConfig.setTheme(theme);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -481,16 +489,6 @@ public class ImeInputView extends FrameLayout
 
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
             this.inputListCleanCancelBtnView.setOnClickListener(null);
-        }
-    }
-
-    private Keyboard.HandMode getHandMode() {
-        String handMode = this.preferences.getString(Keyboard.Config.pref_key_hand_mode, "right");
-
-        if ("left".equals(handMode)) {
-            return Keyboard.HandMode.Left;
-        } else {
-            return Keyboard.HandMode.Right;
         }
     }
 }

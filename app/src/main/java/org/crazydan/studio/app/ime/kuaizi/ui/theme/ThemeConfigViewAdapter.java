@@ -29,13 +29,11 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
  * @date 2023-10-15
  */
 public class ThemeConfigViewAdapter extends RecyclerViewAdapter<ThemeConfigView> {
-    private final List<ThemeConfig> data;
+    private List<ThemeConfig> data;
 
-    public ThemeConfigViewAdapter(List<ThemeConfig> data) {
+    public void updateData(List<ThemeConfig> data) {
         this.data = data;
-    }
 
-    public void update() {
         notifyDataSetChanged();
     }
 
@@ -46,9 +44,9 @@ public class ThemeConfigViewAdapter extends RecyclerViewAdapter<ThemeConfigView>
 
     @Override
     public void onBindViewHolder(@NonNull ThemeConfigView holder, int position) {
-        ThemeConfig theme = this.data.get(position);
+        ThemeConfig config = this.data.get(position);
 
-        holder.bind(theme);
+        holder.bind(config);
     }
 
     @NonNull

@@ -27,7 +27,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -50,8 +49,8 @@ public class ReadonlyImeInputViewLayout extends FrameLayout {
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         float dstWidth = getMeasuredWidth();
         float dstHeight = getMeasuredHeight();
-        float srcWidth = dstWidth;//child.getMeasuredWidth();
-        float srcHeight = child.getMeasuredHeight();//ScreenUtils.dpToPx(308);//child.getMeasuredHeight();
+        float srcWidth = child.getMeasuredWidth();
+        float srcHeight = child.getMeasuredHeight();
 
         Matrix matrix = new Matrix();
         RectF src = new RectF(0, 0, srcWidth, srcHeight);
@@ -65,39 +64,5 @@ public class ReadonlyImeInputViewLayout extends FrameLayout {
         canvas.restoreToCount(save);
 
         return result;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-//        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-//        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-//        setMeasuredDimension(widthSize, heightSize);
-//
-//        // Measure our child as unspecified.
-//        int spec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.AT_MOST);
-//        measureChildren(spec, spec);
-
-//        if (getChildCount() == 0) {
-//            return;
-//        }
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//
-//        View child = getChildAt(0);
-//        child.measure(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-//
-//        int width = getMeasuredWidth();
-//        int height = getMeasuredHeight();
-//
-//        int childWidth = child.getMeasuredWidth();
-//        int childHeight = child.getMeasuredHeight();
-//
-//        float wRatio = childWidth > width ? width / (childWidth * 1.0f) : 1f;
-//        float hRatio = childHeight > height ? height / (childHeight * 1.0f) : 1f;
-//        float scaleRatio = Math.min(wRatio, hRatio);
-//
-//        child.setScaleX(scaleRatio);
-//        child.setScaleY(scaleRatio);
     }
 }

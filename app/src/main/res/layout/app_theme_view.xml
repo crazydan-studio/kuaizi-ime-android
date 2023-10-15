@@ -19,36 +19,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginVertical="16dp">
+        android:layout_marginVertical="16dp"
+        android:padding="16dp"
+        android:background="?attr/key_highlight_fg_color">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="168dp"
-            android:padding="16dp"
-            android:background="?attr/key_highlight_fg_color">
-
-        <org.crazydan.studio.app.ime.kuaizi.ui.theme.ReadonlyImeInputViewLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            <include
-                    layout="@layout/ime_input_view"
-                    android:id="@+id/ime_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-        </org.crazydan.studio.app.ime.kuaizi.ui.theme.ReadonlyImeInputViewLayout>
-    </LinearLayout>
-
-    <LinearLayout
-            android:layout_width="match_parent"
+    <org.crazydan.studio.app.ime.kuaizi.ui.theme.ReadonlyImeInputViewLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp"
-            android:orientation="horizontal">
+            android:layout_gravity="center">
 
-        <CheckBox
-                android:id="@+id/adapt_desktop_swipe_up_gesture_btn"
-                android:text="@string/label_adapt_desktop_swipe_up_gesture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-    </LinearLayout>
+        <include
+                layout="@layout/ime_input_view"
+                android:id="@+id/ime_view"
+                android:layout_width="@dimen/ime_preview_width"
+                android:layout_height="@dimen/ime_preview_height" />
+    </org.crazydan.studio.app.ime.kuaizi.ui.theme.ReadonlyImeInputViewLayout>
 </LinearLayout>

@@ -17,6 +17,9 @@
 
 <resources>
     <dimen name="about_activity_text_size">18sp</dimen>
+    <dimen name="ime_preview_width">411dp</dimen>
+    <dimen name="ime_preview_height">317dp</dimen>
+    <dimen name="ime_preview_max_height">341dp</dimen>
 
     <dimen name="input_list_view_height">38dp</dimen>
     <dimen name="input_completions_view_height">32dp</dimen>

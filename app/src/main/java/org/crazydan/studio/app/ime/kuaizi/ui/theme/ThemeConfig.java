@@ -30,8 +30,10 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
 public class ThemeConfig implements ViewData {
     private final Keyboard.ThemeType type;
 
-    private boolean selected;
     private List<CharInput> samples;
+    private boolean selected;
+    private boolean desktopSwipeUpGestureAdapted;
+    private Keyboard.HandMode handMode;
 
     public ThemeConfig(Keyboard.ThemeType type) {
         this.type = type;
@@ -39,6 +41,14 @@ public class ThemeConfig implements ViewData {
 
     public Keyboard.ThemeType getType() {
         return this.type;
+    }
+
+    public List<CharInput> getSamples() {
+        return this.samples;
+    }
+
+    public void setSamples(List<CharInput> samples) {
+        this.samples = samples;
     }
 
     public boolean isSelected() {
@@ -49,12 +59,20 @@ public class ThemeConfig implements ViewData {
         this.selected = selected;
     }
 
-    public List<CharInput> getSamples() {
-        return this.samples;
+    public boolean isDesktopSwipeUpGestureAdapted() {
+        return this.desktopSwipeUpGestureAdapted;
     }
 
-    public void setSamples(List<CharInput> samples) {
-        this.samples = samples;
+    public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
+        this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
+    }
+
+    public Keyboard.HandMode getHandMode() {
+        return this.handMode;
+    }
+
+    public void setHandMode(Keyboard.HandMode handMode) {
+        this.handMode = handMode;
     }
 
     @Override

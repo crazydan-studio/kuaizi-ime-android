@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -209,10 +210,6 @@ public interface Keyboard extends UserInputMsgListener {
             this.theme = theme;
         }
 
-        public void setTheme(String theme) {
-            this.theme = theme != null ? ThemeType.valueOf(theme) : null;
-        }
-
         public boolean isUserInputDataDisabled() {
             return this.userInputDataDisabled;
         }
@@ -251,6 +248,26 @@ public interface Keyboard extends UserInputMsgListener {
 
         public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
             this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
+        }
+
+        public static ThemeType getTheme(SharedPreferences preferences) {
+            String theme = preferences.getString(Keyboard.Config.pref_key_theme, null);
+
+            return theme != null ? ThemeType.valueOf(theme) : null;
+        }
+
+        public static HandMode getHandMode(SharedPreferences preferences) {
+            String handMode = preferences.getString(Keyboard.Config.pref_key_hand_mode, "right");
+
+            if ("left".equals(handMode)) {
+                return Keyboard.HandMode.Left;
+            } else {
+                return Keyboard.HandMode.Right;
+            }
+        }
+
+        public static boolean isDesktopSwipeUpGestureAdapted(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_adapt_desktop_swipe_up_gesture, false);
         }
 
         public static int getThemeResId(Context context, Keyboard.ThemeType theme) {

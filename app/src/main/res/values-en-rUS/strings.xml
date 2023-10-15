@@ -61,7 +61,7 @@
     <string name="label_disable_key_clicked_audio">Disable the Key Clicked Audio</string>
     <string name="label_disable_key_animation">Disable the Key Animation</string>
     <string name="label_disable_paging_audio">Disable the Paging Audio</string>
-    <string name="label_choose_theme">Choose the Keyboard Theme</string>
+    <string name="label_config_theme">Configure the Keyboard Theme</string>
     <string name="label_switch_hand_mode">Switch the Keyboard Hand Mode</string>
 
     <string name="desc_disable_user_input_data">
