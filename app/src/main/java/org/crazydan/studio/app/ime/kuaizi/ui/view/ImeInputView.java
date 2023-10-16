@@ -231,7 +231,7 @@ public class ImeInputView extends FrameLayout
         updateKeyboardConfig(newConfig);
     }
 
-    public void updateKeyboardConfig(Keyboard.Config newConfig) {
+    private void updateKeyboardConfig(Keyboard.Config newConfig) {
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         this.keyboard.setConfig(newConfig);
 
@@ -278,8 +278,8 @@ public class ImeInputView extends FrameLayout
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
-        Keyboard.Config config = this.keyboard != null ? this.keyboard.getConfig() : null;
-        Keyboard.ThemeType theme = config != null ? config.getTheme() : null;
+        Keyboard.Config config = getKeyboardConfig();
+        Keyboard.ThemeType theme = config.getTheme();
         int themeResId = Keyboard.Config.getThemeResId(getContext(), theme);
 
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
@@ -380,7 +380,13 @@ public class ImeInputView extends FrameLayout
     }
 
     public Keyboard.Config getKeyboardConfig() {
-        return this.keyboard != null ? this.keyboard.getConfig() : null;
+        if (this.keyboard != null) {
+            return this.keyboard.getConfig();
+        }
+
+        // 默认以保存的应用配置数据为准
+        Keyboard.Config config = new Keyboard.Config(null);
+        return patchKeyboardConfig(config);
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {

@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.theme;
+package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
+ * 只读的 {@link ImeInputView}
+ * <p/>
+ * 只做布局和样式展示，不响应交互
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-15
+ * @date 2023-10-16
  */
-public class ReadonlyImeInputViewLayout extends FrameLayout {
+public class ReadonlyImeInputView extends ImeInputView {
 
-    public ReadonlyImeInputViewLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ReadonlyImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -43,26 +42,5 @@ public class ReadonlyImeInputViewLayout extends FrameLayout {
         // 禁止传递事件，以确保输入键盘不能接收到事件，
         // 也就不能响应用户操作，变成为只读键盘了
         return true;
-    }
-
-    @Override
-    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        float dstWidth = getMeasuredWidth();
-        float dstHeight = getMeasuredHeight();
-        float srcWidth = child.getMeasuredWidth();
-        float srcHeight = child.getMeasuredHeight();
-
-        Matrix matrix = new Matrix();
-        RectF src = new RectF(0, 0, srcWidth, srcHeight);
-        RectF dst = new RectF(0, 0, dstWidth, dstHeight);
-        matrix.setRectToRect(src, dst, Matrix.ScaleToFit.CENTER);
-
-        int save = canvas.save();
-        canvas.concat(matrix);
-
-        boolean result = super.drawChild(canvas, child, drawingTime);
-        canvas.restoreToCount(save);
-
-        return result;
     }
 }

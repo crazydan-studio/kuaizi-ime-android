@@ -23,29 +23,37 @@
 
     <include layout="@layout/app_actionbar" />
 
-    <!-- 嵌套滚动支持: https://stackoverflow.com/questions/27083091/recyclerview-inside-scrollview-is-not-working#answer-37338715 -->
-    <androidx.core.widget.NestedScrollView
+    <!-- Note：Preferences 视图必须放在其他视图之前，否则，会报异常：
+    androidx.appcompat.widget.AppCompatImageButton cannot be cast to android.view.ViewGroup
+    -->
+    <FrameLayout
+            android:id="@+id/settings"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical">
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
+    <!-- Note：键盘的高度优先，以避免展示不完全 -->
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingVertical="16dp"
+            android:background="?attr/key_highlight_fg_color">
+
+        <!-- Note：输入键盘的宽度设置为 match_parent ，且 parent 的左右不设置空白，
+        以确保其键盘高度没有过多的空白，在将其等比缩放，从而可以显示出四周的底色
+        -->
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:scaleX=".9"
+                android:scaleY=".9">
 
-            <FrameLayout
-                    android:id="@+id/settings"
+            <org.crazydan.studio.app.ime.kuaizi.ui.view.ReadonlyImeInputView
+                    android:id="@+id/ime_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
-
-            <org.crazydan.studio.app.ime.kuaizi.ui.theme.ThemeConfigListView
-                    android:id="@+id/theme_config_list_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:paddingTop="8dp"
-                    android:scrollbars="vertical" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
 </LinearLayout>

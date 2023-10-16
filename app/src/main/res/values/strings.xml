@@ -56,13 +56,14 @@
     <string name="title_preference_about">关于</string>
 
     <!-- Settings Preferences -->
-    <string name="label_disable_user_input_data">禁止记录用户输入</string>
+    <string name="label_config_theme">配置键盘主题样式</string>
+    <string name="label_choose_theme">选择键盘主题</string>
+    <string name="label_switch_hand_mode">切换键盘左右手模式</string>
     <string name="label_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
+    <string name="label_disable_user_input_data">禁止记录用户输入</string>
     <string name="label_disable_key_clicked_audio">禁用按键音效</string>
     <string name="label_disable_key_animation">禁用按键动画</string>
     <string name="label_disable_paging_audio">禁用翻页音效</string>
-    <string name="label_config_theme">配置键盘主题样式</string>
-    <string name="label_switch_hand_mode">切换键盘左右手模式</string>
 
     <string name="desc_disable_user_input_data">
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响

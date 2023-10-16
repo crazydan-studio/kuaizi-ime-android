@@ -39,7 +39,7 @@ public class Preferences extends FollowSystemThemeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.preferences_activity);
+        setContentView(R.layout.app_preferences_activity);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();

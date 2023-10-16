@@ -50,11 +50,11 @@
         </activity>
 
         <activity
-                android:name=".ui.ThemeSettings"
+                android:name=".ui.PreferencesTheme"
                 android:exported="false"
                 android:label="@string/label_config_theme">
             <intent-filter>
-                <action android:name=".ui.ThemeSettings" />
+                <action android:name=".ui.PreferencesTheme" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

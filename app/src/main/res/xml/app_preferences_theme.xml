@@ -20,6 +20,15 @@
     iconSpaceReserved 为 false 时，左侧无图标时，将不做空白占位；
     -->
     <ListPreference
+            app:key="theme"
+            app:title="@string/label_choose_theme"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:defaultValue="night"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
             app:key="hand_mode"
             app:title="@string/label_switch_hand_mode"
             app:entries="@array/hand_mode_entries"
