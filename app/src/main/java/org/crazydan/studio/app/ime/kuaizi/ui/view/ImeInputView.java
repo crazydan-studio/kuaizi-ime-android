@@ -217,6 +217,8 @@ public class ImeInputView extends FrameLayout
         } else {
             newKeyboard.reset();
         }
+
+        toggleShowInputListCleanBtn();
     }
 
     @Override
