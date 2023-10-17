@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="136dp"
+        android:layout_width="128dp"
         android:layout_height="@dimen/input_completions_view_height"
         android:paddingStart="8dp"
         android:paddingEnd="12dp"

@@ -154,7 +154,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case InputCandidate_Choose_Doing:
                 if (msg == UserInputMsg.Input_Choose_Doing) {
                     start_Input_Choosing(data.target);
-                    break;
+                    return;
                 }
             case InputChars_Flip_Doing: {
                 if (msg == UserInputMsg.Inputs_Clean_Done) {
@@ -482,8 +482,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         } else {
             determine_NotConfirmed_InputWords_Before(inputList, pending);
             confirm_InputList_Pending(inputList, key);
-
-            update_InputList_Phrase_Completion(inputList, pending);
         }
     }
     // >>>>>>>>>>>>
@@ -648,8 +646,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         start_Input_Choosing(inputList, selected);
-
-        update_InputList_Phrase_Completion(inputList, selected);
     }
 
     /**
@@ -719,7 +715,20 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void update_InputList_Phrase_Completion(InputList inputList, Input<?> input) {
+    @Override
+    protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {
+        // 仅查找占位输入之前的补全短语
+        if (!input.isGap()) {
+            return;
+        }
+
+        // Note: InputList#getPinyinPhraseWordsBefore 获取的不是紧挨者 input 的短语，
+        // 二者之间可能存在其他非拼音输入
+        Input<?> before = inputList.getInputBefore(input);
+        if (before == null || !before.isPinyin()) {
+            return;
+        }
+
         List<InputWord> words = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
         if (words == null || words.isEmpty()) {
             return;
@@ -735,8 +744,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                                                         phrase))
                                                                 .collect(Collectors.toList());
         inputList.setPhraseCompletions(phraseCompletions);
-
-        fire_InputList_Input_Completion_Update_Doing();
     }
 
     private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {

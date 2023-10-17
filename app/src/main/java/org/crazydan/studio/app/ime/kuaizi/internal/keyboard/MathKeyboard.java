@@ -23,6 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
@@ -66,7 +67,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        // 数字、数学符号不做候选切换：支持更多符号时，可增加数学计算符的候选键盘
+        // 数字、数学符号不做候选切换：需支持更多符号时，可增加数学计算符的候选键盘
         if (msg == UserInputMsg.Input_Choose_Doing) {
             InputList inputList = getInputList();
             Input<?> input = data.target;
@@ -84,6 +85,13 @@ public class MathKeyboard extends BaseKeyboard {
 
     public void onTopUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (msg) {
+            case Input_Completion_Choose_Doing: {
+                InputList topInputList = getTopInputList();
+                CompletionInput completion = (CompletionInput) data.target;
+
+                start_InputList_Completion_Applying(topInputList, completion);
+                break;
+            }
             case Input_Choose_Doing: {
                 InputList topInputList = getTopInputList();
                 Input<?> input = data.target;
@@ -192,8 +200,10 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     private void do_Single_MathKey_Inputting(Key<?> key) {
-        InputList mathInputList = getMathInputList();
+        InputList topInputList = getTopInputList();
+        topInputList.clearPhraseCompletions();
 
+        InputList mathInputList = getMathInputList();
         CharInput pending = mathInputList.getPending();
 
         if (key instanceof CharKey) {
@@ -236,7 +246,7 @@ public class MathKeyboard extends BaseKeyboard {
         InputList topInputList = getTopInputList();
 
         // 在切换前，确保当前的算数输入列表已被确认
-        // Note：新位置的待输入为普通输入，可接受非算数输入，故，不需要处理
+        // Note：新位置的待输入将被设置为普通输入，可接受非算数输入，故，不需要处理
         topInputList.confirmPendingAndSelectNext();
 
         super.switchTo_Previous_Keyboard(key);

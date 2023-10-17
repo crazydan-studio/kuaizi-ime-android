@@ -76,9 +76,9 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
         boolean selected = needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
-        // 第一个 算数输入 输入完毕后会在其前添加 Gap 占位，从而导致该输入会出现后移，
+        // 算数输入 输入完毕后会在其前添加 Gap 占位，从而导致该输入会出现后移，
         // 为避免视觉干扰，故提前为其附加一个空白
-        boolean isFirstGapPendingMathExpr = position == 0 && input.isGap() && !Input.isEmpty(mathExprInput);
+        boolean isFirstGapPendingMathExpr = input.isGap() && !Input.isEmpty(mathExprInput);
 
         if (mathExprInput != null) {
             // Note：视图始终与待输入的算数输入绑定，

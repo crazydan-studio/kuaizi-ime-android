@@ -88,6 +88,14 @@ public class InputList {
         onUserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
     }
 
+    /** 清空输入列表 */
+    public void clear() {
+        clearCommitRevokes();
+        clearDeleteCancels();
+
+        clearPhraseCompletions();
+    }
+
     /**
      * 提交输入列表
      * <p/>
@@ -114,7 +122,7 @@ public class InputList {
     }
 
     /** 清除 提交撤回数据 */
-    public void cleanCommitRevokes() {
+    public void clearCommitRevokes() {
         if (canRevokeCommit()) {
             this.staged = Staged.none();
         }
@@ -136,7 +144,7 @@ public class InputList {
     }
 
     /** 清除 删除撤销数据 */
-    public void cleanDeleteCancels() {
+    public void clearDeleteCancels() {
         if (canCancelDelete()) {
             this.staged = Staged.none();
         }
@@ -285,12 +293,10 @@ public class InputList {
      * 再后移光标到指定的偏移位置，并在该位置新建待输入
      */
     public void confirmPendingAndSelectByOffset(int offset) {
-        int selectedIndex = getSelectedIndex();
-        if (hasEmptyPending() || selectedIndex < 0) {
+        int confirmedPendingIndex = doConfirmPending();
+        if (confirmedPendingIndex < 0) {
             return;
         }
-
-        int confirmedPendingIndex = doConfirmPending();
 
         Input<?> newSelected = this.inputs.get(confirmedPendingIndex + offset);
         doSelect(newSelected);
@@ -329,11 +335,28 @@ public class InputList {
      * <li>原位置为 Gap 时，插入待输入；</li>
      * <li>原位置为字符输入时，将其替换为待输入；</li>
      * </ul>
+     *
+     * @return 若未作确认（空白待输入无需确认），则返回 <code>-1</code>
      */
     private int doConfirmPending() {
         int selectedIndex = getSelectedIndex();
-        if (hasEmptyPending() || selectedIndex < 0) {
-            return selectedIndex;
+        if (selectedIndex < 0) {
+            return -1;
+        }
+
+        if (hasEmptyPending()) {
+            // 若当前为空白算数输入，则直接将其移除
+            if (getSelected().isMathExpr() && getSelected().isEmpty()) {
+                removeCharInputAt(selectedIndex);
+                // 选中相邻的后继 Gap
+                doSelect(selectedIndex - 1);
+            }
+
+            // Note：当前待输入可能为空白的算数输入，
+            // 为了确保确认后能继续接受普通输入，需重置当前的待输入
+            newPending();
+
+            return -1;
         }
 
         Input<?> selected = getSelected();
@@ -361,7 +384,6 @@ public class InputList {
     /** {@link #select(int) 选中指定的输入} */
     public void select(Input<?> input) {
         int index = indexOf(input);
-
         select(index);
     }
 
@@ -654,11 +676,16 @@ public class InputList {
 
     /** 获取已选中输入之前的输入 */
     public Input<?> getInputBeforeSelected() {
-        int selectedIndex = getSelectedIndex();
-        if (selectedIndex <= 0) {
+        return getInputBefore(getSelected());
+    }
+
+    /** 获取指定输入之前的输入 */
+    public Input<?> getInputBefore(Input<?> input) {
+        int index = indexOf(input);
+        if (index <= 0) {
             return null;
         }
-        return this.inputs.get(selectedIndex - 1);
+        return this.inputs.get(index - 1);
     }
 
     /**
@@ -724,7 +751,8 @@ public class InputList {
         }
 
         Input.Option option = this.option;
-        if (left.isMathExpr() || right.isMathExpr()) {
+        if ((left.isMathExpr() && !left.isEmpty()) //
+            || (right.isMathExpr() && !right.isEmpty())) {
             return true;
         } else if (left.isLatin()) {
             return !right.isSymbol();
@@ -773,9 +801,15 @@ public class InputList {
         return CollectionUtils.last(getCharInputs());
     }
 
-    /** 选中指定的输入，并为其新建待输入（空白输入或原输入的副本） */
+    /** 选中指定的输入，但其待输入不变 */
     private void doSelect(Input<?> input) {
         this.cursor.select(input);
+    }
+
+    /** 选中指定的输入，但其待输入不变 */
+    private void doSelect(int index) {
+        Input<?> input = this.inputs.get(index);
+        doSelect(input);
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */

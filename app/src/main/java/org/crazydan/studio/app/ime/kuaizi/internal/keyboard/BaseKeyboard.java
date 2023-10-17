@@ -115,23 +115,16 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
-        getInputList().clearPhraseCompletions();
-
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
         if (getConfig().getSwitchFromType() == Type.Math) {
             Input<?> selected = getInputList().getSelected();
-
-            if (!Input.isEmpty(selected)) {
-                start_Input_Choosing(selected);
-            }
+            start_Input_Choosing(selected);
         }
     }
 
     @Override
     public void reset() {
-        getInputList().clearPhraseCompletions();
-
         change_State_to_Init();
     }
 
@@ -224,13 +217,22 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (msg) {
+            case Inputs_Clean_Done:
+            case Input_Choose_Doing:
+            case Inputs_Cleaned_Cancel_Done: {
+                getInputList().clearPhraseCompletions();
+                break;
+            }
+            case Input_Completion_Choose_Doing: {
+                CompletionInput completion = (CompletionInput) data.target;
+                start_InputList_Completion_Applying(completion);
+                break;
+            }
+        }
+
         switch (this.state.type) {
             case InputChars_Input_Waiting:
-                if (msg == UserInputMsg.Input_Completion_Choose_Doing) {
-                    CompletionInput completion = (CompletionInput) data.target;
-                    start_Input_Completion_applying(completion);
-                    break;
-                }
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing: {
                 switch (msg) {
@@ -443,8 +445,9 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 确认待输入，并触发 {@link InputMsg#InputChars_Input_Done} 消息 */
     protected void confirm_InputList_Pending(InputList inputList, Key<?> key) {
         inputList.confirmPendingAndSelectNext();
-
         fire_InputChars_Input_Done(key);
+
+        start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
 
     /**
@@ -484,7 +487,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 case Enter:
                 case Space:
                     // Note：直输回车和空格后，不再支持输入撤回
-                    inputList.cleanCommitRevokes();
+                    inputList.clearCommitRevokes();
 
                     fire_InputList_Commit_Doing(key.getText(), null);
                     break;
@@ -504,8 +507,9 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.deleteSelected();
-
         fire_InputList_Selected_Delete_Done(key, input);
+
+        start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
 
     /** 删除待输入，并触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
@@ -513,8 +517,9 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.dropPending();
-
         fire_InputList_Pending_Drop_Done(key, input);
+
+        start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
 
     /**
@@ -597,13 +602,15 @@ public abstract class BaseKeyboard implements Keyboard {
      * 输入列表不为空时，在输入列表中做删除，否则，在 目标编辑器 做删除
      */
     protected void backspace_InputList_or_Editor(InputList inputList, Key<?> key) {
-        inputList.cleanCommitRevokes();
+        inputList.clearCommitRevokes();
 
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
             fire_InputChars_Input_Doing(key);
 
-            do_Pending_Latin_Completion_Updating(inputList);
+            do_InputList_Pending_Completion_Updating(inputList);
+
+            start_InputList_Current_Phrase_Completion_Updating(inputList);
         } else {
             do_Editor_Editing(inputList, EditorEditAction.backspace);
         }
@@ -852,7 +859,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 // 无需清空待撤回输入数据
                 break;
             default:
-                inputList.cleanCommitRevokes();
+                inputList.clearCommitRevokes();
         }
 
         InputMsgData data = new EditorEditDoingMsgData(getKeyFactory(), action);
@@ -884,6 +891,8 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void start_Single_Key_Inputting(
             InputList inputList, Key<?> key, UserSingleTapMsgData data, boolean directInputting
     ) {
+        inputList.clearPhraseCompletions();
+
         if (key instanceof CharKey && ((CharKey) key).hasReplacement() && data.tick > 0) {
             do_Single_CharKey_Replacement_Inputting(inputList, (CharKey) key, data.tick, directInputting);
         } else {
@@ -941,7 +950,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 pending.appendKey(key);
                 fire_InputChars_Input_Doing(key);
 
-                do_Pending_Latin_Completion_Updating(inputList);
+                do_InputList_Pending_Completion_Updating(inputList);
                 break;
             }
         }
@@ -1018,9 +1027,13 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>
 
     // <<<<<<< 对输入补全的处理
-    protected void start_Input_Completion_applying(CompletionInput completion) {
+    protected void start_InputList_Completion_Applying(CompletionInput completion) {
         InputList inputList = getInputList();
 
+        start_InputList_Completion_Applying(inputList, completion);
+    }
+
+    protected void start_InputList_Completion_Applying(InputList inputList, CompletionInput completion) {
         inputList.applyCompletion(completion);
         // Note：待输入的补全数据将在 confirm 时清除
         inputList.confirmPendingAndSelectNext();
@@ -1028,7 +1041,8 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputList_Input_Completion_Apply_Done(completion);
     }
 
-    private void do_Pending_Latin_Completion_Updating(InputList inputList) {
+    /** 更新待输入的输入补全 */
+    protected void do_InputList_Pending_Completion_Updating(InputList inputList) {
         CharInput pending = inputList.getPending();
         if (Input.isEmpty(pending) || !pending.isLatin()) {
             return;
@@ -1052,6 +1066,18 @@ public abstract class BaseKeyboard implements Keyboard {
 
         fire_InputList_Input_Completion_Update_Doing();
     }
+
+    /** 更新当前输入位置的短语输入补全 */
+    protected void start_InputList_Current_Phrase_Completion_Updating(InputList inputList) {
+        inputList.clearPhraseCompletions();
+
+        Input<?> input = inputList.getSelected();
+        do_InputList_Phrase_Completion_Updating(inputList, input);
+
+        fire_InputList_Input_Completion_Update_Doing();
+    }
+
+    protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
     // >>>>>>
 
     // <<<<<<<< 表情符号选择逻辑
@@ -1296,6 +1322,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected void start_Input_Choosing(InputList inputList, Input<?> input) {
         inputList.select(input);
+        start_InputList_Current_Phrase_Completion_Updating(inputList);
 
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
@@ -1310,7 +1337,7 @@ public abstract class BaseKeyboard implements Keyboard {
             switch_Keyboard(Type.Math, null);
         } else if (!do_Input_Choosing(inputList, pending)) {
             // 在选择输入时，对于新输入，需先确认其 pending
-            if (input.isGap()) {
+            if (input.isGap() && !pending.isEmpty()) {
                 confirm_InputList_Pending_and_Goto_Init_State(inputList, null);
             } else {
                 change_State_to_Init();

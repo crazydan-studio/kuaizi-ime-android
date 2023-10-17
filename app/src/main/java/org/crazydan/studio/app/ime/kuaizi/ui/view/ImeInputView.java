@@ -141,8 +141,7 @@ public class ImeInputView extends FrameLayout
 
     /** 结束输入 */
     public void finishInput() {
-        this.inputList.cleanCommitRevokes();
-        this.inputList.cleanDeleteCancels();
+        this.inputList.clear();
 
         this.keyboard.reset();
     }
@@ -172,7 +171,7 @@ public class ImeInputView extends FrameLayout
             default: {
                 // 有新输入，则清空 删除撤销数据
                 if (!this.inputList.isEmpty()) {
-                    this.inputList.cleanDeleteCancels();
+                    this.inputList.clearDeleteCancels();
                 }
 
                 toggleShowInputListCleanBtn();
@@ -327,9 +326,10 @@ public class ImeInputView extends FrameLayout
 
         if (keyboard != null) {
             keyboard.setInputList(this.inputList);
-            keyboard.start();
-
+            // Note：在 Keyboard#start 中可能会触发输入事件，故而需尽早绑定监听
             this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
+
+            keyboard.start();
 
             this.keyboardView.updateKeyboard(keyboard);
         }
