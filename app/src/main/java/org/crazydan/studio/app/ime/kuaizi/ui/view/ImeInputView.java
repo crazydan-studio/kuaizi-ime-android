@@ -71,7 +71,6 @@ public class ImeInputView extends FrameLayout
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;
-    private boolean disableSharedPreferencesUpdatedListener;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -96,10 +95,6 @@ public class ImeInputView extends FrameLayout
         if (this.keyboard != null) {
             this.keyboard.getConfig().setUserInputDataDisabled(disabled);
         }
-    }
-
-    public void setDisableSharedPreferencesUpdatedListener(boolean disabled) {
-        this.disableSharedPreferencesUpdatedListener = disabled;
     }
 
     /**
@@ -223,10 +218,6 @@ public class ImeInputView extends FrameLayout
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (this.disableSharedPreferencesUpdatedListener) {
-            return;
-        }
-
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 

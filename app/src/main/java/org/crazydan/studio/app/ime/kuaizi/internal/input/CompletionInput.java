@@ -29,7 +29,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-10-12
  */
 public class CompletionInput extends BaseInput<GapInput> {
+    /** 补全开始的起始位置 */
+    public final int startIndex;
     public final List<CharInput> inputs = new ArrayList<>();
+
+    public CompletionInput(int startIndex) {
+        this.startIndex = startIndex;
+    }
 
     public void add(CharInput input) {
         this.inputs.add(input);

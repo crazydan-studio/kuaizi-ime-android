@@ -39,7 +39,7 @@
 
     <SwitchPreferenceCompat
             app:key="adapt_desktop_swipe_up_gesture"
-            app:iconSpaceReserved="false"
             app:title="@string/label_adapt_desktop_swipe_up_gesture"
+            app:iconSpaceReserved="false"
             app:summary="@string/desc_adapt_desktop_swipe_up_gesture" />
 </PreferenceScreen>

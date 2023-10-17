@@ -53,6 +53,7 @@ public class InputList {
     private Staged staged = Staged.none();
 
     private Input.Option option;
+    private List<CompletionInput> phraseCompletions;
 
     public InputList() {
         reset(false);
@@ -148,6 +149,7 @@ public class InputList {
         this.inputs.clear();
         this.cursor.reset();
         this.candidateWordsCache.clear();
+        clearPhraseCompletions();
 
         Input<?> gap = new GapInput();
         this.inputs.add(gap);
@@ -194,14 +196,56 @@ public class InputList {
         this.option = option;
     }
 
+    /** 设置短语输入补全 */
+    public void setPhraseCompletions(List<CompletionInput> phraseCompletions) {
+        this.phraseCompletions = phraseCompletions != null && !phraseCompletions.isEmpty() ? phraseCompletions : null;
+    }
+
+    /** 清空短语输入补全 */
+    public void clearPhraseCompletions() {
+        this.phraseCompletions = null;
+    }
+
     /** 是否有输入补全 */
     public boolean hasCompletions() {
-        return !hasEmptyPending() && getPending().hasCompletions();
+        return (this.phraseCompletions != null) //
+               || (getPending() != null && getPending().hasCompletions());
+    }
+
+    /** 获取输入补全 */
+    public List<CompletionInput> getCompletions() {
+        if (this.phraseCompletions != null) {
+            return this.phraseCompletions;
+        } else if (getPending() != null && getPending().hasCompletions()) {
+            return getPending().getCompletions();
+        }
+        return null;
     }
 
     /** 应用输入补全 */
     public void applyCompletion(CompletionInput completion) {
-        getPending().applyCompletion(completion);
+        if (this.phraseCompletions != null) {
+            applyPhraseCompletion(completion);
+            clearPhraseCompletions();
+        } else if (getPending() != null && getPending().hasCompletions()) {
+            getPending().applyCompletion(completion);
+        }
+    }
+
+    /**
+     * 应用短语输入补全
+     * <p/>
+     * 在当前选中位置开始，逐个插入剩余部分
+     */
+    private void applyPhraseCompletion(CompletionInput completion) {
+        int startIndex = completion.startIndex;
+
+        // 从补全位置开始插入输入
+        for (int i = startIndex; i < completion.inputs.size(); i++) {
+            CharInput input = completion.inputs.get(i);
+            withPending(input);
+            confirmPendingAndSelectNext();
+        }
     }
 
     /** 重新创建当前输入的待输入（不确认已有的待输入） */

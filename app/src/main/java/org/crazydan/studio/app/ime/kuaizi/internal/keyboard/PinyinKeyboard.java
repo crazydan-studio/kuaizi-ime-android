@@ -37,7 +37,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
@@ -423,8 +425,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             case level_0: {
                 pending.appendKey(currentKey);
 
-                Collection<String> level1NextChars = this.pinyinDict.findNextChar(Key.Level.level_1,
-                                                                                  currentKey.getText());
+                Collection<String> level1NextChars = this.pinyinDict.findPinyinNextChar(Key.Level.level_1,
+                                                                                        currentKey.getText());
 
                 stateData.setLevel0Key(currentKey);
 
@@ -441,7 +443,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 String startChar = stateData.getLevel0Key().getText();
                 startChar += currentKey.getText();
 
-                Collection<String> nextChars = this.pinyinDict.findNextChar(Key.Level.level_2, startChar);
+                Collection<String> nextChars = this.pinyinDict.findPinyinNextChar(Key.Level.level_2, startChar);
                 // 第二级后继字母先按字符顺序排列，再按字符长度升序排列
                 List<String> level2NextChars = nextChars.stream()
                                                         .sorted(String::compareTo)
@@ -479,8 +481,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             drop_InputList_Pending(inputList, key);
         } else {
             determine_NotConfirmed_InputWords_Before(inputList, pending);
-
             confirm_InputList_Pending(inputList, key);
+
+            update_InputList_Phrase_Completion(inputList, pending);
         }
     }
     // >>>>>>>>>>>>
@@ -518,7 +521,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private Map<String, List<String>> getRestChars(String startChar) {
-        Collection<String> filteredChars = this.pinyinDict.findCharsStartsWith(startChar);
+        Collection<String> filteredChars = this.pinyinDict.findPinyinCharsStartsWith(startChar);
 
         Map<String, List<String>> restChars = new HashMap<>();
 
@@ -635,15 +638,18 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // 继续选择下一个拼音输入的候选字
         Input<?> selected = inputList.selectNextFirstMatched(Input::isPinyin);
+        boolean hasNextPinyin = selected != null;
 
         // Note：前序已确认，则继续自动确认下一个拼音输入
-        if (selected != null) {
+        if (hasNextPinyin) {
             determine_NotConfirmed_InputWords_Before(inputList, (CharInput) selected);
         } else {
             selected = inputList.getSelected();
         }
 
         start_Input_Choosing(inputList, selected);
+
+        update_InputList_Phrase_Completion(inputList, selected);
     }
 
     /**
@@ -713,6 +719,41 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    private void update_InputList_Phrase_Completion(InputList inputList, Input<?> input) {
+        List<InputWord> words = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
+        if (words == null || words.isEmpty()) {
+            return;
+        }
+
+        if (input.isPinyin()) {
+            words.add(input.getWord());
+        }
+
+        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPinyinPhrase(words, 5);
+        List<CompletionInput> phraseCompletions = topBestPhrases.stream()
+                                                                .map((phrase) -> createPhraseCompletion(words.size(),
+                                                                                                        phrase))
+                                                                .collect(Collectors.toList());
+        inputList.setPhraseCompletions(phraseCompletions);
+
+        fire_InputList_Input_Completion_Update_Doing();
+    }
+
+    private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {
+        CompletionInput completion = new CompletionInput(startIndex);
+
+        for (int i = 0; i < phrase.size(); i++) {
+            PinyinInputWord word = (PinyinInputWord) phrase.get(i);
+            String pinyin = this.pinyinDict.getPinyinCharsById(word.getCharsId());
+
+            CharInput charInput = CharInput.from(CharKey.from(pinyin));
+            charInput.setWord(word);
+
+            completion.add(charInput);
+        }
+        return completion;
+    }
+
     /**
      * 确认 未确认输入 的候选字
      * <p/>
@@ -763,7 +804,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         Map<String, InputWord> words = inputList.getCachedCandidateWords(input);
 
         if (words == null) {
-            List<InputWord> candidates = this.pinyinDict.getCandidateWords(input);
+            List<InputWord> candidates = this.pinyinDict.getPinyinCandidateWords(input);
             inputList.cacheCandidateWords(input, candidates);
 
             words = inputList.getCachedCandidateWords(input);
@@ -775,7 +816,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 根据当前位置之前的输入确定当前位置的最佳候选字
         List<InputWord> prevPhrase = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
 
-        return this.pinyinDict.findTopBestCandidateWords(input, top, prevPhrase, getConfig().isUserInputDataDisabled());
+        return this.pinyinDict.findTopBestPinyinCandidateWords(input,
+                                                               top,
+                                                               prevPhrase,
+                                                               getConfig().isUserInputDataDisabled());
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {

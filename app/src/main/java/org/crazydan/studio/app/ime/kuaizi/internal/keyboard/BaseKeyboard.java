@@ -115,6 +115,8 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
+        getInputList().clearPhraseCompletions();
+
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
         if (getConfig().getSwitchFromType() == Type.Math) {
@@ -128,6 +130,8 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void reset() {
+        getInputList().clearPhraseCompletions();
+
         change_State_to_Init();
     }
 
@@ -329,6 +333,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputChooseDoneMsgData(input);
 
         fireInputMsg(InputMsg.InputList_Input_Choose_Done, data);
+    }
+
+    /** 触发 {@link InputMsg#InputList_Input_Completion_Update_Doing} 消息 */
+    protected void fire_InputList_Input_Completion_Update_Doing() {
+        InputMsgData data = new InputCommonMsgData();
+
+        fireInputMsg(InputMsg.InputList_Input_Completion_Update_Doing, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Input_Completion_Apply_Done} 消息 */
@@ -590,10 +601,9 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (!inputList.isEmpty()) {
             inputList.deleteBackward();
+            fire_InputChars_Input_Doing(key);
 
             do_Pending_Latin_Completion_Updating(inputList);
-
-            fire_InputChars_Input_Doing(key);
         } else {
             do_Editor_Editing(inputList, EditorEditAction.backspace);
         }
@@ -929,10 +939,9 @@ public abstract class BaseKeyboard implements Keyboard {
                     pending = inputList.newPending();
                 }
                 pending.appendKey(key);
+                fire_InputChars_Input_Doing(key);
 
                 do_Pending_Latin_Completion_Updating(inputList);
-
-                fire_InputChars_Input_Doing(key);
                 break;
             }
         }
@@ -1025,7 +1034,8 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        List<String> bestLatins = this.pinyinDict.findTopBestMatchedLatin(pending.getText().toString(), 5);
+        String text = pending.getText().toString();
+        List<String> bestLatins = this.pinyinDict.findTopBestMatchedLatin(text, 5);
 
         pending.clearCompletions();
         bestLatins.forEach((latin) -> {
@@ -1033,12 +1043,14 @@ public abstract class BaseKeyboard implements Keyboard {
 
             if (!keys.isEmpty()) {
                 CharInput input = CharInput.from(keys);
-                CompletionInput completion = new CompletionInput();
+                CompletionInput completion = new CompletionInput(text.length());
                 completion.add(input);
 
                 pending.addCompletion(completion);
             }
         });
+
+        fire_InputList_Input_Completion_Update_Doing();
     }
     // >>>>>>
 
@@ -1047,7 +1059,7 @@ public abstract class BaseKeyboard implements Keyboard {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getEmojiKeysPageSize();
 
-        Emojis emojis = this.pinyinDict.getEmojis(pageSize / 2);
+        Emojis emojis = this.pinyinDict.findTopBestEmojis(pageSize / 2);
 
         EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
         State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());

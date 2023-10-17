@@ -19,7 +19,7 @@
     <dimen name="about_activity_text_size">18sp</dimen>
 
     <dimen name="input_list_view_height">38dp</dimen>
-    <dimen name="input_completions_view_height">32dp</dimen>
+    <dimen name="input_completions_view_height">38dp</dimen>
     <dimen name="input_list_divider_height">20dp</dimen>
     <dimen name="input_list_button_icon_size">32dp</dimen>
     <dimen name="input_list_button_spacing">8dp</dimen>

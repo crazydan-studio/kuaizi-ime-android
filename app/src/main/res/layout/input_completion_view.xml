@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="92dp"
+        android:layout_width="136dp"
         android:layout_height="@dimen/input_completions_view_height"
         android:paddingStart="8dp"
         android:paddingEnd="12dp"
@@ -33,8 +33,8 @@
             android:layout_gravity="bottom"
             android:fillViewport="true"
             android:scrollbars="none"
-            android:scaleX=".8"
-            android:scaleY=".8">
+            android:scaleX=".9"
+            android:scaleY=".9">
 
         <LinearLayout
                 android:id="@+id/inputs_view"

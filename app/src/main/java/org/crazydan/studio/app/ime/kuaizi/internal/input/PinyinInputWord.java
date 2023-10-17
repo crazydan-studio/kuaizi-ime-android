@@ -29,6 +29,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
  * @date 2023-08-26
  */
 public class PinyinInputWord extends InputWord {
+    /** 字 id */
+    private final String wordId;
     /** 拼音字母组合 id */
     private final String charsId;
     /** 是否繁体 */
@@ -37,9 +39,12 @@ public class PinyinInputWord extends InputWord {
     private final Map<String, Integer> strokes;
 
     public PinyinInputWord(
-            String uid, String value, String notation, String charsId, boolean traditional, String strokeOrder
+            String uid, String value, String notation, String wordId, String charsId, boolean traditional,
+            String strokeOrder
     ) {
         super(uid, value, notation);
+
+        this.wordId = wordId;
         this.charsId = charsId;
         this.traditional = traditional;
         this.strokes = new HashMap<>();
@@ -85,6 +90,7 @@ public class PinyinInputWord extends InputWord {
         PinyinInputWord copied = new PinyinInputWord(getUid(),
                                                      getValue(),
                                                      getNotation(),
+                                                     getWordId(),
                                                      getCharsId(),
                                                      isTraditional(),
                                                      null);
@@ -93,6 +99,10 @@ public class PinyinInputWord extends InputWord {
         copied.strokes.putAll(this.strokes);
 
         return copied;
+    }
+
+    public String getWordId() {
+        return this.wordId;
     }
 
     public String getCharsId() {

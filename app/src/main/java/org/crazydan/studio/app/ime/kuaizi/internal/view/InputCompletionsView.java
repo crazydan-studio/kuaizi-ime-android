@@ -78,13 +78,7 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        List<CompletionInput> completions = null;
-
-        if (msg == InputMsg.InputChars_Input_Doing) {
-            if (this.inputList.hasCompletions()) {
-                completions = this.inputList.getPending().getCompletions();
-            }
-        }
+        List<CompletionInput> completions = this.inputList.getCompletions();
 
         this.adapter.updateDataList(completions);
     }
