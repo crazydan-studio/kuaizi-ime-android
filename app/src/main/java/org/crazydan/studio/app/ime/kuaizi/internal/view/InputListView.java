@@ -74,8 +74,13 @@ public class InputListView extends RecyclerView implements InputMsgListener {
     }
 
     public void updateInputList(InputList inputList) {
+        updateInputList(inputList, true);
+    }
+
+    public void updateInputList(InputList inputList, boolean canBeSelected) {
         this.inputList = inputList;
-        this.adapter.updateInputList(this.inputList);
+
+        this.adapter.updateInputList(this.inputList, canBeSelected);
     }
 
     /** 响应输入列表的点击等消息 */
@@ -104,7 +109,7 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:
-                this.adapter.updateInputList(this.inputList);
+                updateInputList(this.inputList);
 
                 int position = this.inputList.getSelectedIndex();
                 scrollToEnd(position);

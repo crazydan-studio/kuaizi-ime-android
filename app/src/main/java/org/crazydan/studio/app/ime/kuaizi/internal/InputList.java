@@ -493,11 +493,6 @@ public class InputList {
         return Input.isGap(getSelected());
     }
 
-    /** 丢弃已选择输入，光标处于游离态 */
-    public void dropSelected() {
-        this.cursor.reset();
-    }
-
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
     public void clearPairOnSelected() {
         Input<?> selected = getSelected();

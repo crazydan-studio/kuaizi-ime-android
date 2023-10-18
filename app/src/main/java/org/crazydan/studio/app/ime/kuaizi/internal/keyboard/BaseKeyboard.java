@@ -118,8 +118,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
         if (getConfig().getSwitchFromType() == Type.Math) {
-            Input<?> selected = getInputList().getSelected();
-            start_Input_Choosing(selected);
+            start_Selected_Input_ReChoosing(getInputList());
         }
     }
 
@@ -587,10 +586,10 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         inputList.revokeCommit();
-
         after_Revoke_Committed_InputList(inputList);
-
         fire_Common_InputMsg(InputMsg.InputList_Committed_Revoke_Doing, key);
+
+        start_Selected_Input_ReChoosing(inputList);
     }
 
     /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
@@ -605,14 +604,9 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.clearCommitRevokes();
 
         if (!inputList.isEmpty()) {
-            inputList.deleteBackward();
-            fire_InputChars_Input_Doing(key);
-
-            do_InputList_Pending_Completion_Updating(inputList);
-
-            start_InputList_Current_Phrase_Completion_Updating(inputList);
+            do_InputList_Backspacing(inputList, key);
         } else {
-            do_Editor_Editing(inputList, EditorEditAction.backspace);
+            do_Editor_Backspacing(inputList, key);
         }
     }
 
@@ -814,6 +808,24 @@ public abstract class BaseKeyboard implements Keyboard {
 
         return false;
     }
+
+    // <<<<<<< 回删逻辑
+
+    /** 回删输入列表中的输入内容 */
+    protected void do_InputList_Backspacing(InputList inputList, Key<?> key) {
+        inputList.deleteBackward();
+        fire_InputChars_Input_Doing(key);
+
+        do_InputList_Pending_Completion_Updating(inputList);
+
+        start_InputList_Current_Phrase_Completion_Updating(inputList);
+    }
+
+    /** 回删 目标编辑器 的内容 */
+    protected void do_Editor_Backspacing(InputList inputList, Key<?> key) {
+        do_Editor_Editing(inputList, EditorEditAction.backspace);
+    }
+    // >>>>>>>>
 
     // <<<<<< 输入定位逻辑
     private void start_Editor_Editing(CtrlKey key) {
@@ -1316,6 +1328,12 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>>>>
 
     // <<<<<<<<< 对输入列表的操作
+    protected void start_Selected_Input_ReChoosing(InputList inputList) {
+        Input<?> selected = inputList.getSelected();
+
+        start_Input_Choosing(inputList, selected);
+    }
+
     protected void start_Input_Choosing(Input<?> input) {
         start_Input_Choosing(getInputList(), input);
     }

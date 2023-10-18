@@ -234,8 +234,6 @@ public class CharMathExprInput extends CharInput {
     @Override
     public void confirm() {
         this.inputList.confirmPending();
-
-        this.inputList.dropSelected();
     }
 
     @Override

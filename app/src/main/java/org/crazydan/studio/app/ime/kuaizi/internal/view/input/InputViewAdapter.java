@@ -17,10 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,17 +40,12 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
 
     private InputList inputList;
-    private List<Integer> inputHashes = new ArrayList<>();
+    private boolean canBeSelected;
 
     /** 更新输入列表，并对发生变更的输入发送变更消息，以仅对变化的输入做渲染 */
-    public void updateInputList(InputList inputList) {
+    public void updateInputList(InputList inputList, boolean canBeSelected) {
+        this.canBeSelected = canBeSelected;
         this.inputList = inputList;
-
-//        List<Integer> oldInputHashes = this.inputHashes;
-//        List<Integer> newInputHashes = getInputHashes();
-//        this.inputHashes = new ArrayList<>(newInputHashes);
-//
-//        updateItems(oldInputHashes, newInputHashes);
 
         // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
         // 其判断逻辑较复杂且容易遗漏更新，故而，直接对列表视图做全量更新
@@ -74,7 +65,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         CharInput pending = this.inputList.getPendingOn(input);
         CharMathExprInput mathExprInput = determineMathExprInput(position);
 
-        boolean selected = needToBeSelected(input);
+        boolean selected = this.canBeSelected && needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
 
         if (mathExprInput != null) {
@@ -121,27 +112,6 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         } else {
             return new GapInputView(inflateItemView(parent, R.layout.input_gap_view));
         }
-    }
-
-    private List<Integer> getInputHashes() {
-        if (this.inputList == null) {
-            return new ArrayList<>();
-        }
-
-        return this.inputList.getInputs().stream().map(input -> {
-            Input.Option option = this.inputList.getOption();
-            CharInput pending = this.inputList.getPendingOn(input);
-            Input<?> target = pending != null ? pending : input;
-
-            boolean selected = needToBeSelected(input);
-            boolean needGapSpace = this.inputList.needGapSpace(input);
-            int textHash = option != null && target.hasWord() ? target.getText(option).hashCode() : 0;
-
-            // 因为输入内容可能是相同的，故而，需要对其内容和引用做 Hash
-            int hash = target.hashCode() + System.identityHashCode(target);
-
-            return hash + (selected ? 1 : 0) + (needGapSpace ? 1 : 0) + textHash;
-        }).collect(Collectors.toList());
     }
 
     private boolean needToBeSelected(Input<?> input) {

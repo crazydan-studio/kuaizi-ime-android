@@ -51,7 +51,7 @@ public class CharMathExprInputView extends InputView<Input<?>> {
         addLeftSpaceMargin(this.itemView, needGapSpace ? needMoreGapSpace ? 2 : 1 : 0);
 
         InputList inputList = input.getInputList();
-        this.inputListView.updateInputList(inputList);
+        this.inputListView.updateInputList(inputList, selected);
 
         setBackgroundColorByAttrId(this.markerView,
                                    selected
