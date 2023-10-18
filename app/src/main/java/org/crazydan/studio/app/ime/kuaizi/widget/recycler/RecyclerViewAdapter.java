@@ -41,17 +41,20 @@ public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> ext
     }
 
     protected <I> void updateItems(List<I> oldItems, List<I> newItems) {
-        if (oldItems.size() > newItems.size()) {
-            for (int i = newItems.size(); i < oldItems.size(); i++) {
+        int oldItemsSize = oldItems != null ? oldItems.size() : 0;
+        int newItemsSize = newItems != null ? newItems.size() : 0;
+
+        if (oldItemsSize > newItemsSize) {
+            for (int i = newItemsSize; i < oldItemsSize; i++) {
                 notifyItemRemoved(i);
             }
-        } else if (oldItems.size() < newItems.size()) {
-            for (int i = oldItems.size(); i < newItems.size(); i++) {
+        } else if (oldItemsSize < newItemsSize) {
+            for (int i = oldItemsSize; i < newItemsSize; i++) {
                 notifyItemInserted(i);
             }
         }
 
-        int size = Math.min(oldItems.size(), newItems.size());
+        int size = Math.min(oldItemsSize, newItemsSize);
         for (int i = 0; i < size; i++) {
             I oldItem = oldItems.get(i);
             I newItem = newItems.get(i);

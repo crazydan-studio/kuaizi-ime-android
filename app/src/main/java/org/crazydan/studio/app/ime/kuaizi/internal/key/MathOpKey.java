@@ -48,17 +48,6 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
         return this.type;
     }
 
-    /** 是否为百/千/万分比 */
-    public boolean isPerxxx() {
-        switch (this.type) {
-            case percent:
-            case permill:
-            case permyriad:
-                return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean isMathOperator() {
         switch (this.type) {
@@ -97,6 +86,11 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
 
         MathOpKey that = (MathOpKey) o;
         return this.type == that.type && Objects.equals(this.getText(), that.getText());
+    }
+
+    @Override
+    public String toString() {
+        return this.type + "(" + getText() + ")";
     }
 
     public enum Type {

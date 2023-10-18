@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
@@ -54,6 +55,12 @@ public class GapInput extends BaseInput<GapInput> {
 
     @Override
     public boolean isSameWith(Object o) {return equals(o);}
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Gap";
+    }
 
     @Override
     public boolean equals(Object o) {return this == o;}

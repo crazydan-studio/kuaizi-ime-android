@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+
 /**
  * 标点符号
  *
@@ -38,6 +40,12 @@ public class Symbol {
 
     public static Symbol pair(String left, String right) {
         return new Symbol.Pair(left, right);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.text;
     }
 
     @Override

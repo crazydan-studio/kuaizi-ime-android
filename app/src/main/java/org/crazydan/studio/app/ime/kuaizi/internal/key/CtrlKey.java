@@ -109,7 +109,7 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     @NonNull
     @Override
     public String toString() {
-        return "CTRL - " + getType() + (getLabel() != null ? " (" + getLabel() + ")" : "");
+        return getType() + (getLabel() != null ? "(" + getLabel() + ")" : "");
     }
 
     public enum Type {

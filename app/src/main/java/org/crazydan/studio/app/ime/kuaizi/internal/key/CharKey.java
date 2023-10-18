@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
 /**
@@ -177,12 +176,6 @@ public class CharKey extends BaseCharKey<CharKey> {
 
         CharKey that = (CharKey) o;
         return this.type == that.type && Objects.equals(this.getText(), that.getText());
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        return "CHAR - " + getText() + '(' + getType() + ')';
     }
 
     public enum Type {

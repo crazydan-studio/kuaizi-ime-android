@@ -44,10 +44,11 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
         this.manager = manager;
     }
 
-    public void updateDataList(List<CompletionInput> completions) {
-        this.completions = completions;
+    public void updateDataList(List<CompletionInput> newCompletions) {
+        List<CompletionInput> oldCompletions = this.completions;
+        this.completions = newCompletions;
 
-        notifyDataSetChanged();
+        updateItems(oldCompletions, newCompletions);
     }
 
     @Override

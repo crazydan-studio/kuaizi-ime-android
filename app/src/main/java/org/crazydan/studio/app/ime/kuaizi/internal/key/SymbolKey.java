@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Symbol;
 
 /**
@@ -66,6 +67,12 @@ public class SymbolKey extends BaseKey<SymbolKey> {
 
         SymbolKey that = (SymbolKey) o;
         return this.symbol.equals(that.symbol);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.symbol.toString();
     }
 
     @Override

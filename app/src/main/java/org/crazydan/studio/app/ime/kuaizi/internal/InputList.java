@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
@@ -849,6 +850,12 @@ public class InputList {
             pairInput.clearPair();
             removeCharInputAt(pairInputIndex);
         }
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return getText().toString();
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.EmojiInputWord;
 
@@ -61,6 +62,12 @@ public class InputWordKey extends BaseKey<InputWordKey> {
 
         InputWordKey that = (InputWordKey) key;
         return Objects.equals(this.word, that.word);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.word.toString();
     }
 
     @Override

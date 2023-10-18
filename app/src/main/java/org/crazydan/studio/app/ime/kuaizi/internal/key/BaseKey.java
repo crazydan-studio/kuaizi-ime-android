@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
 
@@ -134,6 +135,12 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     public K setColor(KeyColor color) {
         this.color = color == null ? KeyColor.none() : color;
         return (K) this;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.label + "(" + getText() + ")";
     }
 
     @Override

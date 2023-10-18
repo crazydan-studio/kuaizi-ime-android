@@ -19,7 +19,10 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 
 /**
@@ -39,5 +42,32 @@ public class CompletionInput extends BaseInput<GapInput> {
 
     public void add(CharInput input) {
         this.inputs.add(input);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.startIndex + ": " + this.inputs.stream().map(Objects::toString).collect(Collectors.joining(""));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        CompletionInput that = (CompletionInput) o;
+        return this.inputs.equals(that.inputs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.inputs);
     }
 }
