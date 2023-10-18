@@ -20,6 +20,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="12dp"
         android:paddingTop="6dp"
+        android:paddingBottom="1dp"
         android:layout_marginHorizontal="8dp"
         android:background="@drawable/bg_input_completion">
 

@@ -400,10 +400,7 @@ public class ImeInputView extends FrameLayout
         PopupWindow window = this.inputCompletionsPopup;
 
         if (!shown) {
-            // Note：必须延后关闭窗口，否则，
-            // 若直接关闭，点击事件会被再次发送，
-            // 造成 CompletionViewGestureListener 触发两次补全事件
-            post(window::dismiss);
+            window.dismiss();
             return;
         } else if (window.isShowing()) {
             return;
