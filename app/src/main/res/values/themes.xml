@@ -220,5 +220,10 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
-    <!-- End -->
+
+    <!-- https://www.dev2qa.com/android-popup-window-animation-example/ -->
+    <style name="Theme.Kuaizi.PopupWindow.Animation" parent="">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
 </resources>

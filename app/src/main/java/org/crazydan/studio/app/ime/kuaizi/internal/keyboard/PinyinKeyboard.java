@@ -717,8 +717,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {
-        // 仅查找占位输入之前的补全短语
-        if (!input.isGap()) {
+        Input<?> pending = inputList.getPendingOn(input);
+        // 仅查找占位输入（且其待输入不能为拉丁文）之前的补全短语
+        if (!input.isGap() || (pending != null && pending.isLatin())) {
             return;
         }
 

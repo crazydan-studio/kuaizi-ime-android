@@ -337,11 +337,11 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputList_Input_Choose_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Input_Completion_Update_Doing} 消息 */
-    protected void fire_InputList_Input_Completion_Update_Doing() {
+    /** 触发 {@link InputMsg#InputList_Input_Completion_Update_Done} 消息 */
+    protected void fire_InputList_Input_Completion_Update_Done() {
         InputMsgData data = new InputCommonMsgData();
 
-        fireInputMsg(InputMsg.InputList_Input_Completion_Update_Doing, data);
+        fireInputMsg(InputMsg.InputList_Input_Completion_Update_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Input_Completion_Apply_Done} 消息 */
@@ -1064,7 +1064,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         });
 
-        fire_InputList_Input_Completion_Update_Doing();
+        fire_InputList_Input_Completion_Update_Done();
     }
 
     /** 更新当前输入位置的短语输入补全 */
@@ -1074,7 +1074,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> input = inputList.getSelected();
         do_InputList_Phrase_Completion_Updating(inputList, input);
 
-        fire_InputList_Input_Completion_Update_Doing();
+        fire_InputList_Input_Completion_Update_Done();
     }
 
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}

@@ -112,14 +112,14 @@ public interface Keyboard extends UserInputMsgListener {
 
     /** 键盘配置 */
     class Config {
-        public static final String pref_key_disable_user_input_data = "disable_user_input_data";
-        public static final String pref_key_disable_key_clicked_audio = "disable_key_clicked_audio";
-        public static final String pref_key_disable_key_animation = "disable_key_animation";
-        public static final String pref_key_disable_input_candidates_paging_audio
+        private static final String pref_key_disable_user_input_data = "disable_user_input_data";
+        private static final String pref_key_disable_key_clicked_audio = "disable_key_clicked_audio";
+        private static final String pref_key_disable_key_animation = "disable_key_animation";
+        private static final String pref_key_disable_input_candidates_paging_audio
                 = "disable_input_candidates_paging_audio";
-        public static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
-        public static final String pref_key_hand_mode = "hand_mode";
-        public static final String pref_key_theme = "theme";
+        private static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
+        private static final String pref_key_hand_mode = "hand_mode";
+        private static final String pref_key_theme = "theme";
 
         /** 键盘类型 */
         private final Type type;
@@ -206,10 +206,6 @@ public interface Keyboard extends UserInputMsgListener {
             return this.theme;
         }
 
-        public void setTheme(ThemeType theme) {
-            this.theme = theme;
-        }
-
         public boolean isUserInputDataDisabled() {
             return this.userInputDataDisabled;
         }
@@ -222,32 +218,47 @@ public interface Keyboard extends UserInputMsgListener {
             return this.keyClickedAudioDisabled;
         }
 
-        public void setKeyClickedAudioDisabled(boolean keyClickedAudioDisabled) {
-            this.keyClickedAudioDisabled = keyClickedAudioDisabled;
-        }
-
         public boolean isKeyAnimationDisabled() {
             return this.keyAnimationDisabled;
-        }
-
-        public void setKeyAnimationDisabled(boolean keyAnimationDisabled) {
-            this.keyAnimationDisabled = keyAnimationDisabled;
         }
 
         public boolean isPagingAudioDisabled() {
             return this.pagingAudioDisabled;
         }
 
-        public void setPagingAudioDisabled(boolean pagingAudioDisabled) {
-            this.pagingAudioDisabled = pagingAudioDisabled;
-        }
-
         public boolean isDesktopSwipeUpGestureAdapted() {
             return this.desktopSwipeUpGestureAdapted;
         }
 
-        public void setDesktopSwipeUpGestureAdapted(boolean desktopSwipeUpGestureAdapted) {
-            this.desktopSwipeUpGestureAdapted = desktopSwipeUpGestureAdapted;
+        public void syncWith(SharedPreferences preferences) {
+            boolean disableUserInputData = Keyboard.Config.isUserInputDataDisabled(preferences);
+            setUserInputDataDisabled(disableUserInputData);
+
+            this.keyClickedAudioDisabled = Keyboard.Config.isKeyClickedAudioDisabled(preferences);
+            this.keyAnimationDisabled = Keyboard.Config.isKeyAnimationDisabled(preferences);
+            this.pagingAudioDisabled = Keyboard.Config.isPagingAudioDisabled(preferences);
+            this.desktopSwipeUpGestureAdapted = Keyboard.Config.isDesktopSwipeUpGestureAdapted(preferences);
+
+            Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
+            setHandMode(handMode);
+
+            this.theme = Keyboard.Config.getTheme(preferences);
+        }
+
+        public static boolean isUserInputDataDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_disable_user_input_data, false);
+        }
+
+        public static boolean isKeyClickedAudioDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_disable_key_clicked_audio, false);
+        }
+
+        public static boolean isKeyAnimationDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_disable_key_animation, false);
+        }
+
+        public static boolean isPagingAudioDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
         }
 
         public static ThemeType getTheme(SharedPreferences preferences) {

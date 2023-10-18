@@ -338,30 +338,7 @@ public class ImeInputView extends FrameLayout
     private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
         Keyboard.Config patchedConfig = new Keyboard.Config(config.getType(), config);
 
-        boolean disableUserInputData = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_user_input_data,
-                                                                   false);
-        patchedConfig.setUserInputDataDisabled(disableUserInputData);
-
-        boolean disableKeyClickedAudio = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_key_clicked_audio,
-                                                                     false);
-        patchedConfig.setKeyClickedAudioDisabled(disableKeyClickedAudio);
-
-        boolean disableKeyAnimation = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_key_animation,
-                                                                  false);
-        patchedConfig.setKeyAnimationDisabled(disableKeyAnimation);
-
-        boolean disableInputCandidatesPagingAudio
-                = this.preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
-        patchedConfig.setPagingAudioDisabled(disableInputCandidatesPagingAudio);
-
-        boolean desktopSwipeUpGestureAdapted = Keyboard.Config.isDesktopSwipeUpGestureAdapted(this.preferences);
-        patchedConfig.setDesktopSwipeUpGestureAdapted(desktopSwipeUpGestureAdapted);
-
-        Keyboard.HandMode handMode = Keyboard.Config.getHandMode(this.preferences);
-        patchedConfig.setHandMode(handMode);
-
-        Keyboard.ThemeType theme = Keyboard.Config.getTheme(this.preferences);
-        patchedConfig.setTheme(theme);
+        patchedConfig.syncWith(this.preferences);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             patchedConfig.setOrientation(Keyboard.Orientation.Landscape);
@@ -415,6 +392,8 @@ public class ImeInputView extends FrameLayout
         window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
 
         window.setContentView(completionsView);
+
+        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
     }
 
     private void showInputCompletionsPopup(boolean shown) {

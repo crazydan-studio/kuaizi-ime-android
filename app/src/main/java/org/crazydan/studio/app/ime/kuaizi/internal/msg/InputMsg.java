@@ -36,8 +36,8 @@ public enum InputMsg {
 
     /** 输入列表中的输入已选择 */
     InputList_Input_Choose_Done,
-    /** 输入补全更新中 */
-    InputList_Input_Completion_Update_Doing,
+    /** 输入补全已更新 */
+    InputList_Input_Completion_Update_Done,
     /** 输入补全已应用 */
     InputList_Input_Completion_Apply_Done,
     /** 输入列表的{@link InputList#getPending 待输入}已丢弃 */

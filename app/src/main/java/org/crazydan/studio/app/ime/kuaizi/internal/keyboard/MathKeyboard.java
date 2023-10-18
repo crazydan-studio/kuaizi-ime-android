@@ -90,6 +90,9 @@ public class MathKeyboard extends BaseKeyboard {
                 CompletionInput completion = (CompletionInput) data.target;
 
                 start_InputList_Completion_Applying(topInputList, completion);
+
+                withMathExprPending(topInputList);
+                fire_InputChars_Input_Doing(null);
                 break;
             }
             case Input_Choose_Doing: {
@@ -147,6 +150,14 @@ public class MathKeyboard extends BaseKeyboard {
                     // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
                     if (!mathInputList.isEmpty()) {
                         backspace_InputList_or_Editor(mathInputList, key);
+
+                        // 当前算数输入已清空，则从上层输入中移除该输入
+                        if (mathInputList.isEmpty()) {
+                            topInputList.deleteBackward();
+
+                            withMathExprPending(topInputList);
+                            fire_InputChars_Input_Doing(key);
+                        }
                     } else {
                         backspace_InputList_or_Editor(topInputList, key);
                     }
@@ -260,7 +271,19 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void setInputList(InputList inputList) {
-        newMatchExprInput(inputList);
+        super.setInputList(inputList);
+    }
+
+    @Override
+    public void start() {
+        InputList topInputList = getTopInputList();
+
+        // 先提交从其他键盘切过来之前的输入
+        topInputList.confirmPendingAndSelectNext();
+
+        newMatchExprInput(topInputList);
+
+        super.start();
     }
 
     @Override
@@ -286,7 +309,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */
     private void resetMathInputList() {
-        setInputList(getTopInputList());
+        newMatchExprInput(getTopInputList());
     }
 
     private void dropMathInputList() {
@@ -305,12 +328,16 @@ public class MathKeyboard extends BaseKeyboard {
 
     private void newMatchExprInput(InputList topInputList) {
         dropMathInputList();
-        super.setInputList(topInputList);
 
         // 算数键盘仅响应上层输入列表的特定事件
         topInputList.removeUserInputMsgListener(this);
         topInputList.addUserInputMsgListener(this.topUserInputMsgListener);
 
+        withMathExprPending(topInputList);
+    }
+
+    /** 确保当前的待输入为算数输入 */
+    private void withMathExprPending(InputList topInputList) {
         Input<?> selected = topInputList.getSelected();
         CharInput pending = topInputList.getPending();
 
@@ -326,7 +353,6 @@ public class MathKeyboard extends BaseKeyboard {
 
         // 在上层输入列表中绑定算数输入列表
         CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
-
         this.mathInputList = input.getInputList();
         this.mathInputList.addUserInputMsgListener(this);
     }
