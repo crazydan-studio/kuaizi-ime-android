@@ -318,17 +318,15 @@ public class MathKeyboard extends BaseKeyboard {
         else {
             super.do_InputList_Backspacing(inputList, key);
 
-            // 当前算数输入已清空，则从上层输入中移除该输入
-            if (inputList.isEmpty()) {
+            // 当前算数输入已清空，且该输入在上层中不是 Gap 的待输入，则从上层输入中移除该输入
+            if (!topInputList.isGapSelected() && inputList.isEmpty()) {
                 topInputList.deleteBackward();
                 fire_InputChars_Input_Doing(key);
             }
         }
 
         // 不管哪个层级的输入列表为空，均重置算数输入列表，以接受新的算数输入
-        if (inputList.isEmpty()) {
-            resetMathInputList();
-        }
+        resetMathInputList();
     }
 
     private InputList getMathInputList() {

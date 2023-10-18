@@ -396,12 +396,8 @@ public class InputList {
      * </ul>
      */
     public void select(int index) {
-        if (index < 0 || index >= this.inputs.size()) {
-            return;
-        }
-
-        Input<?> input = this.inputs.get(index);
-        if (isSelected(input)) {
+        Input<?> input = getInput(index);
+        if (input == null || isSelected(input)) {
             return;
         }
 
@@ -459,6 +455,14 @@ public class InputList {
     public int getSelectedIndex() {
         Input<?> selected = getSelected();
         return indexOf(selected);
+    }
+
+    /** 获取指定位置的输入 */
+    public Input<?> getInput(int index) {
+        if (index < 0 || index >= this.inputs.size()) {
+            return null;
+        }
+        return this.inputs.get(index);
     }
 
     /** 获取待输入 */

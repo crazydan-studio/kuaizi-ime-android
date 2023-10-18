@@ -61,36 +61,51 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
         Input.Option option = this.inputList.getOption();
 
-        Input<?> input = this.inputList.getInputs().get(position);
+        Input<?> input = this.inputList.getInput(position);
+        Input<?> preInput = this.inputList.getInput(position - 1);
         CharInput pending = this.inputList.getPendingOn(input);
+        CharInput prePending = this.inputList.getPendingOn(preInput);
+
         CharMathExprInput mathExprInput = determineMathExprInput(position);
 
         boolean selected = this.canBeSelected && needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
 
+        // 前序正在输入的 Gap 位为算数待输入，则当前位置需多加一个空白位
+        boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
+        int gapSpaceCount = needGapSpace ? preGapIsMathExprInput ? 2 : 1 : 0;
+
         if (mathExprInput != null) {
-            // 算数输入 在输入完毕后会在其前添加一个 Gap 占位，从而导致该输入发生后移，
-            // 为避免视觉干扰，故在输入前先为其附加一个空白
-            boolean needMoreGapSpace = input.isGap() && !Input.isEmpty(mathExprInput);
+            // 第一个普通输入不需要添加空白，
+            // 但是对于第一个不为空的算数待输入则需要提前添加，
+            // 因为，在输入过程中，算数待输入的前面没有 Gap 占位，
+            // 输入完毕后才会添加 Gap 占位
+            if (position == 0) {
+                gapSpaceCount = !Input.isEmpty(mathExprInput) ? 1 : 0;
+            }
+            // 算数输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
+            // 为避免视觉干扰，故在该算数的待输入之前先多附加一个空白
+            else if (needGapSpace && input.isGap() && !Input.isEmpty(mathExprInput)) {
+                gapSpaceCount = 2;
+            }
 
             // Note：视图始终与待输入的算数输入绑定，
             // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算数表达式中的字符
-            ((CharMathExprInputView) view).bind(option,
-                                                mathExprInput,
-                                                mathExprInput,
-                                                needGapSpace,
-                                                needMoreGapSpace,
-                                                selected);
+            ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected, gapSpaceCount);
         } else if (input.isGap()) {
-            ((GapInputView) view).bind(option, (GapInput) input, pending, needGapSpace, selected);
+            if (!Input.isEmpty(pending)) {
+                gapSpaceCount = needGapSpace ? 2 : 1;
+            }
+
+            ((GapInputView) view).bind(option, (GapInput) input, pending, selected, gapSpaceCount);
         } else {
-            ((CharInputView) view).bind(option, (CharInput) input, pending, needGapSpace, selected);
+            ((CharInputView) view).bind(option, (CharInput) input, pending, selected, gapSpaceCount);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        Input<?> input = this.inputList.getInputs().get(position);
+        Input<?> input = this.inputList.getInput(position);
         CharMathExprInput mathExprInput = determineMathExprInput(position);
 
         if (mathExprInput != null) {
@@ -128,7 +143,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     }
 
     private CharMathExprInput determineMathExprInput(int position) {
-        Input<?> input = this.inputList.getInputs().get(position);
+        Input<?> input = this.inputList.getInput(position);
         CharInput pending = this.inputList.getPendingOn(input);
 
         return isMathExprInput(pending)

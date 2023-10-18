@@ -45,10 +45,10 @@ public class CharMathExprInputView extends InputView<Input<?>> {
 
     public void bind(
             Input.Option option, Input<?> data, CharMathExprInput input, //
-            boolean needGapSpace, boolean needMoreGapSpace, boolean selected
+            boolean selected, int gapSpaceCount
     ) {
         super.bind(data);
-        addLeftSpaceMargin(this.itemView, needGapSpace ? needMoreGapSpace ? 2 : 1 : 0);
+        addLeftSpaceMargin(this.itemView, gapSpaceCount);
 
         InputList inputList = input.getInputList();
         this.inputListView.updateInputList(inputList, selected);

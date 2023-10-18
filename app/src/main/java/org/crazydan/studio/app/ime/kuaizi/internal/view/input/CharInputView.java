@@ -35,17 +35,17 @@ public class CharInputView extends InputView<CharInput> {
     }
 
     public void bind(
-            Input.Option option, CharInput data, CharInput pending, boolean needGapSpace, boolean selected
+            Input.Option option, CharInput data, CharInput pending, boolean selected, int gapSpaceCount
     ) {
-        bind(option, data, pending, needGapSpace, selected, false);
+        bind(option, data, pending, selected, false, gapSpaceCount);
     }
 
     public void bind(
-            Input.Option option, CharInput data, CharInput pending, boolean needGapSpace, boolean selected,
-            boolean hideWordNotation
+            Input.Option option, CharInput data, CharInput pending, boolean selected, boolean hideWordNotation,
+            int gapSpaceCount
     ) {
         super.bind(data);
-        addLeftSpaceMargin(this.itemView, needGapSpace ? 1 : 0);
+        addLeftSpaceMargin(this.itemView, gapSpaceCount);
 
         showWord(option, Input.isEmpty(pending) ? data : pending, selected, hideWordNotation);
         setSelectedBgColor(this.itemView, selected);
