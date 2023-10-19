@@ -115,18 +115,32 @@ public class Exercise implements ViewData, InputMsgListener {
         return addStep(content, null);
     }
 
+    public ExerciseStep addStep(int offset, String content) {
+        return addStep(offset, null, content, null);
+    }
+
     public ExerciseStep addStep(String content, ExerciseStep.Action action) {
         return addStep(null, content, action);
     }
 
     public ExerciseStep addStep(String name, String content, ExerciseStep.Action action) {
+        return addStep(0, name, content, action);
+    }
+
+    public ExerciseStep addStep(int offset, String name, String content, ExerciseStep.Action action) {
         ExerciseStep step = ExerciseStep.create(name, content, action, this.imageGetter);
 
-        return addStep(step);
+        return addStep(offset, step);
     }
 
     public ExerciseStep addStep(ExerciseStep step) {
-        this.steps.add(step);
+        return addStep(0, step);
+    }
+
+    public ExerciseStep addStep(int offset, ExerciseStep step) {
+        int index = this.steps.size() + offset;
+        this.steps.add(index, step);
+
         return step;
     }
 

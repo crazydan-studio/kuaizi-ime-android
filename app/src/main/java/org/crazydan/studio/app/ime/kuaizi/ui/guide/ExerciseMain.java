@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.EditorEditKeyTable;
@@ -193,17 +194,15 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(this.exerciseListView);
 
-        activeExercise(1);
+        // Note：延迟激活指定的练习，以确保始终能被选中
+        this.exerciseListView.post(() -> activeExercise(1));
     }
 
     private List<Exercise> createExercises(DynamicLayoutSandboxView sandboxView) {
         List<Exercise> exerciseList = new ArrayList<>();
 
-        Exercise exercise = Exercise.free("自由练习");
-        exerciseList.add(exercise);
-
-        exercise = exercise_Basic_Introduce(sandboxView);
-        exerciseList.add(exercise);
+        exerciseList.add(Exercise.free("自由练习"));
+        exerciseList.add(exercise_Basic_Introduce(sandboxView));
 
         Exercise[] exercises = new Exercise[] {
                 exercise_Pinyin_Slipping_Inputting(sandboxView),
@@ -214,16 +213,23 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 exercise_Math_Inputting(sandboxView),
                 };
         for (int i = 0; i < exercises.length; i++) {
-            Exercise ex = exercises[i];
-            ExerciseStep.Final finalStep = new ExerciseStep.Final(ex::restart,
-                                                                  i < exercises.length - 1
+            Exercise exercise = exercises[i];
+            boolean isLastOne = i == exercises.length - 1;
+            if (!isLastOne) {
+                exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
+            } else {
+                exercise.addStep("本次练习已结束，您可以重做当前练习。", (msg, data) -> {});
+            }
+
+            ExerciseStep.Final finalStep = new ExerciseStep.Final(exercise::restart,
+                                                                  !isLastOne
                                                                   ? () -> this.exerciseListView.activeNext()
                                                                   : null);
 
-            ex.addStep(finalStep);
-            ex.setDisableUserInputData(true);
+            exercise.addStep(finalStep);
+            exercise.setDisableUserInputData(true);
 
-            exerciseList.add(ex);
+            exerciseList.add(exercise);
         }
 
         return exerciseList;
@@ -264,7 +270,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 + "\"/>为空格输入按键，单击可在输入内容中添加空格，长按则将连续添加空格；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_cursor_locator)
-                + "\"/>为光标定位按键，在其上滑动可移动目标编辑器中的光标位置，"
+                + "\"/>为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，"
                 + "长按则将进入<b>内容编辑</b>模式；",
                 // 其他按键
                 "<img src=\""
@@ -287,8 +293,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 + "\"/>为标点符号键盘切换按键，用于切换到标点符号输入键盘；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_input_revoke)
-                + "\"/>为已提交输入的<b>撤回</b>按键，用于撤回提交至目标编辑器的输入以重新修正，"
-                + "在无可撤回输入时，该按键将被禁用；",
+                + "\"/>为已提交输入的<b>撤回</b>按键，用于撤回已提交至目标编辑器的输入以重新修正。"
+                + "在没有可撤回输入时，该按键将被禁用；",
                 // 隐藏按键
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_commit)
@@ -304,13 +310,14 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 + "比如，从表情符号键盘退回到拼音键盘；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_input_drop)
-                + "\"/>为选中输入的删除按键，在选中表情符号、标点符号、拼音候选字等时显示。"
+                + "\"/>为已选中输入的删除按键，在选中表情符号、标点符号、拼音候选字等时显示。"
                 + "单击可删除当前选中的输入；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_range_selector)
                 + "\"/>为内容选择按键，在长按<img src=\""
                 + sandboxView.withKey(key_ctrl_cursor_locator)
-                + "\"/>后显示。在其上滑动可选中目标编辑器中的内容，以进一步执行复制、粘贴、剪切等操作；",
+                + "\"/>后显示。在其上滑动手指可移动目标编辑器中的光标，并选中光标移动范围内的内容，"
+                + "可进一步执行复制、粘贴、剪切等操作；",
                 };
 
         for (String step : steps) {
@@ -339,130 +346,17 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "("
                          + case_word.getNotation()
                          + ")</span>；");
-        exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
-        exercise.addStep("input_level_0",
-                         "请将手指放在下方键盘的按键<img src=\""
-                         + sandboxView.withKey(key_level_0)
-                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputChars_Input_Doing) {
-                                 Key<?> key = data.getKey();
 
-                                 if (((InputCharsInputtingMsgData) data).keyInputType
-                                     != InputCharsInputtingMsgData.KeyInputType.slip) {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
-                                 } else if (key.getLabel().equals(key_level_0.getLabel())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
-                                 }
-                             } else if (msg != InputMsg.Keyboard_State_Change_Done) {
-                                 warning("请按当前步骤的指导要求输入拼音");
-                             }
-                         });
-        exercise.addStep("input_level_1",
-                         "请不要让手指离开屏幕，继续将手指滑到按键<img src=\""
-                         + sandboxView.withKey(key_level_1)
-                         + "\"/>上，再从该按键上滑出；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputChars_Input_Doing) {
-                                 Key<?> key = data.getKey();
+        add_Pinyin_Inputting_Steps(sandboxView,
+                                   exercise,
+                                   key_level_0,
+                                   key_level_1,
+                                   key_level_2,
+                                   key_case_word,
+                                   expected_auto_word,
+                                   null);
 
-                                 if (key.getLabel().equals(key_level_1.getLabel())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要从其他按键上滑出", key_level_1.getLabel());
-                                 }
-                             } else {
-                                 warning("当前操作不符合输入要求，请重新开始本练习");
-                                 exercise.restart();
-                             }
-                         });
-        exercise.addStep("input_level_2",
-                         "请将手指滑到按键<img src=\"" + sandboxView.withKey(key_level_2) + "\"/>上，并就地释放手指；",
-                         (msg, data) -> {
-                             switch (msg) {
-                                 case InputChars_Input_Doing: {
-                                     Key<?> key = data.getKey();
-
-                                     if (!key.getLabel().startsWith(key_level_0.getLabel() + key_level_1.getLabel())) {
-                                         warning("请重新滑回到按键"
-                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                 + " 上，再从其上滑出", key_level_1.getLabel());
-                                         exercise.gotoStep("input_level_1");
-                                     }
-                                     break;
-                                 }
-                                 case InputChars_Input_Done: {
-                                     Key<?> key = data.getKey();
-
-                                     if (key != null && key.getLabel().equals(key_level_2.getLabel())) {
-                                         exercise.gotoNextStep();
-                                     } else {
-                                         warning("当前输入的拼音与练习内容不符，请重新开始本练习");
-                                         exercise.restart();
-                                     }
-                                     break;
-                                 }
-                             }
-                         });
-        exercise.addStep("select_auto_word",
-                         "请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
-                         + " <span style=\"color:#ed4c67;\">"
-                         + expected_auto_word
-                         + "</span>；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Doing) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
-
-                                 if (word != null && expected_auto_word.equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                     return;
-                                 }
-                             }
-
-                             warning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                         });
-        exercise.addStep("choose_correct_word",
-                         "请在候选字列表区域中点击正确的候选字<img src=\""
-                         + sandboxView.withKey(key_case_word)
-                         + "\"/>。<b>注</b>：可在该区域中上下翻页；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Done) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
-
-                                 if (word != null && case_word.getValue().equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                     exercise.gotoStep("select_auto_word");
-                                 }
-                             } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
-                                 warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                 exercise.gotoStep("select_auto_word");
-                             }
-                         });
-        exercise.addStep("请点击输入提交按键<img src=\""
-                         + sandboxView.withKey(key_ctrl_commit)
-                         + "\"/>将当前输入提交至目标编辑器；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
-                exercise.gotoNextStep();
-            } else {
-                warning("请按当前步骤的指导要求提交输入内容");
-            }
-        });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
+        add_Common_Input_Committing_Step(sandboxView, exercise, key_ctrl_commit);
 
         return exercise;
     }
@@ -491,129 +385,38 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "("
                          + case_word.getNotation()
                          + ")</span>，并通过笔画过滤筛选其候选字；");
-        exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
-        exercise.addStep("input_level_0",
-                         "请将手指放在下方键盘的按键<img src=\""
-                         + sandboxView.withKey(key_level_0)
-                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputChars_Input_Doing) {
-                                 Key<?> key = data.getKey();
+        add_Pinyin_Inputting_Steps(sandboxView,
+                                   exercise,
+                                   key_level_0,
+                                   key_level_1,
+                                   null,
+                                   key_case_word,
+                                   expected_auto_word,
+                                   "请在候选字列表区域上方依次点击"
+                                   + "<span style=\"color:#ed4c67;\">5</span>次<img src=\""
+                                   + sandboxView.withKey(key_ctrl_filter_heng)
+                                   + "\"/>（横）"
+                                   + "、<span style=\"color:#ed4c67;\">4</span>次<img src=\""
+                                   + sandboxView.withKey(key_ctrl_filter_shu)
+                                   + "\"/>（竖，其包含竖钩等变形笔画）"
+                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
+                                   + sandboxView.withKey(key_ctrl_filter_pie)
+                                   + "\"/>（撇）"
+                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
+                                   + sandboxView.withKey(key_ctrl_filter_na)
+                                   + "\"/>（捺，其包含点、提等变形笔画）"
+                                   + "、<span style=\"color:#ed4c67;\">2</span>次<img src=\""
+                                   + sandboxView.withKey(key_ctrl_filter_zhe)
+                                   + "\"/>（折，其包含任意含折的笔画）"
+                                   + "，再点击正确的候选字<img src=\""
+                                   + sandboxView.withKey(key_case_word)
+                                   + "\"/>；");
 
-                                 if (((InputCharsInputtingMsgData) data).keyInputType
-                                     != InputCharsInputtingMsgData.KeyInputType.slip) {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
-                                 } else if (key.getLabel().equals(key_level_0.getLabel())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
-                                 }
-                             } else if (msg != InputMsg.Keyboard_State_Change_Done) {
-                                 warning("请按当前步骤的指导要求输入拼音");
-                             }
-                         });
-        exercise.addStep("input_level_1",
-                         "请不要让手指离开屏幕，继续将手指滑到按键<img src=\""
-                         + sandboxView.withKey(key_level_1)
-                         + "\"/>上，并就地释放手指；",
-                         (msg, data) -> {
-                             switch (msg) {
-                                 case InputChars_Input_Doing: {
-                                     Key<?> key = data.getKey();
-
-                                     if (!key.getLabel().equals(key_level_1.getLabel())) {
-                                         warning("请重新滑回到按键"
-                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                 + " 上，再就地释放手指", key_level_1.getLabel());
-                                     }
-                                     break;
-                                 }
-                                 case InputChars_Input_Done: {
-                                     Key<?> key = data.getKey();
-
-                                     if (key != null && key.getLabel().equals(key_level_1.getLabel())) {
-                                         exercise.gotoNextStep();
-                                     } else {
-                                         warning("当前输入的拼音与练习内容不符，请重新开始本练习");
-                                         exercise.restart();
-                                     }
-                                     break;
-                                 }
-                             }
-                         });
-        exercise.addStep("select_auto_word",
-                         "请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
-                         + " <span style=\"color:#ed4c67;\">"
-                         + expected_auto_word
-                         + "</span>；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Doing) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
-
-                                 if (word != null && expected_auto_word.equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                     return;
-                                 }
-                             }
-
-                             warning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                         });
-        exercise.addStep("<b>提示</b>：笔画过滤是按字所包含的各类笔画的数量进行筛选的。"
+        exercise.addStep(-1,
+                         "<b>提示</b>：笔画过滤是按字所包含的各类笔画的数量进行筛选的。"
                          + "点击笔画按键为增加笔画数，而在其上做快速滑出则是减少其数量；");
-        exercise.addStep("choose_correct_word",
-                         "请在候选字列表区域上方依次点击"
-                         + "<span style=\"color:#ed4c67;\">5</span>次<img src=\""
-                         + sandboxView.withKey(key_ctrl_filter_heng)
-                         + "\"/>（横）"
-                         + "、<span style=\"color:#ed4c67;\">4</span>次<img src=\""
-                         + sandboxView.withKey(key_ctrl_filter_shu)
-                         + "\"/>（竖，其包含竖钩等变形笔画）"
-                         + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
-                         + sandboxView.withKey(key_ctrl_filter_pie)
-                         + "\"/>（撇）"
-                         + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
-                         + sandboxView.withKey(key_ctrl_filter_na)
-                         + "\"/>（捺，其包含点、提等变形笔画）"
-                         + "、<span style=\"color:#ed4c67;\">2</span>次<img src=\""
-                         + sandboxView.withKey(key_ctrl_filter_zhe)
-                         + "\"/>（折，其包含任意含折的笔画）"
-                         + "，再点击正确的候选字<img src=\""
-                         + sandboxView.withKey(key_case_word)
-                         + "\"/>；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Done) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
 
-                                 if (word != null && case_word.getValue().equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                     exercise.gotoStep("select_auto_word");
-                                 }
-                             } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
-                                 warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                 exercise.gotoStep("select_auto_word");
-                             }
-                         });
-        exercise.addStep("请点击输入提交按键<img src=\""
-                         + sandboxView.withKey(key_ctrl_commit)
-                         + "\"/>将当前输入提交至目标编辑器；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
-                exercise.gotoNextStep();
-            } else {
-                warning("请按当前步骤的指导要求提交输入内容");
-            }
-        });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
+        add_Common_Input_Committing_Step(sandboxView, exercise, key_ctrl_commit);
 
         return exercise;
     }
@@ -632,111 +435,26 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_commit_opt_with_pinyin
                 = keyTable.commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin);
 
-        Exercise exercise = Exercise.normal("拼音输入提交", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("拼音输入提交选项", sandboxView::getImage);
 
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">"
                          + case_word.getValue()
                          + "("
                          + case_word.getNotation()
                          + ")</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；");
-        exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
-        exercise.addStep("input_level_0",
-                         "请将手指放在下方键盘的按键<img src=\""
-                         + sandboxView.withKey(key_level_0)
-                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputChars_Input_Doing) {
-                                 Key<?> key = data.getKey();
 
-                                 if (((InputCharsInputtingMsgData) data).keyInputType
-                                     != InputCharsInputtingMsgData.KeyInputType.slip) {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
-                                 } else if (key.getLabel().equals(key_level_0.getLabel())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("请按当前步骤的指导要求从按键"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                             + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
-                                 }
-                             } else if (msg != InputMsg.Keyboard_State_Change_Done) {
-                                 warning("请按当前步骤的指导要求输入拼音");
-                             }
-                         });
-        exercise.addStep("input_level_1",
-                         "请不要让手指离开屏幕，继续将手指滑到按键<img src=\""
-                         + sandboxView.withKey(key_level_1)
-                         + "\"/>上，并就地释放手指；",
-                         (msg, data) -> {
-                             switch (msg) {
-                                 case InputChars_Input_Doing: {
-                                     Key<?> key = data.getKey();
+        add_Pinyin_Inputting_Steps(sandboxView,
+                                   exercise,
+                                   key_level_0,
+                                   key_level_1,
+                                   null,
+                                   key_case_word,
+                                   expected_auto_word,
+                                   null);
 
-                                     if (!key.getLabel().equals(key_level_1.getLabel())) {
-                                         warning("请重新滑回到按键"
-                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                 + " 上，再就地释放手指", key_level_1.getLabel());
-                                     }
-                                     break;
-                                 }
-                                 case InputChars_Input_Done: {
-                                     Key<?> key = data.getKey();
-
-                                     if (key != null && key.getLabel().equals(key_level_1.getLabel())) {
-                                         exercise.gotoNextStep();
-                                     } else {
-                                         warning("当前输入的拼音与练习内容不符，请重新开始本练习");
-                                         exercise.restart();
-                                     }
-                                     break;
-                                 }
-                             }
-                         });
-        exercise.addStep("select_auto_word",
-                         "请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
-                         + " <span style=\"color:#ed4c67;\">"
-                         + expected_auto_word
-                         + "</span>；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Doing) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
-
-                                 if (word != null && expected_auto_word.equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                     return;
-                                 }
-                             }
-
-                             warning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                         });
-        exercise.addStep("choose_correct_word",
-                         "请在候选字列表区域中点击正确的候选字<img src=\""
-                         + sandboxView.withKey(key_case_word)
-                         + "\"/>。<b>注</b>：可在该区域中上下翻页；",
-                         (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Done) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
-                                 InputWord word = input.getWord();
-
-                                 if (word != null && case_word.getValue().equals(word.getValue())) {
-                                     exercise.gotoNextStep();
-                                 } else {
-                                     warning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                     exercise.gotoStep("select_auto_word");
-                                 }
-                             } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
-                                 warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
-                                 exercise.gotoStep("select_auto_word");
-                             }
-                         });
         exercise.addStep("请长按输入提交按键<img src=\""
                          + sandboxView.withKey(key_ctrl_commit)
-                         + "\"/>以进入<b>输入选项</b>模式；", (msg, data) -> {
+                         + "\"/>以进入<b>输入提交选项</b>模式；", (msg, data) -> {
             if (msg == InputMsg.Keyboard_State_Change_Done) {
                 Key<?> key = data.getKey();
 
@@ -745,7 +463,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                     return;
                 }
             }
-
             warning("请按当前步骤的指导要求长按 <span style=\"color:#ed4c67;\">输入提交按键</span>");
         });
         exercise.addStep("请点击按键<img src=\""
@@ -764,7 +481,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("请点击输入提交按键<img src=\""
                          + sandboxView.withKey(key_ctrl_commit)
                          + "\"/>将当前形式的输入提交至目标编辑器。"
-                         + "<b>注</b>：长按该按键可退出<b>输入选项</b>模式；", (msg, data) -> {
+                         + "<b>注</b>：长按该按键可退出<b>输入提交选项</b>模式；", (msg, data) -> {
             if (msg == InputMsg.InputList_Commit_Doing) {
                 exercise.gotoNextStep();
             }
@@ -778,7 +495,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 warning("请按当前步骤的指导要求撤回输入内容");
             }
         });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
 
         return exercise;
     }
@@ -792,11 +508,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(EditorEditAction.copy);
         Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(EditorEditAction.paste);
 
-        Exercise exercise = Exercise.normal("编辑器内容编辑", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("内容编辑", sandboxView::getImage);
         exercise.setSampleText(getResources().getString(R.string.app_slogan));
 
-        exercise.addStep("<b>提示</b>：光标移动和文本选择的范围与手指在按键上滑行的距离相关，"
-                         + "手指滑行距离越长，光标移动和文本选择的范围将越大；");
+        exercise.addStep("<b>提示</b>：光标移动和内容选择的范围与手指在按键上滑行的距离相关，"
+                         + "手指在按键上的滑行距离越长，光标移动和内容选择的范围将越大；");
         exercise.addStep("请使用手指在光标定位按键<img src=\""
                          + sandboxView.withKey(key_ctrl_cursor_locator)
                          + "\"/>上向不同方向快速滑动，并观察目标编辑器中光标位置的变化；", (msg, data) -> {
@@ -851,7 +567,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                  exercise.gotoNextStep();
                              }
                          });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
 
         return exercise;
     }
@@ -867,8 +582,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Be Happy!</span>；");
         exercise.addStep("<b>提示</b>：在拼音键盘和拉丁文键盘中，"
-                         + "均可以通过单击输入按键字符，通过双击输入按键字符的变换形式。"
-                         + "变换形式包括字母的大小写切换、ü/v/V 转换和标点的中英文切换；");
+                         + "均可以通过单击按键输入字符，通过双击按键输入字符的变换形式，"
+                         + "若连续多次快速点击，则会按顺序依次做不同形式的变换。"
+                         + "形式变换包括字母的大小写切换、ü/v/V 转换和标点的中英文切换；");
 
         char[] chars = new char[] { 'B', 'e', ' ', 'H', 'a', 'p', 'p', 'y' };
         for (char ch : chars) {
@@ -948,21 +664,12 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 } else if (key.getText().equals("!")) {
                     exercise.gotoNextStep();
                 }
-            } else {
+            } else if (msg != InputMsg.InputChars_Input_Done) {
                 warning("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">!</span>");
             }
         });
 
-        exercise.addStep("请点击输入提交按键<img src=\""
-                         + sandboxView.withKey(key_ctrl_commit)
-                         + "\"/>将当前输入提交至目标编辑器；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
-                exercise.gotoNextStep();
-            } else {
-                warning("请按当前步骤的指导要求提交输入内容");
-            }
-        });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
+        add_Common_Input_Committing_Step(sandboxView, exercise, key_ctrl_commit);
 
         return exercise;
     }
@@ -976,8 +683,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Exercise exercise = Exercise.normal("算数输入", sandboxView::getImage);
 
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">3 × (2 + 1) =</span>；");
-        exercise.addStep("<b>提示</b>：若计算式以等号开头，则提交内容将仅包含计算结果；"
-                         + "若计算式以等号结尾，则提交内容处理计算结果以外还将包括计算式本身。"
+        exercise.addStep("<b>提示</b>：若计算式以等号开头，则提交内容将仅包含计算结果。"
+                         + "若计算式以等号结尾，则提交内容除了计算结果以外还将包括计算式本身。"
                          + "对于无效的计算式，则将保持原样输出；");
         exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_switch_math) + "\"/>以切换到算数键盘；",
                          (msg, data) -> {
@@ -1052,7 +759,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 warning("请按当前步骤的指导要求提交输入内容");
             }
         });
-        exercise.addStep("本次练习已结束，您可以开始后续练习或者重做当前练习。", (msg, data) -> {});
 
         return exercise;
     }
@@ -1066,5 +772,182 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         toast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
 
         toast.show();
+    }
+
+    private void add_Pinyin_Inputting_Steps(
+            DynamicLayoutSandboxView sandboxView, Exercise exercise, //
+            Key<?> key_level_0, Key<?> key_level_1, Key<?> key_level_2, //
+            Key<?> key_case_word, String expected_auto_word, String word_choose_step_content
+    ) {
+        InputWord case_word = ((InputWordKey) key_case_word).getWord();
+
+        exercise.addStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
+
+        exercise.addStep("input_level_0",
+                         "请将手指放在下方键盘的按键<img src=\""
+                         + sandboxView.withKey(key_level_0)
+                         + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
+                         (msg, data) -> {
+                             if (msg == InputMsg.InputChars_Input_Doing) {
+                                 Key<?> key = data.getKey();
+
+                                 if (((InputCharsInputtingMsgData) data).keyInputType
+                                     != InputCharsInputtingMsgData.KeyInputType.slip) {
+                                     warning("请按当前步骤的指导要求从按键"
+                                             + " <span style=\"color:#ed4c67;\">%s</span>"
+                                             + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
+                                 } else if (key.getLabel().equals(key_level_0.getLabel())) {
+                                     exercise.gotoNextStep();
+                                 } else {
+                                     warning("请按当前步骤的指导要求从按键"
+                                             + " <span style=\"color:#ed4c67;\">%s</span>"
+                                             + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
+                                 }
+                             } else if (msg != InputMsg.Keyboard_State_Change_Done) {
+                                 warning("请按当前步骤的指导要求输入拼音");
+                             }
+                         });
+
+        if (key_level_2 == null) {
+            exercise.addStep("input_level_1",
+                             "请不要让手指离开屏幕，继续将手指滑到按键<img src=\""
+                             + sandboxView.withKey(key_level_1)
+                             + "\"/>上，并就地释放手指；",
+                             (msg, data) -> {
+                                 switch (msg) {
+                                     case InputChars_Input_Doing: {
+                                         Key<?> key = data.getKey();
+
+                                         if (!key.getLabel().equals(key_level_1.getLabel())) {
+                                             warning("请重新滑回到按键"
+                                                     + " <span style=\"color:#ed4c67;\">%s</span>"
+                                                     + " 上，再就地释放手指", key_level_1.getLabel());
+                                         }
+                                         break;
+                                     }
+                                     case InputChars_Input_Done: {
+                                         Key<?> key = data.getKey();
+
+                                         if (key != null && key.getLabel().equals(key_level_1.getLabel())) {
+                                             exercise.gotoNextStep();
+                                         } else {
+                                             warning("当前输入的拼音与练习内容不符，请重新开始本练习");
+                                             exercise.restart();
+                                         }
+                                         break;
+                                     }
+                                 }
+                             });
+        } else {
+            exercise.addStep("input_level_1",
+                             "请不要让手指离开屏幕，继续将手指滑到按键<img src=\""
+                             + sandboxView.withKey(key_level_1)
+                             + "\"/>上，再从该按键上滑出；",
+                             (msg, data) -> {
+                                 if (msg == InputMsg.InputChars_Input_Doing) {
+                                     Key<?> key = data.getKey();
+
+                                     if (key.getLabel().equals(key_level_1.getLabel())) {
+                                         exercise.gotoNextStep();
+                                     } else {
+                                         warning("请按当前步骤的指导要求从按键"
+                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
+                                                 + " 上滑出，不要从其他按键上滑出", key_level_1.getLabel());
+                                     }
+                                 } else {
+                                     warning("当前操作不符合输入要求，请重新开始本练习");
+                                     exercise.restart();
+                                 }
+                             });
+            exercise.addStep("input_level_2",
+                             "请继续将手指滑到按键<img src=\""
+                             + sandboxView.withKey(key_level_2)
+                             + "\"/>上，并就地释放手指；",
+                             (msg, data) -> {
+                                 switch (msg) {
+                                     case InputChars_Input_Doing: {
+                                         Key<?> key = data.getKey();
+
+                                         if (!key.getLabel()
+                                                 .startsWith(key_level_0.getLabel() + key_level_1.getLabel())) {
+                                             warning("请重新滑回到按键"
+                                                     + " <span style=\"color:#ed4c67;\">%s</span>"
+                                                     + " 上，再从其上滑出", key_level_1.getLabel());
+                                             exercise.gotoStep("input_level_1");
+                                         }
+                                         break;
+                                     }
+                                     case InputChars_Input_Done: {
+                                         Key<?> key = data.getKey();
+
+                                         if (key != null && key.getLabel().equals(key_level_2.getLabel())) {
+                                             exercise.gotoNextStep();
+                                         } else {
+                                             warning("当前输入的拼音与练习内容不符，请重新开始本练习");
+                                             exercise.restart();
+                                         }
+                                         break;
+                                     }
+                                 }
+                             });
+        }
+
+        exercise.addStep("select_auto_word",
+                         "请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
+                         + " <span style=\"color:#ed4c67;\">"
+                         + expected_auto_word
+                         + "</span>；",
+                         (msg, data) -> {
+                             if (msg == InputMsg.InputCandidate_Choose_Doing) {
+                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
+                                 InputWord word = input.getWord();
+
+                                 if (word != null && expected_auto_word.equals(word.getValue())) {
+                                     exercise.gotoNextStep();
+                                     return;
+                                 }
+                             }
+                             warning("请按当前步骤的指导要求选中指定的拼音候选字"
+                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                         });
+
+        exercise.addStep("choose_correct_word",
+                         word_choose_step_content != null
+                         ? word_choose_step_content
+                         : "请在候选字列表区域中点击正确的候选字<img src=\""
+                           + sandboxView.withKey(key_case_word)
+                           + "\"/>。<b>注</b>：可在该区域中上下翻页；",
+                         (msg, data) -> {
+                             if (msg == InputMsg.InputCandidate_Choose_Done) {
+                                 CharInput input = ((InputCandidateChoosingMsgData) data).target;
+                                 InputWord word = input.getWord();
+
+                                 if (word != null && case_word.getValue().equals(word.getValue())) {
+                                     exercise.gotoNextStep();
+                                 } else {
+                                     warning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
+                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                                     exercise.gotoStep("select_auto_word");
+                                 }
+                             } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
+                                 warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
+                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                                 exercise.gotoStep("select_auto_word");
+                             }
+                         });
+    }
+
+    private void add_Common_Input_Committing_Step(
+            DynamicLayoutSandboxView sandboxView, Exercise exercise, Key<?> key_ctrl_commit
+    ) {
+        exercise.addStep("请点击输入提交按键<img src=\""
+                         + sandboxView.withKey(key_ctrl_commit)
+                         + "\"/>将当前输入提交至目标编辑器；", (msg, data) -> {
+            if (msg == InputMsg.InputList_Commit_Doing) {
+                exercise.gotoNextStep();
+            } else {
+                warning("请按当前步骤的指导要求提交输入内容");
+            }
+        });
     }
 }
