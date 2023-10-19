@@ -56,6 +56,10 @@ public class Exercise implements ViewData, InputMsgListener {
         return new Exercise(Mode.normal, title, imageGetter);
     }
 
+    public static Exercise introduce(String title, ExerciseStep.ImageGetter imageGetter) {
+        return new Exercise(Mode.introduce, title, imageGetter);
+    }
+
     public void start() {
         gotoNextStep();
     }
@@ -70,6 +74,30 @@ public class Exercise implements ViewData, InputMsgListener {
         ExerciseStep current = this.runningStep;
         if (current == null) {
             return;
+        }
+
+        switch (msg) {
+            case InputChars_Input_Doing:
+                if (data.getKey() == null || data.getKey().getText() == null) {
+                    return;
+                } else {
+                    break;
+                }
+            case Keyboard_State_Change_Done:
+                if (data.getKey() == null) {
+                    return;
+                } else {
+                    break;
+                }
+            case InputAudio_Play_Doing:
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done:
+            case InputList_Input_Choose_Done:
+            case InputList_Input_Completion_Update_Done:
+            case InputList_Input_Completion_Apply_Done:
+            case Keyboard_Config_Update_Done:
+            case Keyboard_Theme_Update_Done:
+                return;
         }
 
         current.onInputMsg(msg, data);
@@ -176,6 +204,7 @@ public class Exercise implements ViewData, InputMsgListener {
     public enum Mode {
         free,
         normal,
+        introduce,
     }
 
     public interface ProgressListener {

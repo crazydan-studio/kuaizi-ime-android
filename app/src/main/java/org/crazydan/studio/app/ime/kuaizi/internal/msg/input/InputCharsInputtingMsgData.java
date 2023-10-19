@@ -30,11 +30,21 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
  * @date 2023-07-06
  */
 public class InputCharsInputtingMsgData extends InputCommonMsgData {
-    /** 当前输入按键 */
-    public final Key<?> key;
+    public final KeyInputType keyInputType;
 
-    public InputCharsInputtingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key) {
-        super(keyFactory);
-        this.key = key;
+    public InputCharsInputtingMsgData(Keyboard.KeyFactory keyFactory, Key<?> key, KeyInputType keyInputType) {
+        super(keyFactory, key);
+
+        this.keyInputType = keyInputType;
+    }
+
+    /** 按键输入方式 */
+    public enum KeyInputType {
+        /** 点击 */
+        tap,
+        /** 滑动 */
+        slip,
+        /** 翻动 */
+        flip,
     }
 }

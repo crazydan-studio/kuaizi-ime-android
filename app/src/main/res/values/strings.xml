@@ -47,7 +47,7 @@
     <string name="btn_guide_try_exercises">使用练习</string>
     <string name="btn_guide_show_preferences">输入法配置</string>
     <string name="btn_guide_show_software_service_agreement">软件服务协议</string>
-    <string name="btn_guide_exercise_try_again">继续当前练习</string>
+    <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
 
     <!-- Preference Titles -->
@@ -81,7 +81,7 @@
         &lt;p>是否现在就去启用？&lt;/p>
     </string>
     <string name="text_exercise_edit_text_placeholder">
-        请按上述指导步骤操作键盘输入内容
+        请跟随上述指导步骤操作键盘以输入练习内容
     </string>
     <string name="text_exercise_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习

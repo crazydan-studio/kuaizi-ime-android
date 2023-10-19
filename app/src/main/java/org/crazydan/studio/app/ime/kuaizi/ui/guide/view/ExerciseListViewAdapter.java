@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
 public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     private final static int VIEW_TYPE_FREE_MODE = 0;
     private final static int VIEW_TYPE_NORMAL_MODE = 1;
+    private final static int VIEW_TYPE_INTRODUCE_MODE = 2;
 
     private List<Exercise> data;
 
@@ -59,19 +60,35 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     @NonNull
     @Override
     public ExerciseView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_FREE_MODE) {
-            return new ExerciseView(inflateItemView(parent, R.layout.guide_exercise_free_mode_view));
+        int resId;
+        switch (viewType) {
+            case VIEW_TYPE_FREE_MODE: {
+                resId = R.layout.guide_exercise_mode_free_view;
+                break;
+            }
+            case VIEW_TYPE_INTRODUCE_MODE: {
+                resId = R.layout.guide_exercise_mode_introduce_view;
+                return new ExerciseIntroduceView(inflateItemView(parent, resId));
+            }
+            default: {
+                resId = R.layout.guide_exercise_mode_normal_view;
+                break;
+            }
         }
-        return new ExerciseView(inflateItemView(parent, R.layout.guide_exercise_normal_mode_view));
+        return new ExerciseView(inflateItemView(parent, resId));
     }
 
     @Override
     public int getItemViewType(int position) {
         Exercise exercise = this.data.get(position);
 
-        if (exercise.mode == Exercise.Mode.free) {
-            return VIEW_TYPE_FREE_MODE;
+        switch (exercise.mode) {
+            case free:
+                return VIEW_TYPE_FREE_MODE;
+            case introduce:
+                return VIEW_TYPE_INTRODUCE_MODE;
+            default:
+                return VIEW_TYPE_NORMAL_MODE;
         }
-        return VIEW_TYPE_NORMAL_MODE;
     }
 }

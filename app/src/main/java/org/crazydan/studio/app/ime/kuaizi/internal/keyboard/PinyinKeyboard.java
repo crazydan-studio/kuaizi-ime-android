@@ -55,6 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -468,7 +469,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 并确定候选字
         determine_NotConfirmed_InputWord(inputList, pending);
 
-        fire_InputChars_Input_Doing(currentKey);
+        fire_InputChars_Input_Doing(currentKey, InputCharsInputtingMsgData.KeyInputType.slip);
     }
 
     private void end_InputChars_Slipping(InputList inputList, CharInput input, Key<?> key) {
@@ -502,7 +503,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         CharInput pending = inputList.newPending();
         pending.appendKey(key);
 
-        fire_InputChars_Input_Doing(key);
+        fire_InputChars_Input_Doing(key, InputCharsInputtingMsgData.KeyInputType.flip);
     }
 
     private void end_InputChars_Flipping(InputList inputList, CharInput input, Key<?> key) {

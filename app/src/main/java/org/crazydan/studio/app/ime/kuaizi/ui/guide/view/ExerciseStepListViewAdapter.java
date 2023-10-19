@@ -30,6 +30,9 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
  * @date 2023-09-19
  */
 public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStepView> {
+    private final static int VIEW_TYPE_NORMAL = 0;
+    private final static int VIEW_TYPE_FINAL = 1;
+
     private List<ExerciseStep> data;
 
     public void bind(List<ExerciseStep> data) {
@@ -53,6 +56,26 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     @NonNull
     @Override
     public ExerciseStepView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ExerciseStepView(inflateItemView(parent, R.layout.guide_exercise_step_view));
+        if (viewType == VIEW_TYPE_FINAL) {
+            return new ExerciseStepFinalView(inflateItemView(parent, R.layout.guide_exercise_step_final_view));
+        }
+        return new ExerciseStepView(inflateItemView(parent, R.layout.guide_exercise_step_normal_view));
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        ExerciseStep step = this.data.get(position);
+
+        if (step instanceof ExerciseStep.Final) {
+            return VIEW_TYPE_FINAL;
+        }
+        return VIEW_TYPE_NORMAL;
+    }
+
+    public boolean isFinalStep(int position) {
+        if (position < getItemCount()) {
+            return this.data.get(position) instanceof ExerciseStep.Final;
+        }
+        return false;
     }
 }

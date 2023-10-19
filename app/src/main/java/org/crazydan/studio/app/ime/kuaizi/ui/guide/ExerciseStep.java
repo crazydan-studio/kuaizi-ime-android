@@ -81,4 +81,16 @@ public class ExerciseStep implements ViewData {
     public interface ImageGetter {
         Drawable get(String id, int width, int height);
     }
+
+    public static class Final extends ExerciseStep {
+        public final Runnable restartCallback;
+        public final Runnable continueCallback;
+
+        public Final(Runnable restartCallback, Runnable continueCallback) {
+            super(null, null, null, null);
+
+            this.restartCallback = restartCallback;
+            this.continueCallback = continueCallback;
+        }
+    }
 }

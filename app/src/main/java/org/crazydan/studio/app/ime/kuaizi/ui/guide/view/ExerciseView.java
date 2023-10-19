@@ -35,8 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
  * @date 2023-09-19
  */
 public class ExerciseView extends RecyclerViewHolder<Exercise> {
-    private final TextView titleView;
-    private final ExerciseStepListView stepListView;
+    protected final TextView titleView;
+    protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
 
     public ExerciseView(@NonNull View itemView) {
@@ -58,7 +58,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         ime.addInputMsgListener(this.textView);
 
         ime.removeInputMsgListenerByType(exercise.getClass());
-        ime.addInputMsgListener(getData());
+        ime.addInputMsgListener(exercise);
 
         ime.setDisableUserInputData(exercise.isDisableUserInputData());
 
@@ -81,11 +81,16 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         updateSteps();
     }
 
-    private void scrollTo(int position) {
+    protected void scrollTo(int position) {
+        // 提前定位到最后一个 step
+        if (this.stepListView.adapter.isFinalStep(position + 1)) {
+            position += 1;
+        }
+
         this.stepListView.smoothScrollToPosition(position);
     }
 
-    private void updateSteps() {
+    protected void updateSteps() {
         if (this.stepListView == null) {
             return;
         }

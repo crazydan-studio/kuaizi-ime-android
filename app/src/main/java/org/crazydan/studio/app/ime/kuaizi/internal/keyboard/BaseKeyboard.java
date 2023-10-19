@@ -317,14 +317,19 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key) {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key);
+        fire_InputChars_Input_Doing(key, InputCharsInputtingMsgData.KeyInputType.tap);
+    }
+
+    /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
+    protected void fire_InputChars_Input_Doing(Key<?> key, InputCharsInputtingMsgData.KeyInputType keyInputType) {
+        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, keyInputType);
 
         fireInputMsg(InputMsg.InputChars_Input_Doing, data);
     }
 
     /** 触发 {@link InputMsg#InputChars_Input_Done} 消息 */
     protected void fire_InputChars_Input_Done(Key<?> key) {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key);
+        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
         fireInputMsg(InputMsg.InputChars_Input_Done, data);
     }
