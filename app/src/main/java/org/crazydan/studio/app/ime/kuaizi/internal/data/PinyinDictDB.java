@@ -1231,7 +1231,7 @@ public class PinyinDictDB {
                 "CREATE INDEX IF NOT EXISTS idx_used_phrase_pinyin_word"
                 + " ON used_phrase_pinyin_word (target_spell_chars_id_, source_id_, target_index_);",
                 //
-                "DROP VIEW IF EXISTS used_pinyin_phrase;",
+                //"DROP VIEW IF EXISTS used_pinyin_phrase;",
                 "CREATE VIEW\n"
                 + "    IF NOT EXISTS used_pinyin_phrase (\n"
                 + "        id_,\n"
