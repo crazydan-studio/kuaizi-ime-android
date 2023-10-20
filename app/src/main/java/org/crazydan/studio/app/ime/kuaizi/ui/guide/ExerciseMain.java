@@ -207,10 +207,10 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         Exercise[] exercises = new Exercise[] {
                 exercise_Pinyin_Slipping_Inputting(sandboxView),
                 exercise_Pinyin_Candidate_Filtering(sandboxView),
-                exercise_Pinyin_Committed_Processing(sandboxView),
-                exercise_Editor_Editing(sandboxView),
                 exercise_Char_Replacement_Inputting(sandboxView),
                 exercise_Math_Inputting(sandboxView),
+                exercise_Editor_Editing(sandboxView),
+                exercise_Pinyin_Committed_Processing(sandboxView),
                 };
         for (int i = 0; i < exercises.length; i++) {
             Exercise exercise = exercises[i];
@@ -293,7 +293,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 + "\"/>为标点符号键盘切换按键，用于切换到标点符号输入键盘；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_input_revoke)
-                + "\"/>为已提交输入的<b>撤回</b>按键，用于撤回已提交至目标编辑器的输入以重新修正。"
+                + "\"/>为已提交输入的<b>撤回</b>按键，用于撤回已提交至目标编辑器的输入，以重新修正。"
                 + "在没有可撤回输入时，该按键将被禁用；",
                 // 隐藏按键
                 "<img src=\""

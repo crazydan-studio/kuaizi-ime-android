@@ -266,10 +266,10 @@ public abstract class KeyTable {
                 style = KeyStyle.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Latin:
-                style = KeyStyle.withIcon(R.drawable.ic_switch_zi_to_a, R.attr.key_ctrl_switcher_bg_color);
+                style = KeyStyle.withIcon(R.drawable.ic_switch_to_latin, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Pinyin:
-                style = KeyStyle.withIcon(R.drawable.ic_switch_a_to_zi, R.attr.key_ctrl_switcher_bg_color);
+                style = KeyStyle.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_ctrl_switcher_bg_color);
                 break;
         }
 
