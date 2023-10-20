@@ -1303,11 +1303,13 @@ public abstract class BaseKeyboard implements Keyboard {
             leftInput.replaceLastKey(leftKey);
             rightInput.replaceLastKey(rightKey);
         } else {
-            // 对于非空的待输入，对其做配对符号包裹
-            boolean wrapSelected = !inputList.hasEmptyPending() && !selected.isSymbol();
+            // 对于输入修改，若为非空的待输入，则对其做配对符号包裹
+            boolean wrapSelected = !selected.isGap() && !inputList.hasEmptyPending() && !selected.isSymbol();
             if (wrapSelected) {
                 // 选中被包裹输入的左侧 Gap
                 inputList.confirmPendingAndSelectPrevious();
+            } else {
+                inputList.confirmPendingAndSelectNext();
             }
 
             CharInput leftInput = inputList.getPending();
