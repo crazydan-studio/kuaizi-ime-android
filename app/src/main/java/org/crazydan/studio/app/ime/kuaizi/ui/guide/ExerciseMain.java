@@ -452,8 +452,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                    expected_auto_word,
                                    null);
 
-        exercise.addStep("请长按输入提交按键<img src=\""
-                         + sandboxView.withKey(key_ctrl_commit)
+        exercise.addStep("请<span style=\"color:#ed4c67;\">长按</span>输入提交按键<img src=\"" //
+                         + sandboxView.withKey(key_ctrl_commit) //
                          + "\"/>以进入<b>输入提交选项</b>模式；", (msg, data) -> {
             if (msg == InputMsg.Keyboard_State_Change_Done) {
                 Key<?> key = data.getKey();
@@ -463,7 +463,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                     return;
                 }
             }
-            warning("请按当前步骤的指导要求长按 <span style=\"color:#ed4c67;\">输入提交按键</span>");
+            warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
         });
         exercise.addStep("请点击按键<img src=\""
                          + sandboxView.withKey(key_ctrl_commit_opt_with_pinyin)
@@ -526,8 +526,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             }
             warning("请按当前步骤的指导要求移动目标编辑器中的光标");
         });
-        exercise.addStep("请长按光标定位按键<img src=\""
-                         + sandboxView.withKey(key_ctrl_cursor_locator)
+        exercise.addStep("请<span style=\"color:#ed4c67;\">长按</span>光标定位按键<img src=\"" //
+                         + sandboxView.withKey(key_ctrl_cursor_locator) //
                          + "\"/>以进入<b>内容编辑</b>模式；", (msg, data) -> {
             if (msg == InputMsg.Keyboard_State_Change_Done) {
                 Key<?> key = data.getKey();
@@ -535,7 +535,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 if (key != null && key.equals(key_ctrl_cursor_locator)) {
                     exercise.gotoNextStep();
                 } else {
-                    warning("请按当前步骤的指导要求长按 <span style=\"color:#ed4c67;\">光标定位按键</span>");
+                    warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span>"
+                            + " <b>光标定位按键</b>");
                 }
             }
         });
@@ -582,9 +583,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Be Happy!</span>；");
         exercise.addStep("<b>提示</b>：在拼音键盘和拉丁文键盘中，"
-                         + "均可以通过单击按键输入字符，通过双击按键输入字符的变换形式，"
-                         + "若连续多次快速点击，则会按顺序依次做不同形式的变换。"
-                         + "形式变换包括字母的大小写切换、ü/v/V 转换和标点的中英文切换；");
+                         + "均可以通过单击按键输入字符，而<span style=\"color:#ed4c67;\">快速</span>"
+                         + "连续点击按键则将循环输入字符的变换形式。"
+                         + "形式变换包括字母的大小写切换、ü/v/V 转换和中英文标点切换；");
 
         char[] chars = new char[] { 'B', 'e', ' ', 'H', 'a', 'p', 'p', 'y' };
         for (char ch : chars) {
@@ -604,10 +605,10 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 continue;
             }
 
-            Key<?> key_char = keyTable.level0CharKey(ch + "");
+            Key<?> key_char = keyTable.level0CharKey(String.valueOf(ch).toLowerCase());
 
             if (Character.isUpperCase(ch)) {
-                exercise.addStep("请双击按键<img src=\""
+                exercise.addStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键<img src=\""
                                  + sandboxView.withKey(key_char)
                                  + "\"/>以输入大写字母 <span style=\"color:#ed4c67;\">"
                                  + ch
@@ -618,9 +619,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                         if (((InputCharsInputtingMsgData) data).keyInputType
                             != InputCharsInputtingMsgData.KeyInputType.tap //
                             || !key.getText().equalsIgnoreCase(key_char.getText())) {
-                            warning("请按当前步骤的指导要求双击按键 <span style=\"color:#ed4c67;\">%s</span>",
-                                    key_char.getText());
-                        } else if (key.getText().equals(key_char.getText())) {
+                            warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                                    + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_char.getText());
+                        } else if (key.getText().equals(String.valueOf(ch))) {
                             exercise.gotoNextStep();
                         }
                     } else {
@@ -651,7 +652,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             }
         }
 
-        exercise.addStep("请双击按键<img src=\""
+        exercise.addStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键<img src=\""
+                         //
                          + sandboxView.withKey(key_symbol_tanhao)
                          + "\"/>以输入英文标点 <span style=\"color:#ed4c67;\">!</span>；", (msg, data) -> {
             if (msg == InputMsg.InputChars_Input_Doing) {
@@ -659,8 +661,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
                 if (((InputCharsInputtingMsgData) data).keyInputType != InputCharsInputtingMsgData.KeyInputType.tap //
                     || (!key.getText().equals("!") && !key.getText().equals(key_symbol_tanhao.getText()))) {
-                    warning("请按当前步骤的指导要求双击按键 <span style=\"color:#ed4c67;\">%s</span>",
-                            key_symbol_tanhao.getText());
+                    warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                            + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.getText());
                 } else if (key.getText().equals("!")) {
                     exercise.gotoNextStep();
                 }
