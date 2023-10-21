@@ -217,6 +217,10 @@ public class ImeInputView extends FrameLayout
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (this.keyboard == null) {
+            return;
+        }
+
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 

@@ -24,7 +24,7 @@
             app:title="@string/label_choose_theme"
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"
-            app:defaultValue="night"
+            app:defaultValue="light"
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
