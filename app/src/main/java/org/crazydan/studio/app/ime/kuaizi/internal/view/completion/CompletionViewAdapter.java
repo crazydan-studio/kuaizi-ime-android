@@ -51,10 +51,6 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
         updateItems(oldCompletions, newCompletions);
     }
 
-    public CompletionInput getItem(int position) {
-        return this.completions != null ? this.completions.get(position) : null;
-    }
-
     public void updateBindViewHolder(CompletionView view) {
         if (this.completions == null) {
             return;

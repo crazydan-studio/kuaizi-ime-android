@@ -24,10 +24,9 @@ import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.ExtractedText;
-import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
+import org.crazydan.studio.app.ime.kuaizi.internal.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
@@ -51,6 +50,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     private Keyboard.Config imeKeyboardConfig;
 
     private int prevFieldId;
+    private EditorSelection editorSelection;
 
     /**
      * 启动输入，先于 {@link #onCreateInputView()} 和
@@ -145,6 +145,8 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void startImeInput(Keyboard.Config config, boolean resetInputList) {
+        this.editorSelection = null;
+
         this.imeView.startInput(config, resetInputList);
     }
 
@@ -265,7 +267,22 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void revokeTextCommitting() {
-        editEditor(EditorEditAction.undo);
+        // Note：撤销由编辑器控制，其可能会撤销间隔时间较短的多个输入，
+        // 故而，只能采用记录输入前的范围，再还原的方式实现输入的撤回
+        //editEditor(EditorEditAction.undo);
+        EditorSelection selection = this.editorSelection;
+        if (selection == null) {
+            return;
+        }
+
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        replaceText(ic, selection.content, selection.origStart, selection.end);
+        // 重新选中
+        ic.setSelection(selection.origStart, selection.origEnd);
     }
 
     private void commitText(CharSequence text, List<String> replacements) {
@@ -273,12 +290,13 @@ public class Service extends InputMethodService implements InputMsgListener {
         if (ic == null) {
             return;
         }
+        this.editorSelection = null;
 
         // Note：假设替换字符的长度均相同
         CharSequence raw = ic.getTextBeforeCursor(text.length(), 0);
         // 替换字符
         if (replacements.contains(raw.toString())) {
-            replaceTextBeforeCursor(text, raw.length());
+            replaceTextBeforeCursor(ic, text, raw.length());
         }
         // 输入字符
         else if (text.length() == 1) {
@@ -286,11 +304,17 @@ public class Service extends InputMethodService implements InputMsgListener {
             // 单个字符需以事件形式发送，才能被所有组件识别
             sendKeyChar(ch);
         } else {
-            ic.beginBatchEdit();
+            EditorSelection before = EditorSelection.from(ic);
 
-            addText(text);
+            addText(ic, text);
 
-            ic.endBatchEdit();
+            EditorSelection after = EditorSelection.from(ic);
+
+            this.editorSelection = new EditorSelection(after.start,
+                                                       after.end,
+                                                       before.start,
+                                                       before.end,
+                                                       before.content);
         }
     }
 
@@ -300,24 +324,20 @@ public class Service extends InputMethodService implements InputMsgListener {
             return;
         }
 
-        ExtractedText extractedText = getExtractedText();
-        // Note：仅异常情况才获取不到 ExtractedText
-        if (extractedText == null) {
-            return;
-        }
+        EditorSelection selection = EditorSelection.from(ic);
+        int start = selection.start;
+        int end = selection.end;
 
-        int start = Math.min(extractedText.selectionStart, extractedText.selectionEnd);
-        int end = Math.max(extractedText.selectionStart, extractedText.selectionEnd);
-
+        // Note：仅包含多个编辑动作时，才启用编辑批处理
         ic.beginBatchEdit();
 
         // Note：先向选区尾部添加符号，以避免选区发生移动
-        addText(right, end);
-        addText(left, start);
+        addText(ic, right, end);
+        addText(ic, left, start);
 
         // 重新选中初始文本：确保选区的选择移动方向不变
         int offset = left.length();
-        ic.setSelection(extractedText.selectionStart + offset, extractedText.selectionEnd + offset);
+        ic.setSelection(selection.origStart + offset, selection.origEnd + offset);
 
         ic.endBatchEdit();
     }
@@ -341,59 +361,36 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private ExtractedText getExtractedText() {
-        InputConnection ic = getCurrentInputConnection();
-        if (ic == null) {
-            return null;
-        }
-
-        // https://stackoverflow.com/questions/40521324/selection-using-android-ime#answer-58778722
-        return ic.getExtractedText(new ExtractedTextRequest(), 0);
-    }
-
     /** 在光标位置添加文本 */
-    private void addText(CharSequence text) {
-        if (text.length() == 0) {
-            return;
+    private void addText(InputConnection ic, CharSequence text) {
+        if (text == null) {
+            text = "";
         }
 
-        InputConnection ic = getCurrentInputConnection();
-        if (ic != null) {
-            // Note: 第二个参数必须为 1，
-            // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
-            // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
-            ic.commitText(text, 1);
-        }
+        // Note: 第二个参数必须为 1，
+        // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
+        // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
+        ic.commitText(text, 1);
     }
 
     /** 向指定位置添加文本 */
-    private void addText(CharSequence text, int pos) {
-        replaceText(text, pos, pos);
+    private void addText(InputConnection ic, CharSequence text, int pos) {
+        replaceText(ic, text, pos, pos);
     }
 
     /** 替换光标之前指定长度的文本 */
-    private void replaceTextBeforeCursor(CharSequence text, int length) {
-        ExtractedText extractedText = getExtractedText();
-        if (extractedText == null) {
-            return;
-        }
+    private void replaceTextBeforeCursor(InputConnection ic, CharSequence text, int length) {
+        EditorSelection selection = EditorSelection.from(ic);
 
-        int start = extractedText.selectionStart;
-        replaceText(text, start - length, start);
+        int start = selection.origStart;
+        replaceText(ic, text, start - length, start);
     }
 
     /** 替换指定范围内的文本 */
-    private void replaceText(CharSequence text, int posStart, int posEnd) {
-        if (text.length() == 0) {
-            return;
-        }
+    private void replaceText(InputConnection ic, CharSequence text, int posStart, int posEnd) {
+        // 移动光标到指定位置
+        ic.setSelection(posStart, posEnd);
 
-        InputConnection ic = getCurrentInputConnection();
-        if (ic != null) {
-            // 移动光标到指定位置
-            ic.setSelection(posStart, posEnd);
-
-            addText(text);
-        }
+        addText(ic, text);
     }
 }

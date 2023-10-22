@@ -23,6 +23,7 @@ import android.content.Context;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import org.crazydan.studio.app.ime.kuaizi.internal.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
@@ -40,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbol
  * @date 2023-07-16
  */
 public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditText implements InputMsgListener {
+    private EditorSelection editorSelection;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -83,47 +85,53 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     }
 
     private void commitText(CharSequence text, List<String> replacements) {
-        Editable editable = getText();
-        if (editable == null) {
+        this.editorSelection = null;
+
+        EditorSelection before = EditorSelection.from(this);
+        if (before == null) {
             return;
         }
 
-        int start = Math.min(getSelectionStart(), getSelectionEnd());
-        int end = Math.max(getSelectionStart(), getSelectionEnd());
+        int start = before.start;
+        int end = before.end;
 
+        Editable editable = getText();
         // Note：假设替换字符的长度均相同
         int replacementStartIndex = Math.max(0, start - text.length());
         CharSequence raw = editable.subSequence(replacementStartIndex, start);
         if (replacements.contains(raw.toString())) {
-            editable.replace(replacementStartIndex, start, text);
+            replaceText(text, replacementStartIndex, start);
             return;
         }
 
-        editable.replace(start, end, text);
+        replaceText(text, start, end);
 
         // 移动到替换后的文本内容之后
         int offset = text.length();
         setSelection(start + offset);
+
+        EditorSelection after = EditorSelection.from(this);
+        this.editorSelection = new EditorSelection(after.start, after.end, before.start, before.end, before.content);
     }
 
     private void commitText(CharSequence left, CharSequence right) {
-        Editable editable = getText();
-        if (editable == null) {
+        EditorSelection selection = EditorSelection.from(this);
+        if (selection == null) {
             return;
         }
 
-        int start = Math.min(getSelectionStart(), getSelectionEnd());
-        int end = Math.max(getSelectionStart(), getSelectionEnd());
+        int start = selection.start;
+        int end = selection.end;
 
         // Note：先向选区尾部添加符号，以避免选区发生移动
-        editable.replace(end, end, right);
-        editable.replace(start, start, left);
+        replaceText(right, end, end);
+        replaceText(left, start, start);
 
         if (start == end) {
             setSelection(start + left.length());
         } else {
             // 重新选中初始文本：以上添加文本过程中，EditText 会自动更新选区，且选区结束位置在配对符号的右符号的最右侧
-            setSelection(getSelectionStart(), getSelectionEnd() - right.length());
+            setSelection(selection.origStart, selection.origEnd - right.length());
         }
     }
 
@@ -190,7 +198,14 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     }
 
     private void revokeTextCommitting() {
-        editEditor(EditorEditAction.undo);
+        //editEditor(EditorEditAction.undo);
+        EditorSelection selection = this.editorSelection;
+        if (selection == null) {
+            return;
+        }
+
+        replaceText(selection.content, selection.origStart, selection.end);
+        setSelection(selection.origStart, selection.origEnd);
     }
 
     private void sendKey(int code) {
@@ -204,5 +219,19 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
 
     private void sendKeyUp(int code) {
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+    }
+
+    /** 替换指定范围内的文本 */
+    private void replaceText(CharSequence text, int posStart, int posEnd) {
+        Editable editable = getText();
+        if (editable == null) {
+            return;
+        }
+
+        if (text == null) {
+            text = "";
+        }
+
+        editable.replace(posStart, posEnd, text);
     }
 }
