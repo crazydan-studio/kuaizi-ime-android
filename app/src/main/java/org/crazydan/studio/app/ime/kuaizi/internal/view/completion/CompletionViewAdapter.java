@@ -22,12 +22,12 @@ import java.util.List;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link CompletionInput} 的{@link RecyclerView}适配器
@@ -51,6 +51,25 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
         updateItems(oldCompletions, newCompletions);
     }
 
+    public CompletionInput getItem(int position) {
+        return this.completions != null ? this.completions.get(position) : null;
+    }
+
+    public void updateBindViewHolder(CompletionView view) {
+        if (this.completions == null) {
+            return;
+        }
+
+        CompletionInput completion = view.getData();
+        int index = this.completions.indexOf(completion);
+        CompletionInput newCompletion = this.completions.get(index);
+
+        // 更新变更了补全位置的数据，以确保在应用补全时能够对应到正确的补全位置
+        if (newCompletion != completion) {
+            ((RecyclerViewHolder<CompletionInput>) view).bind(newCompletion);
+        }
+    }
+
     @Override
     public int getItemCount() {
         return this.completions == null ? 0 : this.completions.size();
@@ -72,19 +91,18 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
     }
 
     private boolean handleScrollViewEvent(View view, MotionEvent event) {
-        boolean canScrollCompletion = ((HorizontalScrollView) view).canScrollHorizontally(-1)
-                                      || ((HorizontalScrollView) view).canScrollHorizontally(1);
+        boolean canScrollCompletion = view.canScrollHorizontally(-1) || view.canScrollHorizontally(1);
 
         // https://stackoverflow.com/questions/29426858/scrollview-inside-a-recyclerview-android/68506793#answer-68506793
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
                 this.manager.enableScroll(!canScrollCompletion);
-                return true;
+                break;
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
                 this.manager.enableScroll(true);
-                return true;
+                break;
             }
         }
         return false;

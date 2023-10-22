@@ -20,7 +20,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="12dp"
         android:paddingTop="6dp"
-        android:paddingBottom="1dp"
+        android:paddingBottom="0dp"
         android:layout_marginHorizontal="8dp"
         android:background="@drawable/bg_input_completion">
 
@@ -33,14 +33,15 @@
             android:layout_height="match_parent"
             android:layout_gravity="bottom"
             android:fillViewport="true"
-            android:scrollbars="none"
-            android:scaleX=".9"
-            android:scaleY=".9">
+            android:scrollbars="horizontal"
+            android:scaleX=".8"
+            android:scaleY=".8">
 
         <LinearLayout
                 android:id="@+id/inputs_view"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_marginBottom="2dp"
                 android:gravity="center_horizontal|bottom"
                 android:orientation="horizontal" />
     </HorizontalScrollView>

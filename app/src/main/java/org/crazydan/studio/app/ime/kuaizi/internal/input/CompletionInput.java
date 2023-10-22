@@ -62,6 +62,8 @@ public class CompletionInput extends BaseInput<GapInput> {
             return false;
         }
 
+        // Note：为避免补全位置发生变动而导致 CompletionView 视图发生抖动，
+        // 故而，不检查补全位置是否相等
         CompletionInput that = (CompletionInput) o;
         return this.inputs.equals(that.inputs);
     }

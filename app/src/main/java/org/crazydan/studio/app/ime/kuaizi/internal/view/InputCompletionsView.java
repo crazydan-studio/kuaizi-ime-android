@@ -85,7 +85,13 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
 
     public CompletionView findCompletionViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
+        if (view == null) {
+            return null;
+        }
 
-        return view != null ? (CompletionView) getChildViewHolder(view) : null;
+        CompletionView viewHolder = (CompletionView) getChildViewHolder(view);
+        this.adapter.updateBindViewHolder(viewHolder);
+
+        return viewHolder;
     }
 }
