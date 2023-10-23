@@ -17,4 +17,5 @@
 
 <resources>
     <string name="app_name_shown">筷字输入法 (内测版)</string>
+    <string name="text_alpha_using_warning">感谢使用筷字输入法内测版</string>
 </resources>

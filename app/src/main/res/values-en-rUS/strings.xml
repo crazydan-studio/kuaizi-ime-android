@@ -76,6 +76,7 @@
         the enough blank space should be added at the bottom of the input keyboard
         to avoid conflict between the keyboard swipe inputting and the system swipe-up gesture.
     </string>
+
     <string name="msg_ime_should_be_enabled_first">
         &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,
         &amp;#160;so it cannot be activated.&lt;/p>
@@ -86,6 +87,7 @@
         &lt;br/>
         &lt;p>Do you want to enable it right now?&lt;/p>
     </string>
+
     <string name="text_exercise_edit_text_placeholder">
         Please follow the above instructions
         to operate the keyboard to input content
@@ -93,12 +95,7 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         Please input any text for free exercises
     </string>
-    <string name="msg_guid_exercise_finished_confirm">
-        &lt;p>Congratulations, you have successfully completed this exercise!&lt;/p>
-        &lt;br/>
-        &lt;p>Now, you can choose to continue with the current exercise,
-        &amp;#160;or start the next one.&lt;/p>
-    </string>
+    <string name="text_alpha_using_warning"></string>
 
     <string name="value_theme_light">Light</string>
     <string name="value_theme_night">Night</string>

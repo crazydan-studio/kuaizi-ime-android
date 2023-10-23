@@ -30,7 +30,7 @@
 
     <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
 
         <ImageButton
@@ -49,17 +49,32 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/keyboard_divider_color" />
 
-        <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
-        <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
-                android:id="@+id/input_list"
+        <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="@dimen/input_list_view_height"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="1dp"
-                android:layout_marginVertical="4dp"
-                android:clipToPadding="false"
-                android:paddingStart="8dp"
-                android:paddingEnd="16dp" />
+                android:layout_marginVertical="4dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/text_alpha_using_warning"
+                    android:alpha=".1"
+                    android:textColor="?attr/input_fg_color"
+                    android:textSize="@dimen/char_input_word_text_size" />
+
+            <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
+            <org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/input_list"
+                    android:clipToPadding="false"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="16dp" />
+        </FrameLayout>
 
         <View
                 android:layout_width="1dp"

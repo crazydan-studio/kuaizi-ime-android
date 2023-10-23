@@ -71,6 +71,7 @@
     <string name="desc_adapt_desktop_swipe_up_gesture">
         若是系统采用上滑手势返回桌面，则需要确保输入键盘底部留有足够的空白空间，以避免键盘的滑行输入与系统的上滑手势产生冲突
     </string>
+
     <string name="msg_ime_should_be_enabled_first">
         &lt;p>&lt;b>%1$s&lt;/b> 在系统中还未被启用，因此，无法激活其使用。&lt;/p>
         &lt;br/>
@@ -80,17 +81,14 @@
         &lt;br/>
         &lt;p>是否现在就去启用？&lt;/p>
     </string>
+
     <string name="text_exercise_edit_text_placeholder">
         请跟随上述指导步骤操作键盘以输入练习内容
     </string>
     <string name="text_exercise_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习
     </string>
-    <string name="msg_guid_exercise_finished_confirm">
-        &lt;p>恭喜您，您已成功完成本次练习！&lt;/p>
-        &lt;br/>
-        &lt;p>您现在可以选择继续当前练习，或者开始下一个练习。&lt;/p>
-    </string>
+    <string name="text_alpha_using_warning"></string>
 
     <string name="value_theme_light">浅色主题</string>
     <string name="value_theme_night">深色主题</string>
