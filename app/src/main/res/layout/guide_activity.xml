@@ -83,8 +83,42 @@
                 android:layout_width="256dp"
                 android:layout_height="64dp"
                 android:gravity="center"
+                android:layout_marginBottom="16dp"
                 app:backgroundTint="#ff059669"
                 android:textColor="@color/color_white"
                 app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guide_feedback"
+                android:text="@string/title_about_suggestion"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_width="256dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                app:backgroundTint="#3395d4"
+                android:textColor="@color/color_white"
+                app:cornerRadius="8dp" />
+
+        <!--
+        圆形按钮: https://stackoverflow.com/questions/58529593/how-to-create-a-circular-outlined-material-button-in-android#answer-58529735
+        避免图标为白色: https://stackoverflow.com/questions/53461491/material-button-icon-is-showing-without-color#answer-55568056
+        -->
+        <!--<com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guide_feedback"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:backgroundTint="#ffea580c"
+                app:icon="@drawable/ic_feedback"
+                app:iconTint="@null"
+                app:iconSize="28dp"
+                app:iconGravity="textStart"
+                android:padding="0dp"
+                app:iconPadding="0dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:shapeAppearanceOverlay="@style/Theme.Kuaizi.Button.Circle" />-->
     </LinearLayout>
 </LinearLayout>

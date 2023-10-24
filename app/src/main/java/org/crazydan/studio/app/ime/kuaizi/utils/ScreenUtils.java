@@ -19,12 +19,20 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Point;
+import android.util.DisplayMetrics;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
 public class ScreenUtils {
+
+    public static Point getScreenSize() {
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+
+        return new Point(metrics.widthPixels, metrics.heightPixels);
+    }
 
     public static int pxToDp(int px) {
         return (int) (px / Resources.getSystem().getDisplayMetrics().density);

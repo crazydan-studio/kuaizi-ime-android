@@ -221,6 +221,12 @@
         <item name="cornerSize">8dp</item>
     </style>
 
+    <!-- https://stackoverflow.com/questions/58529593/how-to-create-a-circular-outlined-material-button-in-android#answer-58529735 -->
+    <style name="Theme.Kuaizi.Button.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <!-- https://www.dev2qa.com/android-popup-window-animation-example/ -->
     <style name="Theme.Kuaizi.PopupWindow.Animation" parent="">
         <item name="android:windowEnterAnimation">@android:anim/fade_in</item>

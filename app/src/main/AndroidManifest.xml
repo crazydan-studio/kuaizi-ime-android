@@ -77,15 +77,6 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.about.AboutSuggestion"
-                android:exported="false"
-                android:label="@string/title_about_suggestion">
-            <intent-filter>
-                <action android:name=".ui.about.AboutSuggestion" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
                 android:name=".ui.about.AboutThanks"
                 android:exported="false"
                 android:label="@string/title_about_thanks">

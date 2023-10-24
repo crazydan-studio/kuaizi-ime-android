@@ -88,7 +88,7 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习
     </string>
-    <string name="text_alpha_using_warning"></string>
+    <string name="text_alpha_using_warning">@null</string>
 
     <string name="value_theme_light">浅色主题</string>
     <string name="value_theme_night">深色主题</string>

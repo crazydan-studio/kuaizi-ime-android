@@ -80,10 +80,12 @@ public class Guide extends FollowSystemThemeActivity {
         MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         MaterialButton btnTryExercises = findViewById(R.id.btn_guide_try_exercises);
         MaterialButton btnShowSoftwareServiceAgreement = findViewById(R.id.btn_guide_show_software_service_agreement);
+        MaterialButton btnShowFeedback = findViewById(R.id.btn_guide_feedback);
 
         btnShowPreferences.setOnClickListener(this::showPreferences);
         btnTryExercises.setOnClickListener(this::tryExercises);
         btnShowSoftwareServiceAgreement.setOnClickListener(this::showSoftwareServiceAgreement);
+        btnShowFeedback.setOnClickListener(this::showFeedback);
 
         if (!isAlphaUserAgreementConfirmed()) {
             showAlphaUserAgreementConfirmWindow();
@@ -147,6 +149,12 @@ public class Guide extends FollowSystemThemeActivity {
         Context context = getApplicationContext();
 
         SystemUtils.showActivity(context, SoftwareServiceAgreement.class);
+    }
+
+    private void showFeedback(View v) {
+        Context context = getApplicationContext();
+
+        Preferences.openFeedbackUrl(context);
     }
 
     private void tryExercises(View v) {

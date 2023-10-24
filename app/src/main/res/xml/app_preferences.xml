@@ -53,9 +53,9 @@
         <PreferenceScreen android:title="@string/title_about_thanks">
             <intent android:action=".ui.about.AboutThanks" />
         </PreferenceScreen>
-        <!--<PreferenceScreen android:title="@string/title_about_suggestion">
-            <intent android:action=".ui.about.AboutSuggestion" />
-        </PreferenceScreen>-->
+        <Preference
+                app:key="about_user_feedback"
+                android:title="@string/title_about_suggestion" />
         <PreferenceScreen android:title="@string/title_about_app">
             <intent android:action=".ui.about.AboutApp" />
         </PreferenceScreen>

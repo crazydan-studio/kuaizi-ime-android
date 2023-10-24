@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,5 +72,21 @@ public class CharUtils {
             hasGlyph = paint.hasGlyph(s);
         }
         return hasGlyph;
+    }
+
+    public static String md5(String str) {
+        // https://mkyong.com/java/java-md5-hashing-example/
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] bytes = md.digest(str.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

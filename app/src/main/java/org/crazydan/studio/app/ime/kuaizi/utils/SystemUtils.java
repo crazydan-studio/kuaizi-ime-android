@@ -19,6 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.provider.Settings;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -153,5 +156,28 @@ public class SystemUtils {
                         | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         context.startActivity(intent);
+    }
+
+    /** 使用默认浏览器打开指定链接地址 */
+    public static void openLink(Context context, String url) {
+        // https://stackoverflow.com/questions/5026349/how-to-open-a-website-when-a-button-is-clicked-in-android-application#answer-16566120
+        Intent intent = new Intent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(Intent.ACTION_VIEW);
+
+        // Note：在有多个浏览器时，该设置会要求选择某个浏览器，而不会使用默认浏览器
+        //intent.addCategory(Intent.CATEGORY_BROWSABLE);
+
+        intent.setData(Uri.parse(url));
+
+        context.startActivity(intent);
+    }
+
+    public static PackageInfo getPackageInfo(Context context) {
+        try {
+            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

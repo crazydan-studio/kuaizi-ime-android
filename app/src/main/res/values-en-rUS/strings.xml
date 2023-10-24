@@ -95,7 +95,7 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         Please input any text for free exercises
     </string>
-    <string name="text_alpha_using_warning"></string>
+    <string name="text_alpha_using_warning">@null</string>
 
     <string name="value_theme_light">Light</string>
     <string name="value_theme_night">Night</string>
