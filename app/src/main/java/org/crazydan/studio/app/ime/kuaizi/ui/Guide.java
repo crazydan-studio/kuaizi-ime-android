@@ -152,9 +152,7 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     private void showFeedback(View v) {
-        Context context = getApplicationContext();
-
-        Preferences.openFeedbackUrl(context);
+        Preferences.openFeedbackUrl(this);
     }
 
     private void tryExercises(View v) {

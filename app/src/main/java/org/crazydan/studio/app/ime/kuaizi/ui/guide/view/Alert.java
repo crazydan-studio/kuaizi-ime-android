@@ -42,6 +42,7 @@ public class Alert {
     private CharSequence message;
     private Button negativeBtn;
     private Button positiveBtn;
+    private boolean cancelable;
 
     private Alert(Context context) {
         this.context = context;
@@ -96,6 +97,11 @@ public class Alert {
         return this;
     }
 
+    public Alert setCancelable(boolean cancelable) {
+        this.cancelable = cancelable;
+        return this;
+    }
+
     public void show() {
         TextView titleView = this.view.findViewById(R.id.title_view);
         TextView messageView = this.view.findViewById(R.id.message_view);
@@ -106,14 +112,14 @@ public class Alert {
         if (this.message instanceof Spanned) {
             messageView.setText(this.message);
         } else {
-            messageView.setText(ViewUtils.parseHtml(this.message.toString()));
+            ViewUtils.setHtmlText(messageView, this.message.toString());
         }
 
         // Note: AlertDialog 的 context 必须为 activity，不能是应用的 context
         // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.context);
 
-        AlertDialog alert = builder.setView(this.view).setCancelable(false).create();
+        AlertDialog alert = builder.setView(this.view).setCancelable(this.cancelable).create();
         alert.show();
 
         negativeBtnView.setText(this.negativeBtn.text);

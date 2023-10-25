@@ -42,6 +42,8 @@
 
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
+    <string name="btn_feedback_open_link_without_extra_info">继续反馈，但始终不附带系统和应用信息</string>
+    <string name="btn_feedback_open_link_with_extra_info">继续反馈，且始终附带系统和应用信息</string>
     <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议</string>
     <string name="btn_guide_reject_alpha_user_agreement">放弃，我拒绝该协议</string>
     <string name="btn_guide_try_exercises">使用练习</string>

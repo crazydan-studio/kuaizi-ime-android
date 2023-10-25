@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.graphics.Point;
@@ -34,6 +34,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
@@ -60,42 +61,11 @@ public class Preferences extends FollowSystemThemeActivity {
         }
     }
 
-    public static void openFeedbackUrl(Context context) {
-        String url = Preferences.createFeedbackUrl(context);
-
-        SystemUtils.openLink(context, url);
-    }
-
-    private static String createFeedbackUrl(Context context) {
+    public static void openFeedbackUrl(Activity context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String pref_key = "user_feedback_info";
-        String user_info = preferences.getString(pref_key, null);
-
-        String openid = "";
-        String nickname = "";
-        String avatar = "";
-        String user_signature = "";
-        if (user_info == null) {
-            int millis = (int) (System.currentTimeMillis() % 10000);
-            int uid = millis + random.nextInt(10000) * random.nextInt(1000) + random.nextInt(100) * random.nextInt(10);
-
-            openid = UUID.randomUUID().toString();
-            nickname = "筷友" + String.format(Locale.getDefault(), "%06d", uid).substring(0, 6);
-            avatar = "https://api.multiavatar.com/kuaizi_" + uid + ".png";
-            user_signature = CharUtils.md5(openid + nickname + avatar + "bqMO5230");
-
-            user_info = String.format("%s,%s,%s,%s", openid, nickname, avatar, user_signature);
-
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(pref_key, user_info);
-            editor.apply();
-        } else {
-            String[] splits = user_info.split(",");
-            openid = splits[0];
-            nickname = splits[1];
-            avatar = splits[2];
-            user_signature = splits[3];
-        }
+        String pref_key = "user_feedback_with_extra_info_enabled";
+        String extraInfoEnabledStr = preferences.getString(pref_key, null);
+        Boolean extraInfoEnabled = extraInfoEnabledStr != null ? Boolean.parseBoolean(extraInfoEnabledStr) : null;
 
         Point screenSize = ScreenUtils.getScreenSize();
         PackageInfo pkgInfo = SystemUtils.getPackageInfo(context);
@@ -112,16 +82,84 @@ public class Preferences extends FollowSystemThemeActivity {
                             + screenSize.y;
         String customInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
 
-        String url = "https://txc.qq.com/products/613302";
+        if (extraInfoEnabled != null) {
+            String url = extraInfoEnabled
+                         ? Preferences.createFeedbackUrl(preferences, clientInfo, customInfo)
+                         : Preferences.createFeedbackUrl(preferences, null, null);
+            SystemUtils.openLink(context, url);
+            return;
+        }
 
-        return String.format("%s?openid=%s&nickname=%s&avatar=%s&user_signature=%s&clientInfo=%s&customInfo=%s",
+        Alert.with(context)
+             .setView(R.layout.guide_alert_view)
+             .setCancelable(true)
+             .setTitle(R.string.title_tips)
+             .setRawMessage(R.raw.text_about_suggestion, clientInfo, customInfo)
+             .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
+                 savePreference(preferences, pref_key, Boolean.FALSE.toString());
+
+                 String url = Preferences.createFeedbackUrl(preferences, null, null);
+                 SystemUtils.openLink(context, url);
+             })
+             .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
+                 savePreference(preferences, pref_key, Boolean.TRUE.toString());
+
+                 String url = Preferences.createFeedbackUrl(preferences, clientInfo, customInfo);
+                 SystemUtils.openLink(context, url);
+             })
+             .show();
+    }
+
+    private static String createFeedbackUrl(SharedPreferences preferences, String clientInfo, String customInfo) {
+        String pref_key = "user_feedback_info";
+        String user_info = preferences.getString(pref_key, null);
+
+        String openid;
+        String nickname;
+        String avatar;
+        if (user_info == null) {
+            int millis = (int) (System.currentTimeMillis() % 10000);
+            int uid = millis + random.nextInt(10000) * random.nextInt(1000) + random.nextInt(100) * random.nextInt(10);
+
+            openid = UUID.randomUUID().toString();
+            nickname = "筷友" + String.format(Locale.getDefault(), "%06d", uid).substring(0, 6);
+            avatar = "https://api.multiavatar.com/kuaizi_" + uid + ".png";
+
+            user_info = String.format("%s,%s,%s", openid, nickname, avatar);
+
+            savePreference(preferences, pref_key, user_info);
+        } else {
+            String[] splits = user_info.split(",");
+            openid = splits[0];
+            nickname = splits[1];
+            avatar = splits[2];
+        }
+
+        String url = "https://txc.qq.com/products/613302";
+        String user_signature = CharUtils.md5(openid + nickname + avatar + "bqMO5230");
+
+        if (clientInfo != null && customInfo != null) {
+            return String.format("%s?openid=%s&nickname=%s&avatar=%s&user_signature=%s&clientInfo=%s&customInfo=%s",
+                                 url,
+                                 Uri.encode(openid),
+                                 Uri.encode(nickname),
+                                 Uri.encode(avatar),
+                                 Uri.encode(user_signature),
+                                 Uri.encode(clientInfo),
+                                 Uri.encode(customInfo));
+        }
+        return String.format("%s?openid=%s&nickname=%s&avatar=%s&user_signature=%s",
                              url,
                              Uri.encode(openid),
                              Uri.encode(nickname),
                              Uri.encode(avatar),
-                             Uri.encode(user_signature),
-                             Uri.encode(clientInfo),
-                             Uri.encode(customInfo));
+                             Uri.encode(user_signature));
+    }
+
+    private static void savePreference(SharedPreferences preferences, String key, String value) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(key, value);
+        editor.apply();
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -140,7 +178,7 @@ public class Preferences extends FollowSystemThemeActivity {
 
             Preference feedback = findPreference("about_user_feedback");
             feedback.setOnPreferenceClickListener(preference -> {
-                openFeedbackUrl(getContext());
+                openFeedbackUrl(getActivity());
                 return true;
             });
         }
