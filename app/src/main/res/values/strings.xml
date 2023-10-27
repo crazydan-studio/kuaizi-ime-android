@@ -34,6 +34,7 @@
     <string name="title_about_software_service_agreement">软件服务协议</string>
     <string name="title_about_copyright">版权声明</string>
     <string name="title_about_alpha_user_agreement">内测用户协议</string>
+    <string name="title_user_data_backup">数据备份</string>
     <string name="title_tips">友情提示</string>
 
     <string name="label_method_subtype_generic">%s</string>
@@ -55,6 +56,7 @@
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
     <string name="title_preference_performance">性能优先</string>
+    <string name="title_preference_user_data">用户数据</string>
     <string name="title_preference_about">关于</string>
 
     <!-- Settings Preferences -->

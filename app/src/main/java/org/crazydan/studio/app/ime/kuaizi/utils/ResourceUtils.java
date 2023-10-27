@@ -42,8 +42,8 @@ public class ResourceUtils {
             }
 
             return String.format(output.toString(), args);
-        } catch (IOException ignore) {
-            return null;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -51,13 +51,17 @@ public class ResourceUtils {
         try (
                 InputStream input = context.getResources().openRawResource(rawResId);
         ) {
-            int length;
-            byte[] buffer = new byte[1024];
-            while ((length = input.read(buffer)) > 0) {
-                output.write(buffer, 0, length);
-            }
-
-            output.flush();
+            copy(input, output);
         }
+    }
+
+    public static void copy(InputStream input, OutputStream output) throws IOException {
+        int length;
+        byte[] buffer = new byte[1024];
+        while ((length = input.read(buffer)) > 0) {
+            output.write(buffer, 0, length);
+        }
+
+        output.flush();
     }
 }

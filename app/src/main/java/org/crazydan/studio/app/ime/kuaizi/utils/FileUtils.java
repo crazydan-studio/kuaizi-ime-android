@@ -83,7 +83,7 @@ public class FileUtils {
         return null;
     }
 
-    private static OutputStream newOutput(File file) throws IOException {
+    public static OutputStream newOutput(File file) throws IOException {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             return Files.newOutputStream(file.toPath());
         } else {
@@ -91,7 +91,7 @@ public class FileUtils {
         }
     }
 
-    private static InputStream newInput(File file) throws IOException {
+    public static InputStream newInput(File file) throws IOException {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             return Files.newInputStream(file.toPath());
         } else {

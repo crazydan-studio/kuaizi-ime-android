@@ -17,6 +17,11 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- SDK 29 以下版本读取 Downloads 目录需要外部存储权限 -->
+    <uses-permission
+            android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+            android:maxSdkVersion="28" />
+
     <!-- Note：在 application 上设置默认主题，以便于 IDE 识别并处理 drawable 中引用的样式 -->
     <application
             android:icon="@drawable/ic_logo"

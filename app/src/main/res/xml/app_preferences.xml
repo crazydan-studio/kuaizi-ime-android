@@ -42,6 +42,12 @@
                 app:title="@string/label_disable_paging_audio" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/title_preference_user_data">
+        <Preference
+                app:key="user_data_backup"
+                android:title="@string/title_user_data_backup" />
+    </PreferenceCategory>
+
     <!--<PreferenceCategory app:title="用户数据">
         &lt;!&ndash; 1. 数据备份；2. 导入数据；3. 数据同步/迁移，同网络内通过扫描二维码实现多端的差异数据同步； &ndash;&gt;
     </PreferenceCategory>-->

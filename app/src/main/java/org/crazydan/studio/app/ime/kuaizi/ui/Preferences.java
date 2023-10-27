@@ -17,25 +17,33 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
@@ -58,6 +66,34 @@ public class Preferences extends FollowSystemThemeActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
+        }
+    }
+
+    public static void backupUserData(Activity context) {
+        String fileName = "kuaizi_user_data_backup.db";
+        // https://stackoverflow.com/questions/59103133/how-to-directly-download-a-file-to-download-directory-on-android-q-android-10#answer-64357198
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream");
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            ContentResolver resolver = context.getContentResolver();
+            Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+
+            try (OutputStream output = resolver.openOutputStream(uri)) {
+                PinyinDictDB.getInstance().saveUserDB(context, output);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + fileName);
+
+            try (OutputStream output = FileUtils.newOutput(dir)) {
+                PinyinDictDB.getInstance().saveUserDB(context, output);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
@@ -179,6 +215,12 @@ public class Preferences extends FollowSystemThemeActivity {
             Preference feedback = findPreference("about_user_feedback");
             feedback.setOnPreferenceClickListener(preference -> {
                 openFeedbackUrl(getActivity());
+                return true;
+            });
+
+            Preference backup = findPreference("user_data_backup");
+            backup.setOnPreferenceClickListener(preference -> {
+                backupUserData(getActivity());
                 return true;
             });
         }
