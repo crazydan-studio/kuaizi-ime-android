@@ -478,7 +478,7 @@ public class PinyinDictDB {
         Map<String, InputWord> wordMap = getPinyinWordsFromAppDB(wordIdSet);
         return phraseWordsList.stream()
                               .map((wordIdList) -> wordIdList.stream().map(wordMap::get).collect(Collectors.toList()))
-                              .sorted(Comparator.comparingInt(List::size))
+                              //.sorted(Comparator.comparingInt(List::size))
                               .collect(Collectors.toList());
     }
 
