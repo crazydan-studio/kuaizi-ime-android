@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 /**
  * 拼音字典（数据库版）
@@ -249,6 +252,16 @@ public class PinyinDictDB {
 
     public boolean isOpened() {
         return Boolean.TRUE.equals(value(this.dbOpened));
+    }
+
+    public void saveUserDB(Context context, OutputStream output) {
+        File userDBFile = getUserDBFile(context);
+
+        try (InputStream input = FileUtils.newInput(userDBFile)) {
+            ResourceUtils.copy(input, output);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /** 判断指定的输入是否为有效拼音 */
@@ -604,9 +617,10 @@ public class PinyinDictDB {
                                                           .filter(phrase -> phrase.length > 1)
                                                           .collect(Collectors.toList());
 
-        Set<String> firstWordIdInBestPhrasesSet = bestPhraseWordIdsList.stream()
-                                                                       .map(phrase -> phrase[0])
-                                                                       .collect(Collectors.toCollection(LinkedHashSet::new));
+        // Note：短语中的最佳候选字，仅针对短语长度大于 1 的情况，等于 1 的就应该使用高频的单字
+        Set<String> firstWordIdInBestPhrasesSet = bestPhrases.stream()
+                                                             .map(phrase -> phrase[0])
+                                                             .collect(Collectors.toCollection(LinkedHashSet::new));
         List<String> bestWords = CollectionUtils.topPatch(new ArrayList<>(firstWordIdInBestPhrasesSet), top,
                                                           // 匹配高频字
                                                           () -> doSQLiteQuery(db, wordTable,

@@ -654,7 +654,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * <p/>
      * <code>input</code> 也将根据前序确定的候选字而进行调整
      * <p/>
-     * 在滑屏输入完成后，对未确认前序的候选字按匹配的最佳短语进行调整，
+     * 在滑屏输入完成后，对未确认前序的候选字按匹配到的最佳短语进行调整，
      * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
      */
     private void determine_NotConfirmed_InputWords_Before(InputList inputList, CharInput input) {
