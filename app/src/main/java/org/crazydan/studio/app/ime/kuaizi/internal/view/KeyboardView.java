@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.FingerMovingTrailDecoration;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
@@ -53,6 +54,10 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        FingerMovingTrailDecoration movingTrailDecoration = new FingerMovingTrailDecoration();
+        addItemDecoration(movingTrailDecoration);
+        setOnTouchListener(movingTrailDecoration);
 
         this.animator = new KeyViewAnimator();
         setItemAnimator(this.animator);
