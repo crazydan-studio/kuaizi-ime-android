@@ -18,10 +18,12 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
@@ -35,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
@@ -112,34 +115,45 @@ public class InputListView extends RecyclerView implements InputMsgListener {
                 updateInputList(this.inputList);
 
                 int position = this.inputList.getSelectedIndex();
-                scrollToEnd(position);
+                scrollToSelected(position);
                 break;
         }
     }
 
-    public void scrollToEnd(int position) {
+    public void scrollToSelected(int position) {
         View item = this.layoutManager.findViewByPosition(position);
 
         int offset = 0;
         if (item != null) {
-            // https://stackoverflow.com/questions/26580723/how-to-scroll-to-the-bottom-of-a-recyclerview-scrolltoposition-doesnt-work#answer-65990642
-            int visibleWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
-            int itemWidth = item.getMeasuredWidth();
+            int parentWidth = getMeasuredWidth();
+            int parentPadding = getPaddingLeft() + getPaddingRight();
+            Point parentLocation = ViewUtils.getLocationInWindow(this);
 
-            // 项目宽度超过可见区域宽度时，向可见区域的开始位置方向移动超出的部分，
-            // 以确保项目尾部始终在可见区域的结束位置处
-            if (itemWidth > visibleWidth) {
-                offset = -(itemWidth - visibleWidth);
+            int itemWidth = item.getMeasuredWidth();
+            Point itemLocation = ViewUtils.getLocationInWindow(item);
+
+            // 项目宽度超出可见区域，则滚动位置需移至其尾部
+            if (itemWidth + parentPadding > parentWidth) {
+                offset = (itemLocation.x + itemWidth) - (parentLocation.x + parentWidth)
+                         // 尾部留白
+                         + parentPadding;
+
+                // 已经移动完成，则不做处理。用于处理多次相邻调用的情况
+                if (offset == 0) {
+                    return;
+                }
+            }
+            // 若项目已在可见区域内，则不需要滚动
+            else if (itemLocation.x >= parentLocation.x //
+                     && itemLocation.x + itemWidth <= parentLocation.x + parentWidth) {
+                return;
             }
         }
 
-        // 不需要移动项目时，采用 scrollToPosition 以保持当前滚动位置不变：
-        // 在 offset 为 0 时，scrollToPositionWithOffset
-        // 会将项目移动到可见区域的开始位置处
         if (offset == 0) {
-            this.layoutManager.scrollToPosition(position);
+            scrollToPosition(position);
         } else {
-            this.layoutManager.scrollToPositionWithOffset(position, offset);
+            scrollBy(offset, 0);
         }
     }
 
@@ -150,20 +164,20 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
         // 若点击位置更靠近输入之间的 Gap 位置，则返回该 Gap
         if (inputView instanceof CharInputView) {
-            int gap = ScreenUtils.dpToPx(4);
+            int gap = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
             int position = getChildAdapterPosition(view);
             float left = view.getLeft();
             float right = view.getRight();
 
             // 取当前输入左边的 Gap
+            // Note：不能通过 getChildAt(position) 方式获取 ViewHolder 对应位置的视图，
+            // 因为子视图的位置不一定与 ViewHolder 的视图位置等同
             if (x < left - gap) {
-                view = getChildAt(position - 1);
-                inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
+                inputView = (InputView<?>) findViewHolderForAdapterPosition(position - 1);
             }
             // 取当前输入右边的 Gap
             else if (x > right - gap) {
-                view = getChildAt(position + 1);
-                inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
+                inputView = (InputView<?>) findViewHolderForAdapterPosition(position + 1);
             }
         }
 

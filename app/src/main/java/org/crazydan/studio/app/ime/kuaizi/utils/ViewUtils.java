@@ -21,6 +21,7 @@ import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -64,6 +65,16 @@ public class ViewUtils {
     public static void setHeight(View view, int height) {
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
         layoutParams.height = height;
+    }
+
+    public static Point getLocationInWindow(View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+
+        int x = location[0];
+        int y = location[1];
+
+        return new Point(x, y);
     }
 
     public static int getBackgroundColor(View view) {

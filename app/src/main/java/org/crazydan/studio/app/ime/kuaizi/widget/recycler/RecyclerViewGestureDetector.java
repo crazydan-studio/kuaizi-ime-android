@@ -175,6 +175,10 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     }
 
     private void startLongPressTick(LongPressTickGestureData data) {
+        if (!this.longPressing.get()) {
+            return;
+        }
+
         long timeout = LONG_PRESS_TICK_TIMEOUT_MILLS;
         LongPressTickGestureData newData = new LongPressTickGestureData(data, data.tick + 1, data.duration + timeout);
 
