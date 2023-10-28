@@ -209,20 +209,26 @@ public class Preferences extends FollowSystemThemeActivity {
                 PreferenceCategory category = findPreference("category_about");
                 PreferenceScreen about = findPreference("about_alpha_user_agreement");
 
-                category.removePreference(about);
+                if (category != null && about != null) {
+                    category.removePreference(about);
+                }
             }
 
             Preference feedback = findPreference("about_user_feedback");
-            feedback.setOnPreferenceClickListener(preference -> {
-                openFeedbackUrl(getActivity());
-                return true;
-            });
+            if (feedback != null) {
+                feedback.setOnPreferenceClickListener(preference -> {
+                    openFeedbackUrl(getActivity());
+                    return true;
+                });
+            }
 
             Preference backup = findPreference("user_data_backup");
-            backup.setOnPreferenceClickListener(preference -> {
-                backupUserData(getActivity());
-                return true;
-            });
+            if (backup != null) {
+                backup.setOnPreferenceClickListener(preference -> {
+                    backupUserData(getActivity());
+                    return true;
+                });
+            }
         }
     }
 }
