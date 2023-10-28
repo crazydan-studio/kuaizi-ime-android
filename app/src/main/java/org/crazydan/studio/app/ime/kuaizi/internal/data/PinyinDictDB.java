@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -663,16 +662,16 @@ public class PinyinDictDB {
                           return null;
                       });
 
-        List<List<String>> matchedPhraseWordsList = new ArrayList<>();
+        Set<List<String>> matchedPhraseWordsSet = new LinkedHashSet<>();
         bestPhraseMap.forEach((k, phraseWordIds) -> {
             // Note：匹配位置不是在开头就是在中间
             int index = phraseWordIds.indexOf("," + prevPhraseWordIds);
             String matchedPhraseWordIds = phraseWordIds.substring(index + 1);
 
-            matchedPhraseWordsList.add(Arrays.asList(matchedPhraseWordIds.split(",")));
+            matchedPhraseWordsSet.add(Arrays.asList(matchedPhraseWordIds.split(",")));
         });
 
-        return matchedPhraseWordsList;
+        return new ArrayList<>(matchedPhraseWordsSet);
     }
 
     private Map<String, InputWord> getPinyinWordsFromAppDB(Collection<String> wordIds) {
