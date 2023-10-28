@@ -30,12 +30,14 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.FingerMovingTrailDecoration;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewGestureListener;
+import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureTrailer;
 
 /**
  * {@link Keyboard 键盘}视图
@@ -47,6 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
  */
 public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     private final RecyclerViewGestureDetector gesture;
+    private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
     private final AudioPlayer audioPlayer;
 
@@ -55,9 +58,10 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        FingerMovingTrailDecoration movingTrailDecoration = new FingerMovingTrailDecoration();
-        addItemDecoration(movingTrailDecoration);
-        setOnTouchListener(movingTrailDecoration);
+        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.key_highlight_fg_color);
+        this.gestureTrailer = new RecyclerViewGestureTrailer(this, true);
+        this.gestureTrailer.setTrailColor(trailColor);
+        addItemDecoration(this.gestureTrailer);
 
         this.animator = new KeyViewAnimator();
         setItemAnimator(this.animator);
@@ -67,7 +71,9 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
-                    .addListener(new KeyViewGestureListener(this));
+                    // Note：以下监听的执行顺序与注册顺序一致
+                    .addListener(new KeyViewGestureListener(this)) //
+                    .addListener(this.gestureTrailer);
     }
 
     /** 重置视图 */
@@ -113,6 +119,17 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
                     setItemAnimator(null);
                 } else {
                     setItemAnimator(this.animator);
+                }
+                break;
+            }
+            case InputChars_Input_Done: {
+                this.gestureTrailer.setDisabled(true);
+                break;
+            }
+            case InputChars_Input_Doing: {
+                // 仅滑屏输入才显示轨迹
+                if (((InputCharsInputtingMsgData) data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip) {
+                    this.gestureTrailer.setDisabled(false);
                 }
                 break;
             }

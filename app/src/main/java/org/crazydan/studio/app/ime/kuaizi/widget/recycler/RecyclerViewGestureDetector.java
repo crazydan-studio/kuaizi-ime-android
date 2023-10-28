@@ -18,7 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +48,7 @@ public class RecyclerViewGestureDetector implements RecyclerView.OnItemTouchList
     /** 确定滑动的超时时间 */
     private static final long FLIPPING_TIMEOUT_MILLS = 400;
 
-    private final Set<Listener> listeners = new HashSet<>();
+    private final Set<Listener> listeners = new LinkedHashSet<>();
 
     private final GestureHandler gestureHandler = new GestureHandler();
     private final List<GestureData> movingTracker = new ArrayList<>();
