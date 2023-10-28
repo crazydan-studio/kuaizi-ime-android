@@ -27,13 +27,16 @@ import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
@@ -43,6 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
@@ -64,7 +68,8 @@ public class ImeInputView extends FrameLayout
     private final InputList inputList;
     private KeyboardView keyboardView;
     private InputListView inputListView;
-    private PopupWindow inputCompletionsPopup;
+    private PopupWindow inputCompletionsPopupWindow;
+    private PopupWindow inputKeyPopupWindow;
     private InputCompletionsView inputCompletionsView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
@@ -150,7 +155,7 @@ public class ImeInputView extends FrameLayout
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
         boolean completionsShown = this.inputList.hasCompletions();
-        showInputCompletionsPopup(completionsShown);
+        showInputCompletionsPopupWindow(completionsShown);
 
         switch (msg) {
             case Keyboard_Switch_Doing: {
@@ -166,6 +171,18 @@ public class ImeInputView extends FrameLayout
             case Keyboard_HandMode_Switch_Done: {
                 // Note：仅记录切换到的模式以便于切换到其他类型键盘时按该模式绘制按键
                 this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) data).mode;
+                break;
+            }
+            case InputChars_Input_Doing: {
+                Key<?> key = data.getKey();
+                showInputKeyPopupWindow(key != null ? key.getLabel() : null,
+                                        ((InputCharsInputtingMsgData) data).keyInputType
+                                        != InputCharsInputtingMsgData.KeyInputType.slip);
+                break;
+            }
+            case InputList_Pending_Drop_Done:
+            case InputChars_Input_Done: {
+                showInputKeyPopupWindow(null, false);
                 break;
             }
             default: {
@@ -252,7 +269,7 @@ public class ImeInputView extends FrameLayout
             this.inputMsgListeners.forEach(this.keyboard::removeInputMsgListener);
         }
 
-        resetInputCompletionsPopup();
+        resetPopupWindows();
 
         if (this.keyboardView != null) {
             this.keyboardView.reset();
@@ -289,8 +306,9 @@ public class ImeInputView extends FrameLayout
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.inputListView = rootView.findViewById(R.id.input_list);
 
+        View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
-        prepareInputCompletionsPopup(this.inputCompletionsView);
+        preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         this.inputListView.updateInputList(this.inputList);
         this.inputCompletionsView.setInputList(this.inputList);
@@ -386,22 +404,29 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    private void prepareInputCompletionsPopup(InputCompletionsView completionsView) {
-        resetInputCompletionsPopup();
+    private void resetPopupWindows() {
+        if (this.inputCompletionsPopupWindow != null) {
+            this.inputCompletionsPopupWindow.dismiss();
+        } else {
+            this.inputCompletionsPopupWindow = new PopupWindow();
+        }
 
-        PopupWindow window = this.inputCompletionsPopup;
-
-        window.setClippingEnabled(false);
-        window.setBackgroundDrawable(null);
-        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
-
-        window.setContentView(completionsView);
-
-        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+        if (this.inputKeyPopupWindow != null) {
+            this.inputKeyPopupWindow.dismiss();
+        } else {
+            this.inputKeyPopupWindow = new PopupWindow();
+        }
     }
 
-    private void showInputCompletionsPopup(boolean shown) {
-        PopupWindow window = this.inputCompletionsPopup;
+    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
+        resetPopupWindows();
+
+        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
+        initPopupWindow(this.inputKeyPopupWindow, keyView);
+    }
+
+    private void showInputCompletionsPopupWindow(boolean shown) {
+        PopupWindow window = this.inputCompletionsPopupWindow;
 
         if (!shown) {
             window.dismiss();
@@ -416,25 +441,35 @@ public class ImeInputView extends FrameLayout
         int width = getMeasuredWidth();
         int height = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.input_completions_view_height);
 
-        window.setWidth(width);
-        window.setHeight(height);
-
-        // 放置于被布局的键盘之上
-        View parent = this;
-        int[] location = new int[2];
-        parent.getLocationInWindow(location);
-
-        int x = location[0];
-        int y = location[1] - window.getHeight();
-
-        post(() -> window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y));
+        showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
     }
 
-    private void resetInputCompletionsPopup() {
-        if (this.inputCompletionsPopup != null) {
-            this.inputCompletionsPopup.dismiss();
-        } else {
-            this.inputCompletionsPopup = new PopupWindow();
+    private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
+        if (getKeyboardConfig().isInputKeyPopupTipsDisabled()) {
+            return;
+        }
+
+        PopupWindow window = this.inputKeyPopupWindow;
+
+        if (key == null || key.isEmpty()) {
+            // Note：存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
+            post(window::dismiss);
+            return;
+        }
+
+        View contentView = window.getContentView();
+        TextView textView = contentView.findViewById(R.id.fg_view);
+        textView.setText(key);
+
+        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+
+        int width = WindowManager.LayoutParams.WRAP_CONTENT;
+        int height = contentView.getMeasuredHeight() + ScreenUtils.dpToPx(2);
+
+        showPopupWindow(window, width, height, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+
+        if (hideDelayed) {
+            postDelayed(window::dismiss, 600);
         }
     }
 
@@ -469,5 +504,30 @@ public class ImeInputView extends FrameLayout
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
             this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
+    }
+
+    private void initPopupWindow(PopupWindow window, View contentView) {
+        window.setClippingEnabled(false);
+        window.setBackgroundDrawable(null);
+        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        window.setContentView(contentView);
+
+        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+    }
+
+    private void showPopupWindow(PopupWindow window, int width, int height, int gravity) {
+        window.setWidth(width);
+        window.setHeight(height);
+
+        // 放置于被布局的键盘之上
+        View parent = this;
+        int[] location = new int[2];
+        parent.getLocationInWindow(location);
+
+        int x = location[0];
+        int y = location[1] - window.getHeight();
+
+        post(() -> window.showAtLocation(parent, gravity, x, y));
     }
 }

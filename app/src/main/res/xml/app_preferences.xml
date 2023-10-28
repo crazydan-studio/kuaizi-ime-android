@@ -40,6 +40,14 @@
         <SwitchPreferenceCompat
                 app:key="disable_input_candidates_paging_audio"
                 app:title="@string/label_disable_paging_audio" />
+
+        <SwitchPreferenceCompat
+                app:key="disable_gesture_slipping_trail"
+                app:title="@string/label_disable_gesture_slipping_trail" />
+
+        <SwitchPreferenceCompat
+                app:key="disable_input_key_popup_tips"
+                app:title="@string/label_disable_input_key_popup_tips" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/title_preference_user_data">

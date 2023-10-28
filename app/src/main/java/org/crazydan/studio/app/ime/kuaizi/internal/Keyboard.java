@@ -117,6 +117,8 @@ public interface Keyboard extends UserInputMsgListener {
         private static final String pref_key_disable_key_animation = "disable_key_animation";
         private static final String pref_key_disable_input_candidates_paging_audio
                 = "disable_input_candidates_paging_audio";
+        private static final String pref_key_disable_input_key_popup_tips = "disable_input_key_popup_tips";
+        private static final String pref_key_disable_gesture_slipping_trail = "disable_gesture_slipping_trail";
         private static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
         private static final String pref_key_hand_mode = "hand_mode";
         private static final String pref_key_theme = "theme";
@@ -139,6 +141,8 @@ public interface Keyboard extends UserInputMsgListener {
         private boolean keyClickedAudioDisabled;
         private boolean keyAnimationDisabled;
         private boolean pagingAudioDisabled;
+        private boolean inputKeyPopupTipsDisabled;
+        private boolean gestureSlippingTrailDisabled;
         private boolean desktopSwipeUpGestureAdapted;
 
         public Config(Type type) {
@@ -158,6 +162,8 @@ public interface Keyboard extends UserInputMsgListener {
                 this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
                 this.keyAnimationDisabled = config.keyAnimationDisabled;
                 this.pagingAudioDisabled = config.pagingAudioDisabled;
+                this.inputKeyPopupTipsDisabled = config.inputKeyPopupTipsDisabled;
+                this.gestureSlippingTrailDisabled = config.gestureSlippingTrailDisabled;
                 this.desktopSwipeUpGestureAdapted = config.desktopSwipeUpGestureAdapted;
             }
         }
@@ -226,6 +232,14 @@ public interface Keyboard extends UserInputMsgListener {
             return this.pagingAudioDisabled;
         }
 
+        public boolean isInputKeyPopupTipsDisabled() {
+            return this.inputKeyPopupTipsDisabled;
+        }
+
+        public boolean isGestureSlippingTrailDisabled() {
+            return this.gestureSlippingTrailDisabled;
+        }
+
         public boolean isDesktopSwipeUpGestureAdapted() {
             return this.desktopSwipeUpGestureAdapted;
         }
@@ -237,6 +251,8 @@ public interface Keyboard extends UserInputMsgListener {
             this.keyClickedAudioDisabled = Keyboard.Config.isKeyClickedAudioDisabled(preferences);
             this.keyAnimationDisabled = Keyboard.Config.isKeyAnimationDisabled(preferences);
             this.pagingAudioDisabled = Keyboard.Config.isPagingAudioDisabled(preferences);
+            this.inputKeyPopupTipsDisabled = Keyboard.Config.isInputKeyPopupTipsDisabled(preferences);
+            this.gestureSlippingTrailDisabled = Keyboard.Config.isGestureSlippingTrailDisabled(preferences);
             this.desktopSwipeUpGestureAdapted = Keyboard.Config.isDesktopSwipeUpGestureAdapted(preferences);
 
             Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
@@ -259,6 +275,14 @@ public interface Keyboard extends UserInputMsgListener {
 
         public static boolean isPagingAudioDisabled(SharedPreferences preferences) {
             return preferences.getBoolean(Keyboard.Config.pref_key_disable_input_candidates_paging_audio, false);
+        }
+
+        public static boolean isInputKeyPopupTipsDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Config.pref_key_disable_input_key_popup_tips, false);
+        }
+
+        public static boolean isGestureSlippingTrailDisabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Config.pref_key_disable_gesture_slipping_trail, false);
         }
 
         public static ThemeType getTheme(SharedPreferences preferences) {

@@ -128,7 +128,8 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
             }
             case InputChars_Input_Doing: {
                 // 仅滑屏输入才显示轨迹
-                if (((InputCharsInputtingMsgData) data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip) {
+                if (((InputCharsInputtingMsgData) data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
+                    && !this.keyboard.getConfig().isGestureSlippingTrailDisabled()) {
                     this.gestureTrailer.setDisabled(false);
                 }
                 break;

@@ -46,6 +46,11 @@ public class InputWordKey extends BaseKey<InputWordKey> {
     }
 
     @Override
+    public String getLabel() {
+        return getText();
+    }
+
+    @Override
     public String getText() {
         return getWord().getValue();
     }

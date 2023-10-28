@@ -68,6 +68,8 @@
     <string name="label_disable_key_clicked_audio">Disable the Key Clicked Audio</string>
     <string name="label_disable_key_animation">Disable the Key Animation</string>
     <string name="label_disable_paging_audio">Disable the Paging Audio</string>
+    <string name="label_disable_input_key_popup_tips">Disable the Key Popup Tips</string>
+    <string name="label_disable_gesture_slipping_trail">Disable the Slipping Trail</string>
 
     <string name="desc_disable_user_input_data">
         Forbidden recording the user inputting data can avoid privacy leaks
