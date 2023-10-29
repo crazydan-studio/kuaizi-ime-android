@@ -23,10 +23,12 @@ import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -107,31 +109,12 @@ public class HexagonDrawable extends Drawable {
     }
 
     private void resetPath(Rect bounds) {
-        double centerX = bounds.width() / 2f;
-        double centerY = bounds.height() / 2f;
-        double radius = this.orientation == HexagonOrientation.FLAT_TOP ? centerX : centerY;
-
-        double[] vertexX = new double[6];
-        double[] vertexY = new double[6];
-        for (int i = 0; i < 6; i++) {
-            int times = this.orientation == HexagonOrientation.FLAT_TOP ? 2 * i : 2 * i + 1;
-            double radians = Math.toRadians(30 * times);
-
-            vertexX[i] = centerX + radius * Math.cos(radians);
-            vertexY[i] = centerY + radius * Math.sin(radians);
-        }
-
         this.path.reset();
-        for (int i = 0; i < 6; i++) {
-            float x = (float) vertexX[i];
-            float y = (float) vertexY[i];
 
-            if (i == 0) {
-                this.path.moveTo(x, y);
-            } else {
-                this.path.lineTo(x, y);
-            }
-        }
-        this.path.close();
+        PointF center = new PointF(bounds.width() / 2f, bounds.height() / 2f);
+        // Note：bounds 的坐标从 (0, 0) 开始，且其为正方形，故而，半径与中心位置相同
+        float radius = this.orientation == HexagonOrientation.FLAT_TOP ? center.x : center.y;
+
+        ViewUtils.drawHexagon(this.path, this.orientation, center, radius);
     }
 }

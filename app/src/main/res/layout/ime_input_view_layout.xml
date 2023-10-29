@@ -107,15 +107,32 @@
             android:layout_height="1dp"
             android:background="?attr/keyboard_divider_color" />
 
-    <org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView
-            android:id="@+id/keyboard"
+    <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/keyboard_view_height"
-            android:layout_margin="4dp" />
+            android:layout_height="wrap_content">
 
-    <View
-            android:id="@+id/bottom_spacing_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:visibility="gone" />
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+            <org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView
+                    android:id="@+id/keyboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/keyboard_view_height"
+                    android:layout_margin="4dp" />
+
+            <View
+                    android:id="@+id/bottom_spacing_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+        </LinearLayout>
+
+        <org.crazydan.studio.app.ime.kuaizi.internal.view.XKeyboardView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/keyboard_view_height"
+                android:layout_margin="4dp" />
+    </FrameLayout>
 </LinearLayout>

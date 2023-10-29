@@ -21,7 +21,9 @@ import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -33,6 +35,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.widget.TextView;
+import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
@@ -126,6 +129,31 @@ public class ViewUtils {
         drawable.setBounds(0, 0, width, height);
 
         return drawable;
+    }
+
+    public static void drawHexagon(Path path, HexagonOrientation orientation, PointF center, float radius) {
+        float[] vertexX = new float[6];
+        float[] vertexY = new float[6];
+
+        for (int i = 0; i < 6; i++) {
+            int times = orientation == HexagonOrientation.FLAT_TOP ? 2 * i : 2 * i + 1;
+            float radians = (float) Math.toRadians(30 * times);
+
+            vertexX[i] = (float) (center.x + radius * Math.cos(radians));
+            vertexY[i] = (float) (center.y + radius * Math.sin(radians));
+        }
+
+        for (int i = 0; i < 6; i++) {
+            float x = vertexX[i];
+            float y = vertexY[i];
+
+            if (i == 0) {
+                path.moveTo(x, y);
+            } else {
+                path.lineTo(x, y);
+            }
+        }
+        path.close();
     }
 
     public static void startAnimationOnce(View view, long duration, Animation... animations) {
