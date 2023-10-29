@@ -32,6 +32,8 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * X 型全滑屏输入键盘视图
+ * <p/>
+ * 参考设计来源于：<a href="https://github.com/8VIM/8VIM">8VIM/8VIM</a>
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-29
