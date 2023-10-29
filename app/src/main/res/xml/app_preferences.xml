@@ -28,7 +28,9 @@
                 app:summary="@string/desc_disable_user_input_data" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/title_preference_performance">
+    <PreferenceCategory
+            app:title="@string/title_preference_performance"
+            app:initialExpandedChildrenCount="0">
         <SwitchPreferenceCompat
                 app:key="disable_key_clicked_audio"
                 app:title="@string/label_disable_key_clicked_audio" />
