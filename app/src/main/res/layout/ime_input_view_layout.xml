@@ -133,6 +133,6 @@
         <org.crazydan.studio.app.ime.kuaizi.internal.view.XKeyboardView
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/keyboard_view_height"
-                android:layout_margin="4dp" />
+                android:rotation="-15" />
     </FrameLayout>
 </LinearLayout>

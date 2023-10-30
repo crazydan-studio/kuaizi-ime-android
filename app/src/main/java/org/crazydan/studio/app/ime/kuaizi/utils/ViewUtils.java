@@ -131,29 +131,76 @@ public class ViewUtils {
         return drawable;
     }
 
-    public static void drawHexagon(Path path, HexagonOrientation orientation, PointF center, float radius) {
-        float[] vertexX = new float[6];
-        float[] vertexY = new float[6];
+    /**
+     * 获取正六边形顶点坐标
+     *
+     * @return 从最右侧顶点开始顺时针旋转一周所遇到的顶点
+     */
+    public static PointF[] createHexagon(HexagonOrientation orientation, PointF center, float radius) {
+        return drawHexagon(null, orientation, center, radius);
+    }
+
+    /** 绘制正六边形，并返回其顶点坐标 */
+    public static PointF[] drawHexagon(Path path, HexagonOrientation orientation, PointF center, float radius) {
+        PointF[] vertexes = new PointF[6];
 
         for (int i = 0; i < 6; i++) {
             int times = orientation == HexagonOrientation.FLAT_TOP ? 2 * i : 2 * i + 1;
             float radians = (float) Math.toRadians(30 * times);
 
-            vertexX[i] = (float) (center.x + radius * Math.cos(radians));
-            vertexY[i] = (float) (center.y + radius * Math.sin(radians));
-        }
+            float x = (float) (center.x + radius * Math.cos(radians));
+            float y = (float) (center.y + radius * Math.sin(radians));
 
-        for (int i = 0; i < 6; i++) {
-            float x = vertexX[i];
-            float y = vertexY[i];
+            vertexes[i] = new PointF(x, y);
 
-            if (i == 0) {
-                path.moveTo(x, y);
-            } else {
-                path.lineTo(x, y);
+            if (path != null) {
+                if (i == 0) {
+                    path.moveTo(x, y);
+                } else {
+                    path.lineTo(x, y);
+                }
             }
         }
-        path.close();
+
+        if (path != null) {
+            path.close();
+        }
+
+        return vertexes;
+    }
+
+    /** 为在 view 上绘制阴影做准备 */
+    public static void prepareForShadow(View view) {
+        // https://stackoverflow.com/questions/17410195/setshadowlayer-android-api-differences/17414651#17414651
+        // https://developer.android.com/topic/performance/hardware-accel#determining
+        // https://developer.android.com/topic/performance/hardware-accel#drawing-support
+        // Note：在 API 28 以下版本中，若在未启用硬件加速的视图上通过 Drawable 画阴影（Paint.setShadowLayer），
+        // 必须在视图上启用软件加速，否则，视图将会出现整体虚化，且阴影颜色也会使用其填充色而不是设置的颜色
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P //
+            && !view.isHardwareAccelerated()) {
+            view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+    }
+
+    /** 判断指定的点是否在多边形内部 */
+    public static boolean isPointInPolygon(PointF point, PointF[] polygon) {
+        int intersectCount = 0;
+        for (int i = 0; i < polygon.length; i++) {
+            PointF p1 = polygon[i];
+            PointF p2 = polygon[(i + 1) % polygon.length];
+
+            if (point.y > Math.min(p1.y, p2.y)
+                && point.y <= Math.max(p1.y, p2.y)
+                && point.x <= Math.max(p1.x, p2.x)
+                && p1.y != p2.y) {
+                double xIntersection = (point.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x;
+
+                if (p1.x == p2.x || point.x <= xIntersection) {
+                    intersectCount++;
+                }
+            }
+        }
+        return intersectCount % 2 != 0;
     }
 
     public static void startAnimationOnce(View view, long duration, Animation... animations) {
