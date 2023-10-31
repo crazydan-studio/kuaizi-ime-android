@@ -134,7 +134,7 @@ public class ViewUtils {
     /**
      * 获取正六边形顶点坐标
      *
-     * @return 从最右侧顶点开始顺时针旋转一周所遇到的顶点
+     * @return 从最右上角顶点开始顺时针旋转一周所遇到的顶点
      */
     public static PointF[] createHexagon(HexagonOrientation orientation, PointF center, float radius) {
         return drawHexagon(null, orientation, center, radius);
@@ -142,16 +142,20 @@ public class ViewUtils {
 
     /** 绘制正六边形，并返回其顶点坐标 */
     public static PointF[] drawHexagon(Path path, HexagonOrientation orientation, PointF center, float radius) {
-        PointF[] vertexes = new PointF[6];
+        int vertexCount = 6;
+        PointF[] vertexes = new PointF[vertexCount];
 
-        for (int i = 0; i < 6; i++) {
-            int times = orientation == HexagonOrientation.FLAT_TOP ? 2 * i : 2 * i + 1;
+        for (int i = 0; i < vertexCount; i++) {
+            int times = orientation == HexagonOrientation.FLAT_TOP //
+                        ? 2 * i : 2 * i + 1;
             float radians = (float) Math.toRadians(30 * times);
 
             float x = (float) (center.x + radius * Math.cos(radians));
             float y = (float) (center.y + radius * Math.sin(radians));
 
-            vertexes[i] = new PointF(x, y);
+            int vertexIndex = orientation == HexagonOrientation.FLAT_TOP //
+                              ? i : (vertexCount + 1 + i) % vertexCount;
+            vertexes[vertexIndex] = new PointF(x, y);
 
             if (path != null) {
                 if (i == 0) {
