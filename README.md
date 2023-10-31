@@ -10,3 +10,5 @@
   - [动态赋值](https://developer.android.com/build/gradle-tips#simplify-app-development)
   - [签名](https://developer.android.com/build/gradle-tips#remove-private-signing-information-from-your-project)
   - [为不同构建类型添加不同资源配置](https://stackoverflow.com/questions/24785270/how-to-change-app-name-per-gradle-build-type#answer-24786371)
+- [Android自定义View篇之（三）Canvas绘制文字](https://www.cnblogs.com/andy-songwei/p/10968358.html):
+  涉及详细的文字尺寸、基线等计算方式的说明
