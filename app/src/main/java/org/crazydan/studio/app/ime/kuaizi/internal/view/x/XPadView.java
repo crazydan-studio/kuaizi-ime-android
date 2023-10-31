@@ -25,6 +25,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -62,7 +64,7 @@ public class XPadView extends View {
     private final PathMeasure trailPathMeasure = new PathMeasure();
 
     private int padding = ScreenUtils.dpToPx(4);
-    private int hexagonRadius = 142;
+    private int hexagonRadius = 152;
     private int hexagonCornerRadius = 12;
     private String dividerStyle;
 
@@ -129,21 +131,20 @@ public class XPadView extends View {
         int width = getWidth();
         int height = getHeight();
         PointF center = new PointF(width / 2f, height / 2f);
-        float innerCircleMaxRadius = Math.min(center.x, center.y);
+        float innerCircleMaxRadius = Math.min(center.x, center.y) - this.padding;
 
         float innerHexagonRadius = this.hexagonRadius;
-        float outerHexagonRadius = (this.orientation == HexagonOrientation.FLAT_TOP
-                                    ? innerCircleMaxRadius / cos_30
-                                    : innerCircleMaxRadius) - this.padding;
+        float outerHexagonRadius = this.orientation == HexagonOrientation.FLAT_TOP
+                                   ? innerCircleMaxRadius / cos_30
+                                   : innerCircleMaxRadius;
 
-        PointF origin = new PointF(this.orientation == HexagonOrientation.FLAT_TOP
-                                   ? center.x + (width
-                                                 - outerHexagonRadius
-                                                   * 2)
-                                   : center.x + (width - innerCircleMaxRadius * 2),
-                                   center.y + (height - innerCircleMaxRadius * 2));
+        PointF origin = this.orientation == HexagonOrientation.FLAT_TOP //
+                        ? new PointF(width - outerHexagonRadius - this.padding,
+                                     height - innerCircleMaxRadius - this.padding) //
+                        : new PointF(width - outerHexagonRadius * cos_30 - this.padding,
+                                     height - outerHexagonRadius - this.padding);
 
-        float circleRadius = this.hexagonRadius * 0.35f;
+        float circleRadius = this.hexagonRadius * 0.4f;
         int keyNormalColor = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_fg_color);
         int keyHighlightColor = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_highlight_fg_color);
 
@@ -209,8 +210,8 @@ public class XPadView extends View {
 
         // 绘制输入文本
         float keyTextSize = 45f;
-        float keyHalfTextSize = keyTextSize / 2f;
-        float keySpacing = (outerHexagonRadius - innerHexagonRadius - keyHalfTextSize) / 3f;
+        float keySpacing = (outerHexagonRadius - innerHexagonRadius - keyTextSize * 0.5f) //
+                           / 3f;
 //        // - 绘制输入文本布局线
 //        this.path.reset();
 //
@@ -241,6 +242,8 @@ public class XPadView extends View {
         // 例如，(0, 0, 1) 表示第 0 区的 x 轴上序号为 1 的点；(1, 2, 0) 表示第 1 区 y 轴上序号为 2 的点
         String[][][] keys = getKeys();
 
+        float keyTextSpacing = 20;
+        float keyTextHeight = -this.textPaint.getFontMetrics().ascent;
         for (int i = 0; i < 3; i++) {
             float radius = keySpacing * (i + 1) + innerHexagonRadius;
             PointF[] vertexes = ViewUtils.createHexagon(this.orientation == HexagonOrientation.FLAT_TOP
@@ -268,73 +271,78 @@ public class XPadView extends View {
                 String xKey = keys[j][0][i];
                 String yKey = keys[j][1][i];
 
+                float xKeyWidth = getTextWidth(this.textPaint, xKey);
+                float yKeyWidth = getTextWidth(this.textPaint, yKey);
+
                 this.textPaint.setColor(j == activeZoneIndex ? keyHighlightColor : keyNormalColor);
 
                 float hOffset;
                 float vOffset;
 
                 // 靠近分区 x 轴绘制文本
+                float xHOffset = xKeyWidth;
                 this.path.reset();
                 if (j == 0) {
                     this.path.moveTo(origin.x, origin.y);
-                    this.path.lineTo(xPoint.x, xPoint.y);
+                    this.path.lineTo(xPoint.x + xHOffset, xPoint.y);
                     this.textPaint.setTextAlign(Paint.Align.RIGHT);
-                    hOffset = keyHalfTextSize;
-                    vOffset = keyTextSize;
+                    hOffset = 0; // 偏移无效
+                    vOffset = keyTextHeight + keyTextSpacing * 0.5f;
                 } else if (j == 3) {
-                    this.path.moveTo(xPoint.x, xPoint.y);
+                    this.path.moveTo(xPoint.x - xHOffset, xPoint.y);
                     this.path.lineTo(origin.x, origin.y);
                     this.textPaint.setTextAlign(Paint.Align.LEFT);
-                    hOffset = -keyHalfTextSize;
-                    vOffset = -keyHalfTextSize;
+                    hOffset = 0; // 偏移无效
+                    vOffset = -keyTextSpacing;
                 } else if (j <= 2) {
                     this.path.moveTo(current.x, current.y);
                     this.path.lineTo(xPoint.x, xPoint.y);
                     this.textPaint.setTextAlign(Paint.Align.RIGHT);
-                    hOffset = -keyHalfTextSize;
-                    vOffset = keyHalfTextSize / 2f;
+                    hOffset = -keyTextSpacing;
+                    vOffset = keyTextHeight;
                 } else {
                     this.path.moveTo(xPoint.x, xPoint.y);
                     this.path.lineTo(current.x, current.y);
                     this.textPaint.setTextAlign(Paint.Align.LEFT);
-                    hOffset = keyHalfTextSize;
-                    vOffset = keyHalfTextSize / 2f;
+                    hOffset = keyTextSpacing;
+                    vOffset = 0;
                 }
                 canvas.drawTextOnPath(xKey, this.path, hOffset, vOffset, this.textPaint);
 
                 // 靠近分区 y 轴绘制文本
+                float yHOffset = yKeyWidth;
                 this.path.reset();
                 if (j == 2) {
-                    this.path.moveTo(yPoint.x, yPoint.y);
+                    this.path.moveTo(yPoint.x - yHOffset, yPoint.y);
                     this.path.lineTo(origin.x, origin.y);
                     this.textPaint.setTextAlign(Paint.Align.LEFT);
-                    hOffset = -keyHalfTextSize;
-                    vOffset = keyTextSize;
+                    hOffset = 0; // 偏移无效
+                    vOffset = keyTextHeight + keyTextSpacing * 0.5f;
                 } else if (j == 5) {
                     this.path.moveTo(origin.x, origin.y);
-                    this.path.lineTo(yPoint.x, yPoint.y);
+                    this.path.lineTo(yPoint.x + yHOffset, yPoint.y);
                     this.textPaint.setTextAlign(Paint.Align.RIGHT);
-                    hOffset = keyHalfTextSize;
-                    vOffset = -keyHalfTextSize;
+                    hOffset = 0; // 偏移无效
+                    vOffset = -keyTextSpacing;
                 } else if (j <= 2) {
                     this.path.moveTo(yPoint.x, yPoint.y);
                     this.path.lineTo(current.x, current.y);
                     this.textPaint.setTextAlign(Paint.Align.LEFT);
-                    hOffset = keyHalfTextSize;
-                    vOffset = keyHalfTextSize / 2f;
+                    hOffset = keyTextSpacing;
+                    vOffset = keyTextHeight;
                 } else {
                     this.path.moveTo(current.x, current.y);
                     this.path.lineTo(yPoint.x, yPoint.y);
                     this.textPaint.setTextAlign(Paint.Align.RIGHT);
-                    hOffset = -keyHalfTextSize;
-                    vOffset = keyHalfTextSize / 2f;
+                    hOffset = -keyTextSpacing;
+                    vOffset = 0;
                 }
                 canvas.drawTextOnPath(yKey, this.path, hOffset, vOffset, this.textPaint);
             }
         }
 
         // 绘制按钮文本
-        float labelTextSize = 30f;
+        float labelTextSize = 35f;
         this.textPaint.setTextSize(labelTextSize);
 
         String[] switcherTexts = new String[] { "英文", "拼音", "数字", "算数", "", "大写" };
@@ -360,7 +368,7 @@ public class XPadView extends View {
             canvas.drawTextOnPath(switcherTexts[i],
                                   this.path,
                                   0,
-                                  i > 2 ? labelTextSize * 1.5f : -labelTextSize * 0.7f,
+                                  i > 2 ? labelTextSize * 1.25f : -labelTextSize * 0.5f,
                                   this.textPaint);
         }
     }
@@ -386,10 +394,28 @@ public class XPadView extends View {
         }
     }
 
+    private float getTextWidth(Paint paint, String text) {
+        float[] widths = new float[text.length()];
+        paint.getTextWidths(text, widths);
+
+        float total = 0;
+        for (float width : widths) {
+            total += width;
+        }
+        return total;
+    }
+
+    private RectF getTextBounds(Paint paint, String text) {
+        Rect rect = new Rect();
+        paint.getTextBounds(text, 0, text.length(), rect);
+
+        return new RectF(rect.left, rect.top, rect.right, rect.bottom);
+    }
+
     private String[][][] getKeys() {
         return new String[][][] {
                 new String[][] {
-                        new String[] { "i", "u", "ü" }, new String[] { "", "Space", "" },
+                        new String[] { "i", "u", "ü" }, new String[] { "", "空格", "" },
                         }, //
                 new String[][] {
                         new String[] { "", "", "" }, new String[] { "p", "w", "y" },
