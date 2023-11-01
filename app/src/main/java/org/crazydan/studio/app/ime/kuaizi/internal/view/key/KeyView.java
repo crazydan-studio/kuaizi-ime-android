@@ -72,7 +72,7 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
                 drawable.setBorder(getStringByAttrId(R.attr.key_disabled_border_style));
             }
 
-            ViewUtils.prepareForShadow(this.bgView);
+            ViewUtils.enableHardwareAccelerated(this.bgView);
             this.bgView.setImageDrawable(drawable);
         } else {
             this.bgView.setImageDrawable(null);

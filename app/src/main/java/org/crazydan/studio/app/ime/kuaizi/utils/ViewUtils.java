@@ -134,7 +134,7 @@ public class ViewUtils {
     /**
      * 获取正六边形顶点坐标
      *
-     * @return 从最右上角顶点开始顺时针旋转一周所遇到的顶点
+     * @return 从水平线最右侧开始逆时针旋转所经过的顶点
      */
     public static PointF[] createHexagon(HexagonOrientation orientation, PointF center, float radius) {
         return drawHexagon(null, orientation, center, radius);
@@ -153,9 +153,7 @@ public class ViewUtils {
             float x = (float) (center.x + radius * Math.cos(radians));
             float y = (float) (center.y + radius * Math.sin(radians));
 
-            int vertexIndex = orientation == HexagonOrientation.FLAT_TOP //
-                              ? i : (vertexCount + 1 + i) % vertexCount;
-            vertexes[vertexIndex] = new PointF(x, y);
+            vertexes[i] = new PointF(x, y);
 
             if (path != null) {
                 if (i == 0) {
@@ -173,13 +171,16 @@ public class ViewUtils {
         return vertexes;
     }
 
-    /** 为在 view 上绘制阴影做准备 */
-    public static void prepareForShadow(View view) {
+    /**
+     * 在 view 上启用硬件加速以支持绘制阴影等
+     * <p/>
+     * 在 API 28 以下版本中，若在未启用硬件加速的视图上通过 Drawable 画阴影（Paint.setShadowLayer），
+     * 必须在视图上启用软件加速，否则，视图将会出现整体虚化，且阴影颜色也会使用其填充色而不是设置的颜色
+     */
+    public static void enableHardwareAccelerated(View view) {
         // https://stackoverflow.com/questions/17410195/setshadowlayer-android-api-differences/17414651#17414651
         // https://developer.android.com/topic/performance/hardware-accel#determining
         // https://developer.android.com/topic/performance/hardware-accel#drawing-support
-        // Note：在 API 28 以下版本中，若在未启用硬件加速的视图上通过 Drawable 画阴影（Paint.setShadowLayer），
-        // 必须在视图上启用软件加速，否则，视图将会出现整体虚化，且阴影颜色也会使用其填充色而不是设置的颜色
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P //
             && !view.isHardwareAccelerated()) {
             view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
