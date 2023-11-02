@@ -63,13 +63,10 @@ public class XPadView extends View {
 
     private int padding = ScreenUtils.dpToPx(8);
     private int hexagonRadius = 136;
-    private int hexagonCornerRadius = 12;
-    private String dividerStyle;
+    private int hexagonCornerRadius = 16;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        this.dividerStyle = ThemeUtils.getStringByAttrId(context, R.attr.x_keyboard_divider_style);
 
         this.textPaint = new Paint();
         this.textPaint.setAntiAlias(true);
@@ -296,33 +293,36 @@ public class XPadView extends View {
 
         // ==================================================
         // 第 0 级分区：中心圆
+        XZone level_0_zone = this.zones[0] = new XZone();
+
         int level_0_zone_bg_color = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_ctrl_locator_bg_color);
         String level_0_zone_shadow = ThemeUtils.getStringByAttrId(getContext(), R.attr.key_shadow_style);
 
-        XZone level_0_zone = this.zones[0] = new XZone();
-        level_0_zone.painter.setFillShadow(level_0_zone_shadow);
-        level_0_zone.painter.setFillColor(level_0_zone_bg_color);
+        XPainter level_0_zone_fill_painter = level_0_zone.newPainter();
+        level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
+        level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
 
         float centerCircleRadius = innerHexagonRadius * 0.4f;
-        level_0_zone.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
+        level_0_zone_fill_painter.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
 
         level_0_zone.blocks.add(new XZone.CircleBlock(origin, centerCircleRadius));
 
         // ==================================================
         // 第 1 级分区：内六边形
+        XZone level_1_zone = this.zones[1] = new XZone();
+
         int level_1_zone_bg_color = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_bg_color);
         String level_1_zone_divider_style = ThemeUtils.getStringByAttrId(getContext(),
                                                                          R.attr.x_keyboard_ctrl_divider_style);
         String level_1_zone_shadow_style = ThemeUtils.getStringByAttrId(getContext(), R.attr.x_keyboard_shadow_style);
 
-        XZone level_1_zone = this.zones[1] = new XZone();
-        level_1_zone.painter.setFillColor(level_1_zone_bg_color);
-        level_1_zone.painter.setFillShadow(level_1_zone_shadow_style);
-        level_1_zone.painter.setStrokeStyle(level_1_zone_divider_style);
-        level_1_zone.painter.setCornerRadius(innerHexagonCornerRadius);
+        XPainter level_1_zone_fill_painter = level_1_zone.newPainter();
+        level_1_zone_fill_painter.setFillColor(level_1_zone_bg_color);
+        level_1_zone_fill_painter.setFillShadow(level_1_zone_shadow_style);
+        level_1_zone_fill_painter.setCornerRadius(innerHexagonCornerRadius);
 
         float innerHexagonAxisRadius = centerCircleRadius + (innerHexagonRadius - centerCircleRadius) * 0.25f;
-        PointF[] innerHexagonVertexes = ViewUtils.drawHexagon(level_1_zone.path,
+        PointF[] innerHexagonVertexes = ViewUtils.drawHexagon(level_1_zone_fill_painter.path,
                                                               orientation,
                                                               origin,
                                                               innerHexagonRadius);
@@ -344,10 +344,13 @@ public class XPadView extends View {
             // 中心 Link 为其可视的梯形区域
             block.links.center.addVertexes(axisCurrent, current, next, axisNext);
         }
-//        // 去掉与重新圆重复的部分，以避免中心圆的背景色被覆盖
-//        level_1_zone.path.op(level_0_zone.path, Path.Op.XOR);
+        // 去掉与重新圆重复的部分，以避免中心圆的背景色被覆盖
+        level_1_zone_fill_painter.path.op(level_0_zone_fill_painter.path, Path.Op.XOR);
 
-        // 绘制分隔线
+        // - 绘制分隔线
+        XPainter level_1_zone_stroke_painter = level_1_zone.newPainter();
+        level_1_zone_stroke_painter.setStrokeStyle(level_1_zone_divider_style);
+
         PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation,
                                                                           origin,
                                                                           innerHexagonRadius
@@ -357,27 +360,29 @@ public class XPadView extends View {
             PointF start = innerHexagonCrossCircleVertexes[i];
             PointF end = innerHexagonCropCornerVertexes[i];
 
-            level_1_zone.path.moveTo(start.x, start.y);
-            level_1_zone.path.lineTo(end.x, end.y);
+            level_1_zone_stroke_painter.path.moveTo(start.x, start.y);
+            level_1_zone_stroke_painter.path.lineTo(end.x, end.y);
         }
 
         // ==================================================
         // 第 2 级分区：外六边形，不封边，且射线范围内均为其分区空间
+        XZone level_2_zone = this.zones[2] = new XZone();
+
         String level_2_zone_divider_style = ThemeUtils.getStringByAttrId(getContext(),
                                                                          R.attr.x_keyboard_chars_divider_style);
         String level_2_zone_shadow_style = ThemeUtils.getStringByAttrId(getContext(), R.attr.x_keyboard_shadow_style);
 
-        XZone level_2_zone = this.zones[2] = new XZone();
-        level_2_zone.painter.setStrokeShadow(level_2_zone_shadow_style);
-        level_2_zone.painter.setStrokeStyle(level_2_zone_divider_style);
+        XPainter level_2_zone_stroke_painter = level_2_zone.newPainter();
+        level_2_zone_stroke_painter.setStrokeStyle(level_2_zone_divider_style);
+        level_2_zone_stroke_painter.setStrokeShadow(level_2_zone_shadow_style);
 
         PointF[] outerHexagonVertexes = ViewUtils.createHexagon(orientation, origin, outerHexagonRadius);
         for (int i = 0; i < outerHexagonVertexes.length; i++) {
             PointF start = innerHexagonCrossCircleVertexes[i];
             PointF end = outerHexagonVertexes[i];
 
-            level_2_zone.path.moveTo(start.x, start.y);
-            level_2_zone.path.lineTo(end.x, end.y);
+            level_2_zone_stroke_painter.path.moveTo(start.x, start.y);
+            level_2_zone_stroke_painter.path.lineTo(end.x, end.y);
         }
 
         // - 确定一个最大外边界

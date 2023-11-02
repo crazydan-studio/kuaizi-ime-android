@@ -35,17 +35,24 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-11-01
  */
 public class XZone {
-    public final Path path = new Path();
-    public final XPainter painter = new XPainter();
+    private final List<XPainter> painters = new ArrayList<>();
 
     public final List<Block> blocks = new ArrayList<>();
 
     public void draw(Canvas canvas) {
-        canvas.drawPath(this.path, this.painter.fill);
-        canvas.drawPath(this.path, this.painter.stroke);
+        for (XPainter painter : this.painters) {
+            painter.draw(canvas);
+        }
 
         // 绘制 Link 边界线
         //drawLinkBoundaries(canvas);
+    }
+
+    public XPainter newPainter() {
+        XPainter painter = new XPainter();
+        this.painters.add(painter);
+
+        return painter;
     }
 
     private void drawLinkBoundaries(Canvas canvas) {

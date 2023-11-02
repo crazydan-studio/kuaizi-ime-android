@@ -17,9 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
-import android.graphics.Color;
+import java.util.function.Consumer;
+
+import android.graphics.Canvas;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 
 /**
@@ -27,38 +30,48 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
  * @date 2023-11-01
  */
 public class XPainter {
-    public final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
-    public final Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
+    public final Path path = new Path();
 
-    public XPainter() {
-        this.fill.setStyle(Paint.Style.FILL);
-        this.fill.setColor(Color.TRANSPARENT);
+    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        this.stroke.setStyle(Paint.Style.STROKE);
-        this.stroke.setColor(Color.TRANSPARENT);
+    public void draw(Canvas canvas) {
+        canvas.drawPath(this.path, this.paint);
     }
 
     public void setFillColor(int color) {
-        this.fill.setColor(color);
+        updateFill((p) -> p.setColor(color));
     }
 
     public void setFillShadow(String shadow) {
-        ThemeUtils.applyShadow(this.fill, shadow);
+        updateFill((p) -> ThemeUtils.applyShadow(p, shadow));
     }
 
     public void setStrokeShadow(String shadow) {
-        ThemeUtils.applyShadow(this.stroke, shadow);
+        updateStroke((p) -> ThemeUtils.applyShadow(p, shadow));
     }
 
     public void setStrokeStyle(String style) {
-        ThemeUtils.applyBorder(this.stroke, style);
+        updateStroke((p) -> ThemeUtils.applyBorder(p, style));
     }
 
     public void setCornerRadius(float radius) {
         CornerPathEffect effect = new CornerPathEffect(radius);
 
-        // Note：若 fill 画笔设置了圆角，则 Path#op 将不起作用，原因未知
-        this.fill.setPathEffect(effect);
-        this.stroke.setPathEffect(effect);
+        // Note：若画笔设置了圆角，则 Path#op 将不起作用，原因未知
+        this.paint.setPathEffect(effect);
+    }
+
+    private void updateStroke(Consumer<Paint> updater) {
+        updatePaint(Paint.Style.STROKE, updater);
+    }
+
+    private void updateFill(Consumer<Paint> updater) {
+        updatePaint(Paint.Style.FILL, updater);
+    }
+
+    private void updatePaint(Paint.Style style, Consumer<Paint> updater) {
+        updater.accept(this.paint);
+
+        this.paint.setStyle(style);
     }
 }
