@@ -39,13 +39,31 @@ public class XZone {
 
     public final List<Block> blocks = new ArrayList<>();
 
-    public void draw(Canvas canvas) {
+    private float alpha = 1f;
+    private float scale = 1f;
+
+    public void draw(Canvas canvas, PointF origin) {
         for (XPainter painter : this.painters) {
-            painter.draw(canvas);
+            painter.setAlpha(this.alpha);
+            painter.setScale(this.scale);
+
+            painter.draw(canvas, origin);
         }
 
         // 绘制 Link 边界线
         //drawLinkBoundaries(canvas);
+    }
+
+    /** 按压 */
+    public void press() {
+        this.alpha = 0.4f;
+        this.scale = 0.9f;
+    }
+
+    /** 弹起 */
+    public void bounce() {
+        this.alpha = 1f;
+        this.scale = 1f;
     }
 
     public XPainter newPainter() {
@@ -53,6 +71,10 @@ public class XZone {
         this.painters.add(painter);
 
         return painter;
+    }
+
+    public XPainter getPainter(int index) {
+        return this.painters.get(index);
     }
 
     private void drawLinkBoundaries(Canvas canvas) {

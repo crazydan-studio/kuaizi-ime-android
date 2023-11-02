@@ -17,12 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
-import java.util.function.Consumer;
-
 import android.graphics.Canvas;
 import android.graphics.CornerPathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 
 /**
@@ -34,24 +34,35 @@ public class XPainter {
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    public void draw(Canvas canvas) {
-        canvas.drawPath(this.path, this.paint);
+    private float scale;
+
+    public void draw(Canvas canvas, PointF origin) {
+        Path p = this.path;
+        if (this.scale < 1f) {
+            Matrix matrix = new Matrix();
+            matrix.setScale(this.scale, this.scale, origin.x, origin.y);
+
+            p = new Path();
+            this.path.transform(matrix, p);
+        }
+
+        canvas.drawPath(p, this.paint);
     }
 
     public void setFillColor(int color) {
-        updateFill((p) -> p.setColor(color));
+        withFill(() -> this.paint.setColor(color));
     }
 
     public void setFillShadow(String shadow) {
-        updateFill((p) -> ThemeUtils.applyShadow(p, shadow));
+        withFill(() -> ThemeUtils.applyShadow(this.paint, shadow));
     }
 
     public void setStrokeShadow(String shadow) {
-        updateStroke((p) -> ThemeUtils.applyShadow(p, shadow));
+        withStroke(() -> ThemeUtils.applyShadow(this.paint, shadow));
     }
 
     public void setStrokeStyle(String style) {
-        updateStroke((p) -> ThemeUtils.applyBorder(p, style));
+        withStroke(() -> ThemeUtils.applyBorder(this.paint, style));
     }
 
     public void setCornerRadius(float radius) {
@@ -61,17 +72,24 @@ public class XPainter {
         this.paint.setPathEffect(effect);
     }
 
-    private void updateStroke(Consumer<Paint> updater) {
-        updatePaint(Paint.Style.STROKE, updater);
+    public void setAlpha(float alpha) {
+        this.paint.setAlpha((int) (255 * alpha));
     }
 
-    private void updateFill(Consumer<Paint> updater) {
-        updatePaint(Paint.Style.FILL, updater);
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 
-    private void updatePaint(Paint.Style style, Consumer<Paint> updater) {
-        updater.accept(this.paint);
+    private void withStroke(Runnable caller) {
+        updatePaint(Paint.Style.STROKE, caller);
+    }
 
+    private void withFill(Runnable caller) {
+        updatePaint(Paint.Style.FILL, caller);
+    }
+
+    private void updatePaint(Paint.Style style, Runnable caller) {
+        caller.run();
         this.paint.setStyle(style);
     }
 }
