@@ -96,6 +96,7 @@ public class XZone {
 
     /** 链 */
     public static class Link {
+        public final PointF center = new PointF();
         public final List<PointF> vertexes = new ArrayList<>();
 
         public boolean isEmpty() {
@@ -104,6 +105,9 @@ public class XZone {
 
         public void addVertexes(PointF... vertexes) {
             this.vertexes.addAll(Arrays.asList(vertexes));
+
+            PointF p = ViewUtils.getPolygonCenter(this.vertexes);
+            this.center.set(p.x, p.y);
         }
     }
 
@@ -120,10 +124,12 @@ public class XZone {
     /** 圆形块 */
     public static class CircleBlock extends BaseBlock {
         public final PointF center;
+        public final float radius;
         private final float radius_pow_2;
 
         public CircleBlock(PointF center, float radius) {
             this.center = center;
+            this.radius = radius;
             this.radius_pow_2 = radius * radius;
         }
 

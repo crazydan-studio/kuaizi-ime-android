@@ -42,6 +42,14 @@ public class XPainter {
         this.fill.setColor(color);
     }
 
+    public void setFillShadow(String shadow) {
+        ThemeUtils.applyShadow(this.fill, shadow);
+    }
+
+    public void setStrokeShadow(String shadow) {
+        ThemeUtils.applyShadow(this.stroke, shadow);
+    }
+
     public void setStrokeStyle(String style) {
         ThemeUtils.applyBorder(this.stroke, style);
     }
@@ -49,6 +57,7 @@ public class XPainter {
     public void setCornerRadius(float radius) {
         CornerPathEffect effect = new CornerPathEffect(radius);
 
+        // Note：若 fill 画笔设置了圆角，则 Path#op 将不起作用，原因未知
         this.fill.setPathEffect(effect);
         this.stroke.setPathEffect(effect);
     }

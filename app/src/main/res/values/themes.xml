@@ -85,6 +85,9 @@
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
 
         <item name="x_keyboard_divider_style">2 #b3c5c5c5</item>
+        <item name="x_keyboard_ctrl_divider_style">0.5 #b3c5c5c5</item>
+        <item name="x_keyboard_chars_divider_style">2 #b3000000</item>
+        <item name="x_keyboard_shadow_style">0 1 2 #b3c5c5c5</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="">
@@ -168,6 +171,9 @@
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
 
         <item name="x_keyboard_divider_style">2 #b3000000</item>
+        <item name="x_keyboard_ctrl_divider_style">0.5 #b3000000</item>
+        <item name="x_keyboard_chars_divider_style">2 #b3ffffff</item>
+        <item name="x_keyboard_shadow_style">0 1 2 #b3000000</item>
     </style>
 
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />

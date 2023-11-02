@@ -73,7 +73,7 @@ public class ThemeUtils {
         }
 
         String[] splits = border.trim().split("\\s+");
-        int width = ScreenUtils.dpToPx(Integer.parseInt(splits[0]));
+        float width = ScreenUtils.dpToPx(Float.parseFloat(splits[0]));
         int color = Color.parseColor(splits[1]);
 
         if (width > 0) {

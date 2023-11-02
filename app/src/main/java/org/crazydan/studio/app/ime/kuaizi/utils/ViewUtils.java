@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.utils;
 
+import java.util.List;
+
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -206,6 +208,18 @@ public class ViewUtils {
             }
         }
         return intersectCount % 2 != 0;
+    }
+
+    public static PointF getPolygonCenter(List<PointF> polygon) {
+        float x = 0;
+        float y = 0;
+        int total = polygon.size();
+
+        for (PointF vertex : polygon) {
+            x += vertex.x;
+            y += vertex.y;
+        }
+        return new PointF(x / total, y / total);
     }
 
     public static void startAnimationOnce(View view, long duration, Animation... animations) {

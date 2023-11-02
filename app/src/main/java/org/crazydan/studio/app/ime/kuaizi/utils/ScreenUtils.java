@@ -39,7 +39,11 @@ public class ScreenUtils {
     }
 
     public static int dpToPx(int dp) {
-        return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
+        return (int) dpToPx((float) dp);
+    }
+
+    public static float dpToPx(float dp) {
+        return dp * Resources.getSystem().getDisplayMetrics().density;
     }
 
     public static float pxFromDimension(Context context, int dimenId) {

@@ -90,6 +90,9 @@
 
         <!-- format: width #AARRGGBB -->
         <attr name="x_keyboard_divider_style" format="string" />
+        <attr name="x_keyboard_ctrl_divider_style" format="string" />
+        <attr name="x_keyboard_chars_divider_style" format="string" />
+        <attr name="x_keyboard_shadow_style" format="string" />
     </declare-styleable>
 
     <declare-styleable name="app_style">
