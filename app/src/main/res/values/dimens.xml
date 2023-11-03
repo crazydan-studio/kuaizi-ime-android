@@ -46,4 +46,11 @@
     <dimen name="input_word_key_word_text_size">16sp</dimen>
 
     <dimen name="guide_exercise_step_icon_size">32dp</dimen>
+
+    <dimen name="x_keyboard_pad_padding">8dp</dimen>
+    <dimen name="x_keyboard_ctrl_pad_radius">58dp</dimen>
+    <dimen name="x_keyboard_ctrl_pad_corner_radius">10dp</dimen>
+    <dimen name="x_keyboard_ctrl_icon_size">18dp</dimen>
+    <dimen name="x_keyboard_chars_text_size">18dp</dimen>
+    <dimen name="x_keyboard_chars_text_padding">8dp</dimen>
 </resources>

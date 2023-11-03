@@ -18,78 +18,20 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
 import android.graphics.Canvas;
-import android.graphics.CornerPathEffect;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PointF;
-import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-01
  */
-public class XPainter {
-    public final Path path = new Path();
+public abstract class XPainter {
 
-    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    public abstract void draw(Canvas canvas);
 
-    private float scale;
+    public abstract void setAlpha(float alpha);
 
-    public void draw(Canvas canvas, PointF origin) {
-        Path p = this.path;
-        if (this.scale < 1f) {
-            Matrix matrix = new Matrix();
-            matrix.setScale(this.scale, this.scale, origin.x, origin.y);
-
-            p = new Path();
-            this.path.transform(matrix, p);
-        }
-
-        canvas.drawPath(p, this.paint);
-    }
-
-    public void setFillColor(int color) {
-        withFill(() -> this.paint.setColor(color));
-    }
-
-    public void setFillShadow(String shadow) {
-        withFill(() -> ThemeUtils.applyShadow(this.paint, shadow));
-    }
-
-    public void setStrokeShadow(String shadow) {
-        withStroke(() -> ThemeUtils.applyShadow(this.paint, shadow));
-    }
-
-    public void setStrokeStyle(String style) {
-        withStroke(() -> ThemeUtils.applyBorder(this.paint, style));
-    }
-
-    public void setCornerRadius(float radius) {
-        CornerPathEffect effect = new CornerPathEffect(radius);
-
-        // Note：若画笔设置了圆角，则 Path#op 将不起作用，原因未知
-        this.paint.setPathEffect(effect);
-    }
-
-    public void setAlpha(float alpha) {
-        this.paint.setAlpha((int) (255 * alpha));
-    }
-
-    public void setScale(float scale) {
-        this.scale = scale;
-    }
-
-    private void withStroke(Runnable caller) {
-        updatePaint(Paint.Style.STROKE, caller);
-    }
-
-    private void withFill(Runnable caller) {
-        updatePaint(Paint.Style.FILL, caller);
-    }
-
-    private void updatePaint(Paint.Style style, Runnable caller) {
+    public static void inCanvasLayer(Canvas canvas, Runnable caller) {
+        canvas.save();
         caller.run();
-        this.paint.setStyle(style);
+        canvas.restore();
     }
 }

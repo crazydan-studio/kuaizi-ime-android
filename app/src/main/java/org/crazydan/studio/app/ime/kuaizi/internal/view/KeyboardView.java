@@ -58,7 +58,7 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.key_highlight_fg_color);
+        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.input_trail_color);
         this.gestureTrailer = new RecyclerViewGestureTrailer(this, true);
         this.gestureTrailer.setTrailColor(trailColor);
         addItemDecoration(this.gestureTrailer);

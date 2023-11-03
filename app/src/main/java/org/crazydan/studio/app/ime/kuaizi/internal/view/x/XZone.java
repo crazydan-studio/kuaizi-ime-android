@@ -26,6 +26,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -36,6 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  */
 public class XZone {
     private final List<XPainter> painters = new ArrayList<>();
+    private final List<XDrawablePainter> iconPainters = new ArrayList<>();
+    private final List<XPathTextPainter> textPainters = new ArrayList<>();
 
     public final List<Block> blocks = new ArrayList<>();
 
@@ -43,12 +46,15 @@ public class XZone {
     private float scale = 1f;
 
     public void draw(Canvas canvas, PointF origin) {
-        for (XPainter painter : this.painters) {
-            painter.setAlpha(this.alpha);
-            painter.setScale(this.scale);
+        XPainter.inCanvasLayer(canvas, () -> {
+            if (this.scale < 1f) {
+                canvas.scale(this.scale, this.scale, origin.x, origin.y);
+            }
 
-            painter.draw(canvas, origin);
-        }
+            this.painters.forEach((p) -> doPaint(canvas, p));
+            this.iconPainters.forEach((p) -> doPaint(canvas, p));
+            this.textPainters.forEach((p) -> doPaint(canvas, p));
+        });
 
         // 绘制 Link 边界线
         //drawLinkBoundaries(canvas);
@@ -66,15 +72,42 @@ public class XZone {
         this.scale = 1f;
     }
 
-    public XPainter newPainter() {
-        XPainter painter = new XPainter();
+    public XPathPainter newPathPainter() {
+        XPathPainter painter = new XPathPainter();
         this.painters.add(painter);
 
         return painter;
     }
 
-    public XPainter getPainter(int index) {
-        return this.painters.get(index);
+    public void clearIconPainters() {
+        this.iconPainters.clear();
+    }
+
+    public XDrawablePainter newIconPainter(Drawable drawable) {
+        XDrawablePainter painter = new XDrawablePainter(drawable);
+        this.iconPainters.add(painter);
+
+        return painter;
+    }
+
+    public void clearTextPainters() {
+        this.textPainters.clear();
+    }
+
+    public XPathTextPainter newTextPainter(String text) {
+        XPathTextPainter painter = new XPathTextPainter(text);
+        this.textPainters.add(painter);
+
+        return painter;
+    }
+
+    private void doPaint(Canvas canvas, XPainter painter) {
+        if (painter == null) {
+            return;
+        }
+
+        painter.setAlpha(this.alpha);
+        painter.draw(canvas);
     }
 
     private void drawLinkBoundaries(Canvas canvas) {

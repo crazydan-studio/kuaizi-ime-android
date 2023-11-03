@@ -53,8 +53,6 @@ public class XPadView extends View {
 
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final XZone[] zones = new XZone[3];
-    private final Paint textPaint;
-    private final PointF currentPoint = new PointF(-100000, -100000);
 
     private final Path trailPath = new Path();
     private final Paint trailPaint = new Paint();
@@ -62,15 +60,11 @@ public class XPadView extends View {
     private final PathMeasure trailPathMeasure = new PathMeasure();
 
     private PointF padCenter;
-    private int padding = ScreenUtils.dpToPx(8);
-    private int hexagonRadius = 136;
-    private int hexagonCornerRadius = 16;
+    private PointF cursorPos = new PointF(-100000, -100000);
+    private int[] activeBlock;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        this.textPaint = new Paint();
-        this.textPaint.setAntiAlias(true);
 
         ViewUtils.enableHardwareAccelerated(this);
     }
@@ -80,7 +74,8 @@ public class XPadView extends View {
     public boolean onTouchEvent(MotionEvent e) {
         invalidate();
 
-        this.currentPoint.set(-100000, -100000);
+        this.cursorPos = new PointF(-100000, -100000);
+        this.activeBlock = null;
 
         // Note：需要返回 true 才能拦截到 move 等事件
         switch (e.getActionMasked()) {
@@ -90,12 +85,14 @@ public class XPadView extends View {
                 this.trailPath.reset();
                 this.trailPath.moveTo(e.getX(), e.getY());
 
-                int trailColor = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_highlight_fg_color);
+                int trailColor = attrColor(R.attr.input_trail_color);
                 this.trailPaint.setColor(trailColor);
                 return true;
             }
             case MotionEvent.ACTION_MOVE: {
-                this.currentPoint.set(e.getX(), e.getY());
+                this.cursorPos = new PointF(e.getX(), e.getY());
+                this.activeBlock = findActiveBlock(e);
+
                 this.trailPath.lineTo(e.getX(), e.getY());
                 return true;
             }
@@ -113,12 +110,11 @@ public class XPadView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // 准备分区的待显示内容
+        prepareContentOnZone(this.orientation);
+
         // 绘制分区
         drawZones(canvas);
-
-        // 绘制分区的 Link 内容
-        drawContentOnZoneLinks(canvas, this.orientation);
-
         // 绘制滑屏轨迹
         drawTrailPath(canvas);
     }
@@ -143,19 +139,38 @@ public class XPadView extends View {
         }
     }
 
-    private void drawContentOnZoneLinks(Canvas canvas, HexagonOrientation orientation) {
-        // TODO 图标、文字等以 XPainter 方式加入 XZone 中，以便于进行整体缩放等处理
+    private int[] findActiveBlock(MotionEvent e) {
+        for (int i = 0; i < this.zones.length; i++) {
+            XZone zone = this.zones[i];
 
-        // TODO 按下后呈按压状态
+            for (int j = 0; j < zone.blocks.size(); j++) {
+                XZone.Block block = zone.blocks.get(j);
+
+                if (block.contains(new PointF(e.getX(), e.getY()))) {
+                    return new int[] { i, j };
+                }
+            }
+        }
+        return null;
+    }
+
+    private void prepareContentOnZone(HexagonOrientation orientation) {
+        // ==============================================
         XZone level_0_zone = this.zones[0];
+        level_0_zone.clearIconPainters();
+
         XZone.CircleBlock centerCircleBlock = (XZone.CircleBlock) level_0_zone.blocks.get(0);
-        draw(canvas, R.drawable.ic_input_cursor, centerCircleBlock.center, centerCircleBlock.radius);
 
-        Path textPath = new Path();
+        Drawable level_0_zone_icon = drawable(R.drawable.ic_input_cursor);
+        XDrawablePainter level_0_zone_icon_painter = level_0_zone.newIconPainter(level_0_zone_icon);
+        level_0_zone_icon_painter.setSize(centerCircleBlock.radius);
+        level_0_zone_icon_painter.setCenter(centerCircleBlock.center);
+
+        // ==============================================
         XZone level_1_zone = this.zones[1];
+        level_1_zone.clearIconPainters();
 
-        // TODO 按下控制建后，其余按键图标不显示，被按下按键置灰，整个分区呈按压状态
-        float ctrl_icon_size = 48f;
+        float ctrl_icon_size = dimens(R.dimen.x_keyboard_ctrl_icon_size);
         Integer[] ctrlIcons = new Integer[] {
                 R.drawable.ic_switch_to_latin,
                 R.drawable.ic_switch_to_pinyin,
@@ -165,148 +180,168 @@ public class XPadView extends View {
                 R.drawable.ic_symbol
         };
         for (int i = 0; i < level_1_zone.blocks.size(); i++) {
-            Integer icon = ctrlIcons[i];
-            if (icon == null) {
+            Integer iconResId = ctrlIcons[i];
+            if (iconResId == null) {
                 continue;
             }
 
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_1_zone.blocks.get(i);
             PointF center = block.links.center.center;
-
             float rotate = orientation == HexagonOrientation.POINTY_TOP //
                            ? 30 * (2 * i - 1) : 60 * (i - 1);
-            inCanvasLayer(canvas, () -> {
-                draw(canvas, icon, center, ctrl_icon_size, rotate);
-            });
+
+            Drawable icon = drawable(iconResId);
+            XDrawablePainter level_1_zone_icon_painter = level_1_zone.newIconPainter(icon);
+            level_1_zone_icon_painter.setSize(ctrl_icon_size);
+            level_1_zone_icon_painter.setCenter(center);
+            level_1_zone_icon_painter.setRotate(rotate);
         }
 
+        // ==============================================
         XZone level_2_zone = this.zones[2];
-        int textColor = ThemeUtils.getColorByAttrId(getContext(), R.attr.key_fg_color);
-        this.textPaint.setColor(textColor);
-        this.textPaint.setStyle(Paint.Style.FILL);
-        this.textPaint.setTextSize(40f);
+        level_2_zone.clearTextPainters();
 
-        float axisPadding = 15f;
-        float axisFontAscent = -this.textPaint.getFontMetrics().ascent;
-        float axisFontDescent = this.textPaint.getFontMetrics().descent;
+        float textSize = dimens(R.dimen.x_keyboard_chars_text_size);
+        float textPadding = dimens(R.dimen.x_keyboard_chars_text_padding);
 
         String[][][] axisTextArray = getKeys();
         for (int i = 0; i < level_2_zone.blocks.size(); i++) {
+            int textColor = this.activeBlock != null //
+                            && this.activeBlock[0] == 2 //
+                            && this.activeBlock[1] == i
+                            ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
+                            : attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
             for (int j = 0; j < block.links.left.size(); j++) {
+                String text = axisTextArray[i][0][j];
                 XZone.Link link = block.links.left.get(j);
 
-                String text = axisTextArray[i][0][j];
                 PointF start = link.vertexes.get(0);
                 PointF end = link.vertexes.get(1);
 
-                float vOffset = -axisFontDescent;
-                float hOffset = axisPadding;
+                XPathTextPainter textPainter = level_2_zone.newTextPainter(text);
+                textPainter.setTextSize(textSize);
+                textPainter.setFillColor(textColor);
 
-                this.textPaint.setTextAlign(Paint.Align.LEFT);
+                float fontAscent = -textPainter.getFontAscent();
+                float fontDescent = textPainter.getFontDescent();
+                float vOffset = -fontDescent;
+                float hOffset = textPadding;
+                Paint.Align align = Paint.Align.LEFT;
+
                 if (i == 0 //
                     || (orientation == HexagonOrientation.POINTY_TOP //
                         && i == 5)) {
                     start = link.vertexes.get(2);
                     end = link.vertexes.get(1);
-                    hOffset = axisFontDescent;
-                    vOffset = axisFontAscent + axisFontDescent;
+
+                    hOffset = fontDescent;
+                    vOffset = fontAscent + fontDescent;
                 } else if (i == 3 //
                            || (orientation == HexagonOrientation.POINTY_TOP //
                                && i == 2)) {
                     start = link.vertexes.get(1);
                     end = link.vertexes.get(2);
-                    hOffset = -axisFontDescent;
-                    vOffset = -axisPadding;
 
-                    this.textPaint.setTextAlign(Paint.Align.RIGHT);
+                    hOffset = -fontDescent;
+                    vOffset = -textPadding;
+                    align = Paint.Align.RIGHT;
                 } else if (i < 3) {
                     start = link.vertexes.get(1);
                     end = link.vertexes.get(0);
-                    hOffset = -axisPadding;
-                    vOffset = axisFontAscent;
 
-                    this.textPaint.setTextAlign(Paint.Align.RIGHT);
+                    hOffset = -textPadding;
+                    vOffset = fontAscent;
+                    align = Paint.Align.RIGHT;
                 }
 
-                textPath.reset();
-                textPath.moveTo(end.x, end.y);
-                textPath.lineTo(start.x, start.y);
+                textPainter.path.reset();
+                textPainter.path.moveTo(end.x, end.y);
+                textPainter.path.lineTo(start.x, start.y);
 
-                canvas.drawTextOnPath(text, textPath, hOffset, vOffset, this.textPaint);
+                textPainter.setTextAlign(align);
+                textPainter.setOffset(hOffset, vOffset);
             }
 
             for (int j = 0; j < block.links.right.size(); j++) {
+                String text = axisTextArray[i][1][j];
                 XZone.Link link = block.links.right.get(j);
 
-                String text = axisTextArray[i][1][j];
                 PointF start = link.vertexes.get(0);
                 PointF end = link.vertexes.get(1);
 
-                float vOffset = -axisFontDescent;
-                float hOffset = axisPadding;
+                XPathTextPainter textPainter = level_2_zone.newTextPainter(text);
+                textPainter.setTextSize(textSize);
+                textPainter.setFillColor(textColor);
 
-                this.textPaint.setTextAlign(Paint.Align.LEFT);
+                float fontAscent = -textPainter.getFontAscent();
+                float fontDescent = textPainter.getFontDescent();
+                float vOffset = -fontDescent;
+                float hOffset = textPadding;
+                Paint.Align align = Paint.Align.LEFT;
+
                 if (i == 2 //
                     || (orientation == HexagonOrientation.POINTY_TOP //
                         && i == 1)) {
                     start = link.vertexes.get(1);
                     end = link.vertexes.get(2);
-                    hOffset = -axisFontDescent;
-                    vOffset = axisFontAscent + axisFontDescent;
 
-                    this.textPaint.setTextAlign(Paint.Align.RIGHT);
+                    hOffset = -fontDescent;
+                    vOffset = fontAscent + fontDescent;
+                    align = Paint.Align.RIGHT;
                 } else if (i == 5 //
                            || (orientation == HexagonOrientation.POINTY_TOP //
                                && i == 4)) {
                     start = link.vertexes.get(2);
                     end = link.vertexes.get(1);
-                    hOffset = axisFontDescent;
-                    vOffset = -axisPadding;
+
+                    hOffset = fontDescent;
+                    vOffset = -textPadding;
                 } else if (i < 3) {
-                    vOffset = axisFontAscent;
+                    vOffset = fontAscent;
                 } else {
                     start = link.vertexes.get(1);
                     end = link.vertexes.get(0);
-                    hOffset = -axisPadding;
 
-                    this.textPaint.setTextAlign(Paint.Align.RIGHT);
+                    hOffset = -textPadding;
+                    align = Paint.Align.RIGHT;
                 }
 
-                textPath.reset();
-                textPath.moveTo(end.x, end.y);
-                textPath.lineTo(start.x, start.y);
+                textPainter.path.reset();
+                textPainter.path.moveTo(end.x, end.y);
+                textPainter.path.lineTo(start.x, start.y);
 
-                canvas.drawTextOnPath(text, textPath, hOffset, vOffset, this.textPaint);
+                textPainter.setTextAlign(align);
+                textPainter.setOffset(hOffset, vOffset);
             }
         }
     }
 
     private void prepareZones(HexagonOrientation orientation, int width, int height) {
-        float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - this.padding;
+        float padPadding = dimens(R.dimen.x_keyboard_pad_padding);
+        float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
 
-        float innerHexagonRadius = this.hexagonRadius;
-        float innerHexagonCornerRadius = this.hexagonCornerRadius;
+        float innerHexagonRadius = dimens(R.dimen.x_keyboard_ctrl_pad_radius);
+        float innerHexagonCornerRadius = dimens(R.dimen.x_keyboard_ctrl_pad_corner_radius);
         float outerHexagonRadius = orientation == HexagonOrientation.FLAT_TOP
                                    ? maxHexagonRadius * cos_30_divided_by_1
                                    : maxHexagonRadius;
 
         PointF origin = orientation == HexagonOrientation.FLAT_TOP //
-                        ? new PointF(width - outerHexagonRadius - this.padding,
-                                     height - maxHexagonRadius - this.padding) //
-                        : new PointF(width - outerHexagonRadius * cos_30 - this.padding,
-                                     height - outerHexagonRadius - this.padding);
+                        ? new PointF(width - outerHexagonRadius - padPadding, height - maxHexagonRadius - padPadding) //
+                        : new PointF(width - outerHexagonRadius * cos_30 - padPadding,
+                                     height - outerHexagonRadius - padPadding);
         this.padCenter = origin;
 
         // ==================================================
         // 第 0 级分区：中心圆
         XZone level_0_zone = this.zones[0] = new XZone();
 
-        int level_0_zone_bg_color = ThemeUtils.getColorByAttrId(getContext(), R.attr.x_keyboard_ctrl_editor_bg_style);
-        String level_0_zone_shadow = ThemeUtils.getStringByAttrId(getContext(), R.attr.key_shadow_style);
+        int level_0_zone_bg_color = attrColor(R.attr.x_keyboard_ctrl_editor_bg_style);
+        String level_0_zone_shadow = attrString(R.attr.key_shadow_style);
 
-        XPainter level_0_zone_fill_painter = level_0_zone.newPainter();
+        XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
         level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
         level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
 
@@ -319,12 +354,11 @@ public class XPadView extends View {
         // 第 1 级分区：内六边形
         XZone level_1_zone = this.zones[1] = new XZone();
 
-        int level_1_zone_bg_color = ThemeUtils.getColorByAttrId(getContext(), R.attr.x_keyboard_ctrl_bg_style);
-        String level_1_zone_divider_style = ThemeUtils.getStringByAttrId(getContext(),
-                                                                         R.attr.x_keyboard_ctrl_divider_style);
-        String level_1_zone_shadow_style = ThemeUtils.getStringByAttrId(getContext(), R.attr.x_keyboard_shadow_style);
+        int level_1_zone_bg_color = attrColor(R.attr.x_keyboard_ctrl_bg_style);
+        String level_1_zone_divider_style = attrString(R.attr.x_keyboard_ctrl_divider_style);
+        String level_1_zone_shadow_style = attrString(R.attr.x_keyboard_shadow_style);
 
-        XPainter level_1_zone_fill_painter = level_1_zone.newPainter();
+        XPathPainter level_1_zone_fill_painter = level_1_zone.newPathPainter();
         level_1_zone_fill_painter.setFillColor(level_1_zone_bg_color);
         level_1_zone_fill_painter.setFillShadow(level_1_zone_shadow_style);
         level_1_zone_fill_painter.setCornerRadius(innerHexagonCornerRadius);
@@ -356,7 +390,7 @@ public class XPadView extends View {
         level_1_zone_fill_painter.path.op(level_0_zone_fill_painter.path, Path.Op.XOR);
 
         // - 绘制分隔线
-        XPainter level_1_zone_stroke_painter = level_1_zone.newPainter();
+        XPathPainter level_1_zone_stroke_painter = level_1_zone.newPathPainter();
         level_1_zone_stroke_painter.setStrokeStyle(level_1_zone_divider_style);
 
         PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation,
@@ -378,11 +412,10 @@ public class XPadView extends View {
         // 第 2 级分区：外六边形，不封边，且射线范围内均为其分区空间
         XZone level_2_zone = this.zones[2] = new XZone();
 
-        String level_2_zone_divider_style = ThemeUtils.getStringByAttrId(getContext(),
-                                                                         R.attr.x_keyboard_chars_divider_style);
-        String level_2_zone_shadow_style = ThemeUtils.getStringByAttrId(getContext(), R.attr.x_keyboard_shadow_style);
+        String level_2_zone_divider_style = attrString(R.attr.x_keyboard_chars_divider_style);
+        String level_2_zone_shadow_style = attrString(R.attr.x_keyboard_chars_divider_shadow_style);
 
-        XPainter level_2_zone_stroke_painter = level_2_zone.newPainter();
+        XPathPainter level_2_zone_stroke_painter = level_2_zone.newPathPainter();
         level_2_zone_stroke_painter.setStrokeStyle(level_2_zone_divider_style);
         level_2_zone_stroke_painter.setStrokeShadow(level_2_zone_shadow_style);
 
@@ -490,28 +523,20 @@ public class XPadView extends View {
         }
     }
 
-    private void draw(Canvas canvas, int resId, PointF center, float size) {
-        draw(canvas, resId, center, size, 0);
+    private Drawable drawable(int resId) {
+        return AppCompatResources.getDrawable(getContext(), resId);
     }
 
-    private void draw(Canvas canvas, int resId, PointF center, float size, float rotate) {
-        Drawable drawable = AppCompatResources.getDrawable(getContext(), resId);
-        drawable.setBounds(0, 0, (int) size, (int) size);
-
-        inCanvasLayer(canvas, () -> {
-            if (rotate != 0) {
-                canvas.rotate(rotate, center.x, center.y);
-            }
-            float offset = size * 0.5f;
-            canvas.translate(center.x - offset, center.y - offset);
-            drawable.draw(canvas);
-        });
+    private float dimens(int resId) {
+        return ScreenUtils.pxFromDimension(getContext(), resId);
     }
 
-    private void inCanvasLayer(Canvas canvas, Runnable caller) {
-        canvas.save();
-        caller.run();
-        canvas.restore();
+    private int attrColor(int resId) {
+        return ThemeUtils.getColorByAttrId(getContext(), resId);
+    }
+
+    private String attrString(int resId) {
+        return ThemeUtils.getStringByAttrId(getContext(), resId);
     }
 
     private String[][][] getKeys() {
