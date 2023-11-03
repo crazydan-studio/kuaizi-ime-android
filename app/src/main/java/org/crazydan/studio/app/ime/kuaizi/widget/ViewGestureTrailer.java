@@ -82,15 +82,16 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         switch (type) {
-            case MovingStart: {
+            case PressStart: {
                 moveTo(data);
                 break;
             }
+            case MovingStart:
             case Moving: {
                 lineTo(data);
                 break;
             }
-            case MovingEnd: {
+            case PressEnd: {
                 reset();
                 break;
             }
