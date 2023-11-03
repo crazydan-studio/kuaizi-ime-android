@@ -62,6 +62,11 @@ public class XPathPainter extends XPainter {
         withStroke(() -> ThemeUtils.applyBorder(this.paint, style));
     }
 
+    /** 圆角化线的端点 */
+    public void setStrokeCap(Paint.Cap cap) {
+        this.paint.setStrokeCap(cap);
+    }
+
     public void setCornerRadius(float radius) {
         CornerPathEffect effect = new CornerPathEffect(radius);
 

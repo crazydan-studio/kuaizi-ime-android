@@ -391,6 +391,7 @@ public class XPadView extends View {
 
         // - 绘制分隔线
         XPathPainter level_1_zone_stroke_painter = level_1_zone.newPathPainter();
+        level_1_zone_stroke_painter.setStrokeCap(Paint.Cap.ROUND);
         level_1_zone_stroke_painter.setStrokeStyle(level_1_zone_divider_style);
 
         // Note：圆角是通过指定半径的圆与矩形的角相切再去掉角的外部后得到的；切点过圆心的线一定与切线垂直
@@ -430,6 +431,7 @@ public class XPadView extends View {
         String level_2_zone_shadow_style = attrString(R.attr.x_keyboard_chars_divider_shadow_style);
 
         XPathPainter level_2_zone_stroke_painter = level_2_zone.newPathPainter();
+        level_2_zone_stroke_painter.setStrokeCap(Paint.Cap.ROUND);
         level_2_zone_stroke_painter.setStrokeStyle(level_2_zone_divider_style);
         level_2_zone_stroke_painter.setStrokeShadow(level_2_zone_shadow_style);
 
