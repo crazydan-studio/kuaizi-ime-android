@@ -132,6 +132,7 @@
 
         <org.crazydan.studio.app.ime.kuaizi.internal.view.XKeyboardView
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/keyboard_view_height" />
+                android:layout_height="@dimen/keyboard_view_height"
+                android:visibility="visible" />
     </FrameLayout>
 </LinearLayout>

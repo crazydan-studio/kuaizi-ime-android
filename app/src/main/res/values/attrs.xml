@@ -89,11 +89,11 @@
         <attr name="key_char_level_5_bg_color" format="color" />
         <attr name="key_char_level_5_fg_color" format="color" />
 
-        <!-- format: width #AARRGGBB -->
+        <!-- format: dx dy radius #AARRGGBB -->
         <attr name="x_keyboard_shadow_style" format="string" />
+        <!-- format: width #AARRGGBB -->
         <attr name="x_keyboard_ctrl_divider_style" format="string" />
         <attr name="x_keyboard_ctrl_bg_style" format="color" />
-        <attr name="x_keyboard_ctrl_editor_bg_style" format="color" />
         <attr name="x_keyboard_chars_fg_color" format="color" />
         <attr name="x_keyboard_chars_highlight_fg_color" format="color" />
         <attr name="x_keyboard_chars_divider_style" format="string" />

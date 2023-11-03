@@ -29,7 +29,6 @@ public class XDrawablePainter extends XPainter {
     private final Drawable drawable;
 
     private PointF center;
-    private float alpha;
     private float size;
     private float rotate;
 
@@ -52,11 +51,6 @@ public class XDrawablePainter extends XPainter {
 
             this.drawable.draw(canvas);
         });
-    }
-
-    @Override
-    public void setAlpha(float alpha) {
-        this.alpha = alpha;
     }
 
     public void setCenter(PointF center) {

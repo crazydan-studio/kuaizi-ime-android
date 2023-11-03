@@ -88,11 +88,10 @@
         <item name="x_keyboard_shadow_style">0 1 2 #b3c5c5c5</item>
         <item name="x_keyboard_ctrl_divider_style">0.5 #b3c5c5c5</item>
         <item name="x_keyboard_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="x_keyboard_ctrl_editor_bg_style">?attr/key_highlight_fg_color</item>
         <item name="x_keyboard_chars_fg_color">?attr/key_fg_color</item>
         <item name="x_keyboard_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="x_keyboard_chars_divider_style">2 #b3c5c5c5</item>
-        <item name="x_keyboard_chars_divider_shadow_style">0 1 2 #b3c5c5c5</item>
+        <item name="x_keyboard_chars_divider_style">2 #ffa3a3a3</item>
+        <item name="x_keyboard_chars_divider_shadow_style">?attr/x_keyboard_shadow_style</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="">
@@ -179,11 +178,10 @@
         <item name="x_keyboard_shadow_style">0 1 2 #b3000000</item>
         <item name="x_keyboard_ctrl_divider_style">0.5 #b3000000</item>
         <item name="x_keyboard_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="x_keyboard_ctrl_editor_bg_style">?attr/key_highlight_fg_color</item>
-        <item name="x_keyboard_chars_fg_color">?attr/key_fg_color</item>
+        <item name="x_keyboard_chars_fg_color">#fffafafa</item>
         <item name="x_keyboard_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="x_keyboard_chars_divider_style">2 #b3000000</item>
-        <item name="x_keyboard_chars_divider_shadow_style">0 1 2 #b3000000</item>
+        <item name="x_keyboard_chars_divider_style">2 #ffa3a3a3</item>
+        <item name="x_keyboard_chars_divider_shadow_style">?attr/x_keyboard_shadow_style</item>
     </style>
 
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />

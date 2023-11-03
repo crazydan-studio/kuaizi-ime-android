@@ -34,7 +34,8 @@ public class XPathTextPainter extends XPathPainter {
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawTextOnPath(this.text, this.path, this.offsets[0], this.offsets[1], this.paint);
+        Paint paint = getPaint();
+        canvas.drawTextOnPath(this.text, this.path, this.offsets[0], this.offsets[1], paint);
     }
 
     public void setOffset(float h, float v) {

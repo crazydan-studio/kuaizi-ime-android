@@ -338,7 +338,7 @@ public class XPadView extends View {
         // 第 0 级分区：中心圆
         XZone level_0_zone = this.zones[0] = new XZone();
 
-        int level_0_zone_bg_color = attrColor(R.attr.x_keyboard_ctrl_editor_bg_style);
+        int level_0_zone_bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
         String level_0_zone_shadow = attrString(R.attr.key_shadow_style);
 
         XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
@@ -393,13 +393,16 @@ public class XPadView extends View {
         XPathPainter level_1_zone_stroke_painter = level_1_zone.newPathPainter();
         level_1_zone_stroke_painter.setStrokeStyle(level_1_zone_divider_style);
 
-        PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation,
-                                                                          origin,
-                                                                          innerHexagonRadius
-                                                                          - innerHexagonCornerRadius * 0.2f);
+        // Note：圆角是通过指定半径的圆与矩形的角相切再去掉角的外部后得到的；切点过圆心的线一定与切线垂直
+        // - 不清楚为何实际绘制的圆角半径是定义半径的 1.6 倍？
+        float innerHexagonCornerActualRadius = innerHexagonCornerRadius * 1.6f;
+        float innerHexagonCropRadius = innerHexagonRadius - innerHexagonCornerActualRadius * (cos_30_divided_by_1 - 1);
+        float innerHexagonCrossRadius = centerCircleRadius * 0.9f; // 确保中心按下后依然能够显示分隔线
+        PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation, origin, //
+                                                                          innerHexagonCropRadius);
         PointF[] innerHexagonCrossCircleVertexes = ViewUtils.createHexagon(orientation,
                                                                            origin,
-                                                                           centerCircleRadius * 0.9f);
+                                                                           innerHexagonCrossRadius);
         for (int i = 0; i < innerHexagonVertexes.length; i++) {
             PointF start = innerHexagonCrossCircleVertexes[i];
             PointF end = innerHexagonCropCornerVertexes[i];
@@ -407,6 +410,17 @@ public class XPadView extends View {
             level_1_zone_stroke_painter.path.moveTo(start.x, start.y);
             level_1_zone_stroke_painter.path.lineTo(end.x, end.y);
         }
+
+//        PointF[] vertexes = ViewUtils.createHexagon(orientation,
+//                                                    origin,
+//                                                    innerHexagonRadius
+//                                                    - innerHexagonCornerActualRadius * cos_30_divided_by_1);
+//        for (PointF start : vertexes) {
+//            level_1_zone_stroke_painter.path.addCircle(start.x,
+//                                                       start.y,
+//                                                       innerHexagonCornerActualRadius,
+//                                                       Path.Direction.CW);
+//        }
 
         // ==================================================
         // 第 2 级分区：外六边形，不封边，且射线范围内均为其分区空间

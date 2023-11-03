@@ -33,12 +33,17 @@ public class XPathPainter extends XPainter {
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawPath(this.path, this.paint);
+        Paint paint = getPaint();
+        canvas.drawPath(this.path, paint);
     }
 
-    @Override
-    public void setAlpha(float alpha) {
-        this.paint.setAlpha((int) (255 * alpha));
+    protected Paint getPaint() {
+        Paint p = new Paint(this.paint);
+
+        if (this.alpha < 1f) {
+            p.setAlpha((int) (this.alpha * 255));
+        }
+        return p;
     }
 
     public void setFillColor(int color) {

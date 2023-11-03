@@ -24,10 +24,13 @@ import android.graphics.Canvas;
  * @date 2023-11-01
  */
 public abstract class XPainter {
+    protected float alpha;
 
     public abstract void draw(Canvas canvas);
 
-    public abstract void setAlpha(float alpha);
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
+    }
 
     public static void inCanvasLayer(Canvas canvas, Runnable caller) {
         canvas.save();
