@@ -18,9 +18,11 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
@@ -59,9 +61,14 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
         super(context, attrs);
 
         int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.input_trail_color);
-        this.gestureTrailer = new RecyclerViewGestureTrailer(this, true);
-        this.gestureTrailer.setTrailColor(trailColor);
-        addItemDecoration(this.gestureTrailer);
+        RecyclerViewGestureTrailer trailer = this.gestureTrailer = new RecyclerViewGestureTrailer(this, true);
+        this.gestureTrailer.setColor(trailColor);
+        addItemDecoration(new ItemDecoration() {
+            @Override
+            public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull State state) {
+                trailer.draw(canvas);
+            }
+        });
 
         this.animator = new KeyViewAnimator();
         setItemAnimator(this.animator);

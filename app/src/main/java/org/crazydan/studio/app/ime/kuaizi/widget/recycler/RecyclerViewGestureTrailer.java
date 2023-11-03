@@ -17,12 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PathMeasure;
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureTrailer;
 
 /**
  * 在 {@link RecyclerView} 之上绘制滑屏轨迹
@@ -30,95 +27,21 @@ import androidx.recyclerview.widget.RecyclerView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-27
  */
-public class RecyclerViewGestureTrailer extends RecyclerView.ItemDecoration
-        implements RecyclerViewGestureDetector.Listener {
-    private static final short TRAIL_STEPS = 100;
-    private static final byte TRAIL_STEP_DISTANCE = 5;
-    private static final byte TRAIL_MAX_RADIUS = 8;
-
+public class RecyclerViewGestureTrailer extends ViewGestureTrailer implements ViewGestureDetector.Listener {
     private final RecyclerView recyclerView;
-    private final Path trailPath = new Path();
-    private final Paint trailPaint = new Paint();
-    private final float[] trailPathPos = new float[2];
-    private final PathMeasure trailPathMeasure = new PathMeasure();
-
-    private boolean disabled;
-    private int trailColor;
 
     public RecyclerViewGestureTrailer(RecyclerView recyclerView, boolean disabled) {
         this.recyclerView = recyclerView;
-        this.disabled = disabled;
-    }
 
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public void setTrailColor(int trailColor) {
-        this.trailColor = trailColor;
-    }
-
-    // 绘制于 RecyclerView 之上
-    @Override
-    public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        if (this.disabled) {
-            return;
-        }
-
-        // https://github.com/8VIM/8VIM/blob/master/8vim/src/main/java/inc/flide/vim8/views/mainkeyboard/XpadView.java#L407
-        this.trailPathMeasure.setPath(this.trailPath, false);
-
-        float pathLength = this.trailPathMeasure.getLength();
-        for (short i = 1; i <= TRAIL_STEPS; i++) {
-            float distance = pathLength - i * TRAIL_STEP_DISTANCE;
-            if (distance < 0) {
-                continue;
-            }
-
-            float trailRadius = TRAIL_MAX_RADIUS * (1 - (float) i / TRAIL_STEPS);
-            this.trailPathMeasure.getPosTan(distance, this.trailPathPos, null);
-
-            float x = this.trailPathPos[0];
-            float y = this.trailPathPos[1];
-
-            canvas.drawCircle(x, y, trailRadius, this.trailPaint);
-        }
+        setDisabled(disabled);
     }
 
     @Override
-    public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
-        switch (type) {
-            case MovingStart: {
-                moveTo(data);
-                break;
-            }
-            case Moving: {
-                lineTo(data);
-                break;
-            }
-            case MovingEnd: {
-                reset();
-                break;
-            }
-        }
-
-        if (!this.disabled) {
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+        if (!isDisabled()) {
             this.recyclerView.invalidate();
         }
-    }
 
-    private void moveTo(RecyclerViewGestureDetector.GestureData gesture) {
-        this.trailPath.reset();
-
-        this.trailPath.moveTo(gesture.x, gesture.y);
-        this.trailPaint.setColor(this.trailColor);
-    }
-
-    private void lineTo(RecyclerViewGestureDetector.GestureData gesture) {
-        this.trailPath.lineTo(gesture.x, gesture.y);
-    }
-
-    private void reset() {
-        this.trailPath.reset();
+        super.onGesture(type, data);
     }
 }

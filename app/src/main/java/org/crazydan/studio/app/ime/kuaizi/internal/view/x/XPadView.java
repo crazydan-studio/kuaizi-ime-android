@@ -22,7 +22,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -34,6 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureTrailer;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -44,29 +45,28 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-29
  */
-public class XPadView extends View {
-    private static final short TRAIL_STEPS = 100;
-    private static final byte TRAIL_STEP_DISTANCE = 5;
-    private static final byte TRAIL_MAX_RADIUS = 8;
+public class XPadView extends View implements ViewGestureDetector.Listener {
     private static final float cos_30 = (float) Math.cos(Math.toRadians(30));
     private static final float cos_30_divided_by_1 = 1f / cos_30;
 
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final XZone[] zones = new XZone[3];
-
-    private final Path trailPath = new Path();
-    private final Paint trailPaint = new Paint();
-    private final float[] trailPathPos = new float[2];
-    private final PathMeasure trailPathMeasure = new PathMeasure();
+    private final ViewGestureDetector gesture;
+    private final ViewGestureTrailer trailer;
 
     private PointF padCenter;
-    private PointF cursorPos = new PointF(-100000, -100000);
     private int[] activeBlock;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
         ViewUtils.enableHardwareAccelerated(this);
+
+        this.trailer = new ViewGestureTrailer();
+        this.trailer.setColor(attrColor(R.attr.input_trail_color));
+
+        this.gesture = new ViewGestureDetector();
+        this.gesture.addListener(this) //
+                    .addListener(this.trailer);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -74,38 +74,10 @@ public class XPadView extends View {
     public boolean onTouchEvent(MotionEvent e) {
         invalidate();
 
-        this.cursorPos = new PointF(-100000, -100000);
-        this.activeBlock = null;
+        this.gesture.onTouchEvent(e);
 
         // Note：需要返回 true 才能拦截到 move 等事件
-        switch (e.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: {
-                this.zones[0].press();
-
-                this.trailPath.reset();
-                this.trailPath.moveTo(e.getX(), e.getY());
-
-                int trailColor = attrColor(R.attr.input_trail_color);
-                this.trailPaint.setColor(trailColor);
-                return true;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                this.cursorPos = new PointF(e.getX(), e.getY());
-                this.activeBlock = findActiveBlock(e);
-
-                this.trailPath.lineTo(e.getX(), e.getY());
-                return true;
-            }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL: {
-                this.zones[0].bounce();
-
-                this.trailPath.reset();
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 
     @Override
@@ -115,8 +87,9 @@ public class XPadView extends View {
 
         // 绘制分区
         drawZones(canvas);
+
         // 绘制滑屏轨迹
-        drawTrailPath(canvas);
+        this.trailer.draw(canvas);
     }
 
     @Override
@@ -131,6 +104,25 @@ public class XPadView extends View {
         prepareZones(this.orientation, specWidth, specHeight);
     }
 
+    @Override
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+        switch (type) {
+            case PressStart:
+                this.zones[0].press();
+                break;
+            case PressEnd:
+                this.zones[0].bounce();
+                break;
+            case MovingStart:
+            case Moving:
+                this.activeBlock = findActiveBlock(data);
+                break;
+            case MovingEnd:
+                this.activeBlock = null;
+                break;
+        }
+    }
+
     private void drawZones(Canvas canvas) {
         // 从外到内绘制，以层叠方式覆盖相交部分
         for (int i = this.zones.length - 1; i >= 0; i--) {
@@ -139,14 +131,14 @@ public class XPadView extends View {
         }
     }
 
-    private int[] findActiveBlock(MotionEvent e) {
+    private int[] findActiveBlock(ViewGestureDetector.GestureData data) {
         for (int i = 0; i < this.zones.length; i++) {
             XZone zone = this.zones[i];
 
             for (int j = 0; j < zone.blocks.size(); j++) {
                 XZone.Block block = zone.blocks.get(j);
 
-                if (block.contains(new PointF(e.getX(), e.getY()))) {
+                if (block.contains(new PointF(data.x, data.y))) {
                     return new int[] { i, j };
                 }
             }
@@ -516,27 +508,6 @@ public class XPadView extends View {
 
     private PointF middle(PointF p1, PointF p2) {
         return new PointF((p1.x + p2.x) / 2f, (p1.y + p2.y) / 2f);
-    }
-
-    private void drawTrailPath(Canvas canvas) {
-        // https://github.com/8VIM/8VIM/blob/master/8vim/src/main/java/inc/flide/vim8/views/mainkeyboard/XpadView.java#L407
-        this.trailPathMeasure.setPath(this.trailPath, false);
-
-        float pathLength = this.trailPathMeasure.getLength();
-        for (short i = 1; i <= TRAIL_STEPS; i++) {
-            float distance = pathLength - i * TRAIL_STEP_DISTANCE;
-            if (distance < 0) {
-                continue;
-            }
-
-            float trailRadius = TRAIL_MAX_RADIUS * (1 - (float) i / TRAIL_STEPS);
-            this.trailPathMeasure.getPosTan(distance, this.trailPathPos, null);
-
-            float x = this.trailPathPos[0];
-            float y = this.trailPathPos[1];
-
-            canvas.drawCircle(x, y, trailRadius, this.trailPaint);
-        }
     }
 
     private Drawable drawable(int resId) {

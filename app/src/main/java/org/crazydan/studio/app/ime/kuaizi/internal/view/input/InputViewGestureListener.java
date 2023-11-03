@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
-import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
 /**
  * {@link InputListView} 的手势监听器
@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public class InputViewGestureListener implements RecyclerViewGestureDetector.Listener {
+public class InputViewGestureListener implements ViewGestureDetector.Listener {
     private final InputListView inputListView;
 
     public InputViewGestureListener(InputListView inputListView) {
@@ -37,7 +37,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
     }
 
     @Override
-    public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         InputView<?> inputView = this.inputListView.findVisibleInputViewUnder(data.x, data.y);
 
         switch (type) {
@@ -47,7 +47,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
         }
     }
 
-    private void onSingleTap(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {
+    private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
         Input<?> input = determineInput(inputView, data);
         if (input == null) {
             return;
@@ -57,7 +57,7 @@ public class InputViewGestureListener implements RecyclerViewGestureDetector.Lis
         this.inputListView.onUserInputMsg(UserInputMsg.Input_Choose_Doing, msgData);
     }
 
-    private Input<?> determineInput(InputView<?> inputView, RecyclerViewGestureDetector.GestureData data) {
+    private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {
         Input<?> input = inputView != null ? inputView.getData() : null;
 
         if (input == null) {

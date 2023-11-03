@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
-import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
 /**
  * {@link InputCompletionsView} 的手势监听器
@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionViewGestureListener implements RecyclerViewGestureDetector.Listener {
+public class CompletionViewGestureListener implements ViewGestureDetector.Listener {
     private final InputCompletionsView inputCompletionsView;
 
     public CompletionViewGestureListener(InputCompletionsView inputCompletionsView) {
@@ -37,7 +37,7 @@ public class CompletionViewGestureListener implements RecyclerViewGestureDetecto
     }
 
     @Override
-    public void onGesture(RecyclerViewGestureDetector.GestureType type, RecyclerViewGestureDetector.GestureData data) {
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         CompletionView completionView = this.inputCompletionsView.findCompletionViewUnder(data.x, data.y);
         if (completionView == null) {
             return;
@@ -50,7 +50,7 @@ public class CompletionViewGestureListener implements RecyclerViewGestureDetecto
         }
     }
 
-    private void onSingleTap(CompletionView completionView, RecyclerViewGestureDetector.GestureData data) {
+    private void onSingleTap(CompletionView completionView, ViewGestureDetector.GestureData data) {
         CompletionInput completion = completionView.getData();
 
         UserInputMsgData msgData = new UserInputMsgData(completion);
