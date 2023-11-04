@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardConfigUpdateDoneMsgData;
@@ -49,7 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureTra
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
+public class KeyboardView extends BaseKeyboardView implements InputMsgListener, UserKeyMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
@@ -108,6 +109,7 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
     }
 
     /** 响应按键点击、双击等消息 */
+    @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         this.keyboard.onUserKeyMsg(msg, data);
     }

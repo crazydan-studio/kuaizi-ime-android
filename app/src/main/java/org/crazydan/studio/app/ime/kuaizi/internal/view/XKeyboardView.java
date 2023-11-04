@@ -23,6 +23,10 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.x.XPadView;
 
 /**
  * X 型全滑屏输入键盘视图
@@ -30,11 +34,18 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-31
  */
-public class XKeyboardView extends LinearLayout {
+public class XKeyboardView extends LinearLayout implements UserKeyMsgListener {
+    private final XPadView padView;
 
     public XKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         inflate(context, R.layout.x_keyboard_view, this);
+
+        this.padView = findViewById(R.id.pad_view);
+    }
+
+    @Override
+    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
     }
 }

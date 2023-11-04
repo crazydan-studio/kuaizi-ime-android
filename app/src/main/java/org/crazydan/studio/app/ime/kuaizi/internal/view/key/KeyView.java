@@ -58,6 +58,14 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
             enable();
         }
 
+        updateBgView(key, orientation);
+    }
+
+    private void updateBgView(K key, HexagonOrientation orientation) {
+        if (this.bgView == null) {
+            return;
+        }
+
         if (key.getColor().bg != null) {
             HexagonDrawable drawable = new HexagonDrawable(orientation);
 

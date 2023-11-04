@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -52,6 +53,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_FILTER_INPUT_WORD_KEY = 5;
     private static final int VIEW_TYPE_SYMBOL_KEY = 6;
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
+    private static final int VIEW_TYPE_XPAD_KEY = 8;
 
     private final HexagonOrientation orientation;
 
@@ -62,7 +64,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         this.orientation = orientation;
     }
 
-    private static int getKeyViewType(Key<?> key) {
+    protected static int getKeyViewType(Key<?> key) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Filter_PinyinInputCandidate_stroke:
@@ -78,6 +80,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             return VIEW_TYPE_SYMBOL_KEY;
         } else if (key instanceof MathOpKey) {
             return VIEW_TYPE_MATH_OP_KEY;
+        } else if (key instanceof XPadKey) {
+            return VIEW_TYPE_XPAD_KEY;
         } else if (key == null) {
             return VIEW_TYPE_NULL_KEY;
         } else {
@@ -103,6 +107,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             return new SymbolKeyView(inflateItemView(context, root, R.layout.key_char_view));
         } else if (viewType == VIEW_TYPE_MATH_OP_KEY) {
             return new MathOpKeyView(inflateItemView(context, root, R.layout.key_char_view));
+        } else if (viewType == VIEW_TYPE_XPAD_KEY) {
+            return new XPadKeyView(inflateItemView(context, root, R.layout.key_xpad_view));
         } else if (viewType == VIEW_TYPE_NULL_KEY) {
             return new NullKeyView(inflateItemView(context, root, R.layout.key_ctrl_view));
         } else {
@@ -128,6 +134,8 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             ((SymbolKeyView) view).bind((SymbolKey) key, orientation);
         } else if (key instanceof MathOpKey) {
             ((MathOpKeyView) view).bind((MathOpKey) key, orientation);
+        } else if (key instanceof XPadKey) {
+            ((XPadKeyView) view).bind((XPadKey) key);
         } else if (key == null) {
             ((NullKeyView) view).bind();
         } else {

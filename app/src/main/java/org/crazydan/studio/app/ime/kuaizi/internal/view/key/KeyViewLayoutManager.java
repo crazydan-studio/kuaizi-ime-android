@@ -19,12 +19,14 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import java.util.function.Predicate;
 
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewLayoutManager;
 import org.hexworks.mixite.core.api.Hexagon;
@@ -102,6 +104,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
         this.grid = createGrid();
 
+        View xPadKeyView = null;
+        int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
+        Rect xPadKeyViewRect = new Rect(0, 0, getWidth(), getHeight());
+
         int i = 0;
         double radius = this.gridItemRadius;
         for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
@@ -118,14 +124,29 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             int right = (int) Math.round(x + radius);
             int bottom = (int) Math.round(y + radius);
 
-            float minSize = ScreenUtils.dpToPx(52);
-            int actualSize = (int) Math.round(radius * 2);
+            if (i % this.gridColumns == 0) {
+                xPadKeyViewRect.set(Math.max(xPadKeyViewRect.left, right),
+                                    xPadKeyViewRect.top,
+                                    xPadKeyViewRect.right,
+                                    xPadKeyViewRect.bottom);
+            } else if (i % this.gridColumns == this.gridColumns - 1) {
+                xPadKeyViewRect.set(xPadKeyViewRect.left,
+                                    xPadKeyViewRect.top,
+                                    Math.min(xPadKeyViewRect.right, left),
+                                    xPadKeyViewRect.bottom);
+            }
 
             // 按按键半径调整按键视图的宽高
             View view = recycler.getViewForPosition(i++);
-            ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-            layoutParams.height = layoutParams.width = actualSize;
+            addView(view);
 
+            if (getItemViewType(view) == xPadKeyViewType) {
+                xPadKeyView = view;
+                continue;
+            }
+
+            float minSize = ScreenUtils.dpToPx(52);
+            int actualSize = (int) Math.round(radius * 2);
             if (actualSize < minSize) {
                 float scale = actualSize / minSize;
 
@@ -140,9 +161,15 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 }
             }
 
-            addView(view);
-            measureChildWithMargins(view, 0, 0);
-            layoutDecoratedWithMargins(view, left, top, right, bottom);
+            layoutItemView(view, left, top, right, bottom);
+        }
+
+        if (xPadKeyView != null) {
+            layoutItemView(xPadKeyView,
+                           xPadKeyViewRect.left,
+                           xPadKeyViewRect.top,
+                           xPadKeyViewRect.right,
+                           xPadKeyViewRect.bottom);
         }
     }
 
@@ -282,5 +309,16 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             return Point.fromPosition(getWidth() - x, y);
         }
         return Point.fromPosition(x, y);
+    }
+
+    private void layoutItemView(
+            View view, int left, int top, int right, int bottom
+    ) {
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.width = Math.abs(left - right);
+        layoutParams.height = Math.abs(top - bottom);
+
+        measureChildWithMargins(view, 0, 0);
+        layoutDecoratedWithMargins(view, left, top, right, bottom);
     }
 }

@@ -42,13 +42,22 @@ public class XZone {
 
     public final List<Block> blocks = new ArrayList<>();
 
+    private boolean hidden;
     private float alpha = 1f;
     private float scale = 1f;
+    private PointF moveTo;
 
     public void draw(Canvas canvas, PointF origin) {
+        if (this.hidden) {
+            return;
+        }
+
         XPainter.inCanvasLayer(canvas, () -> {
             if (this.scale < 1f) {
                 canvas.scale(this.scale, this.scale, origin.x, origin.y);
+            }
+            if (this.moveTo != null) {
+                canvas.translate(this.moveTo.x - origin.x, this.moveTo.y - origin.y);
             }
 
             this.painters.forEach((p) -> doPaint(canvas, p));
@@ -58,6 +67,19 @@ public class XZone {
 
         // 绘制 Link 边界线
         //drawLinkBoundaries(canvas);
+    }
+
+    public void hide() {
+        this.hidden = true;
+    }
+
+    public void show() {
+        this.hidden = false;
+    }
+
+    public void reset() {
+        this.moveTo = null;
+        bounce();
     }
 
     /** 按压 */
@@ -70,6 +92,10 @@ public class XZone {
     public void bounce() {
         this.alpha = 1f;
         this.scale = 1f;
+    }
+
+    public void moveTo(float x, float y) {
+        this.moveTo = new PointF(x, y);
     }
 
     public XPathPainter newPathPainter() {

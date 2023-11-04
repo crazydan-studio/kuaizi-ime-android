@@ -39,6 +39,7 @@ public class SymbolKeyView extends KeyView<SymbolKey, TextView> {
         super(itemView);
     }
 
+    @Override
     public void bind(SymbolKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
