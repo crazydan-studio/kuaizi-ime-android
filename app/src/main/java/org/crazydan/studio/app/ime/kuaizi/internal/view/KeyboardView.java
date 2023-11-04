@@ -129,6 +129,7 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener {
                 }
                 break;
             }
+            case InputList_Pending_Drop_Done:
             case InputChars_Input_Done: {
                 this.gestureTrailer.setDisabled(true);
                 break;
