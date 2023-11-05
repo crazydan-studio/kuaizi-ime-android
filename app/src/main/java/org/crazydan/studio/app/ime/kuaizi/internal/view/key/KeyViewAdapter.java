@@ -55,7 +55,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
     private static final int VIEW_TYPE_XPAD_KEY = 8;
 
-    private final HexagonOrientation orientation;
+    private HexagonOrientation orientation;
 
     private List<Key<?>> keys = new ArrayList<>();
     private Integer themeResId;
@@ -144,8 +144,9 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateKeys(Key<?>[][] keys, Integer themeResId) {
+    public void updateKeys(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
         this.themeResId = themeResId;
+        this.orientation = orientation;
 
         List<Key<?>> oldKeys = this.keys;
         this.keys = new ArrayList<>();

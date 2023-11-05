@@ -63,116 +63,116 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
     public Key<?>[][] createKeys() {
-//        return (Key<?>[][]) new Key[][] {
-//                new Key[] {
-//                        ctrlKey(CtrlKey.Type.Switch_HandMode),
-//                        //
-//                        null, null, null, null, null, null,
-//                        //
-//                        null,
-//                        } //
-//                , new Key[] {
-//                null,
-//                //
-//                null, null, null, null, null, null,
-//                //
-//                null,
-//                } //
-//                , new Key[] {
-//                null,
-//                //
-//                null, null, null, null, null, null,
-//                //
-//                null,
-//                } //
-//                , new Key[] {
-//                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
-//                //
-//                null, null, null, new XPadKey(), null, null,
-//                //
-//                ctrlKey(CtrlKey.Type.Backspace),
-//                } //
-//                , new Key[] {
-//                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-//                //
-//                null, null, null, null, null, null,
-//                //
-//                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
-//                } //
-//                , new Key[] {
-//                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
-//                //
-//                null, null, null, null, null, null,
-//                //
-//                ctrlKey(CtrlKey.Type.Space),
-//                },
-//                };
-
         return (Key<?>[][]) new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
-                        // 😂
-                        emojiKey("\uD83D\uDE02"),
-                        symbolKey("！").withReplacements("!"),
-                        level0CharKey("ü").withReplacements("v", "V"),
-                        level0CharKey("i").withReplacements("I"),
-                        level0CharKey("u").withReplacements("U"),
-                        level0CharKey("o").withReplacements("O"),
-                        level0CharKey("j").withReplacements("J"),
+                        //
+                        null, null, null, null, null, null,
+                        //
+                        null,
                         } //
                 , new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Math),
-                symbolKey("？").withReplacements("?"),
-                level0CharKey("d").withReplacements("D"),
-                level0CharKey("b").withReplacements("B"),
-                level0CharKey("x").withReplacements("X"),
-                level0CharKey("q").withReplacements("Q"),
-                level0CharKey("a").withReplacements("A"),
-                ctrlKey(CtrlKey.Type.Backspace),
+                null,
+                //
+                null, null, null, null, null, null,
+                //
+                null,
                 } //
                 , new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Latin),
-                // 😄
-                emojiKey("\uD83D\uDE04"),
-                symbolKey("；").withReplacements(";"),
-                level0CharKey("m").withReplacements("M"),
-                level0CharKey("l").withReplacements("L"),
-                level0CharKey("y").withReplacements("Y"),
-                level0CharKey("p").withReplacements("P"),
-                level0CharKey("e").withReplacements("E"),
+                null,
+                //
+                null, null, null, null, null, null,
+                //
+                null,
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
-                symbolKey("：").withReplacements(":"),
-                level0CharKey("s").withReplacements("S"),
-                level0CharKey("t").withReplacements("T"),
-                ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
-                level0CharKey("r").withReplacements("R"),
-                level0CharKey("h").withReplacements("H"),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                //
+                null, null, null, new XPadKey(), null, null,
+                //
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-                // 😉
-                emojiKey("\uD83D\uDE09"),
-                symbolKey("。").withReplacements("."),
-                level0CharKey("c").withReplacements("C"),
-                level0CharKey("z").withReplacements("Z"),
-                level0CharKey("f").withReplacements("F"),
-                level0CharKey("n").withReplacements("N"),
-                level0CharKey("k").withReplacements("K"),
+                //
+                null, null, null, null, null, null,
+                //
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
-                symbolKey("，").withReplacements(","),
-                level0CharKey("sh").withReplacements("Sh", "SH"),
-                level0CharKey("ch").withReplacements("Ch", "CH"),
-                level0CharKey("zh").withReplacements("Zh", "ZH"),
-                level0CharKey("g").withReplacements("G"),
-                level0CharKey("w").withReplacements("W"),
+                //
+                null, null, null, null, null, null,
+                //
                 ctrlKey(CtrlKey.Type.Space),
                 },
                 };
+
+//        return (Key<?>[][]) new Key[][] {
+//                new Key[] {
+//                        ctrlKey(CtrlKey.Type.Switch_HandMode),
+//                        // 😂
+//                        emojiKey("\uD83D\uDE02"),
+//                        symbolKey("！").withReplacements("!"),
+//                        level0CharKey("ü").withReplacements("v", "V"),
+//                        level0CharKey("i").withReplacements("I"),
+//                        level0CharKey("u").withReplacements("U"),
+//                        level0CharKey("o").withReplacements("O"),
+//                        level0CharKey("j").withReplacements("J"),
+//                        } //
+//                , new Key[] {
+//                keyboardSwitchKey(Keyboard.Type.Math),
+//                symbolKey("？").withReplacements("?"),
+//                level0CharKey("d").withReplacements("D"),
+//                level0CharKey("b").withReplacements("B"),
+//                level0CharKey("x").withReplacements("X"),
+//                level0CharKey("q").withReplacements("Q"),
+//                level0CharKey("a").withReplacements("A"),
+//                ctrlKey(CtrlKey.Type.Backspace),
+//                } //
+//                , new Key[] {
+//                keyboardSwitchKey(Keyboard.Type.Latin),
+//                // 😄
+//                emojiKey("\uD83D\uDE04"),
+//                symbolKey("；").withReplacements(";"),
+//                level0CharKey("m").withReplacements("M"),
+//                level0CharKey("l").withReplacements("L"),
+//                level0CharKey("y").withReplacements("Y"),
+//                level0CharKey("p").withReplacements("P"),
+//                level0CharKey("e").withReplacements("E"),
+//                } //
+//                , new Key[] {
+//                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+//                symbolKey("：").withReplacements(":"),
+//                level0CharKey("s").withReplacements("S"),
+//                level0CharKey("t").withReplacements("T"),
+//                ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
+//                level0CharKey("r").withReplacements("R"),
+//                level0CharKey("h").withReplacements("H"),
+//                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+//                } //
+//                , new Key[] {
+//                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+//                // 😉
+//                emojiKey("\uD83D\uDE09"),
+//                symbolKey("。").withReplacements("."),
+//                level0CharKey("c").withReplacements("C"),
+//                level0CharKey("z").withReplacements("Z"),
+//                level0CharKey("f").withReplacements("F"),
+//                level0CharKey("n").withReplacements("N"),
+//                level0CharKey("k").withReplacements("K"),
+//                } //
+//                , new Key[] {
+//                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
+//                symbolKey("，").withReplacements(","),
+//                level0CharKey("sh").withReplacements("Sh", "SH"),
+//                level0CharKey("ch").withReplacements("Ch", "CH"),
+//                level0CharKey("zh").withReplacements("Zh", "ZH"),
+//                level0CharKey("g").withReplacements("G"),
+//                level0CharKey("w").withReplacements("W"),
+//                ctrlKey(CtrlKey.Type.Space),
+//                },
+//                };
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */

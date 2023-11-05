@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -68,18 +69,14 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private int gridColumns;
     /** 按键行数 */
     private int gridRows;
-    /** 网格左部空白 */
-    private float gridPaddingLeft;
     /** 网格右部最大空白：配置数据，用于确保按键最靠近右手 */
     private float gridMaxPaddingRight;
-    /** 网格顶部空白 */
-    private float gridPaddingTop;
     /** 网格底部空白：实际剩余空间 */
     private float gridPaddingBottom;
 
     private boolean reverse;
     private boolean xPadEnabled;
-    private List<RectHexagons> rectHexagonsList;
+    private List<RectHexagon> rectHexagons;
 
     public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
@@ -109,14 +106,12 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             return;
         }
 
-        if (this.xPadEnabled) {
-            layoutChildrenWithXPad(recycler, itemCount);
-        } else {
-            layoutChildren(recycler, itemCount);
-        }
+        this.rectHexagons = createGrid(this.xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation);
+
+        layoutRectHexagons(recycler, this.rectHexagons, itemCount);
     }
 
-    private List<RectHexagons> createGrid(HexagonOrientation orientation) {
+    private List<RectHexagon> createGrid(HexagonOrientation orientation) {
         // Note: 只有布局完成后，才能得到视图的宽高
         // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
         // - 这里按照按键紧挨的情况计算正六边形的半径，
@@ -134,7 +129,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         float r2 = h / (2 * ((m - 1) * cos_30 * cos_30 + 1));
 
         // 计算左上角的空白偏移量
-        this.gridPaddingLeft = this.gridPaddingTop = 0;
+        float gridPaddingTop = 0;
+        float gridPaddingLeft = 0;
         this.gridPaddingBottom = 0;
 
         float radius;
@@ -146,10 +142,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             float h_left = h - h_used;
             float paddingY = h_left / 2;
             if (orientation == HexagonOrientation.POINTY_TOP) {
-                this.gridPaddingTop = paddingY;
+                gridPaddingTop = paddingY;
                 this.gridPaddingBottom = paddingY;
             } else {
-                this.gridPaddingLeft = Math.max(0, h_left - this.gridMaxPaddingRight);
+                gridPaddingLeft = Math.max(0, h_left - this.gridMaxPaddingRight);
             }
         } else if (compare > 0) {
             radius = r2;
@@ -158,22 +154,26 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             float w_left = w - w_used;
             float paddingX = w_left / 2;
             if (orientation == HexagonOrientation.POINTY_TOP) {
-                this.gridPaddingLeft = Math.max(0, w_left - this.gridMaxPaddingRight);
+                gridPaddingLeft = Math.max(0, w_left - this.gridMaxPaddingRight);
             } else {
-                this.gridPaddingTop = paddingX;
+                gridPaddingTop = paddingX;
                 this.gridPaddingBottom = paddingX;
             }
         } else {
             radius = r1;
         }
 
-        this.gridItemRadius = radius - this.gridItemSpacing / (2 * cos_30);
         this.gridItemOuterRadius = radius;
+        this.gridItemRadius = this.gridItemOuterRadius - this.gridItemSpacing / (2 * cos_30);
         this.gridItemInnerRadius = this.gridItemRadius * cos_30;
 
-        float hexagonRectWidth = this.gridItemInnerRadius * 2 + this.gridItemSpacing;
-        float rectTop = this.gridPaddingTop;
-        float rectLeft = Math.min(this.gridPaddingLeft, this.gridMaxPaddingRight);
+        float hexagonRectWidth = (orientation == HexagonOrientation.POINTY_TOP
+                                  ? this.gridItemInnerRadius
+                                  : this.gridItemRadius) * 2 + this.gridItemSpacing;
+        float rectTop = gridPaddingTop;
+        float rectLeft = this.xPadEnabled //
+                         ? 0 //
+                         : Math.min(gridPaddingLeft, this.gridMaxPaddingRight);
         float rectHeight = getHeight() - this.gridPaddingBottom;
         float leftRectRight = rectLeft + hexagonRectWidth;
         float rightRectRight = getWidth() - rectLeft;
@@ -185,28 +185,53 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         float middleRectLeft = this.xPadEnabled //
                                ? leftRectRight //
                                // 靠右对齐
-                               : rightRectLeft - hexagonRectWidth * middleGridColumns;
+                               : rightRectLeft //
+                                 - (orientation == HexagonOrientation.POINTY_TOP
+                                    ? hexagonRectWidth
+                                    : (this.gridItemRadius * cos_30 * 2 + this.gridItemSpacing) * cos_30)
+                                   * middleGridColumns;
 
+        // ======================================================================
         // 将键盘拆分为左、中、右三个部分，左部分的往最左侧靠齐，中和右部分往最右侧靠齐
-        List<RectHexagons> rectHexagonsList = new ArrayList<>();
-        RectHexagons leftRectHexagons = new RectHexagons(this.gridItemRadius, (idx) -> idx * this.gridColumns);
-        leftRectHexagons.rect.set(rectLeft, rectTop, leftRectRight, rectHeight);
-        leftRectHexagons.generate(1, this.gridRows, orientation, radius);
-        rectHexagonsList.add(leftRectHexagons);
+        List<RectHexagon> rectHexagonList = new ArrayList<>(this.gridColumns * this.gridRows);
 
-        RectHexagons rightRectHexagons = new RectHexagons(this.gridItemRadius,
-                                                          (idx) -> (idx + 1) * this.gridColumns - 1);
-        rightRectHexagons.rect.set(rightRectLeft, rectTop, rightRectRight, rectHeight);
-        rightRectHexagons.generate(1, this.gridRows, orientation, radius);
-        rectHexagonsList.add(rightRectHexagons);
+        RectF leftRect = new RectF(rectLeft, rectTop, leftRectRight, rectHeight);
+        Function<Integer, Integer> leftRectHexagonIndexer = (idx) -> idx * this.gridColumns;
+        List<RectHexagon> leftRectHexagonList = RectHexagon.create(leftRect,
+                                                                   1,
+                                                                   this.gridRows,
+                                                                   orientation,
+                                                                   this.gridItemOuterRadius,
+                                                                   this.gridItemRadius,
+                                                                   leftRectHexagonIndexer);
+        rectHexagonList.addAll(leftRectHexagonList);
 
-        RectHexagons middleRectHexagons = new RectHexagons(this.gridItemRadius,
-                                                           (idx) -> idx + (2 * (idx / middleGridColumns) + 1));
-        middleRectHexagons.rect.set(middleRectLeft, rectTop, rightRectHexagons.rect.left, rectHeight);
-        middleRectHexagons.generate(middleGridColumns, this.gridRows, orientation, radius);
-        rectHexagonsList.add(1, middleRectHexagons);
+        RectF rightRect = new RectF(rightRectLeft, rectTop, rightRectRight, rectHeight);
+        Function<Integer, Integer> rightRectHexagonIndexer = (idx) -> (idx + 1) * this.gridColumns - 1;
+        List<RectHexagon> rightRectHexagonList = RectHexagon.create(rightRect,
+                                                                    1,
+                                                                    this.gridRows,
+                                                                    orientation,
+                                                                    this.gridItemOuterRadius,
+                                                                    this.gridItemRadius,
+                                                                    rightRectHexagonIndexer);
+        rectHexagonList.addAll(rightRectHexagonList);
 
-        return rectHexagonsList;
+        RectF middleRect = new RectF(middleRectLeft, rectTop, rightRect.left, rectHeight);
+        Function<Integer, Integer> middleRectHexagonIndexer = (idx) -> idx + (2 * (idx / middleGridColumns) + 1);
+        List<RectHexagon> middleRectHexagonList = RectHexagon.create(middleRect,
+                                                                     middleGridColumns,
+                                                                     this.gridRows,
+                                                                     orientation,
+                                                                     this.gridItemOuterRadius,
+                                                                     this.gridItemRadius,
+                                                                     middleRectHexagonIndexer);
+        rectHexagonList.addAll(middleRectHexagonList);
+
+        // 必须确保从 0 到 n 的递增顺序排列，以避免视图与绑定的数据映射错误
+        rectHexagonList.sort(Comparator.comparingInt(a -> a.index));
+
+        return rectHexagonList;
     }
 
     public double getGridPaddingBottom() {
@@ -250,32 +275,21 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private View filterChildViewByHexagonCenterDistance(double x, double y, Predicate<Double> predicate) {
         Point point = Point.fromPosition(x, y);
 
-//        int i = 0;
-//        int itemCount = getItemCount();
-//        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
-//            if (i >= itemCount) {
-//                break;
-//            }
-//
-//            Point center = coord(hexagon.getCenter());
-//            double distance = center.distanceFrom(point);
-//
-//            if (predicate.test(distance)) {
-//                return getChildAt(i);
-//            }
-//            i++;
-//        }
+        for (RectHexagon rectHexagon : this.rectHexagons) {
+            Point center = coord(rectHexagon.hexagon.getCenter(), rectHexagon.rect);
+            double distance = center.distanceFrom(point);
+
+            if (predicate.test(distance)) {
+                return getChildAt(rectHexagon.index);
+            }
+        }
 
         return null;
     }
 
-    private Point coord(Point point) {
-        return coord(point.getCoordinateX(), point.getCoordinateY());
-    }
-
-    private Point coord(double x, double y) {
-        x += this.xPadEnabled ? Math.min(this.gridItemSpacing, this.gridPaddingLeft) : this.gridPaddingLeft;
-        y += this.gridPaddingTop;
+    private Point coord(Point point, RectF rect) {
+        double x = point.getCoordinateX() + rect.left;
+        double y = point.getCoordinateY() + rect.top;
 
         if (this.reverse) {
             return Point.fromPosition(getWidth() - x, y);
@@ -283,47 +297,28 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         return Point.fromPosition(x, y);
     }
 
-    private void layoutChildren(RecyclerView.Recycler recycler, int itemCount) {
-        this.rectHexagonsList = createGrid(this.gridItemOrientation);
-
-        for (RectHexagons rectHexagons : this.rectHexagonsList) {
-            for (IndexedHexagon hexagon : rectHexagons.hexagons) {
-                if (hexagon.index >= itemCount) {
-                    break;
-                }
-
-                View view = recycler.getViewForPosition(hexagon.index);
-                addView(view);
-
-                layoutHexagonItemView(view, hexagon.hexagon, rectHexagons);
-            }
-        }
-    }
-
-    private void layoutChildrenWithXPad(RecyclerView.Recycler recycler, int itemCount) {
-        this.rectHexagonsList = createGrid(HexagonOrientation.FLAT_TOP);
-
+    private void layoutRectHexagons(RecyclerView.Recycler recycler, List<RectHexagon> rectHexagons, int itemCount) {
         View xPadKeyView = null;
         RectF xPadKeyViewRect = null;
         int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
 
-        for (RectHexagons rectHexagons : this.rectHexagonsList) {
-            for (IndexedHexagon hexagon : rectHexagons.hexagons) {
-                if (hexagon.index >= itemCount) {
-                    break;
-                }
-
-                View view = recycler.getViewForPosition(hexagon.index);
-                addView(view);
-
-                if (getItemViewType(view) == xPadKeyViewType) {
-                    xPadKeyView = view;
-                    xPadKeyViewRect = rectHexagons.rect;
-                    continue;
-                }
-
-                layoutHexagonItemView(view, hexagon.hexagon, rectHexagons);
+        for (RectHexagon rectHexagon : rectHexagons) {
+            int index = rectHexagon.index;
+            // Note：实际绑定的按键数可能小于满屏布局的按键数
+            if (index >= itemCount) {
+                break;
             }
+
+            View view = recycler.getViewForPosition(index);
+            addView(view, index);
+
+            if (getItemViewType(view) == xPadKeyViewType) {
+                xPadKeyView = view;
+                xPadKeyViewRect = rectHexagon.rect;
+                continue;
+            }
+
+            layoutRectHexagonView(view, rectHexagon);
         }
 
         if (xPadKeyView != null) {
@@ -347,15 +342,13 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         layoutDecoratedWithMargins(view, left, top, right, bottom);
     }
 
-    private void layoutHexagonItemView(
-            View view, Hexagon<SatelliteData> hexagon, RectHexagons rectHexagons
-    ) {
+    private void layoutRectHexagonView(View view, RectHexagon rectHexagon) {
         // 按按键半径调整按键视图的宽高
-        Point center = hexagon.getCenter();
-        RectF rect = rectHexagons.rect;
-        float radius = rectHexagons.radius;
-        float x = (float) (center.getCoordinateX() + rect.left);
-        float y = (float) (center.getCoordinateY() + rect.top);
+        RectF rect = rectHexagon.rect;
+        float radius = rectHexagon.radius;
+        Point center = coord(rectHexagon.hexagon.getCenter(), rect);
+        float x = (float) center.getCoordinateX();
+        float y = (float) center.getCoordinateY();
 
         int left = Math.round(x - radius);
         int top = Math.round(y - radius);
@@ -381,43 +374,42 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         layoutItemView(view, left, top, right, bottom);
     }
 
-    private static class RectHexagons {
+    private static class RectHexagon {
+        public final int index;
+        public final RectF rect;
         public final float radius;
-        public final RectF rect = new RectF();
-        public final List<IndexedHexagon> hexagons = new ArrayList<>();
+        public final Hexagon<SatelliteData> hexagon;
 
-        private final Function<Integer, Integer> indexer;
-
-        private RectHexagons(float radius, Function<Integer, Integer> indexer) {
+        private RectHexagon(int index, RectF rect, float radius, Hexagon<SatelliteData> hexagon) {
+            this.index = index;
+            this.rect = rect;
             this.radius = radius;
-            this.indexer = indexer;
+            this.hexagon = hexagon;
         }
 
-        public void generate(int columns, int rows, HexagonOrientation orientation, float radius) {
+        public static List<RectHexagon> create(
+                RectF rect, int columns, int rows, //
+                HexagonOrientation orientation, float outerRadius, float innerRadius, //
+                Function<Integer, Integer> indexer
+        ) {
             HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>();
             builder.setGridWidth(columns)
                    .setGridHeight(rows)
                    .setGridLayout(HexagonalGridLayout.RECTANGULAR)
                    .setOrientation(orientation)
                    // 包含间隔的半径
-                   .setRadius(radius);
+                   .setRadius(outerRadius);
 
             int i = 0;
+            List<RectHexagon> list = new ArrayList<>();
             Iterable<Hexagon<SatelliteData>> it = builder.build().getHexagons();
             for (Hexagon<SatelliteData> hexagon : it) {
-                int index = this.indexer.apply(i++);
-                this.hexagons.add(new IndexedHexagon(index, hexagon));
+                int index = indexer.apply(i++);
+
+                list.add(new RectHexagon(index, rect, innerRadius, hexagon));
             }
-        }
-    }
 
-    private static class IndexedHexagon {
-        public final int index;
-        public final Hexagon<SatelliteData> hexagon;
-
-        private IndexedHexagon(int index, Hexagon<SatelliteData> hexagon) {
-            this.index = index;
-            this.hexagon = hexagon;
+            return list;
         }
     }
 }

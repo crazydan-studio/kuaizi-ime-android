@@ -41,6 +41,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-09-22
  */
 public abstract class BaseKeyboardView extends RecyclerView {
+    private final HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
     private final int keySpacing = 3;
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
@@ -48,10 +49,8 @@ public abstract class BaseKeyboardView extends RecyclerView {
     public BaseKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
-
-        this.adapter = new KeyViewAdapter(keyViewOrientation);
-        this.layoutManager = new KeyViewLayoutManager(keyViewOrientation);
+        this.adapter = new KeyViewAdapter(this.keyViewOrientation);
+        this.layoutManager = new KeyViewLayoutManager(this.keyViewOrientation);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
@@ -72,7 +71,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
         boolean xPadEnabled = hasXPadKey(keys);
         this.layoutManager.enableXPad(xPadEnabled);
 
-        this.adapter.updateKeys(keys, themeResId);
+        this.adapter.updateKeys(keys, themeResId, xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation);
     }
 
     public double getBottomSpacing() {
