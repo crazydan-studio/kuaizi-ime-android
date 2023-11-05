@@ -29,7 +29,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
@@ -83,28 +82,28 @@ public class PinyinKeyTable extends KeyTable {
                 //
                 null, null, null, null, null, null,
                 //
-                null,
+                ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
                 //
                 null, null, null, new XPadKey(), null, null,
                 //
-                ctrlKey(CtrlKey.Type.Backspace),
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 //
                 null, null, null, null, null, null,
                 //
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                ctrlKey(CtrlKey.Type.Space),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
                 //
                 null, null, null, null, null, null,
                 //
-                ctrlKey(CtrlKey.Type.Space),
+                null,
                 },
                 };
 

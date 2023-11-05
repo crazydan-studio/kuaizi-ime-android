@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,6 +42,10 @@ public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> ext
     }
 
     protected <I> void updateItems(List<I> oldItems, List<I> newItems) {
+        updateItems(oldItems, newItems, (o, n) -> Objects.equals(o, n) ? 0 : -1);
+    }
+
+    protected <I> void updateItems(List<I> oldItems, List<I> newItems, Comparator<I> comparator) {
         int oldItemsSize = oldItems != null ? oldItems.size() : 0;
         int newItemsSize = newItems != null ? newItems.size() : 0;
 
@@ -59,7 +64,7 @@ public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> ext
             I oldItem = oldItems.get(i);
             I newItem = newItems.get(i);
 
-            if (!Objects.equals(oldItem, newItem)) {
+            if (comparator.compare(oldItem, newItem) != 0) {
                 notifyItemChanged(i);
             }
         }

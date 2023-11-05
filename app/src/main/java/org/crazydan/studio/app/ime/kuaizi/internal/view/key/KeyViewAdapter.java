@@ -146,7 +146,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
     public void updateKeys(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
         this.themeResId = themeResId;
-        this.orientation = orientation;
 
         List<Key<?>> oldKeys = this.keys;
         this.keys = new ArrayList<>();
@@ -154,7 +153,15 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         for (Key<?>[] key : keys) {
             this.keys.addAll(Arrays.asList(key));
         }
-        updateItems(oldKeys, this.keys);
+
+        if (this.orientation != orientation) {
+            this.orientation = orientation;
+
+            // Note：若正六边形方向发生了变化，则始终更新视图
+            updateItems(oldKeys, this.keys, (o, n) -> -1);
+        } else {
+            updateItems(oldKeys, this.keys);
+        }
     }
 
     @Override
