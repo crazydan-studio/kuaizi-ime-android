@@ -336,9 +336,17 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
         level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
         level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
+        level_0_zone_fill_painter.setCornerRadius(10);
 
         float centerCircleRadius = innerHexagonRadius * 0.4f;
-        level_0_zone_fill_painter.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
+//        level_0_zone_fill_painter.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
+        ViewUtils.drawHexagon(level_0_zone_fill_painter.path,
+//                              orientation == HexagonOrientation.FLAT_TOP
+//                              ? HexagonOrientation.POINTY_TOP
+//                              : HexagonOrientation.FLAT_TOP,
+                              orientation,
+                              origin,
+                              centerCircleRadius);
 
         level_0_zone.blocks.add(new XZone.CircleBlock(origin, centerCircleRadius));
 

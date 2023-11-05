@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
@@ -67,6 +68,9 @@ public abstract class BaseKeyboardView extends RecyclerView {
         int gridMaxPaddingRight = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);
         this.layoutManager.configGrid(columns, rows, this.keySpacing, gridMaxPaddingRight);
         this.layoutManager.setReverse(isLeftHandMode);
+
+        boolean xPadEnabled = hasXPadKey(keys);
+        this.layoutManager.enableXPad(xPadEnabled);
 
         this.adapter.updateKeys(keys, themeResId);
     }
@@ -117,5 +121,16 @@ public abstract class BaseKeyboardView extends RecyclerView {
             }
         }
         return null;
+    }
+
+    private boolean hasXPadKey(Key<?>[][] keys) {
+        for (Key<?>[] key : keys) {
+            for (Key<?> k : key) {
+                if (k instanceof XPadKey) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

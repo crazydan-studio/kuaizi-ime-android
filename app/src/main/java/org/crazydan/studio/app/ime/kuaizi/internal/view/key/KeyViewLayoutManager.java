@@ -76,6 +76,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private double gridPaddingBottom;
 
     private boolean reverse;
+    private boolean xPadEnabled;
     private HexagonalGrid<SatelliteData> grid;
 
     public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
@@ -84,6 +85,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
     public void setReverse(boolean reverse) {
         this.reverse = reverse;
+    }
+
+    public void enableXPad(boolean enabled) {
+        this.xPadEnabled = enabled;
     }
 
     public void configGrid(int columns, int rows, int itemSpacingInDp, int gridMaxPaddingRight) {
@@ -102,78 +107,14 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             return;
         }
 
-        this.grid = createGrid();
-
-        View xPadKeyView = null;
-        int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
-        Rect xPadKeyViewRect = new Rect(0, 0, getWidth(), getHeight());
-
-        int i = 0;
-        double radius = this.gridItemRadius;
-        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
-            if (i >= itemCount) {
-                break;
-            }
-
-            Point center = coord(hexagon.getCenter());
-
-            double x = center.getCoordinateX();
-            double y = center.getCoordinateY();
-            int left = (int) Math.round(x - radius);
-            int top = (int) Math.round(y - radius);
-            int right = (int) Math.round(x + radius);
-            int bottom = (int) Math.round(y + radius);
-
-            if (i % this.gridColumns == 0) {
-                xPadKeyViewRect.set(Math.max(xPadKeyViewRect.left, right),
-                                    xPadKeyViewRect.top,
-                                    xPadKeyViewRect.right,
-                                    xPadKeyViewRect.bottom);
-            } else if (i % this.gridColumns == this.gridColumns - 1) {
-                xPadKeyViewRect.set(xPadKeyViewRect.left,
-                                    xPadKeyViewRect.top,
-                                    Math.min(xPadKeyViewRect.right, left),
-                                    xPadKeyViewRect.bottom);
-            }
-
-            // 按按键半径调整按键视图的宽高
-            View view = recycler.getViewForPosition(i++);
-            addView(view);
-
-            if (getItemViewType(view) == xPadKeyViewType) {
-                xPadKeyView = view;
-                continue;
-            }
-
-            float minSize = ScreenUtils.dpToPx(52);
-            int actualSize = (int) Math.round(radius * 2);
-            if (actualSize < minSize) {
-                float scale = actualSize / minSize;
-
-                for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
-                    View child = ((ViewGroup) view).getChildAt(j);
-                    if (child.getId() == R.id.bg_view) {
-                        continue;
-                    }
-
-                    child.setScaleX(scale);
-                    child.setScaleY(scale);
-                }
-            }
-
-            layoutItemView(view, left, top, right, bottom);
-        }
-
-        if (xPadKeyView != null) {
-            layoutItemView(xPadKeyView,
-                           xPadKeyViewRect.left,
-                           xPadKeyViewRect.top,
-                           xPadKeyViewRect.right,
-                           xPadKeyViewRect.bottom);
+        if (this.xPadEnabled) {
+            layoutChildrenWithXPad(recycler, itemCount);
+        } else {
+            layoutChildren(recycler, itemCount);
         }
     }
 
-    private HexagonalGrid<SatelliteData> createGrid() {
+    private HexagonalGrid<SatelliteData> createGrid(HexagonOrientation orientation) {
         // Note: 只有布局完成后，才能得到视图的宽高
         // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
         // - 这里按照按键紧挨的情况计算正六边形的半径，
@@ -183,10 +124,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         // - 纵向半径（r2）与高度（h）的关系: h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
         // - 最终正六边形的半径: radius = Math.min(r1, r2)
         // - 按键实际绘制半径: R = radius - spacing / (2 * cos30)
-        int w = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? getWidth() : getHeight();
-        int h = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? getHeight() : getWidth();
-        int n = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? this.gridColumns : this.gridRows;
-        int m = this.gridItemOrientation == HexagonOrientation.POINTY_TOP ? this.gridRows : this.gridColumns;
+        int w = orientation == HexagonOrientation.POINTY_TOP ? getWidth() : getHeight();
+        int h = orientation == HexagonOrientation.POINTY_TOP ? getHeight() : getWidth();
+        int n = orientation == HexagonOrientation.POINTY_TOP ? this.gridColumns : this.gridRows;
+        int m = orientation == HexagonOrientation.POINTY_TOP ? this.gridRows : this.gridColumns;
         double r1 = w / ((2 * n + 1) * cos_30);
         double r2 = h / (2 * ((m - 1) * cos_30 * cos_30 + 1));
         double radius;
@@ -201,7 +142,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             double h_used = 2 * radius + (m - 1) * cos_30 * (2 * radius * cos_30);
             double h_left = h - h_used;
             double paddingY = h_left / 2;
-            if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
+            if (orientation == HexagonOrientation.POINTY_TOP) {
                 this.gridPaddingTop = paddingY;
                 this.gridPaddingBottom = paddingY;
             } else {
@@ -213,7 +154,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             double w_used = (2 * n + 1) * radius * cos_30;
             double w_left = w - w_used;
             double paddingX = w_left / 2;
-            if (this.gridItemOrientation == HexagonOrientation.POINTY_TOP) {
+            if (orientation == HexagonOrientation.POINTY_TOP) {
                 this.gridPaddingLeft = Math.max(0, w_left - this.gridMaxPaddingRight);
             } else {
                 this.gridPaddingTop = paddingX;
@@ -231,7 +172,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         builder.setGridWidth(this.gridColumns)
                .setGridHeight(this.gridRows)
                .setGridLayout(HexagonalGridLayout.RECTANGULAR)
-               .setOrientation(this.gridItemOrientation)
+               .setOrientation(orientation)
                .setRadius(radius);
 
         return builder.build();
@@ -302,13 +243,121 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     }
 
     private Point coord(double x, double y) {
-        x += this.gridPaddingLeft;
+        x += this.xPadEnabled ? Math.min(this.gridItemSpacing, this.gridPaddingLeft) : this.gridPaddingLeft;
         y += this.gridPaddingTop;
 
         if (this.reverse) {
             return Point.fromPosition(getWidth() - x, y);
         }
         return Point.fromPosition(x, y);
+    }
+
+    private void layoutChildren(RecyclerView.Recycler recycler, int itemCount) {
+        this.grid = createGrid(this.gridItemOrientation);
+
+        int i = 0;
+        double radius = this.gridItemRadius;
+        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
+            if (i >= itemCount) {
+                break;
+            }
+
+            View view = recycler.getViewForPosition(i++);
+            addView(view);
+
+            // 按按键半径调整按键视图的宽高
+            Point center = coord(hexagon.getCenter());
+            double x = center.getCoordinateX();
+            double y = center.getCoordinateY();
+
+            int left = (int) Math.round(x - radius);
+            int top = (int) Math.round(y - radius);
+            int right = (int) Math.round(x + radius);
+            int bottom = (int) Math.round(y + radius);
+
+            float minSize = ScreenUtils.dpToPx(52);
+            int actualSize = (int) Math.round(radius * 2);
+            if (actualSize < minSize) {
+                float scale = actualSize / minSize;
+
+                for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
+                    View child = ((ViewGroup) view).getChildAt(j);
+                    if (child.getId() == R.id.bg_view) {
+                        continue;
+                    }
+
+                    child.setScaleX(scale);
+                    child.setScaleY(scale);
+                }
+            }
+
+            layoutItemView(view, left, top, right, bottom);
+        }
+    }
+
+    private void layoutChildrenWithXPad(RecyclerView.Recycler recycler, int itemCount) {
+        this.grid = createGrid(HexagonOrientation.FLAT_TOP);
+
+        double spacing = Math.min(this.gridItemSpacing, this.gridPaddingLeft);
+        View xPadKeyView = null;
+        int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
+        int sidebarWith = (int) (this.gridItemRadius + spacing) * 2;
+        Rect xPadKeyViewRect = new Rect(sidebarWith, 0, getWidth() - sidebarWith, getHeight());
+
+        int i = 0;
+        double radius = this.gridItemRadius;
+        for (Hexagon<SatelliteData> hexagon : this.grid.getHexagons()) {
+            if (i >= itemCount) {
+                break;
+            }
+
+            View view = recycler.getViewForPosition(i++);
+            addView(view);
+
+            if (getItemViewType(view) == xPadKeyViewType) {
+                xPadKeyView = view;
+                continue;
+            }
+
+            // 按按键半径调整按键视图的宽高
+            Point center = coord(hexagon.getCenter());
+            double x = center.getCoordinateX();
+            double y = center.getCoordinateY();
+
+            int left = (int) Math.round(x - radius);
+            int top = (int) Math.round(y - radius);
+            int right = (int) Math.round(x + radius);
+            int bottom = (int) Math.round(y + radius);
+
+            float minSize = ScreenUtils.dpToPx(52);
+            int actualSize = (int) Math.round(radius * 2);
+            if (actualSize < minSize) {
+                float scale = actualSize / minSize;
+
+                for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
+                    View child = ((ViewGroup) view).getChildAt(j);
+                    if (child.getId() == R.id.bg_view) {
+                        continue;
+                    }
+
+                    child.setScaleX(scale);
+                    child.setScaleY(scale);
+                }
+            }
+
+            layoutItemView(view, left, top, right, bottom);
+        }
+
+        if (xPadKeyView != null) {
+            int left = xPadKeyViewRect.left;
+            int right = xPadKeyViewRect.right;
+
+            layoutItemView(xPadKeyView,
+                           Math.min(left, right),
+                           xPadKeyViewRect.top,
+                           Math.max(left, right),
+                           xPadKeyViewRect.bottom);
+        }
     }
 
     private void layoutItemView(
