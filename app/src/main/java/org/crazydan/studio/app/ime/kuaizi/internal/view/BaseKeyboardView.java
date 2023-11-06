@@ -74,7 +74,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
         boolean xPadEnabled = hasXPadKey(keys);
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
 
-        this.layoutManager.setReverse(isLeftHandMode);
+        this.layoutManager.setReversed(isLeftHandMode);
         this.layoutManager.enableXPad(xPadEnabled);
         this.layoutManager.setGridItemOrientation(orientation);
         this.layoutManager.configGrid(columns,

@@ -54,6 +54,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
     private final ViewGestureDetector gesture;
     private final ViewGestureTrailer trailer;
 
+    private boolean reversed;
     /** 中心正六边形半径 */
     private float centerHexagonRadius;
     /** 中心坐标 */
@@ -64,7 +65,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         super(context, attrs);
         ViewUtils.enableHardwareAccelerated(this);
 
-        this.centerHexagonRadius = dimens(R.dimen.key_view_bg_min_radius);
+        this.centerHexagonRadius = dimen(R.dimen.key_view_bg_min_radius);
 
         this.trailer = new ViewGestureTrailer();
         this.trailer.setColor(attrColor(R.attr.input_trail_color));
@@ -72,6 +73,10 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         this.gesture = new ViewGestureDetector();
         this.gesture.addListener(this) //
                     .addListener(this.trailer);
+    }
+
+    public void setReversed(boolean reversed) {
+        this.reversed = reversed;
     }
 
     public void setCenterHexagonRadius(float centerHexagonRadius) {
@@ -91,6 +96,14 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // 整体的镜像翻转：不适用，应该调换左右位置即可，文字和图片等不能翻转
+        //canvas.scale(-1, 1, getWidth() * 0.5f, getHeight() * 0.5f);
+        // 将画布整体向左偏移，按键放置位置左右翻转，从而实现键盘的翻转
+        if (this.reversed) {
+            float dx = getWidth() - this.centerCoord.x * 2;
+            canvas.translate(dx, 0);
+        }
+
         // 准备分区的待显示内容
         prepareContentOnZone(this.orientation);
 
@@ -171,7 +184,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         XZone level_1_zone = this.zones[1];
         level_1_zone.clearIconPainters();
 
-        float ctrl_icon_size = dimens(R.dimen.x_keyboard_ctrl_icon_size);
+        float ctrl_icon_size = dimen(R.dimen.x_keyboard_ctrl_icon_size);
         Integer[] ctrlIcons = new Integer[] {
                 R.drawable.ic_switch_to_latin,
                 R.drawable.ic_switch_to_pinyin,
@@ -181,7 +194,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
                 R.drawable.ic_symbol
         };
         for (int i = 0; i < level_1_zone.blocks.size(); i++) {
-            Integer iconResId = ctrlIcons[i];
+            Integer iconResId = getAt(ctrlIcons, i);
             if (iconResId == null) {
                 continue;
             }
@@ -202,8 +215,8 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         XZone level_2_zone = this.zones[2];
         level_2_zone.clearTextPainters();
 
-        float textSize = dimens(R.dimen.x_keyboard_chars_text_size);
-        float textPadding = dimens(R.dimen.x_keyboard_chars_text_padding);
+        float textSize = dimen(R.dimen.x_keyboard_chars_text_size);
+        float textPadding = dimen(R.dimen.x_keyboard_chars_text_padding);
 
         String[][][] axisTextArray = getKeys();
         for (int i = 0; i < level_2_zone.blocks.size(); i++) {
@@ -214,8 +227,9 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
                             : attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
+            String[][] axisTexts = getAt(axisTextArray, i);
             for (int j = 0; j < block.links.left.size(); j++) {
-                String text = axisTextArray[i][0][j];
+                String text = axisTexts[this.reversed ? 1 : 0][j];
                 XZone.Link link = block.links.left.get(j);
 
                 PointF start = link.vertexes.get(0);
@@ -266,7 +280,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
             }
 
             for (int j = 0; j < block.links.right.size(); j++) {
-                String text = axisTextArray[i][1][j];
+                String text = axisTexts[this.reversed ? 0 : 1][j];
                 XZone.Link link = block.links.right.get(j);
 
                 PointF start = link.vertexes.get(0);
@@ -320,25 +334,27 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
     }
 
     private void prepareZones(HexagonOrientation orientation, int width, int height) {
-        float padPadding = dimens(R.dimen.x_keyboard_pad_padding);
+        float padPadding = dimen(R.dimen.x_keyboard_pad_padding);
         float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
 
         float innerHexagonRadius = this.centerHexagonRadius / 0.45f;
-        float innerHexagonCornerRadius = dimens(R.dimen.x_keyboard_ctrl_pad_corner_radius);
+        float innerHexagonCornerRadius = dimen(R.dimen.x_keyboard_ctrl_pad_corner_radius);
         float outerHexagonRadius = orientation == HexagonOrientation.FLAT_TOP
                                    ? maxHexagonRadius * cos_30_divided_by_1
                                    : maxHexagonRadius;
 
-        PointF origin = orientation == HexagonOrientation.FLAT_TOP //
-                        ? new PointF(width - outerHexagonRadius - padPadding, height - maxHexagonRadius - padPadding) //
-                        : new PointF(width - outerHexagonRadius * cos_30 - padPadding,
+        PointF origin = orientation == HexagonOrientation.FLAT_TOP
+                        ? new PointF(width - (outerHexagonRadius
+                                              + padPadding),
+                                     height - maxHexagonRadius - padPadding)
+                        : new PointF(width - (outerHexagonRadius * cos_30 + padPadding),
                                      height - outerHexagonRadius - padPadding);
         this.centerCoord = origin;
 
         // ==================================================
         // 第 0 级分区：中心圆
         float centerCircleRadius = this.centerHexagonRadius;
-        float centerHexagonCornerRadius = dimens(R.dimen.key_view_corner_radius);
+        float centerHexagonCornerRadius = dimen(R.dimen.key_view_corner_radius);
         XZone level_0_zone = this.zones[0] = new XZone();
 
         int level_0_zone_bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
@@ -530,7 +546,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         return AppCompatResources.getDrawable(getContext(), resId);
     }
 
-    private float dimens(int resId) {
+    private float dimen(int resId) {
         return ScreenUtils.pxFromDimension(getContext(), resId);
     }
 
@@ -540,6 +556,13 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
 
     private String attrString(int resId) {
         return ThemeUtils.getStringByAttrId(getContext(), resId);
+    }
+
+    private <T> T getAt(T[] keys, int index) {
+        int size = keys.length;
+        int idx = this.reversed ? (size + (size / 2 - 1) - index) % size : index;
+
+        return keys[idx];
     }
 
     private String[][][] getKeys() {

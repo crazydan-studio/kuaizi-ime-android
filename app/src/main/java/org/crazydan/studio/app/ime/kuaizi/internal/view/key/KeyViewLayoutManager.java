@@ -76,7 +76,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     /** 网格底部空白：实际剩余空间 */
     private float gridPaddingBottom;
 
-    private boolean reverse;
+    private boolean reversed;
     private boolean xPadEnabled;
     private List<RectHexagon> rectHexagons;
 
@@ -88,8 +88,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         this.gridItemOrientation = gridItemOrientation;
     }
 
-    public void setReverse(boolean reverse) {
-        this.reverse = reverse;
+    public void setReversed(boolean reversed) {
+        this.reversed = reversed;
     }
 
     public void enableXPad(boolean enabled) {
@@ -300,7 +300,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         double x = point.getCoordinateX() + rect.left;
         double y = point.getCoordinateY() + rect.top;
 
-        if (this.reverse) {
+        if (this.reversed) {
             return Point.fromPosition(getWidth() - x, y);
         }
         return Point.fromPosition(x, y);
@@ -342,6 +342,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 xPadKeyView.setScaleY(scale);
             }
 
+            (new XPadKeyView(xPadKeyView)).setReversed(this.reversed);
             (new XPadKeyView(xPadKeyView)).setCenterHexagonRadius(radius);
 
             layoutItemView(xPadKeyView,
