@@ -78,32 +78,25 @@ public class PinyinKeyTable extends KeyTable {
                 null,
                 } //
                 , new Key[] {
-                null,
+                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
                 //
                 null, null, null, null, null, null,
                 //
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 //
                 null, null, null, new XPadKey(), null, null,
                 //
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-                //
-                null, null, null, null, null, null,
-                //
-                ctrlKey(CtrlKey.Type.Space),
-                } //
-                , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
                 //
                 null, null, null, null, null, null,
                 //
-                null,
+                ctrlKey(CtrlKey.Type.Space),
                 },
                 };
 
