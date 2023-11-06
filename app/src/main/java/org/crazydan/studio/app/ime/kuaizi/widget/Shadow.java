@@ -39,7 +39,7 @@ public class Shadow {
     public final float radius;
     public final int color;
 
-    public Shadow(int dx, int dy, int radius, int color) {
+    public Shadow(float dx, float dy, float radius, int color) {
         this.dx = dx;
         this.dy = dy;
         this.radius = radius;
@@ -52,9 +52,9 @@ public class Shadow {
         }
 
         String[] splits = shadow.trim().split("\\s+");
-        int dx = ScreenUtils.dpToPx(Integer.parseInt(splits[0]));
-        int dy = ScreenUtils.dpToPx(Integer.parseInt(splits[1]));
-        int radius = ScreenUtils.dpToPx(Integer.parseInt(splits[2]));
+        float dx = ScreenUtils.dpToPx(Float.parseFloat(splits[0]));
+        float dy = ScreenUtils.dpToPx(Float.parseFloat(splits[1]));
+        float radius = ScreenUtils.dpToPx(Float.parseFloat(splits[2]));
         int color = Color.parseColor(splits[3]);
 
         return new Shadow(dx, dy, radius, color);

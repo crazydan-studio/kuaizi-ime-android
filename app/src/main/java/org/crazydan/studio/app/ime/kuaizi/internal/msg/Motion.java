@@ -25,7 +25,7 @@ public class Motion {
     /** 移动方向 */
     public final Direction direction;
     /** 移动距离 */
-    public final int distance;
+    public final float distance;
     public final long timestamp;
 
     public Motion() {
@@ -36,7 +36,7 @@ public class Motion {
         this(motion.direction, motion.distance, motion.timestamp);
     }
 
-    public Motion(Direction direction, int distance, long timestamp) {
+    public Motion(Direction direction, float distance, long timestamp) {
         this.direction = direction;
         this.distance = distance;
         this.timestamp = timestamp;

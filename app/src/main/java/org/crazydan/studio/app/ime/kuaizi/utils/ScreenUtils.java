@@ -34,12 +34,8 @@ public class ScreenUtils {
         return new Point(metrics.widthPixels, metrics.heightPixels);
     }
 
-    public static int pxToDp(int px) {
-        return (int) (px / Resources.getSystem().getDisplayMetrics().density);
-    }
-
-    public static int dpToPx(int dp) {
-        return (int) dpToPx((float) dp);
+    public static float pxToDp(float px) {
+        return px / Resources.getSystem().getDisplayMetrics().density;
     }
 
     public static float dpToPx(float dp) {

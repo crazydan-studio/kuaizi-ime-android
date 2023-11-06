@@ -28,6 +28,9 @@
     <dimen name="keyboard_right_spacing">12dp</dimen>
     <dimen name="keyboard_bottom_spacing">24dp</dimen>
     <dimen name="key_view_padding">1dp</dimen>
+    <dimen name="key_view_spacing">3dp</dimen>
+    <dimen name="key_view_corner_radius">5dp</dimen>
+    <dimen name="key_view_bg_min_radius">22dp</dimen>
 
     <dimen name="gap_input_width">4dp</dimen>
     <dimen name="char_input_notation_text_size">10sp</dimen>
@@ -48,7 +51,6 @@
     <dimen name="guide_exercise_step_icon_size">32dp</dimen>
 
     <dimen name="x_keyboard_pad_padding">8dp</dimen>
-    <dimen name="x_keyboard_ctrl_pad_radius">58dp</dimen>
     <dimen name="x_keyboard_ctrl_pad_corner_radius">10dp</dimen>
     <dimen name="x_keyboard_ctrl_icon_size">18dp</dimen>
     <dimen name="x_keyboard_chars_text_size">18dp</dimen>

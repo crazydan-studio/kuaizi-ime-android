@@ -87,7 +87,7 @@ public class HexagonDrawable extends Drawable {
     }
 
     /** 绘制圆角 */
-    public void setCornerRadius(int radius) {
+    public void setCornerRadius(float radius) {
         CornerPathEffect effect = new CornerPathEffect(radius);
 
         this.paint.setPathEffect(effect);

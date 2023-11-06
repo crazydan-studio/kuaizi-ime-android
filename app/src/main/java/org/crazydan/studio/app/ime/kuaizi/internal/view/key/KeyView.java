@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.HexagonDrawable;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
@@ -70,7 +71,9 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
             HexagonDrawable drawable = new HexagonDrawable(orientation);
 
             int bgColor = getColorByAttrId(key.getColor().bg);
-            drawable.setCornerRadius(10);
+            float cornerRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_corner_radius);
+
+            drawable.setCornerRadius(cornerRadius);
             drawable.setFillColor(bgColor);
 
             if (!key.isDisabled()) {

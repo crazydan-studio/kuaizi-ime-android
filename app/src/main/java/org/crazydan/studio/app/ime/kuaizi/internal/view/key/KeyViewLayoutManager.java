@@ -55,10 +55,12 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private static final float cos_30 = (float) Math.cos(Math.toRadians(30));
 
     /** 按键正六边形方向 */
-    private final HexagonOrientation gridItemOrientation;
+    private HexagonOrientation gridItemOrientation;
 
     /** 按键正六边形半径：可见范围内的半径 */
     private float gridItemRadius;
+    /** 按键正六边形最小半径 */
+    private float gridItemMinRadius;
     /** 按键正六边形内部边界半径：与可见边相交的圆 */
     private float gridItemInnerRadius;
     /** 按键正六边形外部边界半径：含按键间隔，并与顶点相交的圆 */
@@ -82,6 +84,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         this.gridItemOrientation = gridItemOrientation;
     }
 
+    public void setGridItemOrientation(HexagonOrientation gridItemOrientation) {
+        this.gridItemOrientation = gridItemOrientation;
+    }
+
     public void setReverse(boolean reverse) {
         this.reverse = reverse;
     }
@@ -90,10 +96,13 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         this.xPadEnabled = enabled;
     }
 
-    public void configGrid(int columns, int rows, int itemSpacingInDp, int gridMaxPaddingRight) {
+    public void configGrid(
+            int columns, int rows, float gridItemMinRadius, float gridItemSpacing, float gridMaxPaddingRight
+    ) {
         this.gridColumns = columns;
         this.gridRows = rows;
-        this.gridItemSpacing = ScreenUtils.dpToPx(itemSpacingInDp);
+        this.gridItemMinRadius = gridItemMinRadius;
+        this.gridItemSpacing = gridItemSpacing;
         this.gridMaxPaddingRight = gridMaxPaddingRight;
     }
 
@@ -106,7 +115,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
             return;
         }
 
-        this.rectHexagons = createGrid(this.xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation);
+        this.rectHexagons = createGrid(this.gridItemOrientation);
 
         layoutRectHexagons(recycler, this.rectHexagons, itemCount);
     }
@@ -244,7 +253,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
      * 探测范围比 {@link #findChildViewUnder} 更大，
      * 但比 {@link #findChildViewNear} 更小
      */
-    public View findChildViewUnderLoose(double x, double y) {
+    public View findChildViewUnderLoose(float x, float y) {
         return filterChildViewByHexagonCenterDistance(x, y, distance -> distance < this.gridItemRadius);
     }
 
@@ -253,7 +262,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
      * <p/>
      * 仅当坐标在正六边形的内圈中时才视为符合条件
      */
-    public View findChildViewUnder(double x, double y) {
+    public View findChildViewUnder(float x, float y) {
         return filterChildViewByHexagonCenterDistance(x, y, distance -> distance < this.gridItemInnerRadius);
     }
 
@@ -262,8 +271,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
      * <p/>
      * 仅当坐标在正六边形的外圈但不在内圈中时才视为符合条件
      */
-    public View findChildViewNear(double x, double y, int deltaInDp) {
-        int delta = ScreenUtils.dpToPx(deltaInDp);
+    public View findChildViewNear(float x, float y, float deltaInDp) {
+        float delta = ScreenUtils.dpToPx(deltaInDp);
         double outer = this.gridItemOuterRadius + delta;
 
         return filterChildViewByHexagonCenterDistance(x,
@@ -272,7 +281,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                                                                   && distance < outer);
     }
 
-    private View filterChildViewByHexagonCenterDistance(double x, double y, Predicate<Double> predicate) {
+    private View filterChildViewByHexagonCenterDistance(float x, float y, Predicate<Double> predicate) {
         Point point = Point.fromPosition(x, y);
 
         for (RectHexagon rectHexagon : this.rectHexagons) {
@@ -299,7 +308,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
     private void layoutRectHexagons(RecyclerView.Recycler recycler, List<RectHexagon> rectHexagons, int itemCount) {
         View xPadKeyView = null;
-        RectF xPadKeyViewRect = null;
+        RectHexagon xPadKeyRectHexagon = null;
         int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
 
         for (RectHexagon rectHexagon : rectHexagons) {
@@ -314,7 +323,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
             if (getItemViewType(view) == xPadKeyViewType) {
                 xPadKeyView = view;
-                xPadKeyViewRect = rectHexagon.rect;
+                xPadKeyRectHexagon = rectHexagon;
                 continue;
             }
 
@@ -322,14 +331,24 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
 
         if (xPadKeyView != null) {
-            int left = (int) xPadKeyViewRect.left;
-            int right = (int) xPadKeyViewRect.right;
+            int left = (int) xPadKeyRectHexagon.rect.left;
+            int right = (int) xPadKeyRectHexagon.rect.right;
+            float radius = xPadKeyRectHexagon.radius;
+            float minRadius = this.gridItemMinRadius;
+
+            if (radius < minRadius) {
+                float scale = radius / minRadius;
+                xPadKeyView.setScaleX(scale);
+                xPadKeyView.setScaleY(scale);
+            }
+
+            (new XPadKeyView(xPadKeyView)).setCenterHexagonRadius(radius);
 
             layoutItemView(xPadKeyView,
                            Math.min(left, right),
-                           (int) xPadKeyViewRect.top,
+                           (int) xPadKeyRectHexagon.rect.top,
                            Math.max(left, right),
-                           (int) xPadKeyViewRect.bottom);
+                           (int) xPadKeyRectHexagon.rect.bottom);
         }
     }
 
@@ -355,10 +374,9 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         int right = Math.round(x + radius);
         int bottom = Math.round(y + radius);
 
-        float minSize = ScreenUtils.dpToPx(52);
-        int actualSize = Math.round(radius * 2);
-        if (actualSize < minSize) {
-            float scale = actualSize / minSize;
+        float minRadius = this.gridItemMinRadius;
+        if (radius < minRadius) {
+            float scale = radius / minRadius;
 
             for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
                 View child = ((ViewGroup) view).getChildAt(j);

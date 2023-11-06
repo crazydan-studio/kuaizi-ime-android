@@ -31,7 +31,7 @@ public class EditorEditDoingStateData implements State.Data {
 
     public static Motion createAnchor(Motion motion) {
         // 根据屏幕移动距离得出光标移动字符数
-        int distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16)) : 0;
+        float distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16f)) : 0;
 
         return new Motion(motion.direction, distance, motion.timestamp);
     }

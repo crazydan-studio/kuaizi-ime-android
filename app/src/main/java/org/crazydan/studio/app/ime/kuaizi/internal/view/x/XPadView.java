@@ -54,12 +54,17 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
     private final ViewGestureDetector gesture;
     private final ViewGestureTrailer trailer;
 
-    private PointF padCenter;
+    /** 中心正六边形半径 */
+    private float centerHexagonRadius;
+    /** 中心坐标 */
+    private PointF centerCoord;
     private int[] activeBlock;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         ViewUtils.enableHardwareAccelerated(this);
+
+        this.centerHexagonRadius = dimens(R.dimen.key_view_bg_min_radius);
 
         this.trailer = new ViewGestureTrailer();
         this.trailer.setColor(attrColor(R.attr.input_trail_color));
@@ -67,6 +72,10 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         this.gesture = new ViewGestureDetector();
         this.gesture.addListener(this) //
                     .addListener(this.trailer);
+    }
+
+    public void setCenterHexagonRadius(float centerHexagonRadius) {
+        this.centerHexagonRadius = centerHexagonRadius;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -127,7 +136,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         // 从外到内绘制，以层叠方式覆盖相交部分
         for (int i = this.zones.length - 1; i >= 0; i--) {
             XZone zone = this.zones[i];
-            zone.draw(canvas, this.padCenter);
+            zone.draw(canvas, this.centerCoord);
         }
     }
 
@@ -314,7 +323,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         float padPadding = dimens(R.dimen.x_keyboard_pad_padding);
         float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
 
-        float innerHexagonRadius = dimens(R.dimen.x_keyboard_ctrl_pad_radius);
+        float innerHexagonRadius = this.centerHexagonRadius / 0.45f;
         float innerHexagonCornerRadius = dimens(R.dimen.x_keyboard_ctrl_pad_corner_radius);
         float outerHexagonRadius = orientation == HexagonOrientation.FLAT_TOP
                                    ? maxHexagonRadius * cos_30_divided_by_1
@@ -324,10 +333,12 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
                         ? new PointF(width - outerHexagonRadius - padPadding, height - maxHexagonRadius - padPadding) //
                         : new PointF(width - outerHexagonRadius * cos_30 - padPadding,
                                      height - outerHexagonRadius - padPadding);
-        this.padCenter = origin;
+        this.centerCoord = origin;
 
         // ==================================================
         // 第 0 级分区：中心圆
+        float centerCircleRadius = this.centerHexagonRadius;
+        float centerHexagonCornerRadius = dimens(R.dimen.key_view_corner_radius);
         XZone level_0_zone = this.zones[0] = new XZone();
 
         int level_0_zone_bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
@@ -336,17 +347,14 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
         level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
         level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
-        level_0_zone_fill_painter.setCornerRadius(10);
+        level_0_zone_fill_painter.setCornerRadius(centerHexagonCornerRadius);
 
-        float centerCircleRadius = innerHexagonRadius * 0.4f;
 //        level_0_zone_fill_painter.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
         ViewUtils.drawHexagon(level_0_zone_fill_painter.path,
 //                              orientation == HexagonOrientation.FLAT_TOP
 //                              ? HexagonOrientation.POINTY_TOP
 //                              : HexagonOrientation.FLAT_TOP,
-                              orientation,
-                              origin,
-                              centerCircleRadius);
+                              orientation, origin, centerCircleRadius);
 
         level_0_zone.blocks.add(new XZone.CircleBlock(origin, centerCircleRadius));
 

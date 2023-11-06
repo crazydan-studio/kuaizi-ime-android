@@ -34,6 +34,10 @@ public class XPadKeyView extends KeyView<XPadKey, XPadView> {
         super(itemView);
     }
 
+    public void setCenterHexagonRadius(float centerHexagonRadius) {
+        this.fgView.setCenterHexagonRadius(centerHexagonRadius);
+    }
+
     public void bind(XPadKey key) {
         super.bind(key, null);
     }

@@ -42,12 +42,19 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  */
 public abstract class BaseKeyboardView extends RecyclerView {
     private final HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
-    private final int keySpacing = 3;
+    private final float gridMaxPaddingRight;
+    private final float gridItemMinRadius;
+    private final float gridItemSpacing;
+
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
 
     public BaseKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        this.gridMaxPaddingRight = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);
+        this.gridItemMinRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_bg_min_radius);
+        this.gridItemSpacing = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_spacing);
 
         this.adapter = new KeyViewAdapter(this.keyViewOrientation);
         this.layoutManager = new KeyViewLayoutManager(this.keyViewOrientation);
@@ -64,14 +71,19 @@ public abstract class BaseKeyboardView extends RecyclerView {
     }
 
     protected void updateKeys(Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode) {
-        int gridMaxPaddingRight = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);
-        this.layoutManager.configGrid(columns, rows, this.keySpacing, gridMaxPaddingRight);
-        this.layoutManager.setReverse(isLeftHandMode);
-
         boolean xPadEnabled = hasXPadKey(keys);
-        this.layoutManager.enableXPad(xPadEnabled);
+        HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
 
-        this.adapter.updateKeys(keys, themeResId, xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation);
+        this.layoutManager.setReverse(isLeftHandMode);
+        this.layoutManager.enableXPad(xPadEnabled);
+        this.layoutManager.setGridItemOrientation(orientation);
+        this.layoutManager.configGrid(columns,
+                                      rows,
+                                      this.gridItemMinRadius,
+                                      this.gridItemSpacing,
+                                      this.gridMaxPaddingRight);
+
+        this.adapter.updateKeys(keys, themeResId, orientation);
     }
 
     public double getBottomSpacing() {
@@ -94,7 +106,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
 
     /** 找到指定坐标附近可见的{@link  KeyView 按键视图} */
     public KeyView<?, ?> findVisibleKeyViewNear(float x, float y) {
-        View child = this.layoutManager.findChildViewNear(x, y, this.keySpacing * 2);
+        View child = this.layoutManager.findChildViewNear(x, y, this.gridItemSpacing * 2);
 
         return getVisibleKeyView(child);
     }

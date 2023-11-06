@@ -464,7 +464,7 @@ public class ImeInputView extends FrameLayout
         contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
         int width = WindowManager.LayoutParams.WRAP_CONTENT;
-        int height = contentView.getMeasuredHeight() + ScreenUtils.dpToPx(2);
+        int height = (int) (contentView.getMeasuredHeight() + ScreenUtils.dpToPx(2f));
 
         showPopupWindow(window, width, height, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 
