@@ -40,6 +40,8 @@ public class XPadKeyView extends KeyView<XPadKey, XPadView> {
 
     public void bind(XPadKey key) {
         super.bind(key, null);
+
+        getXPad().updateZoneKeys(key.zone_0_key, key.zone_1_keys, key.zone_2_keys);
     }
 
     // <<<<<<<<<<<<<<<< Start 重载无效的功能接口

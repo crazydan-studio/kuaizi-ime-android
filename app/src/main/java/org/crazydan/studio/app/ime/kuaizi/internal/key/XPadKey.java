@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+
 /**
  * 将 X 型输入键盘作为普通按键，以便于与其他普通按键进行统一布局
  *
@@ -24,6 +26,19 @@ package org.crazydan.studio.app.ime.kuaizi.internal.key;
  * @date 2023-11-04
  */
 public class XPadKey extends BaseKey<XPadKey> {
+    public final Key<?> zone_0_key;
+    public final Key<?>[] zone_1_keys;
+    public final Key<?>[][][] zone_2_keys;
+
+    public XPadKey() {
+        this(null, null, null);
+    }
+
+    public XPadKey(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
+        this.zone_0_key = zone_0_key;
+        this.zone_1_keys = zone_1_keys;
+        this.zone_2_keys = zone_2_keys;
+    }
 
     @Override
     public boolean isSameWith(Object o) {

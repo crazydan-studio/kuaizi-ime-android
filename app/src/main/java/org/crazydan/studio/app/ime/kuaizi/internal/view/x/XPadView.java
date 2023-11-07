@@ -31,7 +31,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -50,8 +49,12 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  */
 public class XPadView extends View {
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
-    private final XZone[] zones = new XZone[3];
     private final ViewGestureTrailer trailer;
+    private final XZone[] zones = new XZone[3];
+
+    private BlockKey zone_0_key;
+    private BlockKey[] zone_1_keys;
+    private BlockKey[][][] zone_2_keys;
 
     private boolean reversed;
     /** 中心正六边形半径 */
@@ -128,12 +131,53 @@ public class XPadView extends View {
 
         float x = data.x + offset.x;
         float y = data.y + offset.y;
+        BlockKey blockKey = findBlockKey(x, y);
 
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
-        Key<?> key = findKey(x, y);
+        switch (type) {
+            case PressStart: {
+                if (blockKey != null && blockKey.zone == 0) {
+                    this.zones[0].press();
+                }
+                break;
+            }
+            case PressEnd: {
+                this.zones[0].bounce();
+                break;
+            }
+        }
+
         // Note：向外部传递的 GestureData 不需要做坐标转换
-        userKeyMsgListenerExecutor.onGesture(key, type, data);
+        userKeyMsgListenerExecutor.onGesture(blockKey != null ? blockKey.key : null, type, data);
+    }
+
+    public void updateZoneKeys(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
+        invalidate();
+
+        this.zone_0_key = new BlockKey(0, 0, 0, 0, zone_0_key);
+
+        this.zone_1_keys = new BlockKey[zone_1_keys.length];
+        for (int i = 0; i < zone_1_keys.length; i++) {
+            Key<?> key = zone_1_keys[i];
+            this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
+        }
+
+        this.zone_2_keys = new BlockKey[zone_2_keys.length][][];
+        for (int i = 0; i < zone_2_keys.length; i++) {
+            Key<?>[][] keys = zone_2_keys[i];
+
+            this.zone_2_keys[i] = new BlockKey[keys.length][];
+            for (int j = 0; j < keys.length; j++) {
+                Key<?>[] array = keys[j];
+
+                this.zone_2_keys[i][j] = new BlockKey[array.length];
+                for (int k = 0; k < array.length; k++) {
+                    Key<?> key = array[k];
+                    this.zone_2_keys[i][j][k] = new BlockKey(2, i, j, k, key);
+                }
+            }
+        }
     }
 
     private void drawZones(Canvas canvas) {
@@ -144,16 +188,23 @@ public class XPadView extends View {
         }
     }
 
-    private Key<?> findKey(float x, float y) {
+    private BlockKey findBlockKey(float x, float y) {
         int[] blockPos = findActiveBlock(x, y);
         if (blockPos == null) {
             return null;
         }
 
-        if (blockPos[0] == 0) {
-            return CtrlKey.create(CtrlKey.Type.Editor_Cursor_Locator);
-        }
+        int zone = blockPos[0];
+        int block = blockPos[1];
 
+        switch (zone) {
+            case 0: {
+                return this.zone_0_key;
+            }
+            case 1: {
+                return this.zone_1_keys[block];
+            }
+        }
         return null;
     }
 
@@ -179,7 +230,7 @@ public class XPadView extends View {
 
         XZone.CircleBlock centerCircleBlock = (XZone.CircleBlock) level_0_zone.blocks.get(0);
 
-        Drawable level_0_zone_icon = drawable(R.drawable.ic_input_cursor);
+        Drawable level_0_zone_icon = drawable(this.zone_0_key.key.getIconResId());
         XDrawablePainter level_0_zone_icon_painter = level_0_zone.newIconPainter(level_0_zone_icon);
         level_0_zone_icon_painter.setSize(centerCircleBlock.radius);
         level_0_zone_icon_painter.setCenter(centerCircleBlock.center);
@@ -189,17 +240,9 @@ public class XPadView extends View {
         level_1_zone.clearIconPainters();
 
         float ctrl_icon_size = dimen(R.dimen.x_keyboard_ctrl_icon_size);
-        Integer[] ctrlIcons = new Integer[] {
-                R.drawable.ic_switch_to_latin,
-                R.drawable.ic_switch_to_pinyin,
-                R.drawable.ic_emoji,
-                R.drawable.ic_calculator,
-                null,
-                R.drawable.ic_symbol
-        };
         for (int i = 0; i < level_1_zone.blocks.size(); i++) {
-            Integer iconResId = getAt(ctrlIcons, i);
-            if (iconResId == null) {
+            BlockKey blockKey = getAt(this.zone_1_keys, i);
+            if (blockKey.isNull()) {
                 continue;
             }
 
@@ -208,11 +251,12 @@ public class XPadView extends View {
             float rotate = orientation == HexagonOrientation.POINTY_TOP //
                            ? 30 * (2 * i - 1) : 60 * (i - 1);
 
-            Drawable icon = drawable(iconResId);
+            Drawable icon = drawable(blockKey.key.getIconResId());
             XDrawablePainter level_1_zone_icon_painter = level_1_zone.newIconPainter(icon);
             level_1_zone_icon_painter.setSize(ctrl_icon_size);
             level_1_zone_icon_painter.setCenter(center);
             level_1_zone_icon_painter.setRotate(rotate);
+            level_1_zone_icon_painter.setAlpha(blockKey.key.isDisabled() ? 0.4f : 1f);
         }
 
         // ==============================================
@@ -222,20 +266,23 @@ public class XPadView extends View {
         float textSize = dimen(R.dimen.x_keyboard_chars_text_size);
         float textPadding = dimen(R.dimen.x_keyboard_chars_text_padding);
 
-        String[][][] axisTextArray = getKeys();
         for (int i = 0; i < level_2_zone.blocks.size(); i++) {
             int textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
-            String[][] axisTexts = getAt(axisTextArray, i);
+            BlockKey[][] blockKeys = getAt(this.zone_2_keys, i);
             for (int j = 0; j < block.links.left.size(); j++) {
-                String text = axisTexts[this.reversed ? 1 : 0][j];
+                BlockKey blockKey = blockKeys[this.reversed ? 1 : 0][j];
+                if (blockKey.isNull()) {
+                    continue;
+                }
+
                 XZone.Link link = block.links.left.get(j);
 
                 PointF start = link.vertexes.get(0);
                 PointF end = link.vertexes.get(1);
 
-                XPathTextPainter textPainter = level_2_zone.newTextPainter(text);
+                XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
                 textPainter.setTextSize(textSize);
                 textPainter.setFillColor(textColor);
 
@@ -280,13 +327,17 @@ public class XPadView extends View {
             }
 
             for (int j = 0; j < block.links.right.size(); j++) {
-                String text = axisTexts[this.reversed ? 0 : 1][j];
+                BlockKey blockKey = blockKeys[this.reversed ? 0 : 1][j];
+                if (blockKey.isNull()) {
+                    continue;
+                }
+
                 XZone.Link link = block.links.right.get(j);
 
                 PointF start = link.vertexes.get(0);
                 PointF end = link.vertexes.get(1);
 
-                XPathTextPainter textPainter = level_2_zone.newTextPainter(text);
+                XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
                 textPainter.setTextSize(textSize);
                 textPainter.setFillColor(textColor);
 
@@ -568,26 +619,23 @@ public class XPadView extends View {
         return keys[idx];
     }
 
-    private String[][][] getKeys() {
-        return new String[][][] {
-                new String[][] {
-                        new String[] { "i", "u", "ü" }, new String[] { "", "Space", "Newline" },
-                        }, //
-                new String[][] {
-                        new String[] { "", "", "" }, new String[] { "p", "w", "y" },
-                        }, //
-                new String[][] {
-                        new String[] { "a", "e", "o" }, new String[] { "h", "k", "t" },
-                        }, //
-                new String[][] {
-                        new String[] { "n", "l", "m" }, new String[] { "d", "b", "f" },
-                        }, //
-                new String[][] {
-                        new String[] { "j", "q", "x" }, new String[] { "z", "c", "s" },
-                        }, //
-                new String[][] {
-                        new String[] { "zh", "ch", "sh" }, new String[] { "", "r", "g" },
-                        },
-                };
+    private static class BlockKey {
+        public final int zone;
+        public final int x;
+        public final int y;
+        public final int z;
+        public final Key<?> key;
+
+        public BlockKey(int zone, int x, int y, int z, Key<?> key) {
+            this.zone = zone;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.key = key;
+        }
+
+        public boolean isNull() {
+            return this.key == null;
+        }
     }
 }

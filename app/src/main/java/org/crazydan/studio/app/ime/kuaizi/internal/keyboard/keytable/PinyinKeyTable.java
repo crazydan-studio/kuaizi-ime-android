@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
@@ -87,7 +88,7 @@ public class PinyinKeyTable extends KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 //
-                null, null, null, new XPadKey(), null, null,
+                null, null, null, createXPadKey(), null, null,
                 //
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
@@ -165,6 +166,44 @@ public class PinyinKeyTable extends KeyTable {
 //                ctrlKey(CtrlKey.Type.Space),
 //                },
 //                };
+    }
+
+    public XPadKey createXPadKey() {
+        return new XPadKey(ctrlKey(CtrlKey.Type.Editor_Cursor_Locator), //
+                           new Key[] {
+                                   keyboardSwitchKey(Keyboard.Type.Latin),
+                                   keyboardSwitchKey(Keyboard.Type.Pinyin).setDisabled(true),
+                                   ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                                   keyboardSwitchKey(Keyboard.Type.Math),
+                                   null,
+                                   ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+                                   }, //
+                           new Key[][][] {
+                                   new Key[][] {
+                                           new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü") },
+                                           new Key[] { null, level0CharKey("Space"), level0CharKey("Newline") },
+                                           }, //
+                                   new Key[][] {
+                                           new Key[] { null, null, null },
+                                           new Key[] { level0CharKey("p"), level0CharKey("w"), level0CharKey("y") },
+                                           }, //
+                                   new Key[][] {
+                                           new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o") },
+                                           new Key[] { level0CharKey("h"), level0CharKey("k"), level0CharKey("t") },
+                                           }, //
+                                   new Key[][] {
+                                           new Key[] { level0CharKey("n"), level0CharKey("l"), level0CharKey("m") },
+                                           new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("f") },
+                                           }, //
+                                   new Key[][] {
+                                           new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x") },
+                                           new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s") },
+                                           }, //
+                                   new Key[][] {
+                                           new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh") },
+                                           new Key[] { null, level0CharKey("r"), level0CharKey("g") },
+                                           },
+                                   });
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
