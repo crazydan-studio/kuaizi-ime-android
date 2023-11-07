@@ -132,18 +132,22 @@ public class XPadView extends View {
         float x = data.x + offset.x;
         float y = data.y + offset.y;
         BlockKey blockKey = findBlockKey(x, y);
+        XZone centerZone = this.zones[0];
+        boolean isCenterBlockKey = blockKey != null && blockKey.zone == 0;
 
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
         switch (type) {
             case PressStart: {
-                if (blockKey != null && blockKey.zone == 0) {
-                    this.zones[0].press();
+                if (isCenterBlockKey) {
+                    centerZone.press();
                 }
                 break;
             }
+            // Note：长按中心按钮会发生键盘切换，故而，需显式弹起
+            case LongPressStart:
             case PressEnd: {
-                this.zones[0].bounce();
+                centerZone.bounce();
                 break;
             }
         }
@@ -228,12 +232,10 @@ public class XPadView extends View {
         XZone level_0_zone = this.zones[0];
         level_0_zone.clearIconPainters();
 
-        XZone.CircleBlock centerCircleBlock = (XZone.CircleBlock) level_0_zone.blocks.get(0);
-
         Drawable level_0_zone_icon = drawable(this.zone_0_key.key.getIconResId());
         XDrawablePainter level_0_zone_icon_painter = level_0_zone.newIconPainter(level_0_zone_icon);
-        level_0_zone_icon_painter.setSize(centerCircleBlock.radius);
-        level_0_zone_icon_painter.setCenter(centerCircleBlock.center);
+        level_0_zone_icon_painter.setSize(this.centerHexagonRadius);
+        level_0_zone_icon_painter.setCenter(this.centerCoord);
 
         // ==============================================
         XZone level_1_zone = this.zones[1];
@@ -407,7 +409,7 @@ public class XPadView extends View {
 
         // ==================================================
         // 第 0 级分区：中心圆
-        float centerCircleRadius = this.centerHexagonRadius;
+        float centerHexagonRadius = this.centerHexagonRadius;
         float centerHexagonCornerRadius = dimen(R.dimen.key_view_corner_radius);
         XZone level_0_zone = this.zones[0] = new XZone();
 
@@ -419,14 +421,11 @@ public class XPadView extends View {
         level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
         level_0_zone_fill_painter.setCornerRadius(centerHexagonCornerRadius);
 
-//        level_0_zone_fill_painter.path.addCircle(origin.x, origin.y, centerCircleRadius, Path.Direction.CW);
-        ViewUtils.drawHexagon(level_0_zone_fill_painter.path,
-//                              orientation == HexagonOrientation.FLAT_TOP
-//                              ? HexagonOrientation.POINTY_TOP
-//                              : HexagonOrientation.FLAT_TOP,
-                              orientation, origin, centerCircleRadius);
-
-        level_0_zone.blocks.add(new XZone.CircleBlock(origin, centerCircleRadius));
+        PointF[] centerHexagonVertexes = ViewUtils.drawHexagon(level_0_zone_fill_painter.path,
+                                                               orientation,
+                                                               origin,
+                                                               centerHexagonRadius);
+        level_0_zone.blocks.add(new XZone.PolygonBlock(centerHexagonVertexes));
 
         // ==================================================
         // 第 1 级分区：内六边形
@@ -441,7 +440,7 @@ public class XPadView extends View {
         level_1_zone_fill_painter.setFillShadow(level_1_zone_shadow_style);
         level_1_zone_fill_painter.setCornerRadius(innerHexagonCornerRadius);
 
-        float innerHexagonAxisRadius = centerCircleRadius + (innerHexagonRadius - centerCircleRadius) * 0.25f;
+        float innerHexagonAxisRadius = centerHexagonRadius + (innerHexagonRadius - centerHexagonRadius) * 0.25f;
         PointF[] innerHexagonVertexes = ViewUtils.drawHexagon(level_1_zone_fill_painter.path,
                                                               orientation,
                                                               origin,
@@ -476,7 +475,7 @@ public class XPadView extends View {
         // - 不清楚为何实际绘制的圆角半径是定义半径的 1.6 倍？
         float innerHexagonCornerActualRadius = innerHexagonCornerRadius * 1.6f;
         float innerHexagonCropRadius = innerHexagonRadius - innerHexagonCornerActualRadius * (cos_30_divided_by_1 - 1);
-        float innerHexagonCrossRadius = centerCircleRadius * 0.9f; // 确保中心按下后依然能够显示分隔线
+        float innerHexagonCrossRadius = centerHexagonRadius * 0.9f; // 确保中心按下后依然能够显示分隔线
         PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation, origin, //
                                                                           innerHexagonCropRadius);
         PointF[] innerHexagonCrossCircleVertexes = ViewUtils.createHexagon(orientation,

@@ -43,8 +43,8 @@ public class XZone {
     public final List<Block> blocks = new ArrayList<>();
 
     private boolean hidden;
-    private float alpha = 1f;
-    private float scale = 1f;
+    private Float alpha = null;
+    private Float scale = null;
     private PointF moveTo;
 
     public void draw(Canvas canvas, PointF origin) {
@@ -53,7 +53,7 @@ public class XZone {
         }
 
         XPainter.inCanvasLayer(canvas, () -> {
-            if (this.scale < 1f) {
+            if (this.scale != null) {
                 canvas.scale(this.scale, this.scale, origin.x, origin.y);
             }
             if (this.moveTo != null) {
@@ -132,7 +132,9 @@ public class XZone {
             return;
         }
 
-        painter.setAlpha(this.alpha);
+        if (this.alpha != null) {
+            painter.setAlpha(this.alpha);
+        }
         painter.draw(canvas);
     }
 

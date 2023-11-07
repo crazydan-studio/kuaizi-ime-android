@@ -24,7 +24,7 @@ import android.graphics.Canvas;
  * @date 2023-11-01
  */
 public abstract class XPainter {
-    protected float alpha;
+    protected float alpha = 1f;
 
     public abstract void draw(Canvas canvas);
 

@@ -33,7 +33,10 @@ public class XDrawablePainter extends XPainter {
     private float rotate;
 
     public XDrawablePainter(Drawable drawable) {
-        this.drawable = drawable;
+        // Note：从资源获取的 Drawable 实例是共享的，
+        // 修改对其他地方的引用也是同样生效的，
+        // 故而，需单独复制一份以做独立修改
+        this.drawable = drawable.mutate();
     }
 
     @Override
