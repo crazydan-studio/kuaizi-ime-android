@@ -45,13 +45,12 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-29
  */
-public class XPadView extends View implements ViewGestureDetector.Listener {
+public class XPadView extends View {
     private static final float cos_30 = (float) Math.cos(Math.toRadians(30));
     private static final float cos_30_divided_by_1 = 1f / cos_30;
 
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final XZone[] zones = new XZone[3];
-    private final ViewGestureDetector gesture;
     private final ViewGestureTrailer trailer;
 
     private boolean reversed;
@@ -69,13 +68,13 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
 
         this.trailer = new ViewGestureTrailer();
         this.trailer.setColor(attrColor(R.attr.input_trail_color));
-
-        this.gesture = new ViewGestureDetector();
-        this.gesture.addListener(this) //
-                    .addListener(this.trailer);
     }
 
     public void setReversed(boolean reversed) {
+        if (this.reversed != reversed) {
+            // 触发重绘
+            invalidate();
+        }
         this.reversed = reversed;
     }
 
@@ -86,11 +85,7 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        invalidate();
-
-        this.gesture.onTouchEvent(e);
-
-        // Note：需要返回 true 才能拦截到 move 等事件
+        // Note：由上层视图处理事件，并将属于本视图的事件通过 #onGesture 转发到本视图内处理
         return true;
     }
 
@@ -126,8 +121,9 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
         prepareZones(this.orientation, specWidth, specHeight);
     }
 
-    @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+        invalidate();
+
         switch (type) {
             case PressStart:
                 this.zones[0].press();
@@ -143,6 +139,8 @@ public class XPadView extends View implements ViewGestureDetector.Listener {
                 this.activeBlock = null;
                 break;
         }
+
+        this.trailer.onGesture(type, data);
     }
 
     private void drawZones(Canvas canvas) {

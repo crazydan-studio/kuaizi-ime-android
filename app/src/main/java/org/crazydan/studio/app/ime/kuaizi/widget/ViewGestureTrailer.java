@@ -91,6 +91,7 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
                 lineTo(data);
                 break;
             }
+            case MovingEnd:
             case PressEnd: {
                 reset();
                 break;

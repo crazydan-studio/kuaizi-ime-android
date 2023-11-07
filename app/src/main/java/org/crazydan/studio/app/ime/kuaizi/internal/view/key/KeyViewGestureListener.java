@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 public class KeyViewGestureListener implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
     private KeyView<?, ?> prevKeyView;
+    private KeyView<?, ?> movingOverXPadKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
         this.keyboardView = keyboardView;
@@ -52,6 +53,19 @@ public class KeyViewGestureListener implements ViewGestureDetector.Listener {
             onPressEnd(this.prevKeyView, data);
         }
         this.prevKeyView = keyView;
+
+        // Note：需要处理 MovingEnd 事件发生在 X 面板以外的情况
+        if (try_OnXPadGesture(keyView, type, data)) {
+            if (type == ViewGestureDetector.GestureType.MovingStart) {
+                this.movingOverXPadKeyView = keyView;
+            } else if (type == ViewGestureDetector.GestureType.MovingEnd) {
+                this.movingOverXPadKeyView = null;
+            }
+            return;
+        } else if (type == ViewGestureDetector.GestureType.MovingEnd) {
+            try_OnXPadGesture(this.movingOverXPadKeyView, type, data);
+            this.movingOverXPadKeyView = null;
+        }
 
         switch (type) {
             case PressStart: {
@@ -87,7 +101,6 @@ public class KeyViewGestureListener implements ViewGestureDetector.Listener {
                 break;
             }
             case Moving: {
-                keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
                 onMoving(keyView, data);
                 break;
             }
@@ -100,6 +113,22 @@ public class KeyViewGestureListener implements ViewGestureDetector.Listener {
                 break;
             }
         }
+    }
+
+    private boolean try_OnXPadGesture(
+            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+    ) {
+        if (!(keyView instanceof XPadKeyView)) {
+            return false;
+        }
+
+        float x = keyView.itemView.getX();
+        float y = keyView.itemView.getY();
+        ViewGestureDetector.GestureData newData = ViewGestureDetector.GestureData.translate(data, -x, -y);
+
+        ((XPadKeyView) keyView).getXPad().onGesture(type, newData);
+
+        return true;
     }
 
     private void onPressStart(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {

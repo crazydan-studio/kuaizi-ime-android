@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.x.XPadView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewLayoutManager;
 import org.hexworks.mixite.core.api.Hexagon;
@@ -78,6 +79,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
     private boolean reversed;
     private boolean xPadEnabled;
+    private RectHexagon xPadKeyRectHexagon = null;
     private List<RectHexagon> rectHexagons;
 
     public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
@@ -116,6 +118,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
 
         this.rectHexagons = createGrid(this.gridItemOrientation);
+        this.xPadKeyRectHexagon = null;
 
         layoutRectHexagons(recycler, this.rectHexagons, itemCount);
     }
@@ -282,8 +285,12 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     }
 
     private View filterChildViewByHexagonCenterDistance(float x, float y, Predicate<Double> predicate) {
-        Point point = Point.fromPosition(x, y);
+        // X 面板的区域为矩形，只需要坐标点在矩形内即可，不需要判断距离
+        if (this.xPadEnabled && this.xPadKeyRectHexagon != null && this.xPadKeyRectHexagon.rect.contains(x, y)) {
+            return getChildAt(this.xPadKeyRectHexagon.index);
+        }
 
+        Point point = Point.fromPosition(x, y);
         for (RectHexagon rectHexagon : this.rectHexagons) {
             Point center = coord(rectHexagon.hexagon.getCenter(), rectHexagon.rect);
             double distance = center.distanceFrom(point);
@@ -308,7 +315,6 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
     private void layoutRectHexagons(RecyclerView.Recycler recycler, List<RectHexagon> rectHexagons, int itemCount) {
         View xPadKeyView = null;
-        RectHexagon xPadKeyRectHexagon = null;
         int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
 
         for (RectHexagon rectHexagon : rectHexagons) {
@@ -323,7 +329,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
             if (getItemViewType(view) == xPadKeyViewType) {
                 xPadKeyView = view;
-                xPadKeyRectHexagon = rectHexagon;
+                this.xPadKeyRectHexagon = rectHexagon;
                 continue;
             }
 
@@ -331,9 +337,10 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         }
 
         if (xPadKeyView != null) {
-            int left = (int) xPadKeyRectHexagon.rect.left;
-            int right = (int) xPadKeyRectHexagon.rect.right;
-            float radius = xPadKeyRectHexagon.radius;
+            RectF rect = this.xPadKeyRectHexagon.rect;
+            int left = (int) rect.left;
+            int right = (int) rect.right;
+            float radius = this.xPadKeyRectHexagon.radius;
             float minRadius = this.gridItemMinRadius;
 
             if (radius < minRadius) {
@@ -342,14 +349,15 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 xPadKeyView.setScaleY(scale);
             }
 
-            (new XPadKeyView(xPadKeyView)).setReversed(this.reversed);
-            (new XPadKeyView(xPadKeyView)).setCenterHexagonRadius(radius);
+            XPadView xPad = (new XPadKeyView(xPadKeyView)).getXPad();
+            xPad.setReversed(this.reversed);
+            xPad.setCenterHexagonRadius(radius);
 
             layoutItemView(xPadKeyView,
                            Math.min(left, right),
-                           (int) xPadKeyRectHexagon.rect.top,
+                           (int) rect.top,
                            Math.max(left, right),
-                           (int) xPadKeyRectHexagon.rect.bottom);
+                           (int) rect.bottom);
         }
     }
 

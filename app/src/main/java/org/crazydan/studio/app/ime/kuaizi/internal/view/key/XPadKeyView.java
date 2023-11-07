@@ -34,14 +34,8 @@ public class XPadKeyView extends KeyView<XPadKey, XPadView> {
         super(itemView);
     }
 
-    public void setReversed(boolean reversed) {
-        this.fgView.setReversed(reversed);
-        // 触发重绘
-        this.fgView.invalidate();
-    }
-
-    public void setCenterHexagonRadius(float centerHexagonRadius) {
-        this.fgView.setCenterHexagonRadius(centerHexagonRadius);
+    public XPadView getXPad() {
+        return this.fgView;
     }
 
     public void bind(XPadKey key) {
