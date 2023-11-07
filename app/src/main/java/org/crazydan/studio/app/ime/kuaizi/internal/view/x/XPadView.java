@@ -30,6 +30,9 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
@@ -46,9 +49,6 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-10-29
  */
 public class XPadView extends View {
-    private static final float cos_30 = (float) Math.cos(Math.toRadians(30));
-    private static final float cos_30_divided_by_1 = 1f / cos_30;
-
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final XZone[] zones = new XZone[3];
     private final ViewGestureTrailer trailer;
@@ -58,7 +58,6 @@ public class XPadView extends View {
     private float centerHexagonRadius;
     /** 中心坐标 */
     private PointF centerCoord;
-    private int[] activeBlock;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -121,26 +120,20 @@ public class XPadView extends View {
         prepareZones(this.orientation, specWidth, specHeight);
     }
 
-    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+    public void onGesture(
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data, PointF offset,
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+    ) {
         invalidate();
 
-        switch (type) {
-            case PressStart:
-                this.zones[0].press();
-                break;
-            case PressEnd:
-                this.zones[0].bounce();
-                break;
-            case MovingStart:
-            case Moving:
-                this.activeBlock = findActiveBlock(data);
-                break;
-            case MovingEnd:
-                this.activeBlock = null;
-                break;
-        }
+        float x = data.x + offset.x;
+        float y = data.y + offset.y;
 
-        this.trailer.onGesture(type, data);
+        this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
+
+        Key<?> key = findKey(x, y);
+        // Note：向外部传递的 GestureData 不需要做坐标转换
+        userKeyMsgListenerExecutor.onGesture(key, type, data);
     }
 
     private void drawZones(Canvas canvas) {
@@ -151,14 +144,27 @@ public class XPadView extends View {
         }
     }
 
-    private int[] findActiveBlock(ViewGestureDetector.GestureData data) {
+    private Key<?> findKey(float x, float y) {
+        int[] blockPos = findActiveBlock(x, y);
+        if (blockPos == null) {
+            return null;
+        }
+
+        if (blockPos[0] == 0) {
+            return CtrlKey.create(CtrlKey.Type.Editor_Cursor_Locator);
+        }
+
+        return null;
+    }
+
+    private int[] findActiveBlock(float x, float y) {
         for (int i = 0; i < this.zones.length; i++) {
             XZone zone = this.zones[i];
 
             for (int j = 0; j < zone.blocks.size(); j++) {
                 XZone.Block block = zone.blocks.get(j);
 
-                if (block.contains(new PointF(data.x, data.y))) {
+                if (block.contains(new PointF(x, y))) {
                     return new int[] { i, j };
                 }
             }
@@ -218,11 +224,7 @@ public class XPadView extends View {
 
         String[][][] axisTextArray = getKeys();
         for (int i = 0; i < level_2_zone.blocks.size(); i++) {
-            int textColor = this.activeBlock != null //
-                            && this.activeBlock[0] == 2 //
-                            && this.activeBlock[1] == i
-                            ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
-                            : attrColor(R.attr.x_keyboard_chars_fg_color);
+            int textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
             String[][] axisTexts = getAt(axisTextArray, i);
@@ -332,6 +334,9 @@ public class XPadView extends View {
     }
 
     private void prepareZones(HexagonOrientation orientation, int width, int height) {
+        float cos_30 = (float) Math.cos(Math.toRadians(30));
+        float cos_30_divided_by_1 = 1f / cos_30;
+
         float padPadding = dimen(R.dimen.x_keyboard_pad_padding);
         float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
 

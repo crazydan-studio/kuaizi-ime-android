@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
+
 /**
  * {@link UserKeyMsg} 消息监听
  *
@@ -26,4 +29,8 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 public interface UserKeyMsgListener {
 
     void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
+
+    interface Executor {
+        void onGesture(Key<?> key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);
+    }
 }

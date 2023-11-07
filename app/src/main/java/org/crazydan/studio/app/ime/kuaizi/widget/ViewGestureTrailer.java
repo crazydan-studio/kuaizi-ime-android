@@ -40,7 +40,7 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
     private final PathMeasure trailPathMeasure = new PathMeasure();
 
     private boolean disabled;
-    private int trailColor;
+    private boolean started;
 
     public boolean isDisabled() {
         return this.disabled;
@@ -51,11 +51,11 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
     }
 
     public void setColor(int color) {
-        this.trailColor = color;
+        this.trailPaint.setColor(color);
     }
 
     public void draw(@NonNull Canvas canvas) {
-        if (this.disabled) {
+        if (this.disabled || !this.started) {
             return;
         }
 
@@ -83,34 +83,39 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         switch (type) {
             case PressStart: {
-                moveTo(data);
+                start(data);
                 break;
             }
             case MovingStart:
             case Moving: {
-                lineTo(data);
+                moving(data);
                 break;
             }
             case MovingEnd:
             case PressEnd: {
-                reset();
+                stop();
                 break;
             }
         }
     }
 
-    private void moveTo(ViewGestureDetector.GestureData gesture) {
+    private void start(ViewGestureDetector.GestureData gesture) {
+        this.started = true;
         this.trailPath.reset();
 
         this.trailPath.moveTo(gesture.x, gesture.y);
-        this.trailPaint.setColor(this.trailColor);
     }
 
-    private void lineTo(ViewGestureDetector.GestureData gesture) {
+    private void moving(ViewGestureDetector.GestureData gesture) {
+        if (!this.started) {
+            return;
+        }
+
         this.trailPath.lineTo(gesture.x, gesture.y);
     }
 
-    private void reset() {
+    private void stop() {
+        this.started = false;
         this.trailPath.reset();
     }
 }

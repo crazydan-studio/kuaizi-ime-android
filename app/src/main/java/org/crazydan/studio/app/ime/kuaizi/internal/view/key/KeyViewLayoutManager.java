@@ -53,8 +53,6 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
  * @date 2023-07-01
  */
 public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
-    private static final float cos_30 = (float) Math.cos(Math.toRadians(30));
-
     /** 按键正六边形方向 */
     private HexagonOrientation gridItemOrientation;
 
@@ -124,6 +122,8 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     }
 
     private List<RectHexagon> createGrid(HexagonOrientation orientation) {
+        float cos_30 = (float) Math.cos(Math.toRadians(30));
+
         // Note: 只有布局完成后，才能得到视图的宽高
         // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
         // - 这里按照按键紧挨的情况计算正六边形的半径，

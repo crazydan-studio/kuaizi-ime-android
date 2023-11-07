@@ -31,12 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 public class UserFingerMovingMsgData extends UserKeyMsgData {
     /** 运动信息 */
     public final Motion motion;
-    /** 靠近的按键 */
-    public final Key<?> closed;
 
-    public UserFingerMovingMsgData(Key<?> target, Key<?> closed, Motion motion) {
+    public UserFingerMovingMsgData(Key<?> target, Motion motion) {
         super(target);
-        this.closed = closed;
         this.motion = motion;
     }
 }

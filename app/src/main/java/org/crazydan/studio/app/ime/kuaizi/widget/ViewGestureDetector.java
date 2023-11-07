@@ -335,8 +335,8 @@ public class ViewGestureDetector {
             this.timestamp = timestamp;
         }
 
-        public static GestureData translate(GestureData g, float dx, float dy) {
-            return new GestureData(g.x + dx, g.y + dy, g.timestamp);
+        public static GestureData newFrom(GestureData g, float x, float y) {
+            return new GestureData(x, y, g.timestamp);
         }
 
         /** 事件位置不变，仅修改时间戳为当前时间 */

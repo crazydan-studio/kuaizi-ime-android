@@ -17,31 +17,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 
+import android.graphics.PointF;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerFlippingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserFingerMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserLongPressTickMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListenerExecutor;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
 /**
- * {@link Keyboard 键盘}{@link Key 按键}的手势监听器
+ * {@link Keyboard 键盘}{@link KeyView 按键}的手势监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-13
  */
-public class KeyViewGestureListener implements ViewGestureDetector.Listener {
+public class KeyViewGestureListener extends UserKeyMsgListenerExecutor implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
     private KeyView<?, ?> prevKeyView;
     private KeyView<?, ?> movingOverXPadKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
+        super(keyboardView);
         this.keyboardView = keyboardView;
     }
 
@@ -49,70 +45,50 @@ public class KeyViewGestureListener implements ViewGestureDetector.Listener {
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
 
+        // 处理普通键盘的按键发生切换的情况
         if (this.prevKeyView != null && this.prevKeyView != keyView) {
-            onPressEnd(this.prevKeyView, data);
+            onPressEnd(this.prevKeyView, ViewGestureDetector.GestureType.PressEnd, data);
         }
         this.prevKeyView = keyView;
 
         // Note：需要处理 MovingEnd 事件发生在 X 面板以外的情况
         if (try_OnXPadGesture(keyView, type, data)) {
-            if (type == ViewGestureDetector.GestureType.MovingStart) {
-                this.movingOverXPadKeyView = keyView;
-            } else if (type == ViewGestureDetector.GestureType.MovingEnd) {
-                this.movingOverXPadKeyView = null;
+            switch (type) {
+                case MovingStart:
+                    this.movingOverXPadKeyView = keyView;
+                    break;
+                case PressEnd:
+                case MovingEnd:
+                    this.movingOverXPadKeyView = null;
+                    break;
             }
             return;
-        } else if (type == ViewGestureDetector.GestureType.MovingEnd) {
-            try_OnXPadGesture(this.movingOverXPadKeyView, type, data);
-            this.movingOverXPadKeyView = null;
+        } else {
+            KeyView<?, ?> xPadKeyView = this.movingOverXPadKeyView;
+            switch (type) {
+                case PressEnd:
+                    this.movingOverXPadKeyView = null;
+                case MovingEnd:
+                    try_OnXPadGesture(xPadKeyView, type, data);
+                    break;
+            }
         }
 
+        // 处理普通键盘的按键按压和弹起
         switch (type) {
             case PressStart: {
-                onPressStart(keyView, data);
-                break;
+                onPressStart(keyView, type, data);
+                return;
             }
             case PressEnd: {
-                onPressEnd(keyView, data);
-                break;
-            }
-            case LongPressStart: {
-                onLongPressStart(keyView, data);
-                break;
-            }
-            case LongPressTick: {
-                onLongPressTick(keyView, data);
-                break;
-            }
-            case LongPressEnd: {
-                onLongPressEnd(keyView, data);
-                break;
-            }
-            case SingleTap: {
-                onSingleTap(keyView, data);
-                break;
-            }
-            case DoubleTap: {
-                onDoubleTap(keyView, data);
-                break;
-            }
-            case MovingStart: {
-                onMovingStart(keyView, data);
-                break;
-            }
-            case Moving: {
-                onMoving(keyView, data);
-                break;
-            }
-            case MovingEnd: {
-                onMovingEnd(keyView, data);
-                break;
-            }
-            case Flipping: {
-                onFlipping(keyView, data);
-                break;
+                onPressEnd(keyView, type, data);
+                return;
             }
         }
+
+        // 触发 UserKeyMsgListener
+        Key<?> key = getKey(keyView);
+        super.onGesture(key, type, data);
     }
 
     private boolean try_OnXPadGesture(
@@ -124,105 +100,35 @@ public class KeyViewGestureListener implements ViewGestureDetector.Listener {
 
         float x = keyView.itemView.getX();
         float y = keyView.itemView.getY();
-        ViewGestureDetector.GestureData newData = ViewGestureDetector.GestureData.translate(data, -x, -y);
+        PointF offset = new PointF(-x, -y);
 
-        ((XPadKeyView) keyView).getXPad().onGesture(type, newData);
+        ((XPadKeyView) keyView).getXPad().onGesture(type, data, offset, this);
 
         return true;
     }
 
-    private void onPressStart(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
+    private void onPressStart(
+            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+    ) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchDown();
         }
 
-        onUserKeyMsg(UserKeyMsg.KeyPressStart, keyView, data);
+        super.onGesture(getKey(keyView), type, data);
     }
 
-    private void onPressEnd(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
+    private void onPressEnd(
+            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+    ) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchUp();
         }
 
-        onUserKeyMsg(UserKeyMsg.KeyPressEnd, keyView, data);
+        super.onGesture(getKey(keyView), type, data);
     }
 
     private Key<?> getKey(KeyView<?, ?> keyView) {
         return keyView != null ? keyView.getData() : null;
-    }
-
-    private void onLongPressStart(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.KeyLongPressStart, keyView, data);
-    }
-
-    private void onLongPressTick(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        Key<?> targetKey = getKey(keyView);
-        if (targetKey == null) {
-            return;
-        }
-
-        ViewGestureDetector.LongPressTickGestureData tickData = (ViewGestureDetector.LongPressTickGestureData) data;
-        UserLongPressTickMsgData msgData = new UserLongPressTickMsgData(targetKey, tickData.tick, tickData.duration);
-
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.KeyLongPressTick, msgData);
-    }
-
-    private void onLongPressEnd(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        UserKeyMsgData msgData = new UserKeyMsgData(null);
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.KeyLongPressEnd, msgData);
-    }
-
-    private void onSingleTap(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.KeySingleTap, keyView, data);
-    }
-
-    private void onDoubleTap(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.KeyDoubleTap, keyView, data);
-    }
-
-    private void onMoving(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        KeyView<?, ?> closedKeyView = this.keyboardView.findVisibleKeyViewNear(data.x, data.y);
-        Key<?> targetKey = getKey(keyView);
-        Key<?> closedKey = getKey(closedKeyView);
-
-        Motion motion = ((ViewGestureDetector.MovingGestureData) data).motion;
-        UserFingerMovingMsgData msgData = new UserFingerMovingMsgData(targetKey, closedKey, motion);
-
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerMoving, msgData);
-    }
-
-    private void onMovingStart(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.FingerMovingStart, keyView, data);
-    }
-
-    private void onMovingEnd(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        Key<?> targetKey = getKey(keyView);
-
-        UserKeyMsgData msgData = new UserKeyMsgData(targetKey);
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerMovingEnd, msgData);
-    }
-
-    private void onFlipping(KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        Key<?> targetKey = getKey(keyView);
-
-        Motion motion = ((ViewGestureDetector.FlippingGestureData) data).motion;
-        UserFingerFlippingMsgData msgData = new UserFingerFlippingMsgData(targetKey, motion);
-
-        this.keyboardView.onUserKeyMsg(UserKeyMsg.FingerFlipping, msgData);
-    }
-
-    private void onUserKeyMsg(UserKeyMsg msg, KeyView<?, ?> keyView, ViewGestureDetector.GestureData data) {
-        Key<?> targetKey = getKey(keyView);
-        if (targetKey == null) {
-            return;
-        }
-
-        UserKeyMsgData msgData = new UserKeyMsgData(targetKey);
-        if (data instanceof ViewGestureDetector.SingleTapGestureData) {
-            msgData = new UserSingleTapMsgData(targetKey, ((ViewGestureDetector.SingleTapGestureData) data).tick);
-        }
-
-        this.keyboardView.onUserKeyMsg(msg, msgData);
     }
 
     private boolean isAvailableKeyView(KeyView<?, ?> keyView) {
