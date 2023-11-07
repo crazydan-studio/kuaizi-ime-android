@@ -60,8 +60,9 @@
     <string name="title_preference_about">关于</string>
 
     <!-- Settings Preferences -->
-    <string name="label_config_theme">配置键盘主题样式</string>
+    <string name="label_config_theme">配置键盘样式</string>
     <string name="label_choose_theme">选择键盘主题</string>
+    <string name="label_enable_x_input_pad">启用 X 型输入面板</string>
     <string name="label_switch_hand_mode">切换键盘左右手模式</string>
     <string name="label_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
     <string name="label_disable_user_input_data">禁止记录用户输入</string>
@@ -73,6 +74,9 @@
 
     <string name="desc_disable_user_input_data">
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
+    </string>
+    <string name="desc_x_input_pad">
+        若是启用 X 型输入面板，则将采用类似于 8vim/8open 输入法的输入模式，支持连续不间断地输入拼音和英文字符，可确保输入的连续性
     </string>
     <string name="desc_adapt_desktop_swipe_up_gesture">
         若是系统采用上滑手势返回桌面，则需要确保输入键盘底部留有足够的空白空间，以避免键盘的滑行输入与系统的上滑手势产生冲突

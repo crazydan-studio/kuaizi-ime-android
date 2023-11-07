@@ -18,7 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -81,6 +83,14 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences_theme, rootKey);
+
+            SwitchPreferenceCompat xpad = findPreference("enable_x_input_pad");
+            Preference adaptGesture = findPreference("adapt_desktop_swipe_up_gesture");
+
+            xpad.setOnPreferenceClickListener(pref -> {
+                adaptGesture.setEnabled(!xpad.isChecked());
+                return true;
+            });
         }
     }
 }

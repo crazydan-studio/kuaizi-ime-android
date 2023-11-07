@@ -206,7 +206,7 @@ public class XPadView extends View {
                 return this.zone_0_key;
             }
             case 1: {
-                return this.zone_1_keys[block];
+                return getAt(this.zone_1_keys, block);
             }
         }
         return null;

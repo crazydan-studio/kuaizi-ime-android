@@ -437,5 +437,9 @@ public abstract class KeyTable {
         public boolean isSingleLineInput() {
             return this.keyboardConfig.isSingleLineInput();
         }
+
+        public boolean isXInputPadEnabled() {
+            return this.keyboardConfig.isXInputPadEnabled();
+        }
     }
 }

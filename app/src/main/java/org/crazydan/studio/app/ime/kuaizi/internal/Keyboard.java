@@ -120,6 +120,7 @@ public interface Keyboard extends UserInputMsgListener {
         private static final String pref_key_disable_input_key_popup_tips = "disable_input_key_popup_tips";
         private static final String pref_key_disable_gesture_slipping_trail = "disable_gesture_slipping_trail";
         private static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
+        private static final String pref_key_enable_x_input_pad = "enable_x_input_pad";
         private static final String pref_key_hand_mode = "hand_mode";
         private static final String pref_key_theme = "theme";
 
@@ -144,6 +145,7 @@ public interface Keyboard extends UserInputMsgListener {
         private boolean inputKeyPopupTipsDisabled;
         private boolean gestureSlippingTrailDisabled;
         private boolean desktopSwipeUpGestureAdapted;
+        private boolean xInputPadEnabled;
 
         public Config(Type type) {
             this.type = type;
@@ -165,6 +167,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.inputKeyPopupTipsDisabled = config.inputKeyPopupTipsDisabled;
                 this.gestureSlippingTrailDisabled = config.gestureSlippingTrailDisabled;
                 this.desktopSwipeUpGestureAdapted = config.desktopSwipeUpGestureAdapted;
+                this.xInputPadEnabled = config.xInputPadEnabled;
             }
         }
 
@@ -244,16 +247,21 @@ public interface Keyboard extends UserInputMsgListener {
             return this.desktopSwipeUpGestureAdapted;
         }
 
+        public boolean isXInputPadEnabled() {
+            return this.xInputPadEnabled;
+        }
+
         public void syncWith(SharedPreferences preferences) {
-            boolean disableUserInputData = Keyboard.Config.isUserInputDataDisabled(preferences);
+            boolean disableUserInputData = isUserInputDataDisabled(preferences);
             setUserInputDataDisabled(disableUserInputData);
 
-            this.keyClickedAudioDisabled = Keyboard.Config.isKeyClickedAudioDisabled(preferences);
-            this.keyAnimationDisabled = Keyboard.Config.isKeyAnimationDisabled(preferences);
-            this.pagingAudioDisabled = Keyboard.Config.isPagingAudioDisabled(preferences);
-            this.inputKeyPopupTipsDisabled = Keyboard.Config.isInputKeyPopupTipsDisabled(preferences);
-            this.gestureSlippingTrailDisabled = Keyboard.Config.isGestureSlippingTrailDisabled(preferences);
-            this.desktopSwipeUpGestureAdapted = Keyboard.Config.isDesktopSwipeUpGestureAdapted(preferences);
+            this.keyClickedAudioDisabled = isKeyClickedAudioDisabled(preferences);
+            this.keyAnimationDisabled = isKeyAnimationDisabled(preferences);
+            this.pagingAudioDisabled = isPagingAudioDisabled(preferences);
+            this.inputKeyPopupTipsDisabled = isInputKeyPopupTipsDisabled(preferences);
+            this.gestureSlippingTrailDisabled = isGestureSlippingTrailDisabled(preferences);
+            this.desktopSwipeUpGestureAdapted = isDesktopSwipeUpGestureAdapted(preferences);
+            this.xInputPadEnabled = isXInputPadEnabled(preferences);
 
             Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
             setHandMode(handMode);
@@ -303,6 +311,10 @@ public interface Keyboard extends UserInputMsgListener {
 
         public static boolean isDesktopSwipeUpGestureAdapted(SharedPreferences preferences) {
             return preferences.getBoolean(Keyboard.Config.pref_key_adapt_desktop_swipe_up_gesture, false);
+        }
+
+        public static boolean isXInputPadEnabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_enable_x_input_pad, false);
         }
 
         public static int getThemeResId(Context context, Keyboard.ThemeType theme) {

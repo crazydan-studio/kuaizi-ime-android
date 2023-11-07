@@ -62,6 +62,7 @@
     <!-- Settings Preferences -->
     <string name="label_config_theme">Configure the Keyboard Style</string>
     <string name="label_choose_theme">Choose the Keyboard Theme</string>
+    <string name="label_enable_x_input_pad">Enable the X-shaped Input Pad</string>
     <string name="label_switch_hand_mode">Switch the Keyboard Hand Mode</string>
     <string name="label_adapt_desktop_swipe_up_gesture">Adapt System Swipe Up Gesture</string>
     <string name="label_disable_user_input_data">DO NOT SAVE User Inputting Data</string>
@@ -76,6 +77,12 @@
         which caused by analyzing the inputting words in the input method.
         However, it will reduce the words matching accuracy of the input method,
         so it will have a certain effect on the inputting efficiency.
+    </string>
+    <string name="desc_x_input_pad">
+        If the X-shaped Input Pad is enabled,
+        the input mode similar to the 8VIM/8OPEN input method will be used
+        to support continuous inputting Pinyin and English characters
+        to ensure the continuity of the input.
     </string>
     <string name="desc_adapt_desktop_swipe_up_gesture">
         If the system uses a swipe-up gesture to return to the desktop,

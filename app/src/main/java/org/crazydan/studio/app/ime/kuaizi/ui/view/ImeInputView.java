@@ -322,7 +322,8 @@ public class ImeInputView extends FrameLayout
 
     private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
         return oldConfig.getTheme() != newConfig.getTheme()
-               || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted();
+               || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()
+               || oldConfig.isXInputPadEnabled() != newConfig.isXInputPadEnabled();
     }
 
     private void addBottomSpacing(View rootView, boolean needSpacing) {
@@ -344,6 +345,7 @@ public class ImeInputView extends FrameLayout
         addBottomSpacing(this,
                          config != null
                          && config.isDesktopSwipeUpGestureAdapted()
+                         && !config.isXInputPadEnabled()
                          && config.getOrientation() == Keyboard.Orientation.Portrait);
 
         if (keyboard != null) {

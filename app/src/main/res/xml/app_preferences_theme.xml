@@ -28,6 +28,12 @@
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
+    <SwitchPreferenceCompat
+            app:key="enable_x_input_pad"
+            app:title="@string/label_enable_x_input_pad"
+            app:iconSpaceReserved="false"
+            app:summary="@string/desc_x_input_pad" />
+
     <ListPreference
             app:key="hand_mode"
             app:title="@string/label_switch_hand_mode"
