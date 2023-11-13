@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
+import java.util.Arrays;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -55,6 +57,9 @@ public class XPadView extends View {
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
     private BlockKey[][][] zone_2_keys;
+
+    private XPadState state = new XPadState(XPadState.Type.Init);
+    private int[] activeBlock = new int[2];
 
     private boolean reversed;
     /** 中心正六边形半径 */
@@ -131,29 +136,22 @@ public class XPadView extends View {
 
         float x = data.x + offset.x;
         float y = data.y + offset.y;
-        BlockKey blockKey = findBlockKey(x, y);
-        XZone centerZone = this.zones[0];
-        boolean isCenterBlockKey = blockKey != null && blockKey.zone == 0;
 
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
-        switch (type) {
-            case PressStart: {
-                if (isCenterBlockKey) {
-                    centerZone.press();
-                }
-                break;
-            }
-            // Note：长按中心按钮会发生键盘切换，故而，需显式弹起
-            case LongPressStart:
-            case PressEnd: {
-                centerZone.bounce();
-                break;
-            }
+        this.activeBlock = findBlockAt(x, y);
+        if (this.activeBlock == null || type == ViewGestureDetector.GestureType.PressEnd) {
+            reset();
+            return;
         }
 
-        // Note：向外部传递的 GestureData 不需要做坐标转换
-        userKeyMsgListenerExecutor.onGesture(blockKey != null ? blockKey.key : null, type, data);
+        if (this.activeBlock[0] == 0) {
+            onGesture_Over_Zone_0(type, data, userKeyMsgListenerExecutor);
+        } else if (this.activeBlock[0] == 1) {
+            onGesture_Over_Zone_1(type, data, userKeyMsgListenerExecutor);
+        } else if (this.activeBlock[0] == 2) {
+            onGesture_Over_Zone_2(type, data, userKeyMsgListenerExecutor);
+        }
     }
 
     public void updateZoneKeys(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
@@ -192,8 +190,7 @@ public class XPadView extends View {
         }
     }
 
-    private BlockKey findBlockKey(float x, float y) {
-        int[] blockPos = findActiveBlock(x, y);
+    private BlockKey getBlockKey(int[] blockPos) {
         if (blockPos == null) {
             return null;
         }
@@ -212,7 +209,7 @@ public class XPadView extends View {
         return null;
     }
 
-    private int[] findActiveBlock(float x, float y) {
+    private int[] findBlockAt(float x, float y) {
         for (int i = 0; i < this.zones.length; i++) {
             XZone zone = this.zones[i];
 
@@ -244,7 +241,7 @@ public class XPadView extends View {
         float ctrl_icon_size = dimen(R.dimen.x_keyboard_ctrl_icon_size);
         for (int i = 0; i < level_1_zone.blocks.size(); i++) {
             BlockKey blockKey = getAt(this.zone_1_keys, i);
-            if (blockKey.isNull()) {
+            if (BlockKey.isNull(blockKey)) {
                 continue;
             }
 
@@ -275,7 +272,7 @@ public class XPadView extends View {
             BlockKey[][] blockKeys = getAt(this.zone_2_keys, i);
             for (int j = 0; j < block.links.left.size(); j++) {
                 BlockKey blockKey = blockKeys[this.reversed ? 1 : 0][j];
-                if (blockKey.isNull()) {
+                if (BlockKey.isNull(blockKey)) {
                     continue;
                 }
 
@@ -330,7 +327,7 @@ public class XPadView extends View {
 
             for (int j = 0; j < block.links.right.size(); j++) {
                 BlockKey blockKey = blockKeys[this.reversed ? 0 : 1][j];
-                if (blockKey.isNull()) {
+                if (BlockKey.isNull(blockKey)) {
                     continue;
                 }
 
@@ -618,6 +615,147 @@ public class XPadView extends View {
         return keys[idx];
     }
 
+    private void reset() {
+        XZone centerZone = this.zones[0];
+        centerZone.bounce();
+
+        this.state = new XPadState(XPadState.Type.Init);
+    }
+
+    private void onGesture_Over_Zone_0(
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+    ) {
+        if (this.state.type != XPadState.Type.Init) {
+            return;
+        }
+
+        BlockKey blockKey = getBlockKey(this.activeBlock);
+        XZone centerZone = this.zones[0];
+
+        switch (type) {
+            case PressStart: {
+                centerZone.press();
+                break;
+            }
+            case Flipping: {
+                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+                break;
+            }
+            case LongPressStart: {
+                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+
+                // Note：进入编辑器编辑状态会发生键盘切换，故而，需显式重置状态
+                reset();
+                break;
+            }
+        }
+    }
+
+    private void onGesture_Over_Zone_1(
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+    ) {
+        BlockKey blockKey = getBlockKey(this.activeBlock);
+
+        switch (type) {
+            case MovingStart: {
+                if (BlockKey.isNull(blockKey)) {
+                    return;
+                }
+
+                XPadState.KeyData stateData = new XPadState.KeyData(blockKey.key);
+                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting, stateData);
+
+                // 发送点击事件以触发通用的子键盘切换
+                ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
+                                                                                                                0);
+                execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
+                                           blockKey,
+                                           ViewGestureDetector.GestureType.SingleTap,
+                                           tapData);
+                break;
+            }
+            case Moving: {
+                if (this.state.type != XPadState.Type.InputChars_Input_Doing) {
+                    return;
+                }
+
+                XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
+                int blockDiff = stateData.getBlockDiff();
+                if (blockDiff != 0) {
+                    int blockIndex = stateData.getStartBlock();
+                    BlockKey[][] blockKeysArray = getAt(this.zone_2_keys, blockIndex);
+                    int blockKeysIndex = blockDiff > 0 //
+                                         ? (this.reversed ? 0 : 1) //
+                                         : (this.reversed ? 1 : 0);
+                    BlockKey[] blockKeys = Arrays.stream(blockKeysArray[blockKeysIndex])
+                                                 .filter((bk) -> !BlockKey.isNull(bk))
+                                                 .toArray(BlockKey[]::new);
+                    int totalBlockKeys = blockKeys.length;
+
+                    if (totalBlockKeys > 0) {
+                        int blockKeyIndex = (Math.abs(blockDiff) - 1) % totalBlockKeys;
+                        BlockKey bk = blockKeys[blockKeyIndex];
+
+                        ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(
+                                data,
+                                0);
+                        execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
+                                                   bk,
+                                                   ViewGestureDetector.GestureType.SingleTap,
+                                                   tapData);
+                    }
+                }
+
+                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting, stateData);
+                break;
+            }
+            case MovingEnd: {
+                if (this.state.type != XPadState.Type.InputChars_Input_Doing) {
+                    return;
+                }
+
+                // 当前输入已完成，重置状态
+                reset();
+                break;
+            }
+        }
+    }
+
+    private void onGesture_Over_Zone_2(
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+    ) {
+        if (type != ViewGestureDetector.GestureType.Moving) {
+            return;
+        }
+
+        int blockIndex = this.activeBlock[1];
+        switch (this.state.type) {
+            case InputChars_Input_Waiting: {
+                XZone level_2_zone = this.zones[2];
+                XPadState.BlockData stateData = new XPadState.BlockData(level_2_zone.blocks.size());
+                this.state = new XPadState(XPadState.Type.InputChars_Input_Doing, stateData);
+
+                stateData.updateCurrentBlock(blockIndex);
+                break;
+            }
+            case InputChars_Input_Doing: {
+                ((XPadState.BlockData) this.state.data).updateCurrentBlock(blockIndex);
+                break;
+            }
+        }
+    }
+
+    private void execute_UserKeyMsgListener(
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor, BlockKey blockKey,
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+    ) {
+        // Note：向外部传递的 GestureData 不需要做坐标转换
+        userKeyMsgListenerExecutor.onGesture(blockKey != null ? blockKey.key : null, type, data);
+    }
+
     private static class BlockKey {
         public final int zone;
         public final int x;
@@ -633,8 +771,8 @@ public class XPadView extends View {
             this.key = key;
         }
 
-        public boolean isNull() {
-            return this.key == null;
+        public static boolean isNull(BlockKey blockKey) {
+            return blockKey == null || blockKey.key == null;
         }
     }
 }

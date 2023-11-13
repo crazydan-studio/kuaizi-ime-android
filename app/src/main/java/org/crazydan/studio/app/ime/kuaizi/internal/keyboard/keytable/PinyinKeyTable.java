@@ -187,10 +187,10 @@ public class PinyinKeyTable extends KeyTable {
                            new Key[][][] {
                                    new Key[][] {
                                            new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü") },
-                                           new Key[] { null, level0CharKey("空格"), level0CharKey("换行") },
+                                           new Key[] { null, ctrlKey(CtrlKey.Type.Space).setLabel("空格"), null },
                                            }, //
                                    new Key[][] {
-                                           new Key[] { null, null, null },
+                                           new Key[] { null, ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"), null },
                                            new Key[] { level0CharKey("p"), level0CharKey("w"), level0CharKey("y") },
                                            }, //
                                    new Key[][] {

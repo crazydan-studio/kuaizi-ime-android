@@ -462,7 +462,7 @@ public class PinyinDictDB {
 
     /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
     public List<List<InputWord>> findTopBestMatchedPinyinPhrase(List<InputWord> prevPhrase, int top) {
-        if (prevPhrase == null || prevPhrase.size() < 1) {
+        if (prevPhrase == null || prevPhrase.size() < 2) {
             return new ArrayList<>();
         }
 
