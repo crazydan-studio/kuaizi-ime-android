@@ -327,6 +327,13 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputChars_Input_Doing, data);
     }
 
+    /** 触发 {@link InputMsg#InputChars_Input_Popup_Showing} 消息 */
+    protected void fire_InputChars_Input_Popup_Showing(Key<?> key) {
+        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
+
+        fireInputMsg(InputMsg.InputChars_Input_Popup_Showing, data);
+    }
+
     /** 触发 {@link InputMsg#InputChars_Input_Done} 消息 */
     protected void fire_InputChars_Input_Done(Key<?> key) {
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);

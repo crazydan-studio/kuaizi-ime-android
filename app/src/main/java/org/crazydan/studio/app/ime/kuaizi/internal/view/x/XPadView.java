@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -59,7 +60,8 @@ public class XPadView extends View {
     private BlockKey[][][] zone_2_keys;
 
     private XPadState state = new XPadState(XPadState.Type.Init);
-    private int[] activeBlock = new int[2];
+    private BlockIndex active_block = null;
+    private XZone active_label_zone = null;
 
     private boolean reversed;
     /** 中心正六边形半径 */
@@ -139,18 +141,25 @@ public class XPadView extends View {
 
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
-        this.activeBlock = findBlockAt(x, y);
-        if (this.activeBlock == null || type == ViewGestureDetector.GestureType.PressEnd) {
+        this.active_block = findBlockAt(x, y);
+        if (this.active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
             reset();
             return;
         }
 
-        if (this.activeBlock[0] == 0) {
-            onGesture_Over_Zone_0(type, data, userKeyMsgListenerExecutor);
-        } else if (this.activeBlock[0] == 1) {
-            onGesture_Over_Zone_1(type, data, userKeyMsgListenerExecutor);
-        } else if (this.activeBlock[0] == 2) {
-            onGesture_Over_Zone_2(type, data, userKeyMsgListenerExecutor);
+        switch (this.active_block.zone) {
+            case 0: {
+                onGesture_Over_Zone_0(type, data, userKeyMsgListenerExecutor);
+                break;
+            }
+            case 1: {
+                onGesture_Over_Zone_1(type, data, userKeyMsgListenerExecutor);
+                break;
+            }
+            case 2: {
+                onGesture_Over_Zone_2(type, data, userKeyMsgListenerExecutor);
+                break;
+            }
         }
     }
 
@@ -188,40 +197,8 @@ public class XPadView extends View {
             XZone zone = this.zones[i];
             zone.draw(canvas, this.centerCoord);
         }
-    }
 
-    private BlockKey getBlockKey(int[] blockPos) {
-        if (blockPos == null) {
-            return null;
-        }
-
-        int zone = blockPos[0];
-        int block = blockPos[1];
-
-        switch (zone) {
-            case 0: {
-                return this.zone_0_key;
-            }
-            case 1: {
-                return getAt(this.zone_1_keys, block);
-            }
-        }
-        return null;
-    }
-
-    private int[] findBlockAt(float x, float y) {
-        for (int i = 0; i < this.zones.length; i++) {
-            XZone zone = this.zones[i];
-
-            for (int j = 0; j < zone.blocks.size(); j++) {
-                XZone.Block block = zone.blocks.get(j);
-
-                if (block.contains(new PointF(x, y))) {
-                    return new int[] { i, j };
-                }
-            }
-        }
-        return null;
+        this.active_label_zone.draw(canvas, this.centerCoord);
     }
 
     private void prepareContentOnZone(HexagonOrientation orientation) {
@@ -259,6 +236,34 @@ public class XPadView extends View {
         }
 
         // ==============================================
+        BlockKey level_2_zone_active_key = getActiveBlockKey_In_Zone_2();
+        String level_2_zone_active_key_label = level_2_zone_active_key != null
+                                               ? level_2_zone_active_key.key.getLabel()
+                                               : null;
+        if (level_2_zone_active_key_label == null) {
+            this.active_label_zone.hide();
+        } else {
+            this.active_label_zone.show();
+            this.active_label_zone.clearTextPainters();
+
+            XZone.PolygonBlock block = (XZone.PolygonBlock) this.active_label_zone.blocks.get(0);
+
+            PointF start = block.vertexes[0];
+            PointF end = block.vertexes[1];
+
+            float textSize = dimen(R.dimen.input_popup_key_text_size);
+            int textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+            XPathTextPainter textPainter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
+            textPainter.setTextAlign(Paint.Align.CENTER);
+            textPainter.setTextSize(textSize);
+            textPainter.setFillColor(textColor);
+
+            textPainter.path.reset();
+            textPainter.path.moveTo(start.x, start.y);
+            textPainter.path.lineTo(end.x, end.y);
+        }
+
+        // ==============================================
         XZone level_2_zone = this.zones[2];
         level_2_zone.clearTextPainters();
 
@@ -266,7 +271,10 @@ public class XPadView extends View {
         float textPadding = dimen(R.dimen.x_keyboard_chars_text_padding);
 
         for (int i = 0; i < level_2_zone.blocks.size(); i++) {
-            int textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+            boolean isActiveBlock = isActiveBlock_In_Zone_2(i);
+            int textColor = isActiveBlock && level_2_zone_active_key == null
+                            ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
+                            : attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
             BlockKey[][] blockKeys = getAt(this.zone_2_keys, i);
@@ -274,6 +282,12 @@ public class XPadView extends View {
                 BlockKey blockKey = blockKeys[this.reversed ? 1 : 0][j];
                 if (BlockKey.isNull(blockKey)) {
                     continue;
+                }
+
+                if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                    textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                } else if (level_2_zone_active_key != null) {
+                    textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                 }
 
                 XZone.Link link = block.links.left.get(j);
@@ -329,6 +343,12 @@ public class XPadView extends View {
                 BlockKey blockKey = blockKeys[this.reversed ? 0 : 1][j];
                 if (BlockKey.isNull(blockKey)) {
                     continue;
+                }
+
+                if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                    textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                } else if (level_2_zone_active_key != null) {
+                    textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                 }
 
                 XZone.Link link = block.links.right.get(j);
@@ -403,6 +423,17 @@ public class XPadView extends View {
                         : new PointF(width - (outerHexagonRadius * cos_30 + padPadding),
                                      height - outerHexagonRadius - padPadding);
         this.centerCoord = origin;
+
+        // ==================================================
+        // 激活标签分区
+        this.active_label_zone = new XZone();
+        {
+            float y = padPadding * 4;
+            PointF start = new PointF(origin.x - y, y);
+            PointF end = new PointF(origin.x + y, y);
+            XZone.PolygonBlock block = new XZone.PolygonBlock(start, end);
+            this.active_label_zone.blocks.add(block);
+        }
 
         // ==================================================
         // 第 0 级分区：中心圆
@@ -622,6 +653,77 @@ public class XPadView extends View {
         this.state = new XPadState(XPadState.Type.Init);
     }
 
+    private BlockKey getBlockKey(BlockIndex blockIndex) {
+        return getBlockKey(blockIndex, 0);
+    }
+
+    private BlockKey getBlockKey(BlockIndex blockIndex, int blockIndexDiff) {
+        if (blockIndex == null) {
+            return null;
+        }
+
+        switch (blockIndex.zone) {
+            case 0: {
+                return this.zone_0_key;
+            }
+            case 1: {
+                return getAt(this.zone_1_keys, blockIndex.block);
+            }
+            case 2: {
+                if (blockIndexDiff == 0) {
+                    return null;
+                }
+
+                BlockKey[][] blockKeysArray = getAt(this.zone_2_keys, blockIndex.block);
+                int blockKeysIndex = blockIndexDiff > 0 //
+                                     ? (this.reversed ? 0 : 1) //
+                                     : (this.reversed ? 1 : 0);
+                BlockKey[] blockKeys = Arrays.stream(blockKeysArray[blockKeysIndex])
+                                             .filter((bk) -> !BlockKey.isNull(bk))
+                                             .toArray(BlockKey[]::new);
+                int totalBlockKeys = blockKeys.length;
+                if (totalBlockKeys == 0) {
+                    return null;
+                }
+
+                int blockKeyIndex = (Math.abs(blockIndexDiff) - 1) % totalBlockKeys;
+                return blockKeys[blockKeyIndex];
+            }
+        }
+        return null;
+    }
+
+    private BlockKey getActiveBlockKey_In_Zone_2() {
+        if (this.state.type != XPadState.Type.InputChars_Input_Doing) {
+            return null;
+        }
+
+        XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
+        BlockKey blockKey = getBlockKey(new BlockIndex(2, stateData.getStartBlock()), stateData.getBlockDiff());
+
+        return BlockKey.isNull(blockKey) ? null : blockKey;
+    }
+
+    private boolean isActiveBlock_In_Zone_2(int index) {
+        return this.state.type == XPadState.Type.InputChars_Input_Doing
+               && ((XPadState.BlockData) this.state.data).getStartBlock() == index;
+    }
+
+    private BlockIndex findBlockAt(float x, float y) {
+        for (int i = 0; i < this.zones.length; i++) {
+            XZone zone = this.zones[i];
+
+            for (int j = 0; j < zone.blocks.size(); j++) {
+                XZone.Block block = zone.blocks.get(j);
+
+                if (block.contains(new PointF(x, y))) {
+                    return new BlockIndex(i, j);
+                }
+            }
+        }
+        return null;
+    }
+
     private void onGesture_Over_Zone_0(
             ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
@@ -630,7 +732,7 @@ public class XPadView extends View {
             return;
         }
 
-        BlockKey blockKey = getBlockKey(this.activeBlock);
+        BlockKey blockKey = getBlockKey(this.active_block);
         XZone centerZone = this.zones[0];
 
         switch (type) {
@@ -656,16 +758,14 @@ public class XPadView extends View {
             ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
     ) {
-        BlockKey blockKey = getBlockKey(this.activeBlock);
-
         switch (type) {
             case MovingStart: {
+                BlockKey blockKey = getBlockKey(this.active_block);
                 if (BlockKey.isNull(blockKey)) {
                     return;
                 }
 
-                XPadState.KeyData stateData = new XPadState.KeyData(blockKey.key);
-                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting, stateData);
+                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
 
                 // 发送点击事件以触发通用的子键盘切换
                 ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
@@ -681,34 +781,20 @@ public class XPadView extends View {
                     return;
                 }
 
-                XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
-                int blockDiff = stateData.getBlockDiff();
-                if (blockDiff != 0) {
-                    int blockIndex = stateData.getStartBlock();
-                    BlockKey[][] blockKeysArray = getAt(this.zone_2_keys, blockIndex);
-                    int blockKeysIndex = blockDiff > 0 //
-                                         ? (this.reversed ? 0 : 1) //
-                                         : (this.reversed ? 1 : 0);
-                    BlockKey[] blockKeys = Arrays.stream(blockKeysArray[blockKeysIndex])
-                                                 .filter((bk) -> !BlockKey.isNull(bk))
-                                                 .toArray(BlockKey[]::new);
-                    int totalBlockKeys = blockKeys.length;
-
-                    if (totalBlockKeys > 0) {
-                        int blockKeyIndex = (Math.abs(blockDiff) - 1) % totalBlockKeys;
-                        BlockKey bk = blockKeys[blockKeyIndex];
-
-                        ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(
-                                data,
-                                0);
-                        execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
-                                                   bk,
-                                                   ViewGestureDetector.GestureType.SingleTap,
-                                                   tapData);
-                    }
+                BlockKey blockKey = getActiveBlockKey_In_Zone_2();
+                if (blockKey == null) {
+                    return;
                 }
 
-                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting, stateData);
+                XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
+                stateData.reset();
+
+                ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
+                                                                                                                0);
+                execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
+                                           blockKey,
+                                           ViewGestureDetector.GestureType.SingleTap,
+                                           tapData);
                 break;
             }
             case MovingEnd: {
@@ -731,7 +817,7 @@ public class XPadView extends View {
             return;
         }
 
-        int blockIndex = this.activeBlock[1];
+        int blockIndex = this.active_block.block;
         switch (this.state.type) {
             case InputChars_Input_Waiting: {
                 XZone level_2_zone = this.zones[2];
@@ -756,6 +842,16 @@ public class XPadView extends View {
         userKeyMsgListenerExecutor.onGesture(blockKey != null ? blockKey.key : null, type, data);
     }
 
+    private static class BlockIndex {
+        public final int zone;
+        public final int block;
+
+        private BlockIndex(int zone, int block) {
+            this.zone = zone;
+            this.block = block;
+        }
+    }
+
     private static class BlockKey {
         public final int zone;
         public final int x;
@@ -773,6 +869,28 @@ public class XPadView extends View {
 
         public static boolean isNull(BlockKey blockKey) {
             return blockKey == null || blockKey.key == null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            BlockKey that = (BlockKey) o;
+            return this.zone == that.zone //
+                   && this.x == that.x //
+                   && this.y == that.y //
+                   && this.z == that.z //
+                   && Objects.equals(this.key, that.key);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.zone, this.x, this.y, this.z, this.key);
         }
     }
 }

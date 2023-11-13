@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.key.KeyViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.XPadKeyView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -71,7 +72,8 @@ public abstract class BaseKeyboardView extends RecyclerView {
     }
 
     protected void updateKeys(Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode) {
-        boolean xPadEnabled = hasXPadKey(keys);
+        XPadKey xPadKey = getXPadKey(keys);
+        boolean xPadEnabled = xPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
 
         this.layoutManager.setReversed(isLeftHandMode);
@@ -83,6 +85,14 @@ public abstract class BaseKeyboardView extends RecyclerView {
                                       this.gridItemSpacing,
                                       this.gridMaxPaddingRight);
 
+        if (xPadEnabled) {
+            // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
+            XPadKeyView xPadKeyView = ((XPadKeyView) getVisibleKeyView(getItemViewByKey(xPadKey)));
+            if (xPadKeyView != null) {
+                xPadKeyView.bind(xPadKey);
+            }
+        }
+
         this.adapter.updateKeys(keys, themeResId, orientation);
     }
 
@@ -93,20 +103,6 @@ public abstract class BaseKeyboardView extends RecyclerView {
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
     public KeyView<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
         View child = this.layoutManager.findChildViewUnderLoose(x, y);
-
-        return getVisibleKeyView(child);
-    }
-
-    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewUnder(float x, float y) {
-        View child = this.layoutManager.findChildViewUnder(x, y);
-
-        return getVisibleKeyView(child);
-    }
-
-    /** 找到指定坐标附近可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewNear(float x, float y) {
-        View child = this.layoutManager.findChildViewNear(x, y, this.gridItemSpacing * 2);
 
         return getVisibleKeyView(child);
     }
@@ -134,14 +130,14 @@ public abstract class BaseKeyboardView extends RecyclerView {
         return null;
     }
 
-    private boolean hasXPadKey(Key<?>[][] keys) {
+    private XPadKey getXPadKey(Key<?>[][] keys) {
         for (Key<?>[] key : keys) {
             for (Key<?> k : key) {
                 if (k instanceof XPadKey) {
-                    return true;
+                    return (XPadKey) k;
                 }
             }
         }
-        return false;
+        return null;
     }
 }

@@ -173,6 +173,7 @@ public class ImeInputView extends FrameLayout
                 this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) data).mode;
                 break;
             }
+            case InputChars_Input_Popup_Showing:
             case InputChars_Input_Doing: {
                 Key<?> key = data.getKey();
                 showInputKeyPopupWindow(key != null ? key.getLabel() : null,

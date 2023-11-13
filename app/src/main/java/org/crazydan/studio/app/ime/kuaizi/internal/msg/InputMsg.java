@@ -26,6 +26,8 @@ public enum InputMsg {
 
     /** 字符输入中 */
     InputChars_Input_Doing,
+    /** 字符气泡显示中 */
+    InputChars_Input_Popup_Showing,
     /** 字符输入已结束 */
     InputChars_Input_Done,
 
