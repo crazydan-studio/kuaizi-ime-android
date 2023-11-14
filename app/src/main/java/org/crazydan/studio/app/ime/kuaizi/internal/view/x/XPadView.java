@@ -435,8 +435,9 @@ public class XPadView extends View {
         // 激活标签分区
         this.active_label_zone = new XZone();
         {
-            PointF start = new PointF(padPadding, 0);
-            PointF end = new PointF(width - padPadding, 0);
+            float size = padPadding * 8;
+            PointF start = new PointF(origin.x - size, 0);
+            PointF end = new PointF(origin.x + size, 0);
             XZone.PolygonBlock block = new XZone.PolygonBlock(start, end);
             this.active_label_zone.blocks.add(block);
         }
