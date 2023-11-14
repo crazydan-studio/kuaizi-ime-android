@@ -45,7 +45,6 @@ public class XZone {
     private boolean hidden;
     private Float alpha = null;
     private Float scale = null;
-    private PointF moveTo;
 
     public void draw(Canvas canvas, PointF origin) {
         if (this.hidden) {
@@ -55,9 +54,6 @@ public class XZone {
         XPainter.inCanvasLayer(canvas, () -> {
             if (this.scale != null) {
                 canvas.scale(this.scale, this.scale, origin.x, origin.y);
-            }
-            if (this.moveTo != null) {
-                canvas.translate(this.moveTo.x - origin.x, this.moveTo.y - origin.y);
             }
 
             this.painters.forEach((p) -> doPaint(canvas, p));
@@ -78,7 +74,6 @@ public class XZone {
     }
 
     public void reset() {
-        this.moveTo = null;
         bounce();
     }
 
@@ -92,10 +87,6 @@ public class XZone {
     public void bounce() {
         this.alpha = 1f;
         this.scale = 1f;
-    }
-
-    public void moveTo(float x, float y) {
-        this.moveTo = new PointF(x, y);
     }
 
     public XPathPainter newPathPainter() {

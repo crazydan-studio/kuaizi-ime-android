@@ -258,6 +258,9 @@ public class XPadView extends View {
             textPainter.setTextSize(textSize);
             textPainter.setFillColor(textColor);
 
+            float fontAscent = -textPainter.getFontAscent();
+            textPainter.setOffset(0, fontAscent);
+
             textPainter.path.reset();
             textPainter.path.moveTo(start.x, start.y);
             textPainter.path.lineTo(end.x, end.y);
@@ -284,8 +287,10 @@ public class XPadView extends View {
                     continue;
                 }
 
+                float textSizeScale = 1f;
                 if (Objects.equals(blockKey, level_2_zone_active_key)) {
                     textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                    textSizeScale = 1.25f;
                 } else if (level_2_zone_active_key != null) {
                     textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                 }
@@ -296,7 +301,7 @@ public class XPadView extends View {
                 PointF end = link.vertexes.get(1);
 
                 XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
-                textPainter.setTextSize(textSize);
+                textPainter.setTextSize(textSize * textSizeScale);
                 textPainter.setFillColor(textColor);
 
                 float fontAscent = -textPainter.getFontAscent();
@@ -345,8 +350,10 @@ public class XPadView extends View {
                     continue;
                 }
 
+                float textSizeScale = 1f;
                 if (Objects.equals(blockKey, level_2_zone_active_key)) {
                     textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                    textSizeScale = 1.25f;
                 } else if (level_2_zone_active_key != null) {
                     textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                 }
@@ -357,7 +364,7 @@ public class XPadView extends View {
                 PointF end = link.vertexes.get(1);
 
                 XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
-                textPainter.setTextSize(textSize);
+                textPainter.setTextSize(textSize * textSizeScale);
                 textPainter.setFillColor(textColor);
 
                 float fontAscent = -textPainter.getFontAscent();
@@ -428,9 +435,8 @@ public class XPadView extends View {
         // 激活标签分区
         this.active_label_zone = new XZone();
         {
-            float y = padPadding * 4;
-            PointF start = new PointF(origin.x - y, y);
-            PointF end = new PointF(origin.x + y, y);
+            PointF start = new PointF(padPadding, 0);
+            PointF end = new PointF(width - padPadding, 0);
             XZone.PolygonBlock block = new XZone.PolygonBlock(start, end);
             this.active_label_zone.blocks.add(block);
         }
@@ -442,7 +448,7 @@ public class XPadView extends View {
         XZone level_0_zone = this.zones[0] = new XZone();
 
         int level_0_zone_bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
-        String level_0_zone_shadow = attrString(R.attr.key_shadow_style);
+        String level_0_zone_shadow = attrStr(R.attr.key_shadow_style);
 
         XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
         level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
@@ -460,8 +466,8 @@ public class XPadView extends View {
         XZone level_1_zone = this.zones[1] = new XZone();
 
         int level_1_zone_bg_color = attrColor(R.attr.x_keyboard_ctrl_bg_style);
-        String level_1_zone_divider_style = attrString(R.attr.x_keyboard_ctrl_divider_style);
-        String level_1_zone_shadow_style = attrString(R.attr.x_keyboard_shadow_style);
+        String level_1_zone_divider_style = attrStr(R.attr.x_keyboard_ctrl_divider_style);
+        String level_1_zone_shadow_style = attrStr(R.attr.x_keyboard_shadow_style);
 
         XPathPainter level_1_zone_fill_painter = level_1_zone.newPathPainter();
         level_1_zone_fill_painter.setFillColor(level_1_zone_bg_color);
@@ -532,8 +538,8 @@ public class XPadView extends View {
         // 第 2 级分区：外六边形，不封边，且射线范围内均为其分区空间
         XZone level_2_zone = this.zones[2] = new XZone();
 
-        String level_2_zone_divider_style = attrString(R.attr.x_keyboard_chars_divider_style);
-        String level_2_zone_shadow_style = attrString(R.attr.x_keyboard_chars_divider_shadow_style);
+        String level_2_zone_divider_style = attrStr(R.attr.x_keyboard_chars_divider_style);
+        String level_2_zone_shadow_style = attrStr(R.attr.x_keyboard_chars_divider_shadow_style);
 
         XPathPainter level_2_zone_stroke_painter = level_2_zone.newPathPainter();
         level_2_zone_stroke_painter.setStrokeCap(Paint.Cap.ROUND);
@@ -635,7 +641,7 @@ public class XPadView extends View {
         return ThemeUtils.getColorByAttrId(getContext(), resId);
     }
 
-    private String attrString(int resId) {
+    private String attrStr(int resId) {
         return ThemeUtils.getStringByAttrId(getContext(), resId);
     }
 
@@ -647,8 +653,7 @@ public class XPadView extends View {
     }
 
     private void reset() {
-        XZone centerZone = this.zones[0];
-        centerZone.bounce();
+        this.zones[0].bounce();
 
         this.state = new XPadState(XPadState.Type.Init);
     }
