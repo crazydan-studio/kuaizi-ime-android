@@ -54,6 +54,7 @@ public class XPadView extends View {
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final ViewGestureTrailer trailer;
     private final XZone[] zones = new XZone[3];
+    private final XZone[] inputting_zones = new XZone[3];
 
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
@@ -62,10 +63,16 @@ public class XPadView extends View {
     private XPadState state = new XPadState(XPadState.Type.Init);
     private BlockIndex active_block = null;
     private XZone active_label_zone = null;
+    private BlockKey active_ctrl_block_key = null;
 
     private boolean reversed;
+    private final float pad_padding;
+    private final float ctrl_icon_size;
+    private final float level_0_zone_CornerRadius;
+    private final float level_1_zone_CornerRadius;
     /** 中心正六边形半径 */
-    private float centerHexagonRadius;
+    private float level_0_zone_HexagonRadius;
+    private final float level_1_zone_HexagonRadius;
     /** 中心坐标 */
     private PointF centerCoord;
 
@@ -73,7 +80,12 @@ public class XPadView extends View {
         super(context, attrs);
         ViewUtils.enableHardwareAccelerated(this);
 
-        this.centerHexagonRadius = dimen(R.dimen.key_view_bg_min_radius);
+        this.pad_padding = dimen(R.dimen.x_keyboard_pad_padding);
+        this.ctrl_icon_size = dimen(R.dimen.x_keyboard_ctrl_icon_size);
+        this.level_0_zone_HexagonRadius = dimen(R.dimen.key_view_bg_min_radius);
+        this.level_0_zone_CornerRadius = dimen(R.dimen.key_view_corner_radius);
+        this.level_1_zone_HexagonRadius = this.level_0_zone_HexagonRadius / 0.45f;
+        this.level_1_zone_CornerRadius = dimen(R.dimen.x_keyboard_ctrl_pad_corner_radius);
 
         this.trailer = new ViewGestureTrailer();
         this.trailer.setColor(attrColor(R.attr.input_trail_color));
@@ -87,8 +99,8 @@ public class XPadView extends View {
         this.reversed = reversed;
     }
 
-    public void setCenterHexagonRadius(float centerHexagonRadius) {
-        this.centerHexagonRadius = centerHexagonRadius;
+    public void setCenterHexagonRadius(float level_0_zone_HexagonRadius) {
+        this.level_0_zone_HexagonRadius = level_0_zone_HexagonRadius;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -192,9 +204,11 @@ public class XPadView extends View {
     }
 
     private void drawZones(Canvas canvas) {
+        XZone[] zones = determineZones();
+
         // 从外到内绘制，以层叠方式覆盖相交部分
-        for (int i = this.zones.length - 1; i >= 0; i--) {
-            XZone zone = this.zones[i];
+        for (int i = zones.length - 1; i >= 0; i--) {
+            XZone zone = zones[i];
             zone.draw(canvas, this.centerCoord);
         }
 
@@ -202,37 +216,49 @@ public class XPadView extends View {
     }
 
     private void prepareContentOnZone(HexagonOrientation orientation) {
+        XZone[] zones = determineZones();
+        boolean isInputting = this.state.type != XPadState.Type.Init;
+
         // ==============================================
-        XZone level_0_zone = this.zones[0];
+        XZone level_0_zone = zones[0];
         level_0_zone.clearIconPainters();
 
-        Drawable level_0_zone_icon = drawable(this.zone_0_key.key.getIconResId());
-        XDrawablePainter level_0_zone_icon_painter = level_0_zone.newIconPainter(level_0_zone_icon);
-        level_0_zone_icon_painter.setSize(this.centerHexagonRadius);
-        level_0_zone_icon_painter.setCenter(this.centerCoord);
+        if (!isInputting) {
+            Drawable icon = drawable(this.zone_0_key.key.getIconResId());
+            XDrawablePainter icon_painter = level_0_zone.newIconPainter(icon);
+            icon_painter.setSize(this.level_0_zone_HexagonRadius);
+            icon_painter.setCenter(this.centerCoord);
+        }
 
         // ==============================================
-        XZone level_1_zone = this.zones[1];
+        XZone level_1_zone = zones[1];
         level_1_zone.clearIconPainters();
 
-        float ctrl_icon_size = dimen(R.dimen.x_keyboard_ctrl_icon_size);
-        for (int i = 0; i < level_1_zone.blocks.size(); i++) {
-            BlockKey blockKey = getAt(this.zone_1_keys, i);
-            if (BlockKey.isNull(blockKey)) {
-                continue;
+        if (!isInputting) {
+            for (int i = 0; i < level_1_zone.blocks.size(); i++) {
+                BlockKey blockKey = getAt(this.zone_1_keys, i);
+                if (BlockKey.isNull(blockKey)) {
+                    continue;
+                }
+
+                XZone.PolygonBlock block = (XZone.PolygonBlock) level_1_zone.blocks.get(i);
+                PointF center = block.links.center.center;
+                float rotate = orientation == HexagonOrientation.POINTY_TOP //
+                               ? 30 * (2 * i - 1) : 60 * (i - 1);
+
+                Drawable icon = drawable(blockKey.key.getIconResId());
+                XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
+                icon_painter.setSize(this.ctrl_icon_size);
+                icon_painter.setCenter(center);
+                icon_painter.setRotate(rotate);
+                icon_painter.setAlpha(blockKey.key.isDisabled() ? 0.4f : 1f);
             }
-
-            XZone.PolygonBlock block = (XZone.PolygonBlock) level_1_zone.blocks.get(i);
-            PointF center = block.links.center.center;
-            float rotate = orientation == HexagonOrientation.POINTY_TOP //
-                           ? 30 * (2 * i - 1) : 60 * (i - 1);
-
+        } else if (!BlockKey.isNull(this.active_ctrl_block_key)) {
+            BlockKey blockKey = this.active_ctrl_block_key;
             Drawable icon = drawable(blockKey.key.getIconResId());
-            XDrawablePainter level_1_zone_icon_painter = level_1_zone.newIconPainter(icon);
-            level_1_zone_icon_painter.setSize(ctrl_icon_size);
-            level_1_zone_icon_painter.setCenter(center);
-            level_1_zone_icon_painter.setRotate(rotate);
-            level_1_zone_icon_painter.setAlpha(blockKey.key.isDisabled() ? 0.4f : 1f);
+            XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
+            icon_painter.setSize(this.ctrl_icon_size * 2);
+            icon_painter.setCenter(this.centerCoord);
         }
 
         // ==============================================
@@ -267,7 +293,7 @@ public class XPadView extends View {
         }
 
         // ==============================================
-        XZone level_2_zone = this.zones[2];
+        XZone level_2_zone = zones[2];
         level_2_zone.clearTextPainters();
 
         float textSize = dimen(R.dimen.x_keyboard_chars_text_size);
@@ -414,21 +440,22 @@ public class XPadView extends View {
         float cos_30 = (float) Math.cos(Math.toRadians(30));
         float cos_30_divided_by_1 = 1f / cos_30;
 
-        float padPadding = dimen(R.dimen.x_keyboard_pad_padding);
-        float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
+        float padPadding = this.pad_padding;
+        float level_0_zone_HexagonRadius = this.level_0_zone_HexagonRadius;
+        float level_1_zone_HexagonRadius = this.level_1_zone_HexagonRadius;
 
-        float innerHexagonRadius = this.centerHexagonRadius / 0.45f;
-        float innerHexagonCornerRadius = dimen(R.dimen.x_keyboard_ctrl_pad_corner_radius);
-        float outerHexagonRadius = orientation == HexagonOrientation.FLAT_TOP
-                                   ? maxHexagonRadius * cos_30_divided_by_1
-                                   : maxHexagonRadius;
+        float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
+        float level_2_zone_HexagonRadius = orientation == HexagonOrientation.FLAT_TOP
+                                           ? maxHexagonRadius
+                                             * cos_30_divided_by_1
+                                           : maxHexagonRadius;
 
         PointF origin = orientation == HexagonOrientation.FLAT_TOP
-                        ? new PointF(width - (outerHexagonRadius
+                        ? new PointF(width - (level_2_zone_HexagonRadius
                                               + padPadding),
                                      height - maxHexagonRadius - padPadding)
-                        : new PointF(width - (outerHexagonRadius * cos_30 + padPadding),
-                                     height - outerHexagonRadius - padPadding);
+                        : new PointF(width - (level_2_zone_HexagonRadius * cos_30 + padPadding),
+                                     height - level_2_zone_HexagonRadius - padPadding);
         this.centerCoord = origin;
 
         // ==================================================
@@ -442,11 +469,39 @@ public class XPadView extends View {
             this.active_label_zone.blocks.add(block);
         }
 
+        XZone[] zones = createZones(orientation,
+                                    width,
+                                    height,
+                                    level_0_zone_HexagonRadius,
+                                    level_1_zone_HexagonRadius,
+                                    level_2_zone_HexagonRadius,
+                                    origin,
+                                    cos_30_divided_by_1);
+        System.arraycopy(zones, 0, this.zones, 0, zones.length);
+
+        zones = createZones(orientation,
+                            width,
+                            height,
+                            level_0_zone_HexagonRadius,
+                            level_1_zone_HexagonRadius * 0.8f,
+                            level_2_zone_HexagonRadius,
+                            origin,
+                            cos_30_divided_by_1);
+        System.arraycopy(zones, 0, this.inputting_zones, 0, zones.length);
+        this.inputting_zones[0] = new XZone();
+        // 去掉分隔线
+        this.inputting_zones[1].dropPathPainter(1);
+    }
+
+    private XZone[] createZones(
+            HexagonOrientation orientation, int width, int height, //
+            float level_0_zone_HexagonRadius, float level_1_zone_HexagonRadius, float level_2_zone_HexagonRadius, //
+            PointF origin, float cos_30_divided_by_1
+    ) {
+        XZone[] zones = new XZone[3];
         // ==================================================
         // 第 0 级分区：中心圆
-        float centerHexagonRadius = this.centerHexagonRadius;
-        float centerHexagonCornerRadius = dimen(R.dimen.key_view_corner_radius);
-        XZone level_0_zone = this.zones[0] = new XZone();
+        XZone level_0_zone = zones[0] = new XZone();
 
         int level_0_zone_bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
         String level_0_zone_shadow = attrStr(R.attr.key_shadow_style);
@@ -454,17 +509,17 @@ public class XPadView extends View {
         XPathPainter level_0_zone_fill_painter = level_0_zone.newPathPainter();
         level_0_zone_fill_painter.setFillShadow(level_0_zone_shadow);
         level_0_zone_fill_painter.setFillColor(level_0_zone_bg_color);
-        level_0_zone_fill_painter.setCornerRadius(centerHexagonCornerRadius);
+        level_0_zone_fill_painter.setCornerRadius(this.level_0_zone_CornerRadius);
 
         PointF[] centerHexagonVertexes = ViewUtils.drawHexagon(level_0_zone_fill_painter.path,
                                                                orientation,
                                                                origin,
-                                                               centerHexagonRadius);
+                                                               level_0_zone_HexagonRadius);
         level_0_zone.blocks.add(new XZone.PolygonBlock(centerHexagonVertexes));
 
         // ==================================================
         // 第 1 级分区：内六边形
-        XZone level_1_zone = this.zones[1] = new XZone();
+        XZone level_1_zone = zones[1] = new XZone();
 
         int level_1_zone_bg_color = attrColor(R.attr.x_keyboard_ctrl_bg_style);
         String level_1_zone_divider_style = attrStr(R.attr.x_keyboard_ctrl_divider_style);
@@ -473,13 +528,14 @@ public class XPadView extends View {
         XPathPainter level_1_zone_fill_painter = level_1_zone.newPathPainter();
         level_1_zone_fill_painter.setFillColor(level_1_zone_bg_color);
         level_1_zone_fill_painter.setFillShadow(level_1_zone_shadow_style);
-        level_1_zone_fill_painter.setCornerRadius(innerHexagonCornerRadius);
+        level_1_zone_fill_painter.setCornerRadius(this.level_1_zone_CornerRadius);
 
-        float innerHexagonAxisRadius = centerHexagonRadius + (innerHexagonRadius - centerHexagonRadius) * 0.25f;
+        float innerHexagonAxisRadius = level_0_zone_HexagonRadius
+                                       + (level_1_zone_HexagonRadius - level_0_zone_HexagonRadius) * 0.25f;
         PointF[] innerHexagonVertexes = ViewUtils.drawHexagon(level_1_zone_fill_painter.path,
                                                               orientation,
                                                               origin,
-                                                              innerHexagonRadius);
+                                                              level_1_zone_HexagonRadius);
         PointF[] innerHexagonAxisVertexes = ViewUtils.createHexagon(orientation, origin, innerHexagonAxisRadius);
 
         for (int i = 0; i < innerHexagonVertexes.length; i++) {
@@ -508,9 +564,11 @@ public class XPadView extends View {
 
         // Note：圆角是通过指定半径的圆与矩形的角相切再去掉角的外部后得到的；切点过圆心的线一定与切线垂直
         // - 不清楚为何实际绘制的圆角半径是定义半径的 1.6 倍？
-        float innerHexagonCornerActualRadius = innerHexagonCornerRadius * 1.6f;
-        float innerHexagonCropRadius = innerHexagonRadius - innerHexagonCornerActualRadius * (cos_30_divided_by_1 - 1);
-        float innerHexagonCrossRadius = centerHexagonRadius * 0.9f; // 确保中心按下后依然能够显示分隔线
+        float innerHexagonCornerActualRadius = this.level_1_zone_CornerRadius * 1.6f;
+        float innerHexagonCropRadius = level_1_zone_HexagonRadius - innerHexagonCornerActualRadius * (
+                cos_30_divided_by_1
+                - 1);
+        float innerHexagonCrossRadius = level_0_zone_HexagonRadius * 0.9f; // 确保中心按下后依然能够显示分隔线
         PointF[] innerHexagonCropCornerVertexes = ViewUtils.createHexagon(orientation, origin, //
                                                                           innerHexagonCropRadius);
         PointF[] innerHexagonCrossCircleVertexes = ViewUtils.createHexagon(orientation,
@@ -537,17 +595,17 @@ public class XPadView extends View {
 
         // ==================================================
         // 第 2 级分区：外六边形，不封边，且射线范围内均为其分区空间
-        XZone level_2_zone = this.zones[2] = new XZone();
+        XZone level_2_zone = zones[2] = new XZone();
 
         String level_2_zone_divider_style = attrStr(R.attr.x_keyboard_chars_divider_style);
         String level_2_zone_shadow_style = attrStr(R.attr.x_keyboard_chars_divider_shadow_style);
 
         XPathPainter level_2_zone_stroke_painter = level_2_zone.newPathPainter();
-        level_2_zone_stroke_painter.setStrokeCap(Paint.Cap.ROUND);
+        level_2_zone_stroke_painter.setStrokeCap(Paint.Cap.ROUND); // 设置端点为圆形
         level_2_zone_stroke_painter.setStrokeStyle(level_2_zone_divider_style);
         level_2_zone_stroke_painter.setStrokeShadow(level_2_zone_shadow_style);
 
-        PointF[] outerHexagonVertexes = ViewUtils.createHexagon(orientation, origin, outerHexagonRadius);
+        PointF[] outerHexagonVertexes = ViewUtils.createHexagon(orientation, origin, level_2_zone_HexagonRadius);
         for (int i = 0; i < outerHexagonVertexes.length; i++) {
             PointF start = innerHexagonCrossCircleVertexes[i];
             PointF end = outerHexagonVertexes[i];
@@ -571,11 +629,12 @@ public class XPadView extends View {
 
         // - 添加垂直于左右轴线的 Link
         int level_2_zone_axis_link_count = 4;
-        float outerHexagonAxisSpacing = (outerHexagonRadius - innerHexagonRadius) / level_2_zone_axis_link_count;
+        float outerHexagonAxisSpacing = (level_2_zone_HexagonRadius - level_1_zone_HexagonRadius)
+                                        / level_2_zone_axis_link_count;
 
         PointF[][] axisHexagonVertexesArray = new PointF[level_2_zone_axis_link_count][];
         for (int i = 0; i < level_2_zone_axis_link_count; i++) {
-            float axisHexagonRadius = (innerHexagonRadius + outerHexagonAxisSpacing * (i + 1)) //
+            float axisHexagonRadius = (level_1_zone_HexagonRadius + outerHexagonAxisSpacing * (i + 1)) //
                                       * cos_30_divided_by_1;
             PointF[] axisHexagonVertexes = ViewUtils.createHexagon(orientation == HexagonOrientation.FLAT_TOP
                                                                    ? HexagonOrientation.POINTY_TOP
@@ -624,6 +683,8 @@ public class XPadView extends View {
                                       outerCurrent);
             }
         }
+
+        return zones;
     }
 
     private PointF middle(PointF p1, PointF p2) {
@@ -654,9 +715,11 @@ public class XPadView extends View {
     }
 
     private void reset() {
-        this.zones[0].bounce();
-
         this.state = new XPadState(XPadState.Type.Init);
+        this.active_ctrl_block_key = null;
+
+        XZone[] zones = determineZones();
+        zones[0].bounce();
     }
 
     private BlockKey getBlockKey(BlockIndex blockIndex) {
@@ -716,8 +779,10 @@ public class XPadView extends View {
     }
 
     private BlockIndex findBlockAt(float x, float y) {
-        for (int i = 0; i < this.zones.length; i++) {
-            XZone zone = this.zones[i];
+        XZone[] zones = determineZones();
+
+        for (int i = 0; i < zones.length; i++) {
+            XZone zone = zones[i];
 
             for (int j = 0; j < zone.blocks.size(); j++) {
                 XZone.Block block = zone.blocks.get(j);
@@ -730,6 +795,13 @@ public class XPadView extends View {
         return null;
     }
 
+    private XZone[] determineZones() {
+        if (this.state.type == XPadState.Type.Init) {
+            return this.zones;
+        }
+        return this.inputting_zones;
+    }
+
     private void onGesture_Over_Zone_0(
             ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
@@ -738,8 +810,9 @@ public class XPadView extends View {
             return;
         }
 
+        XZone[] zones = determineZones();
         BlockKey blockKey = getBlockKey(this.active_block);
-        XZone centerZone = this.zones[0];
+        XZone centerZone = zones[0];
 
         switch (type) {
             case PressStart: {
@@ -771,6 +844,7 @@ public class XPadView extends View {
                     return;
                 }
 
+                this.active_ctrl_block_key = blockKey;
                 this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
 
                 // 发送点击事件以触发通用的子键盘切换
@@ -823,10 +897,12 @@ public class XPadView extends View {
             return;
         }
 
+        XZone[] zones = determineZones();
         int blockIndex = this.active_block.block;
+
         switch (this.state.type) {
             case InputChars_Input_Waiting: {
-                XZone level_2_zone = this.zones[2];
+                XZone level_2_zone = zones[2];
                 XPadState.BlockData stateData = new XPadState.BlockData(level_2_zone.blocks.size());
                 this.state = new XPadState(XPadState.Type.InputChars_Input_Doing, stateData);
 

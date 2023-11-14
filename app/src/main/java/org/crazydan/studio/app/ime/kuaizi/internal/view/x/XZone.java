@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-11-01
  */
 public class XZone {
-    private final List<XPainter> painters = new ArrayList<>();
+    private final List<XPathPainter> pathPainters = new ArrayList<>();
     private final List<XDrawablePainter> iconPainters = new ArrayList<>();
     private final List<XPathTextPainter> textPainters = new ArrayList<>();
 
@@ -56,7 +56,7 @@ public class XZone {
                 canvas.scale(this.scale, this.scale, origin.x, origin.y);
             }
 
-            this.painters.forEach((p) -> doPaint(canvas, p));
+            this.pathPainters.forEach((p) -> doPaint(canvas, p));
             this.iconPainters.forEach((p) -> doPaint(canvas, p));
             this.textPainters.forEach((p) -> doPaint(canvas, p));
         });
@@ -89,9 +89,13 @@ public class XZone {
         this.scale = 1f;
     }
 
+    public void dropPathPainter(int index) {
+        this.pathPainters.remove(index);
+    }
+
     public XPathPainter newPathPainter() {
         XPathPainter painter = new XPathPainter();
-        this.painters.add(painter);
+        this.pathPainters.add(painter);
 
         return painter;
     }

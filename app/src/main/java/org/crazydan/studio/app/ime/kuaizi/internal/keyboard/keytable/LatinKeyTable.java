@@ -181,12 +181,16 @@ public class LatinKeyTable extends KeyTable {
                                    }, //
                            new Key[][][] {
                                    new Key[][] {
-                                           new Key[] { null, null, null },
-                                           new Key[] { null, alphabetKey("Space"), alphabetKey("Newline") },
+                                           new Key[] {
+                                                   null, null, null
+                                           }, new Key[] { null, ctrlKey(CtrlKey.Type.Space).setLabel("空格"), null },
                                            }, //
                                    new Key[][] {
-                                           new Key[] { null, null, null },
-                                           new Key[] { alphabetKey("p"), alphabetKey("w"), alphabetKey("y") },
+                                           new Key[] {
+                                                   null,
+                                                   ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"),
+                                                   null
+                                           }, new Key[] { alphabetKey("p"), alphabetKey("w"), alphabetKey("y") },
                                            }, //
                                    new Key[][] {
                                            new Key[] { alphabetKey("a"), alphabetKey("e"), alphabetKey("o") },
