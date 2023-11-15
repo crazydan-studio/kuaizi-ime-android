@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -230,8 +231,9 @@ public class XPadView extends View {
         if (!isInputting) {
             Drawable icon = drawable(this.zone_0_key.key.getIconResId());
             XDrawablePainter icon_painter = level_0_zone.newIconPainter(icon);
+            icon_painter.setStart(this.centerCoord);
+            icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.level_0_zone_HexagonRadius);
-            icon_painter.setCenter(this.centerCoord);
         }
 
         // ==============================================
@@ -252,17 +254,19 @@ public class XPadView extends View {
 
                 Drawable icon = drawable(blockKey.key.getIconResId());
                 XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
-                icon_painter.setSize(this.ctrl_icon_size);
-                icon_painter.setCenter(center);
+                icon_painter.setStart(center);
+                icon_painter.setAlign(XPainter.Align.Center);
                 icon_painter.setRotate(rotate);
+                icon_painter.setSize(this.ctrl_icon_size);
                 icon_painter.setAlpha(blockKey.key.isDisabled() ? 0.4f : 1f);
             }
         } else if (!BlockKey.isNull(this.active_ctrl_block_key)) {
             BlockKey blockKey = this.active_ctrl_block_key;
             Drawable icon = drawable(blockKey.key.getIconResId());
             XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
+            icon_painter.setStart(this.centerCoord);
+            icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.ctrl_icon_size * 1.8f);
-            icon_painter.setCenter(this.centerCoord);
         }
 
         // ==============================================
@@ -283,17 +287,11 @@ public class XPadView extends View {
 
             float textSize = dimen(R.dimen.input_popup_key_text_size);
             int textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
-            XPathTextPainter textPainter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
-            textPainter.setTextAlign(Paint.Align.CENTER);
-            textPainter.setTextSize(textSize);
+            XTextPainter textPainter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
+            textPainter.setStart(middle(start, end));
+            textPainter.setAlign(XPainter.Align.BottomMiddle);
+            textPainter.setSize(textSize);
             textPainter.setFillColor(textColor);
-
-            float fontAscent = -textPainter.getFontAscent();
-            textPainter.setOffset(0, fontAscent);
-
-            textPainter.path.reset();
-            textPainter.path.moveTo(start.x, start.y);
-            textPainter.path.lineTo(end.x, end.y);
         }
 
         // ==============================================
@@ -317,61 +315,52 @@ public class XPadView extends View {
                     continue;
                 }
 
-                float textSizeScale = 1f;
-                if (Objects.equals(blockKey, level_2_zone_active_key)) {
-                    textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
-                    textSizeScale = 1.25f;
-                } else if (level_2_zone_active_key != null) {
-                    textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
-                }
-
                 XZone.Link link = block.links.left.get(j);
+                PointF start = new PointF(link.vertexes.get(0).x, link.vertexes.get(0).y);
 
-                PointF start = link.vertexes.get(0);
-                PointF end = link.vertexes.get(1);
-
-                XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
-                textPainter.setTextSize(textSize * textSizeScale);
-                textPainter.setFillColor(textColor);
-
-                float fontAscent = -textPainter.getFontAscent();
-                float fontDescent = textPainter.getFontDescent();
-                float vOffset = -fontDescent;
-                float hOffset = textPadding;
-                Paint.Align align = Paint.Align.LEFT;
-
-                if (i == 0 //
-                    || (orientation == HexagonOrientation.POINTY_TOP //
-                        && i == 5)) {
-                    start = link.vertexes.get(2);
-                    end = link.vertexes.get(1);
-
-                    hOffset = fontDescent;
-                    vOffset = fontAscent + fontDescent;
-                } else if (i == 3 //
-                           || (orientation == HexagonOrientation.POINTY_TOP //
-                               && i == 2)) {
-                    start = link.vertexes.get(1);
-                    end = link.vertexes.get(2);
-
-                    hOffset = -fontDescent;
-                    vOffset = -textPadding;
-                    align = Paint.Align.RIGHT;
+                float rotate = 0;
+                XPainter.Align align;
+                if (i == 0) {
+                    start.offset(0, textPadding);
+                    align = XPainter.Align.BottomRight;
+                } else if (i == 3) {
+                    start.offset(0, -textPadding);
+                    align = XPainter.Align.TopLeft;
                 } else if (i < 3) {
-                    start = link.vertexes.get(1);
-                    end = link.vertexes.get(0);
-
-                    hOffset = -textPadding;
-                    vOffset = fontAscent;
-                    align = Paint.Align.RIGHT;
+                    rotate = i == 1 ? -30 : 30;
+                    start.offset(-textPadding, 0);
+                    align = XPainter.Align.BottomLeft;
+                } else {
+                    rotate = i == 4 ? -30 : 30;
+                    start.offset(textPadding, 0);
+                    align = XPainter.Align.TopRight;
                 }
 
-                textPainter.path.reset();
-                textPainter.path.moveTo(end.x, end.y);
-                textPainter.path.lineTo(start.x, start.y);
+                float size;
+                XAlignPainter painter;
+                if (blockKey.key instanceof CtrlKey) {
+                    Drawable icon = drawable(blockKey.key.getIconResId());
+                    painter = level_2_zone.newIconPainter(icon);
+                    size = this.ctrl_icon_size;
+                } else {
+                    painter = level_2_zone.newTextPainter(blockKey.key.getLabel());
 
-                textPainter.setTextAlign(align);
-                textPainter.setOffset(hOffset, vOffset);
+                    float textSizeScale = 1f;
+                    if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                        textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                        textSizeScale = 1.25f;
+                    } else if (level_2_zone_active_key != null) {
+                        textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+                    }
+                    size = textSize * textSizeScale;
+
+                    painter.setFillColor(textColor);
+                }
+
+                painter.setStart(start);
+                painter.setAlign(align);
+                painter.setRotate(rotate);
+                painter.setSize(size);
             }
 
             for (int j = 0; j < block.links.right.size(); j++) {
@@ -380,63 +369,125 @@ public class XPadView extends View {
                     continue;
                 }
 
-                float textSizeScale = 1f;
-                if (Objects.equals(blockKey, level_2_zone_active_key)) {
-                    textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
-                    textSizeScale = 1.25f;
-                } else if (level_2_zone_active_key != null) {
-                    textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
-                }
-
                 XZone.Link link = block.links.right.get(j);
+                PointF start = new PointF(link.vertexes.get(0).x, link.vertexes.get(0).y);
 
-                PointF start = link.vertexes.get(0);
-                PointF end = link.vertexes.get(1);
-
-                XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
-                textPainter.setTextSize(textSize * textSizeScale);
-                textPainter.setFillColor(textColor);
-
-                float fontAscent = -textPainter.getFontAscent();
-                float fontDescent = textPainter.getFontDescent();
-                float vOffset = -fontDescent;
-                float hOffset = textPadding;
-                Paint.Align align = Paint.Align.LEFT;
-
-                if (i == 2 //
-                    || (orientation == HexagonOrientation.POINTY_TOP //
-                        && i == 1)) {
-                    start = link.vertexes.get(1);
-                    end = link.vertexes.get(2);
-
-                    hOffset = -fontDescent;
-                    vOffset = fontAscent + fontDescent;
-                    align = Paint.Align.RIGHT;
-                } else if (i == 5 //
-                           || (orientation == HexagonOrientation.POINTY_TOP //
-                               && i == 4)) {
-                    start = link.vertexes.get(2);
-                    end = link.vertexes.get(1);
-
-                    hOffset = fontDescent;
-                    vOffset = -textPadding;
-                } else if (i < 3) {
-                    vOffset = fontAscent;
+                float rotate = 0;
+                XPainter.Align align;
+                if (i == 2) {
+                    start.offset(0, textPadding);
+                    align = XPainter.Align.BottomLeft;
+                } else if (i == 5) {
+                    start.offset(0, -textPadding);
+                    align = XPainter.Align.TopRight;
+                } else if (i < 2) {
+                    rotate = i == 0 ? -30 : 30;
+                    start.offset(textPadding, 0);
+                    align = XPainter.Align.BottomRight;
                 } else {
-                    start = link.vertexes.get(1);
-                    end = link.vertexes.get(0);
-
-                    hOffset = -textPadding;
-                    align = Paint.Align.RIGHT;
+                    rotate = i == 3 ? -30 : 30;
+                    start.offset(-textPadding, 0);
+                    align = XPainter.Align.TopLeft;
                 }
 
-                textPainter.path.reset();
-                textPainter.path.moveTo(end.x, end.y);
-                textPainter.path.lineTo(start.x, start.y);
+                float size;
+                XAlignPainter painter;
+                if (blockKey.key instanceof CtrlKey) {
+                    Drawable icon = drawable(blockKey.key.getIconResId());
+                    painter = level_2_zone.newIconPainter(icon);
+                    size = this.ctrl_icon_size;
+                } else {
+                    painter = level_2_zone.newTextPainter(blockKey.key.getLabel());
 
-                textPainter.setTextAlign(align);
-                textPainter.setOffset(hOffset, vOffset);
+                    float textSizeScale = 1f;
+                    if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                        textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                        textSizeScale = 1.25f;
+                    } else if (level_2_zone_active_key != null) {
+                        textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+                    }
+                    size = textSize * textSizeScale;
+
+                    painter.setFillColor(textColor);
+                }
+
+                painter.setStart(start);
+                painter.setAlign(align);
+                painter.setRotate(rotate);
+                painter.setSize(size);
             }
+
+//            for (int j = 0; j < block.links.right.size(); j++) {
+//                BlockKey blockKey = blockKeys[this.reversed ? 0 : 1][j];
+//                if (BlockKey.isNull(blockKey)) {
+//                    continue;
+//                }
+//
+//                XZone.Link link = block.links.right.get(j);
+//                PointF start = link.vertexes.get(0);
+//                PointF end = link.vertexes.get(1);
+//
+//                if (blockKey.key instanceof CtrlKey) {
+//                    Drawable icon = drawable(blockKey.key.getIconResId());
+//                    XDrawablePainter icon_painter = level_2_zone.newIconPainter(icon);
+//                    icon_painter.setSize(this.ctrl_icon_size);
+//                    icon_painter.setCenter(end);
+//                    icon_painter.setRotate(30);
+//                    continue;
+//                }
+//
+//                float textSizeScale = 1f;
+//                if (Objects.equals(blockKey, level_2_zone_active_key)) {
+//                    textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+//                    textSizeScale = 1.25f;
+//                } else if (level_2_zone_active_key != null) {
+//                    textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+//                }
+//
+////                XPathTextPainter textPainter = level_2_zone.newTextPainter(blockKey.key.getLabel());
+////                textPainter.setTextSize(textSize * textSizeScale);
+////                textPainter.setFillColor(textColor);
+////
+////                float fontAscent = -textPainter.getFontAscent();
+////                float fontDescent = textPainter.getFontDescent();
+////                float vOffset = -fontDescent;
+////                float hOffset = textPadding;
+////                Paint.Align align = Paint.Align.LEFT;
+////
+////                if (i == 2 //
+////                    || (orientation == HexagonOrientation.POINTY_TOP //
+////                        && i == 1)) {
+////                    start = link.vertexes.get(1);
+////                    end = link.vertexes.get(2);
+////
+////                    hOffset = -fontDescent;
+////                    vOffset = fontAscent + fontDescent;
+////                    align = Paint.Align.RIGHT;
+////                } else if (i == 5 //
+////                           || (orientation == HexagonOrientation.POINTY_TOP //
+////                               && i == 4)) {
+////                    start = link.vertexes.get(2);
+////                    end = link.vertexes.get(1);
+////
+////                    hOffset = fontDescent;
+////                    vOffset = -textPadding;
+////                } else if (i < 3) {
+////                    vOffset = fontAscent;
+////                } else {
+////                    start = link.vertexes.get(1);
+////                    end = link.vertexes.get(0);
+////
+////                    hOffset = -textPadding;
+////                    align = Paint.Align.RIGHT;
+////                }
+////
+////                textPainter.path.reset();
+////                textPainter.path.moveTo(end.x, end.y);
+////                textPainter.path.lineTo(start.x, start.y);
+////
+////                textPainter.setTextAlign(align);
+////                textPainter.setOffset(hOffset, vOffset);
+//            }
         }
     }
 
@@ -473,18 +524,19 @@ public class XPadView extends View {
             this.active_label_zone.blocks.add(block);
         }
 
+        float level_1_zone_scale = 1.25f;
         XZone[] zones = createZones(origin,
                                     orientation,
                                     width,
                                     height,
                                     level_0_zone_HexagonRadius,
-                                    level_1_zone_HexagonRadius,
+                                    level_1_zone_HexagonRadius * level_1_zone_scale,
                                     level_2_zone_HexagonRadius,
-                                    0,
+                                    level_1_zone_HexagonRadius * (1 - level_1_zone_scale),
                                     cos_30_divided_by_1);
         System.arraycopy(zones, 0, this.zones, 0, zones.length);
 
-        float level_1_zone_scale = 0.7f;
+        level_1_zone_scale = 0.75f;
         zones = createZones(origin,
                             orientation,
                             width,
@@ -591,7 +643,7 @@ public class XPadView extends View {
 
 //        PointF[] vertexes = ViewUtils.createHexagon(orientation,
 //                                                    origin,
-//                                                    innerHexagonRadius
+//                                                    level_1_zone_HexagonRadius
 //                                                    - innerHexagonCornerActualRadius * cos_30_divided_by_1);
 //        for (PointF start : vertexes) {
 //            level_1_zone_stroke_painter.path.addCircle(start.x,
@@ -677,18 +729,20 @@ public class XPadView extends View {
                 XZone.Link leftLink = new XZone.Link();
                 block.links.left.add(leftLink);
 
-                leftLink.addVertexes(innerCurrent,
-                                     middle(innerCurrent, innerBefore),
-                                     middle(outerCurrent, outerBefore),
-                                     outerCurrent);
+                // 左侧从轴线相交点逆时针旋转
+                leftLink.addVertexes(middle(innerCurrent, innerBefore),
+                                     innerCurrent,
+                                     outerCurrent,
+                                     middle(outerCurrent, outerBefore));
 
                 XZone.Link rightLink = new XZone.Link();
                 block.links.right.add(rightLink);
 
-                rightLink.addVertexes(innerCurrent,
-                                      middle(innerCurrent, innerAfter),
-                                      middle(outerCurrent, outerAfter),
-                                      outerCurrent);
+                // 右侧从轴线相交点顺时针旋转
+                rightLink.addVertexes(middle(innerCurrent, innerAfter),
+                                      innerCurrent,
+                                      outerCurrent,
+                                      middle(outerCurrent, outerAfter));
             }
         }
 

@@ -17,20 +17,32 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.PointF;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-11-03
+ * @date 2023-11-01
  */
-public class XPathPainter extends XPainter {
-    public final Path path = new Path();
+public abstract class XAlignPainter extends XPainter {
+    protected PointF start;
+    protected Align align = Align.None;
 
-    @Override
-    public void draw(Canvas canvas) {
-        Paint paint = getPaint();
-        canvas.drawPath(this.path, paint);
+    protected float size;
+    protected float rotate;
+
+    public void setStart(PointF start) {
+        this.start = start;
+    }
+
+    public void setAlign(Align align) {
+        this.align = align != null ? align : Align.None;
+    }
+
+    public void setRotate(float rotate) {
+        this.rotate = rotate;
+    }
+
+    public void setSize(float size) {
+        this.size = size;
     }
 }

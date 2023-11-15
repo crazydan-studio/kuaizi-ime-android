@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 public class XZone {
     private final List<XPathPainter> pathPainters = new ArrayList<>();
     private final List<XDrawablePainter> iconPainters = new ArrayList<>();
-    private final List<XPathTextPainter> textPainters = new ArrayList<>();
+    private final List<XTextPainter> textPainters = new ArrayList<>();
 
     public final List<Block> blocks = new ArrayList<>();
 
@@ -115,8 +115,8 @@ public class XZone {
         this.textPainters.clear();
     }
 
-    public XPathTextPainter newTextPainter(String text) {
-        XPathTextPainter painter = new XPathTextPainter(text);
+    public XTextPainter newTextPainter(String text) {
+        XTextPainter painter = new XTextPainter(text);
         this.textPainters.add(painter);
 
         return painter;
