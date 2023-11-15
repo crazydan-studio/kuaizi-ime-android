@@ -184,6 +184,10 @@ public class XPadView extends View {
         for (int i = 0; i < zone_1_keys.length; i++) {
             Key<?> key = zone_1_keys[i];
             this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
+
+            if (key != null && key.isDisabled()) {
+                this.active_ctrl_block_key = this.zone_1_keys[i];
+            }
         }
 
         this.zone_2_keys = new BlockKey[zone_2_keys.length][][];
@@ -257,7 +261,7 @@ public class XPadView extends View {
             BlockKey blockKey = this.active_ctrl_block_key;
             Drawable icon = drawable(blockKey.key.getIconResId());
             XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
-            icon_painter.setSize(this.ctrl_icon_size * 2);
+            icon_painter.setSize(this.ctrl_icon_size * 1.8f);
             icon_painter.setCenter(this.centerCoord);
         }
 
@@ -469,23 +473,26 @@ public class XPadView extends View {
             this.active_label_zone.blocks.add(block);
         }
 
-        XZone[] zones = createZones(orientation,
+        XZone[] zones = createZones(origin,
+                                    orientation,
                                     width,
                                     height,
                                     level_0_zone_HexagonRadius,
                                     level_1_zone_HexagonRadius,
                                     level_2_zone_HexagonRadius,
-                                    origin,
+                                    0,
                                     cos_30_divided_by_1);
         System.arraycopy(zones, 0, this.zones, 0, zones.length);
 
-        zones = createZones(orientation,
+        float level_1_zone_scale = 0.7f;
+        zones = createZones(origin,
+                            orientation,
                             width,
                             height,
                             level_0_zone_HexagonRadius,
-                            level_1_zone_HexagonRadius * 0.8f,
+                            level_1_zone_HexagonRadius * level_1_zone_scale,
                             level_2_zone_HexagonRadius,
-                            origin,
+                            level_1_zone_HexagonRadius * (1 - level_1_zone_scale),
                             cos_30_divided_by_1);
         System.arraycopy(zones, 0, this.inputting_zones, 0, zones.length);
         this.inputting_zones[0] = new XZone();
@@ -494,9 +501,9 @@ public class XPadView extends View {
     }
 
     private XZone[] createZones(
-            HexagonOrientation orientation, int width, int height, //
+            PointF origin, HexagonOrientation orientation, int width, int height, //
             float level_0_zone_HexagonRadius, float level_1_zone_HexagonRadius, float level_2_zone_HexagonRadius, //
-            PointF origin, float cos_30_divided_by_1
+            float level_1_and_2_zone_spacing, float cos_30_divided_by_1
     ) {
         XZone[] zones = new XZone[3];
         // ==================================================
@@ -629,12 +636,13 @@ public class XPadView extends View {
 
         // - 添加垂直于左右轴线的 Link
         int level_2_zone_axis_link_count = 4;
-        float outerHexagonAxisSpacing = (level_2_zone_HexagonRadius - level_1_zone_HexagonRadius)
+        float spacing_between_level_1_and_2_zone = level_1_zone_HexagonRadius + level_1_and_2_zone_spacing;
+        float outerHexagonAxisSpacing = (level_2_zone_HexagonRadius - spacing_between_level_1_and_2_zone)
                                         / level_2_zone_axis_link_count;
 
         PointF[][] axisHexagonVertexesArray = new PointF[level_2_zone_axis_link_count][];
         for (int i = 0; i < level_2_zone_axis_link_count; i++) {
-            float axisHexagonRadius = (level_1_zone_HexagonRadius + outerHexagonAxisSpacing * (i + 1)) //
+            float axisHexagonRadius = (spacing_between_level_1_and_2_zone + outerHexagonAxisSpacing * (i + 1)) //
                                       * cos_30_divided_by_1;
             PointF[] axisHexagonVertexes = ViewUtils.createHexagon(orientation == HexagonOrientation.FLAT_TOP
                                                                    ? HexagonOrientation.POINTY_TOP
@@ -716,7 +724,6 @@ public class XPadView extends View {
 
     private void reset() {
         this.state = new XPadState(XPadState.Type.Init);
-        this.active_ctrl_block_key = null;
 
         XZone[] zones = determineZones();
         zones[0].bounce();
@@ -839,13 +846,12 @@ public class XPadView extends View {
     ) {
         switch (type) {
             case MovingStart: {
+                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
+
                 BlockKey blockKey = getBlockKey(this.active_block);
                 if (BlockKey.isNull(blockKey)) {
                     return;
                 }
-
-                this.active_ctrl_block_key = blockKey;
-                this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
 
                 // 发送点击事件以触发通用的子键盘切换
                 ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
@@ -861,13 +867,15 @@ public class XPadView extends View {
                     return;
                 }
 
+                // 再次进入第 2 分区，则表示当前输入已确定
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
-                if (blockKey == null) {
-                    return;
-                }
 
                 XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
                 stateData.reset();
+
+                if (blockKey == null) {
+                    return;
+                }
 
                 ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
                                                                                                                 0);
@@ -875,15 +883,6 @@ public class XPadView extends View {
                                            blockKey,
                                            ViewGestureDetector.GestureType.SingleTap,
                                            tapData);
-                break;
-            }
-            case MovingEnd: {
-                if (this.state.type != XPadState.Type.InputChars_Input_Doing) {
-                    return;
-                }
-
-                // 当前输入已完成，重置状态
-                reset();
                 break;
             }
         }

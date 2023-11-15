@@ -186,7 +186,7 @@ public class PinyinKeyTable extends KeyTable {
                                    }, //
                            new Key[][][] {
                                    new Key[][] {
-                                           new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü") },
+                                           new Key[] { null, level0CharKey("r"), level0CharKey("g") },
                                            new Key[] { null, ctrlKey(CtrlKey.Type.Space).setLabel("空格"), null },
                                            }, //
                                    new Key[][] {
@@ -207,7 +207,7 @@ public class PinyinKeyTable extends KeyTable {
                                            }, //
                                    new Key[][] {
                                            new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh") },
-                                           new Key[] { null, level0CharKey("r"), level0CharKey("g") },
+                                           new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü") },
                                            },
                                    });
     }
