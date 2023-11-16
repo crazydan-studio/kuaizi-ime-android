@@ -121,11 +121,10 @@ public class XPadView extends View {
             canvas.translate(dx, 0);
         }
 
-        // 绘制分区
-        drawZones(canvas);
-
         // 准备分区的待显示内容
         prepareContentOnZone(this.orientation);
+        // 绘制分区
+        drawZones(canvas);
 
         // 绘制滑屏轨迹
         this.trailer.draw(canvas);
@@ -324,24 +323,46 @@ public class XPadView extends View {
 
                 float rotate = 0;
                 XPainter.Align align;
-                if (i == 0) {
-                    start.offset(0, textPadding);
-                    align = XPainter.Align.BottomRight;
-                } else if (i == 3) {
-                    start.offset(0, -textPadding);
-                    align = XPainter.Align.TopLeft;
-                } else if (i < 3) {
-                    float dir = i == 1 ? -1 : 1;
-                    rotate = dir * 30;
-                    start.offset(-textPadding * cos_30, -dir * textPadding * sin_30);
+                if (orientation == HexagonOrientation.POINTY_TOP) {
+                    if (i == 1) {
+                        start.offset(-textPadding, 0);
+                        align = XPainter.Align.BottomLeft;
+                    } else if (i == 4) {
+                        start.offset(textPadding, 0);
+                        align = XPainter.Align.TopRight;
+                    } else if (i < 3) {
+                        float dir = i == 0 ? -1 : 1;
+                        rotate = dir * 60;
+                        start.offset(-textPadding * sin_30, -dir * textPadding * cos_30);
 
-                    align = XPainter.Align.BottomLeft;
+                        align = XPainter.Align.BottomLeft;
+                    } else {
+                        float dir = i == 3 ? -1 : 1;
+                        rotate = dir * 60;
+                        start.offset(textPadding * sin_30, dir * textPadding * cos_30);
+
+                        align = XPainter.Align.TopRight;
+                    }
                 } else {
-                    float dir = i == 4 ? -1 : 1;
-                    rotate = dir * 30;
-                    start.offset(textPadding * cos_30, dir * textPadding * sin_30);
+                    if (i == 0) {
+                        start.offset(0, textPadding);
+                        align = XPainter.Align.BottomRight;
+                    } else if (i == 3) {
+                        start.offset(0, -textPadding);
+                        align = XPainter.Align.TopLeft;
+                    } else if (i < 3) {
+                        float dir = i == 1 ? -1 : 1;
+                        rotate = dir * 30;
+                        start.offset(-textPadding * cos_30, -dir * textPadding * sin_30);
 
-                    align = XPainter.Align.TopRight;
+                        align = XPainter.Align.BottomLeft;
+                    } else {
+                        float dir = i == 4 ? -1 : 1;
+                        rotate = dir * 30;
+                        start.offset(textPadding * cos_30, dir * textPadding * sin_30);
+
+                        align = XPainter.Align.TopRight;
+                    }
                 }
 
                 float size;
@@ -382,24 +403,46 @@ public class XPadView extends View {
 
                 float rotate = 0;
                 XPainter.Align align;
-                if (i == 2) {
-                    start.offset(0, textPadding);
-                    align = XPainter.Align.BottomLeft;
-                } else if (i == 5) {
-                    start.offset(0, -textPadding);
-                    align = XPainter.Align.TopRight;
-                } else if (i < 2) {
-                    float dir = i == 0 ? -1 : 1;
-                    rotate = dir * 30;
-                    start.offset(textPadding * cos_30, dir * textPadding * sin_30);
+                if (orientation == HexagonOrientation.POINTY_TOP) {
+                    if (i == 0) {
+                        start.offset(textPadding, 0);
+                        align = XPainter.Align.BottomRight;
+                    } else if (i == 3) {
+                        start.offset(-textPadding, 0);
+                        align = XPainter.Align.TopLeft;
+                    } else if (i < 3) {
+                        float dir = i == 1 ? 1 : -1;
+                        rotate = dir * 60;
+                        start.offset(dir * textPadding * sin_30, textPadding * cos_30);
 
-                    align = XPainter.Align.BottomRight;
+                        align = dir > 0 ? XPainter.Align.BottomRight : XPainter.Align.TopLeft;
+                    } else {
+                        float dir = i == 4 ? 1 : -1;
+                        rotate = dir * 60;
+                        start.offset(-dir * textPadding * sin_30, -textPadding * cos_30);
+
+                        align = dir > 0 ? XPainter.Align.TopLeft : XPainter.Align.BottomRight;
+                    }
                 } else {
-                    float dir = i == 3 ? -1 : 1;
-                    rotate = dir * 30;
-                    start.offset(-textPadding * cos_30, -dir * textPadding * sin_30);
+                    if (i == 2) {
+                        start.offset(0, textPadding);
+                        align = XPainter.Align.BottomLeft;
+                    } else if (i == 5) {
+                        start.offset(0, -textPadding);
+                        align = XPainter.Align.TopRight;
+                    } else if (i < 2) {
+                        float dir = i == 0 ? -1 : 1;
+                        rotate = dir * 30;
+                        start.offset(textPadding * cos_30, dir * textPadding * sin_30);
 
-                    align = XPainter.Align.TopLeft;
+                        align = XPainter.Align.BottomRight;
+                    } else {
+                        float dir = i == 3 ? -1 : 1;
+                        rotate = dir * 30;
+                        start.offset(-textPadding * cos_30, -dir * textPadding * sin_30);
+
+                        align = XPainter.Align.TopLeft;
+                    }
                 }
 
                 float size;
@@ -460,6 +503,11 @@ public class XPadView extends View {
             float size = padPadding * 8;
             PointF start = new PointF(origin.x - size, 0);
             PointF end = new PointF(origin.x + size, 0);
+            if (orientation == HexagonOrientation.POINTY_TOP) {
+                start = new PointF(padPadding, 0);
+                end = new PointF(origin.x, 0);
+            }
+
             XZone.PolygonBlock block = new XZone.PolygonBlock(start, end);
             this.active_label_zone.blocks.add(block);
         }
