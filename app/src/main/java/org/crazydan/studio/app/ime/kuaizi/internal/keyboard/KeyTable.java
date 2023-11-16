@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 
 /**
  * {@link Keyboard 键盘}的按键表
@@ -338,6 +339,26 @@ public abstract class KeyTable {
 
     public CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
+    }
+
+    protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key<?>[][][] zone_2_keys) {
+        Key<?>[] zone_1_keys = new Key[] {
+                keyboardSwitchKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
+                keyboardSwitchKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin),
+                keyboardSwitchKey(Keyboard.Type.Number).setIconResId(R.drawable.ic_number),
+                null,
+                null,
+                keyboardSwitchKey(Keyboard.Type.Math).setIconResId(R.drawable.ic_math),
+                };
+        for (Key<?> key : zone_1_keys) {
+            if (key != null //
+                && ((CtrlKey.KeyboardSwitchOption) ((CtrlKey) key).getOption()).value() == activeKeyboard) {
+                key.setDisabled(true);
+            }
+        }
+
+        return new XPadKey(ctrlKey(CtrlKey.Type.Editor_Cursor_Locator), //
+                           zone_1_keys, zone_2_keys);
     }
 
     private static class KeyStyle {

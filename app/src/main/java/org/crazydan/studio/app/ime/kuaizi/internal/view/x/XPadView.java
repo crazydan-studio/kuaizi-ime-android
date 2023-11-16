@@ -226,9 +226,15 @@ public class XPadView extends View {
         XZone[] zones = determineZones();
         boolean isInputting = this.state.type != XPadState.Type.Init;
 
+        for (XZone zone : zones) {
+            zone.clearTextPainters();
+            zone.clearIconPainters();
+        }
+        this.active_label_zone.clearTextPainters();
+        this.active_label_zone.clearIconPainters();
+
         // ==============================================
         XZone level_0_zone = zones[0];
-        level_0_zone.clearIconPainters();
 
         if (!isInputting) {
             Drawable icon = drawable(this.zone_0_key.key.getIconResId());
@@ -240,7 +246,6 @@ public class XPadView extends View {
 
         // ==============================================
         XZone level_1_zone = zones[1];
-        level_1_zone.clearIconPainters();
 
         if (!isInputting) {
             for (int i = 0; i < level_1_zone.blocks.size(); i++) {
@@ -280,7 +285,6 @@ public class XPadView extends View {
             this.active_label_zone.hide();
         } else {
             this.active_label_zone.show();
-            this.active_label_zone.clearTextPainters();
 
             XZone.PolygonBlock block = (XZone.PolygonBlock) this.active_label_zone.blocks.get(0);
 
@@ -299,7 +303,6 @@ public class XPadView extends View {
 
         // ==============================================
         XZone level_2_zone = zones[2];
-        level_2_zone.clearTextPainters();
 
         float textSize = dimen(R.dimen.x_keyboard_chars_text_size);
         float textPadding = dimen(R.dimen.x_keyboard_chars_text_padding);

@@ -170,44 +170,35 @@ public class LatinKeyTable extends KeyTable {
     }
 
     public XPadKey createXPadKey() {
-        return new XPadKey(ctrlKey(CtrlKey.Type.Editor_Cursor_Locator), //
-                           new Key[] {
-                                   keyboardSwitchKey(Keyboard.Type.Latin).setDisabled(true),
-                                   keyboardSwitchKey(Keyboard.Type.Pinyin),
-                                   ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
-                                   keyboardSwitchKey(Keyboard.Type.Math),
-                                   null,
-                                   ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-                                   }, //
-                           new Key[][][] {
-                                   new Key[][] {
-                                           new Key[] {
-                                                   null, null, null
-                                           }, new Key[] { null, ctrlKey(CtrlKey.Type.Space).setLabel("空格"), null },
-                                           }, //
-                                   new Key[][] {
-                                           new Key[] {
-                                                   null,
-                                                   ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"),
-                                                   null
-                                           }, new Key[] { alphabetKey("p"), alphabetKey("w"), alphabetKey("y") },
-                                           }, //
-                                   new Key[][] {
-                                           new Key[] { alphabetKey("a"), alphabetKey("e"), alphabetKey("o") },
-                                           new Key[] { alphabetKey("h"), alphabetKey("k"), alphabetKey("t") },
-                                           }, //
-                                   new Key[][] {
-                                           new Key[] { alphabetKey("n"), alphabetKey("l"), alphabetKey("m") },
-                                           new Key[] { alphabetKey("d"), alphabetKey("b"), alphabetKey("f") },
-                                           }, //
-                                   new Key[][] {
-                                           new Key[] { alphabetKey("j"), alphabetKey("q"), alphabetKey("x") },
-                                           new Key[] { alphabetKey("z"), alphabetKey("c"), alphabetKey("s") },
-                                           }, //
-                                   new Key[][] {
-                                           new Key[] { alphabetKey("i"), alphabetKey("u"), alphabetKey("v") },
-                                           new Key[] { null, alphabetKey("r"), alphabetKey("g") },
-                                           },
-                                   });
+        return xPadKey(Keyboard.Type.Latin, new Key[][][] {
+                new Key[][] {
+                        new Key[] { symbolKey(":"), symbolKey(";"), symbolKey("!") }, //
+                        new Key[] {
+                                null,
+                                ctrlKey(CtrlKey.Type.Space).setLabel("空格"),
+                                ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] { symbolKey(","), symbolKey("."), symbolKey("?") },
+                        new Key[] { alphabetKey("p"), alphabetKey("w"), alphabetKey("y") },
+                        }, //
+                new Key[][] {
+                        new Key[] { alphabetKey("a"), alphabetKey("e"), alphabetKey("o") },
+                        new Key[] { alphabetKey("h"), alphabetKey("k"), alphabetKey("t") },
+                        }, //
+                new Key[][] {
+                        new Key[] { alphabetKey("n"), alphabetKey("l"), alphabetKey("m") },
+                        new Key[] { alphabetKey("d"), alphabetKey("b"), alphabetKey("f") },
+                        }, //
+                new Key[][] {
+                        new Key[] { alphabetKey("j"), alphabetKey("q"), alphabetKey("x") },
+                        new Key[] { alphabetKey("z"), alphabetKey("c"), alphabetKey("s") },
+                        }, //
+                new Key[][] {
+                        new Key[] { alphabetKey("i"), alphabetKey("u"), alphabetKey("v") },
+                        new Key[] { null, alphabetKey("r"), alphabetKey("g") },
+                        },
+                });
     }
 }

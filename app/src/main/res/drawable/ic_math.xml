@@ -1,0 +1,27 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="11.875dp"
+        android:viewportWidth="24"
+        android:viewportHeight="11.875">
+    <path
+            android:fillColor="?attr/key_ctrl_switcher_fg_color"
+            android:pathData="M0.964,1.203C1.678,1.791 2.605,2.631 3.031,3.182L4.046,2.092C3.595,1.553 2.618,0.764 1.929,0.225ZM-0,3.971L-0,5.461L1.829,5.461v3.783c0,0.564 -0.401,0.977 -0.689,1.165 0.251,0.326 0.626,1.015 0.739,1.403C2.117,11.499 2.58,11.148 5.11,9.307 4.96,8.994 4.722,8.355 4.634,7.917L3.357,8.819L3.357,3.971ZM7.127,0.163L7.127,4.059h-3.006v1.566h3.006L7.127,11.875L8.743,11.875L8.743,5.624L11.637,5.624L11.637,4.059L8.743,4.059L8.743,0.163ZM15.62,5.211h5.587v0.463h-5.587zM15.62,6.526h5.587v0.463h-5.587zM15.62,3.933h5.587L21.207,4.372L15.62,4.372ZM19.34,-0C19.09,0.689 18.652,1.378 18.138,1.917L18.138,0.927L15.357,0.927L15.633,0.388 14.242,-0C13.829,0.952 13.09,1.904 12.301,2.505c0.351,0.188 0.939,0.589 1.215,0.827 0.363,-0.326 0.739,-0.752 1.09,-1.228h0.263c0.188,0.301 0.388,0.651 0.501,0.927h-1.265v4.848h1.541v0.752h-2.994v1.203h2.505c-0.401,0.363 -1.115,0.701 -2.342,0.939 0.326,0.276 0.739,0.777 0.939,1.102 1.979,-0.514 2.869,-1.24 3.219,-2.042h2.818v2.017h1.566L21.357,9.833h2.643L24,8.631h-2.643L21.357,7.879L22.785,7.879L22.785,3.031h-1.115l0.852,-0.376C22.422,2.493 22.284,2.305 22.109,2.104h1.854L23.963,0.927L20.505,0.927C20.606,0.739 20.693,0.539 20.768,0.351ZM19.791,8.631h-2.631v-0.752h2.631zM18.614,3.031L15.896,3.031L16.735,2.731C16.672,2.555 16.547,2.33 16.409,2.104h1.553c-0.138,0.138 -0.276,0.251 -0.426,0.363 0.288,0.125 0.752,0.363 1.077,0.564zM19.002,3.031C19.265,2.768 19.541,2.455 19.791,2.104h0.664c0.251,0.301 0.514,0.639 0.689,0.927z"
+            android:strokeWidth="0.782898" />
+</vector>
