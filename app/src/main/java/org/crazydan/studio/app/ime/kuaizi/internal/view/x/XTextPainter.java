@@ -18,6 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 
 /**
@@ -40,46 +42,49 @@ public class XTextPainter extends XAlignPainter {
                 canvas.rotate(this.rotate, this.start.x, this.start.y);
             }
 
+            Path path = new Path();
+            float x = this.start.x;
+            float y = this.start.y;
             // 文字在基线以上的高度
-            float ascent = -this.paint.getFontMetrics().ascent;
-            // 文本实际占用宽度
-            float width = this.paint.measureText(this.text);
+            float ascent = -this.paint.getFontMetrics().ascent * 0.8f;
+            // Note：不需要准确宽度，只需要确保其能够大于文本实际宽度即可
+            float width = this.size * this.text.length() * 2;
 
             PointF offset = new PointF(0, 0);
             switch (this.align) {
-                case TopLeft: {
-                    offset.offset(-width, 0);
-                    break;
-                }
-                case BottomLeft: {
-                    offset.offset(-width, ascent);
-                    break;
-                }
-                case TopRight: {
-                    offset.offset(0, 0);
-                    break;
-                }
-                case BottomRight: {
+                case BottomLeft:
                     offset.offset(0, ascent);
+                case TopLeft: {
+                    path.moveTo(x - width, y);
+                    path.lineTo(x, y);
+                    this.paint.setTextAlign(Paint.Align.RIGHT);
                     break;
                 }
+                case BottomRight:
+                    offset.offset(0, ascent);
+                case TopRight: {
+                    path.moveTo(x, y);
+                    path.lineTo(x + width, y);
+                    this.paint.setTextAlign(Paint.Align.LEFT);
+                    break;
+                }
+                case Center:
+                case BottomMiddle:
+                    offset.offset(0, this.align == Align.Center ? ascent * 0.5f : ascent);
                 case TopMiddle: {
-                    offset.offset(-width * 0.5f, 0);
-                    break;
-                }
-                case BottomMiddle: {
-                    offset.offset(-width * 0.5f, ascent);
-                    break;
-                }
-                case Center: {
-                    offset.offset(-width * 0.5f, ascent * 0.5f);
+                    path.moveTo(x - width * 0.5f, y);
+                    path.lineTo(x + width * 0.5f, y);
+                    this.paint.setTextAlign(Paint.Align.CENTER);
                     break;
                 }
             }
 
-            float x = this.start.x + offset.x;
-            float y = this.start.y + offset.y;
-            canvas.drawText(this.text, x, y, this.paint);
+//            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//            paint.setStyle(Paint.Style.STROKE);
+//            paint.setColor(Color.BLUE);
+//            canvas.drawPath(path, paint);
+
+            canvas.drawTextOnPath(this.text, path, offset.x, offset.y, this.paint);
         });
     }
 }
