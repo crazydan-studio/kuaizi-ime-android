@@ -129,75 +129,68 @@ public class LatinKeyTable extends KeyTable {
         return keys;
     }
 
-    public Key<?>[][] createKeysForXPad() {
-        return (Key<?>[][]) new Key[][] {
-                new Key[] {
-                        ctrlKey(CtrlKey.Type.Switch_HandMode),
-                        //
-                        null, null, null, null, null, null,
-                        //
-                        null,
-                        } //
-                , new Key[] {
-                null,
-                //
-                null, null, null, null, null, null,
-                //
-                null,
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
-                //
-                null, null, null, null, null, null,
-                //
-                ctrlKey(CtrlKey.Type.Backspace),
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-                //
-                null, null, null, createXPadKey(), null, null,
-                //
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
-                //
-                null, null, null, null, null, null,
-                //
-                ctrlKey(CtrlKey.Type.Space),
-                },
-                };
-    }
-
-    public XPadKey createXPadKey() {
+    @Override
+    protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { symbolKey(":"), symbolKey(";"), symbolKey("!") }, //
+                        new Key[] { symbolKey(":"), symbolKey(";"), symbolKey("!"), }, //
                         new Key[] {
-                                null,
-                                ctrlKey(CtrlKey.Type.Space).setLabel("空格"),
-                                ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"),
+                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
-                        new Key[] { symbolKey(","), symbolKey("."), symbolKey("?") },
-                        new Key[] { alphabetKey("p"), alphabetKey("w"), alphabetKey("y") },
+                        new Key[] { symbolKey(","), symbolKey("."), symbolKey("?"), }, //
+                        new Key[] {
+                                alphabetKey("p").withReplacements("P"),
+                                alphabetKey("w").withReplacements("W"),
+                                alphabetKey("y").withReplacements("Y"),
+                                },
                         }, //
                 new Key[][] {
-                        new Key[] { alphabetKey("a"), alphabetKey("e"), alphabetKey("o") },
-                        new Key[] { alphabetKey("h"), alphabetKey("k"), alphabetKey("t") },
+                        new Key[] {
+                                alphabetKey("a").withReplacements("A"),
+                                alphabetKey("e").withReplacements("E"),
+                                alphabetKey("o").withReplacements("O"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("h").withReplacements("H"),
+                                alphabetKey("k").withReplacements("K"),
+                                alphabetKey("t").withReplacements("T"),
+                                },
                         }, //
                 new Key[][] {
-                        new Key[] { alphabetKey("n"), alphabetKey("l"), alphabetKey("m") },
-                        new Key[] { alphabetKey("d"), alphabetKey("b"), alphabetKey("f") },
+                        new Key[] {
+                                alphabetKey("n").withReplacements("N"),
+                                alphabetKey("l").withReplacements("L"),
+                                alphabetKey("m").withReplacements("M"),
+                                },//
+                        new Key[] {
+                                alphabetKey("d").withReplacements("D"),
+                                alphabetKey("b").withReplacements("B"),
+                                alphabetKey("f").withReplacements("F"),
+                                },
                         }, //
                 new Key[][] {
-                        new Key[] { alphabetKey("j"), alphabetKey("q"), alphabetKey("x") },
-                        new Key[] { alphabetKey("z"), alphabetKey("c"), alphabetKey("s") },
+                        new Key[] {
+                                alphabetKey("j").withReplacements("J"),
+                                alphabetKey("q").withReplacements("Q"),
+                                alphabetKey("x").withReplacements("X"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("z").withReplacements("Z"),
+                                alphabetKey("c").withReplacements("C"),
+                                alphabetKey("s").withReplacements("S"),
+                                },
                         }, //
                 new Key[][] {
-                        new Key[] { alphabetKey("i"), alphabetKey("u"), alphabetKey("v") },
-                        new Key[] { null, alphabetKey("r"), alphabetKey("g") },
+                        new Key[] {
+                                alphabetKey("i").withReplacements("I"),
+                                alphabetKey("u").withReplacements("U"),
+                                alphabetKey("v").withReplacements("V"),
+                                }, //
+                        new Key[] {
+                                null, alphabetKey("r").withReplacements("R"), alphabetKey("g").withReplacements("G"),
+                                },
                         },
                 });
     }

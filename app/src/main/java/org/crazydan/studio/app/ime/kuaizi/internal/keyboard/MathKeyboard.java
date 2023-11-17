@@ -161,6 +161,12 @@ public class MathKeyboard extends BaseKeyboard {
                     // 提交上层输入
                     commit_InputList(topInputList, true, false);
 
+                    // Note：在 X 型输入中仅需重置算数输入，而不需要退出当前键盘
+                    if (isXInputPadEnabled()) {
+                        resetMathInputList();
+                        return true;
+                    }
+
                     // 若是在 内嵌键盘 内提交，则需新建算数输入，以接收新的输入
                     if (this.state.previous != null) {
                         resetMathInputList();
@@ -276,6 +282,8 @@ public class MathKeyboard extends BaseKeyboard {
     @Override
     public void destroy() {
         InputList topInputList = getTopInputList();
+        // 清理前，先确认当前的待输入，以接受新的非算数输入
+        topInputList.confirmPendingAndSelectNext();
 
         dropMathInputList();
         topInputList.removeUserInputMsgListener(this.topUserInputMsgListener);

@@ -19,7 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.KeyColor;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
 
@@ -46,6 +48,10 @@ public class NumberKeyTable extends KeyTable {
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
     public Key<?>[][] createKeys() {
+        if (this.config.isXInputPadEnabled()) {
+            return createKeysForXPad();
+        }
+
         Key<?>[] keys = new Key[] {
                 numberKey("0"),
                 numberKey("1"),
@@ -98,6 +104,52 @@ public class NumberKeyTable extends KeyTable {
         }
 
         return gridKeys;
+    }
+
+    @Override
+    protected XPadKey createXPadKey() {
+        return xPadKey(Keyboard.Type.Number, new Key[][][] {
+                new Key[][] {
+                        new Key[] {
+                                null, symbolKey("."), symbolKey("#"),
+                                }, //
+                        new Key[] {
+                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] { null, null, null, }, //
+                        new Key[] { null, numberKey("9"), numberKey("0"), },
+                        }, //
+                new Key[][] {
+                        new Key[] {
+                                null, symbolKey(":"), symbolKey(";"),
+                                }, //
+                        new Key[] { null, numberKey("1"), numberKey("2"), },
+                        }, //
+                new Key[][] {
+                        new Key[] { null, symbolKey(","), symbolKey("%"), }, //
+                        new Key[] {
+                                null, numberKey("3"), numberKey("4"),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] {
+                                null, symbolKey("*"), symbolKey("/"),
+                                }, //
+                        new Key[] {
+                                null, numberKey("5"), numberKey("6"),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] {
+                                null, symbolKey("+"), symbolKey("-"),
+                                }, //
+                        new Key[] {
+                                null, numberKey("7"), numberKey("8"),
+                                },
+                        },
+                });
     }
 
     private GridCoord[][] getKeyCoords() {

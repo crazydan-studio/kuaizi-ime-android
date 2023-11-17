@@ -174,15 +174,14 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    public XPadKey createXPadKey() {
+    @Override
+    protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
                         new Key[] { null, level0CharKey("r"), level0CharKey("g") },
                         //
                         new Key[] {
-                                null,
-                                ctrlKey(CtrlKey.Type.Space).setLabel("空格"),
-                                ctrlKey(CtrlKey.Type.Backspace).setLabel("退格"),
+                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {

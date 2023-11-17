@@ -43,6 +43,8 @@ public interface Keyboard extends UserInputMsgListener {
 
     void setInputList(InputList inputList);
 
+    boolean isXInputPadEnabled();
+
     /** 启动 */
     void start();
 

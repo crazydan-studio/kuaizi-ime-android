@@ -30,6 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * {@link Keyboard 键盘}的按键表
@@ -339,6 +340,61 @@ public abstract class KeyTable {
 
     public CharKey symbolKey(String text) {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
+    }
+
+    protected Key<?>[][] createKeysForXPad(CtrlKey.Type... disabledCtrlKeys) {
+        Key<?>[][] gridKeys = new Key[][] {
+                new Key[] {
+                        ctrlKey(CtrlKey.Type.Switch_HandMode),
+                        //
+                        null, null, null, null, null, null,
+                        //
+                        null,
+                        } //
+                , new Key[] {
+                null,
+                //
+                null, null, null, null, null, null,
+                //
+                null,
+                } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                //
+                null, null, null, null, null, null,
+                //
+                ctrlKey(CtrlKey.Type.Backspace),
+                } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+                //
+                null, null, null, createXPadKey(), null, null,
+                //
+                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                } //
+                , new Key[] {
+                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
+                //
+                null, null, null, null, null, null,
+                //
+                ctrlKey(CtrlKey.Type.Space),
+                },
+                };
+
+        for (Key<?>[] keys : gridKeys) {
+            for (Key<?> key : keys) {
+                if (key instanceof CtrlKey //
+                    && CollectionUtils.contains(disabledCtrlKeys, ((CtrlKey) key).getType())) {
+                    key.setDisabled(true);
+                }
+            }
+        }
+
+        return gridKeys;
+    }
+
+    protected XPadKey createXPadKey() {
+        return null;
     }
 
     protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key<?>[][][] zone_2_keys) {

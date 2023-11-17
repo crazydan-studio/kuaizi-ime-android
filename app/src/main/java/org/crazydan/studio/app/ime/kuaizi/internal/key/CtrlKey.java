@@ -95,6 +95,17 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     }
 
     @Override
+    public String getLabel() {
+        switch (this.type) {
+            case Space:
+                return "空格";
+            case Backspace:
+                return "回删";
+        }
+        return super.getLabel();
+    }
+
+    @Override
     public boolean isSameWith(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;

@@ -114,6 +114,11 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
+    public boolean isXInputPadEnabled() {
+        return getConfig() != null && getConfig().isXInputPadEnabled();
+    }
+
+    @Override
     public void start() {
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理

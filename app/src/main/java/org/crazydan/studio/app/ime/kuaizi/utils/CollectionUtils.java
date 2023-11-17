@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -28,6 +29,19 @@ import java.util.function.Supplier;
  * @date 2023-07-26
  */
 public class CollectionUtils {
+
+    public static <T> boolean contains(T[] array, T el) {
+        if (array == null || el == null) {
+            return false;
+        }
+
+        for (T t : array) {
+            if (Objects.equals(t, el)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static <T> T first(Collection<T> c) {
         return c == null || c.isEmpty() ? null : c.iterator().next();
