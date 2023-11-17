@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.view.key;
 import android.view.View;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.x.XPadView;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.xpad.XPadView;
 
 /**
  * {@link XPadKey} 的视图

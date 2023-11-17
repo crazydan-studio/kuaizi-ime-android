@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.x.XPadView;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.xpad.XPadView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewLayoutManager;
 import org.hexworks.mixite.core.api.Hexagon;

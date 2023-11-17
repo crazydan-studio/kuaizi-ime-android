@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.internal.view.x;
+package org.crazydan.studio.app.ime.kuaizi.internal.view.xpad;
 
 import android.graphics.Canvas;
 import android.graphics.CornerPathEffect;
