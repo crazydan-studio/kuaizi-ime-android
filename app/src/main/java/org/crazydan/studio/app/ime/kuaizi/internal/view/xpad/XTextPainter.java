@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Typeface;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -86,5 +87,9 @@ public class XTextPainter extends XAlignPainter {
 
             canvas.drawTextOnPath(this.text, path, offset.x, offset.y, this.paint);
         });
+    }
+
+    public void enableBoldText() {
+        this.paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
     }
 }

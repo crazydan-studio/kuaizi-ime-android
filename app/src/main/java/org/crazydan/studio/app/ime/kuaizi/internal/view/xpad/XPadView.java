@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
@@ -294,11 +295,12 @@ public class XPadView extends View {
             int textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
             start.offset(0, textSize);
 
-            XTextPainter textPainter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
-            textPainter.setStart(start);
-            textPainter.setAlign(XPainter.Align.TopMiddle);
-            textPainter.setSize(textSize);
-            textPainter.setFillColor(textColor);
+            XTextPainter painter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
+            painter.setStart(start);
+            painter.setAlign(XPainter.Align.TopMiddle);
+            painter.setSize(textSize);
+            painter.setFillColor(textColor);
+            painter.enableBoldText();
         }
 
         // ==============================================
@@ -811,8 +813,18 @@ public class XPadView extends View {
                     return null;
                 }
 
-                int blockKeyIndex = (Math.abs(blockIndexDiff) - 1) % totalBlockKeys;
-                return blockKeys[blockKeyIndex];
+                int blockKeyAbsIndex = Math.abs(blockIndexDiff) - 1;
+                int blockKeyIndex = blockKeyAbsIndex % totalBlockKeys;
+                BlockKey blockKey = blockKeys[blockKeyIndex];
+
+                if (blockKey.key instanceof CharKey && ((CharKey) blockKey.key).hasReplacement()) {
+                    int newKeyIndex = blockKeyAbsIndex / totalBlockKeys;
+                    Key<?> newKey = ((CharKey) blockKey.key).createReplacementKey(newKeyIndex);
+
+                    blockKey = new BlockKey(blockKey, newKey);
+                }
+
+                return blockKey;
             }
         }
         return null;
@@ -994,6 +1006,14 @@ public class XPadView extends View {
             this.x = x;
             this.y = y;
             this.z = z;
+            this.key = key;
+        }
+
+        public BlockKey(BlockKey other, Key<?> key) {
+            this.zone = other.zone;
+            this.x = other.x;
+            this.y = other.y;
+            this.z = other.z;
             this.key = key;
         }
 
