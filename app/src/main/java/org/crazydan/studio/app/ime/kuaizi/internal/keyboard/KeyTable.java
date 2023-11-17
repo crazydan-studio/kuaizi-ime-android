@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * {@link Keyboard 键盘}的按键表
@@ -342,8 +341,8 @@ public abstract class KeyTable {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
     }
 
-    protected Key<?>[][] createKeysForXPad(CtrlKey.Type... disabledCtrlKeys) {
-        Key<?>[][] gridKeys = new Key[][] {
+    protected Key<?>[][] createKeysForXPad() {
+        return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
                         //
@@ -380,17 +379,6 @@ public abstract class KeyTable {
                 ctrlKey(CtrlKey.Type.Space),
                 },
                 };
-
-        for (Key<?>[] keys : gridKeys) {
-            for (Key<?> key : keys) {
-                if (key instanceof CtrlKey //
-                    && CollectionUtils.contains(disabledCtrlKeys, ((CtrlKey) key).getType())) {
-                    key.setDisabled(true);
-                }
-            }
-        }
-
-        return gridKeys;
     }
 
     protected XPadKey createXPadKey() {

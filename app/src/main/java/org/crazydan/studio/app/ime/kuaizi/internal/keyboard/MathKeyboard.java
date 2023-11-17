@@ -26,7 +26,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
@@ -282,8 +284,7 @@ public class MathKeyboard extends BaseKeyboard {
     @Override
     public void destroy() {
         InputList topInputList = getTopInputList();
-        // 清理前，先确认当前的待输入，以接受新的非算数输入
-        topInputList.confirmPendingAndSelectNext();
+        before_ChangeState_Or_SwitchKeyboard(topInputList);
 
         dropMathInputList();
         topInputList.removeUserInputMsgListener(this.topUserInputMsgListener);
@@ -296,19 +297,6 @@ public class MathKeyboard extends BaseKeyboard {
         resetMathInputList();
 
         super.reset();
-    }
-
-    @Override
-    protected void switchTo_Previous_Keyboard(Key<?> key) {
-        InputList topInputList = getTopInputList();
-
-        topInputList.getPending().clearCompletions();
-
-        // 在切换前，确保当前的算数输入列表已被确认
-        // Note：新位置的待输入将被设置为普通输入，可接受非算数输入，故，不需要处理
-        topInputList.confirmPendingAndSelectNext();
-
-        super.switchTo_Previous_Keyboard(key);
     }
 
     @Override
@@ -337,6 +325,56 @@ public class MathKeyboard extends BaseKeyboard {
 
         // 不管哪个层级的输入列表为空，均重置算数输入列表，以接受新的算数输入
         resetMathInputList();
+    }
+
+    @Override
+    protected void switchTo_Previous_Keyboard(Key<?> key) {
+        InputList topInputList = getTopInputList();
+        before_ChangeState_Or_SwitchKeyboard(topInputList);
+
+        super.switchTo_Previous_Keyboard(key);
+    }
+
+    // <<<<<<<<<<<<<<<< Start - 支持切换表情和标点键盘
+
+    /** 从表情和标点符号切换回来时调用 */
+    @Override
+    protected void change_State_to_Previous(Key<?> key) {
+        super.change_State_to_Previous(key);
+
+        resetMathInputList();
+    }
+
+    @Override
+    protected void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
+        InputList topInputList = getTopInputList();
+        before_ChangeState_Or_SwitchKeyboard(topInputList);
+
+        super.do_Single_Emoji_Inputting(topInputList, key);
+    }
+
+    @Override
+    protected void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {
+        InputList topInputList = getTopInputList();
+        before_ChangeState_Or_SwitchKeyboard(topInputList);
+
+        super.do_Single_Symbol_Inputting(topInputList, key, continuousInput);
+    }
+
+    @Override
+    protected void revoke_Committed_InputList(InputList inputList, Key<?> key) {
+        InputList topInputList = getTopInputList();
+
+        super.revoke_Committed_InputList(topInputList, key);
+    }
+    // >>>>>>>>>>>>>>>> End
+
+    private void before_ChangeState_Or_SwitchKeyboard(InputList topInputList) {
+        topInputList.getPending().clearCompletions();
+
+        // 在切换前，确保当前的算数输入列表已被确认
+        // Note：新位置的待输入将被设置为普通输入，可接受非算数输入，故，不需要处理
+        topInputList.confirmPendingAndSelectNext();
     }
 
     private InputList getMathInputList() {

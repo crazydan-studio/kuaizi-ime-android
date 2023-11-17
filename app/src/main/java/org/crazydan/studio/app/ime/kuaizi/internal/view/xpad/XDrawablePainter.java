@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.xpad;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
@@ -26,13 +29,15 @@ import android.graphics.drawable.Drawable;
  * @date 2023-11-03
  */
 public class XDrawablePainter extends XAlignPainter {
+    private static final Map<Drawable, Drawable> mutatedDrawables = new HashMap<>();
+
     private final Drawable drawable;
 
     public XDrawablePainter(Drawable drawable) {
         // Note：从资源获取的 Drawable 实例是共享的，
         // 修改对其他地方的引用也是同样生效的，
         // 故而，需单独复制一份以做独立修改
-        this.drawable = drawable.mutate();
+        this.drawable = mutatedDrawables.computeIfAbsent(drawable, Drawable::mutate);
     }
 
     @Override

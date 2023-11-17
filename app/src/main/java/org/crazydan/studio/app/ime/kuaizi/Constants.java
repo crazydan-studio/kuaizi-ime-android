@@ -21,4 +21,8 @@ package org.crazydan.studio.app.ime.kuaizi;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-17
  */
-public class Constants {}
+public class Constants {
+    public static final float cos_30 = (float) Math.cos(Math.toRadians(30));
+    public static final float sin_30 = (float) Math.sin(Math.toRadians(30));
+    public static final float cos_30_divided_by_1 = 1f / cos_30;
+}

@@ -44,6 +44,10 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureTrailer;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
+import static org.crazydan.studio.app.ime.kuaizi.Constants.cos_30;
+import static org.crazydan.studio.app.ime.kuaizi.Constants.cos_30_divided_by_1;
+import static org.crazydan.studio.app.ime.kuaizi.Constants.sin_30;
+
 /**
  * X 型全滑屏输入面板视图
  * <p/>
@@ -55,8 +59,8 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
 public class XPadView extends View {
     private final HexagonOrientation orientation = HexagonOrientation.FLAT_TOP;
     private final ViewGestureTrailer trailer;
-    private final XZone[] zones = new XZone[3];
-    private final XZone[] inputting_zones = new XZone[3];
+    private XZone[] zones;
+    private XZone[] inputting_zones;
 
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
@@ -221,9 +225,6 @@ public class XPadView extends View {
     }
 
     private void prepareContentOnZone(HexagonOrientation orientation) {
-        float cos_30 = (float) Math.cos(Math.toRadians(30));
-        float sin_30 = (float) Math.sin(Math.toRadians(30));
-
         XZone[] zones = determineZones();
         boolean isInputting = this.state.type != XPadState.Type.Init;
 
@@ -480,9 +481,6 @@ public class XPadView extends View {
     }
 
     private void prepareZones(HexagonOrientation orientation, int width, int height) {
-        float cos_30 = (float) Math.cos(Math.toRadians(30));
-        float cos_30_divided_by_1 = 1f / cos_30;
-
         float padPadding = this.pad_padding;
         float level_0_zone_HexagonRadius = this.level_0_zone_HexagonRadius;
         float level_1_zone_HexagonRadius = this.level_1_zone_HexagonRadius;
@@ -518,28 +516,24 @@ public class XPadView extends View {
         }
 
         float level_1_zone_scale = 1.25f;
-        XZone[] zones = createZones(origin,
-                                    orientation,
-                                    width,
-                                    height,
-                                    level_0_zone_HexagonRadius,
-                                    level_1_zone_HexagonRadius * level_1_zone_scale,
-                                    level_2_zone_HexagonRadius,
-                                    level_1_zone_HexagonRadius * (1 - level_1_zone_scale),
-                                    cos_30_divided_by_1);
-        System.arraycopy(zones, 0, this.zones, 0, zones.length);
+        this.zones = createZones(origin,
+                                 orientation,
+                                 width,
+                                 height,
+                                 level_0_zone_HexagonRadius,
+                                 level_1_zone_HexagonRadius * level_1_zone_scale,
+                                 level_2_zone_HexagonRadius,
+                                 level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
         level_1_zone_scale = 0.75f;
-        zones = createZones(origin,
-                            orientation,
-                            width,
-                            height,
-                            level_0_zone_HexagonRadius,
-                            level_1_zone_HexagonRadius * level_1_zone_scale,
-                            level_2_zone_HexagonRadius,
-                            level_1_zone_HexagonRadius * (1 - level_1_zone_scale),
-                            cos_30_divided_by_1);
-        System.arraycopy(zones, 0, this.inputting_zones, 0, zones.length);
+        this.inputting_zones = createZones(origin,
+                                           orientation,
+                                           width,
+                                           height,
+                                           level_0_zone_HexagonRadius,
+                                           level_1_zone_HexagonRadius * level_1_zone_scale,
+                                           level_2_zone_HexagonRadius,
+                                           level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
         this.inputting_zones[0] = new XZone();
         // 去掉分隔线
@@ -552,7 +546,7 @@ public class XPadView extends View {
     private XZone[] createZones(
             PointF origin, HexagonOrientation orientation, int width, int height, //
             float level_0_zone_HexagonRadius, float level_1_zone_HexagonRadius, float level_2_zone_HexagonRadius, //
-            float level_1_and_2_zone_spacing, float cos_30_divided_by_1
+            float level_1_and_2_zone_spacing
     ) {
         XZone[] zones = new XZone[3];
         // ==================================================

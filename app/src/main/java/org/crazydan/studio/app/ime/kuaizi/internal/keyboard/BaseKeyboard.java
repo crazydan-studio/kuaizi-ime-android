@@ -1170,7 +1170,7 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_Common_InputMsg(InputMsg.Emoji_Choose_Doing, key);
     }
 
-    private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
+    protected void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
         if (try_Single_Key_Inputting(inputList, key)) {
             return;
         }
@@ -1192,7 +1192,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>>>
 
     // <<<<<<<<<<< 对标点符号的操作
-    private void start_Symbol_Choosing(Key<?> key, boolean onlyPair) {
+    protected void start_Symbol_Choosing(Key<?> key, boolean onlyPair) {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
         int pageSize = keyTable.getSymbolKeysPageSize();
 

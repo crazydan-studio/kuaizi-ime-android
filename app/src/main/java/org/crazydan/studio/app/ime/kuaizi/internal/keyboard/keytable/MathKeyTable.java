@@ -59,7 +59,7 @@ public class MathKeyTable extends KeyTable {
     /** 创建{@link MathKeyboard 数学键盘}按键 */
     public Key<?>[][] createKeys() {
         if (this.config.isXInputPadEnabled()) {
-            return createKeysForXPad(CtrlKey.Type.Toggle_Emoji_Keyboard, CtrlKey.Type.Toggle_Symbol_Keyboard);
+            return createKeysForXPad();
         }
 
         Key<?>[] keys = new Key[] {
