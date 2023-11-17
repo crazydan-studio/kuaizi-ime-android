@@ -316,9 +316,9 @@ public class XPadView extends View {
                             : attrColor(R.attr.x_keyboard_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
 
-            BlockKey[][] blockKeys = getAt(this.zone_2_keys, i);
+            BlockKey[][] blockKeys = getBlockKeys_In_Zone_2(i, isActiveBlock);
             for (int j = 0; j < block.links.left.size(); j++) {
-                BlockKey blockKey = blockKeys[this.reversed ? 1 : 0][j];
+                BlockKey blockKey = getAt(blockKeys, 0)[j];
                 if (BlockKey.isNull(blockKey)) {
                     continue;
                 }
@@ -398,7 +398,7 @@ public class XPadView extends View {
             }
 
             for (int j = 0; j < block.links.right.size(); j++) {
-                BlockKey blockKey = blockKeys[this.reversed ? 0 : 1][j];
+                BlockKey blockKey = getAt(blockKeys, 1)[j];
                 if (BlockKey.isNull(blockKey)) {
                     continue;
                 }
@@ -768,8 +768,11 @@ public class XPadView extends View {
 
     private <T> T getAt(T[] keys, int index) {
         int size = keys.length;
-        int idx = this.reversed ? (size + (size / 2 - 1) - index) % size : index;
+        int idx = index;
 
+        if (this.reversed) {
+            idx = size == 2 ? (size - 1 - index) % size : (size + (size / 2 - 1) - index) % size;
+        }
         return keys[idx];
     }
 
@@ -801,30 +804,21 @@ public class XPadView extends View {
                     return null;
                 }
 
-                BlockKey[][] blockKeysArray = getAt(this.zone_2_keys, blockIndex.block);
-                int blockKeysIndex = blockIndexDiff > 0 //
-                                     ? (this.reversed ? 0 : 1) //
-                                     : (this.reversed ? 1 : 0);
-                BlockKey[] blockKeys = Arrays.stream(blockKeysArray[blockKeysIndex])
-                                             .filter((bk) -> !BlockKey.isNull(bk))
-                                             .toArray(BlockKey[]::new);
-                int totalBlockKeys = blockKeys.length;
+                BlockKey[][] blockKeysArray = getBlockKeys_In_Zone_2(blockIndex.block, true);
+                BlockKey[] blockKeys = getAt(blockKeysArray, blockIndexDiff > 0 ? 1 : 0);
+
+                BlockKey[] nonNullBlockKeys = Arrays.stream(blockKeys)
+                                                    .filter((bk) -> !BlockKey.isNull(bk))
+                                                    .toArray(BlockKey[]::new);
+                int totalBlockKeys = nonNullBlockKeys.length;
                 if (totalBlockKeys == 0) {
                     return null;
                 }
 
                 int blockKeyAbsIndex = Math.abs(blockIndexDiff) - 1;
                 int blockKeyIndex = blockKeyAbsIndex % totalBlockKeys;
-                BlockKey blockKey = blockKeys[blockKeyIndex];
 
-                if (blockKey.key instanceof CharKey && ((CharKey) blockKey.key).hasReplacement()) {
-                    int newKeyIndex = blockKeyAbsIndex / totalBlockKeys;
-                    Key<?> newKey = ((CharKey) blockKey.key).createReplacementKey(newKeyIndex);
-
-                    blockKey = new BlockKey(blockKey, newKey);
-                }
-
-                return blockKey;
+                return nonNullBlockKeys[blockKeyIndex];
             }
         }
         return null;
@@ -868,6 +862,58 @@ public class XPadView extends View {
             return this.zones;
         }
         return this.inputting_zones;
+    }
+
+    private BlockKey[][] getBlockKeys_In_Zone_2(int blockIndex, boolean isActiveBlock) {
+        BlockKey[][] blockKeysArray = getAt(this.zone_2_keys, blockIndex);
+        if (this.state.type != XPadState.Type.InputChars_Input_Doing || !isActiveBlock) {
+            return blockKeysArray;
+        }
+
+        XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
+        int blockIndexDiff = stateData.getBlockDiff();
+        if (blockIndexDiff == 0) {
+            return blockKeysArray;
+        }
+
+        int blockKeysIndex = blockIndexDiff > 0 ? 1 : 0;
+        BlockKey[] blockKeys = getAt(blockKeysArray, blockKeysIndex);
+        BlockKey[] nonNullBlockKeys = Arrays.stream(blockKeys)
+                                            .filter((bk) -> !BlockKey.isNull(bk))
+                                            .toArray(BlockKey[]::new);
+        int totalBlockKeys = nonNullBlockKeys.length;
+        if (totalBlockKeys == 0) {
+            return blockKeysArray;
+        }
+
+        int blockKeyAbsIndex = Math.abs(blockIndexDiff) - 1;
+        int replacementBlockKeyIndex = blockKeyAbsIndex / totalBlockKeys;
+        if (replacementBlockKeyIndex == 0) {
+            return blockKeysArray;
+        }
+
+        BlockKey[][] newBlockKeysArray = Arrays.copyOf(blockKeysArray, blockKeysArray.length);
+        for (int i = 0; i < blockKeysArray.length; i++) {
+            newBlockKeysArray[i] = Arrays.copyOf(blockKeysArray[i], blockKeysArray[i].length);
+        }
+
+        blockKeys = getAt(newBlockKeysArray, blockKeysIndex);
+
+        boolean changed = false;
+        for (int i = 0; i < blockKeys.length; i++) {
+            BlockKey blockKey = blockKeys[i];
+
+            if (!BlockKey.isNull(blockKey) //
+                && blockKey.key instanceof CharKey //
+                && ((CharKey) blockKey.key).hasReplacement()) {
+                Key<?> key = ((CharKey) blockKey.key).createReplacementKey(replacementBlockKeyIndex);
+
+                blockKeys[i] = new BlockKey(blockKey, key);
+                changed = true;
+            }
+        }
+
+        return changed ? newBlockKeysArray : blockKeysArray;
     }
 
     private void onGesture_Over_Zone_0(
@@ -980,8 +1026,10 @@ public class XPadView extends View {
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor, BlockKey blockKey,
             ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
+        Key<?> key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
+
         // Note：向外部传递的 GestureData 不需要做坐标转换
-        userKeyMsgListenerExecutor.onGesture(blockKey != null ? blockKey.key : null, type, data);
+        userKeyMsgListenerExecutor.onGesture(key, type, data);
     }
 
     private static class BlockIndex {
