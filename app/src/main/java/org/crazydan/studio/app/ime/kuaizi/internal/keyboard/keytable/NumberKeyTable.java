@@ -119,7 +119,7 @@ public class NumberKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] { null, null, null, }, //
-                        new Key[] { null, numberKey("9"), numberKey("0"), },
+                        new Key[] { null, numberKey("0"), numberKey("9"), },
                         }, //
                 new Key[][] {
                         new Key[] {

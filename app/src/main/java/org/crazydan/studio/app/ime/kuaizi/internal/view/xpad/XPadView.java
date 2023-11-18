@@ -946,6 +946,15 @@ public class XPadView extends View {
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
     ) {
         switch (type) {
+            case SingleTap: {
+                BlockKey blockKey = getBlockKey(this.active_block);
+                if (BlockKey.isNull(blockKey)) {
+                    return;
+                }
+
+                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+                break;
+            }
             case MovingStart: {
                 this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
 

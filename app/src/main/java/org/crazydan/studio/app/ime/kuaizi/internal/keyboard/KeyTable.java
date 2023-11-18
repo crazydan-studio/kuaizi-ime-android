@@ -385,6 +385,15 @@ public abstract class KeyTable {
         return null;
     }
 
+    /**
+     * @param zone_2_keys
+     *         按键布局规则：<ul>
+     *         <li>拇指遮挡部分不放置或少放置输入按键，最好仅放置不常用的空格或回删等功能按键；</li>
+     *         <li>常用输入按键尽可能放置在辐射轴线的第一的位置，且按顺时针输入为最佳方向；</li>
+     *         <li>数字类按键最好全部向顺时针方向输入，以便于顺畅地连续输入。其余符号按键向逆时针方向输入；</li>
+     *         <li>按键均往辐射轴线的外侧排列，以留下更多的视觉空间，从而降低手指遮挡概率；</li>
+     *         </ul>
+     */
     protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key<?>[][][] zone_2_keys) {
         Key<?>[] zone_1_keys = new Key[] {
                 keyboardSwitchKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
