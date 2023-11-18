@@ -101,6 +101,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return "空格";
             case Backspace:
                 return "回删";
+            case Pinyin_End:
+                return "结束";
         }
         return super.getLabel();
     }
@@ -143,6 +145,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 撤回输入 */
         RevokeInput,
 
+        /** 拼音结束 */
+        Pinyin_End,
         /** 在候选字状态下切换当前输入的拼音拼写 */
         Toggle_PinyinInput_spell,
         /** 在候选字状态下根据笔画过滤候选字 */

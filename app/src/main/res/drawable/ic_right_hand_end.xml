@@ -1,0 +1,42 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="14.936dp"
+        android:viewportWidth="24"
+        android:viewportHeight="14.936">
+    <!-- https://www.iconfinder.com/icons/9068758/go_end_icon -->
+    <path
+            android:pathData="M1.216,1.216L1.216,13.72"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.702"
+            android:strokeColor="?attr/key_ctrl_switcher_fg_color"
+            android:strokeLineCap="round" />
+    <path
+            android:pathData="M11.636,1.216 L5.384,7.468 11.636,13.72"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.702"
+            android:strokeColor="#FF1D98FF"
+            android:strokeLineCap="round" />
+    <path
+            android:pathData="M7.568,7.468L16.947,7.468"
+            android:strokeLineJoin="round"
+            android:strokeWidth="2.34"
+            android:strokeColor="#FF1D98FF"
+            android:strokeLineCap="round" />
+</vector>

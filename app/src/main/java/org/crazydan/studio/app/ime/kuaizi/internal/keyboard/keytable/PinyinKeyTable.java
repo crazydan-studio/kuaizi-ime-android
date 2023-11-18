@@ -178,31 +178,30 @@ public class PinyinKeyTable extends KeyTable {
     protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { null, level0CharKey("r"), level0CharKey("g") },
-                        //
+                        new Key[] { ctrlKey(CtrlKey.Type.Pinyin_End), level0CharKey("r"), level0CharKey("g"), }, //
                         new Key[] {
                                 null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
-                        new Key[] { symbolKey("，"), symbolKey("。"), symbolKey("？") },
+                        new Key[] { symbolKey("，"), symbolKey("。"), symbolKey("？"), }, //
                         new Key[] { level0CharKey("p"), level0CharKey("w"), level0CharKey("y") },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o") },
-                        new Key[] { level0CharKey("h"), level0CharKey("k"), level0CharKey("t") },
+                        new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o"), }, //
+                        new Key[] { level0CharKey("h"), level0CharKey("k"), level0CharKey("t"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("n"), level0CharKey("l"), level0CharKey("m") },
-                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("f") },
+                        new Key[] { level0CharKey("n"), level0CharKey("l"), level0CharKey("m"), }, //
+                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("f"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x") },
-                        new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s") },
+                        new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x"), }, //
+                        new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh") },
-                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü") },
+                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh"), }, //
+                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), },
                         },
                 });
     }
