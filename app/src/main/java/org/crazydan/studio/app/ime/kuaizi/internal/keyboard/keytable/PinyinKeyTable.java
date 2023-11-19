@@ -138,7 +138,7 @@ public class PinyinKeyTable extends KeyTable {
     protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { null, level0CharKey("ü"), level0CharKey("r"), }, //
+                        new Key[] { level0CharKey("p"), level0CharKey("q"), level0CharKey("x"), }, //
                         new Key[] {
                                 ctrlKey(CtrlKey.Type.Pinyin_End),
                                 ctrlKey(CtrlKey.Type.Space),
@@ -147,25 +147,25 @@ public class PinyinKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] { symbolKey("，"), symbolKey("。"), symbolKey("？"), }, //
-                        new Key[] { level0CharKey("a"), level0CharKey("w"), level0CharKey("y") },
-                        }, //
+                        new Key[] { level0CharKey("f"), level0CharKey("g"), level0CharKey("j") }, //
+                }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("p"), level0CharKey("d"), level0CharKey("j"), }, //
-                        new Key[] { level0CharKey("e"), level0CharKey("k"), level0CharKey("t"), },
-                        }, //
+                        new Key[] { null, level0CharKey("r"), level0CharKey("t"), }, //
+                        new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("w"), }, //
+                }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("l"), level0CharKey("g"), level0CharKey("h"), }, //
-                        new Key[] { level0CharKey("o"), level0CharKey("b"), level0CharKey("f"), },
-                        }, //
+                        new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s"), }, //
+                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh"), }, //
+                }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("n"), level0CharKey("q"), level0CharKey("x"), }, //
-                        new Key[] { level0CharKey("i"), level0CharKey("s"), level0CharKey("sh"), },
-                        }, //
+                        new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o"), }, //
+                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
+                }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("m"), level0CharKey("c"), level0CharKey("ch"), }, //
-                        new Key[] { level0CharKey("u"), level0CharKey("z"), level0CharKey("zh"), },
-                        },
-                });
+                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
+                        new Key[] { level0CharKey("b"), level0CharKey("d"), level0CharKey("k"), }, //
+                }, //
+        });
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */

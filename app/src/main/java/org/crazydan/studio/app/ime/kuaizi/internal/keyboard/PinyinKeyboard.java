@@ -668,6 +668,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void do_InputChars_XPad_Inputting(InputList inputList, CharInput pending, Key<?> currentKey) {
         InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
         Key.Level currentKeyLevel = currentKey.getLevel();
+        boolean needToEndInputting = false;
 
         // 添加后继字母，
         switch (currentKeyLevel) {
@@ -684,6 +685,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 stateData.setLevel2Key(null);
                 stateData.setLevel2NextChars(new ArrayList<>());
+
+                needToEndInputting = stateData.getLevel1NextChars().isEmpty();
                 break;
             }
             case level_1: {
@@ -703,11 +706,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 stateData.setLevel2Key(null);
                 stateData.setLevel2NextChars(level2NextChars);
+
+                needToEndInputting = stateData.getLevel2NextChars().isEmpty();
                 break;
             }
             case level_2: {
                 // Note：第二级后继字母已包含第一级后继字母，故而，直接替换第 0 级之后的按键
                 pending.replaceKeyAfterLevel(Key.Level.level_0, currentKey);
+
+                needToEndInputting = true;
                 break;
             }
         }
@@ -715,9 +722,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 并确定候选字
         determine_NotConfirmed_InputWord(inputList, pending);
 
-        if (currentKeyLevel == Key.Level.level_2 //
-            || (currentKeyLevel == Key.Level.level_1 //
-                && stateData.getLevel2NextChars().isEmpty())) {
+        if (needToEndInputting) {
             end_InputChars_Inputting(inputList, pending, currentKey);
         } else {
             fire_InputChars_Input_Doing(currentKey, InputCharsInputtingMsgData.KeyInputType.circle);
