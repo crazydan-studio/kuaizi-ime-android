@@ -182,7 +182,7 @@ public abstract class KeyTable {
 
     /** 创建{@link GridCoord 网格坐标} */
     public GridCoord coord(int row, int column) {
-        return coord(row, column);
+        return coord(row, column, 0);
     }
 
     /** 创建{@link GridCoord 网格坐标} */
