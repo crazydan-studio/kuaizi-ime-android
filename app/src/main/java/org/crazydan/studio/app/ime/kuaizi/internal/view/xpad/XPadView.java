@@ -525,8 +525,9 @@ public class XPadView extends View {
                                  level_2_zone_HexagonRadius,
                                  level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
-        // Note：在输入时，缩小第 1 分区的尺寸，以减少手指滑圈的半径和滑动距离
-        level_1_zone_scale = 0.65f;
+        // Note：在输入时，缩小第 1 分区的尺寸，以减少手指滑圈的半径和滑动距离，
+        // 但需降低误入非预期分区的频率
+        level_1_zone_scale = 0.95f;
         this.inputting_zones = createZones(origin,
                                            orientation,
                                            width,
