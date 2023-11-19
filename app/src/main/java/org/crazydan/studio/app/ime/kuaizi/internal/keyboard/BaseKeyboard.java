@@ -510,7 +510,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
         // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
-        else if (key.getType() == CtrlKey.Type.Space) {
+        else if (CtrlKey.is(key, CtrlKey.Type.Space)) {
             // Note：空格不替换当前输入
             inputList.confirmPendingAndSelectNext();
 
@@ -803,7 +803,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // 处理定位按钮
         if (this.state.type != State.Type.Editor_Edit_Doing //
-            && key.getType() == CtrlKey.Type.Editor_Cursor_Locator) {
+            && CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
             switch (msg) {
                 case KeyLongPressStart: {
                     play_DoubleTick_InputAudio(key);
@@ -857,7 +857,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         switch (msg) {
             case KeySingleTap: {
-                if (key.getType() == CtrlKey.Type.Edit_Editor) {
+                if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
                     play_SingleTick_InputAudio(key);
 
                     CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.getOption();
@@ -1144,7 +1144,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void on_Emoji_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeySingleTap) {
-            if (key.getType() == CtrlKey.Type.Toggle_Emoji_Group) {
+            if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
                 play_SingleTick_InputAudio(key);
 
                 CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
@@ -1226,7 +1226,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeySingleTap) {
-            if (key.getType() == CtrlKey.Type.Toggle_Symbol_Group) {
+            if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
                 play_SingleTick_InputAudio(key);
 
                 CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();

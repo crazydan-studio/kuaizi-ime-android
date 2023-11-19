@@ -160,7 +160,7 @@ public class XPadView extends View {
 
         this.active_block = findBlockAt(x, y);
         if (this.active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
-            reset();
+            onGesture_End(type, data, userKeyMsgListenerExecutor);
             return;
         }
 
@@ -525,7 +525,8 @@ public class XPadView extends View {
                                  level_2_zone_HexagonRadius,
                                  level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
-        level_1_zone_scale = 0.75f;
+        // Note：在输入时，缩小第 1 分区的尺寸，以减少手指滑圈的半径和滑动距离
+        level_1_zone_scale = 0.65f;
         this.inputting_zones = createZones(origin,
                                            orientation,
                                            width,
@@ -770,13 +771,6 @@ public class XPadView extends View {
         return keys[idx];
     }
 
-    private void reset() {
-        this.state = new XPadState(XPadState.Type.Init);
-
-        XZone[] zones = determineZones();
-        zones[0].bounce();
-    }
-
     private BlockKey getBlockKey(BlockIndex blockIndex) {
         return getBlockKey(blockIndex, 0);
     }
@@ -910,6 +904,23 @@ public class XPadView extends View {
         return changed ? newBlockKeysArray : blockKeysArray;
     }
 
+    private void onGesture_End(
+            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
+            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+    ) {
+        this.state = new XPadState(XPadState.Type.Init);
+
+        XZone[] zones = determineZones();
+        zones[0].bounce();
+
+        Key<?> key = CtrlKey.noop();
+        BlockKey blockKey = new BlockKey(0, 0, 0, 0, key);
+        execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
+                                   blockKey,
+                                   ViewGestureDetector.GestureType.PressEnd,
+                                   data);
+    }
+
     private void onGesture_Over_Zone_0(
             ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
@@ -935,7 +946,7 @@ public class XPadView extends View {
                 execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
 
                 // Note：进入编辑器编辑状态会发生键盘切换，故而，需显式重置状态
-                reset();
+                onGesture_End(type, data, userKeyMsgListenerExecutor);
                 break;
             }
         }

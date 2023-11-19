@@ -49,7 +49,11 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     }
 
     public static boolean isNoOp(Key<?> key) {
-        return key instanceof CtrlKey && ((CtrlKey) key).isNoOp();
+        return is(key, Type.NoOp);
+    }
+
+    public static boolean is(Key<?> key, Type type) {
+        return type != null && key instanceof CtrlKey && ((CtrlKey) key).getType() == type;
     }
 
     /** 按钮{@link Type 类型} */
@@ -66,13 +70,9 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return this;
     }
 
-    public boolean isNoOp() {
-        return this.type == Type.NoOp;
-    }
-
     @Override
     public boolean isSpace() {
-        return this.type == Type.Space;
+        return is(this, Type.Space);
     }
 
     @Override

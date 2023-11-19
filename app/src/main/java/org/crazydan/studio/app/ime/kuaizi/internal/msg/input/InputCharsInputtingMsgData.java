@@ -46,5 +46,7 @@ public class InputCharsInputtingMsgData extends InputCommonMsgData {
         slip,
         /** 翻动 */
         flip,
+        /** X 型输入的画圈 */
+        circle,
     }
 }

@@ -134,74 +134,36 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    public Key<?>[][] createKeysForXPad() {
-        return (Key<?>[][]) new Key[][] {
-                new Key[] {
-                        ctrlKey(CtrlKey.Type.Switch_HandMode),
-                        //
-                        null, null, null, null, null, null,
-                        //
-                        null,
-                        } //
-                , new Key[] {
-                null,
-                //
-                null, null, null, null, null, null,
-                //
-                null,
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
-                //
-                null, null, null, null, null, null,
-                //
-                ctrlKey(CtrlKey.Type.Backspace),
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
-                //
-                null, null, null, createXPadKey(), null, null,
-                //
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
-                } //
-                , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
-                //
-                null, null, null, null, null, null,
-                //
-                ctrlKey(CtrlKey.Type.Space),
-                },
-                };
-    }
-
     @Override
     protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { ctrlKey(CtrlKey.Type.Pinyin_End), level0CharKey("r"), level0CharKey("g"), }, //
+                        new Key[] { null, level0CharKey("ü"), level0CharKey("r"), }, //
                         new Key[] {
-                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                ctrlKey(CtrlKey.Type.Pinyin_End),
+                                ctrlKey(CtrlKey.Type.Space),
+                                ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
                         new Key[] { symbolKey("，"), symbolKey("。"), symbolKey("？"), }, //
-                        new Key[] { level0CharKey("p"), level0CharKey("w"), level0CharKey("y") },
+                        new Key[] { level0CharKey("a"), level0CharKey("w"), level0CharKey("y") },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o"), }, //
-                        new Key[] { level0CharKey("h"), level0CharKey("k"), level0CharKey("t"), },
+                        new Key[] { level0CharKey("p"), level0CharKey("d"), level0CharKey("j"), }, //
+                        new Key[] { level0CharKey("e"), level0CharKey("k"), level0CharKey("t"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("n"), level0CharKey("l"), level0CharKey("m"), }, //
-                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("f"), },
+                        new Key[] { level0CharKey("l"), level0CharKey("g"), level0CharKey("h"), }, //
+                        new Key[] { level0CharKey("o"), level0CharKey("b"), level0CharKey("f"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x"), }, //
-                        new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s"), },
+                        new Key[] { level0CharKey("n"), level0CharKey("q"), level0CharKey("x"), }, //
+                        new Key[] { level0CharKey("i"), level0CharKey("s"), level0CharKey("sh"), },
                         }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh"), }, //
-                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), },
+                        new Key[] { level0CharKey("m"), level0CharKey("c"), level0CharKey("ch"), }, //
+                        new Key[] { level0CharKey("u"), level0CharKey("z"), level0CharKey("zh"), },
                         },
                 });
     }
@@ -212,14 +174,14 @@ public class PinyinKeyTable extends KeyTable {
             Collection<String> level2NextChars
     ) {
         // 在初始键盘上显隐按键
-        Key<?>[][] keys = createKeys();
+        Key<?>[][] gridKeys = createKeys();
 
         // Note: 第 1 级后继按键与键盘初始按键位置保持一致
-        for (int i = 0; i < keys.length; i++) {
-            for (int j = 0; j < keys[i].length; j++) {
-                Key<?> key = keys[i][j];
+        for (int i = 0; i < gridKeys.length; i++) {
+            for (int j = 0; j < gridKeys[i].length; j++) {
+                Key<?> key = gridKeys[i][j];
 
-                keys[i][j] = noopCtrlKey();
+                gridKeys[i][j] = noopCtrlKey();
                 if (!(key instanceof CharKey)) {
                     continue;
                 }
@@ -229,7 +191,7 @@ public class PinyinKeyTable extends KeyTable {
                         || (nextChar.length() > key.getText().length() //
                             // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
                             && nextChar.startsWith(key.getText()))) {
-                        key = keys[i][j] = level1CharKey(nextChar);
+                        key = gridKeys[i][j] = level1CharKey(nextChar);
                         break;
                     }
                 }
@@ -250,18 +212,18 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            keys[row][column] = level2CharKey(level0Char, text);
+            gridKeys[row][column] = level2CharKey(level0Char, text);
 
             boolean disabled = text != null && text.equals(level2Char);
-            keys[row][column].setDisabled(disabled);
+            gridKeys[row][column].setDisabled(disabled);
         }
 
-        return keys;
+        return gridKeys;
     }
 
     /** 按韵母起始字母以此按行创建按键 */
     public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
-        Key<?>[][] keys = createEmptyGrid();
+        Key<?>[][] gridKeys = createEmptyGrid();
 
         String[] charOrders = new String[] { "m", "n", "g", "a", "o", "e", "i", "u", "ü" };
         GridCoord[] gridCoords = getFullCharKeyCoords();
@@ -283,10 +245,79 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            keys[row][column] = level2CharKey(startChar, restChar);
+            gridKeys[row][column] = level2CharKey(startChar, restChar);
         }
 
-        return keys;
+        return gridKeys;
+    }
+
+    /** 创建 X 型输入的拼音后继字母第 1/2 级按键 */
+    public Key<?>[][] createXPadNextCharKeys(
+            String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
+            Collection<String> level2NextChars
+    ) {
+        XPadKey xPadKey = createXPadKey();
+        // 在初始键盘上显隐按键
+        Key<?>[][] gridKeys = createKeysForXPad(xPadKey);
+
+        if (level1Char == null) {
+            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
+                // Note: 第 1 级后继按键与键盘初始按键位置保持一致
+                for (int i = 0; i < zone_2_key.length; i++) {
+                    for (int j = 0; j < zone_2_key[i].length; j++) {
+                        Key<?> key = zone_2_key[i][j];
+                        if (!(key instanceof CharKey)) {
+                            continue;
+                        }
+
+                        for (String nextChar : level1NextChars) {
+                            if (nextChar.equals(key.getText()) //
+                                || (nextChar.length() > key.getText().length() //
+                                    // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
+                                    && nextChar.startsWith(key.getText()))) {
+                                key = zone_2_key[i][j] = level1CharKey(nextChar);
+                                break;
+                            }
+                        }
+
+                        if (key.getLevel() != Key.Level.level_1) {
+                            zone_2_key[i][j] = null;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
+                for (int i = 0; i < zone_2_key.length; i++) {
+                    for (int j = 0; j < zone_2_key[i].length; j++) {
+                        Key<?> key = zone_2_key[i][j];
+
+                        if (key instanceof CtrlKey) {
+                            continue;
+                        }
+
+                        zone_2_key[i][j] = null;
+                    }
+                }
+            }
+
+            // 在指定可用位置创建第 2 级字母按键
+            Iterator<String> it = level2NextChars.iterator();
+            for (GridCoord keyCoord : getXPadLevel2KeyCoords()) {
+                if (!it.hasNext()) {
+                    break;
+                }
+
+                String text = it.next();
+                int row = keyCoord.row;
+                int column = keyCoord.column;
+                int layer = keyCoord.layer;
+
+                xPadKey.zone_2_keys[layer][row][column] = level2CharKey(level0Char, text);
+            }
+        }
+
+        return gridKeys;
     }
 
     /** 候选字按键的分页大小 */
@@ -593,5 +624,15 @@ public class PinyinKeyTable extends KeyTable {
                 //
                 coord(5, 3),
                 };
+    }
+
+    /** 获取 X 型输入的拼音{@link Key.Level#level_2 第二级}按键坐标 */
+    private GridCoord[] getXPadLevel2KeyCoords() {
+        return new GridCoord[] {
+                coord(0, 0, 4), coord(0, 1, 4), coord(0, 2, 4), //
+                coord(1, 0, 3), coord(1, 1, 3), coord(1, 2, 3), //
+                coord(1, 0, 4), coord(1, 1, 4), coord(1, 2, 4), //
+                coord(0, 0, 5), coord(0, 1, 5), coord(0, 2, 5), //
+        };
     }
 }

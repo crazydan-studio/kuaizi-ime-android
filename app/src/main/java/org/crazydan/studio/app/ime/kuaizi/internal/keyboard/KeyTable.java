@@ -182,7 +182,12 @@ public abstract class KeyTable {
 
     /** 创建{@link GridCoord 网格坐标} */
     public GridCoord coord(int row, int column) {
-        return new GridCoord(row, column);
+        return coord(row, column);
+    }
+
+    /** 创建{@link GridCoord 网格坐标} */
+    public GridCoord coord(int row, int column, int layer) {
+        return new GridCoord(row, column, layer);
     }
 
     protected abstract Key<?>[][] initGrid();
@@ -346,6 +351,10 @@ public abstract class KeyTable {
     }
 
     protected Key<?>[][] createKeysForXPad() {
+        return createKeysForXPad(createXPadKey());
+    }
+
+    protected Key<?>[][] createKeysForXPad(XPadKey xPadKey) {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
@@ -371,7 +380,7 @@ public abstract class KeyTable {
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
                 //
-                null, null, null, createXPadKey(), null, null,
+                null, null, null, xPadKey, null, null,
                 //
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
@@ -468,10 +477,16 @@ public abstract class KeyTable {
     public static class GridCoord {
         public final int row;
         public final int column;
+        public final int layer;
 
         public GridCoord(int row, int column) {
+            this(row, column, 0);
+        }
+
+        public GridCoord(int row, int column, int layer) {
             this.row = row;
             this.column = column;
+            this.layer = layer;
         }
     }
 

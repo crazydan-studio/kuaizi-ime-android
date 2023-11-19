@@ -56,6 +56,8 @@ public class State {
         InputChars_Slip_Doing,
         /** 翻动输入中：通过在首字母按键上做翻动（快速滑出按键）触发翻动输入 */
         InputChars_Flip_Doing,
+        /** X 型面板输入：主要针对拼音输入 */
+        InputChars_XPad_Input_Doing,
 
         /** 输入列表 提交选项 选择中 */
         InputList_Committing_Option_Choose_Doing,
