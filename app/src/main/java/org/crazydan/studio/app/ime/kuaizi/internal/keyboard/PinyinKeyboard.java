@@ -311,6 +311,17 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
+    protected void confirm_InputList_Input_Enter_or_Space(InputList inputList, CtrlKey key) {
+        // Note：在 X 型输入状态下输入空格，则先结束当前拼音输入再录入空格
+        if (this.state.type == State.Type.InputChars_XPad_Input_Doing //
+            && CtrlKey.is(key, CtrlKey.Type.Space)) {
+            end_InputChars_Inputting(inputList, inputList.getPending(), key);
+        }
+
+        super.confirm_InputList_Input_Enter_or_Space(inputList, key);
+    }
+
+    @Override
     protected void before_Commit_InputList(InputList inputList) {
         doWithUserInputData(inputList, this.pinyinDict::saveUserInputData);
     }
