@@ -139,7 +139,7 @@ public class PinyinKeyTable extends KeyTable {
     protected XPadKey createXPadKey() {
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { level0CharKey("p"), level0CharKey("q"), level0CharKey("x"), }, //
+                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh"), }, //
                         new Key[] {
                                 null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
@@ -149,20 +149,20 @@ public class PinyinKeyTable extends KeyTable {
                         new Key[] { level0CharKey("l"), level0CharKey("f"), level0CharKey("j") }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("m"), level0CharKey("t"), null, }, //
+                        new Key[] { level0CharKey("m"), level0CharKey("t"), level0CharKey("k"), }, //
                         new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("w"), }, //
                 }, //
                 new Key[][] {
                         new Key[] { level0CharKey("z"), level0CharKey("c"), level0CharKey("s"), }, //
-                        new Key[] { level0CharKey("zh"), level0CharKey("ch"), level0CharKey("sh"), }, //
+                        new Key[] { level0CharKey("p"), level0CharKey("q"), level0CharKey("x"), }, //
                 }, //
                 new Key[][] {
                         new Key[] { level0CharKey("a"), level0CharKey("e"), level0CharKey("o"), }, //
                         new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("r"), level0CharKey("n"), level0CharKey("g"), }, //
-                        new Key[] { level0CharKey("b"), level0CharKey("d"), level0CharKey("k"), }, //
+                        new Key[] { level0CharKey("n"), level0CharKey("r"), level0CharKey("g"), }, //
+                        new Key[] { level0CharKey("b"), level0CharKey("d"), symbolKey("！"), }, //
                 }, //
         });
     }
