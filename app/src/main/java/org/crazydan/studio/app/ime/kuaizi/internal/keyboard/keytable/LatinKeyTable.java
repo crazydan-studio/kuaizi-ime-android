@@ -189,7 +189,7 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("v").withReplacements("V"),
                                 }, //
                         new Key[] {
-                                null, alphabetKey("r").withReplacements("R"), alphabetKey("g").withReplacements("G"),
+                                alphabetKey("r").withReplacements("R"), alphabetKey("g").withReplacements("G"), null,
                                 },
                         },
                 });

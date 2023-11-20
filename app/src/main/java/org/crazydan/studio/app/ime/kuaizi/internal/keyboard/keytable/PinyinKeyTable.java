@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -140,17 +141,15 @@ public class PinyinKeyTable extends KeyTable {
                 new Key[][] {
                         new Key[] { level0CharKey("p"), level0CharKey("q"), level0CharKey("x"), }, //
                         new Key[] {
-                                ctrlKey(CtrlKey.Type.Pinyin_End),
-                                ctrlKey(CtrlKey.Type.Space),
-                                ctrlKey(CtrlKey.Type.Backspace),
+                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
                         new Key[] { symbolKey("，"), symbolKey("。"), symbolKey("？"), }, //
-                        new Key[] { level0CharKey("f"), level0CharKey("g"), level0CharKey("j") }, //
+                        new Key[] { level0CharKey("l"), level0CharKey("f"), level0CharKey("j") }, //
                 }, //
                 new Key[][] {
-                        new Key[] { null, level0CharKey("r"), level0CharKey("t"), }, //
+                        new Key[] { level0CharKey("m"), level0CharKey("t"), null, }, //
                         new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("w"), }, //
                 }, //
                 new Key[][] {
@@ -162,7 +161,7 @@ public class PinyinKeyTable extends KeyTable {
                         new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
+                        new Key[] { level0CharKey("r"), level0CharKey("n"), level0CharKey("g"), }, //
                         new Key[] { level0CharKey("b"), level0CharKey("d"), level0CharKey("k"), }, //
                 }, //
         });
@@ -266,7 +265,9 @@ public class PinyinKeyTable extends KeyTable {
                 for (int i = 0; i < zone_2_key.length; i++) {
                     for (int j = 0; j < zone_2_key[i].length; j++) {
                         Key<?> key = zone_2_key[i][j];
+
                         if (!(key instanceof CharKey)) {
+                            zone_2_key[i][j] = null;
                             continue;
                         }
 
@@ -286,18 +287,17 @@ public class PinyinKeyTable extends KeyTable {
                     }
                 }
             }
+
+            // 字母按键向靠近中心的方向排列
+            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
+                for (Key<?>[] keys : zone_2_key) {
+                    Arrays.sort(keys, (a, b) -> a != null && b != null ? 0 : a != null ? -1 : 1);
+                }
+            }
         } else {
             for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
-                for (int i = 0; i < zone_2_key.length; i++) {
-                    for (int j = 0; j < zone_2_key[i].length; j++) {
-                        Key<?> key = zone_2_key[i][j];
-
-                        if (key instanceof CtrlKey) {
-                            continue;
-                        }
-
-                        zone_2_key[i][j] = null;
-                    }
+                for (Key<?>[] keys : zone_2_key) {
+                    Arrays.fill(keys, null);
                 }
             }
 
@@ -316,6 +316,12 @@ public class PinyinKeyTable extends KeyTable {
                 xPadKey.zone_2_keys[layer][row][column] = level2CharKey(level0Char, text);
             }
         }
+
+        // Note：仅待输入 1/2 级字母时才需要提供拼音结束按键，且可通过结束按键去掉首字母选错的拼音
+        xPadKey.zone_2_keys[5][1][2] = ctrlKey(CtrlKey.Type.Pinyin_End);
+
+        xPadKey.zone_2_keys[0][1][1] = ctrlKey(CtrlKey.Type.Space);
+        xPadKey.zone_2_keys[0][1][2] = ctrlKey(CtrlKey.Type.Backspace);
 
         return gridKeys;
     }
