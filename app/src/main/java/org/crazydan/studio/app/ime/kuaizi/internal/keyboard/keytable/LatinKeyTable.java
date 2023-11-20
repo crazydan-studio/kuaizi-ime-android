@@ -134,13 +134,21 @@ public class LatinKeyTable extends KeyTable {
         return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                 // 字母按键布局参考: https://github.com/8VIM/8VIM/issues/68
                 new Key[][] {
-                        new Key[] { symbolKey(":"), symbolKey(";"), symbolKey("!"), }, //
                         new Key[] {
-                                null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                symbolKey("?").withReplacements("!"), //
+                                symbolKey("-").withReplacements("_"), //
+                                symbolKey("#").withReplacements("&"), //
+                        }, //
+                        new Key[] {
+                                symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
-                        new Key[] { symbolKey(","), symbolKey("."), symbolKey("?"), }, //
+                        new Key[] {
+                                symbolKey(",").withReplacements("*"), //
+                                symbolKey("@").withReplacements("+"), //
+                                symbolKey(":").withReplacements(";"), //
+                        }, //
                         new Key[] {
                                 alphabetKey("e").withReplacements("E"),
                                 alphabetKey("t").withReplacements("T"),
@@ -192,7 +200,7 @@ public class LatinKeyTable extends KeyTable {
                         new Key[] {
                                 alphabetKey("u").withReplacements("U"), //
                                 alphabetKey("v").withReplacements("V"), //
-                                symbolKey("-"),
+                                symbolKey("/").withReplacements("\\"),
                                 },
                         },
                 });
