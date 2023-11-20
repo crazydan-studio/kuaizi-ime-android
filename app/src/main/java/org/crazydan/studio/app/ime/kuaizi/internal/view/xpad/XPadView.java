@@ -61,6 +61,8 @@ public class XPadView extends View {
     private final ViewGestureTrailer trailer;
     private XZone[] zones;
     private XZone[] inputting_zones;
+    private XZone inputting_scaled_zone_1;
+    private boolean need_to_scale_zone_1;
 
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
@@ -158,10 +160,25 @@ public class XPadView extends View {
 
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
-        this.active_block = findBlockAt(x, y);
+        BlockIndex old_active_block = this.active_block;
+        BlockIndex new_active_block = this.active_block = findBlockAt(x, y);
+
         if (this.active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
             onGesture_End(type, data, userKeyMsgListenerExecutor);
             return;
+        }
+
+        if (old_active_block != null) {
+            // 从第 1 分区进入第 2 分区时（选择输入），将第 1 分区的尺寸缩小，
+            // 以避免手指画圈的半径和距离过大
+            if (old_active_block.zone == 1 && new_active_block.zone == 2) {
+                this.need_to_scale_zone_1 = true;
+            }
+            // 从第 2 分区进入第 1 分区时（确定输入），将第 2 分区的尺寸还原，
+            // 以避免进行新的输入选择时，手指误入非预期的分区
+            else if (old_active_block.zone == 2 && new_active_block.zone == 1) {
+                this.need_to_scale_zone_1 = false;
+            }
         }
 
         switch (this.active_block.zone) {
@@ -525,9 +542,6 @@ public class XPadView extends View {
                                  level_2_zone_HexagonRadius,
                                  level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
-        // Note：在输入时，缩小第 1 分区的尺寸，以减少手指滑圈的半径和滑动距离，
-        // 但需降低误入非预期分区的频率
-        level_1_zone_scale = 0.95f;
         this.inputting_zones = createZones(origin,
                                            orientation,
                                            width,
@@ -543,6 +557,20 @@ public class XPadView extends View {
         // 共用相同部分
         this.inputting_zones[2].blocks.clear();
         this.inputting_zones[2].blocks.addAll(this.zones[2].blocks);
+
+        level_1_zone_scale = 0.7f;
+        XZone[] zones = createZones(origin,
+                                    orientation,
+                                    width,
+                                    height,
+                                    level_0_zone_HexagonRadius,
+                                    level_1_zone_HexagonRadius * level_1_zone_scale,
+                                    level_2_zone_HexagonRadius,
+                                    level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
+
+        this.inputting_scaled_zone_1 = zones[1];
+        // 去掉分隔线
+        this.inputting_scaled_zone_1.dropPathPainter(1);
     }
 
     private XZone[] createZones(
@@ -850,7 +878,14 @@ public class XPadView extends View {
         if (this.state.type == XPadState.Type.Init) {
             return this.zones;
         }
-        return this.inputting_zones;
+
+        XZone[] zones = this.inputting_zones;
+        if (this.need_to_scale_zone_1) {
+            zones = Arrays.copyOf(zones, zones.length);
+            zones[1] = this.inputting_scaled_zone_1;
+        }
+
+        return zones;
     }
 
     private BlockKey[][] getBlockKeys_In_Zone_2(int blockIndex, boolean isActiveBlock) {
