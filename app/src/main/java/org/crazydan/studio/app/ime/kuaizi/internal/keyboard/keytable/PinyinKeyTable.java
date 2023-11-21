@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -170,7 +169,7 @@ public class PinyinKeyTable extends KeyTable {
     /** 创建拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createNextCharKeys(
             String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
-            Collection<String> level2NextChars
+            Map<Integer, List<String>> level2NextChars
     ) {
         // 在初始键盘上显隐按键
         Key<?>[][] gridKeys = createKeys();
@@ -201,21 +200,20 @@ public class PinyinKeyTable extends KeyTable {
         }
 
         // 在指定可用位置创建第 2 级字母按键
-        Iterator<String> it = level2NextChars.iterator();
-        for (GridCoord keyCoord : getLevel2KeyCoords(level2NextChars.size())) {
-            if (!it.hasNext()) {
-                break;
+        level2NextChars.forEach((keyLength, keys) -> {
+            GridCoord[] keyCoords = getLevel2KeyCoords(keyLength);
+            for (int i = 0; i < keys.size(); i++) {
+                String text = keys.get(i);
+                GridCoord keyCoord = keyCoords[i];
+                int row = keyCoord.row;
+                int column = keyCoord.column;
+
+                gridKeys[row][column] = level2CharKey(level0Char, text);
+
+                boolean disabled = text != null && text.equals(level2Char);
+                gridKeys[row][column].setDisabled(disabled);
             }
-
-            String text = it.next();
-            int row = keyCoord.row;
-            int column = keyCoord.column;
-
-            gridKeys[row][column] = level2CharKey(level0Char, text);
-
-            boolean disabled = text != null && text.equals(level2Char);
-            gridKeys[row][column].setDisabled(disabled);
-        }
+        });
 
         return gridKeys;
     }
@@ -253,7 +251,7 @@ public class PinyinKeyTable extends KeyTable {
     /** 创建 X 型输入的拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createXPadNextCharKeys(
             String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
-            Collection<String> level2NextChars
+            Map<Integer, List<String>> level2NextChars
     ) {
         XPadKey xPadKey = createXPadKey();
         // 在初始键盘上显隐按键
@@ -302,19 +300,18 @@ public class PinyinKeyTable extends KeyTable {
             }
 
             // 在指定可用位置创建第 2 级字母按键
-            Iterator<String> it = level2NextChars.iterator();
-            for (GridCoord keyCoord : getXPadLevel2KeyCoords()) {
-                if (!it.hasNext()) {
-                    break;
+            level2NextChars.forEach((keyLength, keys) -> {
+                GridCoord[] keyCoords = getXPadLevel2KeyCoords(keyLength);
+                for (int i = 0; i < keys.size(); i++) {
+                    String text = keys.get(i);
+                    GridCoord keyCoord = keyCoords[i];
+                    int row = keyCoord.row;
+                    int column = keyCoord.column;
+                    int layer = keyCoord.layer;
+
+                    xPadKey.zone_2_keys[layer][row][column] = level2CharKey("", text);
                 }
-
-                String text = it.next();
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-                int layer = keyCoord.layer;
-
-                xPadKey.zone_2_keys[layer][row][column] = level2CharKey(level0Char, text);
-            }
+            });
         }
 
         // Note：仅待输入 1/2 级字母时才需要提供拼音结束按键，且可通过结束按键去掉首字母选错的拼音
@@ -543,51 +540,26 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
-    private GridCoord[] getLevel2KeyCoords(int keySize) {
-//        GridCoord[] coords;
-//        if (keySize <= 2) {
-//            coords = new GridCoord[] {
-//                    coord(4, 3), coord(5, 3),
-//                    };
-//        } else if (keySize == 3) {
-//            coords = new GridCoord[] {
-//                    coord(3, 2), coord(4, 3),
-//                    //
-//                    coord(5, 3),
-//                    };
-//        } else if (keySize <= 6) {
-//            coords = new GridCoord[] {
-//                    coord(2, 2), coord(3, 2),
-//                    //
-//                    coord(4, 3), coord(5, 3),
-//                    //
-//                    coord(4, 2), coord(5, 2),
-//                    };
-//        } else {
-//            coords = new GridCoord[] {
-//                    coord(2, 2), coord(3, 2),
-//                    //
-//                    coord(4, 3), coord(5, 3),
-//                    //
-//                    coord(3, 1), coord(4, 2),
-//                    //
-//                    coord(5, 2), coord(3, 3),
-//                    //
-//                    coord(4, 4),
-//                    };
-//        }
-//        return coords;
-
+    private GridCoord[] getLevel2KeyCoords(int keyLength) {
+        if (keyLength <= 2) {
+            // Note：特定韵母组成的 2 个字母的音节数不会超过 4 个
+            return new GridCoord[] {
+                    //
+                    coord(2, 2), coord(3, 2),
+                    //
+                    coord(4, 3), coord(5, 3),
+                    };
+        } else if (keyLength == 3) {
+            // Note：特定韵母组成的 3 个字母的音节数不会超过 3 个
+            return new GridCoord[] {
+                    //
+                    coord(3, 1), coord(4, 2),
+                    //
+                    coord(5, 2),
+                    };
+        }
         return new GridCoord[] {
                 coord(3, 3), coord(4, 4),
-                //
-                coord(5, 3), coord(4, 3),
-                //
-                coord(3, 2), coord(2, 2),
-                //
-                coord(3, 1), coord(4, 2),
-                //
-                coord(5, 2),
                 };
     }
 
@@ -633,11 +605,21 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 获取 X 型输入的拼音{@link Key.Level#level_2 第二级}按键坐标 */
-    private GridCoord[] getXPadLevel2KeyCoords() {
+    private GridCoord[] getXPadLevel2KeyCoords(int keyLength) {
+        if (keyLength <= 2) {
+            // Note：特定韵母组成的 2 个字母的音节数不会超过 4 个
+            return new GridCoord[] {
+                    coord(0, 0, 4), coord(1, 0, 4), //
+                    coord(0, 1, 4), coord(1, 1, 4), //
+                    coord(0, 2, 4), coord(1, 2, 4), //
+            };
+        } else if (keyLength == 3) {
+            // Note：特定韵母组成的 3 个字母的音节数不会超过 3 个
+            return new GridCoord[] {
+                    coord(1, 0, 3), coord(1, 1, 3), coord(1, 2, 3), //
+            };
+        }
         return new GridCoord[] {
-                coord(0, 0, 4), coord(0, 1, 4), coord(0, 2, 4), //
-                coord(1, 0, 3), coord(1, 1, 3), coord(1, 2, 3), //
-                coord(1, 0, 4), coord(1, 1, 4), coord(1, 2, 4), //
                 coord(0, 0, 5), coord(0, 1, 5), coord(0, 2, 5), //
         };
     }

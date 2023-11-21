@@ -174,11 +174,6 @@ public class XPadView extends View {
             if (old_active_block.zone == 1 && new_active_block.zone == 2) {
                 this.need_to_scale_zone_1 = true;
             }
-            // 从第 2 分区进入第 1 分区时（确定输入），将第 2 分区的尺寸还原，
-            // 以避免进行新的输入选择时，手指误入非预期的分区
-            else if (old_active_block.zone == 2 && new_active_block.zone == 1) {
-                this.need_to_scale_zone_1 = false;
-            }
         }
 
         switch (this.active_block.zone) {
@@ -542,6 +537,7 @@ public class XPadView extends View {
                                  level_2_zone_HexagonRadius,
                                  level_1_zone_HexagonRadius * (1 - level_1_zone_scale));
 
+        level_1_zone_scale = 1.0f;
         this.inputting_zones = createZones(origin,
                                            orientation,
                                            width,
@@ -558,7 +554,7 @@ public class XPadView extends View {
         this.inputting_zones[2].blocks.clear();
         this.inputting_zones[2].blocks.addAll(this.zones[2].blocks);
 
-        level_1_zone_scale = 0.7f;
+        level_1_zone_scale = 0.85f;
         XZone[] zones = createZones(origin,
                                     orientation,
                                     width,
@@ -945,6 +941,7 @@ public class XPadView extends View {
             UserKeyMsgListener.Executor userKeyMsgListenerExecutor
     ) {
         this.state = new XPadState(XPadState.Type.Init);
+        this.need_to_scale_zone_1 = false;
 
         XZone[] zones = determineZones();
         zones[0].bounce();

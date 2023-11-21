@@ -542,10 +542,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                 startChar += currentKey.getText();
 
                 Collection<String> nextChars = this.pinyinDict.findPinyinNextChar(Key.Level.level_2, startChar);
-                // 第二级后继字母先按字符顺序排列，再按字符长度升序排列
+                // 第二级后继字母先按字符长度升序排列，再按字符顺序排列
                 List<String> level2NextChars = nextChars.stream()
-                                                        .sorted(String::compareTo)
                                                         .sorted(Comparator.comparing(String::length))
+                                                        .sorted(String::compareTo)
                                                         .collect(Collectors.toList());
 
                 stateData.setLevel1Key(currentKey);
@@ -696,10 +696,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                 startChar += currentKey.getText();
 
                 Collection<String> nextChars = this.pinyinDict.findPinyinNextChar(Key.Level.level_2, startChar);
-                // 第二级后继字母先按字符顺序排列，再按字符长度升序排列
+                // 第二级后继字母先按字符长度升序排列，再按字符顺序排列
                 List<String> level2NextChars = nextChars.stream()
-                                                        .sorted(String::compareTo)
                                                         .sorted(Comparator.comparing(String::length))
+                                                        .sorted(String::compareTo)
                                                         .collect(Collectors.toList());
 
                 stateData.setLevel1Key(currentKey);

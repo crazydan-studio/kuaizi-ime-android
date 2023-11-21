@@ -17,7 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
@@ -34,7 +38,7 @@ public class InputCharsSlipDoingStateData implements State.Data {
     private Key<?> level2Key;
 
     private Collection<String> level1NextChars;
-    private Collection<String> level2NextChars;
+    private Map<Integer, List<String>> level2NextChars;
 
     public Key<?> getLevel0Key() {
         return this.level0Key;
@@ -68,11 +72,15 @@ public class InputCharsSlipDoingStateData implements State.Data {
         this.level1NextChars = level1NextChars;
     }
 
-    public Collection<String> getLevel2NextChars() {
+    public Map<Integer, List<String>> getLevel2NextChars() {
         return this.level2NextChars;
     }
 
     public void setLevel2NextChars(Collection<String> level2NextChars) {
-        this.level2NextChars = level2NextChars;
+        this.level2NextChars = new HashMap<>();
+
+        for (String text : level2NextChars) {
+            this.level2NextChars.computeIfAbsent(text.length(), (k) -> new ArrayList<>()).add(text);
+        }
     }
 }
