@@ -565,7 +565,7 @@ public class XPadView extends View {
                                       orientation,
                                       zone_2_HexagonRadius,
                                       zone_2_bound_HexagonRadius,
-                                      zone_1_HexagonRadius);
+                                      zone_1_HexagonRadius + dimen(R.dimen.x_keyboard_pad_padding));
 
         this.inputting_zones[0] = new XZone();
         this.inputting_zones[1] = create_zone_1(origin, orientation, zone_0_HexagonRadius, zone_1_HexagonRadius, true);
@@ -713,11 +713,11 @@ public class XPadView extends View {
 
         // - 添加垂直于左右轴线的 Link
         int axis_link_count = 4;
-        float outerHexagonAxisSpacing = (zone_2_HexagonRadius - spacing_from_origin) / axis_link_count;
+        float outerHexagonAxisSpacing = (zone_2_HexagonRadius - spacing_from_origin) / (axis_link_count - 1);
 
         PointF[][] axisHexagonVertexesArray = new PointF[axis_link_count][];
         for (int i = 0; i < axis_link_count; i++) {
-            float axisHexagonRadius = (spacing_from_origin + outerHexagonAxisSpacing * (i + 1)) //
+            float axisHexagonRadius = (spacing_from_origin + outerHexagonAxisSpacing * i) //
                                       * cos_30_divided_by_1;
             PointF[] axisHexagonVertexes = ViewUtils.createHexagon(orientation == HexagonOrientation.FLAT_TOP
                                                                    ? HexagonOrientation.POINTY_TOP
