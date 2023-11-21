@@ -150,8 +150,8 @@ public class XPadView extends View {
     }
 
     public void onGesture(
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data, PointF offset,
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data, PointF offset
     ) {
         invalidate();
 
@@ -164,7 +164,7 @@ public class XPadView extends View {
         BlockIndex new_active_block = this.active_block = findBlockAt(x, y);
 
         if (this.active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
-            onGesture_End(type, data, userKeyMsgListenerExecutor);
+            onGesture_End(trigger, type, data);
             return;
         }
 
@@ -178,15 +178,15 @@ public class XPadView extends View {
 
         switch (this.active_block.zone) {
             case 0: {
-                onGesture_Over_Zone_0(type, data, userKeyMsgListenerExecutor);
+                onGesture_Over_Zone_0(trigger, type, data);
                 break;
             }
             case 1: {
-                onGesture_Over_Zone_1(type, data, userKeyMsgListenerExecutor);
+                onGesture_Over_Zone_1(trigger, type, data);
                 break;
             }
             case 2: {
-                onGesture_Over_Zone_2(type, data, userKeyMsgListenerExecutor);
+                onGesture_Over_Zone_2(trigger, type, data);
                 break;
             }
         }
@@ -937,8 +937,8 @@ public class XPadView extends View {
     }
 
     private void onGesture_End(
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
     ) {
         this.state = new XPadState(XPadState.Type.Init);
         this.need_to_scale_zone_1 = false;
@@ -948,15 +948,13 @@ public class XPadView extends View {
 
         Key<?> key = CtrlKey.noop();
         BlockKey blockKey = new BlockKey(0, 0, 0, 0, key);
-        execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
-                                   blockKey,
-                                   ViewGestureDetector.GestureType.PressEnd,
-                                   data);
+
+        trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.PressEnd, data);
     }
 
     private void onGesture_Over_Zone_0(
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
     ) {
         if (this.state.type != XPadState.Type.Init) {
             return;
@@ -972,22 +970,22 @@ public class XPadView extends View {
                 break;
             }
             case Flipping: {
-                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
                 break;
             }
             case LongPressStart: {
-                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
 
                 // Note：进入编辑器编辑状态会发生键盘切换，故而，需显式重置状态
-                onGesture_End(type, data, userKeyMsgListenerExecutor);
+                onGesture_End(trigger, type, data);
                 break;
             }
         }
     }
 
     private void onGesture_Over_Zone_1(
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
     ) {
         switch (type) {
             case SingleTap: {
@@ -996,7 +994,7 @@ public class XPadView extends View {
                     return;
                 }
 
-                execute_UserKeyMsgListener(userKeyMsgListenerExecutor, blockKey, type, data);
+                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
                 break;
             }
             case MovingStart: {
@@ -1010,10 +1008,7 @@ public class XPadView extends View {
                 // 发送点击事件以触发通用的子键盘切换
                 ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
                                                                                                                 0);
-                execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
-                                           blockKey,
-                                           ViewGestureDetector.GestureType.SingleTap,
-                                           tapData);
+                trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.SingleTap, tapData);
                 break;
             }
             case Moving: {
@@ -1033,18 +1028,15 @@ public class XPadView extends View {
 
                 ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
                                                                                                                 0);
-                execute_UserKeyMsgListener(userKeyMsgListenerExecutor,
-                                           blockKey,
-                                           ViewGestureDetector.GestureType.SingleTap,
-                                           tapData);
+                trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.SingleTap, tapData);
                 break;
             }
         }
     }
 
     private void onGesture_Over_Zone_2(
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data,
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
     ) {
         if (type != ViewGestureDetector.GestureType.Moving) {
             return;
@@ -1069,14 +1061,14 @@ public class XPadView extends View {
         }
     }
 
-    private void execute_UserKeyMsgListener(
-            UserKeyMsgListener.Executor userKeyMsgListenerExecutor, BlockKey blockKey,
-            ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+    private void trigger_UserKeyMsgListener(
+            UserKeyMsgListener.Trigger trigger, BlockKey blockKey, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
     ) {
         Key<?> key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
 
         // Note：向外部传递的 GestureData 不需要做坐标转换
-        userKeyMsgListenerExecutor.onGesture(key, type, data);
+        trigger.onGesture(key, type, data);
     }
 
     private static class BlockIndex {

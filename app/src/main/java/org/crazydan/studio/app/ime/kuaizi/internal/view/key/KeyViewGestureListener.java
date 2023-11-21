@@ -21,7 +21,7 @@ import android.graphics.PointF;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListenerExecutor;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListenerTrigger;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-13
  */
-public class KeyViewGestureListener extends UserKeyMsgListenerExecutor implements ViewGestureDetector.Listener {
+public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
     private KeyView<?, ?> prevKeyView;
     private KeyView<?, ?> movingOverXPadKeyView;
@@ -102,7 +102,7 @@ public class KeyViewGestureListener extends UserKeyMsgListenerExecutor implement
         float y = keyView.itemView.getY();
         PointF offset = new PointF(-x, -y);
 
-        ((XPadKeyView) keyView).getXPad().onGesture(type, data, offset, this);
+        ((XPadKeyView) keyView).getXPad().onGesture(this, type, data, offset);
 
         return true;
     }

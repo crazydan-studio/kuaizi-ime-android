@@ -25,15 +25,15 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData
 import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
 /**
- * {@link UserKeyMsgListener} 的{@link UserKeyMsgListener.Executor 执行器}
+ * {@link UserKeyMsgListener} 的{@link UserKeyMsgListener.Trigger 触发器}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-07
  */
-public class UserKeyMsgListenerExecutor implements UserKeyMsgListener.Executor {
+public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
     private final UserKeyMsgListener listener;
 
-    public UserKeyMsgListenerExecutor(UserKeyMsgListener listener) {
+    public UserKeyMsgListenerTrigger(UserKeyMsgListener listener) {
         this.listener = listener;
     }
 

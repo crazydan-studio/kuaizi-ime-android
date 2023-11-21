@@ -30,7 +30,7 @@ public interface UserKeyMsgListener {
 
     void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
 
-    interface Executor {
+    interface Trigger {
         void onGesture(Key<?> key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);
     }
 }
