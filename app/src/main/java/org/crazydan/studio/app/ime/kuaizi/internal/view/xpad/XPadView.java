@@ -197,8 +197,7 @@ public class XPadView extends View {
         }
 
         if (old_active_block != null) {
-            // 从第 1 分区进入第 2 分区时（选择输入），将第 1 分区的尺寸缩小，
-            // 以避免手指画圈的半径和距离过大
+            // 开始输入：减少手指画圈的半径和滑行距离
             if (old_active_block.zone == 1 && new_active_block.zone == 2) {
                 start_zone_1_animator(this.zone_1_HexagonRadius_input_waiting, this.zone_1_HexagonRadius_input_doing);
             }
@@ -1038,6 +1037,7 @@ public class XPadView extends View {
             case MovingStart: {
                 this.state = new XPadState(XPadState.Type.InputChars_Input_Waiting);
 
+                // 预备输入：减少定位输入分区的滑行距离
                 start_zone_1_animator(this.zone_1_HexagonRadius, this.zone_1_HexagonRadius_input_waiting);
 
                 BlockKey blockKey = getBlockKey(this.active_block);
