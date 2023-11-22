@@ -275,33 +275,33 @@ public class XPadView extends View {
         this.active_label_zone.clearIconPainters();
 
         // ==============================================
-        XZone level_0_zone = zones[0];
+        XZone zone_0 = zones[0];
 
         if (!isInputting) {
             Drawable icon = drawable(this.zone_0_key.key.getIconResId());
-            XDrawablePainter icon_painter = level_0_zone.newIconPainter(icon);
+            XDrawablePainter icon_painter = zone_0.newIconPainter(icon);
             icon_painter.setStart(this.centerCoord);
             icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.zone_0_HexagonRadius);
         }
 
         // ==============================================
-        XZone level_1_zone = zones[1];
+        XZone zone_1 = zones[1];
 
         if (!isInputting) {
-            for (int i = 0; i < level_1_zone.blocks.size(); i++) {
+            for (int i = 0; i < zone_1.blocks.size(); i++) {
                 BlockKey blockKey = getAt(this.zone_1_keys, i);
                 if (BlockKey.isNull(blockKey)) {
                     continue;
                 }
 
-                XZone.PolygonBlock block = (XZone.PolygonBlock) level_1_zone.blocks.get(i);
+                XZone.PolygonBlock block = (XZone.PolygonBlock) zone_1.blocks.get(i);
                 PointF center = block.links.center.center;
                 float rotate = orientation == HexagonOrientation.POINTY_TOP //
                                ? 30 * (2 * i - 1) : 60 * (i - 1);
 
                 Drawable icon = drawable(blockKey.key.getIconResId());
-                XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
+                XDrawablePainter icon_painter = zone_1.newIconPainter(icon);
                 icon_painter.setStart(center);
                 icon_painter.setAlign(XPainter.Align.Center);
                 icon_painter.setRotate(rotate);
@@ -311,18 +311,16 @@ public class XPadView extends View {
         } else if (!BlockKey.isNull(this.active_ctrl_block_key)) {
             BlockKey blockKey = this.active_ctrl_block_key;
             Drawable icon = drawable(blockKey.key.getIconResId());
-            XDrawablePainter icon_painter = level_1_zone.newIconPainter(icon);
+            XDrawablePainter icon_painter = zone_1.newIconPainter(icon);
             icon_painter.setStart(this.centerCoord);
             icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.ctrl_icon_size * 1.8f);
         }
 
         // ==============================================
-        BlockKey level_2_zone_active_key = getActiveBlockKey_In_Zone_2();
-        String level_2_zone_active_key_label = level_2_zone_active_key != null
-                                               ? level_2_zone_active_key.key.getLabel()
-                                               : null;
-        if (level_2_zone_active_key_label == null) {
+        BlockKey zone_2_active_key = getActiveBlockKey_In_Zone_2();
+        String zone_2_active_key_label = zone_2_active_key != null ? zone_2_active_key.key.getLabel() : null;
+        if (zone_2_active_key_label == null) {
             this.active_label_zone.hide();
         } else {
             this.active_label_zone.show();
@@ -332,11 +330,11 @@ public class XPadView extends View {
             PointF start = middle(block.vertexes[0], block.vertexes[1]);
 
             float textSize = dimen(R.dimen.input_popup_key_text_size);
-            float textSizeScale = level_2_zone_active_key.key instanceof CtrlKey ? 0.8f : 1f;
+            float textSizeScale = zone_2_active_key.key instanceof CtrlKey ? 0.8f : 1f;
             int textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
             start.offset(0, textSize);
 
-            XTextPainter painter = this.active_label_zone.newTextPainter(level_2_zone_active_key_label);
+            XTextPainter painter = this.active_label_zone.newTextPainter(zone_2_active_key_label);
             painter.setStart(start);
             painter.setAlign(XPainter.Align.TopMiddle);
             painter.setSize(textSize * textSizeScale);
@@ -345,17 +343,17 @@ public class XPadView extends View {
         }
 
         // ==============================================
-        XZone level_2_zone = zones[2];
+        XZone zone_2 = zones[2];
 
         float textSize = dimen(R.dimen.x_keyboard_chars_text_size);
         float textPadding = dimen(R.dimen.x_keyboard_chars_text_padding);
 
-        for (int i = 0; i < level_2_zone.blocks.size(); i++) {
+        for (int i = 0; i < zone_2.blocks.size(); i++) {
             boolean isActiveBlock = isActiveBlock_In_Zone_2(i);
-            int textColor = isActiveBlock && level_2_zone_active_key == null
-                            ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
-                            : attrColor(R.attr.x_keyboard_chars_fg_color);
-            XZone.PolygonBlock block = (XZone.PolygonBlock) level_2_zone.blocks.get(i);
+            int defaultTextColor = isActiveBlock && zone_2_active_key == null
+                                   ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
+                                   : attrColor(R.attr.x_keyboard_chars_fg_color);
+            XZone.PolygonBlock block = (XZone.PolygonBlock) zone_2.blocks.get(i);
 
             BlockKey[][] blockKeys = getBlockKeys_In_Zone_2(i, isActiveBlock);
             for (int j = 0; j < block.links.left.size(); j++) {
@@ -415,16 +413,17 @@ public class XPadView extends View {
                 XAlignPainter painter;
                 if (blockKey.key instanceof CtrlKey) {
                     Drawable icon = drawable(blockKey.key.getIconResId());
-                    painter = level_2_zone.newIconPainter(icon);
+                    painter = zone_2.newIconPainter(icon);
                     size = this.ctrl_icon_size;
                 } else {
-                    painter = level_2_zone.newTextPainter(blockKey.key.getLabel());
+                    painter = zone_2.newTextPainter(blockKey.key.getLabel());
 
                     float textSizeScale = 1f;
-                    if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                    int textColor = defaultTextColor;
+                    if (Objects.equals(blockKey, zone_2_active_key)) {
                         textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
                         textSizeScale = 1.25f;
-                    } else if (level_2_zone_active_key != null) {
+                    } else if (zone_2_active_key != null) {
                         textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                     }
                     size = textSize * textSizeScale;
@@ -495,16 +494,17 @@ public class XPadView extends View {
                 XAlignPainter painter;
                 if (blockKey.key instanceof CtrlKey) {
                     Drawable icon = drawable(blockKey.key.getIconResId());
-                    painter = level_2_zone.newIconPainter(icon);
+                    painter = zone_2.newIconPainter(icon);
                     size = this.ctrl_icon_size;
                 } else {
-                    painter = level_2_zone.newTextPainter(blockKey.key.getLabel());
+                    painter = zone_2.newTextPainter(blockKey.key.getLabel());
 
                     float textSizeScale = 1f;
-                    if (Objects.equals(blockKey, level_2_zone_active_key)) {
+                    int textColor = defaultTextColor;
+                    if (Objects.equals(blockKey, zone_2_active_key)) {
                         textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
                         textSizeScale = 1.25f;
-                    } else if (level_2_zone_active_key != null) {
+                    } else if (zone_2_active_key != null) {
                         textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
                     }
                     size = textSize * textSizeScale;
@@ -893,7 +893,7 @@ public class XPadView extends View {
         XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
         BlockKey blockKey = getBlockKey(new BlockIndex(2, stateData.getStartBlock()), stateData.getBlockDiff());
 
-        return BlockKey.isNull(blockKey) ? null : blockKey;
+        return BlockKey.isNull(blockKey) || blockKey.key.isDisabled() ? null : blockKey;
     }
 
     private boolean isActiveBlock_In_Zone_2(int index) {

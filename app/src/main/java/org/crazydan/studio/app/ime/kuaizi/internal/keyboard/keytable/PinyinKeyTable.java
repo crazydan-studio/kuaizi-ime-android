@@ -261,12 +261,12 @@ public class PinyinKeyTable extends KeyTable {
         if (level1Char == null) {
             for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
                 // Note: 第 1 级后继按键与键盘初始按键位置保持一致
-                for (int i = 0; i < zone_2_key.length; i++) {
-                    for (int j = 0; j < zone_2_key[i].length; j++) {
-                        Key<?> key = zone_2_key[i][j];
+                for (Key<?>[] keys : zone_2_key) {
+                    for (int j = 0; j < keys.length; j++) {
+                        Key<?> key = keys[j];
 
                         if (!(key instanceof CharKey)) {
-                            zone_2_key[i][j] = null;
+                            keys[j] = null;
                             continue;
                         }
 
@@ -275,21 +275,17 @@ public class PinyinKeyTable extends KeyTable {
                                 || (nextChar.length() > key.getText().length() //
                                     // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
                                     && nextChar.startsWith(key.getText()))) {
-                                key = zone_2_key[i][j] = level1CharKey(nextChar);
+                                key = keys[j] = level1CharKey(nextChar);
                                 break;
                             }
                         }
 
                         if (key.getLevel() != Key.Level.level_1) {
-                            zone_2_key[i][j] = null;
+                            keys[j] = null;
                         }
                     }
-                }
-            }
 
-            // 字母按键向靠近中心的方向排列
-            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
-                for (Key<?>[] keys : zone_2_key) {
+                    // 字母按键向靠近中心的方向排列
                     Arrays.sort(keys, (a, b) -> a != null && b != null ? 0 : a != null ? -1 : 1);
                 }
             }
