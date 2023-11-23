@@ -36,6 +36,8 @@ public enum InputMsg {
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
 
+    /** 输入列表配置已更新 */
+    InputList_Option_Update_Done,
     /** 输入列表中的输入已选择 */
     InputList_Input_Choose_Done,
     /** 输入补全已更新 */

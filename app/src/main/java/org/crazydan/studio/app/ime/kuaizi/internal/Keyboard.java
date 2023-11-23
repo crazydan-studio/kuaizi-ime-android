@@ -122,6 +122,7 @@ public interface Keyboard extends UserInputMsgListener {
         private static final String pref_key_disable_input_key_popup_tips = "disable_input_key_popup_tips";
         private static final String pref_key_disable_gesture_slipping_trail = "disable_gesture_slipping_trail";
         private static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
+        private static final String pref_key_candidate_variant_first_chosen = "candidate_variant_first_chosen";
         private static final String pref_key_enable_x_input_pad = "enable_x_input_pad";
         private static final String pref_key_hand_mode = "hand_mode";
         private static final String pref_key_theme = "theme";
@@ -147,6 +148,7 @@ public interface Keyboard extends UserInputMsgListener {
         private boolean inputKeyPopupTipsDisabled;
         private boolean gestureSlippingTrailDisabled;
         private boolean desktopSwipeUpGestureAdapted;
+        private boolean candidateVariantFirstChosen;
         private boolean xInputPadEnabled;
 
         public Config(Type type) {
@@ -169,6 +171,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.inputKeyPopupTipsDisabled = config.inputKeyPopupTipsDisabled;
                 this.gestureSlippingTrailDisabled = config.gestureSlippingTrailDisabled;
                 this.desktopSwipeUpGestureAdapted = config.desktopSwipeUpGestureAdapted;
+                this.candidateVariantFirstChosen = config.candidateVariantFirstChosen;
                 this.xInputPadEnabled = config.xInputPadEnabled;
             }
         }
@@ -249,6 +252,10 @@ public interface Keyboard extends UserInputMsgListener {
             return this.desktopSwipeUpGestureAdapted;
         }
 
+        public boolean isCandidateVariantFirstChosen() {
+            return this.candidateVariantFirstChosen;
+        }
+
         public boolean isXInputPadEnabled() {
             return this.xInputPadEnabled;
         }
@@ -263,6 +270,7 @@ public interface Keyboard extends UserInputMsgListener {
             this.inputKeyPopupTipsDisabled = isInputKeyPopupTipsDisabled(preferences);
             this.gestureSlippingTrailDisabled = isGestureSlippingTrailDisabled(preferences);
             this.desktopSwipeUpGestureAdapted = isDesktopSwipeUpGestureAdapted(preferences);
+            this.candidateVariantFirstChosen = isCandidateVariantFirstChosen(preferences);
             this.xInputPadEnabled = isXInputPadEnabled(preferences);
 
             Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
@@ -313,6 +321,10 @@ public interface Keyboard extends UserInputMsgListener {
 
         public static boolean isDesktopSwipeUpGestureAdapted(SharedPreferences preferences) {
             return preferences.getBoolean(Keyboard.Config.pref_key_adapt_desktop_swipe_up_gesture, false);
+        }
+
+        public static boolean isCandidateVariantFirstChosen(SharedPreferences preferences) {
+            return preferences.getBoolean(Keyboard.Config.pref_key_candidate_variant_first_chosen, false);
         }
 
         public static boolean isXInputPadEnabled(SharedPreferences preferences) {

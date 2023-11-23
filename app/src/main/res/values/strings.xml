@@ -65,6 +65,7 @@
     <string name="label_enable_x_input_pad">启用 X 型输入面板</string>
     <string name="label_switch_hand_mode">切换键盘左右手模式</string>
     <string name="label_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
+    <string name="label_candidate_variant_first_chosen">繁体候选字优先</string>
     <string name="label_disable_user_input_data">禁止记录用户输入</string>
     <string name="label_disable_key_clicked_audio">禁用按键音效</string>
     <string name="label_disable_key_animation">禁用按键动画</string>

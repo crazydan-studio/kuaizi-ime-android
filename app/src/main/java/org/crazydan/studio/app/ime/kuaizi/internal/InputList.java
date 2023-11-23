@@ -54,6 +54,7 @@ public class InputList {
     private Staged staged = Staged.none();
 
     private Input.Option option;
+    private boolean defaultUseWordVariant;
     private List<CompletionInput> phraseCompletions;
 
     public InputList() {
@@ -164,7 +165,7 @@ public class InputList {
         this.inputs.add(gap);
         doSelect(gap);
 
-        this.option = null;
+        setOption(null);
         this.staged = Staged.none();
 
         return staged;
@@ -198,11 +199,22 @@ public class InputList {
     }
 
     public Input.Option getOption() {
+        if (this.option == null) {
+            this.option = new Input.Option(null, this.defaultUseWordVariant);
+        }
         return this.option;
     }
 
     public void setOption(Input.Option option) {
         this.option = option;
+    }
+
+    public void setDefaultUseWordVariant(boolean defaultUseWordVariant) {
+        this.defaultUseWordVariant = defaultUseWordVariant;
+        this.option = null;
+
+        UserInputMsgData msgData = new UserInputMsgData(null);
+        onUserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
     }
 
     /** 设置短语输入补全 */
@@ -710,7 +722,7 @@ public class InputList {
         for (int i = 0; i < total; i++) {
             Input<?> input = this.inputs.get(i);
 
-            sb.append(input.getText(this.option));
+            sb.append(input.getText(getOption()));
 
             if (needGapSpace(i)) {
                 sb.append(" ");
@@ -750,7 +762,7 @@ public class InputList {
             return false;
         }
 
-        Input.Option option = this.option;
+        Input.Option option = getOption();
         if ((left.isMathExpr() && !left.isEmpty()) //
             || (right.isMathExpr() && !right.isEmpty())) {
             return true;

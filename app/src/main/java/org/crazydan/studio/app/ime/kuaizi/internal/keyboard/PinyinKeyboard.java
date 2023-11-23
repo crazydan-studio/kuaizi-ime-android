@@ -1064,10 +1064,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                             = ((CtrlKey.InputListCommitOption) key.getOption()).value();
 
                     Input.Option oldInputOption = inputList.getOption();
-                    if (oldInputOption == null) {
-                        oldInputOption = new Input.Option(null, false);
-                    }
-
                     Input.Option newInputOption = null;
                     switch (option) {
                         case only_pinyin: {

@@ -23,6 +23,10 @@
         </PreferenceScreen>
 
         <SwitchPreferenceCompat
+                app:key="candidate_variant_first_chosen"
+                app:title="@string/label_candidate_variant_first_chosen" />
+
+        <SwitchPreferenceCompat
                 app:key="disable_user_input_data"
                 app:title="@string/label_disable_user_input_data"
                 app:summary="@string/desc_disable_user_input_data" />

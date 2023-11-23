@@ -230,6 +230,8 @@ public class ImeInputView extends FrameLayout
             newKeyboard.reset();
         }
 
+        updateInputListOption(patchedConfig);
+
         toggleShowInputListCleanBtn();
     }
 
@@ -263,6 +265,8 @@ public class ImeInputView extends FrameLayout
 
             this.keyboardView.updateKeyboard(this.keyboard);
         }
+
+        updateInputListOption(newConfig);
     }
 
     private void reset() {
@@ -532,5 +536,9 @@ public class ImeInputView extends FrameLayout
         int y = location[1] - window.getHeight();
 
         post(() -> window.showAtLocation(parent, gravity, x, y));
+    }
+
+    private void updateInputListOption(Keyboard.Config config) {
+        this.inputList.setDefaultUseWordVariant(config.isCandidateVariantFirstChosen());
     }
 }

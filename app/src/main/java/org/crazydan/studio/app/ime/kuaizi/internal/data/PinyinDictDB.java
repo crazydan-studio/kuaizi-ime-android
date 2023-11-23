@@ -823,13 +823,13 @@ public class PinyinDictDB {
                                                      boolean traditional = cursor.getInt(5) > 0;
                                                      String strokeOrder = cursor.getString(6);
 
-                                                     return (InputWord) new PinyinInputWord(uid,
-                                                                                            value,
-                                                                                            notation,
-                                                                                            wordId,
-                                                                                            pinyinCharsId,
-                                                                                            traditional,
-                                                                                            strokeOrder);
+                                                     return new PinyinInputWord(uid,
+                                                                                value,
+                                                                                notation,
+                                                                                wordId,
+                                                                                pinyinCharsId,
+                                                                                traditional,
+                                                                                strokeOrder);
                                                  });
 
         // 查找繁/简字

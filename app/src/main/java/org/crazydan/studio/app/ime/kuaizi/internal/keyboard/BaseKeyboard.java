@@ -233,6 +233,10 @@ public abstract class BaseKeyboard implements Keyboard {
                 start_InputList_Completion_Applying(completion);
                 break;
             }
+            case InputList_Option_Update_Done: {
+                fire_InputList_Option_Update_Done();
+                return;
+            }
         }
 
         switch (this.state.type) {
@@ -344,6 +348,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
         fireInputMsg(InputMsg.InputChars_Input_Done, data);
+    }
+
+    /** 触发 {@link InputMsg#InputList_Option_Update_Done} 消息 */
+    protected void fire_InputList_Option_Update_Done() {
+        InputMsgData data = new InputCommonMsgData();
+
+        fireInputMsg(InputMsg.InputList_Option_Update_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Input_Choose_Done} 消息 */

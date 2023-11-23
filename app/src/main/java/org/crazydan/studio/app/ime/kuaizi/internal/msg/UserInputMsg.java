@@ -26,6 +26,9 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @date 2023-07-21
  */
 public enum UserInputMsg {
+    /** 输入列表配置已更新 */
+    InputList_Option_Update_Done,
+
     /** 输入选择中 */
     Input_Choose_Doing,
     /** 输入已清空 */
