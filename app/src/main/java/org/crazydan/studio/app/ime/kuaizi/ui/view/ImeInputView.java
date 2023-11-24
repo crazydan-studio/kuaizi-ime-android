@@ -76,6 +76,7 @@ public class ImeInputView extends FrameLayout
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;
+    private Boolean disableInputKeyPopupTips;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -99,6 +100,14 @@ public class ImeInputView extends FrameLayout
 
         if (this.keyboard != null) {
             this.keyboard.getConfig().setUserInputDataDisabled(disabled);
+        }
+    }
+
+    public void setDisableInputKeyPopupTips(Boolean disabled) {
+        this.disableInputKeyPopupTips = disabled;
+
+        if (this.keyboard != null) {
+            this.keyboard.getConfig().setInputKeyPopupTipsDisabled(disabled);
         }
     }
 
@@ -216,6 +225,10 @@ public class ImeInputView extends FrameLayout
         // 支持临时禁用对用户输入的记录
         if (this.disableUserInputData != null) {
             patchedConfig.setUserInputDataDisabled(this.disableUserInputData);
+        }
+        // 支持临时禁用按键气泡提示：主要用于密码输入场景
+        if (this.disableInputKeyPopupTips != null) {
+            patchedConfig.setInputKeyPopupTipsDisabled(this.disableInputKeyPopupTips);
         }
 
         newKeyboard.setConfig(patchedConfig);

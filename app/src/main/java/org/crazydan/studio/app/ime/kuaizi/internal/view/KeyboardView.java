@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
@@ -111,6 +112,26 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
     /** 响应按键点击、双击等消息 */
     @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        switch (msg) {
+            case FingerMovingStart: {
+                // 对光标移动和文本选择按键启用轨迹
+                if ((CtrlKey.is(data.target, CtrlKey.Type.Editor_Cursor_Locator) //
+                     || CtrlKey.is(data.target, CtrlKey.Type.Editor_Range_Selector)) //
+                    && !this.keyboard.getConfig().isGestureSlippingTrailDisabled()) {
+                    this.gestureTrailer.setDisabled(false);
+                }
+                break;
+            }
+            case FingerMovingEnd: {
+                // 确保已绘制的轨迹被重绘，以避免出现轨迹残留
+                if (!this.gestureTrailer.isDisabled()) {
+                    invalidate();
+                }
+                this.gestureTrailer.setDisabled(true);
+                break;
+            }
+        }
+
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
@@ -131,13 +152,8 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
                 }
                 break;
             }
-            case InputList_Pending_Drop_Done:
-            case InputChars_Input_Done: {
-                this.gestureTrailer.setDisabled(true);
-                break;
-            }
             case InputChars_Input_Doing: {
-                // 仅滑屏输入才显示轨迹
+                // 滑屏输入显示轨迹
                 if (((InputCharsInputtingMsgData) data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
                     && !this.keyboard.getConfig().isGestureSlippingTrailDisabled()) {
                     this.gestureTrailer.setDisabled(false);

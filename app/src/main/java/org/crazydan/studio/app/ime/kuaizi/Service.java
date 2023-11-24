@@ -89,6 +89,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         PinyinDictDB.getInstance().open(getApplicationContext());
 
         boolean singleLineInput = false;
+        boolean passwordInputting = false;
         Keyboard.Config config = this.imeKeyboardConfig;
         Keyboard.Type keyboardType = config != null ? config.getType() : Keyboard.Type.Pinyin;
 
@@ -105,6 +106,7 @@ public class Service extends InputMethodService implements InputMsgListener {
                     || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD) {
                     keyboardType = Keyboard.Type.Latin;
                     singleLineInput = true;
+                    passwordInputting = true;
                 }
 
                 if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
@@ -122,6 +124,8 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         int prevFieldId = this.prevFieldId;
         this.prevFieldId = attribute.fieldId;
+
+        this.imeView.setDisableInputKeyPopupTips(passwordInputting);
 
         startImeInput(config, prevFieldId != attribute.fieldId);
     }

@@ -244,6 +244,10 @@ public interface Keyboard extends UserInputMsgListener {
             return this.inputKeyPopupTipsDisabled;
         }
 
+        public void setInputKeyPopupTipsDisabled(boolean inputKeyPopupTipsDisabled) {
+            this.inputKeyPopupTipsDisabled = inputKeyPopupTipsDisabled;
+        }
+
         public boolean isGestureSlippingTrailDisabled() {
             return this.gestureSlippingTrailDisabled;
         }
