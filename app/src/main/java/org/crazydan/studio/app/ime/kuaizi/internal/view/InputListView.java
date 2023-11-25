@@ -126,28 +126,34 @@ public class InputListView extends RecyclerView implements InputMsgListener {
 
         int offset = 0;
         if (item != null) {
+            Point parentLocation = ViewUtils.getLocationInWindow(this);
             int parentWidth = getMeasuredWidth();
             int parentPadding = getPaddingLeft() + getPaddingRight();
-            Point parentLocation = ViewUtils.getLocationInWindow(this);
+            int parentLeft = parentLocation.x;
+            int parentRight = parentLeft + parentWidth;
 
-            int itemWidth = item.getMeasuredWidth();
             Point itemLocation = ViewUtils.getLocationInWindow(item);
+            int itemWidth = item.getMeasuredWidth();
+            int itemLeft = itemLocation.x;
+            int itemRight = itemLeft + itemWidth;
+            int itemMaxRight = itemRight + parentPadding;
 
             // 项目宽度超出可见区域，则滚动位置需移至其尾部
             if (itemWidth + parentPadding > parentWidth) {
-                offset = (itemLocation.x + itemWidth) - (parentLocation.x + parentWidth)
-                         // 尾部留白
-                         + parentPadding;
+                offset = itemMaxRight - parentRight;
 
                 // 已经移动完成，则不做处理。用于处理多次相邻调用的情况
                 if (offset == 0) {
                     return;
                 }
             }
-            // 若项目已在可见区域内，则不需要滚动
-            else if (itemLocation.x >= parentLocation.x //
-                     && itemLocation.x + itemWidth <= parentLocation.x + parentWidth) {
-                return;
+            // 若项目已在可见区域内，且其右侧加上空白后未超出可见区域，则不需要滚动
+            else if (itemLeft >= parentLeft) {
+                offset = itemMaxRight - parentRight;
+
+                if (offset <= 0) {
+                    return;
+                }
             }
         }
 
