@@ -348,11 +348,15 @@ public class PinyinDictDB {
             return new ArrayList<>();
         }
 
-        return queryPinyinWordsFromAppDB("spell_chars_id_ = ?",//
-                                         new String[] { inputPinyinCharsId },//
-                                         // Note：拼音的 id 排序即为其字母排序
-                                         // 按拼音使用频率（weight_）、拼音内字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
-                                         "weight_ desc, glyph_weight_ desc, spell_id_ asc");
+        List<InputWord> wordList = queryPinyinWordsFromAppDB("spell_chars_id_ = ?",
+                                                             new String[] { inputPinyinCharsId },
+                                                             // Note：拼音的 id 排序即为其字母排序
+                                                             // 按拼音使用频率（weight_）、拼音内字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
+                                                             "weight_ desc, glyph_weight_ desc, spell_id_ asc");
+
+        patchPinyinWordVariantInCandidatesFromAppDB(wordList);
+
+        return wordList;
     }
 
     /** 根据前序输入分析得出最靠前的 <code>top</code> 个拼音候选字 */
@@ -461,7 +465,9 @@ public class PinyinDictDB {
     }
 
     /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
-    public List<List<InputWord>> findTopBestMatchedPinyinPhrase(List<InputWord> prevPhrase, int top) {
+    public List<List<InputWord>> findTopBestMatchedPinyinPhrase(
+            List<InputWord> prevPhrase, int top, boolean variantFirst
+    ) {
         if (prevPhrase == null || prevPhrase.size() < 2) {
             return new ArrayList<>();
         }
@@ -475,6 +481,10 @@ public class PinyinDictDB {
         phraseWordsList.forEach(wordIdSet::addAll);
 
         Map<String, InputWord> wordMap = getPinyinWordsFromAppDB(wordIdSet);
+        if (variantFirst) {
+            patchPinyinWordVariantFromAppDB(wordMap.values());
+        }
+
         return phraseWordsList.stream()
                               .map((wordIdList) -> wordIdList.stream().map(wordMap::get).collect(Collectors.toList()))
                               //.sorted(Comparator.comparingInt(List::size))
@@ -686,8 +696,8 @@ public class PinyinDictDB {
         return wordList.stream().collect(Collectors.toMap(InputWord::getUid, Function.identity()));
     }
 
-    /** 查找拼音候选字字的变体 */
-    private Map<String, List<String>> findPinyinWordVariants(
+    /** 查找拼音候选字的变体 id */
+    private Map<String, List<String>> findPinyinWordVariantIds(
             SQLiteDatabase db, String table, Collection<String> sourceIds
     ) {
         if (sourceIds.isEmpty()) {
@@ -705,6 +715,31 @@ public class PinyinDictDB {
                           String sourceId = cursor.getString(0);
                           String targetId = cursor.getString(1);
                           map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetId);
+
+                          return null;
+                      });
+        return map;
+    }
+
+    /** 查找拼音字的变体 */
+    private Map<String, List<String>> findPinyinWordVariants(
+            SQLiteDatabase db, String table, Collection<String> sourceIds
+    ) {
+        if (sourceIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Map<String, List<String>> map = new HashMap<>(sourceIds.size());
+        doSQLiteQuery(db, table, new String[] { "id_", "target_value_" },
+                      //
+                      "id_ in (" //
+                      + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
+                      + ")", //
+                      sourceIds.toArray(new String[0]), //
+                      (cursor) -> {
+                          String sourceId = cursor.getString(0);
+                          String targetValue = cursor.getString(1);
+                          map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetValue);
 
                           return null;
                       });
@@ -832,19 +867,17 @@ public class PinyinDictDB {
                                                                                 strokeOrder);
                                                  });
 
-        // 查找繁/简字
-        patchPinyinWordVariantFromAppDB(wordList);
-
         return wordList;
     }
 
-    private void patchPinyinWordVariantFromAppDB(Collection<InputWord> words) {
+    /** 从拼音的候选字列表中查找各个字的繁/简形式 */
+    private void patchPinyinWordVariantInCandidatesFromAppDB(Collection<InputWord> candidates) {
         SQLiteDatabase db = getAppDB();
 
         Map<String, InputWord> tradWordMap = new HashMap<>();
         Map<String, InputWord> simpleWordMap = new HashMap<>();
 
-        words.forEach((word) -> {
+        candidates.forEach((word) -> {
             String wordId = ((PinyinInputWord) word).getWordId();
             if (((PinyinInputWord) word).isTraditional()) {
                 tradWordMap.put(wordId, word);
@@ -856,13 +889,13 @@ public class PinyinDictDB {
         // 查找繁/简字
         Future<Map<String, List<String>>> tradWithSimpleWordIdMapFuture = tradWordMap.isEmpty()
                                                                           ? null
-                                                                          : this.executor.submit(() -> findPinyinWordVariants(
+                                                                          : this.executor.submit(() -> findPinyinWordVariantIds(
                                                                                   db,
                                                                                   "link_word_with_simple_word",
                                                                                   tradWordMap.keySet()));
         Future<Map<String, List<String>>> simpleWithTradWordIdMapFuture = simpleWordMap.isEmpty()
                                                                           ? null
-                                                                          : this.executor.submit(() -> findPinyinWordVariants(
+                                                                          : this.executor.submit(() -> findPinyinWordVariantIds(
                                                                                   db,
                                                                                   "link_word_with_traditional_word",
                                                                                   simpleWordMap.keySet()));
@@ -895,6 +928,56 @@ public class PinyinDictDB {
                     sourceWord.setVariant(targetWord.getValue());
                 }
             });
+        });
+    }
+
+    /** 查找各个字的繁/简形式 */
+    private void patchPinyinWordVariantFromAppDB(Collection<InputWord> candidates) {
+        SQLiteDatabase db = getAppDB();
+
+        Map<String, InputWord> tradWordMap = new HashMap<>();
+        Map<String, InputWord> simpleWordMap = new HashMap<>();
+
+        candidates.forEach((word) -> {
+            String wordId = ((PinyinInputWord) word).getWordId();
+            if (((PinyinInputWord) word).isTraditional()) {
+                tradWordMap.put(wordId, word);
+            } else {
+                simpleWordMap.put(wordId, word);
+            }
+        });
+
+        Future<Map<String, List<String>>> tradWithSimpleWordMapFuture = tradWordMap.isEmpty()
+                                                                        ? null
+                                                                        : this.executor.submit(() -> findPinyinWordVariants(
+                                                                                db,
+                                                                                "simple_word",
+                                                                                tradWordMap.keySet()));
+        Future<Map<String, List<String>>> simpleWithTradWordMapFuture = simpleWordMap.isEmpty()
+                                                                        ? null
+                                                                        : this.executor.submit(() -> findPinyinWordVariants(
+                                                                                db,
+                                                                                "traditional_word",
+                                                                                simpleWordMap.keySet()));
+
+        value(tradWithSimpleWordMapFuture, new HashMap<>()).forEach((sourceId, variants) -> {
+            InputWord sourceWord = tradWordMap.get(sourceId);
+            if (sourceWord == null || sourceWord.getVariant() != null) {
+                return;
+            }
+
+            String variant = variants.get(0);
+            sourceWord.setVariant(variant);
+        });
+
+        value(simpleWithTradWordMapFuture, new HashMap<>()).forEach((sourceId, variants) -> {
+            InputWord sourceWord = simpleWordMap.get(sourceId);
+            if (sourceWord == null || sourceWord.getVariant() != null) {
+                return;
+            }
+
+            String variant = variants.get(0);
+            sourceWord.setVariant(variant);
         });
     }
 
