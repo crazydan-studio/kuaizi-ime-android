@@ -341,12 +341,13 @@ public class PinyinKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
+        gridKeys[2][0] = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_advance);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.DropInput);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.ConfirmInput);
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
-        // 部首过滤按键
+        // 笔画过滤按键
         String[] filterStrokes = PinyinInputWord.getStrokeNames();
         GridCoord[] filterStrokeKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
         for (int i = 0, j = 0; i < filterStrokeKeyCorrds.length && j < filterStrokes.length; i++, j++) {

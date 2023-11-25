@@ -76,7 +76,12 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
         setItemAnimator(this.animator);
 
         this.audioPlayer = new AudioPlayer();
-        this.audioPlayer.load(getContext(), R.raw.tick_single, R.raw.tick_double, R.raw.page_flip);
+        this.audioPlayer.load(getContext(),
+                              R.raw.tick_single,
+                              R.raw.tick_double,
+                              R.raw.page_flip,
+                              R.raw.tick_clock,
+                              R.raw.tick_ping);
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
@@ -177,6 +182,16 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
             case DoubleTick:
                 if (!config.isKeyClickedAudioDisabled()) {
                     this.audioPlayer.play(R.raw.tick_double);
+                }
+                break;
+            case ClockTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_clock);
+                }
+                break;
+            case PingTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_ping);
                 }
                 break;
             case PageFlip:

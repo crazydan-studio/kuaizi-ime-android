@@ -151,6 +151,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Toggle_PinyinInput_spell,
         /** 在候选字状态下根据笔画过滤候选字 */
         Filter_PinyinInputCandidate_stroke,
+        /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
+        Filter_PinyinInputCandidate_advance,
 
         /** 定位 目标编辑器 光标 */
         Editor_Cursor_Locator,
@@ -180,6 +182,11 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Toggle_Emoji_Group,
         /** 切换标点符号分组 */
         Toggle_Symbol_Group,
+
+        /** X 型输入的当前激活块 */
+        XPad_Active_Block,
+        /** X 型输入的字符按键 */
+        XPad_Char_Key,
     }
 
     public static abstract class Option<T> {

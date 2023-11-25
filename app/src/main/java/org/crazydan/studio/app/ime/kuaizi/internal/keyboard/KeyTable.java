@@ -142,6 +142,8 @@ public abstract class KeyTable {
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_advance,
+                            KeyStyle.withIcon(R.drawable.ic_filter, R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
         ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);

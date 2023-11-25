@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -200,6 +201,9 @@ public class XPadView extends View {
             // 开始输入：减少手指画圈的半径和滑行距离
             if (old_active_block.zone == 1 && new_active_block.zone == 2) {
                 start_zone_1_animator(this.zone_1_HexagonRadius_input_waiting, this.zone_1_HexagonRadius_input_doing);
+
+                // 用于告知手指已进入第 2 分区
+                fire_UserKey_MovingStart(trigger, CtrlKey.create(CtrlKey.Type.XPad_Active_Block), data);
             }
         }
 
@@ -216,6 +220,15 @@ public class XPadView extends View {
                 onGesture_Over_Zone_2(trigger, type, data);
                 break;
             }
+        }
+
+        if (old_active_block != null
+            && old_active_block.zone == 2
+            && new_active_block.zone == 2
+            && old_active_block.block != new_active_block.block
+            && this.state.type == XPadState.Type.InputChars_Input_Doing) {
+            // 用于告知待输入字符发生了切换
+            fire_UserKey_MovingStart(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
         }
     }
 
@@ -1010,6 +1023,7 @@ public class XPadView extends View {
                 trigger_UserKeyMsgListener(trigger, blockKey, type, data);
                 break;
             }
+            case DoubleTap:
             case LongPressStart: {
                 trigger_UserKeyMsgListener(trigger, blockKey, type, data);
 
@@ -1059,10 +1073,11 @@ public class XPadView extends View {
                 // 再次进入第 2 分区，则表示当前输入已确定
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
 
+                // 重置当前的状态数据：在获取 BlockKey 后再执行
                 XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
                 stateData.reset();
 
-                if (blockKey == null) {
+                if (BlockKey.isNull(blockKey)) {
                     return;
                 }
 
@@ -1107,8 +1122,24 @@ public class XPadView extends View {
     ) {
         Key<?> key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
 
+        trigger_UserKeyMsgListener(trigger, key, type, data);
+    }
+
+    private void trigger_UserKeyMsgListener(
+            UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
+    ) {
         // Note：向外部传递的 GestureData 不需要做坐标转换
         trigger.onGesture(key, type, data);
+    }
+
+    private void fire_UserKey_MovingStart(
+            UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureData data
+    ) {
+        trigger_UserKeyMsgListener(trigger,
+                                   key,
+                                   ViewGestureDetector.GestureType.MovingStart,
+                                   new ViewGestureDetector.MovingGestureData(data, new Motion()));
     }
 
     private static class BlockIndex {

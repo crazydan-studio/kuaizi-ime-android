@@ -38,6 +38,8 @@ public class InputAudioPlayDoingMsgData extends InputCommonMsgData {
     public enum AudioType {
         SingleTick,
         DoubleTick,
+        ClockTick,
+        PingTick,
         PageFlip,
     }
 }

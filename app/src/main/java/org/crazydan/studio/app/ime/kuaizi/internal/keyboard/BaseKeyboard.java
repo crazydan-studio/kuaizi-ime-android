@@ -279,6 +279,10 @@ public abstract class BaseKeyboard implements Keyboard {
             return true;
         }
 
+        if (try_OnUserKeyMsg_Over_XPad(msg, key, data)) {
+            return true;
+        }
+
         switch (this.state.type) {
             case InputChars_Input_Waiting: {
                 break;
@@ -708,6 +712,16 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputAudio_Play_Doing(key, InputAudioPlayDoingMsgData.AudioType.DoubleTick);
     }
 
+    /** 播放时钟走时音效 */
+    protected void play_ClockTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayDoingMsgData.AudioType.ClockTick);
+    }
+
+    /** 播放敲击音效 */
+    protected void play_PingTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayDoingMsgData.AudioType.PingTick);
+    }
+
     /** 播放输入翻页音效 */
     protected void play_PageFlip_InputAudio() {
         fire_InputAudio_Play_Doing(null, InputAudioPlayDoingMsgData.AudioType.PageFlip);
@@ -816,6 +830,7 @@ public abstract class BaseKeyboard implements Keyboard {
         if (this.state.type != State.Type.Editor_Edit_Doing //
             && CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
             switch (msg) {
+                case KeyDoubleTap:
                 case KeyLongPressStart: {
                     play_DoubleTick_InputAudio(key);
 
@@ -829,6 +844,28 @@ public abstract class BaseKeyboard implements Keyboard {
                     Motion motion = ((UserFingerFlippingMsgData) data).motion;
 
                     do_Editor_Cursor_Moving(key, motion);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean try_OnUserKeyMsg_Over_XPad(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        if (!isXInputPadEnabled() || !(key instanceof CtrlKey)) {
+            return false;
+        }
+
+        if (msg == UserKeyMsg.FingerMovingStart) {
+            // 播放输入分区激活和待输入按键切换的提示音
+            switch (((CtrlKey) key).getType()) {
+                case XPad_Active_Block: {
+                    play_PingTick_InputAudio(key);
+                    return true;
+                }
+                case XPad_Char_Key: {
+                    play_ClockTick_InputAudio(key);
                     return true;
                 }
             }
