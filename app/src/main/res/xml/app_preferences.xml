@@ -24,7 +24,8 @@
 
         <SwitchPreferenceCompat
                 app:key="candidate_variant_first_chosen"
-                app:title="@string/label_candidate_variant_first_chosen" />
+                app:title="@string/label_candidate_variant_first_chosen"
+                app:summary="@string/desc_candidate_variant_first_chosen" />
 
         <SwitchPreferenceCompat
                 app:key="disable_user_input_data"

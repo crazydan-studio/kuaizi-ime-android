@@ -73,6 +73,9 @@
     <string name="label_disable_input_key_popup_tips">禁用按键提示气泡</string>
     <string name="label_disable_gesture_slipping_trail">禁用滑屏轨迹</string>
 
+    <string name="desc_candidate_variant_first_chosen">
+        启用繁体候选字优先，可以自动将选择的简体候选字转换为其繁体形式，无需每次长按输入提交按钮进行显式转换
+    </string>
     <string name="desc_disable_user_input_data">
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
     </string>
