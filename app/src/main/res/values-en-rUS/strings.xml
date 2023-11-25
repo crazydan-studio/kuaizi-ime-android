@@ -65,7 +65,7 @@
     <string name="label_enable_x_input_pad">Enable the X-shaped Input Pad</string>
     <string name="label_switch_hand_mode">Switch the Keyboard Hand Mode</string>
     <string name="label_adapt_desktop_swipe_up_gesture">Adapt System Swipe Up Gesture</string>
-    <string name="label_candidate_variant_first_chosen">Traditional Chinese Candidate First</string>
+    <string name="label_enable_candidate_variant_first">Enable Traditional Chinese Candidate First</string>
     <string name="label_disable_user_input_data">DO NOT SAVE User Inputting Data</string>
     <string name="label_disable_key_clicked_audio">Disable the Key Clicked Audio</string>
     <string name="label_disable_key_animation">Disable the Key Animation</string>
@@ -73,7 +73,7 @@
     <string name="label_disable_input_key_popup_tips">Disable the Key Popup Tips</string>
     <string name="label_disable_gesture_slipping_trail">Disable the Slipping Trail</string>
 
-    <string name="desc_candidate_variant_first_chosen">
+    <string name="desc_enable_candidate_variant_first">
         Enable Traditional Chinese candidate first
         to automatically convert the selected Simplified Chinese candidate
         into its Traditional Chinese form without the need

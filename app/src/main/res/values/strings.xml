@@ -65,7 +65,7 @@
     <string name="label_enable_x_input_pad">启用 X 型输入面板</string>
     <string name="label_switch_hand_mode">切换键盘左右手模式</string>
     <string name="label_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
-    <string name="label_candidate_variant_first_chosen">繁体候选字优先</string>
+    <string name="label_enable_candidate_variant_first">启用繁体候选字优先</string>
     <string name="label_disable_user_input_data">禁止记录用户输入</string>
     <string name="label_disable_key_clicked_audio">禁用按键音效</string>
     <string name="label_disable_key_animation">禁用按键动画</string>
@@ -73,7 +73,7 @@
     <string name="label_disable_input_key_popup_tips">禁用按键提示气泡</string>
     <string name="label_disable_gesture_slipping_trail">禁用滑屏轨迹</string>
 
-    <string name="desc_candidate_variant_first_chosen">
+    <string name="desc_enable_candidate_variant_first">
         启用繁体候选字优先，可以自动将选择的简体候选字转换为其繁体形式，无需每次长按输入提交按钮进行显式转换
     </string>
     <string name="desc_disable_user_input_data">

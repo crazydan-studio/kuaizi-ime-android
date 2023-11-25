@@ -914,7 +914,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             words.add(input.getWord());
         }
 
-        boolean variantFirst = getConfig().isCandidateVariantFirstChosen();
+        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
         List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPinyinPhrase(words, 5, variantFirst);
         List<CompletionInput> phraseCompletions = topBestPhrases.stream()
                                                                 .map((phrase) -> createPhraseCompletion(words.size(),

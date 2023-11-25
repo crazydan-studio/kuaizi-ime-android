@@ -552,6 +552,6 @@ public class ImeInputView extends FrameLayout
     }
 
     private void updateInputListOption(Keyboard.Config config) {
-        this.inputList.setDefaultUseWordVariant(config.isCandidateVariantFirstChosen());
+        this.inputList.setDefaultUseWordVariant(config.isCandidateVariantFirstEnabled());
     }
 }
