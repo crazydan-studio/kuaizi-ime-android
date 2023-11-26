@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.key;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 
@@ -45,7 +48,14 @@ public class XPadKey extends BaseKey<XPadKey> {
 
     @Override
     public boolean isSameWith(Object o) {
-        return false;
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        XPadKey that = (XPadKey) o;
+        return Objects.equals(this.zone_0_key, that.zone_0_key)
+               && Arrays.equals(this.zone_1_keys, that.zone_1_keys)
+               && Arrays.deepEquals(this.zone_2_keys, that.zone_2_keys);
     }
 
     @NonNull
