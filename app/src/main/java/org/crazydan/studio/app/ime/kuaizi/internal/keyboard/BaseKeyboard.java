@@ -857,7 +857,7 @@ public abstract class BaseKeyboard implements Keyboard {
             return false;
         }
 
-        if (msg == UserKeyMsg.FingerMovingStart) {
+        if (msg == UserKeyMsg.FingerMoving) {
             // 播放输入分区激活和待输入按键切换的提示音
             switch (((CtrlKey) key).getType()) {
                 case XPad_Active_Block: {

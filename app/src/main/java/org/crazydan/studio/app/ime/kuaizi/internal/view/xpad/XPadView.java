@@ -201,9 +201,6 @@ public class XPadView extends View {
             // 开始输入：减少手指画圈的半径和滑行距离
             if (old_active_block.zone == 1 && new_active_block.zone == 2) {
                 start_zone_1_animator(this.zone_1_HexagonRadius_input_waiting, this.zone_1_HexagonRadius_input_doing);
-
-                // 用于告知手指已进入第 2 分区
-                fire_UserKey_MovingStart(trigger, CtrlKey.create(CtrlKey.Type.XPad_Active_Block), data);
             }
         }
 
@@ -222,13 +219,27 @@ public class XPadView extends View {
             }
         }
 
-        if (old_active_block != null
-            && old_active_block.zone == 2
-            && new_active_block.zone == 2
-            && old_active_block.block != new_active_block.block
-            && this.state.type == XPadState.Type.InputChars_Input_Doing) {
-            // 用于告知待输入字符发生了切换
-            fire_UserKey_MovingStart(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
+        if (old_active_block != null) {
+            // 告知已激活第 2 分区
+            if (old_active_block.zone == 1 && new_active_block.zone == 2) {
+                BlockKey blockKey = getBlockKey(new_active_block, 1);
+                if (BlockKey.isNull(blockKey)) {
+                    blockKey = getBlockKey(new_active_block, -1);
+                }
+
+                if (!BlockKey.isNull(blockKey)) {
+                    fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Active_Block), data);
+                }
+            }
+            // 告知待输入字符发生了切换
+            else if (old_active_block.zone == 2
+                     && new_active_block.zone == 2
+                     && old_active_block.block != new_active_block.block) {
+                BlockKey blockKey = getActiveBlockKey_In_Zone_2();
+                if (!BlockKey.isNull(blockKey)) {
+                    fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
+                }
+            }
         }
     }
 
@@ -1133,12 +1144,12 @@ public class XPadView extends View {
         trigger.onGesture(key, type, data);
     }
 
-    private void fire_UserKey_MovingStart(
+    private void fire_UserKey_Moving(
             UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureData data
     ) {
         trigger_UserKeyMsgListener(trigger,
                                    key,
-                                   ViewGestureDetector.GestureType.MovingStart,
+                                   ViewGestureDetector.GestureType.Moving,
                                    new ViewGestureDetector.MovingGestureData(data, new Motion()));
     }
 
