@@ -219,9 +219,13 @@ public class XPadView extends View {
             }
         }
 
-        if (old_active_block != null) {
+        // 触发滑行过程中的切换消息
+        if (old_active_block != null //
+            && type == ViewGestureDetector.GestureType.Moving) {
             // 告知已激活第 2 分区
-            if (old_active_block.zone == 1 && new_active_block.zone == 2) {
+            if (old_active_block.zone == 1 && new_active_block.zone == 2 //
+                && this.state.type == XPadState.Type.InputChars_Input_Doing) {
+                //
                 BlockKey blockKey = getBlockKey(new_active_block, 1);
                 if (BlockKey.isNull(blockKey)) {
                     blockKey = getBlockKey(new_active_block, -1);
@@ -235,6 +239,7 @@ public class XPadView extends View {
             else if (old_active_block.zone == 2
                      && new_active_block.zone == 2
                      && old_active_block.block != new_active_block.block) {
+                //
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {
                     fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
@@ -1160,6 +1165,19 @@ public class XPadView extends View {
         private BlockIndex(int zone, int block) {
             this.zone = zone;
             this.block = block;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            BlockIndex that = (BlockIndex) o;
+            return this.zone == that.zone && this.block == that.block;
         }
     }
 

@@ -53,6 +53,7 @@ public class ViewGestureDetector {
 
     private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
+    private GestureData latestPressStart;
     private SingleTapGestureData latestSingleTap;
 
     public ViewGestureDetector addListener(Listener listener) {
@@ -116,10 +117,14 @@ public class ViewGestureDetector {
     }
 
     private void onPressStart(GestureData data) {
+        this.latestPressStart = data;
+
         triggerListeners(GestureType.PressStart, data);
     }
 
     private void onPressEnd(GestureData data) {
+        this.latestPressStart = null;
+
         triggerListeners(GestureType.PressEnd, data);
     }
 
@@ -203,6 +208,11 @@ public class ViewGestureDetector {
     }
 
     private void onMoving(GestureData data) {
+        // Note: PressStart、MovingStart、Flipping 均须发生在相同的位置上
+        if (!this.moving) {
+            data = this.latestPressStart;
+        }
+
         this.moving = true;
         this.movingTracker.add(data);
 

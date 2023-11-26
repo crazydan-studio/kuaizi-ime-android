@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
     private KeyView<?, ?> prevKeyView;
+    private KeyView<?, ?> pressStartKeyView;
     private KeyView<?, ?> movingOverXPadKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
@@ -45,11 +46,13 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
 
-        // 处理普通键盘的按键发生切换的情况
-        if (this.prevKeyView != null && this.prevKeyView != keyView) {
-            onPressEnd(this.prevKeyView, ViewGestureDetector.GestureType.PressEnd, data);
-        }
+        KeyView<?, ?> oldKeyView = this.prevKeyView;
         this.prevKeyView = keyView;
+
+        // 处理普通键盘的按键发生切换的情况
+        if (oldKeyView != null && oldKeyView != keyView) {
+            onPressEnd(oldKeyView, ViewGestureDetector.GestureType.PressEnd, data);
+        }
 
         // Note：需要处理 MovingEnd 事件发生在 X 面板以外的情况
         if (try_OnXPadGesture(keyView, type, data)) {
