@@ -47,7 +47,7 @@ public class NumberKeyTable extends KeyTable {
     }
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
-    public Key<?>[][] createKeys() {
+    public Key<?>[][] createKeys(boolean showExitKey) {
         if (this.config.isXInputPadEnabled()) {
             return createKeysForXPad();
         }
@@ -88,6 +88,10 @@ public class NumberKeyTable extends KeyTable {
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[3][index_end] = enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
+
+        if (showExitKey) {
+            gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
+        }
 
         int dataIndex = 0;
         GridCoord[][] levelKeyCoords = getKeyCoords();

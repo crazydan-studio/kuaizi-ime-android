@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.NumberKeyTable;
 
@@ -27,11 +28,29 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.NumberKeyTa
  * @date 2023-07-28
  */
 public class NumberKeyboard extends DirectInputKeyboard {
+    private boolean needToShowExit;
+
+    @Override
+    public void setConfig(Config newConfig) {
+        // 若是在 X 型输入中切换过来的，则需要在禁用 X 型输入后，提供退出按钮以回到前一键盘
+        this.needToShowExit = getConfig() != null
+                              && !newConfig.isXInputPadEnabled()
+                              && getConfig().isXInputPadEnabled();
+
+        super.setConfig(newConfig);
+    }
 
     @Override
     protected KeyFactory doGetKeyFactory() {
         NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfigure());
 
-        return keyTable::createKeys;
+        return () -> keyTable.createKeys(this.needToShowExit);
+    }
+
+    @Override
+    protected void switchTo_Previous_Keyboard(Key<?> key) {
+        this.needToShowExit = false;
+
+        super.switchTo_Previous_Keyboard(key);
     }
 }
