@@ -129,8 +129,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                 InputCandidateAdvanceFilterDoingStateData stateData
                         = (InputCandidateAdvanceFilterDoingStateData) this.state.data;
 
-                return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getPagingData(),
-                                                                            stateData.getSpells(),
+                return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
+                                                                            stateData.getSelectedSpells(),
+                                                                            stateData.getRadicals(),
+                                                                            stateData.getSelectedRadicals(),
                                                                             stateData.getPageStart());
             }
             case InputList_Committing_Option_Choose_Doing: {
@@ -180,10 +182,12 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
+                // Note：其余消息，继续向后处理
                 if (msg == UserInputMsg.Input_Choose_Doing) {
                     start_Input_Choosing(data.target);
                     return;
                 }
+            case InputCandidate_AdvanceFilter_Doing:
             case InputChars_Flip_Doing: {
                 if (msg == UserInputMsg.Inputs_Clean_Done) {
                     fire_InputList_Clean_Done();
@@ -199,11 +203,14 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(msg, data)) {
+        Key<?> key = data.target;
+        if (try_OnUserKeyMsg(msg, data) //
+            // Note：被禁用的部首和读音按键也需要接受处理
+            && (!CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell) //
+                && !CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical))) {
             return;
         }
 
-        Key<?> key = data.target;
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
                 on_InputChars_Slip_Doing_UserKey_Msg(msg, key, data);
@@ -224,6 +231,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                     on_InputCandidate_Choose_Doing_InputWordKey_Msg(msg, (InputWordKey) key, data);
                 } else if (key instanceof CtrlKey) {
                     on_InputCandidate_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
+                }
+                break;
+            }
+            case InputCandidate_AdvanceFilter_Doing: {
+                if (msg == UserKeyMsg.FingerFlipping) {
+                    on_InputCandidate_AdvanceFilter_Doing_PageFlipping_Msg(msg, key, data);
+                } else if (key instanceof CtrlKey) {
+                    on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
                 }
                 break;
             }
@@ -498,7 +513,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case Filter_PinyinInputCandidate_advance: {
                 play_SingleTick_InputAudio(key);
 
-                start_InputCandidate_Filtering_Advance(inputList, pending, key);
+                start_InputCandidate_Advance_Filtering(inputList, pending, key);
                 break;
             }
         }
@@ -746,18 +761,79 @@ public class PinyinKeyboard extends BaseKeyboard {
     // >>>>>>>>>>>>
 
     // <<<<<<<<< 对输入候选字的高级过滤
-    private void start_InputCandidate_Filtering_Advance(InputList inputList, CharInput input, Key<?> key) {
+    private void start_InputCandidate_Advance_Filtering(InputList inputList, CharInput input, Key<?> key) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
 
         CandidateFilters filters = this.pinyinDict.getPinyinCandidateFilters(input);
-        InputCandidateAdvanceFilterDoingStateData stateData = new InputCandidateAdvanceFilterDoingStateData(filters,
+        InputCandidateAdvanceFilterDoingStateData stateData = new InputCandidateAdvanceFilterDoingStateData(input,
+                                                                                                            filters,
                                                                                                             pageSize);
 
         State state = new State(State.Type.InputCandidate_AdvanceFilter_Doing, stateData, this.state);
         change_State_To(key, state);
 
         fire_InputCandidate_Choose_Doing(input);
+    }
+
+    private void on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        if (msg != UserKeyMsg.KeySingleTap) {
+            return;
+        }
+
+        InputCandidateAdvanceFilterDoingStateData stateData
+                = (InputCandidateAdvanceFilterDoingStateData) this.state.data;
+        switch (key.getType()) {
+            case Filter_PinyinInputCandidate_by_Spell:
+            case Filter_PinyinInputCandidate_by_Radical: {
+                play_SingleTick_InputAudio(key);
+
+                CtrlKey.Option<?> option = key.getOption();
+                String code = (String) option.value();
+
+                switch (key.getType()) {
+                    case Filter_PinyinInputCandidate_by_Spell: {
+                        if (key.isDisabled()) {
+                            stateData.unselectSpell(code);
+                        } else {
+                            stateData.selectSpell(code);
+                        }
+                        stateData.clearSelectedRadicals();
+                        break;
+                    }
+                    case Filter_PinyinInputCandidate_by_Radical: {
+                        if (key.isDisabled()) {
+                            stateData.unselectRadical(code);
+                        } else {
+                            stateData.selectRadical(code);
+                        }
+                        break;
+                    }
+                }
+
+                fire_InputCandidate_Choose_Doing(stateData.getTarget());
+                break;
+            }
+            case Confirm_PinyinInputCandidate_Filters: {
+                play_SingleTick_InputAudio(key);
+
+                exit(key);
+                break;
+            }
+        }
+    }
+
+    private void on_InputCandidate_AdvanceFilter_Doing_PageFlipping_Msg(
+            UserKeyMsg msg, Key<?> key, UserKeyMsgData data
+    ) {
+        UserFingerFlippingMsgData flippingData = (UserFingerFlippingMsgData) data;
+        InputCandidateAdvanceFilterDoingStateData stateData
+                = (InputCandidateAdvanceFilterDoingStateData) this.state.data;
+
+        // 翻页
+        update_PagingStateData_by_UserKeyMsg(stateData, flippingData);
+
+        fire_InputCandidate_Choose_Doing(stateData.getTarget());
     }
     // >>>>>>>>>>>>
 

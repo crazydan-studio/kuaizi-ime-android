@@ -18,7 +18,14 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.data;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 候选字过滤数据
@@ -27,15 +34,60 @@ import java.util.List;
  * @date 2023-11-27
  */
 public class CandidateFilters {
-    public final List<String> spells;
-    public final List<String> radicals;
+    private final Map<String, Set<Radical>> spellAndRadicalsMap;
 
     public CandidateFilters() {
-        this(new ArrayList<>(), new ArrayList<>());
+        this(new HashMap<>());
     }
 
-    public CandidateFilters(List<String> spells, List<String> radicals) {
-        this.spells = spells;
-        this.radicals = radicals;
+    public CandidateFilters(Map<String, Set<Radical>> spellAndRadicalsMap) {
+        this.spellAndRadicalsMap = spellAndRadicalsMap;
+    }
+
+    public List<String> getSpells() {
+        return new ArrayList<>(this.spellAndRadicalsMap.keySet());
+    }
+
+    public List<String> getRadicals(List<String> spells) {
+        Set<Radical> radicals = new HashSet<>();
+
+        this.spellAndRadicalsMap.forEach((spell, set) -> {
+            if (spells.isEmpty() || spells.contains(spell)) {
+                radicals.addAll(set);
+            }
+        });
+
+        return radicals.stream()
+                       .sorted(Comparator.comparing(r -> r.strokeCount))
+                       .map(r -> r.value)
+                       .collect(Collectors.toList());
+    }
+
+    public static class Radical {
+        public final String value;
+        public final int strokeCount;
+
+        public Radical(String value, int strokeCount) {
+            this.value = value;
+            this.strokeCount = strokeCount;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Radical that = (Radical) o;
+            return this.value.equals(that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
     }
 }

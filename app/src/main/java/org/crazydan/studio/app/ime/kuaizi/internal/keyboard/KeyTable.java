@@ -143,9 +143,12 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_advance,
-                            KeyStyle.withIcon(R.drawable.ic_filter, R.attr.key_ctrl_switcher_bg_color));
+                            KeyStyle.withIcon(R.drawable.ic_filter_empty, R.attr.key_ctrl_switcher_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Confirm_PinyinInputCandidate_Filters,
+                            KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
+                                              R.drawable.ic_left_hand_ok,
+                                              R.attr.key_ctrl_confirm_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
         ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);

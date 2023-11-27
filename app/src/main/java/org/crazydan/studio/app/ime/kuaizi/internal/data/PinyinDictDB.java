@@ -882,8 +882,7 @@ public class PinyinDictDB {
 
         SQLiteDatabase db = getAppDB();
 
-        Set<String> spellSet = new LinkedHashSet<>();
-        Map<Integer, Set<String>> radicalMap = new HashMap<>();
+        Map<String, Set<CandidateFilters.Radical>> spellAndRadicalsMap = new LinkedHashMap<>();
         doSQLiteQuery(db, "pinyin_word", //
                       new String[] {
                               "spell_", "radical_", "radical_stroke_count_",
@@ -893,19 +892,17 @@ public class PinyinDictDB {
                       "spell_id_ asc", //
                       (cursor) -> {
                           String spellValue = cursor.getString(0);
-                          String radical = cursor.getString(1);
+                          String radicalValue = cursor.getString(1);
                           int radicalStrokeCount = cursor.getInt(2);
+                          CandidateFilters.Radical radical = new CandidateFilters.Radical(radicalValue,
+                                                                                          radicalStrokeCount);
 
-                          spellSet.add(spellValue);
-                          radicalMap.computeIfAbsent(radicalStrokeCount, (k) -> new LinkedHashSet<>()).add(radical);
+                          spellAndRadicalsMap.computeIfAbsent(spellValue, (k) -> new HashSet<>()).add(radical);
 
                           return null;
                       });
 
-        List<String> radicals = new ArrayList<>();
-        radicalMap.keySet().stream().sorted().forEach((k) -> radicals.addAll(radicalMap.get(k)));
-
-        return new CandidateFilters(new ArrayList<>(spellSet), radicals);
+        return new CandidateFilters(spellAndRadicalsMap);
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */

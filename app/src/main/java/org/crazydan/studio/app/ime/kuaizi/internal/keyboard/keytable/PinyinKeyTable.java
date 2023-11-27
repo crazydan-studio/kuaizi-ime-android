@@ -450,7 +450,9 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字高级过滤按键 */
     public Key<?>[][] createInputCandidateAdvanceFilterKeys(
-            List<String> radicals, List<String> spells, int startIndex
+            List<String> spells, List<String> selectedSpells, //
+            List<String> radicals, List<String> selectedRadicals, //
+            int startIndex
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -462,7 +464,7 @@ public class PinyinKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_confirm);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Confirm_PinyinInputCandidate_Filters);
 
         // 声调过滤按键
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
@@ -473,7 +475,10 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            gridKeys[row][column] = filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell, spell);
+            boolean disabled = selectedSpells.contains(spell);
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
+
+            gridKeys[row][column] = filterKey(type, spell).setDisabled(disabled);
         }
 
         // 部首过滤按键
@@ -492,11 +497,11 @@ public class PinyinKeyTable extends KeyTable {
                 }
 
                 String radical = radicals.get(dataIndex++);
-                if (radical == null) {
-                    continue;
-                }
+                boolean disabled = selectedRadicals.contains(radical);
+                KeyColor color = key_input_word_level_colors[level];
+                CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical;
 
-                gridKeys[row][column] = filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical, radical);
+                gridKeys[row][column] = filterKey(type, radical).setColor(color).setDisabled(disabled);
             }
         }
 
