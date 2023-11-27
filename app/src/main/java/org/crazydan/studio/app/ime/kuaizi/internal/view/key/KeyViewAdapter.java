@@ -67,7 +67,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     protected static int getKeyViewType(Key<?> key) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case Filter_PinyinInputCandidate_stroke:
+                case Filter_PinyinInputCandidate_by_Stroke:
                     return VIEW_TYPE_FILTER_INPUT_WORD_KEY;
                 case Toggle_PinyinInput_spell:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
@@ -119,7 +119,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static void bindKeyView(KeyView<?, ?> view, Key<?> key, HexagonOrientation orientation) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case Filter_PinyinInputCandidate_stroke:
+                case Filter_PinyinInputCandidate_by_Stroke:
                     ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, orientation);
                     break;
                 case Toggle_PinyinInput_spell:

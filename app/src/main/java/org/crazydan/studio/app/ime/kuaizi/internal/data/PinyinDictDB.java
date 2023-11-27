@@ -359,6 +359,13 @@ public class PinyinDictDB {
         return wordList;
     }
 
+    /** 获取指定输入的候选字过滤数据 */
+    public CandidateFilters getPinyinCandidateFilters(CharInput input) {
+        String inputPinyinCharsId = getPinyinCharsId(input);
+
+        return queryPinyinCandidateFiltersFromAppDB(inputPinyinCharsId);
+    }
+
     /** 根据前序输入分析得出最靠前的 <code>top</code> 个拼音候选字 */
     public BestCandidateWords findTopBestPinyinCandidateWords(
             CharInput input, int top, List<InputWord> prevPhrase, boolean userDataDisabled
@@ -838,36 +845,67 @@ public class PinyinDictDB {
     private List<InputWord> queryPinyinWordsFromAppDB(String where, String[] params, String orderBy) {
         SQLiteDatabase db = getAppDB();
 
-        List<InputWord> wordList = doSQLiteQuery(db, "pinyin_word", //
-                                                 new String[] {
-                                                         "id_",
-                                                         "word_",
-                                                         "spell_",
-                                                         "word_id_",
-                                                         "spell_chars_id_",
-                                                         "traditional_",
-                                                         "stroke_order_",
-                                                         }, //
-                                                 where, params, orderBy, //
-                                                 (cursor) -> {
-                                                     String uid = cursor.getString(0);
-                                                     String value = cursor.getString(1);
-                                                     String notation = cursor.getString(2);
-                                                     String wordId = cursor.getString(3);
-                                                     String pinyinCharsId = cursor.getString(4);
-                                                     boolean traditional = cursor.getInt(5) > 0;
-                                                     String strokeOrder = cursor.getString(6);
+        return doSQLiteQuery(db, "pinyin_word", //
+                             new String[] {
+                                     "id_",
+                                     "word_",
+                                     "spell_",
+                                     "word_id_",
+                                     "spell_chars_id_",
+                                     "traditional_",
+                                     "stroke_order_",
+                                     }, //
+                             where, params, orderBy, //
+                             (cursor) -> {
+                                 String uid = cursor.getString(0);
+                                 String value = cursor.getString(1);
+                                 String notation = cursor.getString(2);
+                                 String wordId = cursor.getString(3);
+                                 String pinyinCharsId = cursor.getString(4);
+                                 boolean traditional = cursor.getInt(5) > 0;
+                                 String strokeOrder = cursor.getString(6);
 
-                                                     return new PinyinInputWord(uid,
-                                                                                value,
-                                                                                notation,
-                                                                                wordId,
-                                                                                pinyinCharsId,
-                                                                                traditional,
-                                                                                strokeOrder);
-                                                 });
+                                 return new PinyinInputWord(uid,
+                                                            value,
+                                                            notation,
+                                                            wordId,
+                                                            pinyinCharsId,
+                                                            traditional,
+                                                            strokeOrder);
+                             });
+    }
 
-        return wordList;
+    private CandidateFilters queryPinyinCandidateFiltersFromAppDB(String inputPinyinCharsId) {
+        if (inputPinyinCharsId == null) {
+            return new CandidateFilters();
+        }
+
+        SQLiteDatabase db = getAppDB();
+
+        Set<String> spellSet = new LinkedHashSet<>();
+        Map<Integer, Set<String>> radicalMap = new HashMap<>();
+        doSQLiteQuery(db, "pinyin_word", //
+                      new String[] {
+                              "spell_", "radical_", "radical_stroke_count_",
+                              }, //
+                      "spell_chars_id_ = ?", new String[] { inputPinyinCharsId }, //
+                      // Note：拼音 id 已按声调排序
+                      "spell_id_ asc", //
+                      (cursor) -> {
+                          String spellValue = cursor.getString(0);
+                          String radical = cursor.getString(1);
+                          int radicalStrokeCount = cursor.getInt(2);
+
+                          spellSet.add(spellValue);
+                          radicalMap.computeIfAbsent(radicalStrokeCount, (k) -> new LinkedHashSet<>()).add(radical);
+
+                          return null;
+                      });
+
+        List<String> radicals = new ArrayList<>();
+        radicalMap.keySet().stream().sorted().forEach((k) -> radicals.addAll(radicalMap.get(k)));
+
+        return new CandidateFilters(new ArrayList<>(spellSet), radicals);
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */
@@ -1381,14 +1419,14 @@ public class PinyinDictDB {
     private void initAppDB(SQLiteDatabase db) {
         String[] clauses = new String[] {
                 // 创建索引以加速查询
-                "CREATE INDEX IF NOT EXISTS idx_link_word_with_pinyin"
-                + " ON link_word_with_pinyin"
-                + " (target_chars_id_, weight_, glyph_weight_, target_id_);",
+                "CREATE INDEX IF NOT EXISTS idx_meta_word_with_pinyin"
+                + " ON meta_word_with_pinyin"
+                + " (weight_, glyph_weight_, spell_id_);",
                 //
                 "CREATE INDEX IF NOT EXISTS idx_meta_phrase ON meta_phrase (weight_);",
-                "CREATE INDEX IF NOT EXISTS idx_link_phrase_with_pinyin_word"
-                + " ON link_phrase_with_pinyin_word"
-                + " (target_spell_chars_id_, source_id_, target_index_);",
+                "CREATE INDEX IF NOT EXISTS idx_meta_phrase_with_pinyin_word"
+                + " ON meta_phrase_with_pinyin_word"
+                + " (phrase_id_, word_index_);",
                 };
 
         for (String clause : clauses) {

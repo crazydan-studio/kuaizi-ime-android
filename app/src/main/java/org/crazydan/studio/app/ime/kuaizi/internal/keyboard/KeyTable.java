@@ -141,7 +141,9 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_stroke, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell, key_ctrl_label_style);
+        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_advance,
                             KeyStyle.withIcon(R.drawable.ic_filter, R.attr.key_ctrl_switcher_bg_color));
 
@@ -219,6 +221,10 @@ public abstract class KeyTable {
     }
 
     protected GridCoord[][] getLevelKeyCoords() {
+        return getLevelKeyCoords(false);
+    }
+
+    protected GridCoord[][] getLevelKeyCoords(boolean containsMiddle) {
         return new GridCoord[][] {
                 // level 1
                 new GridCoord[] {
@@ -237,7 +243,13 @@ public abstract class KeyTable {
                         coord(2, 2), coord(2, 1),
                         },
                 // level 3
-                new GridCoord[] {
+                containsMiddle ? new GridCoord[] {
+                        coord(3, 6), coord(3, 5),
+                        //
+                        coord(3, 4), coord(3, 3),
+                        //
+                        coord(3, 2), coord(3, 1),
+                        } : new GridCoord[] {
                         coord(3, 6), coord(3, 5),
                         //
                         coord(3, 3), coord(3, 2),

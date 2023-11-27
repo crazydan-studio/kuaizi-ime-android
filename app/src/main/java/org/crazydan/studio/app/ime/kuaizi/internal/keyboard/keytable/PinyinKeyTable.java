@@ -443,6 +443,66 @@ public class PinyinKeyTable extends KeyTable {
         return gridKeys;
     }
 
+    /** 候选字高级过滤按键的分页大小 */
+    public int getInputCandidateAdvanceFilterKeysPageSize() {
+        return countGridSize(getLevelKeyCoords());
+    }
+
+    /** 创建输入候选字高级过滤按键 */
+    public Key<?>[][] createInputCandidateAdvanceFilterKeys(
+            List<String> radicals, List<String> spells, int startIndex
+    ) {
+        Key<?>[][] gridKeys = createEmptyGrid();
+
+        int dataSize = radicals.size();
+        int pageSize = getInputCandidateAdvanceFilterKeysPageSize();
+        int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
+        int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
+
+        int index_end = getGridLastColumnIndex();
+
+        gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Exit).setIconResId(R.drawable.ic_confirm);
+
+        // 声调过滤按键
+        GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
+        for (int i = 0, j = 0; i < spellKeyCorrds.length && j < spells.size(); i++, j++) {
+            GridCoord keyCoord = spellKeyCorrds[i];
+            String spell = spells.get(j);
+
+            int row = keyCoord.row;
+            int column = keyCoord.column;
+
+            gridKeys[row][column] = filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell, spell);
+        }
+
+        // 部首过滤按键
+        int dataIndex = startIndex;
+        GridCoord[][] levelKeyCoords = getLevelKeyCoords(true);
+
+        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
+            GridCoord[] keyCoords = levelKeyCoords[level];
+
+            for (GridCoord keyCoord : keyCoords) {
+                int row = keyCoord.row;
+                int column = keyCoord.column;
+
+                if (dataIndex >= dataSize) {
+                    break;
+                }
+
+                String radical = radicals.get(dataIndex++);
+                if (radical == null) {
+                    continue;
+                }
+
+                gridKeys[row][column] = filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical, radical);
+            }
+        }
+
+        return gridKeys;
+    }
+
     /** 创建 输入列表 提交选项 按键 */
     public Key<?>[][] createInputListCommittingOptionKeys(
             Input.Option currentOption, boolean hasNotation, boolean hasVariant
@@ -502,8 +562,17 @@ public class PinyinKeyTable extends KeyTable {
         String strokeCode = PinyinInputWord.getStrokeCode(stroke);
         String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
 
-        CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_stroke;
-        CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
+        return filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke, label, strokeCode);
+    }
+
+    public CtrlKey filterKey(CtrlKey.Type type, String code) {
+        CtrlKey.Option<?> option = new CtrlKey.TextOption(code);
+
+        return ctrlKey(type).setOption(option).setLabel(code);
+    }
+
+    public CtrlKey filterKey(CtrlKey.Type type, String label, String code) {
+        CtrlKey.Option<?> option = new CtrlKey.TextOption(code);
 
         return ctrlKey(type).setOption(option).setLabel(label);
     }

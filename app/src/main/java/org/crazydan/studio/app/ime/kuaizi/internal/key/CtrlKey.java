@@ -87,7 +87,7 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return " ";
             case Enter:
                 return "\n";
-            case Filter_PinyinInputCandidate_stroke:
+            case Filter_PinyinInputCandidate_by_Stroke:
                 return getLabel().replaceAll("/.+$", "");
             default:
                 return getLabel();
@@ -149,10 +149,14 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Pinyin_End,
         /** 在候选字状态下切换当前输入的拼音拼写 */
         Toggle_PinyinInput_spell,
-        /** 在候选字状态下根据笔画过滤候选字 */
-        Filter_PinyinInputCandidate_stroke,
         /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
         Filter_PinyinInputCandidate_advance,
+        /** 在候选字状态下根据笔画过滤候选字 */
+        Filter_PinyinInputCandidate_by_Stroke,
+        /** 在候选字状态下根据读音过滤候选字 */
+        Filter_PinyinInputCandidate_by_Spell,
+        /** 在候选字状态下根据部首过滤候选字 */
+        Filter_PinyinInputCandidate_by_Radical,
 
         /** 定位 目标编辑器 光标 */
         Editor_Cursor_Locator,

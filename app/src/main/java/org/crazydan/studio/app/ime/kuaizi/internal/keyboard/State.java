@@ -67,6 +67,8 @@ public class State {
 
         /** 输入候选字选择中 */
         InputCandidate_Choose_Doing,
+        /** 输入候选字高级过滤中 */
+        InputCandidate_AdvanceFilter_Doing,
 
         /** 表情符号选择中 */
         Emoji_Choose_Doing,

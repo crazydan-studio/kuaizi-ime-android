@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
+import org.crazydan.studio.app.ime.kuaizi.internal.data.CandidateFilters;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
@@ -44,6 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCandidateAdvanceFilterDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCandidateChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCharsFlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state.InputCharsSlipDoingStateData;
@@ -122,6 +124,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                stateData.getPagingData(),
                                                                stateData.getStrokes(),
                                                                stateData.getPageStart());
+            }
+            case InputCandidate_AdvanceFilter_Doing: {
+                InputCandidateAdvanceFilterDoingStateData stateData
+                        = (InputCandidateAdvanceFilterDoingStateData) this.state.data;
+
+                return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getPagingData(),
+                                                                            stateData.getSpells(),
+                                                                            stateData.getPageStart());
             }
             case InputList_Committing_Option_Choose_Doing: {
                 boolean hasNotation = false;
@@ -449,7 +459,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         InputList inputList = getInputList();
         CharInput pending = inputList.getPending();
-        // 丢弃或变更拼音
         switch (key.getType()) {
             case DropInput: {
                 play_SingleTick_InputAudio(key);
@@ -482,8 +491,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                 start_InputCandidate_Choosing(inputList, pending, true);
                 break;
             }
-            case Filter_PinyinInputCandidate_stroke: {
+            case Filter_PinyinInputCandidate_by_Stroke: {
                 do_InputCandidate_Filtering_ByStroke(key, 1);
+                break;
+            }
+            case Filter_PinyinInputCandidate_advance: {
+                play_SingleTick_InputAudio(key);
+
+                start_InputCandidate_Filtering_Advance(inputList, pending, key);
                 break;
             }
         }
@@ -493,7 +508,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         UserFingerFlippingMsgData flippingData = (UserFingerFlippingMsgData) data;
 
         // 减去过滤的笔画数
-        if (CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_stroke)) {
+        if (CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke)) {
             do_InputCandidate_Filtering_ByStroke((CtrlKey) key, -1);
             return;
         }
@@ -727,6 +742,22 @@ public class PinyinKeyboard extends BaseKeyboard {
         } else {
             fire_InputChars_Input_Doing(currentKey, InputCharsInputtingMsgData.KeyInputType.circle);
         }
+    }
+    // >>>>>>>>>>>>
+
+    // <<<<<<<<< 对输入候选字的高级过滤
+    private void start_InputCandidate_Filtering_Advance(InputList inputList, CharInput input, Key<?> key) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
+        int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
+
+        CandidateFilters filters = this.pinyinDict.getPinyinCandidateFilters(input);
+        InputCandidateAdvanceFilterDoingStateData stateData = new InputCandidateAdvanceFilterDoingStateData(filters,
+                                                                                                            pageSize);
+
+        State state = new State(State.Type.InputCandidate_AdvanceFilter_Doing, stateData, this.state);
+        change_State_To(key, state);
+
+        fire_InputCandidate_Choose_Doing(input);
     }
     // >>>>>>>>>>>>
 
