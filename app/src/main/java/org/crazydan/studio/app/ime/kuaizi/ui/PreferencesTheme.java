@@ -91,6 +91,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
                 adaptGesture.setEnabled(!xpad.isChecked());
                 return true;
             });
+            adaptGesture.setEnabled(!xpad.isChecked());
         }
     }
 }
