@@ -30,6 +30,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -239,6 +240,13 @@ public class XPadView extends View {
             else if (old_active_block.zone == 2
                      && new_active_block.zone == 2
                      && old_active_block.block != new_active_block.block) {
+                Log.i(getClass().getSimpleName(),
+                      String.format("%s: old - %d:%d, new - %d:%d",
+                                    type,
+                                    old_active_block.zone,
+                                    old_active_block.block,
+                                    new_active_block.zone,
+                                    new_active_block.block));
                 //
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {

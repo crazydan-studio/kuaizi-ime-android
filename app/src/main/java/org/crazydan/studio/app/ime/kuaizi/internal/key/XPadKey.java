@@ -46,6 +46,11 @@ public class XPadKey extends BaseKey<XPadKey> {
         this.zone_2_keys = zone_2_keys;
     }
 
+    /**
+     * 确保仅在按键布局发生变化时才触发
+     * RecyclerViewGestureDetector#hasChangedViewData
+     * 中的事件视图的重置
+     */
     @Override
     public boolean isSameWith(Object o) {
         if (!super.equals(o)) {

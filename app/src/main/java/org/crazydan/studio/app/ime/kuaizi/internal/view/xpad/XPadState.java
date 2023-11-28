@@ -91,6 +91,10 @@ public class XPadState {
                 this.blockDiff = 0;
             }
 
+            // Note：若已环绕一圈，则重置差值
+            if (Math.abs(this.blockDiff) == this.totalBlocks + 1) {
+                this.blockDiff = this.blockDiff > 0 ? 1 : -1;
+            }
             this.currentBlock = block;
         }
     }
