@@ -223,23 +223,32 @@ public class XPadView extends View {
         // 触发滑行过程中的切换消息
         if (old_active_block != null //
             && type == ViewGestureDetector.GestureType.Moving) {
-            // 告知已激活第 2 分区
-            if (old_active_block.zone == 1 && new_active_block.zone == 2 //
-                && this.state.type == XPadState.Type.InputChars_Input_Doing) {
-                //
+            boolean isInputting = this.state.type == XPadState.Type.InputChars_Input_Doing;
+            boolean isBlockChanged = old_active_block.zone == 1 && new_active_block.zone == 2;
+            boolean isCharChanged = old_active_block.zone == 2
+                                    && new_active_block.zone == 2
+                                    && old_active_block.block != new_active_block.block;
+
+            // 告知处于输入字符待确认状态
+            if (isInputting //
+                && (isBlockChanged //
+                    // 回到输入字符待确认区域
+                    || (((XPadState.BlockData) this.state.data).getBlockDiff() == 0 //
+                        && isCharChanged) //
+                ) //
+            ) {
                 BlockKey blockKey = getBlockKey(new_active_block, 1);
                 if (BlockKey.isNull(blockKey)) {
                     blockKey = getBlockKey(new_active_block, -1);
                 }
 
+                // 在左右任意轴线上有字符，均可触发提示音效
                 if (!BlockKey.isNull(blockKey)) {
                     fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Active_Block), data);
                 }
             }
             // 告知待输入字符发生了切换
-            else if (old_active_block.zone == 2
-                     && new_active_block.zone == 2
-                     && old_active_block.block != new_active_block.block) {
+            else if (isCharChanged) {
                 Log.i(getClass().getSimpleName(),
                       String.format("%s: old - %d:%d, new - %d:%d",
                                     type,
@@ -247,7 +256,6 @@ public class XPadView extends View {
                                     old_active_block.block,
                                     new_active_block.zone,
                                     new_active_block.block));
-                //
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {
                     fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
