@@ -203,9 +203,12 @@ public class PinyinKeyTable extends KeyTable {
         // 在指定可用位置创建第 2 级字母按键
         level2NextChars.forEach((keyLength, keys) -> {
             GridCoord[] keyCoords = getLevel2KeyCoords(keyLength);
+            int diff = keyCoords.length - keys.size();
+
             for (int i = 0; i < keys.size(); i++) {
                 String text = keys.get(i);
-                GridCoord keyCoord = keyCoords[i];
+                // 确保按键靠底部进行放置
+                GridCoord keyCoord = keyCoords[i + diff];
                 int row = keyCoord.row;
                 int column = keyCoord.column;
 

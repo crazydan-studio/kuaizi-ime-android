@@ -34,7 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
     private KeyView<?, ?> prevKeyView;
-    private KeyView<?, ?> pressStartKeyView;
     private KeyView<?, ?> movingOverXPadKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
