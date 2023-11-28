@@ -148,6 +148,7 @@ public class MathKeyboard extends BaseKeyboard {
             switch (key.getType()) {
                 case Backspace: {
                     play_SingleTick_InputAudio(key);
+                    show_InputChars_Input_Popup(key);
 
                     // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
                     if (!mathInputList.isEmpty()) {
@@ -184,6 +185,7 @@ public class MathKeyboard extends BaseKeyboard {
                 }
                 case Space: {
                     play_SingleTick_InputAudio(key);
+                    show_InputChars_Input_Popup(key);
 
                     // Note：对于上层 InputList 而言，当前正在输入的一定是算数输入
                     topInputList.confirmPendingAndSelectNext();
@@ -205,6 +207,7 @@ public class MathKeyboard extends BaseKeyboard {
     private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         if (msg == UserKeyMsg.KeySingleTap) {
             play_SingleTick_InputAudio(key);
+            show_InputChars_Input_Popup(key);
 
             do_Single_MathKey_Inputting(key);
         }

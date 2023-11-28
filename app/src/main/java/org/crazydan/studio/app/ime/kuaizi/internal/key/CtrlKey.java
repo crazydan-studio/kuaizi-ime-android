@@ -97,6 +97,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
     @Override
     public String getLabel() {
         switch (this.type) {
+            case Enter:
+                return "回车";
             case Space:
                 return "空格";
             case Backspace:

@@ -55,6 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputAudioPlayDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputChooseDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
@@ -340,13 +341,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputChars_Input_Doing, data);
     }
 
-    /** 触发 {@link InputMsg#InputChars_Input_Popup_Showing} 消息 */
-    protected void fire_InputChars_Input_Popup_Showing(Key<?> key) {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
-
-        fireInputMsg(InputMsg.InputChars_Input_Popup_Showing, data);
-    }
-
     /** 触发 {@link InputMsg#InputChars_Input_Done} 消息 */
     protected void fire_InputChars_Input_Done(Key<?> key) {
         InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
@@ -555,7 +549,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /**
      * {@link #commit_InputList 提交输入列表（可撤销）}，
-     * 并并{@link #change_State_to_Init 进入初始状态}
+     * 并{@link #change_State_to_Init 进入初始状态}
      */
     protected void commit_InputList_and_Goto_Init_State(InputList inputList) {
         commit_InputList(inputList, true, false);
@@ -702,6 +696,35 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
+    /** 显示输入提示气泡 */
+    protected void show_InputChars_Input_Popup(Key<?> key) {
+        show_InputChars_Input_Popup(key, true);
+    }
+
+    /** 隐藏输入提示气泡 */
+    protected void hide_InputChars_Input_Popup() {
+        InputMsgData data = new InputCommonMsgData();
+
+        fireInputMsg(InputMsg.InputChars_Input_Popup_Hide_Doing, data);
+    }
+
+    /**
+     * 显示输入提示气泡
+     *
+     * @param hideDelayed
+     *         是否延迟隐藏
+     */
+    protected void show_InputChars_Input_Popup(Key<?> key, boolean hideDelayed) {
+        fire_InputChars_Input_Popup_Show_Doing(key != null ? key.getLabel() : null, hideDelayed);
+    }
+
+    /** 触发 {@link InputMsg#InputChars_Input_Popup_Show_Doing} 消息 */
+    protected void fire_InputChars_Input_Popup_Show_Doing(String text, boolean hideDelayed) {
+        InputMsgData data = new InputCharsInputPopupShowingMsgData(text, hideDelayed);
+
+        fireInputMsg(InputMsg.InputChars_Input_Popup_Show_Doing, data);
+    }
+
     /** 播放输入单击音效 */
     protected void play_SingleTick_InputAudio(Key<?> key) {
         fire_InputAudio_Play_Doing(key, InputAudioPlayDoingMsgData.AudioType.SingleTick);
@@ -779,12 +802,16 @@ public abstract class BaseKeyboard implements Keyboard {
                     }
                     case Backspace: {
                         play_SingleTick_InputAudio(key);
+                        show_InputChars_Input_Popup(key);
+
                         backspace_InputList_or_Editor(inputList, key);
                         return true;
                     }
                     case Space:
                     case Enter: {
                         play_SingleTick_InputAudio(key);
+                        show_InputChars_Input_Popup(key);
+
                         confirm_InputList_Input_Enter_or_Space(inputList, key);
                         return true;
                     }
@@ -1069,6 +1096,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         input.replaceLatestKey(lastCharKey, newKey);
 
+        show_InputChars_Input_Popup(newKey);
         fire_InputChars_Input_Doing(newKey);
     }
 
@@ -1098,6 +1126,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected void do_Single_CharKey_Replacement_Committing(InputList inputList, CharKey key, int replacementIndex) {
         CharKey newKey = key.createReplacementKey(replacementIndex);
+        show_InputChars_Input_Popup(newKey);
 
         commit_InputList_with_SingleKey_Only(inputList, newKey, true);
     }
@@ -1184,6 +1213,8 @@ public abstract class BaseKeyboard implements Keyboard {
             case KeyLongPressTick:
             case KeySingleTap: {
                 play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
+
                 do_Single_Emoji_Inputting(inputList, key);
                 break;
             }
@@ -1265,6 +1296,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 continuous = true;
             case KeySingleTap: {
                 play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
 
                 do_Single_Symbol_Inputting(inputList, key, continuous);
                 break;

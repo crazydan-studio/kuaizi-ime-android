@@ -36,7 +36,6 @@ import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
-import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
@@ -46,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
@@ -182,16 +181,12 @@ public class ImeInputView extends FrameLayout
                 this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) data).mode;
                 break;
             }
-            case InputChars_Input_Popup_Showing:
-            case InputChars_Input_Doing: {
-                Key<?> key = data.getKey();
-                showInputKeyPopupWindow(key != null ? key.getLabel() : null,
-                                        ((InputCharsInputtingMsgData) data).keyInputType
-                                        != InputCharsInputtingMsgData.KeyInputType.slip);
+            case InputChars_Input_Popup_Show_Doing: {
+                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) data).text,
+                                        ((InputCharsInputPopupShowingMsgData) data).hideDelayed);
                 break;
             }
-            case InputList_Pending_Drop_Done:
-            case InputChars_Input_Done: {
+            case InputChars_Input_Popup_Hide_Doing: {
                 showInputKeyPopupWindow(null, false);
                 break;
             }

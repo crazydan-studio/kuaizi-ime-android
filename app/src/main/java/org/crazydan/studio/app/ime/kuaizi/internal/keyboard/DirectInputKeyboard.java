@@ -62,9 +62,10 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     protected void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         InputList inputList = getInputList();
 
-        if (msg == UserKeyMsg.KeySingleTap) {// 单字符直接输入
+        // 单字符直接输入
+        if (msg == UserKeyMsg.KeySingleTap) {
             play_SingleTick_InputAudio(key);
-            fire_InputChars_Input_Popup_Showing(key);
+            show_InputChars_Input_Popup(key);
 
             boolean isDirectInputting = inputList.isEmpty();
             start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, isDirectInputting);

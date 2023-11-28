@@ -264,6 +264,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (isXInputPadEnabled()) {
             if (msg == UserKeyMsg.KeySingleTap) {
                 play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
 
                 if (CharKey.isAlphabet(key)) {
                     confirm_or_New_InputList_Pending(inputList);
@@ -283,6 +284,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 // 开始滑屏输入
                 if (CharKey.isAlphabet(key)) {
                     play_DoubleTick_InputAudio(key);
+                    show_InputChars_Input_Popup(key, false);
 
                     confirm_or_New_InputList_Pending(inputList);
 
@@ -295,6 +297,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeySingleTap: {
                 // 单字符输入
                 play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
+
                 start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, false);
                 break;
             }
@@ -306,6 +310,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case KeyLongPressStart: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
+
                     start_InputList_Committing_Option_Choosing(key);
                 }
                 break;
@@ -315,6 +320,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 if (CtrlKey.is(key, CtrlKey.Type.Pinyin_End)) {
                     play_SingleTick_InputAudio(key);
+                    show_InputChars_Input_Popup(key);
 
                     CharInput pending = inputList.getPending();
                     end_InputChars_Inputting(inputList, pending, key);
@@ -370,6 +376,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     && !key.isDisabled() //
                     && !key.isSameWith(lastKey)) {
                     play_DoubleTick_InputAudio(key);
+                    show_InputChars_Input_Popup(key, false);
 
                     do_InputChars_Slipping(inputList, pending, key);
                 }
@@ -393,6 +400,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (pending.getKeys().size() == 1) {
                     CharKey firstKey = (CharKey) pending.getFirstKey();
 
+                    show_InputChars_Input_Popup(firstKey);
                     start_InputChars_Flipping(inputList, firstKey);
                 }
                 break;
@@ -405,6 +413,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         if (msg == UserKeyMsg.KeySingleTap) {
             play_SingleTick_InputAudio(key);
+            show_InputChars_Input_Popup(key);
 
             CharInput pending = inputList.getPending();
             end_InputChars_Flipping(inputList, pending, key);
@@ -428,6 +437,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         play_SingleTick_InputAudio(key);
+        show_InputChars_Input_Popup(key);
 
         // Note: 拼音不存在重复字母相邻的情况
         Key<?> lastKey = pending.getLastKey();
@@ -447,8 +457,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         InputList inputList = getInputList();
 
-        if (msg == UserKeyMsg.KeySingleTap) {// 确认候选字
+        // 确认候选字
+        if (msg == UserKeyMsg.KeySingleTap) {
             play_SingleTick_InputAudio(key);
+            show_InputChars_Input_Popup(key);
 
             InputWord word = key.getWord();
 
@@ -600,6 +612,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void end_InputChars_Slipping(InputList inputList, CharInput input, Key<?> key) {
+        hide_InputChars_Input_Popup();
+
         end_InputChars_Inputting(inputList, input, key);
     }
 
@@ -792,6 +806,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             case Filter_PinyinInputCandidate_by_Spell:
             case Filter_PinyinInputCandidate_by_Radical: {
                 play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
 
                 CtrlKey.Option<?> option = key.getOption();
 
