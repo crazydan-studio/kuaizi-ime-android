@@ -71,7 +71,9 @@ public abstract class BaseKeyboardView extends RecyclerView {
         updateKeys(keys, columns, rows, null, isLeftHandMode);
     }
 
-    protected void updateKeys(Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode) {
+    protected void updateKeys(
+            Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
+    ) {
         XPadKey xPadKey = getXPadKey(keys);
         boolean xPadEnabled = xPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
@@ -130,7 +132,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
         return null;
     }
 
-    private XPadKey getXPadKey(Key<?>[][] keys) {
+    protected XPadKey getXPadKey(Key<?>[][] keys) {
         for (Key<?>[] key : keys) {
             for (Key<?> k : key) {
                 if (k instanceof XPadKey) {

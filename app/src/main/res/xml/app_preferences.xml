@@ -26,11 +26,17 @@
                 app:key="enable_candidate_variant_first"
                 app:title="@string/label_enable_candidate_variant_first"
                 app:summary="@string/desc_enable_candidate_variant_first" />
+    </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/title_preference_privacy">
         <SwitchPreferenceCompat
                 app:key="disable_user_input_data"
                 app:title="@string/label_disable_user_input_data"
                 app:summary="@string/desc_disable_user_input_data" />
+
+        <SwitchPreferenceCompat
+                app:key="disable_input_key_popup_tips"
+                app:title="@string/label_disable_input_key_popup_tips" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -51,10 +57,6 @@
         <SwitchPreferenceCompat
                 app:key="disable_gesture_slipping_trail"
                 app:title="@string/label_disable_gesture_slipping_trail" />
-
-        <SwitchPreferenceCompat
-                app:key="disable_input_key_popup_tips"
-                app:title="@string/label_disable_input_key_popup_tips" />
     </PreferenceCategory>
 
     <!--<PreferenceCategory app:title="@string/title_preference_user_data">

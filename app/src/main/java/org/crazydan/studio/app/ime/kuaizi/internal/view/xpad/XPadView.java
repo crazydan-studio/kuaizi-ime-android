@@ -120,6 +120,14 @@ public class XPadView extends View {
         this.zone_0_HexagonRadius = level_0_zone_HexagonRadius;
     }
 
+    public void disableGestureTrailer(boolean disabled) {
+        if (this.trailer.isDisabled() != disabled) {
+            // 触发重绘
+            invalidate();
+        }
+        this.trailer.setDisabled(disabled);
+    }
+
     private void reset() {
         stop_zone_1_animator();
 

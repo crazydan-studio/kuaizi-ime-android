@@ -114,6 +114,10 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
         updateKeys(this.keyboard.getKeyFactory());
     }
 
+    public boolean isGestureTrailerDisabled() {
+        return this.keyboard != null && this.keyboard.getConfig().isGestureSlippingTrailDisabled();
+    }
+
     /** 响应按键点击、双击等消息 */
     @Override
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {

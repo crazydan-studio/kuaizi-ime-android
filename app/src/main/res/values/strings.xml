@@ -55,6 +55,7 @@
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
+    <string name="title_preference_privacy">隐私优先</string>
     <string name="title_preference_performance">性能优先</string>
     <string name="title_preference_user_data">用户数据</string>
     <string name="title_preference_about">关于</string>

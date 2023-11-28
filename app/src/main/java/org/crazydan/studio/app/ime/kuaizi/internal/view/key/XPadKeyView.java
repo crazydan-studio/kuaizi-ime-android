@@ -38,6 +38,7 @@ public class XPadKeyView extends KeyView<XPadKey, XPadView> {
         return this.fgView;
     }
 
+    @Override
     public void bind(XPadKey key) {
         super.bind(key, null);
 
