@@ -359,13 +359,6 @@ public class PinyinDictDB {
         return wordList;
     }
 
-    /** 获取指定输入的候选字过滤数据 */
-    public CandidateFilters getPinyinCandidateFilters(CharInput input) {
-        String inputPinyinCharsId = getPinyinCharsId(input);
-
-        return queryPinyinCandidateFiltersFromAppDB(inputPinyinCharsId);
-    }
-
     /** 根据前序输入分析得出最靠前的 <code>top</code> 个拼音候选字 */
     public BestCandidateWords findTopBestPinyinCandidateWords(
             CharInput input, int top, List<InputWord> prevPhrase, boolean userDataDisabled
@@ -854,55 +847,36 @@ public class PinyinDictDB {
                                      "spell_chars_id_",
                                      "traditional_",
                                      "stroke_order_",
+                                     "spell_id_",
+                                     "radical_",
+                                     "radical_stroke_count_",
                                      }, //
                              where, params, orderBy, //
                              (cursor) -> {
                                  String uid = cursor.getString(0);
                                  String value = cursor.getString(1);
-                                 String notation = cursor.getString(2);
+                                 String spellValue = cursor.getString(2);
                                  String wordId = cursor.getString(3);
-                                 String pinyinCharsId = cursor.getString(4);
+                                 String spellCharsId = cursor.getString(4);
                                  boolean traditional = cursor.getInt(5) > 0;
                                  String strokeOrder = cursor.getString(6);
+                                 int spellId = cursor.getInt(7);
+                                 String radicalValue = cursor.getString(8);
+                                 int radicalStrokeCount = cursor.getInt(9);
+                                 PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId,
+                                                                                         spellValue,
+                                                                                         spellCharsId);
+                                 PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue,
+                                                                                               radicalStrokeCount);
 
                                  return new PinyinInputWord(uid,
                                                             value,
-                                                            notation,
                                                             wordId,
-                                                            pinyinCharsId,
+                                                            spell,
+                                                            radical,
                                                             traditional,
                                                             strokeOrder);
                              });
-    }
-
-    private CandidateFilters queryPinyinCandidateFiltersFromAppDB(String inputPinyinCharsId) {
-        if (inputPinyinCharsId == null) {
-            return new CandidateFilters();
-        }
-
-        SQLiteDatabase db = getAppDB();
-
-        Map<String, Set<CandidateFilters.Radical>> spellAndRadicalsMap = new LinkedHashMap<>();
-        doSQLiteQuery(db, "pinyin_word", //
-                      new String[] {
-                              "spell_", "radical_", "radical_stroke_count_",
-                              }, //
-                      "spell_chars_id_ = ?", new String[] { inputPinyinCharsId }, //
-                      // Note：拼音 id 已按声调排序
-                      "spell_id_ asc", //
-                      (cursor) -> {
-                          String spellValue = cursor.getString(0);
-                          String radicalValue = cursor.getString(1);
-                          int radicalStrokeCount = cursor.getInt(2);
-                          CandidateFilters.Radical radical = new CandidateFilters.Radical(radicalValue,
-                                                                                          radicalStrokeCount);
-
-                          spellAndRadicalsMap.computeIfAbsent(spellValue, (k) -> new HashSet<>()).add(radical);
-
-                          return null;
-                      });
-
-        return new CandidateFilters(spellAndRadicalsMap);
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */

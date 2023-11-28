@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.input;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 
@@ -31,21 +32,26 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 public class PinyinInputWord extends InputWord {
     /** 字 id */
     private final String wordId;
-    /** 拼音字母组合 id */
-    private final String charsId;
+    /** 拼音 */
+    private final Spell spell;
+    /** 部首 */
+    private final Radical radical;
+
     /** 是否繁体 */
     private final boolean traditional;
     /** 笔画顺序 */
     private final Map<String, Integer> strokes;
 
     public PinyinInputWord(
-            String uid, String value, String notation, String wordId, String charsId, boolean traditional,
-            String strokeOrder
+            String uid, String value, String wordId, //
+            Spell spell, Radical radical, //
+            boolean traditional, String strokeOrder
     ) {
-        super(uid, value, notation);
+        super(uid, value, spell.value);
 
         this.wordId = wordId;
-        this.charsId = charsId;
+        this.spell = spell;
+        this.radical = radical;
         this.traditional = traditional;
         this.strokes = new HashMap<>();
 
@@ -59,7 +65,7 @@ public class PinyinInputWord extends InputWord {
     }
 
     public static String[] getStrokeNames() {
-        return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" };
+        return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" /* 𠃋 */ };
     }
 
     public static String getStrokeCode(String stroke) {
@@ -89,9 +95,9 @@ public class PinyinInputWord extends InputWord {
     public PinyinInputWord copy() {
         PinyinInputWord copied = new PinyinInputWord(getUid(),
                                                      getValue(),
-                                                     getNotation(),
                                                      getWordId(),
-                                                     getCharsId(),
+                                                     getSpell(),
+                                                     getRadical(),
                                                      isTraditional(),
                                                      null);
         copy(copied, this);
@@ -106,7 +112,15 @@ public class PinyinInputWord extends InputWord {
     }
 
     public String getCharsId() {
-        return this.charsId;
+        return getSpell().charsId;
+    }
+
+    public Spell getSpell() {
+        return this.spell;
+    }
+
+    public Radical getRadical() {
+        return this.radical;
     }
 
     public boolean isTraditional() {
@@ -115,5 +129,64 @@ public class PinyinInputWord extends InputWord {
 
     public Map<String, Integer> getStrokes() {
         return this.strokes;
+    }
+
+    public static class Spell {
+        public final int id;
+        public final String value;
+        /** 字母组合 id */
+        public final String charsId;
+
+        public Spell(int id, String value, String charsId) {
+            this.id = id;
+            this.value = value;
+            this.charsId = charsId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Spell that = (Spell) o;
+            return this.id == that.id && this.value.equals(that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.id, this.value);
+        }
+    }
+
+    public static class Radical {
+        public final String value;
+        public final int strokeCount;
+
+        public Radical(String value, int strokeCount) {
+            this.value = value;
+            this.strokeCount = strokeCount;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Radical that = (Radical) o;
+            return this.value.equals(that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
     }
 }

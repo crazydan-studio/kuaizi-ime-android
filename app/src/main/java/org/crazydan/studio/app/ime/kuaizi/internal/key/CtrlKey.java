@@ -207,6 +207,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         public TextOption(String value) {super(value);}
     }
 
+    public static class ObjectOption extends Option<Object> {
+        public ObjectOption(Object value) {super(value);}
+    }
+
     public static class KeyboardSwitchOption extends Option<Keyboard.Type> {
         public KeyboardSwitchOption(Keyboard.Type value) {
             super(value);

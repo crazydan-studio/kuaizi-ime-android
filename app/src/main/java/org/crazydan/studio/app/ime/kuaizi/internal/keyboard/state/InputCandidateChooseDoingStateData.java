@@ -42,6 +42,7 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
     private final List<InputWord> candidates;
     private final Map<String, Integer> strokes;
 
+    private AdvanceFilter advanceFilter;
     private List<InputWord> cachedFilterCandidates;
 
     public InputCandidateChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
@@ -52,6 +53,8 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
 
         this.strokes = new HashMap<>();
         this.cachedFilterCandidates = candidates;
+
+        this.advanceFilter = new AdvanceFilter();
     }
 
     public CharInput getTarget() {
@@ -89,8 +92,21 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
         return changed;
     }
 
+    public void newAdvanceFilter(List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals) {
+        AdvanceFilter oldFilter = this.advanceFilter;
+        this.advanceFilter = new AdvanceFilter(spells, radicals);
+
+        if (!oldFilter.equals(this.advanceFilter)) {
+            this.cachedFilterCandidates = filterCandidates(this.candidates);
+        }
+    }
+
+    public AdvanceFilter getAdvanceFilter() {
+        return this.advanceFilter;
+    }
+
     private List<InputWord> filterCandidates(List<InputWord> candidates) {
-        if (this.strokes.isEmpty()) {
+        if (this.strokes.isEmpty() && this.advanceFilter.isEmpty()) {
             return candidates;
         }
 
@@ -138,6 +154,10 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
             return true;
         }
 
+        if (!this.advanceFilter.matched(word)) {
+            return false;
+        }
+
         Map<String, Integer> wordStrokes = ((PinyinInputWord) word).getStrokes();
         if (wordStrokes.isEmpty() || this.strokes.isEmpty()) {
             return true;
@@ -153,5 +173,53 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
             }
         }
         return true;
+    }
+
+    public static class AdvanceFilter {
+        public final List<PinyinInputWord.Spell> spells;
+        public final List<PinyinInputWord.Radical> radicals;
+
+        public AdvanceFilter() {
+            this(new ArrayList<>(), new ArrayList<>());
+        }
+
+        public AdvanceFilter(List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals) {
+            this.spells = spells;
+            this.radicals = radicals;
+        }
+
+        public boolean isEmpty() {
+            return this.spells.isEmpty() //
+                   && this.radicals.isEmpty();
+        }
+
+        public boolean matched(InputWord word) {
+            if (!(word instanceof PinyinInputWord)) {
+                return false;
+            }
+
+            return (this.spells.isEmpty() //
+                    || this.spells.contains(((PinyinInputWord) word).getSpell())) //
+                   && (this.radicals.isEmpty() //
+                       || this.radicals.contains(((PinyinInputWord) word).getRadical()));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            AdvanceFilter that = (AdvanceFilter) o;
+            return this.spells.equals(that.spells) && this.radicals.equals(that.radicals);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.spells, this.radicals);
+        }
     }
 }

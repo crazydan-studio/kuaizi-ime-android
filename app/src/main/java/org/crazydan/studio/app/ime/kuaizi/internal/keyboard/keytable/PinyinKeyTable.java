@@ -327,7 +327,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字按键 */
     public Key<?>[][] createInputCandidateKeys(
-            CharInput input, List<InputWord> words, Map<String, Integer> strokes, int startIndex
+            CharInput input, List<InputWord> words, Map<String, Integer> strokes, //
+            int startIndex, boolean hasAdvanceFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -340,8 +341,15 @@ public class PinyinKeyTable extends KeyTable {
         int index_mid = getGridMiddleColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        if (totalPage > 2 || hasAdvanceFilter) {
+            CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_advance);
+            gridKeys[2][0] = key;
 
-        gridKeys[2][0] = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_advance);
+            if (hasAdvanceFilter) {
+                key.setIconResId(R.drawable.ic_filter_filled);
+            }
+        }
+
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.DropInput);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.ConfirmInput);
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
@@ -450,8 +458,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字高级过滤按键 */
     public Key<?>[][] createInputCandidateAdvanceFilterKeys(
-            List<String> spells, List<String> selectedSpells, //
-            List<String> radicals, List<String> selectedRadicals, //
+            List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Spell> selectedSpells, //
+            List<PinyinInputWord.Radical> radicals, List<PinyinInputWord.Radical> selectedRadicals, //
             int startIndex
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
@@ -470,7 +478,7 @@ public class PinyinKeyTable extends KeyTable {
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
         for (int i = 0, j = 0; i < spellKeyCorrds.length && j < spells.size(); i++, j++) {
             GridCoord keyCoord = spellKeyCorrds[i];
-            String spell = spells.get(j);
+            PinyinInputWord.Spell spell = spells.get(j);
 
             int row = keyCoord.row;
             int column = keyCoord.column;
@@ -478,7 +486,7 @@ public class PinyinKeyTable extends KeyTable {
             boolean disabled = selectedSpells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
 
-            gridKeys[row][column] = filterKey(type, spell).setDisabled(disabled);
+            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
         }
 
         // 部首过滤按键
@@ -496,12 +504,13 @@ public class PinyinKeyTable extends KeyTable {
                     break;
                 }
 
-                String radical = radicals.get(dataIndex++);
+                PinyinInputWord.Radical radical = radicals.get(dataIndex++);
                 boolean disabled = selectedRadicals.contains(radical);
                 KeyColor color = key_input_word_level_colors[level];
                 CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical;
 
-                gridKeys[row][column] = filterKey(type, radical).setColor(color).setDisabled(disabled);
+                gridKeys[row][column] = advanceFilterKey(type, radical.value, radical).setColor(color)
+                                                                                      .setDisabled(disabled);
             }
         }
 
@@ -567,17 +576,13 @@ public class PinyinKeyTable extends KeyTable {
         String strokeCode = PinyinInputWord.getStrokeCode(stroke);
         String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
 
-        return filterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke, label, strokeCode);
+        CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
+
+        return ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke).setOption(option).setLabel(label);
     }
 
-    public CtrlKey filterKey(CtrlKey.Type type, String code) {
-        CtrlKey.Option<?> option = new CtrlKey.TextOption(code);
-
-        return ctrlKey(type).setOption(option).setLabel(code);
-    }
-
-    public CtrlKey filterKey(CtrlKey.Type type, String label, String code) {
-        CtrlKey.Option<?> option = new CtrlKey.TextOption(code);
+    public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value) {
+        CtrlKey.Option<?> option = new CtrlKey.ObjectOption(value);
 
         return ctrlKey(type).setOption(option).setLabel(label);
     }

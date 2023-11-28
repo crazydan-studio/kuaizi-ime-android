@@ -1,0 +1,27 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/9110058/filter_icon -->
+    <path
+            android:pathData="M2.818,2.957 L10.333,12.349a2.319,2.319 0,0 1,0.508 1.449v7.708L13.159,19.767L13.159,13.797a2.319,2.319 0,0 1,0.508 -1.448L21.182,2.957L2.819,2.957ZM2.818,0.639L21.182,0.639a2.319,2.319 0,0 1,1.81 3.768L15.478,13.797v5.97a2.319,2.319 0,0 1,-0.927 1.855L12.232,23.361A2.319,2.319 0,0 1,8.522 21.506L8.522,13.797L1.009,4.407A2.319,2.319 0,0 1,2.818 0.639Z"
+            android:fillColor="?attr/key_ctrl_commit_fg_color" />
+</vector>

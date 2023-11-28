@@ -18,34 +18,53 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.keyboard.state;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.crazydan.studio.app.ime.kuaizi.internal.data.CandidateFilters;
+import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.State;
 
 /**
- * {@link State.Type#InputCandidate_AdvanceFilter_Doing}的状态数据
+ * {@link State.Type#InputCandidate_AdvanceFilter_Doing} 的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-27
  */
-public class InputCandidateAdvanceFilterDoingStateData extends PagingStateData<String> {
+public class InputCandidateAdvanceFilterDoingStateData extends PagingStateData<PinyinInputWord.Radical> {
     private final CharInput target;
-    private final CandidateFilters filters;
-    private final List<String> selectedSpells = new ArrayList<>();
-    private final List<String> selectedRadicals = new ArrayList<>();
+    private final Map<PinyinInputWord.Spell, Set<PinyinInputWord.Radical>> spellAndRadicalsMap = new HashMap<>();
 
-    public InputCandidateAdvanceFilterDoingStateData(CharInput target, CandidateFilters filters, int pageSize) {
+    public final List<PinyinInputWord.Spell> selectedSpells = new ArrayList<>();
+    public final List<PinyinInputWord.Radical> selectedRadicals = new ArrayList<>();
+
+    public InputCandidateAdvanceFilterDoingStateData(CharInput target, Collection<InputWord> inputWords, int pageSize) {
         super(pageSize);
 
         this.target = target;
-        this.filters = filters;
+
+        inputWords.forEach((word) -> {
+            if (!(word instanceof PinyinInputWord)) {
+                return;
+            }
+
+            PinyinInputWord.Spell spell = ((PinyinInputWord) word).getSpell();
+            PinyinInputWord.Radical radical = ((PinyinInputWord) word).getRadical();
+
+            this.spellAndRadicalsMap.computeIfAbsent(spell, (k) -> new HashSet<>()).add(radical);
+        });
     }
 
     /** 获取可用的过滤部首列表 */
     @Override
-    public List<String> getPagingData() {
+    public List<PinyinInputWord.Radical> getPagingData() {
         return getRadicals();
     }
 
@@ -53,39 +72,22 @@ public class InputCandidateAdvanceFilterDoingStateData extends PagingStateData<S
         return this.target;
     }
 
-    public List<String> getSpells() {
-        return this.filters.getSpells();
+    public List<PinyinInputWord.Spell> getSpells() {
+        return this.spellAndRadicalsMap.keySet()
+                                       .stream()
+                                       .sorted(Comparator.comparing(s -> s.id))
+                                       .collect(Collectors.toList());
     }
 
-    public List<String> getSelectedSpells() {
-        return this.selectedSpells;
-    }
+    public List<PinyinInputWord.Radical> getRadicals() {
+        Set<PinyinInputWord.Radical> radicals = new HashSet<>();
 
-    public List<String> getRadicals() {
-        return this.filters.getRadicals(this.selectedSpells);
-    }
+        this.spellAndRadicalsMap.forEach((spell, set) -> {
+            if (this.selectedSpells.isEmpty() || this.selectedSpells.contains(spell)) {
+                radicals.addAll(set);
+            }
+        });
 
-    public List<String> getSelectedRadicals() {
-        return this.selectedRadicals;
-    }
-
-    public void clearSelectedRadicals() {
-        this.selectedRadicals.clear();
-    }
-
-    public void selectSpell(String spell) {
-        this.selectedSpells.add(spell);
-    }
-
-    public void unselectSpell(String spell) {
-        this.selectedSpells.remove(spell);
-    }
-
-    public void selectRadical(String radical) {
-        this.selectedRadicals.add(radical);
-    }
-
-    public void unselectRadical(String radical) {
-        this.selectedRadicals.remove(radical);
+        return radicals.stream().sorted(Comparator.comparing(r -> r.strokeCount)).collect(Collectors.toList());
     }
 }

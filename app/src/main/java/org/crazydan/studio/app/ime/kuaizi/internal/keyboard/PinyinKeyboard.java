@@ -35,7 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.BestCandidateWords;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.CandidateFilters;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
@@ -123,16 +122,17 @@ public class PinyinKeyboard extends BaseKeyboard {
                 return () -> keyTable.createInputCandidateKeys(input,
                                                                stateData.getPagingData(),
                                                                stateData.getStrokes(),
-                                                               stateData.getPageStart());
+                                                               stateData.getPageStart(),
+                                                               !stateData.getAdvanceFilter().isEmpty());
             }
             case InputCandidate_AdvanceFilter_Doing: {
                 InputCandidateAdvanceFilterDoingStateData stateData
                         = (InputCandidateAdvanceFilterDoingStateData) this.state.data;
 
                 return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
-                                                                            stateData.getSelectedSpells(),
+                                                                            stateData.selectedSpells,
                                                                             stateData.getRadicals(),
-                                                                            stateData.getSelectedRadicals(),
+                                                                            stateData.selectedRadicals,
                                                                             stateData.getPageStart());
             }
             case InputList_Committing_Option_Choose_Doing: {
@@ -762,13 +762,18 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // <<<<<<<<< 对输入候选字的高级过滤
     private void start_InputCandidate_Advance_Filtering(InputList inputList, CharInput input, Key<?> key) {
+        InputCandidateChooseDoingStateData prevStateData = (InputCandidateChooseDoingStateData) this.state.data;
+        InputCandidateChooseDoingStateData.AdvanceFilter advanceFilter = prevStateData.getAdvanceFilter();
+
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
 
-        CandidateFilters filters = this.pinyinDict.getPinyinCandidateFilters(input);
+        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         InputCandidateAdvanceFilterDoingStateData stateData = new InputCandidateAdvanceFilterDoingStateData(input,
-                                                                                                            filters,
+                                                                                                            candidateMap.values(),
                                                                                                             pageSize);
+        stateData.selectedSpells.addAll(advanceFilter.spells);
+        stateData.selectedRadicals.addAll(advanceFilter.radicals);
 
         State state = new State(State.Type.InputCandidate_AdvanceFilter_Doing, stateData, this.state);
         change_State_To(key, state);
@@ -789,23 +794,24 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_SingleTick_InputAudio(key);
 
                 CtrlKey.Option<?> option = key.getOption();
-                String code = (String) option.value();
 
                 switch (key.getType()) {
                     case Filter_PinyinInputCandidate_by_Spell: {
+                        PinyinInputWord.Spell value = (PinyinInputWord.Spell) option.value();
                         if (key.isDisabled()) {
-                            stateData.unselectSpell(code);
+                            stateData.selectedSpells.remove(value);
                         } else {
-                            stateData.selectSpell(code);
+                            stateData.selectedSpells.add(value);
                         }
-                        stateData.clearSelectedRadicals();
+                        stateData.selectedRadicals.clear();
                         break;
                     }
                     case Filter_PinyinInputCandidate_by_Radical: {
+                        PinyinInputWord.Radical value = (PinyinInputWord.Radical) option.value();
                         if (key.isDisabled()) {
-                            stateData.unselectRadical(code);
+                            stateData.selectedRadicals.remove(value);
                         } else {
-                            stateData.selectRadical(code);
+                            stateData.selectedRadicals.add(value);
                         }
                         break;
                     }
@@ -816,6 +822,10 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case Confirm_PinyinInputCandidate_Filters: {
                 play_SingleTick_InputAudio(key);
+
+                InputCandidateChooseDoingStateData prevStateData
+                        = (InputCandidateChooseDoingStateData) this.state.previous.data;
+                prevStateData.newAdvanceFilter(stateData.selectedSpells, stateData.selectedRadicals);
 
                 exit(key);
                 break;
