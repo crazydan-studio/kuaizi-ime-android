@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
@@ -31,6 +32,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -63,6 +65,8 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @date 2023-09-11
  */
 public class ExerciseMain extends FollowSystemThemeActivity {
+    private SharedPreferences preferences;
+
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
@@ -73,6 +77,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_exercise_main_activity);
+
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
@@ -184,10 +190,29 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.exerciseListView.adapter.bind(exercises);
 
         this.exerciseListView.setExerciseActiveListener((exerciseView) -> {
-            int position = exercises.indexOf(exerciseView.getData());
+            Exercise exercise = exerciseView.getData();
+            int position = exercises.indexOf(exercise);
             activeDrawerNavItem(position);
 
+            switch (exercise.mode) {
+                case free:
+                case introduce: {
+                    this.imeView.disableXInputPad(!Keyboard.Config.isXInputPadEnabled(this.preferences));
+                    this.imeView.disableCandidateVariantFirst(!Keyboard.Config.isCandidateVariantFirstEnabled(this.preferences));
+                    this.imeView.disableUserInputData(false);
+                    this.imeView.disableSettingsBtn(false);
+                    break;
+                }
+                case normal: {
+                    this.imeView.disableXInputPad(true);
+                    this.imeView.disableCandidateVariantFirst(true);
+                    this.imeView.disableUserInputData(true);
+                    this.imeView.disableSettingsBtn(true);
+                    break;
+                }
+            }
             exerciseView.withIme(this.imeView);
+
             this.imeView.startInput(Keyboard.Type.Pinyin);
         });
 
@@ -225,11 +250,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                                                   !isLastOne
                                                                   ? () -> this.exerciseListView.activeNext()
                                                                   : null);
-
             exercise.addStep(finalStep);
-            exercise.setDisableUserInputData(true);
-            exercise.setDisableXInputPad(true);
-            exercise.setDisableSettingsBtn(true);
 
             exerciseList.add(exercise);
         }
@@ -332,7 +353,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_Pinyin_Slipping_Inputting(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        String expected_auto_word = "块";
+        String expected_auto_word = "会";
         InputWord case_word = new InputWord("kuai", "筷", "kuài");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 
@@ -368,7 +389,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         String expected_auto_word = "术";
         InputWord case_word = new InputWord("shu", "输", "shū");
-        Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
+        Key<?> key_case_word = keyTable.inputWordKey(case_word, 1);
 
         Key<?> key_level_0 = keyTable.level0CharKey("sh");
         Key<?> key_level_1 = keyTable.level1CharKey("u");
@@ -426,7 +447,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_Pinyin_Committed_Processing(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        String expected_auto_word = "自";
+        String expected_auto_word = "子";
         InputWord case_word = new InputWord("zi", "字", "zì");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 

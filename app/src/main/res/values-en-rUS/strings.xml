@@ -56,7 +56,7 @@
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
     <string name="title_preference_privacy">Privacy First</string>
-    <string name="title_preference_performance">Performance First</string>
+    <string name="title_preference_performance">Animation &amp; Audio</string>
     <string name="title_preference_user_data">User Data</string>
     <string name="title_preference_about">About</string>
 

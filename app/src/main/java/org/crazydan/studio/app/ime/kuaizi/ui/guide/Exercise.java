@@ -37,9 +37,6 @@ public class Exercise implements ViewData, InputMsgListener {
 
     private final ExerciseStep.ImageGetter imageGetter;
 
-    private boolean disableUserInputData;
-    private boolean disableXInputPad;
-    private boolean disableSettingsBtn;
     private String sampleText;
     private ProgressListener progressListener;
     private ExerciseStep runningStep;
@@ -91,6 +88,8 @@ public class Exercise implements ViewData, InputMsgListener {
                 } else {
                     break;
                 }
+            case InputChars_Input_Popup_Show_Doing:
+            case InputChars_Input_Popup_Hide_Doing:
             case InputAudio_Play_Doing:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done:
@@ -145,30 +144,6 @@ public class Exercise implements ViewData, InputMsgListener {
         this.steps.add(index, step);
 
         return step;
-    }
-
-    public boolean isDisableUserInputData() {
-        return this.disableUserInputData;
-    }
-
-    public void setDisableUserInputData(boolean disableUserInputData) {
-        this.disableUserInputData = disableUserInputData;
-    }
-
-    public boolean isDisableXInputPad() {
-        return this.disableXInputPad;
-    }
-
-    public void setDisableXInputPad(boolean disableXInputPad) {
-        this.disableXInputPad = disableXInputPad;
-    }
-
-    public boolean isDisableSettingsBtn() {
-        return this.disableSettingsBtn;
-    }
-
-    public void setDisableSettingsBtn(boolean disableSettingsBtn) {
-        this.disableSettingsBtn = disableSettingsBtn;
     }
 
     public String getSampleText() {

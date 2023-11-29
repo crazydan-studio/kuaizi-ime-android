@@ -260,6 +260,10 @@ public interface Keyboard extends UserInputMsgListener {
             return this.candidateVariantFirstEnabled;
         }
 
+        public void setCandidateVariantFirstEnabled(boolean candidateVariantFirstEnabled) {
+            this.candidateVariantFirstEnabled = candidateVariantFirstEnabled;
+        }
+
         public boolean isXInputPadEnabled() {
             return this.xInputPadEnabled;
         }

@@ -36,10 +36,7 @@ public class ExerciseIntroduceView extends ExerciseView {
 
     @Override
     public void withIme(ImeInputView ime) {
-        Exercise exercise = getData();
-
-        ime.disableXInputPad(exercise.isDisableXInputPad());
-        ime.disableSettingsBtn(exercise.isDisableSettingsBtn());
+        // keep it empty
     }
 
     @Override

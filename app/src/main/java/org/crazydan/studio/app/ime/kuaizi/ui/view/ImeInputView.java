@@ -78,6 +78,7 @@ public class ImeInputView extends FrameLayout
     private Boolean disableUserInputData;
     private Boolean disableInputKeyPopupTips;
     private Boolean disableXInputPad;
+    private Boolean disableCandidateVariantFirst;
     private boolean disableSettingsBtn;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -118,6 +119,16 @@ public class ImeInputView extends FrameLayout
 
         if (this.keyboard != null) {
             this.keyboard.getConfig().setXInputPadEnabled(!Boolean.TRUE.equals(disabled));
+
+            updateBottomSpacing(this.keyboard);
+        }
+    }
+
+    public void disableCandidateVariantFirst(boolean disabled) {
+        this.disableCandidateVariantFirst = disabled;
+
+        if (this.keyboard != null) {
+            this.keyboard.getConfig().setCandidateVariantFirstEnabled(!Boolean.TRUE.equals(disabled));
         }
     }
 
@@ -252,6 +263,10 @@ public class ImeInputView extends FrameLayout
         if (this.disableXInputPad != null) {
             patchedConfig.setXInputPadEnabled(!this.disableXInputPad);
         }
+        // 支持临时禁用 繁体候选字优先
+        if (this.disableCandidateVariantFirst != null) {
+            patchedConfig.setCandidateVariantFirstEnabled(!this.disableCandidateVariantFirst);
+        }
 
         newKeyboard.setConfig(patchedConfig);
 
@@ -265,6 +280,7 @@ public class ImeInputView extends FrameLayout
             newKeyboard.reset();
         }
 
+        updateBottomSpacing(newKeyboard);
         updateInputListOption(patchedConfig);
 
         toggleShowInputListCleanBtn();
@@ -359,12 +375,24 @@ public class ImeInputView extends FrameLayout
         addInputMsgListener(this.inputCompletionsView);
 
         bindKeyboard(this.keyboard);
+        updateBottomSpacing(this.keyboard);
     }
 
     private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
         return oldConfig.getTheme() != newConfig.getTheme()
                || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()
                || oldConfig.isXInputPadEnabled() != newConfig.isXInputPadEnabled();
+    }
+
+    private void updateBottomSpacing(Keyboard keyboard) {
+        Keyboard.Config config = keyboard != null ? keyboard.getConfig() : null;
+
+        // Note：仅竖屏模式下需要添加底部空白
+        addBottomSpacing(this,
+                         config != null
+                         && config.isDesktopSwipeUpGestureAdapted()
+                         && !config.isXInputPadEnabled()
+                         && config.getOrientation() == Keyboard.Orientation.Portrait);
     }
 
     private void addBottomSpacing(View rootView, boolean needSpacing) {
@@ -381,23 +409,16 @@ public class ImeInputView extends FrameLayout
     }
 
     private void bindKeyboard(Keyboard keyboard) {
-        Keyboard.Config config = keyboard != null ? keyboard.getConfig() : null;
-        // Note：仅竖屏模式下需要添加底部空白
-        addBottomSpacing(this,
-                         config != null
-                         && config.isDesktopSwipeUpGestureAdapted()
-                         && !config.isXInputPadEnabled()
-                         && config.getOrientation() == Keyboard.Orientation.Portrait);
-
-        if (keyboard != null) {
-            keyboard.setInputList(this.inputList);
-            // Note：在 Keyboard#start 中可能会触发输入事件，故而需尽早绑定监听
-            this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
-
-            keyboard.start();
-
-            this.keyboardView.updateKeyboard(keyboard);
+        if (keyboard == null) {
+            return;
         }
+
+        keyboard.setInputList(this.inputList);
+        // Note：在 Keyboard#start 中可能会触发输入事件，故而需尽早绑定监听
+        this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
+
+        keyboard.start();
+        this.keyboardView.updateKeyboard(keyboard);
     }
 
     private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
