@@ -98,6 +98,10 @@ public class ImeInputView extends FrameLayout
         return this.inputList;
     }
 
+    public void refresh() {
+        updateKeyboardConfig();
+    }
+
     public void disableUserInputData(boolean disabled) {
         this.disableUserInputData = disabled;
 
@@ -114,21 +118,29 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    public void disableXInputPad(boolean disabled) {
+    public void disableXInputPad(Boolean disabled) {
         this.disableXInputPad = disabled;
 
+        if (disabled == null) {
+            disabled = !Keyboard.Config.isXInputPadEnabled(this.preferences);
+        }
+
         if (this.keyboard != null) {
-            this.keyboard.getConfig().setXInputPadEnabled(!Boolean.TRUE.equals(disabled));
+            this.keyboard.getConfig().setXInputPadEnabled(!disabled);
 
             updateBottomSpacing(this.keyboard);
         }
     }
 
-    public void disableCandidateVariantFirst(boolean disabled) {
+    public void disableCandidateVariantFirst(Boolean disabled) {
         this.disableCandidateVariantFirst = disabled;
 
+        if (disabled == null) {
+            disabled = Keyboard.Config.isCandidateVariantFirstEnabled(this.preferences);
+        }
+
         if (this.keyboard != null) {
-            this.keyboard.getConfig().setCandidateVariantFirstEnabled(!Boolean.TRUE.equals(disabled));
+            this.keyboard.getConfig().setCandidateVariantFirstEnabled(!disabled);
         }
     }
 
@@ -235,7 +247,7 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    /** 根据配置更新键盘：设计键盘切换等 */
+    /** 根据配置更新键盘：涉及键盘切换等 */
     private void updateKeyboard(Keyboard.Config config) {
         Keyboard oldKeyboard = this.keyboard;
 
@@ -247,27 +259,6 @@ public class ImeInputView extends FrameLayout
         }
 
         Keyboard.Config patchedConfig = patchKeyboardConfig(config);
-        // 支持临时修改左右手模式
-        if (this.keyboardHandMode != null) {
-            patchedConfig.setHandMode(this.keyboardHandMode);
-        }
-        // 支持临时禁用对用户输入的记录
-        if (this.disableUserInputData != null) {
-            patchedConfig.setUserInputDataDisabled(this.disableUserInputData);
-        }
-        // 支持临时禁用按键气泡提示：主要用于密码输入场景
-        if (this.disableInputKeyPopupTips != null) {
-            patchedConfig.setInputKeyPopupTipsDisabled(this.disableInputKeyPopupTips);
-        }
-        // 支持临时禁用 X 型输入
-        if (this.disableXInputPad != null) {
-            patchedConfig.setXInputPadEnabled(!this.disableXInputPad);
-        }
-        // 支持临时禁用 繁体候选字优先
-        if (this.disableCandidateVariantFirst != null) {
-            patchedConfig.setCandidateVariantFirstEnabled(!this.disableCandidateVariantFirst);
-        }
-
         newKeyboard.setConfig(patchedConfig);
 
         if (oldKeyboard != newKeyboard) {
@@ -292,14 +283,13 @@ public class ImeInputView extends FrameLayout
             return;
         }
 
+        updateKeyboardConfig();
+    }
+
+    private void updateKeyboardConfig() {
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 
-        updateKeyboardConfig(newConfig);
-    }
-
-    private void updateKeyboardConfig(Keyboard.Config newConfig) {
-        Keyboard.Config oldConfig = this.keyboard.getConfig();
         this.keyboard.setConfig(newConfig);
 
         // 主题发生变化，重新绑定视图
@@ -433,6 +423,30 @@ public class ImeInputView extends FrameLayout
             patchedConfig.setOrientation(Keyboard.Orientation.Landscape);
         } else {
             patchedConfig.setOrientation(Keyboard.Orientation.Portrait);
+        }
+
+        Keyboard.Subtype subtype = SystemUtils.getImeSubtype(getContext());
+        patchedConfig.setSubtype(subtype);
+
+        // 临时修改左右手模式
+        if (this.keyboardHandMode != null) {
+            patchedConfig.setHandMode(this.keyboardHandMode);
+        }
+        // 临时禁用对用户输入的记录
+        if (this.disableUserInputData != null) {
+            patchedConfig.setUserInputDataDisabled(this.disableUserInputData);
+        }
+        // 临时禁用按键气泡提示：主要用于密码输入场景
+        if (this.disableInputKeyPopupTips != null) {
+            patchedConfig.setInputKeyPopupTipsDisabled(this.disableInputKeyPopupTips);
+        }
+        // 临时禁用 X 型输入
+        if (this.disableXInputPad != null) {
+            patchedConfig.setXInputPadEnabled(!this.disableXInputPad);
+        }
+        // 临时禁用 繁体候选字优先
+        if (this.disableCandidateVariantFirst != null) {
+            patchedConfig.setCandidateVariantFirstEnabled(!this.disableCandidateVariantFirst);
         }
 
         return patchedConfig;

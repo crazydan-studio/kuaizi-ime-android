@@ -139,7 +139,7 @@ public class PinyinKeyTable extends KeyTable {
         // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { level0CharKey("zh"), level0CharKey("z"), level0CharKey("k"), }, //
+                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
                         new Key[] {
                                 symbolKey("。"), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
@@ -149,7 +149,7 @@ public class PinyinKeyTable extends KeyTable {
                         new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t") }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
+                        new Key[] { level0CharKey("zh"), level0CharKey("z"), level0CharKey("k"), }, //
                         new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("r"), }, //
                 }, //
                 new Key[][] {

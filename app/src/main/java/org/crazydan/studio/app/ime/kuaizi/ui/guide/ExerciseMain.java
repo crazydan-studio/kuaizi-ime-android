@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
@@ -32,7 +31,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.preference.PreferenceManager;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
@@ -65,8 +63,6 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @date 2023-09-11
  */
 public class ExerciseMain extends FollowSystemThemeActivity {
-    private SharedPreferences preferences;
-
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
@@ -77,8 +73,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.guide_exercise_main_activity);
-
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
@@ -97,6 +91,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     protected void onStart() {
         // 确保拼音字典库保持就绪状态
         PinyinDictDB.getInstance().open(getApplicationContext());
+
+        this.imeView.refresh();
 
         super.onStart();
     }
@@ -197,8 +193,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             switch (exercise.mode) {
                 case free:
                 case introduce: {
-                    this.imeView.disableXInputPad(!Keyboard.Config.isXInputPadEnabled(this.preferences));
-                    this.imeView.disableCandidateVariantFirst(!Keyboard.Config.isCandidateVariantFirstEnabled(this.preferences));
+                    this.imeView.disableXInputPad(null);
+                    this.imeView.disableCandidateVariantFirst(null);
                     this.imeView.disableUserInputData(false);
                     this.imeView.disableSettingsBtn(false);
                     break;

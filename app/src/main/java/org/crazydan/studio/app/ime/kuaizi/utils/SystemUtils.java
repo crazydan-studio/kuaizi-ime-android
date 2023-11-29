@@ -25,7 +25,9 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.ui.Preferences;
 
 /**
@@ -113,6 +115,23 @@ public class SystemUtils {
             }
         }
         return false;
+    }
+
+    public static Keyboard.Subtype getImeSubtype(Context context) {
+        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        InputMethodSubtype subtype = manager.getCurrentInputMethodSubtype();
+        return parseImeSubtype(subtype);
+    }
+
+    public static Keyboard.Subtype parseImeSubtype(InputMethodSubtype subtype) {
+        if (subtype != null //
+            && ("en_US".equals(subtype.getLocale()) //
+                || "en_US".equals(subtype.getLanguageTag()))) {
+            return Keyboard.Subtype.latin;
+        } else {
+            return Keyboard.Subtype.hans;
+        }
     }
 
     /** 切换输入法 */

@@ -92,6 +92,7 @@ public class Exercise implements ViewData, InputMsgListener {
             case InputChars_Input_Popup_Hide_Doing:
             case InputAudio_Play_Doing:
             case InputList_Clean_Done:
+            case InputList_Option_Update_Done:
             case InputList_Cleaned_Cancel_Done:
             case InputList_Pending_Drop_Done:
             case InputList_Input_Choose_Done:

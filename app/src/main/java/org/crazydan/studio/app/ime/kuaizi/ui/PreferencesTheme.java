@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 
 import android.os.Bundle;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -28,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -101,6 +103,10 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             });
             latinUsePinyinKeys.setEnabled(xPad.isChecked());
             adaptGesture.setEnabled(!xPad.isChecked());
+
+            Keyboard.Subtype subtype = SystemUtils.getImeSubtype(getContext());
+            PreferenceCategory xPadCategory = findPreference("preference_x_input_pad");
+            xPadCategory.setVisible(subtype == Keyboard.Subtype.hans);
 
             // 显示配置后的拉丁文键盘布局
             latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {

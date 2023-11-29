@@ -142,6 +142,7 @@ public interface Keyboard extends UserInputMsgListener {
         private HandMode handMode = HandMode.Right;
         /** 主题类型 */
         private ThemeType theme;
+        private Subtype subtype;
 
         private boolean userInputDataDisabled;
         private boolean keyClickedAudioDisabled;
@@ -166,6 +167,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.singleLineInput = config.singleLineInput;
                 this.orientation = config.orientation;
                 this.handMode = config.handMode;
+                this.subtype = config.subtype;
 
                 this.userInputDataDisabled = config.userInputDataDisabled;
                 this.keyClickedAudioDisabled = config.keyClickedAudioDisabled;
@@ -224,6 +226,14 @@ public interface Keyboard extends UserInputMsgListener {
             return this.theme;
         }
 
+        public Subtype getSubtype() {
+            return this.subtype;
+        }
+
+        public void setSubtype(Subtype subtype) {
+            this.subtype = subtype;
+        }
+
         public boolean isUserInputDataDisabled() {
             return this.userInputDataDisabled;
         }
@@ -277,7 +287,8 @@ public interface Keyboard extends UserInputMsgListener {
         }
 
         public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
-            return this.latinUsePinyinKeysInXInputPadEnabled;
+            // Note：仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的
+            return this.latinUsePinyinKeysInXInputPadEnabled && this.subtype == Subtype.hans;
         }
 
         public void syncWith(SharedPreferences preferences) {
@@ -397,5 +408,12 @@ public interface Keyboard extends UserInputMsgListener {
         public int getLabelResId() {
             return this.labelResId;
         }
+    }
+
+    enum Subtype {
+        /** 拉丁文 */
+        latin,
+        /** 汉字 */
+        hans,
     }
 }

@@ -135,21 +135,20 @@ public class LatinKeyTable extends KeyTable {
             return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("z").withReplacements("Z"),
-                                    alphabetKey("k").withReplacements("K"),
-                                    symbolKey("?").withReplacements("!"),
-                                    //
-                            }, //
+                                    alphabetKey("l").withReplacements("L"),
+                                    alphabetKey("m").withReplacements("M"),
+                                    alphabetKey("n").withReplacements("N"),
+                                    }, //
                             new Key[] {
                                     symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                     },
                             }, //
                     new Key[][] {
                             new Key[] {
-                                    symbolKey(",").withReplacements("*"), //
-                                    symbolKey("@").withReplacements("+"), //
-                                    symbolKey(":").withReplacements(";"), //
-                            }, //
+                                    symbolKey(",").withReplacements(";"), //
+                                    symbolKey("?").withReplacements(":"), //
+                                    symbolKey("!").withReplacements("*"),
+                                    }, //
                             new Key[] {
                                     alphabetKey("d").withReplacements("D"),
                                     alphabetKey("b").withReplacements("B"),
@@ -158,10 +157,11 @@ public class LatinKeyTable extends KeyTable {
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("l").withReplacements("L"),
-                                    alphabetKey("m").withReplacements("M"),
-                                    alphabetKey("n").withReplacements("N"),
-                                    }, //
+                                    alphabetKey("z").withReplacements("Z"),
+                                    alphabetKey("k").withReplacements("K"),
+                                    symbolKey("@").withReplacements("&"),
+                                    //
+                            }, //
                             new Key[] {
                                     alphabetKey("y").withReplacements("Y"),
                                     alphabetKey("h").withReplacements("H"),
@@ -196,7 +196,7 @@ public class LatinKeyTable extends KeyTable {
                             new Key[] {
                                     alphabetKey("x").withReplacements("X"),
                                     alphabetKey("c").withReplacements("C"),
-                                    symbolKey("#").withReplacements("&"),
+                                    symbolKey("#").withReplacements("+"),
                                     }, //
                             new Key[] {
                                     alphabetKey("j").withReplacements("J"),
@@ -211,9 +211,9 @@ public class LatinKeyTable extends KeyTable {
                 // - 排序: echo "" | sort -n -r -k 2
                 new Key[][] {
                         new Key[] {
-                                symbolKey("?").withReplacements("!"), //
+                                symbolKey("@").withReplacements("&"), //
                                 symbolKey("-").withReplacements("_"), //
-                                symbolKey("#").withReplacements("&"), //
+                                symbolKey("#").withReplacements("+"), //
                         }, //
                         new Key[] {
                                 symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
@@ -221,10 +221,10 @@ public class LatinKeyTable extends KeyTable {
                 },
                 new Key[][] {
                         new Key[] {
-                                symbolKey(",").withReplacements("*"), //
-                                symbolKey("@").withReplacements("+"), //
-                                symbolKey(":").withReplacements(";"), //
-                        }, //
+                                symbolKey(",").withReplacements(";"), //
+                                symbolKey("?").withReplacements(":"), //
+                                symbolKey("!").withReplacements("*"),
+                                }, //
                         new Key[] {
                                 alphabetKey("t").withReplacements("T"),
                                 alphabetKey("f").withReplacements("F"),

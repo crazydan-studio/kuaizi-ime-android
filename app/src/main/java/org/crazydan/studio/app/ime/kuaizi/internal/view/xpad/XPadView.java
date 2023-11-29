@@ -252,8 +252,11 @@ public class XPadView extends View {
             // 告知待输入字符发生了切换
             else if (isCharChanged) {
                 Log.i(getClass().getSimpleName(),
-                      String.format("%s: old - %d:%d, new - %d:%d",
+                      String.format("%s - %s: x/y - %f/%f,old - %d:%d, new - %d:%d",
+                                    Objects.hash(this),
                                     type,
+                                    x,
+                                    y,
                                     old_active_block.zone,
                                     old_active_block.block,
                                     new_active_block.zone,

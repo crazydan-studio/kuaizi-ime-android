@@ -17,7 +17,9 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="@string/title_preference_basic">
+    <PreferenceCategory
+            app:key="preference_basic"
+            app:title="@string/title_preference_basic">
         <PreferenceScreen android:title="@string/label_config_theme">
             <intent android:action=".ui.PreferencesTheme" />
         </PreferenceScreen>
@@ -28,7 +30,9 @@
                 app:summary="@string/desc_enable_candidate_variant_first" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/title_preference_privacy">
+    <PreferenceCategory
+            app:key="preference_privacy"
+            app:title="@string/title_preference_privacy">
         <SwitchPreferenceCompat
                 app:key="disable_user_input_data"
                 app:title="@string/label_disable_user_input_data"
@@ -40,6 +44,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+            app:key="preference_performance"
             app:title="@string/title_preference_performance"
             app:initialExpandedChildrenCount="0">
         <SwitchPreferenceCompat
@@ -70,7 +75,7 @@
     </PreferenceCategory>-->
 
     <PreferenceCategory
-            app:key="category_about"
+            app:key="preference_about"
             app:title="@string/title_preference_about">
         <!-- https://stackoverflow.com/questions/7275015/android-start-activity-from-preferences-xml#answer-10441707 -->
         <PreferenceScreen android:title="@string/title_about_thanks">
