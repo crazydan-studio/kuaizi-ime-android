@@ -264,6 +264,10 @@ public interface Keyboard extends UserInputMsgListener {
             return this.xInputPadEnabled;
         }
 
+        public void setXInputPadEnabled(boolean xInputPadEnabled) {
+            this.xInputPadEnabled = xInputPadEnabled;
+        }
+
         public void syncWith(SharedPreferences preferences) {
             boolean disableUserInputData = isUserInputDataDisabled(preferences);
             setUserInputDataDisabled(disableUserInputData);

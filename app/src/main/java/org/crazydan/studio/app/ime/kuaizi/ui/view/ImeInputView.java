@@ -70,12 +70,15 @@ public class ImeInputView extends FrameLayout
     private PopupWindow inputCompletionsPopupWindow;
     private PopupWindow inputKeyPopupWindow;
     private InputCompletionsView inputCompletionsView;
+    private View settingsBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
     private Keyboard keyboard;
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;
     private Boolean disableInputKeyPopupTips;
+    private Boolean disableXInputPad;
+    private boolean disableSettingsBtn;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -94,7 +97,7 @@ public class ImeInputView extends FrameLayout
         return this.inputList;
     }
 
-    public void setDisableUserInputData(boolean disabled) {
+    public void disableUserInputData(boolean disabled) {
         this.disableUserInputData = disabled;
 
         if (this.keyboard != null) {
@@ -102,11 +105,31 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    public void setDisableInputKeyPopupTips(Boolean disabled) {
+    public void disableInputKeyPopupTips(boolean disabled) {
         this.disableInputKeyPopupTips = disabled;
 
         if (this.keyboard != null) {
             this.keyboard.getConfig().setInputKeyPopupTipsDisabled(disabled);
+        }
+    }
+
+    public void disableXInputPad(boolean disabled) {
+        this.disableXInputPad = disabled;
+
+        if (this.keyboard != null) {
+            this.keyboard.getConfig().setXInputPadEnabled(!Boolean.TRUE.equals(disabled));
+        }
+    }
+
+    public void disableSettingsBtn(boolean disabled) {
+        this.disableSettingsBtn = disabled;
+
+        if (disabled) {
+            this.settingsBtnView.setAlpha(0.4f);
+            this.settingsBtnView.setOnClickListener(null);
+        } else {
+            this.settingsBtnView.setAlpha(1.0f);
+            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
         }
     }
 
@@ -225,6 +248,10 @@ public class ImeInputView extends FrameLayout
         if (this.disableInputKeyPopupTips != null) {
             patchedConfig.setInputKeyPopupTipsDisabled(this.disableInputKeyPopupTips);
         }
+        // 支持临时禁用 X 型输入
+        if (this.disableXInputPad != null) {
+            patchedConfig.setXInputPadEnabled(!this.disableXInputPad);
+        }
 
         newKeyboard.setConfig(patchedConfig);
 
@@ -310,7 +337,8 @@ public class ImeInputView extends FrameLayout
 
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
-        rootView.findViewById(R.id.settings).setOnClickListener(this::onShowPreferences);
+        this.settingsBtnView = rootView.findViewById(R.id.settings);
+        disableSettingsBtn(this.disableSettingsBtn);
 
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);

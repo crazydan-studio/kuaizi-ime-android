@@ -120,14 +120,6 @@ public class XPadView extends View {
         this.zone_0_HexagonRadius = level_0_zone_HexagonRadius;
     }
 
-    public void disableGestureTrailer(boolean disabled) {
-        if (this.trailer.isDisabled() != disabled) {
-            // 触发重绘
-            invalidate();
-        }
-        this.trailer.setDisabled(disabled);
-    }
-
     private void reset() {
         stop_zone_1_animator();
 
@@ -177,13 +169,14 @@ public class XPadView extends View {
 
     public void onGesture(
             UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
-            ViewGestureDetector.GestureData data, PointF offset
+            ViewGestureDetector.GestureData data, PointF offset, boolean disableTrailer
     ) {
         invalidate();
 
         float x = data.x + offset.x;
         float y = data.y + offset.y;
 
+        this.trailer.setDisabled(disableTrailer);
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
 
         BlockIndex old_active_block = this.active_block;

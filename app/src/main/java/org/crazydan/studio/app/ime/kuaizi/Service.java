@@ -125,7 +125,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         int prevFieldId = this.prevFieldId;
         this.prevFieldId = attribute.fieldId;
 
-        this.imeView.setDisableInputKeyPopupTips(passwordInputting);
+        this.imeView.disableInputKeyPopupTips(passwordInputting);
 
         startImeInput(config, prevFieldId != attribute.fieldId);
     }

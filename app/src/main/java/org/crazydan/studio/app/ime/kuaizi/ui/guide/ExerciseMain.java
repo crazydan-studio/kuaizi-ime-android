@@ -228,6 +228,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
             exercise.addStep(finalStep);
             exercise.setDisableUserInputData(true);
+            exercise.setDisableXInputPad(true);
+            exercise.setDisableSettingsBtn(true);
 
             exerciseList.add(exercise);
         }

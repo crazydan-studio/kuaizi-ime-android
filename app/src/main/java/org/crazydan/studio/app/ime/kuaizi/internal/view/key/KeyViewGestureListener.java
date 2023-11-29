@@ -104,8 +104,8 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
         float y = keyView.itemView.getY();
         PointF offset = new PointF(-x, -y);
 
-        ((XPadKeyView) keyView).getXPad().disableGestureTrailer(this.keyboardView.isGestureTrailerDisabled());
-        ((XPadKeyView) keyView).getXPad().onGesture(this, type, data, offset);
+        boolean disableTrailer = this.keyboardView.isGestureTrailerDisabled();
+        ((XPadKeyView) keyView).getXPad().onGesture(this, type, data, offset, disableTrailer);
 
         return true;
     }

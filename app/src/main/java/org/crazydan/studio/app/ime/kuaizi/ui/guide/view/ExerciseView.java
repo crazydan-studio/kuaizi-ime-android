@@ -60,7 +60,9 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         ime.removeInputMsgListenerByType(exercise.getClass());
         ime.addInputMsgListener(exercise);
 
-        ime.setDisableUserInputData(exercise.isDisableUserInputData());
+        ime.disableUserInputData(exercise.isDisableUserInputData());
+        ime.disableXInputPad(exercise.isDisableXInputPad());
+        ime.disableSettingsBtn(exercise.isDisableSettingsBtn());
 
         this.textView.requestFocus();
         this.textView.setText(exercise.getSampleText());
