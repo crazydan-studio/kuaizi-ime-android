@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.xpad;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
@@ -29,7 +26,7 @@ import android.graphics.drawable.Drawable;
  * @date 2023-11-03
  */
 public class XDrawablePainter extends XAlignPainter {
-    private static final Map<Drawable, Drawable> mutatedDrawables = new HashMap<>();
+    private final Layer layer = new Layer();
 
     private final Drawable drawable;
 
@@ -37,29 +34,47 @@ public class XDrawablePainter extends XAlignPainter {
         // Note：从资源获取的 Drawable 实例是共享的，
         // 修改对其他地方的引用也是同样生效的，
         // 故而，需单独复制一份以做独立修改
-        this.drawable = mutatedDrawables.computeIfAbsent(drawable, Drawable::mutate);
+        // Note: mutate 后的 Drawable 不能被缓存，
+        // 否则，其资源将不会被回收，从而导致内存占用暴增
+        this.drawable = drawable.mutate();
     }
 
     @Override
     public void draw(Canvas canvas) {
-        int w = this.drawable.getIntrinsicWidth();
-        int h = this.drawable.getIntrinsicHeight();
-        // 按最小比例做长宽的等比例缩放
-        float scale = this.size / Math.max(w, h);
+        this.layer.setCanvas(canvas);
 
-        float width = (int) (w * scale);
-        float height = (int) (h * scale);
+        inCanvasLayer(canvas, this.layer);
+    }
 
-        this.drawable.setAlpha((int) (this.alpha * 255));
-        this.drawable.setBounds(0, 0, (int) width, (int) height);
+    /** 通过 inner class 降低动态创建 lambda 函数的开销 */
+    private class Layer implements Runnable {
+        private Canvas canvas;
 
-        inCanvasLayer(canvas, () -> {
-            if (this.rotate != 0) {
-                canvas.rotate(this.rotate, this.start.x, this.start.y);
+        public void setCanvas(Canvas canvas) {
+            this.canvas = canvas;
+        }
+
+        @Override
+        public void run() {
+            int w = XDrawablePainter.this.drawable.getIntrinsicWidth();
+            int h = XDrawablePainter.this.drawable.getIntrinsicHeight();
+            // 按最小比例做长宽的等比例缩放
+            float scale = XDrawablePainter.this.size / Math.max(w, h);
+
+            float width = (int) (w * scale);
+            float height = (int) (h * scale);
+
+            XDrawablePainter.this.drawable.setAlpha((int) (XDrawablePainter.this.alpha * 255));
+            XDrawablePainter.this.drawable.setBounds(0, 0, (int) width, (int) height);
+
+            if (XDrawablePainter.this.rotate != 0) {
+                this.canvas.rotate(XDrawablePainter.this.rotate,
+                                   XDrawablePainter.this.start.x,
+                                   XDrawablePainter.this.start.y);
             }
 
             PointF offset = new PointF(0, 0);
-            switch (this.align) {
+            switch (XDrawablePainter.this.align) {
                 case TopLeft: {
                     offset.offset(-width, -height);
                     break;
@@ -90,11 +105,11 @@ public class XDrawablePainter extends XAlignPainter {
                 }
             }
 
-            float x = this.start.x + offset.x;
-            float y = this.start.y + offset.y;
-            canvas.translate(x, y);
+            float x = XDrawablePainter.this.start.x + offset.x;
+            float y = XDrawablePainter.this.start.y + offset.y;
+            this.canvas.translate(x, y);
 
-            this.drawable.draw(canvas);
-        });
+            XDrawablePainter.this.drawable.draw(this.canvas);
+        }
     }
 }

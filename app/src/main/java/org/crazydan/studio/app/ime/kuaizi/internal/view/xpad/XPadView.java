@@ -67,6 +67,7 @@ public class XPadView extends View {
     private final XZone[] zones = new XZone[3];
     private final XZone[] inputting_zones = new XZone[3];
     private ValueAnimator zone_1_animator;
+    private ValueAnimator.AnimatorUpdateListener zone_1_animator_update_listener = new Zone1AnimatorUpdateListener();
 
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
@@ -835,7 +836,7 @@ public class XPadView extends View {
         if (listener != null) {
             this.zone_1_animator.addListener(listener);
         }
-        this.zone_1_animator.addUpdateListener(this::on_zone_1_update_animation);
+        this.zone_1_animator.addUpdateListener(this.zone_1_animator_update_listener);
 
         this.zone_1_animator.start();
     }
@@ -1245,6 +1246,13 @@ public class XPadView extends View {
         @Override
         public int hashCode() {
             return Objects.hash(this.zone, this.x, this.y, this.z, this.key);
+        }
+    }
+
+    private class Zone1AnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+        @Override
+        public void onAnimationUpdate(@NonNull ValueAnimator animation) {
+            on_zone_1_update_animation(animation);
         }
     }
 }

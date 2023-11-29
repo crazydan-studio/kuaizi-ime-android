@@ -36,6 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-11-01
  */
 public class XZone {
+    private final Layer layer = new Layer();
+
     private final List<XPathPainter> pathPainters = new ArrayList<>();
     private final List<XDrawablePainter> iconPainters = new ArrayList<>();
     private final List<XTextPainter> textPainters = new ArrayList<>();
@@ -51,15 +53,10 @@ public class XZone {
             return;
         }
 
-        XPainter.inCanvasLayer(canvas, () -> {
-            if (this.scale != null) {
-                canvas.scale(this.scale, this.scale, origin.x, origin.y);
-            }
+        this.layer.setCanvas(canvas);
+        this.layer.setOrigin(origin);
 
-            this.pathPainters.forEach((p) -> doPaint(canvas, p));
-            this.iconPainters.forEach((p) -> doPaint(canvas, p));
-            this.textPainters.forEach((p) -> doPaint(canvas, p));
-        });
+        XPainter.inCanvasLayer(canvas, this.layer);
 
         // 绘制 Link 边界线
         //drawLinkBoundaries(canvas);
@@ -87,10 +84,6 @@ public class XZone {
     public void bounce() {
         this.alpha = 1f;
         this.scale = 1f;
-    }
-
-    public void dropPathPainter(int index) {
-        this.pathPainters.remove(index);
     }
 
     public XPathPainter newPathPainter() {
@@ -122,15 +115,17 @@ public class XZone {
         return painter;
     }
 
-    private void doPaint(Canvas canvas, XPainter painter) {
-        if (painter == null) {
-            return;
-        }
+    private <T extends XPainter> void doPaint(Canvas canvas, List<T> painters) {
+        for (XPainter painter : painters) {
+            if (painter == null) {
+                continue;
+            }
 
-        if (this.alpha != null) {
-            painter.setAlpha(this.alpha);
+            if (this.alpha != null) {
+                painter.setAlpha(this.alpha);
+            }
+            painter.draw(canvas);
         }
-        painter.draw(canvas);
     }
 
     private void drawLinkBoundaries(Canvas canvas) {
@@ -238,6 +233,31 @@ public class XZone {
         @Override
         public boolean contains(PointF point) {
             return ViewUtils.isPointInPolygon(point, this.vertexes);
+        }
+    }
+
+    /** 通过 inner class 降低动态创建 lambda 函数的开销 */
+    private class Layer implements Runnable {
+        private Canvas canvas;
+        private PointF origin;
+
+        public void setCanvas(Canvas canvas) {
+            this.canvas = canvas;
+        }
+
+        public void setOrigin(PointF origin) {
+            this.origin = origin;
+        }
+
+        @Override
+        public void run() {
+            if (XZone.this.scale != null) {
+                this.canvas.scale(XZone.this.scale, XZone.this.scale, this.origin.x, this.origin.y);
+            }
+
+            XZone.this.doPaint(this.canvas, XZone.this.pathPainters);
+            XZone.this.doPaint(this.canvas, XZone.this.iconPainters);
+            XZone.this.doPaint(this.canvas, XZone.this.textPainters);
         }
     }
 }
