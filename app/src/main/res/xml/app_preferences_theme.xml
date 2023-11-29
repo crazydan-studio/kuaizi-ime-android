@@ -28,12 +28,6 @@
             app:iconSpaceReserved="false"
             app:useSimpleSummaryProvider="true" />
 
-    <SwitchPreferenceCompat
-            app:key="enable_x_input_pad"
-            app:title="@string/label_enable_x_input_pad"
-            app:iconSpaceReserved="false"
-            app:summary="@string/desc_x_input_pad" />
-
     <ListPreference
             app:key="hand_mode"
             app:title="@string/label_switch_hand_mode"
@@ -44,8 +38,24 @@
             app:useSimpleSummaryProvider="true" />
 
     <SwitchPreferenceCompat
+            app:key="enable_x_input_pad"
+            app:title="@string/label_enable_x_input_pad"
+            app:iconSpaceReserved="false"
+            app:summary="@string/desc_enable_x_input_pad" />
+
+    <SwitchPreferenceCompat
             app:key="adapt_desktop_swipe_up_gesture"
             app:title="@string/label_adapt_desktop_swipe_up_gesture"
             app:iconSpaceReserved="false"
             app:summary="@string/desc_adapt_desktop_swipe_up_gesture" />
+
+    <PreferenceCategory
+            app:title="@string/title_preference_x_input_pad"
+            app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+                app:key="enable_latin_use_pinyin_keys_in_x_input_pad"
+                app:title="@string/label_enable_latin_use_pinyin_keys_in_x_input_pad"
+                app:iconSpaceReserved="false"
+                app:summary="@string/desc_enable_latin_use_pinyin_keys_in_x_input_pad" />
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -551,5 +551,9 @@ public abstract class KeyTable {
         public boolean isXInputPadEnabled() {
             return this.keyboardConfig.isXInputPadEnabled();
         }
+
+        public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
+            return this.keyboardConfig.isLatinUsePinyinKeysInXInputPadEnabled();
+        }
     }
 }

@@ -131,6 +131,81 @@ public class LatinKeyTable extends KeyTable {
 
     @Override
     protected XPadKey createXPadKey() {
+        if (this.config.isLatinUsePinyinKeysInXInputPadEnabled()) {
+            return xPadKey(Keyboard.Type.Latin, new Key[][][] {
+                    new Key[][] {
+                            new Key[] {
+                                    alphabetKey("z").withReplacements("Z"),
+                                    alphabetKey("k").withReplacements("K"),
+                                    symbolKey("?").withReplacements("!"),
+                                    //
+                            }, //
+                            new Key[] {
+                                    symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                    },
+                            }, //
+                    new Key[][] {
+                            new Key[] {
+                                    symbolKey(",").withReplacements("*"), //
+                                    symbolKey("@").withReplacements("+"), //
+                                    symbolKey(":").withReplacements(";"), //
+                            }, //
+                            new Key[] {
+                                    alphabetKey("d").withReplacements("D"),
+                                    alphabetKey("b").withReplacements("B"),
+                                    alphabetKey("t").withReplacements("T")
+                            }, //
+                    }, //
+                    new Key[][] {
+                            new Key[] {
+                                    alphabetKey("l").withReplacements("L"),
+                                    alphabetKey("m").withReplacements("M"),
+                                    alphabetKey("n").withReplacements("N"),
+                                    }, //
+                            new Key[] {
+                                    alphabetKey("y").withReplacements("Y"),
+                                    alphabetKey("h").withReplacements("H"),
+                                    alphabetKey("r").withReplacements("R"),
+                                    }, //
+                    }, //
+                    new Key[][] {
+                            new Key[] {
+                                    alphabetKey("g").withReplacements("G"),
+                                    alphabetKey("f").withReplacements("F"),
+                                    alphabetKey("p").withReplacements("P"),
+                                    }, //
+                            new Key[] {
+                                    alphabetKey("q").withReplacements("Q"),
+                                    alphabetKey("s").withReplacements("S"),
+                                    symbolKey("-").withReplacements("_"),
+                                    }, //
+                    }, //
+                    new Key[][] {
+                            new Key[] {
+                                    alphabetKey("e").withReplacements("E"),
+                                    alphabetKey("a").withReplacements("A"),
+                                    alphabetKey("o").withReplacements("O"),
+                                    }, //
+                            new Key[] {
+                                    alphabetKey("i").withReplacements("I"),
+                                    alphabetKey("u").withReplacements("U"),
+                                    alphabetKey("v").withReplacements("V"),
+                                    }, //
+                    }, //
+                    new Key[][] {
+                            new Key[] {
+                                    alphabetKey("x").withReplacements("X"),
+                                    alphabetKey("c").withReplacements("C"),
+                                    symbolKey("#").withReplacements("&"),
+                                    }, //
+                            new Key[] {
+                                    alphabetKey("j").withReplacements("J"),
+                                    alphabetKey("w").withReplacements("W"),
+                                    symbolKey("/").withReplacements("\\"),
+                                    }, //
+                    }, //
+            });
+        }
         return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                 // 英语单词中首字母的频率: https://zh.wikipedia.org/zh-cn/%E5%AD%97%E6%AF%8D%E9%A2%91%E7%8E%87#.E8.8B.B1.E8.AF.AD.E5.8D.95.E8.AF.8D.E4.B8.AD.E9.A6.96.E5.AD.97.E6.AF.8D.E7.9A.84.E9.A2.91.E7.8E.87
                 // - 排序: echo "" | sort -n -r -k 2
@@ -142,8 +217,8 @@ public class LatinKeyTable extends KeyTable {
                         }, //
                         new Key[] {
                                 symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
-                                },
-                        }, //
+                                }, //
+                },
                 new Key[][] {
                         new Key[] {
                                 symbolKey(",").withReplacements("*"), //
@@ -154,8 +229,8 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("t").withReplacements("T"),
                                 alphabetKey("f").withReplacements("F"),
                                 alphabetKey("y").withReplacements("Y"),
-                                },
-                        }, //
+                                }, //
+                },
                 new Key[][] {
                         new Key[] {
                                 alphabetKey("m").withReplacements("M"),
@@ -166,8 +241,8 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("a").withReplacements("A"),
                                 alphabetKey("c").withReplacements("C"),
                                 alphabetKey("u").withReplacements("U"),
-                                },
-                        }, //
+                                }, //
+                },
                 new Key[][] {
                         new Key[] {
                                 alphabetKey("b").withReplacements("B"),
@@ -178,8 +253,8 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("s").withReplacements("S"),
                                 alphabetKey("l").withReplacements("L"),
                                 alphabetKey("v").withReplacements("V"),
-                                },
-                        }, //
+                                }, //
+                },
                 new Key[][] {
                         new Key[] {
                                 alphabetKey("o").withReplacements("O"),
@@ -190,8 +265,8 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("h").withReplacements("H"),
                                 alphabetKey("d").withReplacements("D"),
                                 alphabetKey("j").withReplacements("J"),
-                                },
-                        }, //
+                                }, //
+                },
                 new Key[][] {
                         new Key[] {
                                 alphabetKey("i").withReplacements("I"),
@@ -202,8 +277,8 @@ public class LatinKeyTable extends KeyTable {
                                 alphabetKey("w").withReplacements("W"), //
                                 alphabetKey("p").withReplacements("P"), //
                                 symbolKey("/").withReplacements("\\"),
-                                },
-                        },
+                                }, //
+                },
                 });
     }
 }

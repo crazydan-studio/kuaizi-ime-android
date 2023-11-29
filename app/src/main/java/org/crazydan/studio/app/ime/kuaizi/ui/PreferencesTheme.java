@@ -44,7 +44,9 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
         this.imeView = findViewById(R.id.ime_view);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
+            getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.settings, new SettingsFragment(this.imeView))
+                                       .commit();
         }
     }
 
@@ -80,18 +82,32 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        private final ImeInputView imeView;
+
+        public SettingsFragment(ImeInputView imeView) {this.imeView = imeView;}
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences_theme, rootKey);
 
-            SwitchPreferenceCompat xpad = findPreference("enable_x_input_pad");
+            SwitchPreferenceCompat xPad = findPreference("enable_x_input_pad");
+            Preference latinUsePinyinKeys = findPreference("enable_latin_use_pinyin_keys_in_x_input_pad");
             Preference adaptGesture = findPreference("adapt_desktop_swipe_up_gesture");
 
-            xpad.setOnPreferenceClickListener(pref -> {
-                adaptGesture.setEnabled(!xpad.isChecked());
+            xPad.setOnPreferenceClickListener(pref -> {
+                latinUsePinyinKeys.setEnabled(xPad.isChecked());
+                adaptGesture.setEnabled(!xPad.isChecked());
                 return true;
             });
-            adaptGesture.setEnabled(!xpad.isChecked());
+            latinUsePinyinKeys.setEnabled(xPad.isChecked());
+            adaptGesture.setEnabled(!xPad.isChecked());
+
+            // 显示配置后的拉丁文键盘布局
+            latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {
+                Keyboard.Config config = new Keyboard.Config(Keyboard.Type.Latin);
+                this.imeView.startInput(config, false);
+                return true;
+            });
         }
     }
 }

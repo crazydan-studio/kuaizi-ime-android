@@ -381,7 +381,10 @@ public class ImeInputView extends FrameLayout
     private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
         return oldConfig.getTheme() != newConfig.getTheme()
                || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()
-               || oldConfig.isXInputPadEnabled() != newConfig.isXInputPadEnabled();
+               || oldConfig.isXInputPadEnabled() != newConfig.isXInputPadEnabled()
+               || (newConfig.isXInputPadEnabled() //
+                   && (oldConfig.isLatinUsePinyinKeysInXInputPadEnabled()
+                       != newConfig.isLatinUsePinyinKeysInXInputPadEnabled()));
     }
 
     private void updateBottomSpacing(Keyboard keyboard) {

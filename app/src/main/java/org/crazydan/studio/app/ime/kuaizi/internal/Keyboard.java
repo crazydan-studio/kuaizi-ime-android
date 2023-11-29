@@ -124,6 +124,8 @@ public interface Keyboard extends UserInputMsgListener {
         private static final String pref_key_adapt_desktop_swipe_up_gesture = "adapt_desktop_swipe_up_gesture";
         private static final String pref_key_enable_candidate_variant_first = "enable_candidate_variant_first";
         private static final String pref_key_enable_x_input_pad = "enable_x_input_pad";
+        private static final String pref_key_enable_latin_use_pinyin_keys_in_x_input_pad
+                = "enable_latin_use_pinyin_keys_in_x_input_pad";
         private static final String pref_key_hand_mode = "hand_mode";
         private static final String pref_key_theme = "theme";
 
@@ -150,6 +152,7 @@ public interface Keyboard extends UserInputMsgListener {
         private boolean desktopSwipeUpGestureAdapted;
         private boolean candidateVariantFirstEnabled;
         private boolean xInputPadEnabled;
+        private boolean latinUsePinyinKeysInXInputPadEnabled;
 
         public Config(Type type) {
             this.type = type;
@@ -173,6 +176,7 @@ public interface Keyboard extends UserInputMsgListener {
                 this.desktopSwipeUpGestureAdapted = config.desktopSwipeUpGestureAdapted;
                 this.candidateVariantFirstEnabled = config.candidateVariantFirstEnabled;
                 this.xInputPadEnabled = config.xInputPadEnabled;
+                this.latinUsePinyinKeysInXInputPadEnabled = config.latinUsePinyinKeysInXInputPadEnabled;
             }
         }
 
@@ -272,6 +276,10 @@ public interface Keyboard extends UserInputMsgListener {
             this.xInputPadEnabled = xInputPadEnabled;
         }
 
+        public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
+            return this.latinUsePinyinKeysInXInputPadEnabled;
+        }
+
         public void syncWith(SharedPreferences preferences) {
             boolean disableUserInputData = isUserInputDataDisabled(preferences);
             setUserInputDataDisabled(disableUserInputData);
@@ -284,6 +292,7 @@ public interface Keyboard extends UserInputMsgListener {
             this.desktopSwipeUpGestureAdapted = isDesktopSwipeUpGestureAdapted(preferences);
             this.candidateVariantFirstEnabled = isCandidateVariantFirstEnabled(preferences);
             this.xInputPadEnabled = isXInputPadEnabled(preferences);
+            this.latinUsePinyinKeysInXInputPadEnabled = isLatinUsePinyinKeysInXInputPadEnabled(preferences);
 
             Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
             setHandMode(handMode);
@@ -341,6 +350,10 @@ public interface Keyboard extends UserInputMsgListener {
 
         public static boolean isXInputPadEnabled(SharedPreferences preferences) {
             return preferences.getBoolean(Keyboard.Config.pref_key_enable_x_input_pad, false);
+        }
+
+        public static boolean isLatinUsePinyinKeysInXInputPadEnabled(SharedPreferences preferences) {
+            return preferences.getBoolean(Config.pref_key_enable_latin_use_pinyin_keys_in_x_input_pad, false);
         }
 
         public static int getThemeResId(Context context, Keyboard.ThemeType theme) {
