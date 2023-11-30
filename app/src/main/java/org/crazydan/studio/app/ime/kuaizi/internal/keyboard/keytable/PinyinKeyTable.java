@@ -200,26 +200,48 @@ public class PinyinKeyTable extends KeyTable {
             }
         }
 
+        // 统计按键总数，小于一定数量的，单独布局
+        if (level2NextChars.size() <= 2) {
+            List<String> keys = new ArrayList<>();
+            level2NextChars.keySet()
+                           .stream()
+                           .sorted(Integer::compare)
+                           .forEach((keyLength) -> keys.addAll(level2NextChars.get(keyLength)));
+
+            GridCoord[] keyAmountCoords = getLevel2KeyCoordsByKeyAmount(keys.size());
+
+            if (keyAmountCoords != null) {
+                fillNextCharGridKeys(gridKeys, keyAmountCoords, keys, level0Char, level2Char);
+                return gridKeys;
+            }
+        }
+
         // 在指定可用位置创建第 2 级字母按键
         level2NextChars.forEach((keyLength, keys) -> {
             GridCoord[] keyCoords = getLevel2KeyCoords(keyLength);
-            int diff = keyCoords.length - keys.size();
-
-            for (int i = 0; i < keys.size(); i++) {
-                String text = keys.get(i);
-                // 确保按键靠底部进行放置
-                GridCoord keyCoord = keyCoords[i + diff];
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                gridKeys[row][column] = level2CharKey(level0Char, text);
-
-                boolean disabled = text != null && text.equals(level2Char);
-                gridKeys[row][column].setDisabled(disabled);
-            }
+            fillNextCharGridKeys(gridKeys, keyCoords, keys, level0Char, level2Char);
         });
 
         return gridKeys;
+    }
+
+    private void fillNextCharGridKeys(
+            Key<?>[][] gridKeys, GridCoord[] keyCoords, List<String> keys, String level0Char, String level2Char
+    ) {
+        int diff = keyCoords.length - keys.size();
+
+        for (int i = 0; i < keys.size(); i++) {
+            String text = keys.get(i);
+            // 确保按键靠底部进行放置
+            GridCoord keyCoord = keyCoords[i + diff];
+            int row = keyCoord.row;
+            int column = keyCoord.column;
+
+            gridKeys[row][column] = level2CharKey(level0Char, text);
+
+            boolean disabled = text != null && text.equals(level2Char);
+            gridKeys[row][column].setDisabled(disabled);
+        }
     }
 
     /** 按韵母起始字母以此按行创建按键 */
@@ -641,6 +663,44 @@ public class PinyinKeyTable extends KeyTable {
         return new GridCoord[] {
                 coord(3, 3), coord(4, 4),
                 };
+    }
+
+    /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
+    private GridCoord[] getLevel2KeyCoordsByKeyAmount(int keyAmount) {
+        if (keyAmount <= 2) {
+            return new GridCoord[] {
+                    coord(3, 3), coord(4, 4),
+                    };
+        } else {
+            switch (keyAmount) {
+                case 3: {
+                    return new GridCoord[] {
+                            coord(3, 3), coord(4, 4),
+                            //
+                            coord(4, 3),
+                            };
+                }
+                case 4: {
+                    return new GridCoord[] {
+                            //
+                            coord(3, 3), coord(4, 4),
+                            //
+                            coord(4, 3), coord(5, 3),
+                            };
+                }
+                case 5: {
+                    return new GridCoord[] {
+                            //
+                            coord(3, 3), coord(4, 4),
+                            //
+                            coord(4, 3), coord(5, 3),
+                            //
+                            coord(3, 2),
+                            };
+                }
+            }
+        }
+        return null;
     }
 
     private GridCoord[] getFullCharKeyCoords() {
