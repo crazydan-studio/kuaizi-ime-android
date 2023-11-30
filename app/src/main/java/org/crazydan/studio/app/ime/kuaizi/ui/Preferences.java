@@ -206,11 +206,11 @@ public class Preferences extends FollowSystemThemeActivity {
 
             if (!SystemUtils.isAlphaVersion()) {
                 // https://stackoverflow.com/questions/2240326/remove-hide-a-preference-from-the-screen#answer-45274037
-                PreferenceCategory category = findPreference("category_about");
-                PreferenceScreen about = findPreference("about_alpha_user_agreement");
+                PreferenceCategory category = findPreference("preference_about");
+                PreferenceScreen alpha = findPreference("about_alpha_user_agreement");
 
-                if (category != null && about != null) {
-                    category.removePreference(about);
+                if (category != null && alpha != null) {
+                    category.removePreference(alpha);
                 }
             }
 
