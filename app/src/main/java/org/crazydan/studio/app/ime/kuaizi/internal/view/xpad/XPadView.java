@@ -251,9 +251,9 @@ public class XPadView extends View {
             }
             // 告知待输入字符发生了切换
             else if (isCharChanged) {
-                Log.i(getClass().getSimpleName(),
-                      String.format("%s - %s: x/y - %f/%f,old - %d:%d, new - %d:%d",
-                                    Objects.hash(this),
+                Log.i("XPadView",
+                      String.format("%s - %s: x/y - %f/%f, old - %d:%d, new - %d:%d",
+                                    Thread.currentThread(),
                                     type,
                                     x,
                                     y,
