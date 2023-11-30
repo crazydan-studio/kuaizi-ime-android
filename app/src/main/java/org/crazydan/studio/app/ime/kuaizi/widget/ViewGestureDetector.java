@@ -169,6 +169,13 @@ public class ViewGestureDetector {
             return;
         }
 
+        // 若发生了移动，则需要更新 tick 事件发生位置
+        int size = this.movingTracker.size();
+        if (size > 0) {
+            GestureData g = this.movingTracker.get(size - 1);
+            data = new LongPressTickGestureData(g, data.tick, data.duration);
+        }
+
         // 分发当前 tick 事件
         LongPressTickGestureData newData = LongPressTickGestureData.newFrom(data);
         triggerListeners(GestureType.LongPressTick, newData);

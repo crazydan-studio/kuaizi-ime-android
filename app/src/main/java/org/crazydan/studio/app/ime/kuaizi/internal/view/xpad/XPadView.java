@@ -30,7 +30,6 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -66,8 +65,9 @@ public class XPadView extends View {
     private final ViewGestureTrailer trailer;
     private final XZone[] zones = new XZone[3];
     private final XZone[] inputting_zones = new XZone[3];
+    private final ValueAnimator.AnimatorUpdateListener zone_1_animator_update_listener
+            = new Zone1AnimatorUpdateListener();
     private ValueAnimator zone_1_animator;
-    private ValueAnimator.AnimatorUpdateListener zone_1_animator_update_listener = new Zone1AnimatorUpdateListener();
 
     private BlockKey zone_0_key;
     private BlockKey[] zone_1_keys;
@@ -89,7 +89,7 @@ public class XPadView extends View {
     private final float zone_1_HexagonRadius_input_waiting;
     private final float zone_1_HexagonRadius_input_doing;
     /** 中心坐标 */
-    private PointF centerCoord;
+    private PointF center_coordinate;
 
     public XPadView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -125,6 +125,7 @@ public class XPadView extends View {
         stop_zone_1_animator();
 
         this.state = new XPadState(XPadState.Type.Init);
+        this.active_block = null;
 
         XZone[] zones = determineZones();
         zones[0].bounce();
@@ -155,7 +156,7 @@ public class XPadView extends View {
         //canvas.scale(-1, 1, getWidth() * 0.5f, getHeight() * 0.5f);
         // 将画布整体向左偏移，按键放置位置左右翻转，从而实现键盘的翻转
         if (this.reversed) {
-            float dx = getWidth() - this.centerCoord.x * 2;
+            float dx = getWidth() - this.center_coordinate.x * 2;
             canvas.translate(dx, 0);
         }
 
@@ -172,6 +173,11 @@ public class XPadView extends View {
             UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data, PointF offset, boolean disableTrailer
     ) {
+        // 忽略长按的 tick 事件，目前没有对该事件的处理需求
+        if (type == ViewGestureDetector.GestureType.LongPressTick) {
+            return;
+        }
+
         invalidate();
 
         float x = data.x + offset.x;
@@ -182,6 +188,19 @@ public class XPadView extends View {
 
         BlockIndex old_active_block = this.active_block;
         BlockIndex new_active_block = this.active_block = findBlockAt(x, y);
+
+//        if (old_active_block != null && new_active_block != null) {
+//            Log.i("GestureOnXPadView",
+//                  String.format("%s - %s: x/y - %f/%f, old - %d:%d, new - %d:%d",
+//                                Objects.hashCode(this),
+//                                type,
+//                                x,
+//                                y,
+//                                old_active_block.zone,
+//                                old_active_block.block,
+//                                new_active_block.zone,
+//                                new_active_block.block));
+//        }
 
         if (new_active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
             if (this.state.type != XPadState.Type.Init && this.zone_1_animator != null) {
@@ -251,16 +270,6 @@ public class XPadView extends View {
             }
             // 告知待输入字符发生了切换
             else if (isCharChanged) {
-                Log.i("XPadView",
-                      String.format("%s - %s: x/y - %f/%f, old - %d:%d, new - %d:%d",
-                                    Thread.currentThread(),
-                                    type,
-                                    x,
-                                    y,
-                                    old_active_block.zone,
-                                    old_active_block.block,
-                                    new_active_block.zone,
-                                    new_active_block.block));
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {
                     fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
@@ -307,10 +316,10 @@ public class XPadView extends View {
         // 从外到内绘制，以层叠方式覆盖相交部分
         for (int i = zones.length - 1; i >= 0; i--) {
             XZone zone = zones[i];
-            zone.draw(canvas, this.centerCoord);
+            zone.draw(canvas, this.center_coordinate);
         }
 
-        this.active_label_zone.draw(canvas, this.centerCoord);
+        this.active_label_zone.draw(canvas, this.center_coordinate);
     }
 
     private void prepareContentOnZone(HexagonOrientation orientation) {
@@ -330,7 +339,7 @@ public class XPadView extends View {
         if (!isInputting) {
             Drawable icon = drawable(this.zone_0_key.key.getIconResId());
             XDrawablePainter icon_painter = zone_0.newIconPainter(icon);
-            icon_painter.setStart(this.centerCoord);
+            icon_painter.setStart(this.center_coordinate);
             icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.zone_0_HexagonRadius);
         }
@@ -362,7 +371,7 @@ public class XPadView extends View {
             BlockKey blockKey = this.active_ctrl_block_key;
             Drawable icon = drawable(blockKey.key.getIconResId());
             XDrawablePainter icon_painter = zone_1.newIconPainter(icon);
-            icon_painter.setStart(this.centerCoord);
+            icon_painter.setStart(this.center_coordinate);
             icon_painter.setAlign(XPainter.Align.Center);
             icon_painter.setSize(this.ctrl_icon_size * 1.8f);
         }
@@ -584,7 +593,7 @@ public class XPadView extends View {
                                      height - maxHexagonRadius - padPadding)
                         : new PointF(width - (zone_2_HexagonRadius * cos_30 + padPadding),
                                      height - zone_2_HexagonRadius - padPadding);
-        this.centerCoord = origin;
+        this.center_coordinate = origin;
 
         // ==================================================
         // 绘制激活标签分区
@@ -856,7 +865,7 @@ public class XPadView extends View {
     private void on_zone_1_update_animation(@NonNull ValueAnimator animation) {
         invalidate();
 
-        PointF origin = this.centerCoord;
+        PointF origin = this.center_coordinate;
         HexagonOrientation orientation = this.orientation;
         float zone_0_HexagonRadius = this.zone_0_HexagonRadius;
 
