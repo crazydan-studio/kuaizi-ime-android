@@ -143,6 +143,15 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
         }
     }
 
+    public XPadKey getXPadKey() {
+        for (Key<?> key : this.keys) {
+            if (key instanceof XPadKey) {
+                return (XPadKey) key;
+            }
+        }
+        return null;
+    }
+
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
     public void updateKeys(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
         this.themeResId = themeResId;

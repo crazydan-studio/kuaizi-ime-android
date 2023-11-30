@@ -807,6 +807,11 @@ public class XPadView extends View {
                 PointF outerAfter = outerVertexes[afterIndex];
 
                 XZone.PolygonBlock block = (XZone.PolygonBlock) zone.blocks.get(j);
+
+                if (i == 0) {
+                    block.links.center.addVertexes(innerCurrent, outerCurrent);
+                }
+
                 XZone.Link leftLink = new XZone.Link();
                 block.links.left.add(leftLink);
 
@@ -1175,6 +1180,10 @@ public class XPadView extends View {
             UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
+        if (trigger == null) {
+            return;
+        }
+
         // Note：向外部传递的 GestureData 不需要做坐标转换
         trigger.onGesture(key, type, data);
     }
@@ -1186,6 +1195,114 @@ public class XPadView extends View {
                                    key,
                                    ViewGestureDetector.GestureType.Moving,
                                    new ViewGestureDetector.MovingGestureData(data, new Motion()));
+    }
+
+    public void mockInput(Key<?> start, Key<?> key) {
+        BlockKey old_active_ctrl_block_key = this.active_ctrl_block_key;
+
+        BlockKey startBlockKey = getBlockKey(start);
+        PointF startPoint = getBlockCenter(startBlockKey);
+        PointF endPoint = this.center_coordinate;
+
+        BlockKey inputBlockKey = getBlockKey(key);
+
+        this.active_ctrl_block_key = startBlockKey;
+        this.active_ctrl_block_key.key.setDisabled(true);
+
+        mockGesture(ViewGestureDetector.GestureType.PressStart, startPoint, () -> {
+            mockGesture(ViewGestureDetector.GestureType.MovingStart, startPoint);
+        }, () -> {
+            PointF point = getBlockCenter(inputBlockKey);
+            mockGesture(ViewGestureDetector.GestureType.Moving, point);
+        }, () -> {
+            PointF point = getBlockCenter(new BlockIndex(inputBlockKey.zone, inputBlockKey.block - 1));
+            mockGesture(ViewGestureDetector.GestureType.Moving, point);
+        }, () -> {
+            PointF point = getBlockCenter(new BlockIndex(inputBlockKey.zone, inputBlockKey.block - 2));
+            mockGesture(ViewGestureDetector.GestureType.Moving, point);
+        }, () -> {
+            mockGesture(ViewGestureDetector.GestureType.Moving, endPoint);
+        }, () -> {
+            this.active_ctrl_block_key.key.setDisabled(false);
+
+            this.active_ctrl_block_key = old_active_ctrl_block_key;
+            this.active_ctrl_block_key.key.setDisabled(true);
+
+            mockGesture(ViewGestureDetector.GestureType.PressEnd, endPoint);
+        });
+    }
+
+    private void mockGesture(ViewGestureDetector.GestureType type, PointF point, Runnable... cbs) {
+        Runnable runner = () -> {};
+        for (int i = cbs.length - 1; i >= 0; i--) {
+            Runnable prev = cbs[i];
+            Runnable post = runner;
+
+            runner = () -> postDelayed(() -> {
+                prev.run();
+                post.run();
+            }, 500);
+        }
+
+        Runnable next = runner;
+        postDelayed(() -> {
+            mockGesture(type, point);
+            next.run();
+        }, 500);
+    }
+
+    private void mockGesture(ViewGestureDetector.GestureType type, PointF point) {
+        PointF offset = new PointF(0, 0);
+        ViewGestureDetector.GestureData data = createGestureData(type, point);
+
+        onGesture(null, type, data, offset, false);
+    }
+
+    private ViewGestureDetector.GestureData createGestureData(ViewGestureDetector.GestureType type, PointF point) {
+        ViewGestureDetector.GestureData data = new ViewGestureDetector.GestureData(point.x, point.y, 0);
+
+        switch (type) {
+            case Moving:
+            case MovingStart: {
+                return new ViewGestureDetector.MovingGestureData(data, null);
+            }
+        }
+        return data;
+    }
+
+    private PointF getBlockCenter(BlockIndex blockIndex) {
+        XZone[] zones = determineZones();
+        XZone.BaseBlock block = (XZone.BaseBlock) zones[blockIndex.zone].blocks.get(blockIndex.block);
+
+        return block.links.center.center;
+    }
+
+    private BlockKey getBlockKey(Key<?> key) {
+        for (BlockKey blockKey : this.zone_1_keys) {
+            if (BlockKey.isNull(blockKey)) {
+                continue;
+            }
+
+            if (key instanceof CtrlKey //
+                && ((CtrlKey) blockKey.key).getType() == ((CtrlKey) key).getType()) {
+                return blockKey;
+            }
+        }
+
+        for (BlockKey[][] zone_2_key : this.zone_2_keys) {
+            for (BlockKey[] blockKeys : zone_2_key) {
+                for (BlockKey blockKey : blockKeys) {
+                    if (BlockKey.isNull(blockKey)) {
+                        continue;
+                    }
+
+                    if (key.getText().equals(blockKey.key.getText())) {
+                        return blockKey;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static class BlockIndex {
@@ -1211,27 +1328,21 @@ public class XPadView extends View {
         }
     }
 
-    private static class BlockKey {
-        public final int zone;
+    private static class BlockKey extends BlockIndex {
         public final int x;
         public final int y;
-        public final int z;
         public final Key<?> key;
 
-        public BlockKey(int zone, int x, int y, int z, Key<?> key) {
-            this.zone = zone;
+        public BlockKey(int zone, int block, int x, int y, Key<?> key) {
+            super(zone, block);
+
             this.x = x;
             this.y = y;
-            this.z = z;
             this.key = key;
         }
 
         public BlockKey(BlockKey other, Key<?> key) {
-            this.zone = other.zone;
-            this.x = other.x;
-            this.y = other.y;
-            this.z = other.z;
-            this.key = key;
+            this(other.zone, other.block, other.x, other.y, key);
         }
 
         public static boolean isNull(BlockKey blockKey) {
@@ -1249,15 +1360,15 @@ public class XPadView extends View {
 
             BlockKey that = (BlockKey) o;
             return this.zone == that.zone //
+                   && this.block == that.block //
                    && this.x == that.x //
                    && this.y == that.y //
-                   && this.z == that.z //
                    && Objects.equals(this.key, that.key);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.zone, this.x, this.y, this.z, this.key);
+            return Objects.hash(this.zone, this.block, this.x, this.y, this.key);
         }
     }
 

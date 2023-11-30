@@ -51,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoing
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.key.XPadKeyView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -96,6 +97,10 @@ public class ImeInputView extends FrameLayout
 
     public InputList getInputList() {
         return this.inputList;
+    }
+
+    public XPadKeyView getXPadKeyView() {
+        return this.keyboardView.getXPadKeyView();
     }
 
     public void refresh() {

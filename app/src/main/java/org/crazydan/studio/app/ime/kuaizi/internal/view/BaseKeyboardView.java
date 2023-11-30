@@ -74,7 +74,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
     protected void updateKeys(
             Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
     ) {
-        XPadKey xPadKey = getXPadKey(keys);
+        XPadKey xPadKey = getXPadKeyFrom(keys);
         boolean xPadEnabled = xPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
 
@@ -89,7 +89,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
 
         if (xPadEnabled) {
             // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
-            XPadKeyView xPadKeyView = ((XPadKeyView) getVisibleKeyView(getItemViewByKey(xPadKey)));
+            XPadKeyView xPadKeyView = getXPadKeyView(xPadKey);
             if (xPadKeyView != null) {
                 xPadKeyView.bind(xPadKey);
             }
@@ -100,6 +100,15 @@ public abstract class BaseKeyboardView extends RecyclerView {
 
     public double getBottomSpacing() {
         return this.layoutManager.getGridPaddingBottom();
+    }
+
+    public XPadKeyView getXPadKeyView() {
+        XPadKey xPadKey = this.adapter.getXPadKey();
+        return getXPadKeyView(xPadKey);
+    }
+
+    private XPadKeyView getXPadKeyView(XPadKey xPadKey) {
+        return ((XPadKeyView) getVisibleKeyView(getItemViewByKey(xPadKey)));
     }
 
     /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
@@ -132,7 +141,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
         return null;
     }
 
-    protected XPadKey getXPadKey(Key<?>[][] keys) {
+    protected XPadKey getXPadKeyFrom(Key<?>[][] keys) {
         for (Key<?>[] key : keys) {
             for (Key<?> k : key) {
                 if (k instanceof XPadKey) {

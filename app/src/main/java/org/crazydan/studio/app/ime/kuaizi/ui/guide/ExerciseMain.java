@@ -200,7 +200,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                     break;
                 }
                 case normal: {
-                    this.imeView.disableXInputPad(true);
+                    this.imeView.disableXInputPad(!exercise.isEnableXInputPad());
                     this.imeView.disableCandidateVariantFirst(true);
                     this.imeView.disableUserInputData(true);
                     this.imeView.disableSettingsBtn(true);
@@ -232,6 +232,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 exercise_Math_Inputting(sandboxView),
                 exercise_Editor_Editing(sandboxView),
                 exercise_Pinyin_Committed_Processing(sandboxView),
+                exercise_XPad_Inputting(sandboxView),
                 };
         for (int i = 0; i < exercises.length; i++) {
             Exercise exercise = exercises[i];
@@ -779,6 +780,31 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             } else {
                 warning("请按当前步骤的指导要求提交输入内容");
             }
+        });
+
+        return exercise;
+    }
+
+    private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
+        EditorEditKeyTable keyTable = EditorEditKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+
+        Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin);
+
+        Exercise exercise = Exercise.normal("X 型面板输入", sandboxView::getImage);
+        exercise.setEnableXInputPad(true);
+
+        exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Android 筷字输入法</span>；");
+
+        String config_label = getResources().getString(R.string.label_config_theme);
+        String enable_label = getResources().getString(R.string.label_enable_x_input_pad);
+        exercise.addStep("<b>提示</b>：X 型输入面板默认未启用，需要自行在配置项「"
+                         + config_label
+                         + "」中「"
+                         + enable_label
+                         + "」；");
+        exercise.addStep("请参考演示动画；", (msg, data) -> {
+            Key<?> charKey = keyTable.alphabetKey("a");
+            this.imeView.getXPadKeyView().getXPad().mockInput(key_ctrl_switch_latin, charKey);
         });
 
         return exercise;

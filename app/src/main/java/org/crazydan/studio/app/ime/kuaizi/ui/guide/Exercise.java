@@ -37,6 +37,7 @@ public class Exercise implements ViewData, InputMsgListener {
 
     private final ExerciseStep.ImageGetter imageGetter;
 
+    private boolean enableXInputPad;
     private String sampleText;
     private ProgressListener progressListener;
     private ExerciseStep runningStep;
@@ -145,6 +146,14 @@ public class Exercise implements ViewData, InputMsgListener {
         this.steps.add(index, step);
 
         return step;
+    }
+
+    public boolean isEnableXInputPad() {
+        return this.enableXInputPad;
+    }
+
+    public void setEnableXInputPad(boolean enableXInputPad) {
+        this.enableXInputPad = enableXInputPad;
     }
 
     public String getSampleText() {

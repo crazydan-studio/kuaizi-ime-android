@@ -346,7 +346,7 @@ public class ViewGestureDetector {
         public final float y;
         public final long timestamp;
 
-        private GestureData(float x, float y, long timestamp) {
+        public GestureData(float x, float y, long timestamp) {
             this.x = x;
             this.y = y;
             this.timestamp = timestamp;
