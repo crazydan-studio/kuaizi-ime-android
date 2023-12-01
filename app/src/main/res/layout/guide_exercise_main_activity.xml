@@ -47,6 +47,12 @@
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
 
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
+                    android:id="@+id/xpad_step_image_sandbox_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/keyboard_view_height"
+                    android:visibility="invisible" />
+
             <com.google.android.flexbox.FlexboxLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

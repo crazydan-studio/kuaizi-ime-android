@@ -42,13 +42,14 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-09-22
  */
 public abstract class BaseKeyboardView extends RecyclerView {
-    private final HexagonOrientation keyViewOrientation = HexagonOrientation.POINTY_TOP;
     private final float gridMaxPaddingRight;
     private final float gridItemMinRadius;
     private final float gridItemSpacing;
 
     private final KeyViewAdapter adapter;
     private final KeyViewLayoutManager layoutManager;
+
+    private HexagonOrientation gridItemOrientation = HexagonOrientation.POINTY_TOP;
 
     public BaseKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -57,11 +58,15 @@ public abstract class BaseKeyboardView extends RecyclerView {
         this.gridItemMinRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_bg_min_radius);
         this.gridItemSpacing = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_spacing);
 
-        this.adapter = new KeyViewAdapter(this.keyViewOrientation);
-        this.layoutManager = new KeyViewLayoutManager(this.keyViewOrientation);
+        this.adapter = new KeyViewAdapter(this.gridItemOrientation);
+        this.layoutManager = new KeyViewLayoutManager(this.gridItemOrientation);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+    }
+
+    public void setGridItemOrientation(HexagonOrientation gridItemOrientation) {
+        this.gridItemOrientation = gridItemOrientation;
     }
 
     protected void updateKeys(Key<?>[][] keys, boolean isLeftHandMode) {
@@ -76,7 +81,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
     ) {
         XPadKey xPadKey = getXPadKeyFrom(keys);
         boolean xPadEnabled = xPadKey != null;
-        HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.keyViewOrientation;
+        HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation;
 
         this.layoutManager.setReversed(isLeftHandMode);
         this.layoutManager.enableXPad(xPadEnabled);

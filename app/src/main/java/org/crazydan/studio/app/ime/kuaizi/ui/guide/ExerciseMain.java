@@ -49,12 +49,15 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.xpad.XPadView;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
+import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
@@ -81,7 +84,14 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         int imeThemeResId = Keyboard.Config.getThemeResId(getApplicationContext(), theme);
 
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
-        List<Exercise> exercises = sandboxView.withMutation(imeThemeResId, () -> createExercises(sandboxView));
+        DynamicLayoutSandboxView xPadSandboxView = findViewById(R.id.xpad_step_image_sandbox_view);
+        xPadSandboxView.setGridItemOrientation(HexagonOrientation.FLAT_TOP);
+
+        List<Exercise> exercises = sandboxView.withMutation(imeThemeResId,
+                                                            () -> xPadSandboxView.withMutation(imeThemeResId,
+                                                                                               () -> createExercises(
+                                                                                                       sandboxView,
+                                                                                                       xPadSandboxView)));
 
         initDrawer(exercises);
         initExerciseList(exercises);
@@ -219,7 +229,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.exerciseListView.post(() -> activeExercise(1));
     }
 
-    private List<Exercise> createExercises(DynamicLayoutSandboxView sandboxView) {
+    private List<Exercise> createExercises(
+            DynamicLayoutSandboxView sandboxView, DynamicLayoutSandboxView xPadSandboxView
+    ) {
         List<Exercise> exerciseList = new ArrayList<>();
 
         exerciseList.add(Exercise.free("自由练习"));
@@ -232,7 +244,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 exercise_Math_Inputting(sandboxView),
                 exercise_Editor_Editing(sandboxView),
                 exercise_Pinyin_Committed_Processing(sandboxView),
-                exercise_XPad_Inputting(sandboxView),
+                // exercise for XPad
+                exercise_XPad_Inputting(xPadSandboxView),
                 };
         for (int i = 0; i < exercises.length; i++) {
             Exercise exercise = exercises[i];
@@ -788,25 +801,85 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin);
+        Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin)
+                                               .setIconResId(R.drawable.ic_latin);
+        Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
 
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView::getImage);
         exercise.setEnableXInputPad(true);
 
-        exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Android</span>；");
+        String latinTextSample = "Android";
+        exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">" + latinTextSample + "</span>；");
 
         String config_label = getResources().getString(R.string.label_config_theme);
         String enable_label = getResources().getString(R.string.label_enable_x_input_pad);
-        exercise.addStep("<b>提示</b>：X 型输入面板默认未启用，需要自行在配置项「"
+        exercise.addStep("<b>提示</b>：X 型输入面板默认未启用，请自行在配置项「"
                          + config_label
                          + "」中「"
                          + enable_label
                          + "」；");
-        exercise.addStep("请参考演示动画输入字符 <span style=\"color:#ed4c67;\">A</span>；", (msg, data) -> {
-            this.imeView.startInput(Keyboard.Type.Latin, false);
-            Key<?> charKey = keyTable.alphabetKey("A");
-            this.imeView.getXPadKeyView().getXPad().mockInput(key_ctrl_switch_latin, charKey);
+
+        exercise.addStep("请点击回车按键<img src=\"" //
+                         + sandboxView.withKey(key_ctrl_enter) //
+                         + "\"/>以开始演示动画；", (msg, data) -> {
+            if (msg == InputMsg.InputList_Commit_Doing) {
+                if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
+                    exercise.gotoNextStep();
+                    return;
+                }
+            }
+            warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>回车按键</b>");
         });
+
+        for (int i = 0; i < latinTextSample.length(); i++) {
+            char ch = latinTextSample.charAt(i);
+            Key<?> charKey = keyTable.alphabetKey(ch + "");
+            String stepName = String.format("char-input-animation:%s", charKey.getText());
+
+            exercise.addStep(stepName,
+                             "请观看字符 <span style=\"color:#ed4c67;\">"
+                             + charKey.getText()
+                             + "</span> 的输入演示动画。",
+                             (ExerciseStep.AutoAction) () -> {
+                                 XPadView.GestureSimulator simulator = ExerciseMain.this.imeView.getXPadKeyView()
+                                                                                                .getXPad()
+                                                                                                .createSimulator();
+
+                                 Keyboard.Type type = this.imeView.getKeyboardConfig().getType();
+                                 this.imeView.startInput(Keyboard.Type.Latin);
+
+                                 simulator.input(key_ctrl_switch_latin, charKey, () -> {
+                                     this.imeView.startInput(type);
+
+                                     exercise.gotoNextStep();
+                                 });
+                             });
+            exercise.addStep("请让手指从中央正六边形外围的<img src=\""
+                             + sandboxView.withKey(key_ctrl_switch_latin)
+                             + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
+                             + "以输入字符 <span style=\"color:#ed4c67;\">"
+                             + charKey.getText()
+                             + "</span>；", (msg, data) -> {
+                switch (msg) {
+                    case InputList_Commit_Doing: {
+                        if (charKey.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
+                            exercise.gotoNextStep();
+                            return;
+                        }
+                    }
+                    case InputChars_Input_Doing: {
+                        warning("当前输入的字符与练习内容不符，请按演示动画重新输入");
+                        exercise.gotoStep(stepName);
+                        return;
+                    }
+                    case Keyboard_State_Change_Done: {
+                        return;
+                    }
+                }
+
+                warning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", charKey.getText());
+            });
+        }
 
         return exercise;
     }

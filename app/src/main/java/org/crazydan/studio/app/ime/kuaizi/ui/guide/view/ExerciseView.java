@@ -61,7 +61,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         ime.addInputMsgListener(exercise);
 
         this.textView.requestFocus();
-        this.textView.setText(exercise.getSampleText());
+
+        String text = exercise.getSampleText();
+        this.textView.setText(text);
+        this.textView.setSelection(text != null ? text.length() : 0);
 
         exercise.setProgressListener((step, position) -> {
             updateSteps();

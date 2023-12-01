@@ -51,14 +51,16 @@ public class ExerciseStep implements ViewData {
 
     public void start() {
         this.running = true;
+
+        if (this.action instanceof AutoAction) {
+            ((AutoAction) this.action).run();
+        }
     }
 
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        if (this.action == null) {
-            return;
+        if (this.action != null) {
+            this.action.onInputMsg(msg, data);
         }
-
-        this.action.onInputMsg(msg, data);
     }
 
     public boolean isRunnable() {
@@ -76,6 +78,13 @@ public class ExerciseStep implements ViewData {
 
     public interface Action {
         void onInputMsg(InputMsg msg, InputMsgData data);
+    }
+
+    public interface AutoAction extends Action {
+        void run();
+
+        @Override
+        default void onInputMsg(InputMsg msg, InputMsgData data) {}
     }
 
     public interface ImageGetter {

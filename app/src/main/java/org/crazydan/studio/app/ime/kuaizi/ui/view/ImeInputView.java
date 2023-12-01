@@ -192,12 +192,7 @@ public class ImeInputView extends FrameLayout
 
     /** 启动指定类型的键盘，并清空输入列表 */
     public void startInput(Keyboard.Type type) {
-        startInput(type, true);
-    }
-
-    /** 启动指定类型的键盘 */
-    public void startInput(Keyboard.Type type, boolean resetInputList) {
-        startInput(new Keyboard.Config(type), resetInputList);
+        startInput(new Keyboard.Config(type), true);
     }
 
     /** 开始输入 */

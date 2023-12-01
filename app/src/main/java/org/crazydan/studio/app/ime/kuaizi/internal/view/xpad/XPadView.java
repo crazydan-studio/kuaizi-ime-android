@@ -81,6 +81,7 @@ public class XPadView extends View {
     private BlockKey active_ctrl_block_key = null;
 
     private boolean reversed;
+    private boolean simulating;
     private final float pad_padding;
     private final float ctrl_icon_size;
     private final float zone_0_CornerRadius;
@@ -177,6 +178,11 @@ public class XPadView extends View {
     ) {
         // 忽略长按的 tick 事件，目前没有对该事件的处理需求
         if (type == ViewGestureDetector.GestureType.LongPressTick) {
+            return;
+        }
+
+        // Note：若正在模拟演示中，则不响应外部事件
+        if (this.simulating && trigger != null) {
             return;
         }
 
@@ -1205,133 +1211,23 @@ public class XPadView extends View {
                                    new ViewGestureDetector.MovingGestureData(data, new Motion()));
     }
 
-    public void mockInput(Key<?> start, Key<?> inputKey) {
-        BlockKey startBlockKey = getMatchedBlockKey(start);
-        PointF startPoint = getBlockCenter(startBlockKey);
-        PointF centerPoint = this.center_coordinate;
-
-        BlockKey inputBlockKey = getMatchedBlockKey(inputKey);
-
-        this.active_ctrl_block_key.key.setDisabled(false);
-        BlockKey old_active_ctrl_block_key = this.active_ctrl_block_key;
-        this.active_ctrl_block_key = startBlockKey;
-        this.active_ctrl_block_key.key.setDisabled(true);
-
-        // ==================================================================
-        List<Runnable> gestures = new ArrayList<>();
-        gestures.add(() -> {
-            mockGesture(ViewGestureDetector.GestureType.MovingStart, startPoint);
-        });
-        gestures.add(() -> {
-            mockGesture(ViewGestureDetector.GestureType.Moving, centerPoint);
-        });
-
-        int inputBlockKeyAxis = inputBlockKey.x;
-        int inputBlockKeyCross = inputBlockKey.y + 2;
-        for (int i = 0; i < inputBlockKeyCross; i++) {
-            int targetBlock = inputBlockKey.block + (inputBlockKeyAxis == 0 ? -i : i);
-            BlockIndex targetBlockIndex = new BlockIndex(inputBlockKey.zone, targetBlock);
-
-            gestures.add(() -> {
-                PointF point = getBlockCenter(targetBlockIndex);
-                mockGesture(ViewGestureDetector.GestureType.Moving, point);
-            });
-        }
-
-        gestures.add(() -> {
-            mockGesture(ViewGestureDetector.GestureType.Moving, centerPoint);
-        });
-        gestures.add(() -> {
-            this.active_ctrl_block_key.key.setDisabled(false);
-
-            this.active_ctrl_block_key = old_active_ctrl_block_key;
-            this.active_ctrl_block_key.key.setDisabled(true);
-
-            mockGesture(ViewGestureDetector.GestureType.PressEnd, centerPoint);
-        });
-
-        // ============================================================
-        mockGesture(ViewGestureDetector.GestureType.PressStart, startPoint, gestures);
+    // ====================================================================
+    public GestureSimulator createSimulator() {
+        return new GestureSimulator();
     }
 
-    private void mockGesture(ViewGestureDetector.GestureType type, PointF point, List<Runnable> cbs) {
-        Runnable runner = () -> {};
-        for (int i = cbs.size() - 1; i >= 0; i--) {
-            Runnable prev = cbs.get(i);
-            Runnable post = runner;
-
-            runner = () -> postDelayed(() -> {
-                prev.run();
-                post.run();
-            }, 500);
-        }
-
-        Runnable next = runner;
-        post(() -> {
-            mockGesture(type, point);
-            next.run();
-        });
+    private PointF get_center_coordinate() {
+        return this.center_coordinate;
     }
 
-    private void mockGesture(ViewGestureDetector.GestureType type, PointF point) {
-        PointF offset = new PointF(0, 0);
-        ViewGestureDetector.GestureData data = createGestureData(type, point);
-
-        onGesture(null, type, data, offset, false);
+    private BlockKey[] get_zone_1_keys() {
+        return this.zone_1_keys;
     }
 
-    private ViewGestureDetector.GestureData createGestureData(ViewGestureDetector.GestureType type, PointF point) {
-        ViewGestureDetector.GestureData data = new ViewGestureDetector.GestureData(point.x, point.y, 0);
-
-        switch (type) {
-            case Moving:
-            case MovingStart: {
-                return new ViewGestureDetector.MovingGestureData(data, null);
-            }
-        }
-        return data;
+    private BlockKey[][][] get_zone_2_keys() {
+        return this.zone_2_keys;
     }
-
-    private PointF getBlockCenter(BlockIndex blockIndex) {
-        XZone[] zones = determineZones();
-        List<XZone.Block> blocks = zones[blockIndex.zone].blocks;
-        int index = getIndex(blocks.size(), blockIndex.block);
-        XZone.BaseBlock block = (XZone.BaseBlock) blocks.get(index);
-
-        return block.links.center.center;
-    }
-
-    private BlockKey getMatchedBlockKey(Key<?> key) {
-        for (BlockKey blockKey : this.zone_1_keys) {
-            if (BlockKey.isNull(blockKey)) {
-                continue;
-            }
-
-            if (key instanceof CtrlKey //
-                && key.isSameWith(blockKey.key)) {
-                return blockKey;
-            }
-        }
-
-        for (BlockKey[][] zone_2_key : this.zone_2_keys) {
-            for (BlockKey[] blockKeys : zone_2_key) {
-                BlockKey[] nonNullBlockKeys = Arrays.stream(blockKeys)
-                                                    .filter((bk) -> !BlockKey.isNull(bk))
-                                                    .toArray(BlockKey[]::new);
-                for (BlockKey blockKey : nonNullBlockKeys) {
-                    if (key.getText().equals(blockKey.key.getText())) {
-                        return blockKey;
-                    } else if (blockKey.key instanceof CharKey //
-                               && ((CharKey) blockKey.key).canReplaceTheKey(key)) {
-                        return new BlockKey(blockKey.zone, blockKey.block, blockKey.x,
-                                            // Note：替换字符的位置需要环绕一圈
-                                            blockKey.y + nonNullBlockKeys.length, key);
-                    }
-                }
-            }
-        }
-        return null;
-    }
+    // ====================================================================
 
     private static class BlockIndex {
         public final int zone;
@@ -1404,6 +1300,132 @@ public class XPadView extends View {
         @Override
         public void onAnimationUpdate(@NonNull ValueAnimator animation) {
             on_zone_1_update_animation(animation);
+        }
+    }
+
+    public class GestureSimulator {
+
+        public void input(Key<?> start, Key<?> charKey, Runnable cb) {
+            BlockKey startBlockKey = getMatchedBlockKey(start);
+            PointF startPoint = getBlockCenter(startBlockKey);
+            PointF endPoint = get_center_coordinate();
+
+            BlockKey charBlockKey = getMatchedBlockKey(charKey);
+
+            // ==================================================================
+            List<Runnable> gestures = new ArrayList<>();
+            gestures.add(() -> {
+                mockGesture(ViewGestureDetector.GestureType.PressEnd, startPoint);
+                mockGesture(ViewGestureDetector.GestureType.PressStart, startPoint);
+                mockGesture(ViewGestureDetector.GestureType.Moving, startPoint);
+            });
+            gestures.add(() -> {
+                mockGesture(ViewGestureDetector.GestureType.MovingStart, startPoint);
+                mockGesture(ViewGestureDetector.GestureType.Moving, endPoint);
+            });
+
+            int charBlockKeyAxis = charBlockKey.x;
+            int charBlockKeyCross = charBlockKey.y + 2;
+            for (int i = 0; i < charBlockKeyCross; i++) {
+                int targetBlock = charBlockKey.block + (charBlockKeyAxis == 0 ? -i : i);
+                BlockIndex targetBlockIndex = new BlockIndex(charBlockKey.zone, targetBlock);
+
+                gestures.add(() -> {
+                    PointF point = getBlockCenter(targetBlockIndex);
+                    mockGesture(ViewGestureDetector.GestureType.Moving, point);
+                });
+            }
+
+            gestures.add(() -> {
+                mockGesture(ViewGestureDetector.GestureType.Moving, endPoint);
+            });
+            gestures.add(() -> {
+                mockGesture(ViewGestureDetector.GestureType.PressEnd, endPoint);
+            });
+
+            // ============================================================
+            XPadView.this.simulating = true;
+            gestures.add(() -> {
+                cb.run();
+                XPadView.this.simulating = false;
+            });
+
+            mockGestures(gestures);
+        }
+
+        private void mockGestures(List<Runnable> cbs) {
+            Runnable runner = () -> {};
+            for (int i = cbs.size() - 1; i >= 0; i--) {
+                Runnable prev = cbs.get(i);
+                Runnable post = runner;
+
+                runner = () -> postDelayed(() -> {
+                    prev.run();
+                    post.run();
+                }, 500);
+            }
+
+            runner.run();
+        }
+
+        private void mockGesture(ViewGestureDetector.GestureType type, PointF point) {
+            PointF offset = new PointF(0, 0);
+            ViewGestureDetector.GestureData data = createGestureData(type, point);
+
+            onGesture(null, type, data, offset, false);
+        }
+
+        private ViewGestureDetector.GestureData createGestureData(ViewGestureDetector.GestureType type, PointF point) {
+            ViewGestureDetector.GestureData data = new ViewGestureDetector.GestureData(point.x, point.y, 0);
+
+            switch (type) {
+                case Moving:
+                case MovingStart: {
+                    return new ViewGestureDetector.MovingGestureData(data, null);
+                }
+            }
+            return data;
+        }
+
+        private PointF getBlockCenter(BlockIndex blockIndex) {
+            XZone[] zones = determineZones();
+            List<XZone.Block> blocks = zones[blockIndex.zone].blocks;
+            int index = getIndex(blocks.size(), blockIndex.block);
+            XZone.BaseBlock block = (XZone.BaseBlock) blocks.get(index);
+
+            return block.links.center.center;
+        }
+
+        private BlockKey getMatchedBlockKey(Key<?> key) {
+            for (BlockKey blockKey : get_zone_1_keys()) {
+                if (BlockKey.isNull(blockKey)) {
+                    continue;
+                }
+
+                if (key instanceof CtrlKey //
+                    && key.isSameWith(blockKey.key)) {
+                    return blockKey;
+                }
+            }
+
+            for (BlockKey[][] zone_2_key : get_zone_2_keys()) {
+                for (BlockKey[] blockKeys : zone_2_key) {
+                    BlockKey[] nonNullBlockKeys = Arrays.stream(blockKeys)
+                                                        .filter((bk) -> !BlockKey.isNull(bk))
+                                                        .toArray(BlockKey[]::new);
+                    for (BlockKey blockKey : nonNullBlockKeys) {
+                        if (key.getText().equals(blockKey.key.getText())) {
+                            return blockKey;
+                        } else if (blockKey.key instanceof CharKey //
+                                   && ((CharKey) blockKey.key).canReplaceTheKey(key)) {
+                            return new BlockKey(blockKey.zone, blockKey.block, blockKey.x,
+                                                // Note：替换字符的位置需要环绕一圈
+                                                blockKey.y + nonNullBlockKeys.length, key);
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }
