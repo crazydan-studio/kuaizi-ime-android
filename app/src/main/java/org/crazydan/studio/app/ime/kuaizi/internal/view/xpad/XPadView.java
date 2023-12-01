@@ -1353,6 +1353,57 @@ public class XPadView extends View {
             mockGestures(gestures);
         }
 
+        public void input(Key<?> charKey, Runnable cb) {
+            XPadView.this.simulating = true;
+
+            // Note：键盘布局更新需要时间，故，需要延迟执行
+            postDelayed(() -> doInput(charKey, () -> {
+                XPadView.this.simulating = false;
+
+                cb.run();
+            }), 100);
+        }
+
+        private void doInput(Key<?> charKey, Runnable cb) {
+            PointF endPoint = get_center_coordinate();
+
+            // ==================================================================
+            List<Runnable> gestures = new ArrayList<>();
+            gestures.add(() -> {
+                ViewGestureDetector.GestureType type = ViewGestureDetector.GestureType.PressStart;
+                XPadView.this.trailer.onGesture(type, createGestureData(type, endPoint));
+            });
+
+            BlockKey charBlockKey = getMatchedBlockKey(charKey);
+            int charBlockKeyAxis = charBlockKey.x;
+            int charBlockKeyCross = charBlockKey.y + 2;
+            for (int i = 0; i < charBlockKeyCross; i++) {
+                int targetBlock = charBlockKey.block + (charBlockKeyAxis == 0 ? -i : i);
+                BlockIndex targetBlockIndex = new BlockIndex(charBlockKey.zone, targetBlock);
+
+                gestures.add(() -> {
+                    PointF point = getBlockCenter(targetBlockIndex);
+                    mockGesture(ViewGestureDetector.GestureType.Moving, point);
+                });
+            }
+
+            gestures.add(() -> {
+                mockGesture(ViewGestureDetector.GestureType.Moving, endPoint);
+            });
+            gestures.add(() -> {
+                ViewGestureDetector.GestureType type = ViewGestureDetector.GestureType.PressEnd;
+                XPadView.this.trailer.onGesture(type, createGestureData(type, endPoint));
+
+                type = ViewGestureDetector.GestureType.PressStart;
+                XPadView.this.trailer.onGesture(type, createGestureData(type, endPoint));
+            });
+
+            // ============================================================
+            gestures.add(cb::run);
+
+            mockGestures(gestures);
+        }
+
         private void mockGestures(List<Runnable> cbs) {
             Runnable runner = () -> {};
             for (int i = cbs.size() - 1; i >= 0; i--) {
