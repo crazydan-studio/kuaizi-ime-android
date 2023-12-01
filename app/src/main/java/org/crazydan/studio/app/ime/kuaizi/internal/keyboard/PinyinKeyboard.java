@@ -913,7 +913,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void do_InputCandidate_Filtering_ByStroke(CtrlKey key, int strokeIncrement) {
         InputCandidateChooseDoingStateData stateData = (InputCandidateChooseDoingStateData) this.state.data;
 
-        CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+        CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
         if (stateData.addStroke(option.value(), strokeIncrement)) {
             play_SingleTick_InputAudio(key);
         }

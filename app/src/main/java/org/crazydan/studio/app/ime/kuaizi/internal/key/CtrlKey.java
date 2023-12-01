@@ -88,7 +88,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             case Enter:
                 return "\n";
             case Filter_PinyinInputCandidate_by_Stroke:
-                return getLabel().replaceAll("/.+$", "");
+                CodeOption option = (CodeOption) getOption();
+                return option.text;
             default:
                 return getLabel();
         }
@@ -118,7 +119,9 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         }
 
         CtrlKey that = (CtrlKey) o;
-        return this.type == that.type && Objects.equals(this.getText(), that.getText());
+        return this.type == that.type
+               && Objects.equals(this.getText(), that.getText())
+               && Objects.equals(this.getOption(), that.getOption());
     }
 
     @NonNull
@@ -203,14 +206,41 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         protected Option(T value) {this.value = value;}
 
         public T value() {return this.value;}
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Option<?> that = (Option<?>) o;
+            return Objects.equals(this.value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
     }
 
-    public static class TextOption extends Option<String> {
-        public TextOption(String value) {super(value);}
+    public static class CodeOption extends Option<String> {
+        public final String text;
+
+        public CodeOption(String value) {
+            this(value, null);
+        }
+
+        public CodeOption(String value, String text) {
+            super(value);
+            this.text = text;
+        }
     }
 
-    public static class ObjectOption extends Option<Object> {
-        public ObjectOption(Object value) {super(value);}
+    public static class ValueOption extends Option<Object> {
+        public ValueOption(Object value) {super(value);}
     }
 
     public static class KeyboardSwitchOption extends Option<Keyboard.Type> {

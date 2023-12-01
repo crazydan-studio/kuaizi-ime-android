@@ -1226,7 +1226,7 @@ public abstract class BaseKeyboard implements Keyboard {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
                 play_SingleTick_InputAudio(key);
 
-                CtrlKey.TextOption option = (CtrlKey.TextOption) key.getOption();
+                CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
                 do_Emoji_Choosing(key, option.value());
             }
         }

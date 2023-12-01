@@ -786,14 +786,14 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     }
 
     private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
-        EditorEditKeyTable keyTable = EditorEditKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
         Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin);
 
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView::getImage);
         exercise.setEnableXInputPad(true);
 
-        exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Android 筷字输入法</span>；");
+        exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">Android</span>；");
 
         String config_label = getResources().getString(R.string.label_config_theme);
         String enable_label = getResources().getString(R.string.label_enable_x_input_pad);
@@ -802,8 +802,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "」中「"
                          + enable_label
                          + "」；");
-        exercise.addStep("请参考演示动画；", (msg, data) -> {
-            Key<?> charKey = keyTable.alphabetKey("a");
+        exercise.addStep("请参考演示动画输入字符 <span style=\"color:#ed4c67;\">A</span>；", (msg, data) -> {
+            this.imeView.startInput(Keyboard.Type.Latin, false);
+            Key<?> charKey = keyTable.alphabetKey("A");
             this.imeView.getXPadKeyView().getXPad().mockInput(key_ctrl_switch_latin, charKey);
         });
 

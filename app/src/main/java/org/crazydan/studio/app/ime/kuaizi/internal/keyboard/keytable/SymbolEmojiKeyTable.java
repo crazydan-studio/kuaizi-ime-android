@@ -88,7 +88,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
             int row = keyCoord.row;
             int column = keyCoord.column;
-            CtrlKey.Option<?> option = new CtrlKey.TextOption(group);
+            CtrlKey.Option<?> option = new CtrlKey.CodeOption(group);
 
             gridKeys[row][column] = ctrlKey(CtrlKey.Type.Toggle_Emoji_Group).setOption(option)
                                                                             .setLabel(group)

@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.view.xpad;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import android.animation.Animator;
@@ -898,14 +900,20 @@ public class XPadView extends View {
         return ThemeUtils.getStringByAttrId(getContext(), resId);
     }
 
-    private <T> T getAt(T[] keys, int index) {
-        int size = keys.length;
-        int idx = index;
+    private <T> T getAt(T[] array, int index) {
+        int size = array.length;
+        int idx = getIndex(size, index);
+
+        return array[idx];
+    }
+
+    private int getIndex(int size, int index) {
+        int idx = (index < 0 ? size + index : index) % size;
 
         if (this.reversed) {
             idx = size == 2 ? (size - 1 - index) % size : (size + (size / 2 - 1) - index) % size;
         }
-        return keys[idx];
+        return idx;
     }
 
     private BlockKey getBlockKey(BlockIndex blockIndex) {
@@ -1197,45 +1205,59 @@ public class XPadView extends View {
                                    new ViewGestureDetector.MovingGestureData(data, new Motion()));
     }
 
-    public void mockInput(Key<?> start, Key<?> key) {
-        BlockKey old_active_ctrl_block_key = this.active_ctrl_block_key;
-
-        BlockKey startBlockKey = getBlockKey(start);
+    public void mockInput(Key<?> start, Key<?> inputKey) {
+        BlockKey startBlockKey = getMatchedBlockKey(start);
         PointF startPoint = getBlockCenter(startBlockKey);
-        PointF endPoint = this.center_coordinate;
+        PointF centerPoint = this.center_coordinate;
 
-        BlockKey inputBlockKey = getBlockKey(key);
+        BlockKey inputBlockKey = getMatchedBlockKey(inputKey);
 
+        this.active_ctrl_block_key.key.setDisabled(false);
+        BlockKey old_active_ctrl_block_key = this.active_ctrl_block_key;
         this.active_ctrl_block_key = startBlockKey;
         this.active_ctrl_block_key.key.setDisabled(true);
 
-        mockGesture(ViewGestureDetector.GestureType.PressStart, startPoint, () -> {
+        // ==================================================================
+        List<Runnable> gestures = new ArrayList<>();
+        gestures.add(() -> {
             mockGesture(ViewGestureDetector.GestureType.MovingStart, startPoint);
-        }, () -> {
-            PointF point = getBlockCenter(inputBlockKey);
-            mockGesture(ViewGestureDetector.GestureType.Moving, point);
-        }, () -> {
-            PointF point = getBlockCenter(new BlockIndex(inputBlockKey.zone, inputBlockKey.block - 1));
-            mockGesture(ViewGestureDetector.GestureType.Moving, point);
-        }, () -> {
-            PointF point = getBlockCenter(new BlockIndex(inputBlockKey.zone, inputBlockKey.block - 2));
-            mockGesture(ViewGestureDetector.GestureType.Moving, point);
-        }, () -> {
-            mockGesture(ViewGestureDetector.GestureType.Moving, endPoint);
-        }, () -> {
+        });
+        gestures.add(() -> {
+            mockGesture(ViewGestureDetector.GestureType.Moving, centerPoint);
+        });
+
+        int inputBlockKeyAxis = inputBlockKey.x;
+        int inputBlockKeyCross = inputBlockKey.y + 2;
+        for (int i = 0; i < inputBlockKeyCross; i++) {
+            int targetBlock = inputBlockKey.block + (inputBlockKeyAxis == 0 ? -i : i);
+            BlockIndex targetBlockIndex = new BlockIndex(inputBlockKey.zone, targetBlock);
+
+            gestures.add(() -> {
+                PointF point = getBlockCenter(targetBlockIndex);
+                mockGesture(ViewGestureDetector.GestureType.Moving, point);
+            });
+        }
+
+        gestures.add(() -> {
+            mockGesture(ViewGestureDetector.GestureType.Moving, centerPoint);
+        });
+        gestures.add(() -> {
             this.active_ctrl_block_key.key.setDisabled(false);
 
             this.active_ctrl_block_key = old_active_ctrl_block_key;
             this.active_ctrl_block_key.key.setDisabled(true);
 
-            mockGesture(ViewGestureDetector.GestureType.PressEnd, endPoint);
+            mockGesture(ViewGestureDetector.GestureType.PressEnd, centerPoint);
         });
+
+        // ============================================================
+        mockGesture(ViewGestureDetector.GestureType.PressStart, startPoint, gestures);
     }
 
-    private void mockGesture(ViewGestureDetector.GestureType type, PointF point, Runnable... cbs) {
+    private void mockGesture(ViewGestureDetector.GestureType type, PointF point, List<Runnable> cbs) {
         Runnable runner = () -> {};
-        for (int i = cbs.length - 1; i >= 0; i--) {
-            Runnable prev = cbs[i];
+        for (int i = cbs.size() - 1; i >= 0; i--) {
+            Runnable prev = cbs.get(i);
             Runnable post = runner;
 
             runner = () -> postDelayed(() -> {
@@ -1245,10 +1267,10 @@ public class XPadView extends View {
         }
 
         Runnable next = runner;
-        postDelayed(() -> {
+        post(() -> {
             mockGesture(type, point);
             next.run();
-        }, 500);
+        });
     }
 
     private void mockGesture(ViewGestureDetector.GestureType type, PointF point) {
@@ -1272,32 +1294,38 @@ public class XPadView extends View {
 
     private PointF getBlockCenter(BlockIndex blockIndex) {
         XZone[] zones = determineZones();
-        XZone.BaseBlock block = (XZone.BaseBlock) zones[blockIndex.zone].blocks.get(blockIndex.block);
+        List<XZone.Block> blocks = zones[blockIndex.zone].blocks;
+        int index = getIndex(blocks.size(), blockIndex.block);
+        XZone.BaseBlock block = (XZone.BaseBlock) blocks.get(index);
 
         return block.links.center.center;
     }
 
-    private BlockKey getBlockKey(Key<?> key) {
+    private BlockKey getMatchedBlockKey(Key<?> key) {
         for (BlockKey blockKey : this.zone_1_keys) {
             if (BlockKey.isNull(blockKey)) {
                 continue;
             }
 
             if (key instanceof CtrlKey //
-                && ((CtrlKey) blockKey.key).getType() == ((CtrlKey) key).getType()) {
+                && key.isSameWith(blockKey.key)) {
                 return blockKey;
             }
         }
 
         for (BlockKey[][] zone_2_key : this.zone_2_keys) {
             for (BlockKey[] blockKeys : zone_2_key) {
-                for (BlockKey blockKey : blockKeys) {
-                    if (BlockKey.isNull(blockKey)) {
-                        continue;
-                    }
-
+                BlockKey[] nonNullBlockKeys = Arrays.stream(blockKeys)
+                                                    .filter((bk) -> !BlockKey.isNull(bk))
+                                                    .toArray(BlockKey[]::new);
+                for (BlockKey blockKey : nonNullBlockKeys) {
                     if (key.getText().equals(blockKey.key.getText())) {
                         return blockKey;
+                    } else if (blockKey.key instanceof CharKey //
+                               && ((CharKey) blockKey.key).canReplaceTheKey(key)) {
+                        return new BlockKey(blockKey.zone, blockKey.block, blockKey.x,
+                                            // Note：替换字符的位置需要环绕一圈
+                                            blockKey.y + nonNullBlockKeys.length, key);
                     }
                 }
             }

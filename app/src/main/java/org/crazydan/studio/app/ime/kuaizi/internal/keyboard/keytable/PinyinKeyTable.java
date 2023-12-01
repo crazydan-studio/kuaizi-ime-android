@@ -601,13 +601,13 @@ public class PinyinKeyTable extends KeyTable {
         String strokeCode = PinyinInputWord.getStrokeCode(stroke);
         String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
 
-        CtrlKey.Option<?> option = new CtrlKey.TextOption(strokeCode);
+        CtrlKey.Option<?> option = new CtrlKey.CodeOption(strokeCode, stroke);
 
         return ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke).setOption(option).setLabel(label);
     }
 
     public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value) {
-        CtrlKey.Option<?> option = new CtrlKey.ObjectOption(value);
+        CtrlKey.Option<?> option = new CtrlKey.ValueOption(value);
 
         return ctrlKey(type).setOption(option).setLabel(label);
     }
