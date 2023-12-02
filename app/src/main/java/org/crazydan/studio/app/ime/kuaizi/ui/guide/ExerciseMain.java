@@ -42,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Key;
 import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
@@ -367,7 +368,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_Pinyin_Slipping_Inputting(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        String expected_auto_word = "会";
+        InputWord expected_auto_word = new InputWord("kuai", "块", "kuài");
         InputWord case_word = new InputWord("kuai", "筷", "kuài");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 
@@ -401,7 +402,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_Pinyin_Candidate_Filtering(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        String expected_auto_word = "术";
+        InputWord expected_auto_word = new InputWord("shu", "术", "shù");
         InputWord case_word = new InputWord("shu", "输", "shū");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 1);
 
@@ -461,7 +462,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_Pinyin_Committed_Processing(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
-        String expected_auto_word = "子";
+        InputWord expected_auto_word = new InputWord("shu", "自", "zì");
         InputWord case_word = new InputWord("zi", "字", "zì");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 
@@ -805,6 +806,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getKeyboardConfig()));
 
+        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin)
                                                .setIconResId(R.drawable.ic_latin);
         Key<?> key_ctrl_switch_pinyin = keyTable.keyboardSwitchKey(Keyboard.Type.Pinyin)
@@ -815,6 +817,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView::getImage);
         exercise.setEnableXInputPad(true);
+        exercise.setSampleText("请换行输入练习内容：");
 
         Key<?>[] latinSample = new Key<?>[] {
                 keyTable.alphabetKey("A"),
@@ -860,7 +863,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + "\"/>以开始英文输入演示动画；", (msg, data) -> {
             if (msg == InputMsg.InputList_Commit_Doing) {
                 if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
-                    this.imeView.startInput(Keyboard.Type.Latin);
                     exercise.gotoNextStep();
                     return;
                 }
@@ -871,23 +873,41 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         for (int i = 0; i < latinSample.length; i++) {
             Key<?> key = latinSample[i];
             String stepName = String.format(Locale.getDefault(), "latin-char-input-step:%d:%s", i, key.getText());
+            boolean isFirstStep = i == 0;
 
-            exercise.addStep(stepName,
-                             "请注意观看 <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> 的输入演示动画。",
-                             (ExerciseStep.AutoAction) () -> {
-                                 XPadView.GestureSimulator simulator = ExerciseMain.this.imeView.getXPadKeyView()
-                                                                                                .getXPad()
-                                                                                                .createSimulator();
+            String stepContent = isFirstStep ? "请注意观看 <span style=\"color:#ed4c67;\">"
+                                               + key.getLabel()
+                                               + "</span> 的输入演示动画。" //
+                                             : "请<span style=\"color:#ed4c67;\">保持手指不动</span>，"
+                                               + "并注意观看 <span style=\"color:#ed4c67;\">"
+                                               + key.getLabel()
+                                               + "</span> 的输入演示动画。";
 
-                                 this.imeView.startInput(Keyboard.Type.Latin);
-                                 simulator.input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
-                             });
-            exercise.addStep("请让手指从中央正六边形外围的<img src=\""
-                             + sandboxView.withKey(key_ctrl_switch_latin)
-                             + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
-                             + "以输入 <span style=\"color:#ed4c67;\">"
-                             + key.getLabel()
-                             + "</span>；", (msg, data) -> {
+            exercise.addStep(stepName, stepContent, (ExerciseStep.AutoAction) () -> {
+                XPadView.GestureSimulator simulator = ExerciseMain.this.imeView.getXPadKeyView()
+                                                                               .getXPad()
+                                                                               .createSimulator();
+
+                if (simulator.isStopped()) {
+                    simulator.input(key_ctrl_switch_latin,
+                                    key,
+                                    () -> this.imeView.startInput(Keyboard.Type.Latin),
+                                    exercise::gotoNextStep);
+                } else {
+                    simulator.input(key, exercise::gotoNextStep);
+                }
+            });
+
+            stepContent = isFirstStep ? "请让手指从中央正六边形外围的<img src=\""
+                                        + sandboxView.withKey(key_ctrl_switch_latin)
+                                        + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                        + "以输入 <span style=\"color:#ed4c67;\">"
+                                        + key.getLabel()
+                                        + "</span>；" //
+                                      : "请继续沿演示动画所绘制的新的运动轨迹滑行，以输入 <span style=\"color:#ed4c67;\">"
+                                        + key.getLabel()
+                                        + "</span>；";
+            exercise.addStep(stepContent, (msg, data) -> {
                 switch (msg) {
                     case InputList_Commit_Doing: {
                         if (key.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
@@ -909,12 +929,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             });
         }
 
-        exercise.addStep("请释放手指，并点击空格按键<img src=\"" //
+        exercise.addStep("请<span style=\"color:#ed4c67;\">释放手指</span>，并点击空格按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_space) //
                          + "\"/>以开始拼音输入的演示动画；", (msg, data) -> {
             if (msg == InputMsg.InputList_Commit_Doing) {
                 if (key_ctrl_space.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
-                    this.imeView.startInput(Keyboard.Type.Pinyin);
                     exercise.gotoNextStep();
                     return;
                 }
@@ -937,7 +956,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 String stepContent = isFirstStep ? "请注意观看 <span style=\"color:#ed4c67;\">"
                                                    + key.getLabel()
                                                    + "</span> 的输入演示动画。" //
-                                                 : "请保持手指不动，注意观看" //
+                                                 : "请<span style=\"color:#ed4c67;\">保持手指不动</span>，并注意观看" //
                                                    + (key instanceof CtrlKey
                                                       ? "<img src=\""
                                                         + sandboxView.withKey(key)
@@ -952,8 +971,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                                                                    .getXPad()
                                                                                    .createSimulator();
 
-                    if (isFirstStep) {
-                        simulator.input(key_ctrl_switch_pinyin, key, exercise::gotoNextStep);
+                    if (simulator.isStopped()) {
+                        simulator.input(key_ctrl_switch_pinyin,
+                                        key,
+                                        () -> this.imeView.startInput(Keyboard.Type.Pinyin),
+                                        exercise::gotoNextStep);
                     } else {
                         simulator.input(key, exercise::gotoNextStep);
                     }
@@ -983,6 +1005,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                         }
                         case InputChars_Input_Done: {
                             if (lastKey.getText().contentEquals(data.getKey().getText())) {
+                                changePinyinWord(word);
+
                                 this.imeView.startInput(Keyboard.Type.Pinyin, false);
                                 exercise.gotoNextStep();
                             } else {
@@ -1001,6 +1025,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
             }
         }
 
+        add_Common_Input_Committing_Step(sandboxView, exercise, key_ctrl_commit);
+
         return exercise;
     }
 
@@ -1018,7 +1044,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     private void add_Pinyin_Inputting_Steps(
             DynamicLayoutSandboxView sandboxView, Exercise exercise, //
             Key<?> key_level_0, Key<?> key_level_1, Key<?> key_level_2, //
-            Key<?> key_case_word, String expected_auto_word, String word_choose_step_content
+            Key<?> key_case_word, InputWord expected_auto_word, String word_choose_step_content
     ) {
         InputWord case_word = ((InputWordKey) key_case_word).getWord();
 
@@ -1070,6 +1096,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                          Key<?> key = data.getKey();
 
                                          if (key != null && key.getLabel().equals(key_level_1.getLabel())) {
+                                             changePinyinWord(expected_auto_word);
                                              exercise.gotoNextStep();
                                          } else {
                                              warning("当前输入的拼音与练习内容不符，请重新开始本练习");
@@ -1122,6 +1149,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                          Key<?> key = data.getKey();
 
                                          if (key != null && key.getLabel().equals(key_level_2.getLabel())) {
+                                             changePinyinWord(expected_auto_word);
                                              exercise.gotoNextStep();
                                          } else {
                                              warning("当前输入的拼音与练习内容不符，请重新开始本练习");
@@ -1136,20 +1164,20 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         exercise.addStep("select_auto_word",
                          "请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
                          + " <span style=\"color:#ed4c67;\">"
-                         + expected_auto_word
+                         + expected_auto_word.getValue()
                          + "</span>；",
                          (msg, data) -> {
                              if (msg == InputMsg.InputCandidate_Choose_Doing) {
                                  CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                  InputWord word = input.getWord();
 
-                                 if (word != null && expected_auto_word.equals(word.getValue())) {
+                                 if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
                                      exercise.gotoNextStep();
                                      return;
                                  }
                              }
                              warning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                                     + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
                          });
 
         exercise.addStep("choose_correct_word",
@@ -1167,12 +1195,13 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      exercise.gotoNextStep();
                                  } else {
                                      warning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                                             + " <span style=\"color:#ed4c67;\">%s</span>",
+                                             expected_auto_word.getValue());
                                      exercise.gotoStep("select_auto_word");
                                  }
                              } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
                                  warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word);
+                                         + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
                                  exercise.gotoStep("select_auto_word");
                              }
                          });
@@ -1190,5 +1219,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 warning("请按当前步骤的指导要求提交输入内容");
             }
         });
+    }
+
+    private void changePinyinWord(InputWord word) {
+        this.imeView.getInputList().getLastCharInput().setWord(PinyinInputWord.from(word));
     }
 }

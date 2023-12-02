@@ -157,9 +157,9 @@ public class LatinKeyTable extends KeyTable {
                     }, //
                     new Key[][] {
                             new Key[] {
+                                    symbolKey("@").withReplacements("&"),
                                     alphabetKey("z").withReplacements("Z"),
                                     alphabetKey("k").withReplacements("K"),
-                                    symbolKey("@").withReplacements("&"),
                                     //
                             }, //
                             new Key[] {
@@ -175,9 +175,9 @@ public class LatinKeyTable extends KeyTable {
                                     alphabetKey("p").withReplacements("P"),
                                     }, //
                             new Key[] {
+                                    symbolKey("-").withReplacements("_"),
                                     alphabetKey("q").withReplacements("Q"),
                                     alphabetKey("s").withReplacements("S"),
-                                    symbolKey("-").withReplacements("_"),
                                     }, //
                     }, //
                     new Key[][] {
@@ -195,8 +195,8 @@ public class LatinKeyTable extends KeyTable {
                     new Key[][] {
                             new Key[] {
                                     alphabetKey("x").withReplacements("X"),
-                                    alphabetKey("c").withReplacements("C"),
                                     symbolKey("#").withReplacements("+"),
+                                    alphabetKey("c").withReplacements("C"),
                                     }, //
                             new Key[] {
                                     alphabetKey("j").withReplacements("J"),

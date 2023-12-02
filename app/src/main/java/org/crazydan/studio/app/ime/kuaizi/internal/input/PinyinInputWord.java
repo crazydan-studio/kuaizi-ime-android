@@ -64,6 +64,16 @@ public class PinyinInputWord extends InputWord {
         }
     }
 
+    public static PinyinInputWord from(InputWord word) {
+        return new PinyinInputWord(word.getUid(),
+                                   word.getValue(),
+                                   word.getUid(),
+                                   new Spell(-1, word.getNotation(), "-1"),
+                                   null,
+                                   false,
+                                   null);
+    }
+
     public static String[] getStrokeNames() {
         return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" /* 𠃋 */ };
     }
