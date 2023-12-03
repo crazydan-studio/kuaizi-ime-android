@@ -889,10 +889,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                                                                .createSimulator();
 
                 if (simulator.isStopped()) {
-                    simulator.input(key_ctrl_switch_latin,
-                                    key,
-                                    () -> this.imeView.startInput(Keyboard.Type.Latin),
-                                    exercise::gotoNextStep);
+                    this.imeView.startInput(Keyboard.Type.Latin);
+                    simulator.input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
                 } else {
                     simulator.input(key, exercise::gotoNextStep);
                 }
@@ -972,10 +970,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                                                                    .createSimulator();
 
                     if (simulator.isStopped()) {
-                        simulator.input(key_ctrl_switch_pinyin,
-                                        key,
-                                        () -> this.imeView.startInput(Keyboard.Type.Pinyin),
-                                        exercise::gotoNextStep);
+                        this.imeView.startInput(Keyboard.Type.Pinyin);
+                        simulator.input(key_ctrl_switch_pinyin, key, exercise::gotoNextStep);
                     } else {
                         simulator.input(key, exercise::gotoNextStep);
                     }

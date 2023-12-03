@@ -32,7 +32,6 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -156,6 +155,8 @@ public class XPadView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+//        Log.i("onDraw", "Doing ...");
+
         // 整体的镜像翻转：不适用，应该调换左右位置即可，文字和图片等不能翻转
         //canvas.scale(-1, 1, getWidth() * 0.5f, getHeight() * 0.5f);
         // 将画布整体向左偏移，按键放置位置左右翻转，从而实现键盘的翻转
@@ -171,6 +172,13 @@ public class XPadView extends View {
 
         // 绘制滑屏轨迹
         this.trailer.draw(canvas);
+
+//        Log.i("onDraw",
+//              String.format("Done: %s",
+//                            this.active_ctrl_block_key != null
+//                            ? ((CtrlKey) this.active_ctrl_block_key.key).getOption()
+//                                                                        .value()
+//                            : null));
     }
 
     public void onGesture(
@@ -198,20 +206,21 @@ public class XPadView extends View {
         BlockIndex old_active_block = this.active_block;
         BlockIndex new_active_block = this.active_block = findBlockAt(x, y);
 
-        if (old_active_block != null && new_active_block != null //
-            && (old_active_block.zone != new_active_block.zone //
-                || old_active_block.block != new_active_block.block)) {
-            Log.i(trigger != null ? "GestureOnXPadView" : "GestureSimulationOnXPadView",
-                  String.format("%s: simulation - %s, x/y - %f/%f, old - %d:%d, new - %d:%d",
-                                type,
-                                this.simulating,
-                                x,
-                                y,
-                                old_active_block.zone,
-                                old_active_block.block,
-                                new_active_block.zone,
-                                new_active_block.block));
-        }
+//        if (old_active_block != null && new_active_block != null //
+//            && (old_active_block.zone != new_active_block.zone //
+//                || old_active_block.block != new_active_block.block)) {
+//            Log.i("GestureOnXPadView",
+//                  String.format("%s: simulation - %s:%s, x/y - %f/%f, old - %d:%d, new - %d:%d",
+//                                type,
+//                                this.simulating,
+//                                trigger,
+//                                x,
+//                                y,
+//                                old_active_block.zone,
+//                                old_active_block.block,
+//                                new_active_block.zone,
+//                                new_active_block.block));
+//        }
 
         if (new_active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
             if (this.state.type != XPadState.Type.Init && this.zone_1_animator != null) {
@@ -290,6 +299,7 @@ public class XPadView extends View {
     }
 
     public void updateZoneKeys(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
+//        Log.i("updateZoneKeys", "Doing ...");
         invalidate();
 
         this.zone_0_key = new BlockKey(0, 0, 0, 0, zone_0_key);
@@ -319,6 +329,19 @@ public class XPadView extends View {
                 }
             }
         }
+
+//        Log.i("updateZoneKeys",
+//              String.format("Got active key: %s",
+//                            this.active_ctrl_block_key != null
+//                            ? ((CtrlKey) this.active_ctrl_block_key.key).getOption()
+//                                                                        .value()
+//                            : null));
+//        try {
+//            throw new RuntimeException();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        Log.i("updateZoneKeys", "Done ...");
     }
 
     private void drawZones(Canvas canvas) {
@@ -1197,12 +1220,10 @@ public class XPadView extends View {
             UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
-        if (trigger == null) {
-            return;
+        if (trigger != null) {
+            // Note：向外部传递的 GestureData 不需要做坐标转换
+            trigger.onGesture(key, type, data);
         }
-
-        // Note：向外部传递的 GestureData 不需要做坐标转换
-        trigger.onGesture(key, type, data);
     }
 
     private void fire_UserKey_Moving(
@@ -1312,27 +1333,24 @@ public class XPadView extends View {
             return XPadView.this.active_block == null;
         }
 
-        public void input(Key<?> start, Key<?> charKey, Runnable before, Runnable after) {
+        public void input(Key<?> start, Key<?> charKey, Runnable after) {
             XPadView.this.simulating = true;
 
-            doInput(start, charKey, before, () -> {
+            doInput(start, charKey, () -> {
                 after.run();
                 XPadView.this.simulating = false;
             });
         }
 
         public void input(Key<?> charKey, Runnable after) {
-            input(null, charKey, null, after);
+            input(null, charKey, after);
         }
 
-        private void doInput(Key<?> start, Key<?> charKey, Runnable before, Runnable after) {
+        private void doInput(Key<?> start, Key<?> charKey, Runnable after) {
             PointF endPoint = get_center_coordinate();
 
             // ==================================================================
             List<Runnable> gestures = new ArrayList<>();
-            if (before != null) {
-                before.run();
-            }
 
             if (start == null) {
                 gestures.add(() -> {

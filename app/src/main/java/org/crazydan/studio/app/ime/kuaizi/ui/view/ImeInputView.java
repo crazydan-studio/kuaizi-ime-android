@@ -197,15 +197,18 @@ public class ImeInputView extends FrameLayout
 
     /** 启动指定类型的键盘 */
     public void startInput(Keyboard.Type type, boolean resetInputList) {
+        //Log.i("SwitchKeyboard", String.format("%s - %s", type, resetInputList));
         startInput(new Keyboard.Config(type), resetInputList);
     }
 
     /** 开始输入 */
     public void startInput(Keyboard.Config config, boolean resetInputList) {
+        updateKeyboard(config);
+
+        // 先更新键盘，再重置输入列表
         if (resetInputList) {
             this.inputList.reset(false);
         }
-        updateKeyboard(config);
     }
 
     /** 结束输入 */
