@@ -71,8 +71,14 @@ public class MsgBus {
         }
     }
 
+    /** 移除指定类型的监听器 */
+    public static void unregister(Class<?> listenerType) {
+        listenersByType.forEach((msgType, listeners) -> listeners.removeIf(listener -> listener.getClass()
+                                                                                       == listenerType));
+    }
+
     /** 移除全部消息的监听器 */
-    public static <S, M extends Msg, D extends MsgData> void unregister(MsgListener<S, M, D> listener) {
+    public static void unregister(MsgListener<?, ?, ?> listener) {
         listenersByType.forEach((type, listeners) -> listeners.remove(listener));
     }
 }

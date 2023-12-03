@@ -30,6 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
@@ -51,7 +52,13 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureTra
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends BaseKeyboardView implements InputMsgListener, UserKeyMsgListener {
+public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener {
+    private final InputMsgListener inputMsgListener = (keyboard, msg, msgData) -> {
+        if (getKeyboard() == keyboard) {
+            onInputMsg(keyboard, msg, msgData);
+        }
+    };
+
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
@@ -90,32 +97,37 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
                     .addListener(this.gestureTrailer);
     }
 
-    /** 重置视图 */
-    public void reset() {
-        this.gesture.reset();
-        this.animator.reset();
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MsgBus.register(InputMsg.class, this.inputMsgListener);
+    }
 
-        // Note：不清空按键，以避免子键盘切换过程中出现闪动
-        //updateKeys(new Key[][] {});
-        if (this.keyboard != null) {
-            this.keyboard.removeInputMsgListener(this);
-        }
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        destroy();
+    }
 
-        this.keyboard = null;
+    public Keyboard getKeyboard() {
+        return this.keyboard;
+    }
+
+    public boolean isGestureTrailerDisabled() {
+        return getKeyboard() != null && getKeyboard().getConfig().isGestureSlippingTrailDisabled();
+    }
+
+    public void destroy() {
+        MsgBus.unregister(InputMsg.class, this.inputMsgListener);
+        reset();
     }
 
     /** 更新键盘，并重绘键盘 */
     public void updateKeyboard(Keyboard keyboard) {
         reset();
-
         this.keyboard = keyboard;
-        this.keyboard.addInputMsgListener(this);
 
-        updateKeys(this.keyboard.getKeyFactory());
-    }
-
-    public boolean isGestureTrailerDisabled() {
-        return this.keyboard != null && this.keyboard.getConfig().isGestureSlippingTrailDisabled();
+        updateKeys(keyboard, keyboard.getKeyFactory());
     }
 
     /** 响应按键点击、双击等消息 */
@@ -144,16 +156,14 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
-    /** 响应键盘输入消息 */
-    @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    private void onInputMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         switch (msg) {
             case InputAudio_Play_Doing: {
-                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) data);
+                on_InputAudio_Play_Doing_Msg(keyboard, (InputAudioPlayDoingMsgData) msgData);
                 break;
             }
             case Keyboard_Config_Update_Done: {
-                Keyboard.Config config = ((KeyboardConfigUpdateDoneMsgData) data).after;
+                Keyboard.Config config = ((KeyboardConfigUpdateDoneMsgData) msgData).after;
                 if (config.isKeyAnimationDisabled()) {
                     setItemAnimator(null);
                 } else {
@@ -163,19 +173,19 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
             }
             case InputChars_Input_Doing: {
                 // 滑屏输入显示轨迹
-                if (((InputCharsInputtingMsgData) data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
-                    && !this.keyboard.getConfig().isGestureSlippingTrailDisabled()) {
+                if (((InputCharsInputtingMsgData) msgData).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
+                    && !keyboard.getConfig().isGestureSlippingTrailDisabled()) {
                     this.gestureTrailer.setDisabled(false);
                 }
                 break;
             }
         }
 
-        updateKeysByInputMsg(data);
+        updateKeys(keyboard, msgData.getKeyFactory());
     }
 
-    private void on_InputAudio_Play_Doing_Msg(InputAudioPlayDoingMsgData data) {
-        Keyboard.Config config = this.keyboard.getConfig();
+    private void on_InputAudio_Play_Doing_Msg(Keyboard keyboard, InputAudioPlayDoingMsgData data) {
+        Keyboard.Config config = keyboard.getConfig();
 
         switch (data.audioType) {
             case SingleTick:
@@ -206,11 +216,16 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
         }
     }
 
-    private void updateKeysByInputMsg(InputMsgData data) {
-        updateKeys(data.getKeyFactory());
+    private void reset() {
+        this.keyboard = null;
+        this.gesture.reset();
+        this.animator.reset();
+
+        // Note：不清空按键，以避免子键盘切换过程中出现闪动
+        //updateKeys(new Key[][] {});
     }
 
-    private void updateKeys(Keyboard.KeyFactory keyFactory) {
+    private void updateKeys(Keyboard keyboard, Keyboard.KeyFactory keyFactory) {
         if (keyFactory == null) {
             return;
         }
@@ -226,6 +241,6 @@ public class KeyboardView extends BaseKeyboardView implements InputMsgListener, 
             post(() -> setItemAnimator(this.animator));
         }
 
-        super.updateKeys(keys, this.keyboard.getConfig().isLeftHandMode());
+        super.updateKeys(keys, keyboard.getConfig().isLeftHandMode());
     }
 }

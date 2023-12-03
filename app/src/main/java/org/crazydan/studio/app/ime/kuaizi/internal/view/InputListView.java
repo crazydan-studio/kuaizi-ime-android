@@ -25,9 +25,11 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
@@ -66,8 +68,21 @@ public class InputListView extends RecyclerView implements InputMsgListener {
                     .addListener(new InputViewGestureListener(this));
     }
 
-    /** 重置视图 */
-    public void reset() {
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MsgBus.register(InputMsg.class, this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        destroy();
+    }
+
+    public void destroy() {
+        MsgBus.unregister(this);
+
         this.gesture.reset();
 
         updateInputList(null);
@@ -87,9 +102,8 @@ public class InputListView extends RecyclerView implements InputMsgListener {
         this.adapter.updateInputList(this.inputList, canBeSelected);
     }
 
-    /** 响应键盘输入消息 */
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData data) {
         switch (msg) {
             case Keyboard_Switch_Doing:
             case Keyboard_State_Change_Done:

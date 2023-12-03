@@ -289,7 +289,7 @@ public class MathKeyboard extends BaseKeyboard {
         before_ChangeState_Or_SwitchKeyboard(topInputList);
 
         // 在被监听的输入列表处理完毕后，再移除监听
-        MsgBus.unregister(UserInputMsg.class, this.topUserInputMsgListener);
+        MsgBus.unregister(this.topUserInputMsgListener);
 
         dropMathInputList();
 

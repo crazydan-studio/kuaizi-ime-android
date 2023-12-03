@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -68,6 +69,8 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onDestroy() {
         super.onDestroy();
 
+        MsgBus.unregister(this);
+
         // 确保拼音字典库能够被及时关闭
         PinyinDictDB.getInstance().close();
     }
@@ -77,8 +80,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     public View onCreateInputView() {
         this.imeView = (ImeInputView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
 
-        this.imeView.addInputMsgListener(this);
-
         return this.imeView;
     }
 
@@ -87,6 +88,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
         // 确保拼音字典库保持就绪状态
         PinyinDictDB.getInstance().open(getApplicationContext());
+        MsgBus.register(InputMsg.class, this);
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
@@ -164,10 +166,10 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         switch (msg) {
             case InputList_Commit_Doing: {
-                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
+                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msgData;
                 commitText(d.text, d.replacements);
                 break;
             }
@@ -176,20 +178,20 @@ public class Service extends InputMethodService implements InputMsgListener {
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) data;
+                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) msgData;
                 commitText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                moveCursor((EditorCursorMovingMsgData) data);
+                moveCursor((EditorCursorMovingMsgData) msgData);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectText((EditorCursorMovingMsgData) data);
+                selectText((EditorCursorMovingMsgData) msgData);
                 break;
             }
             case Editor_Edit_Doing: {
-                EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
+                EditorEditDoingMsgData d = (EditorEditDoingMsgData) msgData;
                 editEditor(d.action);
                 break;
             }

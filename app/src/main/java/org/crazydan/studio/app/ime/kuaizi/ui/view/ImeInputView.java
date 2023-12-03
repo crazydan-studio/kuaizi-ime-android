@@ -17,10 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -45,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
@@ -62,9 +59,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-07-01
  */
 public class ImeInputView extends FrameLayout
-        implements InputMsgListener, SharedPreferences.OnSharedPreferenceChangeListener {
+        implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener {
     private final SharedPreferences preferences;
-    private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
     private final InputList inputList;
     private KeyboardView keyboardView;
     private InputListView inputListView;
@@ -95,8 +91,24 @@ public class ImeInputView extends FrameLayout
         relayoutViews();
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MsgBus.register(InputMsg.class, this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        MsgBus.unregister(this);
+    }
+
     public InputList getInputList() {
         return this.inputList;
+    }
+
+    public Keyboard getKeyboard() {
+        return this.keyboard;
     }
 
     public XPadKeyView getXPadKeyView() {
@@ -161,35 +173,6 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    /**
-     * 添加{@link InputMsg 输入消息监听}
-     * <p/>
-     * 忽略重复加入的监听，且执行顺序与添加顺序无关
-     */
-    public void addInputMsgListener(InputMsgListener listener) {
-        this.inputMsgListeners.add(listener);
-
-        if (this.keyboard != null) {
-            this.keyboard.addInputMsgListener(listener);
-        }
-    }
-
-    /** 按监听类型移除监听 */
-    public void removeInputMsgListenerByType(Class<?> cls) {
-        Iterator<InputMsgListener> it = this.inputMsgListeners.iterator();
-        while (it.hasNext()) {
-            InputMsgListener listener = it.next();
-            if (listener.getClass() != cls) {
-                continue;
-            }
-
-            it.remove();
-            if (this.keyboard != null) {
-                this.keyboard.removeInputMsgListener(listener);
-            }
-        }
-    }
-
     /** 启动指定类型的键盘，并清空输入列表 */
     public void startInput(Keyboard.Type type) {
         startInput(type, true);
@@ -207,29 +190,32 @@ public class ImeInputView extends FrameLayout
 
         // 先更新键盘，再重置输入列表
         if (resetInputList) {
-            this.inputList.reset(false);
+            getInputList().reset(false);
         }
     }
 
     /** 结束输入 */
     public void finishInput() {
-        this.inputList.clear();
-
-        this.keyboard.reset();
+        getInputList().clear();
+        getKeyboard().reset();
     }
 
-    /** 响应键盘输入消息 */
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
-        boolean completionsShown = this.inputList.hasCompletions();
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        updateKeyboardConfig();
+    }
+
+    @Override
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        boolean completionsShown = getInputList().hasCompletions();
         showInputCompletionsPopupWindow(completionsShown);
 
         switch (msg) {
             case Keyboard_Switch_Doing: {
-                Keyboard.Type source = ((KeyboardSwitchDoingMsgData) data).source;
-                Keyboard.Type target = ((KeyboardSwitchDoingMsgData) data).target;
+                Keyboard.Type source = ((KeyboardSwitchDoingMsgData) msgData).source;
+                Keyboard.Type target = ((KeyboardSwitchDoingMsgData) msgData).target;
 
-                Keyboard.Config config = new Keyboard.Config(target, this.keyboard.getConfig());
+                Keyboard.Config config = new Keyboard.Config(target, keyboard.getConfig());
                 config.setSwitchFromType(source);
 
                 updateKeyboard(config);
@@ -237,12 +223,12 @@ public class ImeInputView extends FrameLayout
             }
             case Keyboard_HandMode_Switch_Done: {
                 // Note：仅记录切换到的模式以便于切换到其他类型键盘时按该模式绘制按键
-                this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) data).mode;
+                this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) msgData).mode;
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
-                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) data).text,
-                                        ((InputCharsInputPopupShowingMsgData) data).hideDelayed);
+                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) msgData).text,
+                                        ((InputCharsInputPopupShowingMsgData) msgData).hideDelayed);
                 break;
             }
             case InputChars_Input_Popup_Hide_Doing: {
@@ -251,8 +237,8 @@ public class ImeInputView extends FrameLayout
             }
             default: {
                 // 有新输入，则清空 删除撤销数据
-                if (!this.inputList.isEmpty()) {
-                    this.inputList.clearDeleteCancels();
+                if (!getInputList().isEmpty()) {
+                    getInputList().clearDeleteCancels();
                 }
 
                 toggleShowInputListCleanBtn();
@@ -265,10 +251,10 @@ public class ImeInputView extends FrameLayout
         Keyboard oldKeyboard = this.keyboard;
 
         Keyboard newKeyboard = createKeyboard(config.getType());
-        if (this.keyboard == null || !newKeyboard.getClass().equals(this.keyboard.getClass())) {
+        if (oldKeyboard == null || !newKeyboard.getClass().equals(oldKeyboard.getClass())) {
             this.keyboard = newKeyboard;
         } else {
-            newKeyboard = this.keyboard;
+            newKeyboard = oldKeyboard;
         }
 
         Keyboard.Config patchedConfig = patchKeyboardConfig(config);
@@ -290,16 +276,11 @@ public class ImeInputView extends FrameLayout
         toggleShowInputListCleanBtn();
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (this.keyboard == null) {
+    private void updateKeyboardConfig() {
+        if (getKeyboard() == null) {
             return;
         }
 
-        updateKeyboardConfig();
-    }
-
-    private void updateKeyboardConfig() {
         Keyboard.Config oldConfig = this.keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 
@@ -324,25 +305,17 @@ public class ImeInputView extends FrameLayout
     }
 
     private void reset() {
-        if (this.keyboard != null) {
-            this.inputMsgListeners.forEach(this.keyboard::removeInputMsgListener);
-        }
-
         resetPopupWindows();
 
         if (this.keyboardView != null) {
-            this.keyboardView.reset();
+            this.keyboardView.destroy();
         }
         if (this.inputListView != null) {
-            this.inputListView.reset();
+            this.inputListView.destroy();
         }
         if (this.inputCompletionsView != null) {
-            this.inputCompletionsView.reset();
+            this.inputCompletionsView.destroy();
         }
-
-        this.inputMsgListeners.remove(this);
-        this.inputMsgListeners.remove(this.inputListView);
-        this.inputMsgListeners.remove(this.inputCompletionsView);
     }
 
     private void relayoutViews() {
@@ -372,10 +345,6 @@ public class ImeInputView extends FrameLayout
 
         this.inputListView.updateInputList(this.inputList);
         this.inputCompletionsView.updateInputList(this.inputList);
-
-        addInputMsgListener(this);
-        addInputMsgListener(this.inputListView);
-        addInputMsgListener(this.inputCompletionsView);
 
         bindKeyboard(this.keyboard);
         updateBottomSpacing(this.keyboard);
@@ -420,10 +389,8 @@ public class ImeInputView extends FrameLayout
         }
 
         keyboard.setInputList(this.inputList);
-        // Note：在 Keyboard#start 中可能会触发输入事件，故而需尽早绑定监听
-        this.inputMsgListeners.forEach(keyboard::addInputMsgListener);
-
         keyboard.start();
+
         this.keyboardView.updateKeyboard(keyboard);
     }
 
@@ -572,16 +539,16 @@ public class ImeInputView extends FrameLayout
     }
 
     private void onCleanInputList(View v) {
-        this.inputList.reset(true);
+        getInputList().reset(true);
     }
 
     private void onCancelCleanInputList(View v) {
-        this.inputList.cancelDelete();
+        getInputList().cancelDelete();
     }
 
     private void toggleShowInputListCleanBtn() {
-        if (this.inputList.isEmpty()) {
-            if (this.inputList.canCancelDelete()) {
+        if (getInputList().isEmpty()) {
+            if (getInputList().canCancelDelete()) {
                 ViewUtils.hide(this.inputListCleanBtnView);
                 ViewUtils.show(this.inputListCleanCancelBtnView);
             } else {
@@ -626,6 +593,6 @@ public class ImeInputView extends FrameLayout
     }
 
     private void updateInputListOption(Keyboard.Config config) {
-        this.inputList.setDefaultUseWordVariant(config.isCandidateVariantFirstEnabled());
+        getInputList().setDefaultUseWordVariant(config.isCandidateVariantFirstEnabled());
     }
 }

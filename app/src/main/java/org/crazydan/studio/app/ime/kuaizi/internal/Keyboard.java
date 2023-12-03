@@ -21,8 +21,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 
@@ -58,16 +56,6 @@ public interface Keyboard {
 
     /** 处理{@link UserKeyMsg 按键消息} */
     void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
-
-    /**
-     * 添加{@link InputMsg 输入消息监听}
-     * <p/>
-     * 忽略重复加入的监听，且执行顺序与添加顺序无关
-     */
-    void addInputMsgListener(InputMsgListener listener);
-
-    /** 移除{@link InputMsg 输入消息监听} */
-    void removeInputMsgListener(InputMsgListener listener);
 
     /** 键盘类型 */
     enum Type {

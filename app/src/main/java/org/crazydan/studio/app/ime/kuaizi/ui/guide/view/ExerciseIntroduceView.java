@@ -36,9 +36,7 @@ public class ExerciseIntroduceView extends ExerciseView {
 
     @Override
     public void withIme(ImeInputView ime) {
-        // 卸载前序练习的监听，并不做其他处理
-        ime.removeInputMsgListenerByType(super.getClass());
-        ime.removeInputMsgListenerByType(Exercise.class);
+        // keep it empty
     }
 
     @Override

@@ -17,13 +17,15 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
+
 /**
  * {@link InputMsg} 监听
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public interface InputMsgListener {
+public interface InputMsgListener extends MsgListener<Keyboard, InputMsg, InputMsgData> {
 
-    void onInputMsg(InputMsg msg, InputMsgData data);
+    void onMsg(Keyboard sender, InputMsg msg, InputMsgData msgData);
 }

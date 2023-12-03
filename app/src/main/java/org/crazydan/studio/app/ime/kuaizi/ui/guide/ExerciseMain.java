@@ -52,6 +52,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTabl
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -110,6 +111,24 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         this.imeView.refresh();
 
         super.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MsgBus.unregister(Exercise.class);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MsgBus.unregister(Exercise.class);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MsgBus.unregister(Exercise.class);
     }
 
     @Override

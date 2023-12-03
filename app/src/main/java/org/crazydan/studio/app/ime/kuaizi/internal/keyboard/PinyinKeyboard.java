@@ -923,13 +923,13 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void fire_InputCandidate_Choose_Doing(CharInput input) {
         InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fireInputMsg(InputMsg.InputCandidate_Choose_Doing, data);
+        fire_InputMsg(InputMsg.InputCandidate_Choose_Doing, data);
     }
 
     private void fire_InputCandidate_Choose_Done(CharInput input) {
         InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fireInputMsg(InputMsg.InputCandidate_Choose_Done, data);
+        fire_InputMsg(InputMsg.InputCandidate_Choose_Done, data);
     }
 
     private void confirm_Selected_InputCandidate(InputList inputList) {

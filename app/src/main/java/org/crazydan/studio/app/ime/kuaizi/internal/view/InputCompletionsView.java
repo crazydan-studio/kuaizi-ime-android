@@ -26,10 +26,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewGestureListener;
@@ -61,7 +63,21 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
                .addListener(new CompletionViewGestureListener(this));
     }
 
-    public void reset() {
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MsgBus.register(InputMsg.class, this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        destroy();
+    }
+
+    public void destroy() {
+        MsgBus.unregister(this);
+
         updateInputList(null);
     }
 
@@ -74,7 +90,7 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         List<CompletionInput> completions = getInputList().getCompletions();
 
         this.adapter.updateDataList(completions);

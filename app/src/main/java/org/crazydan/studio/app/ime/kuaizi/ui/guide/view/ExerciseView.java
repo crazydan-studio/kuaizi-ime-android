@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
@@ -54,11 +55,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
     public void withIme(ImeInputView ime) {
         Exercise exercise = getData();
 
-        ime.removeInputMsgListenerByType(this.textView.getClass());
-        ime.addInputMsgListener(this.textView);
-
-        ime.removeInputMsgListenerByType(exercise.getClass());
-        ime.addInputMsgListener(exercise);
+        MsgBus.unregister(Exercise.class);
 
         this.textView.requestFocus();
 
@@ -70,6 +67,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
             updateSteps();
             scrollTo(position);
         });
+
         exercise.restart();
     }
 

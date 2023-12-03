@@ -21,9 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.Key;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
 
 /**
@@ -60,31 +63,39 @@ public class Exercise implements ViewData, InputMsgListener {
         return new Exercise(Mode.introduce, title, imageGetter);
     }
 
-    public void start() {
+    public void restart() {
+        reset();
+
+        MsgBus.register(InputMsg.class, this);
         gotoNextStep();
     }
 
-    public void restart() {
-        doReset();
-        start();
+    public void reset() {
+        MsgBus.unregister(this);
+
+        this.runningStep = null;
+        for (ExerciseStep step : this.steps) {
+            step.reset();
+        }
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         ExerciseStep current = this.runningStep;
         if (current == null) {
             return;
         }
 
+        Key<?> key = msgData.getKey();
         switch (msg) {
             case InputChars_Input_Doing:
-                if (data.getKey() == null || data.getKey().getText() == null) {
+                if (key == null || key.getText() == null) {
                     return;
                 } else {
                     break;
                 }
             case Keyboard_State_Change_Done:
-                if (data.getKey() == null) {
+                if (key == null) {
                     return;
                 } else {
                     break;
@@ -102,7 +113,7 @@ public class Exercise implements ViewData, InputMsgListener {
                 return;
         }
 
-        current.onInputMsg(msg, data);
+        current.onInputMsg(msg, msgData);
     }
 
     public void gotoNextStep() {
@@ -169,13 +180,6 @@ public class Exercise implements ViewData, InputMsgListener {
     @Override
     public boolean isSameWith(Object o) {
         return false;
-    }
-
-    private void doReset() {
-        this.runningStep = null;
-        for (ExerciseStep step : this.steps) {
-            step.reset();
-        }
     }
 
     private void gotoStep(ExerciseStep step) {

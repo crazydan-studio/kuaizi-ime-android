@@ -24,11 +24,13 @@ import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import org.crazydan.studio.app.ime.kuaizi.internal.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -52,7 +54,19 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     }
 
     @Override
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        MsgBus.register(InputMsg.class, this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        MsgBus.unregister(getClass());
+    }
+
+    @Override
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;
