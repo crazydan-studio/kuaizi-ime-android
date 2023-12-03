@@ -62,7 +62,7 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        MsgBus.unregister(getClass());
+        MsgBus.unregister(this);
     }
 
     @Override
