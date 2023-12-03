@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,9 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
@@ -45,7 +44,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  * @date 2023-06-28
  */
 public class InputList {
-    private final Set<UserInputMsgListener> listeners = new HashSet<>();
     private final Map<String, Map<String, InputWord>> candidateWordsCache = new LinkedHashMap<>(50);
 
     private final List<Input<?>> inputs = new ArrayList<>();
@@ -61,33 +59,12 @@ public class InputList {
         reset(false);
     }
 
-    /**
-     * 添加 {@link UserInputMsg} 消息监听
-     * <p/>
-     * 忽略重复加入的监听，且执行顺序与添加顺序无关
-     */
-    public void addUserInputMsgListener(UserInputMsgListener listener) {
-        this.listeners.add(listener);
-    }
-
-    /** 移除 {@link UserInputMsg} 消息监听 */
-    public void removeUserInputMsgListener(UserInputMsgListener listener) {
-        this.listeners.remove(listener);
-    }
-
-    /** 处理{@link UserInputMsg 输入}消息 */
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        // Note: 存在在监听未执行完毕便移除监听的情况，故，在监听列表的副本中执行监听
-        Set<UserInputMsgListener> listeners = new HashSet<>(this.listeners);
-        listeners.forEach(listener -> listener.onUserInputMsg(msg, data));
-    }
-
     /** 重置输入列表 */
     public void reset(boolean canBeCanceled) {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
-        UserInputMsgData msgData = new UserInputMsgData(null);
-        onUserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
+        UserInputMsgData msgData = new UserInputMsgData();
+        MsgBus.send(this, UserInputMsg.Inputs_Clean_Done, msgData);
     }
 
     /** 清空输入列表 */
@@ -140,8 +117,8 @@ public class InputList {
         if (canCancelDelete()) {
             Staged.restore(this, this.staged);
 
-            UserInputMsgData msgData = new UserInputMsgData(null);
-            onUserInputMsg(UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
+            UserInputMsgData msgData = new UserInputMsgData();
+            MsgBus.send(this, UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
         }
     }
 
@@ -210,11 +187,14 @@ public class InputList {
     }
 
     public void setDefaultUseWordVariant(boolean defaultUseWordVariant) {
-        this.defaultUseWordVariant = defaultUseWordVariant;
         this.option = null;
 
-        UserInputMsgData msgData = new UserInputMsgData(null);
-        onUserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
+        if (this.defaultUseWordVariant != defaultUseWordVariant) {
+            this.defaultUseWordVariant = defaultUseWordVariant;
+
+            UserInputMsgData msgData = new UserInputMsgData();
+            MsgBus.send(this, UserInputMsg.InputList_Option_Update_Done, msgData);
+        }
     }
 
     /** 设置短语输入补全 */

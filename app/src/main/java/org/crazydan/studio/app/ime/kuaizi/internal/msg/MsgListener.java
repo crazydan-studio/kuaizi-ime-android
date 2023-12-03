@@ -23,7 +23,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-12-03
  */
-public interface MsgListener<M extends Msg, D extends MsgData> {
+public interface MsgListener<S, M extends Msg, D extends MsgData> {
 
-    void onMsg(M msg, D data);
+    void onMsg(S sender, M msg, D msgData);
 }

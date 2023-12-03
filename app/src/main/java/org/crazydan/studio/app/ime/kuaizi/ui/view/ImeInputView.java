@@ -371,7 +371,7 @@ public class ImeInputView extends FrameLayout
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         this.inputListView.updateInputList(this.inputList);
-        this.inputCompletionsView.setInputList(this.inputList);
+        this.inputCompletionsView.updateInputList(this.inputList);
 
         addInputMsgListener(this);
         addInputMsgListener(this.inputListView);

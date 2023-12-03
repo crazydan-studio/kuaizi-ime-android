@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.completion;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
@@ -54,6 +55,6 @@ public class CompletionViewGestureListener implements ViewGestureDetector.Listen
         CompletionInput completion = completionView.getData();
 
         UserInputMsgData msgData = new UserInputMsgData(completion);
-        this.inputCompletionsView.onUserInputMsg(UserInputMsg.Input_Completion_Choose_Doing, msgData);
+        MsgBus.send(this.inputCompletionsView.getInputList(), UserInputMsg.Input_Completion_Choose_Doing, msgData);
     }
 }

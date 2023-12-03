@@ -179,18 +179,17 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
                 // Note：其余消息，继续向后处理
                 if (msg == UserInputMsg.Input_Choose_Doing) {
-                    start_Input_Choosing(data.target);
+                    start_Input_Choosing(inputList, msgData.target);
                     return;
                 }
             case InputCandidate_AdvanceFilter_Doing:
             case InputChars_Flip_Doing: {
                 if (msg == UserInputMsg.Inputs_Clean_Done) {
-                    fire_InputList_Clean_Done();
                     change_State_to_Init();
                     return;
                 }
@@ -198,7 +197,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        super.onUserInputMsg(msg, data);
+        super.onUserInputMsg(inputList, msg, msgData);
     }
 
     @Override

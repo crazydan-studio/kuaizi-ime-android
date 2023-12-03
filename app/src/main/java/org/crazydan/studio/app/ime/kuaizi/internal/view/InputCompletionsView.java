@@ -30,8 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewGestureListener;
@@ -64,21 +62,20 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
     }
 
     public void reset() {
-        setInputList(null);
+        updateInputList(null);
     }
 
-    public void setInputList(InputList inputList) {
+    public InputList getInputList() {
+        return this.inputList;
+    }
+
+    public void updateInputList(InputList inputList) {
         this.inputList = inputList;
-    }
-
-    /** 响应输入列表的点击等消息 */
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        this.inputList.onUserInputMsg(msg, data);
     }
 
     @Override
     public void onInputMsg(InputMsg msg, InputMsgData data) {
-        List<CompletionInput> completions = this.inputList.getCompletions();
+        List<CompletionInput> completions = getInputList().getCompletions();
 
         this.adapter.updateDataList(completions);
     }

@@ -34,34 +34,45 @@ import java.util.Set;
  * @date 2023-12-03
  */
 public class MsgBus {
-    private static final Map<Class<?>, Set<MsgListener<Msg, MsgData>>> listenersByType = new HashMap<>();
+    private static final Map<Class<?>, Set<MsgListener<Object, Msg, MsgData>>> listenersByType = new HashMap<>();
 
     private MsgBus() {
     }
 
     /** 发送消息 */
-    public static <M extends Msg, D extends MsgData> void send(M msg, D data) {
-        Set<MsgListener<Msg, MsgData>> listeners = listenersByType.get(msg.getClass());
-        if (listeners != null) {
-            listeners.forEach(listener -> listener.onMsg(msg, data));
+    public static <S, M extends Msg, D extends MsgData> void send(S sender, M msg, D msgData) {
+        Set<MsgListener<Object, Msg, MsgData>> listeners = listenersByType.get(msg.getClass());
+        if (listeners == null) {
+            return;
+        }
+
+        Set<MsgListener<Object, Msg, MsgData>> oldListeners = new HashSet<>(listeners);
+        for (MsgListener<Object, Msg, MsgData> listener : oldListeners) {
+            // 若有被提前移除的监听，则无需执行
+            if (listeners.contains(listener)) {
+                listener.onMsg(sender, msg, msgData);
+            }
         }
     }
 
     /** 注册指定类型消息的监听器 */
-    public static <M extends Msg, D extends MsgData> void register(Class<M> msgType, MsgListener<M, D> listener) {
-        listenersByType.computeIfAbsent(msgType, (k) -> new HashSet<>()).add((MsgListener<Msg, MsgData>) listener);
+    public static <S, M extends Msg, D extends MsgData> void register(Class<M> msgType, MsgListener<S, M, D> listener) {
+        listenersByType.computeIfAbsent(msgType, (k) -> new HashSet<>())
+                       .add((MsgListener<Object, Msg, MsgData>) listener);
     }
 
     /** 移除指定类型消息的监听器 */
-    public static <M extends Msg, D extends MsgData> void unregister(Class<M> msgType, MsgListener<M, D> listener) {
-        Set<MsgListener<Msg, MsgData>> listeners = listenersByType.get(msgType);
+    public static <S, M extends Msg, D extends MsgData> void unregister(
+            Class<M> msgType, MsgListener<S, M, D> listener
+    ) {
+        Set<MsgListener<Object, Msg, MsgData>> listeners = listenersByType.get(msgType);
         if (listeners != null) {
             listeners.remove(listener);
         }
     }
 
     /** 移除全部消息的监听器 */
-    public static <M extends Msg, D extends MsgData> void unregister(MsgListener<M, D> listener) {
+    public static <S, M extends Msg, D extends MsgData> void unregister(MsgListener<S, M, D> listener) {
         listenersByType.forEach((type, listeners) -> listeners.remove(listener));
     }
 }

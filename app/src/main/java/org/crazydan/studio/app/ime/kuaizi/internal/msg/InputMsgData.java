@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public interface InputMsgData {
+public interface InputMsgData extends MsgData {
 
     /** 获取按键生成器，以便于重新布局按键 */
     Keyboard.KeyFactory getKeyFactory();

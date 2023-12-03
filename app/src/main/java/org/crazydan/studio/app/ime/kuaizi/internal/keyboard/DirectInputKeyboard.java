@@ -38,10 +38,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         // Note: 在输入列表为空且消息为非输入列表清空消息时，直输键盘无预处理过程，故不对输入列表事件做响应
-        if (!getInputList().isEmpty() || msg == UserInputMsg.Inputs_Clean_Done) {
-            super.onUserInputMsg(msg, data);
+        if (!inputList.isEmpty() || msg == UserInputMsg.Inputs_Clean_Done) {
+            super.onUserInputMsg(inputList, msg, msgData);
         }
     }
 

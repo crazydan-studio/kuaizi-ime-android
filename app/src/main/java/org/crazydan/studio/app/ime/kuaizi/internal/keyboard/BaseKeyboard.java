@@ -48,8 +48,10 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
@@ -77,6 +79,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData
 public abstract class BaseKeyboard implements Keyboard {
     protected final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
     private final Set<InputMsgListener> inputMsgListeners = new HashSet<>();
+
+    private final UserInputMsgListener userInputMsgListener = (inputList, msg, msgData) -> {
+        if (getInputList() == inputList) {
+            onUserInputMsg(inputList, msg, msgData);
+        }
+    };
+
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
     private Config config;
@@ -121,6 +130,8 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
+        MsgBus.register(UserInputMsg.class, this.userInputMsgListener);
+
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
         if (getConfig().getSwitchFromType() == Type.Math) {
@@ -135,9 +146,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void destroy() {
-        if (this.inputList != null) {
-            this.inputList.removeUserInputMsgListener(this);
-        }
+        MsgBus.unregister(UserInputMsg.class, this.userInputMsgListener);
 
         this.inputMsgListeners.clear();
         this.config = null;
@@ -151,7 +160,6 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void setInputList(InputList inputList) {
         this.inputList = inputList;
-        this.inputList.addUserInputMsgListener(this);
     }
 
     @Override
@@ -220,45 +228,34 @@ public abstract class BaseKeyboard implements Keyboard {
                                    !inputList.isGapSelected());
     }
 
-    @Override
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
+    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         switch (msg) {
-            case Inputs_Clean_Done:
             case Input_Choose_Doing:
+            case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
-                getInputList().clearPhraseCompletions();
+                inputList.clearPhraseCompletions();
+                // 继续后续处理
+            }
+            case InputList_Option_Update_Done: {
+                fire_InputList_Update_Done();
                 break;
             }
             case Input_Completion_Choose_Doing: {
-                CompletionInput completion = (CompletionInput) data.target;
+                CompletionInput completion = (CompletionInput) msgData.target;
                 start_InputList_Completion_Applying(completion);
                 break;
             }
-            case InputList_Option_Update_Done: {
-                fire_InputList_Option_Update_Done();
-                return;
-            }
         }
 
-        switch (this.state.type) {
-            case InputChars_Input_Waiting:
-            case Emoji_Choose_Doing:
-            case Symbol_Choose_Doing: {
-                switch (msg) {
-                    case Input_Choose_Doing: {
-                        start_Input_Choosing(data.target);
-                        break;
-                    }
-                    case Inputs_Clean_Done: {
-                        fire_InputList_Clean_Done();
-                        break;
-                    }
-                    case Inputs_Cleaned_Cancel_Done: {
-                        fire_InputList_Cleaned_Cancel_Done();
-                        break;
-                    }
+        if (msg == UserInputMsg.Input_Choose_Doing) {
+            switch (this.state.type) {
+                case InputChars_Input_Waiting:
+                case Emoji_Choose_Doing:
+                case Symbol_Choose_Doing: {
+                    // Note：这里涉及键盘切换，必须在前面的事件在当前键盘内都处理完成后再执行
+                    start_Input_Choosing(inputList, msgData.target);
+                    break;
                 }
-                break;
             }
         }
     }
@@ -319,10 +316,6 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
-    protected void fire_Common_InputMsg(InputMsg msg) {
-        fire_Common_InputMsg(msg, null);
-    }
-
     protected void fire_Common_InputMsg(InputMsg msg, Key<?> key) {
         InputMsgData data = new InputCommonMsgData(getKeyFactory(), key);
 
@@ -348,11 +341,11 @@ public abstract class BaseKeyboard implements Keyboard {
         fireInputMsg(InputMsg.InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Option_Update_Done} 消息 */
-    protected void fire_InputList_Option_Update_Done() {
-        InputMsgData data = new InputCommonMsgData();
+    /** 触发 {@link InputMsg#InputList_Update_Done} 消息 */
+    protected void fire_InputList_Update_Done() {
+        InputMsgData data = new InputCommonMsgData(getKeyFactory());
 
-        fireInputMsg(InputMsg.InputList_Option_Update_Done, data);
+        fireInputMsg(InputMsg.InputList_Update_Done, data);
     }
 
     /** 触发 {@link InputMsg#InputList_Input_Choose_Done} 消息 */
@@ -388,16 +381,6 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
 
         fireInputMsg(InputMsg.InputList_Pending_Drop_Done, data);
-    }
-
-    /** 触发 {@link InputMsg#InputList_Clean_Done} 消息 */
-    protected void fire_InputList_Clean_Done() {
-        fire_Common_InputMsg(InputMsg.InputList_Clean_Done);
-    }
-
-    /** 触发 {@link InputMsg#InputList_Cleaned_Cancel_Done} 消息 */
-    protected void fire_InputList_Cleaned_Cancel_Done() {
-        fire_Common_InputMsg(InputMsg.InputList_Cleaned_Cancel_Done);
     }
 
     /** 触发 {@link InputMsg#InputList_Commit_Doing} 消息 */
@@ -1431,10 +1414,6 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> selected = inputList.getSelected();
 
         start_Input_Choosing(inputList, selected);
-    }
-
-    protected void start_Input_Choosing(Input<?> input) {
-        start_Input_Choosing(getInputList(), input);
     }
 
     protected void start_Input_Choosing(InputList inputList, Input<?> input) {

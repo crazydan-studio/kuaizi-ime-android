@@ -24,13 +24,10 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.input.InputViewAdapter;
@@ -76,6 +73,10 @@ public class InputListView extends RecyclerView implements InputMsgListener {
         updateInputList(null);
     }
 
+    public InputList getInputList() {
+        return this.inputList;
+    }
+
     public void updateInputList(InputList inputList) {
         updateInputList(inputList, true);
     }
@@ -84,11 +85,6 @@ public class InputListView extends RecyclerView implements InputMsgListener {
         this.inputList = inputList;
 
         this.adapter.updateInputList(this.inputList, canBeSelected);
-    }
-
-    /** 响应输入列表的点击等消息 */
-    public void onUserInputMsg(UserInputMsg msg, UserInputMsgData data) {
-        this.inputList.onUserInputMsg(msg, data);
     }
 
     /** 响应键盘输入消息 */
@@ -103,25 +99,27 @@ public class InputListView extends RecyclerView implements InputMsgListener {
             case InputCandidate_Choose_Done:
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing:
-            case InputList_Option_Update_Done:
+            case InputList_Update_Done:
             case InputList_Input_Choose_Done:
             case InputList_Input_Completion_Apply_Done:
             case InputList_Pending_Drop_Done:
             case InputList_Selected_Delete_Done:
-            case InputList_Clean_Done:
-            case InputList_Cleaned_Cancel_Done:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:
-                updateInputList(this.inputList);
-
-                int position = this.inputList.getSelectedIndex();
-                scrollToSelected(position);
+                refreshInputList(getInputList());
                 break;
         }
     }
 
-    public void scrollToSelected(int position) {
+    private void refreshInputList(InputList inputList) {
+        updateInputList(inputList);
+
+        int position = inputList.getSelectedIndex();
+        scrollToSelected(position);
+    }
+
+    private void scrollToSelected(int position) {
         View item = this.layoutManager.findViewByPosition(position);
 
         int offset = 0;
@@ -189,13 +187,5 @@ public class InputListView extends RecyclerView implements InputMsgListener {
         }
 
         return inputView;
-    }
-
-    public Input<?> getLastInput() {
-        return this.inputList.getLastInput();
-    }
-
-    public Input<?> getFirstInput() {
-        return this.inputList.getFirstInput();
     }
 }

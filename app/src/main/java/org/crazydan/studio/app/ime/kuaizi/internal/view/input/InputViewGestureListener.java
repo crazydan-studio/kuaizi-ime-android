@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
@@ -40,10 +41,8 @@ public class InputViewGestureListener implements ViewGestureDetector.Listener {
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         InputView<?> inputView = this.inputListView.findVisibleInputViewUnder(data.x, data.y);
 
-        switch (type) {
-            case SingleTap:
-                onSingleTap(inputView, data);
-                break;
+        if (type == ViewGestureDetector.GestureType.SingleTap) {
+            onSingleTap(inputView, data);
         }
     }
 
@@ -54,7 +53,7 @@ public class InputViewGestureListener implements ViewGestureDetector.Listener {
         }
 
         UserInputMsgData msgData = new UserInputMsgData(input);
-        this.inputListView.onUserInputMsg(UserInputMsg.Input_Choose_Doing, msgData);
+        MsgBus.send(this.inputListView.getInputList(), UserInputMsg.Input_Choose_Doing, msgData);
     }
 
     private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {
@@ -62,9 +61,9 @@ public class InputViewGestureListener implements ViewGestureDetector.Listener {
 
         if (input == null) {
             if (data.x < this.inputListView.getPaddingStart()) {
-                input = this.inputListView.getFirstInput();
+                input = this.inputListView.getInputList().getFirstInput();
             } else {
-                input = this.inputListView.getLastInput();
+                input = this.inputListView.getInputList().getLastInput();
             }
         }
         return input;

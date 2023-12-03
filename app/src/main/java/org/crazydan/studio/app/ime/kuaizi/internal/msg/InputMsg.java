@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 
 /** 输入消息 */
-public enum InputMsg {
+public enum InputMsg implements Msg {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
 
@@ -38,8 +38,8 @@ public enum InputMsg {
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
 
-    /** 输入列表配置已更新 */
-    InputList_Option_Update_Done,
+    /** 输入列表已更新 */
+    InputList_Update_Done,
     /** 输入列表中的输入已选择 */
     InputList_Input_Choose_Done,
     /** 输入补全已更新 */
@@ -50,10 +50,6 @@ public enum InputMsg {
     InputList_Pending_Drop_Done,
     /** 输入列表的{@link InputList#getSelected 当前选中的输入}已删除 */
     InputList_Selected_Delete_Done,
-    /** 输入列表已清空 */
-    InputList_Clean_Done,
-    /** 已撤销对输入列表的清空操作 */
-    InputList_Cleaned_Cancel_Done,
     /** 输入列表提交中：将输入内容写入到 目标编辑器 中 */
     InputList_Commit_Doing,
     /** 已提交输入列表撤回中 */

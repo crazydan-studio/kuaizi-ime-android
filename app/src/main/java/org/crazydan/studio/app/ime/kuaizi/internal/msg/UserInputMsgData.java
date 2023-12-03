@@ -25,9 +25,13 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public class UserInputMsgData {
+public class UserInputMsgData implements MsgData {
     /** 消息目标输入 */
     public final Input<?> target;
+
+    public UserInputMsgData() {
+        this(null);
+    }
 
     public UserInputMsgData(Input<?> target) {
         this.target = target;

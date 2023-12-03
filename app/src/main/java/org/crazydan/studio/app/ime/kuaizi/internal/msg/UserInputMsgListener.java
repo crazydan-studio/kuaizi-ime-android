@@ -17,13 +17,15 @@
 
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
+
 /**
  * {@link UserInputMsg} 消息监听
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public interface UserInputMsgListener {
+public interface UserInputMsgListener extends MsgListener<InputList, UserInputMsg, UserInputMsgData> {
 
-    void onUserInputMsg(UserInputMsg msg, UserInputMsgData data);
+    void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData);
 }
