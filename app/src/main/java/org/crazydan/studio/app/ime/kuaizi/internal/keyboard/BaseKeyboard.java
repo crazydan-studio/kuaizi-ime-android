@@ -45,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
@@ -126,7 +126,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
-        MsgBus.register(UserInputMsg.class, this.userInputMsgListener);
+        Msg.Registry.register(UserInputMsg.class, this.userInputMsgListener);
 
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
@@ -142,7 +142,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void destroy() {
-        MsgBus.unregister(this.userInputMsgListener);
+        Msg.Registry.unregister(this.userInputMsgListener);
 
         this.config = null;
         this.inputList = null;
@@ -296,7 +296,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsg} 消息 */
     protected void fire_InputMsg(InputMsg msg, InputMsgData msgData) {
-        MsgBus.send(this, msg, msgData);
+        msg.send(this, msgData);
     }
 
     protected void fire_Common_InputMsg(InputMsg msg, Key<?> key) {

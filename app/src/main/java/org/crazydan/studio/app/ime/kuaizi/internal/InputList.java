@@ -32,7 +32,6 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
@@ -59,12 +58,16 @@ public class InputList {
         reset(false);
     }
 
+    private void fire_UserInputMsg(UserInputMsg msg, UserInputMsgData msgData) {
+        msg.send(this, msgData);
+    }
+
     /** 重置输入列表 */
     public void reset(boolean canBeCanceled) {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         UserInputMsgData msgData = new UserInputMsgData();
-        MsgBus.send(this, UserInputMsg.Inputs_Clean_Done, msgData);
+        fire_UserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
     }
 
     /** 清空输入列表 */
@@ -118,7 +121,7 @@ public class InputList {
             Staged.restore(this, this.staged);
 
             UserInputMsgData msgData = new UserInputMsgData();
-            MsgBus.send(this, UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
+            fire_UserInputMsg(UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
         }
     }
 
@@ -193,7 +196,7 @@ public class InputList {
             this.defaultUseWordVariant = defaultUseWordVariant;
 
             UserInputMsgData msgData = new UserInputMsgData();
-            MsgBus.send(this, UserInputMsg.InputList_Option_Update_Done, msgData);
+            fire_UserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
         }
     }
 

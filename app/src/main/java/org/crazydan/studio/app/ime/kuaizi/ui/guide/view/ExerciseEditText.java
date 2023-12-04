@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -38,6 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbol
 
 /**
  * 用于筷字输入法使用练习的编辑框
+ * <p/>
+ * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-16
@@ -51,18 +52,6 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         // 禁止获取焦点时弹出系统输入法
         // Note：需同时在 activity 的配置上添加 android:windowSoftInputMode="stateAlwaysHidden"
         setShowSoftInputOnFocus(false);
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        MsgBus.register(InputMsg.class, this);
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        MsgBus.unregister(this);
     }
 
     @Override

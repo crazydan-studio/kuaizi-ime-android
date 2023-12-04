@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CharMathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.ReadonlyInputListView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 
 /**
@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  * @date 2023-09-15
  */
 public class CharMathExprInputView extends InputView<Input<?>> {
-    private final InputListView inputListView;
+    private final ReadonlyInputListView inputListView;
     private final View markerView;
 
     public CharMathExprInputView(@NonNull View itemView) {

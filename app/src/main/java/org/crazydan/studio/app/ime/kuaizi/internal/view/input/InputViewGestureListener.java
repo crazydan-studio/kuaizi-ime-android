@@ -18,9 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.view.input;
 
 import org.crazydan.studio.app.ime.kuaizi.internal.Input;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.view.BaseInputListView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 
@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
  * @date 2023-07-21
  */
 public class InputViewGestureListener implements ViewGestureDetector.Listener {
-    private final InputListView inputListView;
+    private final BaseInputListView inputListView;
 
-    public InputViewGestureListener(InputListView inputListView) {
+    public InputViewGestureListener(BaseInputListView inputListView) {
         this.inputListView = inputListView;
     }
 
@@ -52,8 +52,9 @@ public class InputViewGestureListener implements ViewGestureDetector.Listener {
             return;
         }
 
+        UserInputMsg msg = UserInputMsg.Input_Choose_Doing;
         UserInputMsgData msgData = new UserInputMsgData(input);
-        MsgBus.send(this.inputListView.getInputList(), UserInputMsg.Input_Choose_Doing, msgData);
+        msg.send(this.inputListView.getInputList(), msgData);
     }
 
     private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {

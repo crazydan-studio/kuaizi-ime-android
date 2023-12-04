@@ -52,7 +52,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTabl
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -103,6 +102,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         initExerciseList(exercises);
     }
 
+    // Activity 生命周期: https://media.geeksforgeeks.org/wp-content/uploads/20210303165235/ActivityLifecycleinAndroid-601x660.jpg
     @Override
     protected void onStart() {
         // 确保拼音字典库保持就绪状态
@@ -114,21 +114,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        MsgBus.unregister(Exercise.class);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        MsgBus.unregister(Exercise.class);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
-        MsgBus.unregister(Exercise.class);
+
+        this.imeView.destroy();
+        this.exerciseListView.destroy();
     }
 
     @Override

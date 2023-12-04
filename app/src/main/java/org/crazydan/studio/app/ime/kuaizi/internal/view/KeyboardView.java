@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
@@ -48,17 +47,14 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureTra
  * {@link Keyboard 键盘}视图
  * <p/>
  * 负责显示各类键盘的按键布局，并提供事件监听等处理
+ * <p/>
+ * 注：在 {@link org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView ImeInputView}
+ * 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener {
-    private final InputMsgListener inputMsgListener = (keyboard, msg, msgData) -> {
-        if (getKeyboard() == keyboard) {
-            onInputMsg(keyboard, msg, msgData);
-        }
-    };
-
+public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener, InputMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
@@ -97,29 +93,12 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        MsgBus.register(InputMsg.class, this.inputMsgListener);
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        destroy();
-    }
-
     public Keyboard getKeyboard() {
         return this.keyboard;
     }
 
     public boolean isGestureTrailerDisabled() {
         return getKeyboard() != null && getKeyboard().getConfig().isGestureSlippingTrailDisabled();
-    }
-
-    public void destroy() {
-        MsgBus.unregister(InputMsg.class, this.inputMsgListener);
-        reset();
     }
 
     /** 更新键盘，并重绘键盘 */
@@ -156,7 +135,8 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         this.keyboard.onUserKeyMsg(msg, data);
     }
 
-    private void onInputMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    @Override
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         switch (msg) {
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg(keyboard, (InputAudioPlayDoingMsgData) msgData);

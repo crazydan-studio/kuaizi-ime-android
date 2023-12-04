@@ -26,12 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionView;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.completion.CompletionViewGestureListener;
@@ -40,11 +35,13 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
 
 /**
  * 输入补全列表视图
+ * <p/>
+ * 注：在需要显示前调用 {@link #updateInputList} 更新列表数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class InputCompletionsView extends RecyclerView implements InputMsgListener {
+public class InputCompletionsView extends RecyclerView {
     private final CompletionViewAdapter adapter;
 
     private InputList inputList;
@@ -63,36 +60,14 @@ public class InputCompletionsView extends RecyclerView implements InputMsgListen
                .addListener(new CompletionViewGestureListener(this));
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        MsgBus.register(InputMsg.class, this);
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        destroy();
-    }
-
-    public void destroy() {
-        MsgBus.unregister(this);
-
-        updateInputList(null);
-    }
-
     public InputList getInputList() {
         return this.inputList;
     }
 
     public void updateInputList(InputList inputList) {
         this.inputList = inputList;
-    }
 
-    @Override
-    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
-        List<CompletionInput> completions = getInputList().getCompletions();
-
+        List<CompletionInput> completions = inputList.getCompletions();
         this.adapter.updateDataList(completions);
     }
 

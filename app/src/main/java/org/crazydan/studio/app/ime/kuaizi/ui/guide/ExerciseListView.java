@@ -71,6 +71,16 @@ public class ExerciseListView extends RecyclerView {
         });
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        destroy();
+    }
+
+    public void destroy() {
+        ExerciseView.stopAll();
+    }
+
     public void active(int position) {
         smoothScrollToPosition(position);
     }

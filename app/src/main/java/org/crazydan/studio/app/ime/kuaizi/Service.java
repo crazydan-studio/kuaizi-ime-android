@@ -34,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
@@ -69,7 +69,10 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onDestroy() {
         super.onDestroy();
 
-        MsgBus.unregister(this);
+        Msg.Registry.unregister(this);
+        if (this.imeView != null) {
+            this.imeView.destroy();
+        }
 
         // 确保拼音字典库能够被及时关闭
         PinyinDictDB.getInstance().close();
@@ -88,7 +91,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
         // 确保拼音字典库保持就绪状态
         PinyinDictDB.getInstance().open(getApplicationContext());
-        MsgBus.register(InputMsg.class, this);
+        Msg.Registry.register(InputMsg.class, this);
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
@@ -167,6 +170,11 @@ public class Service extends InputMethodService implements InputMsgListener {
 
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        // 忽略非绑定键盘的消息
+        if (this.imeView == null || this.imeView.getKeyboard() != keyboard) {
+            return;
+        }
+
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msgData;

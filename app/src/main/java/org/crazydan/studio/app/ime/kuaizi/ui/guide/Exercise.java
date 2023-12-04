@@ -26,10 +26,12 @@ import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
 
 /**
+ * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
@@ -65,14 +67,10 @@ public class Exercise implements ViewData, InputMsgListener {
 
     public void restart() {
         reset();
-
-        MsgBus.register(InputMsg.class, this);
         gotoNextStep();
     }
 
     public void reset() {
-        MsgBus.unregister(this);
-
         this.runningStep = null;
         for (ExerciseStep step : this.steps) {
             step.reset();

@@ -60,7 +60,7 @@ public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
         int index = this.completions.indexOf(completion);
         CompletionInput newCompletion = this.completions.get(index);
 
-        // 更新变更了补全位置的数据，以确保在应用补全时能够对应到正确的补全位置
+        // 更新 变更了补全位置 的数据，以确保在应用补全时能够对应到正确的补全位置
         if (newCompletion != completion) {
             ((RecyclerViewHolder<CompletionInput>) view).bind(newCompletion);
         }

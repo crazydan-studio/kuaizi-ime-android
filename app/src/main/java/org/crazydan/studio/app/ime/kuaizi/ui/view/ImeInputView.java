@@ -41,7 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
@@ -60,17 +60,32 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  */
 public class ImeInputView extends FrameLayout
         implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener {
+    private final InputMsgListener inputMsgListener = (keyboard, msg, msgData) -> {
+        // 忽略非绑定键盘的消息
+        if (getKeyboard() != keyboard) {
+            return;
+        }
+
+        this.inputListView.onMsg(keyboard, msg, msgData);
+        this.keyboardView.onMsg(keyboard, msg, msgData);
+
+        this.onMsg(keyboard, msg, msgData);
+    };
+
     private final SharedPreferences preferences;
     private final InputList inputList;
+    private Keyboard keyboard;
+
     private KeyboardView keyboardView;
     private InputListView inputListView;
     private PopupWindow inputCompletionsPopupWindow;
     private PopupWindow inputKeyPopupWindow;
     private InputCompletionsView inputCompletionsView;
+
     private View settingsBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
-    private Keyboard keyboard;
+
     private Keyboard.HandMode keyboardHandMode;
     private Boolean disableUserInputData;
     private Boolean disableInputKeyPopupTips;
@@ -94,13 +109,17 @@ public class ImeInputView extends FrameLayout
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        MsgBus.register(InputMsg.class, this);
+        Msg.Registry.register(InputMsg.class, this.inputMsgListener);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        MsgBus.unregister(this);
+        destroy();
+    }
+
+    public void destroy() {
+        Msg.Registry.unregister(this.inputMsgListener);
     }
 
     public InputList getInputList() {
@@ -306,16 +325,6 @@ public class ImeInputView extends FrameLayout
 
     private void reset() {
         resetPopupWindows();
-
-        if (this.keyboardView != null) {
-            this.keyboardView.destroy();
-        }
-        if (this.inputListView != null) {
-            this.inputListView.destroy();
-        }
-        if (this.inputCompletionsView != null) {
-            this.inputCompletionsView.destroy();
-        }
     }
 
     private void relayoutViews() {
@@ -344,7 +353,6 @@ public class ImeInputView extends FrameLayout
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         this.inputListView.updateInputList(this.inputList);
-        this.inputCompletionsView.updateInputList(this.inputList);
 
         bindKeyboard(this.keyboard);
         updateBottomSpacing(this.keyboard);
@@ -492,7 +500,10 @@ public class ImeInputView extends FrameLayout
         if (!shown) {
             window.dismiss();
             return;
-        } else if (window.isShowing()) {
+        }
+
+        this.inputCompletionsView.updateInputList(getInputList());
+        if (window.isShowing()) {
             return;
         }
 

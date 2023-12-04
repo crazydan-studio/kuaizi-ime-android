@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.keytable.MathKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.MsgBus;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserInputMsgListener;
@@ -267,7 +267,7 @@ public class MathKeyboard extends BaseKeyboard {
     public void start() {
         InputList topInputList = getTopInputList();
         // 在被监听的输入列表开始处理之前，注册监听
-        MsgBus.register(UserInputMsg.class, this.topUserInputMsgListener);
+        Msg.Registry.register(UserInputMsg.class, this.topUserInputMsgListener);
 
         // 先提交从其他键盘切过来之前的待输入
         if (topInputList.isGapSelected() //
@@ -289,7 +289,7 @@ public class MathKeyboard extends BaseKeyboard {
         before_ChangeState_Or_SwitchKeyboard(topInputList);
 
         // 在被监听的输入列表处理完毕后，再移除监听
-        MsgBus.unregister(this.topUserInputMsgListener);
+        Msg.Registry.unregister(this.topUserInputMsgListener);
 
         dropMathInputList();
 
