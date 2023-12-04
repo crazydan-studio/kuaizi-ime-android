@@ -158,11 +158,6 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
-    public void onThemeUpdated() {
-        fire_InputMsg(InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
-    }
-
-    @Override
     public KeyFactory getKeyFactory() {
         switch (this.state.type) {
             case Editor_Edit_Doing: {

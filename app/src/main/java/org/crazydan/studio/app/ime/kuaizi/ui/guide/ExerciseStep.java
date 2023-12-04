@@ -53,7 +53,7 @@ public class ExerciseStep implements ViewData {
         this.running = true;
 
         if (this.action instanceof AutoAction) {
-            ((AutoAction) this.action).run();
+            ((AutoAction) this.action).start();
         }
     }
 
@@ -81,7 +81,7 @@ public class ExerciseStep implements ViewData {
     }
 
     public interface AutoAction extends Action {
-        void run();
+        void start();
 
         @Override
         default void onInputMsg(InputMsg msg, InputMsgData data) {}

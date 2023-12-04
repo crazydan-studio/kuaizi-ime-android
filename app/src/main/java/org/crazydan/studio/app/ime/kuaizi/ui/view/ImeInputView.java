@@ -43,6 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
@@ -141,16 +142,18 @@ public class ImeInputView extends FrameLayout
     public void disableUserInputData(boolean disabled) {
         this.disableUserInputData = disabled;
 
-        if (this.keyboard != null) {
-            this.keyboard.getConfig().setUserInputDataDisabled(disabled);
+        Keyboard keyboard = getKeyboard();
+        if (keyboard != null) {
+            keyboard.getConfig().setUserInputDataDisabled(disabled);
         }
     }
 
     public void disableInputKeyPopupTips(boolean disabled) {
         this.disableInputKeyPopupTips = disabled;
 
-        if (this.keyboard != null) {
-            this.keyboard.getConfig().setInputKeyPopupTipsDisabled(disabled);
+        Keyboard keyboard = getKeyboard();
+        if (keyboard != null) {
+            keyboard.getConfig().setInputKeyPopupTipsDisabled(disabled);
         }
     }
 
@@ -161,10 +164,11 @@ public class ImeInputView extends FrameLayout
             disabled = !Keyboard.Config.isXInputPadEnabled(this.preferences);
         }
 
-        if (this.keyboard != null) {
-            this.keyboard.getConfig().setXInputPadEnabled(!disabled);
+        Keyboard keyboard = getKeyboard();
+        if (keyboard != null) {
+            keyboard.getConfig().setXInputPadEnabled(!disabled);
 
-            updateBottomSpacing(this.keyboard);
+            updateBottomSpacing(keyboard);
         }
     }
 
@@ -238,6 +242,9 @@ public class ImeInputView extends FrameLayout
                 config.setSwitchFromType(source);
 
                 updateKeyboard(config);
+
+                // Note：消息发送者需为更新后的 Keyboard
+                InputMsg.Keyboard_Switch_Done.send(getKeyboard(), msgData);
                 break;
             }
             case Keyboard_HandMode_Switch_Done: {
@@ -270,9 +277,7 @@ public class ImeInputView extends FrameLayout
         Keyboard oldKeyboard = this.keyboard;
 
         Keyboard newKeyboard = createKeyboard(config.getType());
-        if (oldKeyboard == null || !newKeyboard.getClass().equals(oldKeyboard.getClass())) {
-            this.keyboard = newKeyboard;
-        } else {
+        if (oldKeyboard != null && newKeyboard.getClass().equals(oldKeyboard.getClass())) {
             newKeyboard = oldKeyboard;
         }
 
@@ -283,6 +288,7 @@ public class ImeInputView extends FrameLayout
             if (oldKeyboard != null) {
                 oldKeyboard.destroy();
             }
+            this.keyboard = newKeyboard;
 
             bindKeyboard(newKeyboard);
         } else {
@@ -296,20 +302,21 @@ public class ImeInputView extends FrameLayout
     }
 
     private void updateKeyboardConfig() {
-        if (getKeyboard() == null) {
+        Keyboard keyboard = getKeyboard();
+        if (keyboard == null) {
             return;
         }
 
-        Keyboard.Config oldConfig = this.keyboard.getConfig();
+        Keyboard.Config oldConfig = keyboard.getConfig();
         Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
 
-        this.keyboard.setConfig(newConfig);
+        keyboard.setConfig(newConfig);
 
         // 主题发生变化，重新绑定视图
         if (needToRelayoutViews(oldConfig, newConfig)) {
             relayoutViews();
 
-            this.keyboard.onThemeUpdated();
+            InputMsg.Keyboard_Theme_Update_Done.send(keyboard, new InputCommonMsgData());
         }
         // Note: 仅需更新视图，无需更新监听等
         else if (oldConfig.getHandMode() != newConfig.getHandMode()) {
@@ -317,7 +324,7 @@ public class ImeInputView extends FrameLayout
                 this.keyboardHandMode = newConfig.getHandMode();
             }
 
-            this.keyboardView.updateKeyboard(this.keyboard);
+            this.keyboardView.updateKeyboard(keyboard);
         }
 
         updateInputListOption(newConfig);
@@ -354,8 +361,9 @@ public class ImeInputView extends FrameLayout
 
         this.inputListView.updateInputList(this.inputList);
 
-        bindKeyboard(this.keyboard);
-        updateBottomSpacing(this.keyboard);
+        Keyboard keyboard = getKeyboard();
+        bindKeyboard(keyboard);
+        updateBottomSpacing(keyboard);
     }
 
     private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
@@ -441,8 +449,9 @@ public class ImeInputView extends FrameLayout
     }
 
     public Keyboard.Config getKeyboardConfig() {
-        if (this.keyboard != null) {
-            return this.keyboard.getConfig();
+        Keyboard keyboard = getKeyboard();
+        if (keyboard != null) {
+            return keyboard.getConfig();
         }
 
         // 默认以保存的应用配置数据为准

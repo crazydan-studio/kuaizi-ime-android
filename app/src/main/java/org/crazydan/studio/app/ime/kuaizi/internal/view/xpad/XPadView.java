@@ -31,7 +31,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -43,6 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.internal.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
@@ -155,7 +158,7 @@ public class XPadView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        Log.i("onDraw", "Doing ...");
+//        Log.d("onDraw", "Doing ...");
 
         // 整体的镜像翻转：不适用，应该调换左右位置即可，文字和图片等不能翻转
         //canvas.scale(-1, 1, getWidth() * 0.5f, getHeight() * 0.5f);
@@ -173,7 +176,7 @@ public class XPadView extends View {
         // 绘制滑屏轨迹
         this.trailer.draw(canvas);
 
-//        Log.i("onDraw",
+//        Log.d("onDraw",
 //              String.format("Done: %s",
 //                            this.active_ctrl_block_key != null
 //                            ? ((CtrlKey) this.active_ctrl_block_key.key).getOption()
@@ -190,8 +193,19 @@ public class XPadView extends View {
             return;
         }
 
-        // Note：若正在模拟演示中，则不响应外部事件
-        if (this.simulating && trigger != null) {
+        if (this.simulating) {
+            if (trigger != null) {
+                if (type == ViewGestureDetector.GestureType.PressEnd) {
+                    // 连续输入的模拟过程中，手指已离开屏幕，
+                    // 则终止模拟，并继续后续逻辑以复原键盘
+                    this.simulating = false;
+                } else {
+                    // 正在模拟演示中，则不响应外部事件
+                    return;
+                }
+            }
+        } else if (trigger == null) {
+            // 演示模拟已提前终止
             return;
         }
 
@@ -209,7 +223,7 @@ public class XPadView extends View {
 //        if (old_active_block != null && new_active_block != null //
 //            && (old_active_block.zone != new_active_block.zone //
 //                || old_active_block.block != new_active_block.block)) {
-//            Log.i("GestureOnXPadView",
+//            Log.d("GestureOnXPadView",
 //                  String.format("%s: simulation - %s:%s, x/y - %f/%f, old - %d:%d, new - %d:%d",
 //                                type,
 //                                this.simulating,
@@ -299,7 +313,7 @@ public class XPadView extends View {
     }
 
     public void updateZoneKeys(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
-//        Log.i("updateZoneKeys", "Doing ...");
+//        Log.d("updateZoneKeys", "Doing ...");
         invalidate();
 
         this.zone_0_key = new BlockKey(0, 0, 0, 0, zone_0_key);
@@ -330,7 +344,7 @@ public class XPadView extends View {
             }
         }
 
-//        Log.i("updateZoneKeys",
+//        Log.d("updateZoneKeys",
 //              String.format("Got active key: %s",
 //                            this.active_ctrl_block_key != null
 //                            ? ((CtrlKey) this.active_ctrl_block_key.key).getOption()
@@ -341,7 +355,7 @@ public class XPadView extends View {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-//        Log.i("updateZoneKeys", "Done ...");
+//        Log.d("updateZoneKeys", "Done ...");
     }
 
     private void drawZones(Canvas canvas) {
@@ -1088,9 +1102,7 @@ public class XPadView extends View {
         reset();
 
         Key<?> key = CtrlKey.noop();
-        BlockKey blockKey = new BlockKey(0, 0, 0, 0, key);
-
-        trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.PressEnd, data);
+        trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
     }
 
     private void onGesture_Over_Zone_0(
@@ -1328,12 +1340,23 @@ public class XPadView extends View {
     }
 
     public class GestureSimulator {
+        private final Handler handler = new Handler();
+        private boolean stopped = false;
+
+        public void stop() {
+            Log.d(getClass().getSimpleName(), "stop");
+            this.handler.stop();
+
+            this.stopped = true;
+            XPadView.this.simulating = false;
+        }
 
         public boolean isStopped() {
-            return XPadView.this.active_block == null;
+            return this.stopped;
         }
 
         public void input(Key<?> start, Key<?> charKey, Runnable after) {
+            this.stopped = false;
             XPadView.this.simulating = true;
 
             doInput(start, charKey, () -> {
@@ -1399,18 +1422,12 @@ public class XPadView extends View {
         }
 
         private void executeGestures(List<Runnable> cbs) {
-            Runnable runner = () -> {};
-            for (int i = cbs.size() - 1; i >= 0; i--) {
-                Runnable prev = cbs.get(i);
-                Runnable post = runner;
-
-                runner = () -> postDelayed(() -> {
-                    prev.run();
-                    post.run();
-                }, 500);
+            if (cbs.isEmpty()) {
+                return;
             }
 
-            runner.run();
+            Message msg = this.handler.obtainMessage(Handler.MSG_TICK, cbs);
+            this.handler.sendMessageDelayed(msg, 500);
         }
 
         private void executeGesture(ViewGestureDetector.GestureType type, PointF point) {
@@ -1492,6 +1509,25 @@ public class XPadView extends View {
                 }
             }
             return null;
+        }
+
+        private class Handler extends android.os.Handler {
+            private static final int MSG_TICK = 1;
+
+            public void stop() {
+                removeMessages(MSG_TICK);
+            }
+
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == MSG_TICK) {
+                    List<Runnable> cbs = (List<Runnable>) msg.obj;
+                    Runnable first = CollectionUtils.first(cbs);
+
+                    first.run();
+                    executeGestures(cbs.isEmpty() ? cbs : cbs.subList(1, cbs.size()));
+                }
+            }
         }
     }
 }

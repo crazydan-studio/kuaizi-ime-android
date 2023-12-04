@@ -625,7 +625,8 @@ public class PinyinKeyboard extends BaseKeyboard {
             confirm_InputList_Pending(inputList, key);
         }
 
-        change_State_to_Init();
+        // Note：将最后的输入按键附加到消息中，以便于识别哪个按键触发了状态变化
+        change_State_to_Init(key);
     }
     // >>>>>>>>>>>>
 

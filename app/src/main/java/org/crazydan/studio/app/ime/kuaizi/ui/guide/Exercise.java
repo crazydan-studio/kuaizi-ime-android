@@ -108,6 +108,7 @@ public class Exercise implements ViewData, InputMsgListener {
             case InputList_Input_Completion_Apply_Done:
             case Keyboard_Config_Update_Done:
             case Keyboard_Theme_Update_Done:
+            case Keyboard_Switch_Doing:
                 return;
         }
 

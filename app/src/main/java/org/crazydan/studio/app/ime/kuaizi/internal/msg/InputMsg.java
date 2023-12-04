@@ -74,6 +74,8 @@ public enum InputMsg implements Msg {
     Keyboard_HandMode_Switch_Done,
     /** 键盘切换中 */
     Keyboard_Switch_Doing,
+    /** 键盘已切换 */
+    Keyboard_Switch_Done,
 
     /** 输入法切换中 */
     IME_Switch_Doing,

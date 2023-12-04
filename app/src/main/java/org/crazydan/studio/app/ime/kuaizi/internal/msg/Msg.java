@@ -18,7 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.internal.msg;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +59,8 @@ public interface Msg {
                 return;
             }
 
-            Set<MsgListener<Object, Msg, MsgData>> oldListeners = new HashSet<>(listeners);
+            // Note：按注册顺序响应消息，以确保某些跟注册顺序相关的监听器能够正常处理
+            Set<MsgListener<Object, Msg, MsgData>> oldListeners = new LinkedHashSet<>(listeners);
             for (MsgListener<Object, Msg, MsgData> listener : oldListeners) {
                 // 若有被提前移除的监听，则无需执行
                 if (listeners.contains(listener)) {
@@ -72,7 +73,8 @@ public interface Msg {
         public static <S, M extends Msg, D extends MsgData> void register(
                 Class<M> msgType, MsgListener<S, M, D> listener
         ) {
-            listenersByType.computeIfAbsent(msgType, (k) -> new HashSet<>())
+            // Note：保持注册顺序，以确保按注册顺序发送消息。但一般要求监听器之间不能有顺序依赖
+            listenersByType.computeIfAbsent(msgType, (k) -> new LinkedHashSet<>())
                            .add((MsgListener<Object, Msg, MsgData>) listener);
         }
 
@@ -80,7 +82,7 @@ public interface Msg {
         public static <S, M extends Msg, D extends MsgData> void unregister(
                 Class<M> msgType, MsgListener<S, M, D> listener
         ) {
-            Log.i(Msg.Registry.class.getSimpleName(), "unregister listener - " + msgType + ":" + listener);
+            Log.d(Msg.Registry.class.getSimpleName(), "unregister listener - " + msgType + ":" + listener);
 
             Set<MsgListener<Object, Msg, MsgData>> listeners = listenersByType.get(msgType);
             if (listeners != null) {
@@ -90,7 +92,7 @@ public interface Msg {
 
         /** 移除指定类型的监听器 */
         public static void unregister(Class<?> listenerType) {
-            Log.i(Msg.Registry.class.getSimpleName(), "unregister listeners - " + listenerType);
+            Log.d(Msg.Registry.class.getSimpleName(), "unregister listeners - " + listenerType);
 
             listenersByType.forEach((msgType, listeners) -> listeners.removeIf(listener -> listener.getClass()
                                                                                            == listenerType));
@@ -98,7 +100,7 @@ public interface Msg {
 
         /** 移除全部消息的监听器 */
         public static void unregister(MsgListener<?, ?, ?> listener) {
-            Log.i(Msg.Registry.class.getSimpleName(), "unregister listener - " + listener);
+            Log.d(Msg.Registry.class.getSimpleName(), "unregister listener - " + listener);
 
             listenersByType.forEach((type, listeners) -> listeners.remove(listener));
         }
