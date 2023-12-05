@@ -76,6 +76,8 @@ public enum InputMsg implements Msg {
     Keyboard_Switch_Doing,
     /** 键盘已切换 */
     Keyboard_Switch_Done,
+    /** X 型输入键盘的演示已被终止：仅用于发送演示终止消息 */
+    Keyboard_XPad_Simulation_Terminated,
 
     /** 输入法切换中 */
     IME_Switch_Doing,

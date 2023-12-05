@@ -732,9 +732,6 @@ public abstract class BaseKeyboard implements Keyboard {
             }
             case KeySingleTap: {
                 switch (key.getType()) {
-                    // 定位按钮不响应单击和双击操作
-                    case Editor_Cursor_Locator:
-                        return true;
                     // Note：在任意子键盘中提交输入，都需直接回到初始键盘
                     case Commit_InputList: {
                         play_SingleTick_InputAudio(key);
@@ -813,7 +810,15 @@ public abstract class BaseKeyboard implements Keyboard {
         if (this.state.type != State.Type.Editor_Edit_Doing //
             && CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
             switch (msg) {
-                case KeyDoubleTap:
+                case KeySingleTap: {
+                    // 为双击提前播放音效
+                    play_SingleTick_InputAudio(key);
+                    return true;
+                }
+                case KeyDoubleTap: {
+                    start_Editor_Editing(key);
+                    return true;
+                }
                 case KeyLongPressStart: {
                     play_DoubleTick_InputAudio(key);
 
@@ -842,8 +847,12 @@ public abstract class BaseKeyboard implements Keyboard {
 
         switch (msg) {
             case KeyPressEnd: {
-                try_OnUserKeyMsg_KeyPressEnd_Over_XPad(msg, key, data);
-                return true;
+                if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
+                    InputMsg.Keyboard_XPad_Simulation_Terminated.send(this, new InputCommonMsgData());
+                    return true;
+                } else {
+                    break;
+                }
             }
             case FingerMoving: {
                 // 播放输入分区激活和待输入按键切换的提示音
@@ -862,11 +871,6 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         return false;
-    }
-
-    protected void try_OnUserKeyMsg_KeyPressEnd_Over_XPad(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        // 为 X Pad 输入演示发送手指释放消息：手指释放意味着键盘状态发生了变化
-        change_State_To(key, this.state);
     }
 
     // <<<<<<< 回删逻辑

@@ -198,6 +198,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         XPad_Active_Block,
         /** X 型输入的字符按键 */
         XPad_Char_Key,
+        /** X 型输入演示终止按键：仅用于发送演示终止消息 */
+        XPad_Simulation_Terminated,
     }
 
     public static abstract class Option<T> {

@@ -914,8 +914,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
                                  @Override
                                  public void onInputMsg(InputMsg msg, InputMsgData data) {
-                                     // 若演示过程中手指离开屏幕，则重新开始演示
-                                     if (msg == InputMsg.Keyboard_State_Change_Done) {
+                                     // 若演示因手指释放而提前终止，则重新开始演示
+                                     if (msg == InputMsg.Keyboard_XPad_Simulation_Terminated) {
                                          restart.run();
                                      }
                                  }
@@ -937,12 +937,9 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                     case InputList_Commit_Doing: {
                         if (key.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
                             exercise.gotoNextStep();
-                            return;
+                        } else {
+                            restart.run();
                         }
-                        // 与后续分支处理相同
-                    }
-                    case InputChars_Input_Doing: {
-                        restart.run();
                         return;
                     }
                     case Keyboard_State_Change_Done: {
@@ -952,6 +949,11 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                             return;
                         }
                         break;
+                    }
+                    case Keyboard_XPad_Simulation_Terminated:
+                    case InputChars_Input_Doing: {
+                        restart.run();
+                        return;
                     }
                 }
 
@@ -1020,8 +1022,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
                                      @Override
                                      public void onInputMsg(InputMsg msg, InputMsgData data) {
-                                         // 若演示过程中手指离开屏幕，则重新开始演示
-                                         if (msg == InputMsg.Keyboard_State_Change_Done) {
+                                         // 若演示因手指释放而提前终止，则重新开始演示
+                                         if (msg == InputMsg.Keyboard_XPad_Simulation_Terminated) {
                                              restart.run();
                                          }
                                      }
@@ -1068,6 +1070,12 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                 return;
                             }
                             break;
+                        }
+                        // 拼音输入不是直输的
+                        case InputList_Commit_Doing:
+                        case Keyboard_XPad_Simulation_Terminated: {
+                            restart.run();
+                            return;
                         }
                     }
 

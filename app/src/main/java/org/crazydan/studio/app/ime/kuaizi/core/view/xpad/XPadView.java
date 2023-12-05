@@ -190,12 +190,14 @@ public class XPadView extends View {
             return;
         }
 
+        boolean simulationTerminated = false;
         if (this.simulating) {
             if (trigger != null) {
                 if (type == ViewGestureDetector.GestureType.PressEnd) {
                     // 连续输入的模拟过程中，手指已离开屏幕，
                     // 则终止模拟，并继续后续逻辑以复原键盘
                     this.simulating = false;
+                    simulationTerminated = true;
                 } else {
                     // 正在模拟演示中，则不响应外部事件
                     return;
@@ -235,18 +237,20 @@ public class XPadView extends View {
 
         if (new_active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
             if (this.state.type != XPadState.Type.Init && this.zone_1_animator != null) {
+                boolean finalSimulationTerminated = simulationTerminated;
+
                 // 输入状态结束，动画还原到初始状态
                 start_zone_1_animator(0, this.zone_1_HexagonRadius, new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        onGesture_End(trigger, type, data);
+                        onGesture_End(trigger, data, finalSimulationTerminated);
                         invalidate();
                     }
                 });
                 return;
             }
 
-            onGesture_End(trigger, type, data);
+            onGesture_End(trigger, data, simulationTerminated);
             return;
         }
 
@@ -1093,13 +1097,18 @@ public class XPadView extends View {
     }
 
     private void onGesture_End(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
-            ViewGestureDetector.GestureData data
+            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureData data, //
+            boolean simulationTerminated
     ) {
         reset();
 
         Key<?> key = CtrlKey.noop();
         trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
+
+        if (simulationTerminated) {
+            key = CtrlKey.create(CtrlKey.Type.XPad_Simulation_Terminated);
+            trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
+        }
     }
 
     private void onGesture_Over_Zone_0(
@@ -1119,6 +1128,7 @@ public class XPadView extends View {
                 centerZone.press();
                 break;
             }
+            case SingleTap: // 用于播放双击提示音：两次单击音效
             case Flipping: {
                 trigger_UserKeyMsgListener(trigger, blockKey, type, data);
                 break;
