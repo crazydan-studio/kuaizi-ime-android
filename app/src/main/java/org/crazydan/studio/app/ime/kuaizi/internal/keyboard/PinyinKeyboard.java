@@ -423,17 +423,13 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (key instanceof CtrlKey && !CtrlKey.isNoOp(key)) {
             onCtrlKeyMsg(msg, (CtrlKey) key, data);
             return;
+        } else if (msg != UserKeyMsg.KeySingleTap) {
+            return;
         }
 
         InputList inputList = getInputList();
         // 添加拼音后继字母
         CharInput pending = inputList.getPending();
-
-        if (msg == UserKeyMsg.KeyPressEnd) {
-            end_InputChars_Inputting(inputList, pending, key);
-        } else if (msg != UserKeyMsg.KeySingleTap) {
-            return;
-        }
 
         play_SingleTick_InputAudio(key);
         show_InputChars_Input_Popup(key);
@@ -445,6 +441,14 @@ public class PinyinKeyboard extends BaseKeyboard {
             && !key.isSameWith(lastKey)) {
             do_InputChars_XPad_Inputting(inputList, pending, key);
         }
+    }
+
+    @Override
+    protected void try_OnUserKeyMsg_KeyPressEnd_Over_XPad(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        InputList inputList = getInputList();
+        CharInput pending = inputList.getPending();
+
+        end_InputChars_Inputting(inputList, pending, key);
     }
 
     private void on_InputCandidate_Choose_Doing_InputWordKey_Msg(

@@ -843,21 +843,33 @@ public abstract class BaseKeyboard implements Keyboard {
             return false;
         }
 
-        if (msg == UserKeyMsg.FingerMoving) {
-            // 播放输入分区激活和待输入按键切换的提示音
-            switch (((CtrlKey) key).getType()) {
-                case XPad_Active_Block: {
-                    play_PingTick_InputAudio(key);
-                    return true;
+        switch (msg) {
+            case KeyPressEnd: {
+                try_OnUserKeyMsg_KeyPressEnd_Over_XPad(msg, key, data);
+                return true;
+            }
+            case FingerMoving: {
+                // 播放输入分区激活和待输入按键切换的提示音
+                switch (((CtrlKey) key).getType()) {
+                    case XPad_Active_Block: {
+                        play_PingTick_InputAudio(key);
+                        return true;
+                    }
+                    case XPad_Char_Key: {
+                        play_ClockTick_InputAudio(key);
+                        return true;
+                    }
                 }
-                case XPad_Char_Key: {
-                    play_ClockTick_InputAudio(key);
-                    return true;
-                }
+                break;
             }
         }
 
         return false;
+    }
+
+    protected void try_OnUserKeyMsg_KeyPressEnd_Over_XPad(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+        // 为 X Pad 输入演示发送手指释放消息：手指释放意味着键盘状态发生了变化
+        change_State_To(key, this.state);
     }
 
     // <<<<<<< 回删逻辑

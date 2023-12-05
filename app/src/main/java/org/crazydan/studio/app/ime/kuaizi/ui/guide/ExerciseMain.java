@@ -870,75 +870,87 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                          + enable_label
                          + "」；");
 
-//        exercise.addStep("请点击回车按键<img src=\"" //
-//                         + sandboxView.withKey(key_ctrl_enter) //
-//                         + "\"/>以开始英文输入演示动画；", (msg, data) -> {
-//            if (msg == InputMsg.InputList_Commit_Doing) {
-//                if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
-//                    exercise.gotoNextStep();
-//                    return;
-//                }
-//            }
-//            warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>回车按键</b>");
-//        });
-//
-//        for (int i = 0; i < latinSample.length; i++) {
-//            Key<?> key = latinSample[i];
-//            String stepName = String.format(Locale.getDefault(), "latin-char-input-step:%d:%s", i, key.getText());
-//            boolean isFirstStep = i == 0;
-//
-//            String stepContent = isFirstStep ? "请注意观看 <span style=\"color:#ed4c67;\">"
-//                                               + key.getLabel()
-//                                               + "</span> 的输入演示动画。" //
-//                                             : "请<span style=\"color:#ed4c67;\">保持手指不动</span>，"
-//                                               + "并注意观看 <span style=\"color:#ed4c67;\">"
-//                                               + key.getLabel()
-//                                               + "</span> 的输入演示动画。";
-//
-//            exercise.addStep(stepName, stepContent, (ExerciseStep.AutoAction) () -> {
-//                XPadView.GestureSimulator simulator = ExerciseMain.this.imeView.getXPadKeyView()
-//                                                                               .getXPad()
-//                                                                               .createSimulator();
-//
-//                if (simulator.isStopped()) {
-//                    this.imeView.startInput(Keyboard.Type.Latin);
-//                    simulator.input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
-//                } else {
-//                    simulator.input(key, exercise::gotoNextStep);
-//                }
-//            });
-//
-//            stepContent = isFirstStep ? "请让手指从中央正六边形外围的<img src=\""
-//                                        + sandboxView.withKey(key_ctrl_switch_latin)
-//                                        + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
-//                                        + "以输入 <span style=\"color:#ed4c67;\">"
-//                                        + key.getLabel()
-//                                        + "</span>；" //
-//                                      : "请继续沿演示动画所绘制的新的运动轨迹滑行，以输入 <span style=\"color:#ed4c67;\">"
-//                                        + key.getLabel()
-//                                        + "</span>；";
-//            exercise.addStep(stepContent, (msg, data) -> {
-//                switch (msg) {
-//                    case InputList_Commit_Doing: {
-//                        if (key.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
-//                            exercise.gotoNextStep();
-//                            return;
-//                        }
-//                    }
-//                    case InputChars_Input_Doing: {
-//                        warning("当前输入的字符与练习内容不符，请按演示动画重新输入");
-//                        exercise.gotoStep(stepName);
-//                        return;
-//                    }
-//                    case Keyboard_State_Change_Done: {
-//                        return;
-//                    }
-//                }
-//
-//                warning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.getLabel());
-//            });
-//        }
+        // =======================================================
+        exercise.addStep("请点击回车按键<img src=\"" //
+                         + sandboxView.withKey(key_ctrl_enter) //
+                         + "\"/>以开始英文输入演示动画；", (msg, data) -> {
+            if (msg == InputMsg.InputList_Commit_Doing) {
+                if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
+                    exercise.gotoNextStep();
+                    return;
+                }
+            }
+            warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>回车按键</b>");
+        });
 
+        for (int i = 0; i < latinSample.length; i++) {
+            Key<?> key = latinSample[i];
+            boolean isFirstStep = i == 0;
+
+            Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
+            String simulatorStepName = String.format(Locale.getDefault(),
+                                                     "latin-char-input-step:%d:%s",
+                                                     i,
+                                                     key.getText());
+            Runnable restart = () -> {
+                warning("当前输入的字符与练习内容不符，请按演示动画重新输入");
+
+                simulator.get().stop();
+                exercise.gotoStep(simulatorStepName);
+            };
+
+            exercise.addStep(simulatorStepName,
+                             "请注意观看 <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> 的输入演示动画；",
+                             new ExerciseStep.AutoAction() {
+                                 @Override
+                                 public void start() {
+                                     if (isFirstStep || simulator.get().isStopped()) {
+                                         ExerciseMain.this.imeView.startInput(Keyboard.Type.Latin);
+                                         simulator.get().input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
+                                     } else {
+                                         simulator.get().input(key, exercise::gotoNextStep);
+                                     }
+                                 }
+
+                                 @Override
+                                 public void onInputMsg(InputMsg msg, InputMsgData data) {
+                                     // 若演示过程中手指离开屏幕，则重新开始演示
+                                     if (msg == InputMsg.Keyboard_State_Change_Done) {
+                                         restart.run();
+                                     }
+                                 }
+                             });
+
+            String stepContent = isFirstStep //
+                                 ? "请让手指从中央正六边形外围的<img src=\""
+                                   + sandboxView.withKey(key_ctrl_switch_latin)
+                                   + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                   + "以输入 <span style=\"color:#ed4c67;\">"
+                                   + key.getLabel()
+                                   + "</span>；" //
+                                 : "请继续沿演示动画所绘制的新的运动轨迹滑行，以输入 <span style=\"color:#ed4c67;\">"
+                                   + key.getLabel()
+                                   + "</span>。完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；";
+            exercise.addStep(stepContent, (msg, data) -> {
+                switch (msg) {
+                    case InputList_Commit_Doing: {
+                        if (key.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
+                            exercise.gotoNextStep();
+                            return;
+                        }
+                    }
+                    case InputChars_Input_Doing:
+                    case Keyboard_State_Change_Done: {
+                        restart.run();
+                        return;
+                    }
+                }
+
+                warning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.getLabel());
+            });
+        }
+
+        // =======================================================================
         exercise.addStep("请<span style=\"color:#ed4c67;\">释放手指</span>，并点击空格按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_space) //
                          + "\"/>以开始拼音输入的演示动画；", (msg, data) -> {
@@ -964,14 +976,14 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 boolean isFirstStep = i == 1 && j == 0;
 
                 String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.getUid());
-                String simulatorStepName = isFirstStep
+                String simulatorStepName = j == 0
                                            ? firstSimulatorStepName
                                            : String.format(Locale.getDefault(),
                                                            "pinyin-input-step:%d-%d:%s",
                                                            i,
                                                            j,
                                                            word.getUid());
-                Runnable reRun = () -> {
+                Runnable restart = () -> {
                     warning("当前输入的字符与练习内容不符，请按演示动画重新输入");
 
                     simulator.get().stop();
@@ -985,7 +997,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                       + sandboxView.withKey(key)
                                       + "\"/>"
                                     : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ")
-                                 + "的输入演示动画。",
+                                 + "的输入演示动画；",
                                  new ExerciseStep.AutoAction() {
                                      @Override
                                      public void start() {
@@ -1001,31 +1013,30 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                      public void onInputMsg(InputMsg msg, InputMsgData data) {
                                          // 若演示过程中手指离开屏幕，则重新开始演示
                                          if (msg == InputMsg.Keyboard_State_Change_Done) {
-                                             reRun.run();
+                                             restart.run();
                                          }
                                      }
                                  });
 
-                String stepContent = isFirstStep ? "请让手指从中央正六边形外围的<img src=\""
-                                                   + sandboxView.withKey(key_ctrl_switch_pinyin)
-                                                   + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
-                                                   + "以输入 <span style=\"color:#ed4c67;\">"
-                                                   + key.getLabel()
-                                                   + "</span>；" //
-                                                 : "请继续沿演示动画所绘制的新的运动轨迹滑行，以输入" //
-                                                   + (key instanceof CtrlKey //
-                                                      ? "<img src=\"" + sandboxView.withKey(key) + "\"/>" //
-                                                      : " <span style=\"color:#ed4c67;\">"
-                                                        + key.getLabel()
-                                                        + "</span> ") //
-                                                   + "；";
+                String stepContent = isFirstStep //
+                                     ? "请让手指从中央正六边形外围的<img src=\""
+                                       + sandboxView.withKey(key_ctrl_switch_pinyin)
+                                       + "\"/>处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                       + "以输入 <span style=\"color:#ed4c67;\">"
+                                       + key.getLabel()
+                                       + "</span>；" //
+                                     : "请继续沿演示动画所绘制的新的运动轨迹滑行，以输入" //
+                                       + (key instanceof CtrlKey //
+                                          ? "<img src=\"" + sandboxView.withKey(key) + "\"/>" //
+                                          : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ") //
+                                       + "。完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；";
                 exercise.addStep(stepContent, (InputMsg msg, InputMsgData data) -> {
                     switch (msg) {
                         case InputChars_Input_Doing: {
                             if (key.getText().equals(data.getKey().getText())) {
                                 exercise.gotoNextStep();
                             } else {
-                                reRun.run();
+                                restart.run();
                             }
                             return;
                         }
@@ -1033,7 +1044,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                             if (lastKey.getText().equals(data.getKey().getText())) {
                                 changePinyinWord(word);
                             } else {
-                                reRun.run();
+                                restart.run();
                             }
                             return;
                         }
@@ -1042,6 +1053,8 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                             // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
                             if (lastKey.getText().equals(data.getKey().getText())) {
                                 exercise.gotoNextStep();
+                            } else if (CtrlKey.isNoOp(data.getKey())) {
+                                restart.run();
                             }
                             return;
                         }
