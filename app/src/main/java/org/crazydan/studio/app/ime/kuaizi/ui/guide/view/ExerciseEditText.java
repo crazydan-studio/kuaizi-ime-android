@@ -23,17 +23,17 @@ import android.content.Context;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import org.crazydan.studio.app.ime.kuaizi.internal.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorCursorMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.EditorEditDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputListPairSymbolCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitDoingMsgData;
 
 /**
  * 用于筷字输入法使用练习的编辑框

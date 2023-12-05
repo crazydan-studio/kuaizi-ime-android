@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 

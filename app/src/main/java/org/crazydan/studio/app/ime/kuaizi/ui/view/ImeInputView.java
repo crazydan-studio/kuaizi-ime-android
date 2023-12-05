@@ -31,25 +31,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.LatinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.MathKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.NumberKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.keyboard.PinyinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.Msg;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCharsInputPopupShowingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.InputCommonMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardHandModeSwitchDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.msg.input.KeyboardSwitchDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.InputCompletionsView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.InputListView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.KeyboardView;
-import org.crazydan.studio.app.ime.kuaizi.internal.view.key.XPadKeyView;
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.LatinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.MathKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.NumberKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.Msg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.view.InputCompletionsView;
+import org.crazydan.studio.app.ime.kuaizi.core.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.core.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.core.view.key.XPadKeyView;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -61,6 +61,22 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
  */
 public class ImeInputView extends FrameLayout
         implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener {
+    private final SharedPreferences preferences;
+    private final InputList inputList;
+    private Keyboard keyboard;
+    private KeyboardView keyboardView;
+    private InputListView inputListView;
+    private PopupWindow inputCompletionsPopupWindow;
+    private PopupWindow inputKeyPopupWindow;
+    private InputCompletionsView inputCompletionsView;
+    private View settingsBtnView;
+    private View inputListCleanBtnView;
+    private View inputListCleanCancelBtnView;
+    private Keyboard.HandMode keyboardHandMode;
+    private Boolean disableUserInputData;
+    private Boolean disableInputKeyPopupTips;
+    private Boolean disableXInputPad;
+    private Boolean disableCandidateVariantFirst;
     private final InputMsgListener inputMsgListener = (keyboard, msg, msgData) -> {
         // 忽略非绑定键盘的消息
         if (getKeyboard() != keyboard) {
@@ -72,26 +88,6 @@ public class ImeInputView extends FrameLayout
 
         this.onMsg(keyboard, msg, msgData);
     };
-
-    private final SharedPreferences preferences;
-    private final InputList inputList;
-    private Keyboard keyboard;
-
-    private KeyboardView keyboardView;
-    private InputListView inputListView;
-    private PopupWindow inputCompletionsPopupWindow;
-    private PopupWindow inputKeyPopupWindow;
-    private InputCompletionsView inputCompletionsView;
-
-    private View settingsBtnView;
-    private View inputListCleanBtnView;
-    private View inputListCleanCancelBtnView;
-
-    private Keyboard.HandMode keyboardHandMode;
-    private Boolean disableUserInputData;
-    private Boolean disableInputKeyPopupTips;
-    private Boolean disableXInputPad;
-    private Boolean disableCandidateVariantFirst;
     private boolean disableSettingsBtn;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {

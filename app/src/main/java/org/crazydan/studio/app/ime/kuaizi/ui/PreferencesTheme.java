@@ -23,11 +23,11 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputList;
-import org.crazydan.studio.app.ime.kuaizi.internal.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.internal.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.internal.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.internal.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 

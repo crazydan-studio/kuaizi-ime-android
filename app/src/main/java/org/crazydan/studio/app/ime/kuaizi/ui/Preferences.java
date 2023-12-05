@@ -40,7 +40,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.internal.data.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
@@ -58,16 +58,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
  */
 public class Preferences extends FollowSystemThemeActivity {
     private static final Random random = new Random();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.app_preferences_activity);
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
-        }
-    }
 
     public static void backupUserData(Activity context) {
         String fileName = "kuaizi_user_data_backup.db";
@@ -196,6 +186,16 @@ public class Preferences extends FollowSystemThemeActivity {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(key, value);
         editor.apply();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.app_preferences_activity);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
+        }
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
