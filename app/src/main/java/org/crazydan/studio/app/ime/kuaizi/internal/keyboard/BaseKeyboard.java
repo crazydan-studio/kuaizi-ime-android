@@ -76,6 +76,7 @@ import org.crazydan.studio.app.ime.kuaizi.internal.msg.user.UserSingleTapMsgData
 public abstract class BaseKeyboard implements Keyboard {
     protected final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
 
+    // Note：在 MathKeyboard#topUserInputMsgListener 中会负责监听上级 InputList 的消息
     private final UserInputMsgListener userInputMsgListener = (inputList, msg, msgData) -> {
         if (getInputList() == inputList) {
             onUserInputMsg(inputList, msg, msgData);

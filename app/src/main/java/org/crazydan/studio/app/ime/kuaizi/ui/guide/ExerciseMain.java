@@ -933,16 +933,25 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                    + "</span>。完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；";
             exercise.addStep(stepContent, (msg, data) -> {
                 switch (msg) {
+                    // Note：拉丁文输入为直输
                     case InputList_Commit_Doing: {
                         if (key.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
                             exercise.gotoNextStep();
                             return;
                         }
+                        // 与后续分支处理相同
                     }
-                    case InputChars_Input_Doing:
-                    case Keyboard_State_Change_Done: {
+                    case InputChars_Input_Doing: {
                         restart.run();
                         return;
+                    }
+                    case Keyboard_State_Change_Done: {
+                        // 忽略正常切换的情况
+                        if (CtrlKey.isNoOp(data.getKey())) {
+                            restart.run();
+                            return;
+                        }
+                        break;
                     }
                 }
 
@@ -1053,10 +1062,12 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                             // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
                             if (lastKey.getText().equals(data.getKey().getText())) {
                                 exercise.gotoNextStep();
+                                return;
                             } else if (CtrlKey.isNoOp(data.getKey())) {
                                 restart.run();
+                                return;
                             }
-                            return;
+                            break;
                         }
                     }
 
