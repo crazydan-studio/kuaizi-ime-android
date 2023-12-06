@@ -135,9 +135,9 @@ public class LatinKeyTable extends KeyTable {
             return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("l").withReplacements("L"),
-                                    alphabetKey("m").withReplacements("M"),
-                                    alphabetKey("n").withReplacements("N"),
+                                    alphabetKey("h").withReplacements("H"),
+                                    alphabetKey("k").withReplacements("K"),
+                                    symbolKey("/").withReplacements("\\"),
                                     }, //
                             new Key[] {
                                     symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
@@ -150,34 +150,33 @@ public class LatinKeyTable extends KeyTable {
                                     symbolKey("!").withReplacements("*"),
                                     }, //
                             new Key[] {
-                                    alphabetKey("d").withReplacements("D"),
-                                    alphabetKey("b").withReplacements("B"),
-                                    alphabetKey("t").withReplacements("T")
-                            }, //
+                                    symbolKey("@").withReplacements("&"),
+                                    alphabetKey("z").withReplacements("Z"),
+                                    alphabetKey("l").withReplacements("L"),
+                                    }, //
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    symbolKey("@").withReplacements("&"),
-                                    alphabetKey("z").withReplacements("Z"),
-                                    alphabetKey("k").withReplacements("K"),
-                                    //
-                            }, //
+                                    alphabetKey("d").withReplacements("D"),
+                                    alphabetKey("b").withReplacements("B"),
+                                    alphabetKey("t").withReplacements("T"),
+                                    }, //
                             new Key[] {
                                     alphabetKey("y").withReplacements("Y"),
-                                    alphabetKey("h").withReplacements("H"),
-                                    alphabetKey("r").withReplacements("R"),
+                                    alphabetKey("f").withReplacements("F"),
+                                    alphabetKey("p").withReplacements("P"),
                                     }, //
                     }, //
                     new Key[][] {
                             new Key[] {
                                     alphabetKey("g").withReplacements("G"),
-                                    alphabetKey("f").withReplacements("F"),
-                                    alphabetKey("p").withReplacements("P"),
+                                    alphabetKey("r").withReplacements("R"),
+                                    alphabetKey("w").withReplacements("W"),
                                     }, //
                             new Key[] {
                                     symbolKey("-").withReplacements("_"),
-                                    alphabetKey("q").withReplacements("Q"),
-                                    alphabetKey("s").withReplacements("S"),
+                                    alphabetKey("c").withReplacements("C"),
+                                    alphabetKey("m").withReplacements("M"),
                                     }, //
                     }, //
                     new Key[][] {
@@ -194,14 +193,14 @@ public class LatinKeyTable extends KeyTable {
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("x").withReplacements("X"),
                                     symbolKey("#").withReplacements("+"),
-                                    alphabetKey("c").withReplacements("C"),
+                                    alphabetKey("s").withReplacements("S"),
+                                    alphabetKey("n").withReplacements("N"),
                                     }, //
                             new Key[] {
                                     alphabetKey("j").withReplacements("J"),
-                                    alphabetKey("w").withReplacements("W"),
-                                    symbolKey("/").withReplacements("\\"),
+                                    alphabetKey("q").withReplacements("Q"),
+                                    alphabetKey("x").withReplacements("X"),
                                     }, //
                     }, //
             });

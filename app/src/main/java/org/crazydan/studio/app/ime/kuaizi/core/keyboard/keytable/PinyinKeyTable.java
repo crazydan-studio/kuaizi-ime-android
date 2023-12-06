@@ -139,30 +139,30 @@ public class PinyinKeyTable extends KeyTable {
         // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
+                        new Key[] { level0CharKey("h"), level0CharKey("k"), symbolKey("："), }, //
                         new Key[] {
                                 symbolKey("。"), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
                         new Key[] { symbolKey("，"), symbolKey("？"), symbolKey("！"), }, //
+                        new Key[] { level0CharKey("zh"), level0CharKey("z"), level0CharKey("l"), }, //
+                }, //
+                new Key[][] {
                         new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t") }, //
+                        new Key[] { level0CharKey("y"), level0CharKey("f"), level0CharKey("p"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("zh"), level0CharKey("z"), level0CharKey("k"), }, //
-                        new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("r"), }, //
-                }, //
-                new Key[][] {
-                        new Key[] { level0CharKey("g"), level0CharKey("f"), level0CharKey("p"), }, //
-                        new Key[] { level0CharKey("sh"), level0CharKey("q"), level0CharKey("s"), }, //
+                        new Key[] { level0CharKey("g"), level0CharKey("r"), level0CharKey("w"), }, //
+                        new Key[] { level0CharKey("ch"), level0CharKey("c"), level0CharKey("m"), }, //
                 }, //
                 new Key[][] {
                         new Key[] { level0CharKey("e"), level0CharKey("a"), level0CharKey("o"), }, //
                         new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("x"), level0CharKey("ch"), level0CharKey("c"), }, //
-                        new Key[] { level0CharKey("j"), level0CharKey("w"), symbolKey("："), }, //
+                        new Key[] { level0CharKey("sh"), level0CharKey("s"), level0CharKey("n"), }, //
+                        new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x"), }, //
                 }, //
         });
     }
