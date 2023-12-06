@@ -439,11 +439,8 @@ public class PinyinKeyboard extends BaseKeyboard {
         play_SingleTick_InputAudio(key);
         show_InputChars_Input_Popup(key);
 
-        // Note: 拼音不存在重复字母相邻的情况
-        Key<?> lastKey = pending.getLastKey();
         if (key instanceof CharKey //
-            && !key.isDisabled() //
-            && !key.isSameWith(lastKey)) {
+            && !key.isDisabled()) {
             do_InputChars_XPad_Inputting(inputList, pending, key);
         }
     }
@@ -618,6 +615,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void end_InputChars_Inputting(InputList inputList, CharInput pending, Key<?> key) {
+        end_InputChars_Inputting(inputList, pending, key, true);
+    }
+
+    private void end_InputChars_Inputting(InputList inputList, CharInput pending, Key<?> key, boolean reset) {
         // 无候选字的输入，视为无效输入，直接丢弃
         if (!pending.hasWord()) {
             drop_InputList_Pending(inputList, key);
@@ -626,8 +627,10 @@ public class PinyinKeyboard extends BaseKeyboard {
             confirm_InputList_Pending(inputList, key);
         }
 
-        // Note：将最后的输入按键附加到消息中，以便于识别哪个按键触发了状态变化
-        change_State_to_Init(key);
+        if (reset) {
+            // Note：将最后的输入按键附加到消息中，以便于识别哪个按键触发了状态变化
+            change_State_to_Init(key);
+        }
     }
     // >>>>>>>>>>>>
 
@@ -714,10 +717,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
         Key.Level currentKeyLevel = currentKey.getLevel();
         boolean needToEndInputting = false;
+        boolean needToContinueInputting = false;
 
         // 添加后继字母，
         switch (currentKeyLevel) {
             case level_0: {
+                // 当前 pending 为有效拼音，则结束当前输入，并创建新输入
+                if (this.pinyinDict.hasValidPinyin(pending)) {
+                    needToEndInputting = true;
+                    needToContinueInputting = true;
+                    break;
+                }
+
                 pending.appendKey(currentKey);
 
                 Collection<String> level1NextChars = this.pinyinDict.findPinyinNextChar(Key.Level.level_1,
@@ -762,13 +773,24 @@ public class PinyinKeyboard extends BaseKeyboard {
                 needToEndInputting = true;
                 break;
             }
+            case level_final: {
+                pending.dropKeys();
+                pending.appendKey(currentKey);
+
+                needToEndInputting = true;
+                break;
+            }
         }
 
         // 并确定候选字
         determine_NotConfirmed_InputWord(inputList, pending);
 
         if (needToEndInputting) {
-            end_InputChars_Inputting(inputList, pending, currentKey);
+            end_InputChars_Inputting(inputList, pending, currentKey, !needToContinueInputting);
+
+            if (needToContinueInputting) {
+                start_InputChars_XPad_Inputting(inputList, inputList.newPending(), currentKey);
+            }
         } else {
             fire_InputChars_Input_Doing(currentKey, InputCharsInputtingMsgData.KeyInputType.circle);
         }

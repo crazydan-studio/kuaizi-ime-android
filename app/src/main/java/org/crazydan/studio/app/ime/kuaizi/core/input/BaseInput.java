@@ -132,6 +132,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
+    public void dropKeys() {
+        this.keys.clear();
+    }
+
+    @Override
     public void dropLastKey() {
         if (!this.keys.isEmpty()) {
             this.keys.remove(this.keys.size() - 1);

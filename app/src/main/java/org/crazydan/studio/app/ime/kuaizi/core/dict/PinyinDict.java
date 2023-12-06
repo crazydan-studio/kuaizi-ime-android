@@ -85,6 +85,7 @@ public class PinyinDict {
 
     // <<<<<<<<<<<<< 缓存常量数据
     private Map<String, String> pinyinCharsAndIdCache;
+    private PinyinTree pinyinTree;
     // >>>>>>>>>>>>>
 
     private PinyinDict() {
@@ -267,6 +268,15 @@ public class PinyinDict {
     /** 判断指定的输入是否为有效拼音 */
     public boolean hasValidPinyin(CharInput input) {
         return getPinyinCharsId(input) != null;
+    }
+
+    /** 判断指定的字符串是否为有效拼音 */
+    public boolean isValidPinyin(String chars) {
+        return this.pinyinCharsAndIdCache.containsKey(chars);
+    }
+
+    public PinyinTree getPinyinTree() {
+        return this.pinyinTree;
     }
 
     /** 通过拼音字符 id 获取拼音字符 */
@@ -1279,6 +1289,8 @@ public class PinyinDict {
                     this.pinyinCharsAndIdCache.put(cursor.getString(1), cursor.getString(0));
                     return null;
                 });
+
+        this.pinyinTree = PinyinTree.create(this.pinyinCharsAndIdCache.keySet());
     }
 
     private void doClose() {

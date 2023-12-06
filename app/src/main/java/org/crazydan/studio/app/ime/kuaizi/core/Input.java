@@ -89,6 +89,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 追加输入按键 */
     void appendKey(Key<?> key);
 
+    /** 丢弃所有按键 */
+    void dropKeys();
+
     /** 丢弃最后一个按键 */
     void dropLastKey();
 

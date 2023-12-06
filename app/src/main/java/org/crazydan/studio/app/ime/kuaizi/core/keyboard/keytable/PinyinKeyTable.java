@@ -139,30 +139,34 @@ public class PinyinKeyTable extends KeyTable {
         // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
         return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
                 new Key[][] {
-                        new Key[] { level0CharKey("h"), level0CharKey("k"), symbolKey("："), }, //
+                        new Key[] { level0CharKey("g"), level0CharKey("f"), level0CharKey("p"), }, //
                         new Key[] {
                                 symbolKey("。"), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
                                 },
                         }, //
                 new Key[][] {
-                        new Key[] { symbolKey("，"), symbolKey("？"), symbolKey("！"), }, //
-                        new Key[] { level0CharKey("zh"), level0CharKey("z"), level0CharKey("l"), }, //
+                        new Key[] {
+                                symbolKey("，").withReplacements("；"),
+                                symbolKey("？").withReplacements("："),
+                                symbolKey("！").withReplacements("、"),
+                                }, //
+                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t") }, //
-                        new Key[] { level0CharKey("y"), level0CharKey("f"), level0CharKey("p"), }, //
+                        new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("r") }, //
+                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("g"), level0CharKey("r"), level0CharKey("w"), }, //
-                        new Key[] { level0CharKey("ch"), level0CharKey("c"), level0CharKey("m"), }, //
+                        new Key[] { level0CharKey("z"), level0CharKey("s"), level0CharKey("c"), }, //
+                        new Key[] { level0CharKey("sh"), level0CharKey("zh"), level0CharKey("ch"), }, //
                 }, //
                 new Key[][] {
                         new Key[] { level0CharKey("e"), level0CharKey("a"), level0CharKey("o"), }, //
                         new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
                 }, //
                 new Key[][] {
-                        new Key[] { level0CharKey("sh"), level0CharKey("s"), level0CharKey("n"), }, //
-                        new Key[] { level0CharKey("j"), level0CharKey("q"), level0CharKey("x"), }, //
+                        new Key[] { level0CharKey("j"), level0CharKey("w"), symbolKey("～"), }, //
+                        new Key[] { level0CharKey("x"), level0CharKey("q"), level0CharKey("k"), }, //
                 }, //
         });
     }
@@ -276,42 +280,88 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建 X 型输入的拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createXPadNextCharKeys(
-            String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
-            Map<Integer, List<String>> level2NextChars
+            String level0Char, String level1Char, String level2Char, //
+            Collection<String> level1NextChars, Map<Integer, List<String>> level2NextChars
     ) {
         XPadKey xPadKey = createXPadKey();
         // 在初始键盘上显隐按键
         Key<?>[][] gridKeys = createKeysForXPad(xPadKey);
 
-        if (level1Char == null) {
-            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
-                // Note: 第 1 级后继按键与键盘初始按键位置保持一致
-                for (Key<?>[] keys : zone_2_key) {
-                    for (int j = 0; j < keys.length; j++) {
-                        Key<?> key = keys[j];
+        switch (level0Char) {
+            case "a": {
+                // a ai an ao ang
+                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ai");
+                xPadKey.zone_2_keys[4][1][1] = levelFinalCharKey("ao");
+                xPadKey.zone_2_keys[4][1][2] = levelFinalCharKey("an");
+                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("ang");
+                return gridKeys;
+            }
+            case "e": {
+                // e ei en er eng
+                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ei");
+                xPadKey.zone_2_keys[4][1][1] = levelFinalCharKey("er");
+                xPadKey.zone_2_keys[4][1][2] = levelFinalCharKey("en");
+                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("eng");
+                return gridKeys;
+            }
+            case "o": {
+                // o ou
+                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ou");
+                xPadKey.zone_2_keys[4][1][1] = null;
+                xPadKey.zone_2_keys[4][1][2] = null;
+                return gridKeys;
+            }
+            case "h": {
+                // hm hng ha he hu
+                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("hm");
+                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("hng");
+                level1NextChars.remove("m");
+                level1NextChars.remove("ng");
+                break;
+            }
+            // Note：对 m 的单音节拼音提供连续输入支持
+            case "m": {
+                // m ma me mi mo mu
+                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("m");
+                break;
+            }
+            // Note：因为可用按键位不足，故而 n 的单音节拼音只能通过释放手指输入，
+            // 无法连续输入，或者以 ng 替代，因为二者的候选字是一样的
+            case "n": {
+                // n ng na ne ni nu nü
+                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("ng");
+                level1NextChars.remove("g");
+                break;
+            }
+        }
 
-                        if (!(key instanceof CharKey)) {
-                            keys[j] = null;
-                            continue;
+        if (level1Char == null) {
+            for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
+                Key<?>[][] zone_2_key = xPadKey.zone_2_keys[i];
+                for (int j = 0; j < zone_2_key.length; j++) {
+                    Key<?>[] keys = zone_2_key[j];
+                    // Note: 第 1 级后继按键与键盘初始按键位置保持一致
+                    for (int k = 0; k < keys.length; k++) {
+                        Key<?> key = keys[k];
+
+                        if (key.getLevel() != Key.Level.level_final) {
+                            keys[k] = null;
                         }
 
                         for (String nextChar : level1NextChars) {
-                            if (nextChar.equals(key.getText()) //
-                                || (nextChar.length() > key.getText().length() //
-                                    // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
-                                    && nextChar.startsWith(key.getText()))) {
-                                key = keys[j] = level1CharKey(nextChar);
+                            if (nextChar.equals(key.getText())) {
+                                keys[k] = level1CharKey(nextChar);
+
+                                String finalChar = level0Char + nextChar;
+                                if (PinyinDict.getInstance().isValidPinyin(finalChar)) {
+                                    int layer = j == 0 ? i - 1 : i + 1;
+                                    int row = j == 0 ? j + 1 : j - 1;
+                                    xPadKey.zone_2_keys[layer][row][k] = levelFinalCharKey(finalChar);
+                                }
                                 break;
                             }
                         }
-
-                        if (key.getLevel() != Key.Level.level_1) {
-                            keys[j] = null;
-                        }
                     }
-
-                    // 字母按键向靠近中心的方向排列
-                    Arrays.sort(keys, (a, b) -> a != null && b != null ? 0 : a != null ? -1 : 1);
                 }
             }
         } else {
@@ -335,9 +385,6 @@ public class PinyinKeyTable extends KeyTable {
                 }
             });
         }
-
-        // Note：仅待输入 1/2 级字母时才需要提供拼音结束按键，且可通过结束按键去掉首字母选错的拼音
-        xPadKey.zone_2_keys[5][1][2] = ctrlKey(CtrlKey.Type.Pinyin_End);
 
         xPadKey.zone_2_keys[0][1][1] = ctrlKey(CtrlKey.Type.Space);
         xPadKey.zone_2_keys[0][1][2] = ctrlKey(CtrlKey.Type.Backspace);
@@ -565,14 +612,20 @@ public class PinyinKeyTable extends KeyTable {
         return gridKeys;
     }
 
-    public CharKey level0CharKey(String level0Char) {
-        return alphabetKey(level0Char);
+    public CharKey level0CharKey(String ch) {
+        return alphabetKey(ch);
     }
 
-    public CharKey level1CharKey(String level1Char) {
+    public CharKey level1CharKey(String ch) {
         KeyColor color = key_char_special_color;
 
-        return alphabetKey(level1Char).setLevel(Key.Level.level_1).setColor(color);
+        return alphabetKey(ch).setLevel(Key.Level.level_1).setColor(color);
+    }
+
+    public CharKey levelFinalCharKey(String ch) {
+        KeyColor color = key_char_special_color;
+
+        return alphabetKey(ch).setLevel(Key.Level.level_final).setColor(color);
     }
 
     public CharKey level2CharKey(String level0Char, String level2Char) {

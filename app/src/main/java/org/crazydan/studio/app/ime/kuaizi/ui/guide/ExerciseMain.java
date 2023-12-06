@@ -825,7 +825,6 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                                                 .setIconResId(R.drawable.ic_pinyin);
         Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
-        Key<?> key_ctrl_pinyin_end = keyTable.ctrlKey(CtrlKey.Type.Pinyin_End);
 
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView::getImage);
         exercise.setEnableXInputPad(true);
@@ -845,16 +844,16 @@ public class ExerciseMain extends FollowSystemThemeActivity {
                 keyTable.level0CharKey("k"), keyTable.level1CharKey("u"), keyTable.level2CharKey("", "uai"),
                 });
         pinyinWordsSample.put(new InputWord("zi", "字", "zì"), new Key[] {
-                keyTable.level0CharKey("z"), keyTable.level1CharKey("i"),
+                keyTable.level0CharKey("z"), keyTable.levelFinalCharKey("zi"),
                 });
         pinyinWordsSample.put(new InputWord("shu", "输", "shū"), new Key[] {
-                keyTable.level0CharKey("sh"), keyTable.level1CharKey("u"), key_ctrl_pinyin_end,
+                keyTable.level0CharKey("sh"), keyTable.levelFinalCharKey("shu"),
                 });
         pinyinWordsSample.put(new InputWord("ru", "入", "rù"), new Key[] {
-                keyTable.level0CharKey("r"), keyTable.level1CharKey("u"), key_ctrl_pinyin_end,
+                keyTable.level0CharKey("r"), keyTable.levelFinalCharKey("ru"),
                 });
         pinyinWordsSample.put(new InputWord("fa", "法", "fǎ"), new Key[] {
-                keyTable.level0CharKey("f"), keyTable.level1CharKey("a"), key_ctrl_pinyin_end,
+                keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 
         String sample = Arrays.stream(latinSample).map(Key::getText).collect(Collectors.joining(""))
