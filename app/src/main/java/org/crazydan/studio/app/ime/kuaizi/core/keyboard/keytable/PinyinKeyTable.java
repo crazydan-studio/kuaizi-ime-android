@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
@@ -421,7 +421,7 @@ public class PinyinKeyTable extends KeyTable {
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!startingToggle.getChars().equals(input.getChars()) //
-            && !PinyinDictDB.getInstance().hasValidPinyin(startingToggle)) {
+            && !PinyinDict.getInstance().hasValidPinyin(startingToggle)) {
             gridKeys[0][index_end] = noopCtrlKey();
         }
 
@@ -440,7 +440,7 @@ public class PinyinKeyTable extends KeyTable {
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!endingToggle.getChars().equals(input.getChars()) //
-            && !PinyinDictDB.getInstance().hasValidPinyin(endingToggle)) {
+            && !PinyinDict.getInstance().hasValidPinyin(endingToggle)) {
             gridKeys[1][index_end] = noopCtrlKey();
         }
 

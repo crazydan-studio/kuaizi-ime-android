@@ -42,7 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
@@ -109,7 +109,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     @Override
     protected void onStart() {
         // 确保拼音字典库保持就绪状态
-        PinyinDictDB.getInstance().open(getApplicationContext());
+        PinyinDict.getInstance().open(getApplicationContext());
 
         this.imeView.refresh();
 

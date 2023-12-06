@@ -108,5 +108,10 @@ public interface Key<K extends Key<?>> extends ViewData {
          * 如，huang 中的 uang 为第 2 级
          */
         level_2,
+        /**
+         * 末级：完整且无后继字母的拼音。
+         * 如，ai, er, an, ang, m, n 等
+         */
+        level_final,
     }
 }

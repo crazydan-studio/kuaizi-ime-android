@@ -67,11 +67,11 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-24
  */
-public class PinyinDictDB {
+public class PinyinDict {
     private static final String file_app_dict_db = "pinyin_app_dict.db";
     private static final String file_user_dict_db = "pinyin_user_dict.db";
 
-    private static final PinyinDictDB instance = new PinyinDictDB();
+    private static final PinyinDict instance = new PinyinDict();
 
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
 
@@ -87,10 +87,10 @@ public class PinyinDictDB {
     private Map<String, String> pinyinCharsAndIdCache;
     // >>>>>>>>>>>>>
 
-    private PinyinDictDB() {
+    private PinyinDict() {
     }
 
-    public static PinyinDictDB getInstance() {
+    public static PinyinDict getInstance() {
         return instance;
     }
 

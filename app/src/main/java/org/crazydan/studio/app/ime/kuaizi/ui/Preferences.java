@@ -40,7 +40,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
@@ -72,7 +72,7 @@ public class Preferences extends FollowSystemThemeActivity {
             Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
 
             try (OutputStream output = resolver.openOutputStream(uri)) {
-                PinyinDictDB.getInstance().saveUserDB(context, output);
+                PinyinDict.getInstance().saveUserDB(context, output);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
@@ -80,7 +80,7 @@ public class Preferences extends FollowSystemThemeActivity {
             File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + fileName);
 
             try (OutputStream output = FileUtils.newOutput(dir)) {
-                PinyinDictDB.getInstance().saveUserDB(context, output);
+                PinyinDict.getInstance().saveUserDB(context, output);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

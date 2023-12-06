@@ -33,7 +33,7 @@ import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.NumberKeyboard;
@@ -93,7 +93,7 @@ public class ImeInputView extends FrameLayout
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        PinyinDictDB.getInstance().init(getContext());
+        PinyinDict.getInstance().init(getContext());
 
         this.preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         this.preferences.registerOnSharedPreferenceChangeListener(this);

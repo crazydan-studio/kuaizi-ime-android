@@ -28,7 +28,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.core.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
@@ -75,7 +75,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         // 确保拼音字典库能够被及时关闭
-        PinyinDictDB.getInstance().close();
+        PinyinDict.getInstance().close();
     }
 
     /** 输入法视图只创建一次 */
@@ -90,7 +90,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
         // 确保拼音字典库保持就绪状态
-        PinyinDictDB.getInstance().open(getApplicationContext());
+        PinyinDict.getInstance().open(getApplicationContext());
         Msg.Registry.register(InputMsg.class, this);
 
         boolean singleLineInput = false;

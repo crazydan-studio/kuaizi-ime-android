@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDB;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
@@ -74,7 +74,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    protected final PinyinDictDB pinyinDict = PinyinDictDB.getInstance();
+    protected final PinyinDict pinyinDict = PinyinDict.getInstance();
     protected State state = new State(State.Type.InputChars_Input_Waiting);
     private Config config;
     /** 输入列表 */
