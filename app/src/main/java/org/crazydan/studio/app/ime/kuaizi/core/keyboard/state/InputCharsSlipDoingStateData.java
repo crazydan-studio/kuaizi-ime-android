@@ -37,7 +37,6 @@ public class InputCharsSlipDoingStateData implements State.Data {
     private Key<?> level1Key;
     private Key<?> level2Key;
 
-    private Collection<String> level1NextChars;
     private Map<Integer, List<String>> level2NextChars;
 
     public Key<?> getLevel0Key() {
@@ -62,14 +61,6 @@ public class InputCharsSlipDoingStateData implements State.Data {
 
     public void setLevel2Key(Key<?> level2Key) {
         this.level2Key = level2Key;
-    }
-
-    public Collection<String> getLevel1NextChars() {
-        return this.level1NextChars;
-    }
-
-    public void setLevel1NextChars(Collection<String> level1NextChars) {
-        this.level1NextChars = level1NextChars;
     }
 
     public Map<Integer, List<String>> getLevel2NextChars() {

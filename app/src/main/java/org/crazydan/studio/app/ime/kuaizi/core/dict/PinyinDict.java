@@ -46,7 +46,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
@@ -84,7 +83,6 @@ public class PinyinDict {
     private SQLiteDatabase userDB;
 
     // <<<<<<<<<<<<< 缓存常量数据
-    private Map<String, String> pinyinCharsAndIdCache;
     private PinyinTree pinyinTree;
     // >>>>>>>>>>>>>
 
@@ -265,95 +263,13 @@ public class PinyinDict {
         }
     }
 
-    /** 判断指定的输入是否为有效拼音 */
-    public boolean hasValidPinyin(CharInput input) {
-        return getPinyinCharsId(input) != null;
-    }
-
-    /** 判断指定的字符串是否为有效拼音 */
-    public boolean isValidPinyin(String chars) {
-        return this.pinyinCharsAndIdCache.containsKey(chars);
-    }
-
     public PinyinTree getPinyinTree() {
         return this.pinyinTree;
     }
 
-    /** 通过拼音字符 id 获取拼音字符 */
-    public String getPinyinCharsById(String charsId) {
-        for (Map.Entry<String, String> entry : this.pinyinCharsAndIdCache.entrySet()) {
-            if (entry.getValue().equals(charsId)) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 查找指定{@link Key.Level 级别}的拼音后继字母
-     *
-     * @return 参数为<code>null</code>或为空时，返回<code>null</code>
-     */
-    public Collection<String> findPinyinNextChar(Key.Level keyLevel, String startChar) {
-        if (startChar == null || startChar.isEmpty()) {
-            return null;
-        }
-
-        List<String> nextCharList = this.pinyinCharsAndIdCache.keySet().stream().filter(chars -> {
-            if (chars.length() > startChar.length() //
-                && chars.startsWith(startChar)) {
-                // 平翘舌需相同
-                return !(chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh"))
-                       || startChar.startsWith(chars.substring(0, 2));
-            }
-            return false;
-        }).collect(Collectors.toList());
-
-        return nextCharList.stream().map(chars -> {
-            if (keyLevel == Key.Level.level_1) {
-                String nextChar = chars.substring(startChar.length(), startChar.length() + 1);
-
-                int startsWithCount = 0;
-                for (String ch : nextCharList) {
-                    if (ch.startsWith(startChar + nextChar)) {
-                        startsWithCount += 1;
-                    }
-                }
-                return startsWithCount == 1
-                       // 只有一个可选拼音，则返回从直接后继字母开始的剩余部分
-                       ? chars.substring(startChar.length())
-                       // 否则，返回直接后继字母
-                       : nextChar;
-            }
-            // Note: 第 2 级后继需包含第 1 级后继字母
-            return chars.substring(startChar.length() - 1);
-        }).collect(Collectors.toSet());
-    }
-
-    /**
-     * 查找以指定字母开头的拼音
-     *
-     * @return 参数为<code>null</code>或为空时，返回空集合
-     */
-    public Collection<String> findPinyinCharsStartsWith(String startChar) {
-        if (startChar == null || startChar.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return this.pinyinCharsAndIdCache.keySet().stream().filter(chars -> {
-            if (chars.length() >= startChar.length() //
-                && chars.startsWith(startChar)) {
-                // 平翘舌需相同
-                return !(chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh"))
-                       || startChar.startsWith(chars.substring(0, 2));
-            }
-            return false;
-        }).collect(Collectors.toList());
-    }
-
     /** 获取指定拼音的候选字 */
     public List<InputWord> getPinyinCandidateWords(CharInput input) {
-        String inputPinyinCharsId = getPinyinCharsId(input);
+        String inputPinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
         if (inputPinyinCharsId == null) {
             return new ArrayList<>();
         }
@@ -373,7 +289,7 @@ public class PinyinDict {
     public BestCandidateWords findTopBestPinyinCandidateWords(
             CharInput input, int top, List<InputWord> prevPhrase, boolean userDataDisabled
     ) {
-        String inputPinyinCharsId = getPinyinCharsId(input);
+        String inputPinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
         if (inputPinyinCharsId == null) {
             return new BestCandidateWords();
         }
@@ -1158,12 +1074,6 @@ public class PinyinDict {
                            shouldIncreaseWeight);
     }
 
-    private String getPinyinCharsId(CharInput input) {
-        String pinyinChars = String.join("", input.getChars());
-
-        return this.pinyinCharsAndIdCache.get(pinyinChars);
-    }
-
     private String calculatePinyinPhraseCode(List<InputWord> phrase) {
         int sum = 0;
         for (int i = 0; i < phrase.size(); i++) {
@@ -1280,17 +1190,17 @@ public class PinyinDict {
         configSQLite(this.appDB);
         configSQLite(this.userDB);
 
-        this.pinyinCharsAndIdCache = new HashMap<>(600);
+        Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
         doSQLiteQuery(this.appDB, "meta_pinyin_chars", new String[] {
                               "id_", "value_"
                       }, //
                       null, null, (cursor) -> {
                     // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
-                    this.pinyinCharsAndIdCache.put(cursor.getString(1), cursor.getString(0));
+                    pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
                     return null;
                 });
 
-        this.pinyinTree = PinyinTree.create(this.pinyinCharsAndIdCache.keySet());
+        this.pinyinTree = PinyinTree.create(pinyinCharsAndIdMap);
     }
 
     private void doClose() {
@@ -1299,7 +1209,7 @@ public class PinyinDict {
 
         this.appDB = null;
         this.userDB = null;
-        this.pinyinCharsAndIdCache = null;
+        this.pinyinTree = null;
     }
 
     private void configSQLite(SQLiteDatabase db) {

@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
-import java.util.List;
-import java.util.Map;
-
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
 
 /**
@@ -30,10 +27,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
  */
 public class InputCharsFlipDoingStateData implements State.Data {
     public final String startChar;
-    public final Map<String, List<String>> restChars;
 
-    public InputCharsFlipDoingStateData(String startChar, Map<String, List<String>> restChars) {
+    public InputCharsFlipDoingStateData(String startChar) {
         this.startChar = startChar;
-        this.restChars = restChars;
     }
 }

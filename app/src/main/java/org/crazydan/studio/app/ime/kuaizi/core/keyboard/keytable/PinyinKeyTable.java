@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
@@ -83,7 +82,7 @@ public class PinyinKeyTable extends KeyTable {
                 keyboardSwitchKey(Keyboard.Type.Math),
                 symbolKey("？").withReplacements("?"),
                 level0CharKey("d").withReplacements("D"),
-                level0CharKey("b").withReplacements("B"),
+                level0CharKey("m").withReplacements("M"),
                 level0CharKey("x").withReplacements("X"),
                 level0CharKey("q").withReplacements("Q"),
                 level0CharKey("a").withReplacements("A"),
@@ -94,7 +93,7 @@ public class PinyinKeyTable extends KeyTable {
                 // 😄
                 emojiKey("\uD83D\uDE04"),
                 symbolKey("；").withReplacements(";"),
-                level0CharKey("m").withReplacements("M"),
+                level0CharKey("b").withReplacements("B"),
                 level0CharKey("l").withReplacements("L"),
                 level0CharKey("y").withReplacements("Y"),
                 level0CharKey("p").withReplacements("P"),
@@ -173,9 +172,15 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createNextCharKeys(
-            String level0Char, String level1Char, String level2Char, Collection<String> level1NextChars,
+            PinyinTree pinyinTree, //
+            String level0Char, String level1Char, String level2Char, //
             Map<Integer, List<String>> level2NextChars
     ) {
+        PinyinTree level0PinyinTree = pinyinTree.getChild(level0Char);
+        if (level0PinyinTree == null) {
+            return createEmptyGrid();
+        }
+
         // 在初始键盘上显隐按键
         Key<?>[][] gridKeys = createKeys();
 
@@ -189,15 +194,16 @@ public class PinyinKeyTable extends KeyTable {
                     continue;
                 }
 
-                for (String nextChar : level1NextChars) {
-                    if (nextChar.equals(key.getText()) //
-                        || (nextChar.length() > key.getText().length() //
-                            // Note: hng 中的第 1 级按键 ng 使用 n 所在键位
-                            && nextChar.startsWith(key.getText()))) {
-                        key = gridKeys[i][j] = level1CharKey(nextChar);
-                        break;
-                    }
+                String nextChar = key.getText();
+                PinyinTree child = level0PinyinTree.getChild(nextChar);
+                if (child == null) {
+                    continue;
                 }
+
+                if (!child.isPinyin() && child.children.size() == 1) {
+                    nextChar = child.getNextCharsList().get(0);
+                }
+                gridKeys[i][j] = key = level1CharKey(nextChar);
 
                 boolean disabled = key.getText() != null && key.getText().equals(level1Char);
                 key.setDisabled(disabled);
@@ -249,18 +255,30 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 按韵母起始字母以此按行创建按键 */
-    public Key<?>[][] createFullCharKeys(String startChar, Map<String, List<String>> restChars) {
+    public Key<?>[][] createFullCharKeys(PinyinTree pinyinTree, String level0Char) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
         String[] charOrders = new String[] { "m", "n", "g", "a", "o", "e", "i", "u", "ü" };
         GridCoord[] gridCoords = getFullCharKeyCoords();
 
+        PinyinTree level0PinyinTree = pinyinTree.getChild(level0Char);
+        if (level0PinyinTree == null) {
+            return createKeys();
+        }
+
         List<String> restCharList = new ArrayList<>();
+        if (level0PinyinTree.isPinyin()) {
+            // 单音节拼音的后继始终为空字符
+            restCharList.add("");
+        }
+
         for (String order : charOrders) {
-            List<String> list = restChars.get(order);
-            if (list != null) {
-                restCharList.addAll(list);
+            PinyinTree child = level0PinyinTree.getChild(order);
+            if (child == null) {
+                continue;
             }
+
+            restCharList.addAll(child.getAllPinyinChars());
         }
         // 再按字符长度升序排列
         restCharList.sort(Comparator.comparing(String::length));
@@ -272,7 +290,7 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            gridKeys[row][column] = level2CharKey(startChar, restChar);
+            gridKeys[row][column] = level2CharKey(level0Char, restChar);
         }
 
         return gridKeys;
@@ -280,8 +298,9 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建 X 型输入的拼音后继字母第 1/2 级按键 */
     public Key<?>[][] createXPadNextCharKeys(
-            String level0Char, String level1Char, String level2Char, //
-            Collection<String> level1NextChars, Map<Integer, List<String>> level2NextChars
+            PinyinTree pinyinTree, //
+            String level0Char, String level1Char, //
+            Map<Integer, List<String>> level2NextChars
     ) {
         XPadKey xPadKey = createXPadKey();
         // 在初始键盘上显隐按键
@@ -311,18 +330,16 @@ public class PinyinKeyTable extends KeyTable {
                 xPadKey.zone_2_keys[4][1][2] = null;
                 return gridKeys;
             }
-            case "h": {
-                // hm hng ha he hu
-                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("hm");
-                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("hng");
-                level1NextChars.remove("m");
-                level1NextChars.remove("ng");
-                break;
-            }
             // Note：对 m 的单音节拼音提供连续输入支持
             case "m": {
                 // m ma me mi mo mu
                 xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("m");
+                break;
+            }
+            case "h": {
+                // hm hng ha he hu
+                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("hm");
+                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("hng");
                 break;
             }
             // Note：因为可用按键位不足，故而 n 的单音节拼音只能通过释放手指输入，
@@ -330,36 +347,56 @@ public class PinyinKeyTable extends KeyTable {
             case "n": {
                 // n ng na ne ni nu nü
                 xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("ng");
-                level1NextChars.remove("g");
                 break;
             }
         }
 
         if (level1Char == null) {
+            PinyinTree level0PinyinTree = pinyinTree.getChild(level0Char);
+            if (level0PinyinTree == null) {
+                return gridKeys;
+            }
+
             for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
                 Key<?>[][] zone_2_key = xPadKey.zone_2_keys[i];
+
                 for (int j = 0; j < zone_2_key.length; j++) {
                     Key<?>[] keys = zone_2_key[j];
                     // Note: 第 1 级后继按键与键盘初始按键位置保持一致
                     for (int k = 0; k < keys.length; k++) {
                         Key<?> key = keys[k];
-
                         if (key.getLevel() != Key.Level.level_final) {
                             keys[k] = null;
                         }
 
-                        for (String nextChar : level1NextChars) {
-                            if (nextChar.equals(key.getText())) {
-                                keys[k] = level1CharKey(nextChar);
+                        String nextChar = key.getText();
+                        PinyinTree child = level0PinyinTree.getChild(nextChar);
+                        if (child == null) {
+                            continue;
+                        }
 
-                                String finalChar = level0Char + nextChar;
-                                if (PinyinDict.getInstance().isValidPinyin(finalChar)) {
-                                    int layer = j == 0 ? i - 1 : i + 1;
-                                    int row = j == 0 ? j + 1 : j - 1;
-                                    xPadKey.zone_2_keys[layer][row][k] = levelFinalCharKey(finalChar);
-                                }
-                                break;
-                            }
+                        // 忽略已单独布局的后继字母按键
+                        if ((level0Char.equals("h") //
+                             && (nextChar.equals("m") || nextChar.equals("n"))) //
+                            || (level0Char.equals("n") && nextChar.equals("g"))) {
+                            continue;
+                        }
+
+                        // 双音节拼音放置在第 4 分区的左右两边的轴线外侧
+                        if (child.isPinyin()) {
+                            int layer = j == 0 ? i - 1 : i + 1;
+                            int row = j == 0 ? j + 1 : j - 1;
+
+                            String finalChar = level0PinyinTree.value + child.value;
+                            xPadKey.zone_2_keys[layer][row][k] = levelFinalCharKey(finalChar);
+                        }
+
+                        // 若第 2 级后继只有一个拼音，则直接放置
+                        if (child.children.size() == 1) {
+                            nextChar = child.getNextCharsList().get(0);
+                            keys[k] = level2CharKey("", nextChar);
+                        } else if (child.children.size() > 1) {
+                            keys[k] = level1CharKey(nextChar);
                         }
                     }
                 }
@@ -399,6 +436,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字按键 */
     public Key<?>[][] createInputCandidateKeys(
+            PinyinTree pinyinTree, //
             CharInput input, List<InputWord> words, Map<String, Integer> strokes, //
             int startIndex, boolean hasAdvanceFilter
     ) {
@@ -468,7 +506,7 @@ public class PinyinKeyTable extends KeyTable {
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!startingToggle.getChars().equals(input.getChars()) //
-            && !PinyinDict.getInstance().hasValidPinyin(startingToggle)) {
+            && !pinyinTree.hasValidPinyin(startingToggle)) {
             gridKeys[0][index_end] = noopCtrlKey();
         }
 
@@ -487,7 +525,7 @@ public class PinyinKeyTable extends KeyTable {
         }
         // 若拼音变换无效，则不提供切换按钮
         if (!endingToggle.getChars().equals(input.getChars()) //
-            && !PinyinDict.getInstance().hasValidPinyin(endingToggle)) {
+            && !pinyinTree.hasValidPinyin(endingToggle)) {
             gridKeys[1][index_end] = noopCtrlKey();
         }
 
