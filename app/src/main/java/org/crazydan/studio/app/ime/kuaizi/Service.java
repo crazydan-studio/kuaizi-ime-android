@@ -261,6 +261,9 @@ public class Service extends InputMethodService implements InputMsgListener {
             case backspace:
                 backspace();
                 break;
+            case select_all:
+                super.onExtractTextContextMenuItem(android.R.id.selectAll);
+                break;
             case copy:
                 super.onExtractTextContextMenuItem(android.R.id.copy);
                 break;

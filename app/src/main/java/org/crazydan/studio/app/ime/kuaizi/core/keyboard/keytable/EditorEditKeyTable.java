@@ -62,6 +62,7 @@ public class EditorEditKeyTable extends KeyTable {
         gridKeys[4][3] = editCtrlKey(EditorEditAction.undo);
         gridKeys[4][4] = editCtrlKey(EditorEditAction.paste);
         gridKeys[4][5] = editCtrlKey(EditorEditAction.copy);
+        gridKeys[5][3] = editCtrlKey(EditorEditAction.select_all);
 
         return gridKeys;
     }
@@ -72,6 +73,9 @@ public class EditorEditKeyTable extends KeyTable {
 
         String label = null;
         switch (action) {
+            case select_all:
+                label = "全选";
+                break;
             case copy:
                 label = "复制";
                 break;

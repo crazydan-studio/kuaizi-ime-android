@@ -29,6 +29,8 @@ public enum EditorEditAction {
 
     /** 回删 */
     backspace,
+    /** 全选 */
+    select_all,
     /** 复制 */
     copy,
     /** 粘贴 */

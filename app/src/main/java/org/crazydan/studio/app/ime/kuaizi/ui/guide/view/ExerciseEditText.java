@@ -23,6 +23,7 @@ import android.content.Context;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import androidx.appcompat.widget.AppCompatEditText;
 import org.crazydan.studio.app.ime.kuaizi.core.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
@@ -43,7 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolComm
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-16
  */
-public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditText implements InputMsgListener {
+public class ExerciseEditText extends AppCompatEditText implements InputMsgListener {
     private EditorSelection editorSelection;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
@@ -181,6 +182,9 @@ public class ExerciseEditText extends androidx.appcompat.widget.AppCompatEditTex
         switch (action) {
             case backspace:
                 backspace();
+                break;
+            case select_all:
+                onTextContextMenuItem(android.R.id.selectAll);
                 break;
             case copy:
                 onTextContextMenuItem(android.R.id.copy);
