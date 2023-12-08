@@ -122,16 +122,25 @@ public class Alert {
         AlertDialog alert = builder.setView(this.view).setCancelable(this.cancelable).create();
         alert.show();
 
-        negativeBtnView.setText(this.negativeBtn.text);
-        negativeBtnView.setOnClickListener((v) -> {
-            this.negativeBtn.listener.onClick(alert, DialogInterface.BUTTON_NEGATIVE);
-            alert.dismiss();
-        });
-        positiveBtnView.setText(this.positiveBtn.text);
-        positiveBtnView.setOnClickListener((v) -> {
-            this.positiveBtn.listener.onClick(alert, DialogInterface.BUTTON_POSITIVE);
-            alert.dismiss();
-        });
+        if (this.negativeBtn != null) {
+            negativeBtnView.setText(this.negativeBtn.text);
+            negativeBtnView.setOnClickListener((v) -> {
+                this.negativeBtn.listener.onClick(alert, DialogInterface.BUTTON_NEGATIVE);
+                alert.dismiss();
+            });
+        } else {
+            ViewUtils.hide(negativeBtnView);
+        }
+
+        if (this.positiveBtn != null) {
+            positiveBtnView.setText(this.positiveBtn.text);
+            positiveBtnView.setOnClickListener((v) -> {
+                this.positiveBtn.listener.onClick(alert, DialogInterface.BUTTON_POSITIVE);
+                alert.dismiss();
+            });
+        } else {
+            ViewUtils.hide(positiveBtnView);
+        }
     }
 
     private static class Button {

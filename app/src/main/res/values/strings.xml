@@ -34,6 +34,7 @@
     <string name="title_about_software_service_agreement">软件服务协议</string>
     <string name="title_about_copyright">版权声明</string>
     <string name="title_about_alpha_user_agreement">内测用户协议</string>
+    <string name="title_about_new_features">新功能介绍</string>
     <string name="title_user_data_backup">数据备份</string>
     <string name="title_tips">友情提示</string>
 
@@ -47,6 +48,7 @@
     <string name="btn_feedback_open_link_with_extra_info">继续反馈，且始终附带系统和应用信息</string>
     <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议</string>
     <string name="btn_guide_reject_alpha_user_agreement">放弃，我拒绝该协议</string>
+    <string name="btn_guide_new_features_confirm">好的，我已知晓</string>
     <string name="btn_guide_try_exercises">使用练习</string>
     <string name="btn_guide_show_preferences">输入法配置</string>
     <string name="btn_guide_show_software_service_agreement">软件服务协议</string>

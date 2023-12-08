@@ -27,11 +27,13 @@ import android.view.View;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.button.MaterialButton;
+import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.Service;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.SoftwareServiceAgreement;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
+import org.crazydan.studio.app.ime.kuaizi.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
@@ -42,6 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
  */
 public class Guide extends FollowSystemThemeActivity {
     private static final String pref_key_confirmed_alpha_user_agreement = "confirmed_alpha_user_agreement";
+    private static final String pref_key_confirmed_new_features_version = "confirmed_new_features_version";
 
     private SharedPreferences preferences;
 
@@ -89,9 +92,11 @@ public class Guide extends FollowSystemThemeActivity {
 
         if (!isAlphaUserAgreementConfirmed()) {
             showAlphaUserAgreementConfirmWindow();
+        } else if (!isNewFeatureConfirmed()) {
+            showNewFeatures();
         }
 
-        tryExercises(null);
+        //tryExercises(null);
     }
 
     private boolean isImeEnabled() {
@@ -165,6 +170,7 @@ public class Guide extends FollowSystemThemeActivity {
         context.startActivity(intent);
     }
 
+    // ====================================================================
     private void showAlphaUserAgreementConfirmWindow() {
         String appName = getResources().getString(R.string.app_name);
 
@@ -179,6 +185,7 @@ public class Guide extends FollowSystemThemeActivity {
              })
              .setPositiveButton(R.string.btn_guide_confirm_alpha_user_agreement, (dialog, which) -> {
                  confirmAlphaUserAgreement();
+                 showNewFeatures();
              })
              .show();
     }
@@ -191,9 +198,37 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     private void confirmAlphaUserAgreement() {
-        SharedPreferences.Editor editor = this.preferences.edit();
+        PreferencesUtils.update(this.preferences, (editor) -> {
+            editor.putBoolean(pref_key_confirmed_alpha_user_agreement, true);
+        });
+    }
 
-        editor.putBoolean(pref_key_confirmed_alpha_user_agreement, true);
-        editor.apply();
+    // ====================================================================
+    private void showNewFeatures() {
+        String appName = getResources().getString(R.string.app_name);
+
+        Alert.with(this)
+             .setView(R.layout.guide_alert_view)
+             .setTitle(R.string.title_about_new_features)
+             .setRawMessage(R.raw.text_about_new_features_v2,
+                            appName,
+                            getResources().getString(R.string.btn_guide_try_exercises),
+                            getResources().getString(R.string.btn_guide_show_preferences),
+                            getResources().getString(R.string.label_config_theme),
+                            getResources().getString(R.string.label_enable_x_input_pad))
+             .setPositiveButton(R.string.btn_guide_new_features_confirm, (dialog, which) -> {
+                 confirmNewFeatures();
+             })
+             .show();
+    }
+
+    private boolean isNewFeatureConfirmed() {
+        return this.preferences.getInt(pref_key_confirmed_new_features_version, 0) >= 200;
+    }
+
+    private void confirmNewFeatures() {
+        PreferencesUtils.update(this.preferences, (editor) -> {
+            editor.putInt(pref_key_confirmed_new_features_version, BuildConfig.VERSION_CODE);
+        });
     }
 }
