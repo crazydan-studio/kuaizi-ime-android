@@ -370,13 +370,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 CharInput pending = inputList.getPending();
 
                 Key<?> lastKey = pending.getLastKey();
-                if (key instanceof CharKey && !key.isDisabled()) {
-                    // Note: 不存在拼音同级字母相邻的情况
-                    if (key.getLevel() == lastKey.getLevel()) {
-                        drop_InputList_Pending(inputList, key);
-                        break;
-                    }
-
+                if (key instanceof CharKey //
+                    && !key.isDisabled() //
+                    // 拼音的后继不会是相同字母
+                    && !key.isSameWith(lastKey) //
+                ) {
                     play_DoubleTick_InputAudio(key);
                     show_InputChars_Input_Popup(key, false);
 
