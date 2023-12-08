@@ -365,7 +365,10 @@ public class PinyinKeyTable extends KeyTable {
                     // Note: 第 1 级后继按键与键盘初始按键位置保持一致
                     for (int k = 0; k < keys.length; k++) {
                         Key<?> key = keys[k];
-                        if (key.getLevel() != Key.Level.level_final) {
+                        // 右下角的功能和符号按键保持不动
+                        if (i + j == 1) {
+                            continue;
+                        } else if (key.getLevel() != Key.Level.level_final) {
                             keys[k] = null;
                         }
 
@@ -402,8 +405,15 @@ public class PinyinKeyTable extends KeyTable {
                 }
             }
         } else {
-            for (Key<?>[][] zone_2_key : xPadKey.zone_2_keys) {
-                for (Key<?>[] keys : zone_2_key) {
+            for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
+                Key<?>[][] zone_2_key = xPadKey.zone_2_keys[i];
+                for (int j = 0; j < zone_2_key.length; j++) {
+                    // 右下角的功能和符号按键保持不动
+                    if (i + j == 1) {
+                        continue;
+                    }
+
+                    Key<?>[] keys = zone_2_key[j];
                     Arrays.fill(keys, null);
                 }
             }
@@ -422,9 +432,6 @@ public class PinyinKeyTable extends KeyTable {
                 }
             });
         }
-
-        xPadKey.zone_2_keys[0][1][1] = ctrlKey(CtrlKey.Type.Space);
-        xPadKey.zone_2_keys[0][1][2] = ctrlKey(CtrlKey.Type.Backspace);
 
         return gridKeys;
     }

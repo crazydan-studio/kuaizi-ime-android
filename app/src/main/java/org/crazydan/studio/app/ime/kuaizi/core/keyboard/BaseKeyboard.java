@@ -125,9 +125,22 @@ public abstract class BaseKeyboard implements Keyboard {
     public void start() {
         Msg.Registry.register(UserInputMsg.class, this.userInputMsgListener);
 
+        InputList inputList = getInputList();
+        Input<?> pending = inputList.getPending();
+        boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
+                                       && getConfig().getSwitchFromType() != null //
+                                       && getConfig().getType() == Type.Pinyin;
+        // 在 X 型输入中，切换到拼音键盘时，先确认新输入（非新输入将做输入替换）
+        if (isXPadSwitchToPinyin && inputList.isGapSelected()) {
+            inputList.confirmPendingAndSelectNext();
+        }
+
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
-        // 而对于其他键盘，选中的输入将视为将被替换的输入，故不做选择处理
-        if (getConfig().getSwitchFromType() == Type.Math) {
+        // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
+        if ((getConfig().getSwitchFromType() == Type.Math //
+             && !pending.isMathExpr()) //
+            || (isXPadSwitchToPinyin && pending.isPinyin()) //
+        ) {
             start_Selected_Input_ReChoosing(getInputList());
         }
     }
@@ -1412,14 +1425,25 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
 
+        // 处理选中的输入需要切换到原键盘的情况
+        if (pending.isMathExpr()) {
+            switch_Keyboard(Type.Math, null);
+            return;
+        } else if (isXInputPadEnabled()) {
+            // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
+            // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
+            if (pending.isPinyin() && getConfig().getType() != Type.Pinyin) {
+                switch_Keyboard(Type.Pinyin, null);
+                return;
+            }
+        }
+
         if (pending.isEmoji()) {
             start_Emoji_Choosing(null);
         } else if (pending.isSymbol()) {
             boolean hasPair = !input.isGap() && ((CharInput) input).hasPair();
 
             start_Symbol_Choosing(null, hasPair);
-        } else if (pending.isMathExpr()) {
-            switch_Keyboard(Type.Math, null);
         } else if (!do_Input_Choosing(inputList, pending)) {
             // 在选择输入时，对于新输入，需先确认其 pending
             if (input.isGap() && !pending.isEmpty()) {

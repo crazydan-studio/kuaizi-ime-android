@@ -121,10 +121,10 @@ public class CharInput extends BaseInput<CharInput> {
         CharKey key = (CharKey) getFirstKey();
         String keyText = key.getText();
 
-        if ("s".equals(keyText) || "c".equals(keyText) || "z".equals(keyText)) {
-            keyText += "h";
-        } else if ("sh".equals(keyText) || "ch".equals(keyText) || "zh".equals(keyText)) {
-            keyText = keyText.substring(0, 1);
+        if (keyText.startsWith("sh") || keyText.startsWith("ch") || keyText.startsWith("zh")) {
+            keyText = keyText.charAt(0) + keyText.substring(2);
+        } else if (keyText.startsWith("s") || keyText.startsWith("c") || keyText.startsWith("z")) {
+            keyText = keyText.charAt(0) + "h" + keyText.substring(1);
         }
 
         replaceCharKeyText(key, 0, keyText);
@@ -172,10 +172,10 @@ public class CharInput extends BaseInput<CharInput> {
         CharKey key = (CharKey) getFirstKey();
         String keyText = key.getText();
 
-        if ("n".equals(keyText)) {
-            keyText = "l";
-        } else if ("l".equals(keyText)) {
-            keyText = "n";
+        if (keyText.startsWith("n")) {
+            keyText = "l" + keyText.substring(1);
+        } else if (keyText.startsWith("l")) {
+            keyText = "n" + keyText.substring(1);
         }
 
         replaceCharKeyText(key, 0, keyText);

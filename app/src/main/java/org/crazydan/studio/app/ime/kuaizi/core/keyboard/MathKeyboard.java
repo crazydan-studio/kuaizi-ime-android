@@ -377,7 +377,9 @@ public class MathKeyboard extends BaseKeyboard {
 
         // 在切换前，确保当前的算数输入列表已被确认
         // Note：新位置的待输入将被设置为普通输入，可接受非算数输入，故，不需要处理
-        topInputList.confirmPendingAndSelectNext();
+        if (topInputList.getSelected().isMathExpr()) {
+            topInputList.confirmPendingAndSelectNext();
+        }
     }
 
     private InputList getMathInputList() {
