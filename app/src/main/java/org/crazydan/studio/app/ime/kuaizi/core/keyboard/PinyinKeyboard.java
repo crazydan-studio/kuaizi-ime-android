@@ -49,6 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputCharsSlipDoin
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
@@ -66,6 +67,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
+
+    public PinyinKeyboard(InputMsgListener listener) {super(listener);}
 
     @Override
     protected KeyFactory doGetKeyFactory() {
@@ -179,7 +182,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
+    public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
                 // Note：其余消息，继续向后处理
@@ -197,7 +200,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        super.onUserInputMsg(inputList, msg, msgData);
+        super.onMsg(inputList, msg, msgData);
     }
 
     @Override

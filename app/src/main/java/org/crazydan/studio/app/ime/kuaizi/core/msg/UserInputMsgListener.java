@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputList;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public interface UserInputMsgListener extends MsgListener<InputList, UserInputMsg, UserInputMsgData> {
+public interface UserInputMsgListener {
 
     void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData);
 }

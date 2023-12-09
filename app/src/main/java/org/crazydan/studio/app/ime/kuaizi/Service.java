@@ -34,7 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitDoingMsgData;
@@ -69,11 +68,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onDestroy() {
         super.onDestroy();
 
-        Msg.Registry.unregister(this);
-        if (this.imeView != null) {
-            this.imeView.destroy();
-        }
-
         // 确保拼音字典库能够被及时关闭
         PinyinDict.getInstance().close();
     }
@@ -91,7 +85,6 @@ public class Service extends InputMethodService implements InputMsgListener {
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
         // 确保拼音字典库保持就绪状态
         PinyinDict.getInstance().open(getApplicationContext());
-        Msg.Registry.register(InputMsg.class, this);
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
@@ -155,6 +148,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     private void startImeInput(Keyboard.Config config, boolean resetInputList) {
         this.editorSelection = null;
 
+        this.imeView.setListener(this);
         this.imeView.startInput(config, resetInputList);
     }
 
@@ -164,17 +158,13 @@ public class Service extends InputMethodService implements InputMsgListener {
         super.onFinishInput();
 
         if (this.imeView != null) {
+            this.imeView.setListener(null);
             this.imeView.finishInput();
         }
     }
 
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
-        // 忽略非绑定键盘的消息
-        if (this.imeView == null || this.imeView.getKeyboard() != keyboard) {
-            return;
-        }
-
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msgData;

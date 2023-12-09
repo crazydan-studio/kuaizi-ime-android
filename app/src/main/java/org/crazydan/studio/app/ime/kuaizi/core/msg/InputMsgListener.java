@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public interface InputMsgListener extends MsgListener<Keyboard, InputMsg, InputMsgData> {
+public interface InputMsgListener {
 
     void onMsg(Keyboard sender, InputMsg msg, InputMsgData msgData);
 }

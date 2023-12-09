@@ -44,11 +44,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.SymbolChooseDoingS
 import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMovingMsgData;
@@ -75,17 +74,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
  */
 public abstract class BaseKeyboard implements Keyboard {
     protected final PinyinDict pinyinDict = PinyinDict.getInstance();
-    protected State state = new State(State.Type.InputChars_Input_Waiting);
+    private final InputMsgListener listener;
+
     private Config config;
-    /** 输入列表 */
-    private InputList inputList;
+    protected State state = new State(State.Type.InputChars_Input_Waiting);
     private Supplier<InputList> inputListGetter;
-    // Note：在 MathKeyboard#topUserInputMsgListener 中会负责监听上级 InputList 的消息
-    private final UserInputMsgListener userInputMsgListener = (inputList, msg, msgData) -> {
-        if (getInputList() == inputList) {
-            onUserInputMsg(inputList, msg, msgData);
-        }
-    };
+
+    protected BaseKeyboard(InputMsgListener listener) {this.listener = listener;}
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
     protected State getInitState() {
@@ -124,7 +119,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
-        Msg.Registry.register(UserInputMsg.class, this.userInputMsgListener);
+        change_State_To(null, this.state);
 
         InputList inputList = getInputList();
         Input<?> pending = inputList.getPending();
@@ -153,10 +148,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void destroy() {
-        Msg.Registry.unregister(this.userInputMsgListener);
-
         this.config = null;
-        this.inputList = null;
     }
 
     public InputList getInputList() {
@@ -212,7 +204,8 @@ public abstract class BaseKeyboard implements Keyboard {
                                    !inputList.isGapSelected());
     }
 
-    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
+    @Override
+    public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         switch (msg) {
             case Input_Choose_Doing:
             case Inputs_Clean_Done:
@@ -302,7 +295,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsg} 消息 */
     protected void fire_InputMsg(InputMsg msg, InputMsgData msgData) {
-        msg.send(this, msgData);
+        this.listener.onMsg(this, msg, msgData);
     }
 
     protected void fire_Common_InputMsg(InputMsg msg, Key<?> key) {
@@ -862,7 +855,7 @@ public abstract class BaseKeyboard implements Keyboard {
         switch (msg) {
             case KeyPressEnd: {
                 if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
-                    InputMsg.Keyboard_XPad_Simulation_Terminated.send(this, new InputCommonMsgData());
+                    fire_InputMsg(InputMsg.Keyboard_XPad_Simulation_Terminated, new InputCommonMsgData());
                     return true;
                 } else {
                     break;

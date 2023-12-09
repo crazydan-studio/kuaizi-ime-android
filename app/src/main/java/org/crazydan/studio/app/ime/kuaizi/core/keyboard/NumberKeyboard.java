@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.NumberKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 
 /**
  * {@link Keyboard.Type#Number 纯数字键盘}
@@ -29,6 +30,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.NumberKeyTable;
  */
 public class NumberKeyboard extends DirectInputKeyboard {
     private boolean needToShowExit;
+
+    public NumberKeyboard(InputMsgListener listener) {
+        super(listener);
+    }
 
     @Override
     public void setConfig(Config newConfig) {

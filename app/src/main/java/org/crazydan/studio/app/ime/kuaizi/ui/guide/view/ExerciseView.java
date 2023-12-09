@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
 import java.util.Locale;
-import java.util.function.Supplier;
 
 import android.view.View;
 import android.widget.TextView;
@@ -28,7 +27,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Msg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
@@ -40,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseView extends RecyclerViewHolder<Exercise> {
+public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputMsgListener {
     protected final TextView titleView;
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
@@ -57,15 +55,17 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         return String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
     }
 
-    public static void stopAll() {
-        Msg.Registry.unregister(Listener.class);
+    public void bind(Exercise exercise, int position) {
+        super.bind(exercise);
+
+        String title = createTitle(exercise, position);
+        this.titleView.setText(title);
+
+        updateSteps();
     }
 
     public void withIme(ImeInputView ime) {
         Exercise exercise = getData();
-
-        stopAll();
-        Msg.Registry.register(InputMsg.class, new Listener(ime::getKeyboard));
 
         this.textView.requestFocus();
 
@@ -81,13 +81,11 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
         exercise.restart();
     }
 
-    public void bind(Exercise exercise, int position) {
-        super.bind(exercise);
+    @Override
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        this.textView.onMsg(keyboard, msg, msgData);
 
-        String title = createTitle(exercise, position);
-        this.titleView.setText(title);
-
-        updateSteps();
+        getData().onMsg(keyboard, msg, msgData);
     }
 
     protected void scrollTo(int position) {
@@ -106,24 +104,5 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> {
 
         Exercise exercise = getData();
         this.stepListView.adapter.bind(exercise.steps);
-    }
-
-    protected class Listener implements InputMsgListener {
-        private final Supplier<Keyboard> keyboard;
-
-        private Listener(Supplier<Keyboard> keyboard) {
-            this.keyboard = keyboard;
-        }
-
-        @Override
-        public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
-            // 忽略非绑定键盘的消息
-            if (this.keyboard.get() != keyboard) {
-                return;
-            }
-
-            ExerciseView.this.textView.onMsg(keyboard, msg, msgData);
-            getData().onMsg(keyboard, msg, msgData);
-        }
     }
 }

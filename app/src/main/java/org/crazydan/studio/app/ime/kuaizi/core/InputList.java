@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
@@ -47,19 +48,25 @@ public class InputList {
 
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
+
+    private UserInputMsgListener listener;
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
-    private Staged staged = Staged.none();
+    private Staged staged;
 
     private Input.Option option;
     private boolean defaultUseWordVariant;
     private List<CompletionInput> phraseCompletions;
 
     public InputList() {
-        reset(false);
+        this.staged = doReset(Staged.Type.none);
     }
 
-    private void fire_UserInputMsg(UserInputMsg msg, UserInputMsgData msgData) {
-        msg.send(this, msgData);
+    public void setListener(UserInputMsgListener listener) {
+        this.listener = listener;
+    }
+
+    public void fireUserInputMsg(UserInputMsg msg, UserInputMsgData msgData) {
+        this.listener.onMsg(this, msg, msgData);
     }
 
     /** 重置输入列表 */
@@ -67,7 +74,7 @@ public class InputList {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         UserInputMsgData msgData = new UserInputMsgData();
-        fire_UserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
+        fireUserInputMsg(UserInputMsg.Inputs_Clean_Done, msgData);
     }
 
     /** 清空输入列表 */
@@ -121,7 +128,7 @@ public class InputList {
             Staged.restore(this, this.staged);
 
             UserInputMsgData msgData = new UserInputMsgData();
-            fire_UserInputMsg(UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
+            fireUserInputMsg(UserInputMsg.Inputs_Cleaned_Cancel_Done, msgData);
         }
     }
 
@@ -196,7 +203,7 @@ public class InputList {
             this.defaultUseWordVariant = defaultUseWordVariant;
 
             UserInputMsgData msgData = new UserInputMsgData();
-            fire_UserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
+            fireUserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
         }
     }
 

@@ -35,13 +35,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardConfigUpdateDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.core.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
-import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureTrailer;
 
@@ -60,7 +58,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
-    private final AudioPlayer audioPlayer;
 
     private Supplier<Keyboard> keyboardGetter;
 
@@ -79,14 +76,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
 
         this.animator = new KeyViewAnimator();
         setItemAnimator(this.animator);
-
-        this.audioPlayer = new AudioPlayer();
-        this.audioPlayer.load(getContext(),
-                              R.raw.tick_single,
-                              R.raw.tick_double,
-                              R.raw.page_flip,
-                              R.raw.tick_clock,
-                              R.raw.tick_ping);
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
@@ -110,7 +99,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
 
     /** 响应按键点击、双击等消息 */
     @Override
-    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Keyboard keyboard = getKeyboard();
 
         switch (msg) {
@@ -141,10 +130,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         Keyboard.KeyFactory keyFactory = msgData.getKeyFactory();
 
         switch (msg) {
-            case InputAudio_Play_Doing: {
-                on_InputAudio_Play_Doing_Msg(keyboard, (InputAudioPlayDoingMsgData) msgData);
-                break;
-            }
             case Keyboard_Config_Update_Done: {
                 Keyboard.Config config = ((KeyboardConfigUpdateDoneMsgData) msgData).after;
                 if (config.isKeyAnimationDisabled()) {
@@ -171,38 +156,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         }
 
         updateKeys(keyboard, keyFactory);
-    }
-
-    private void on_InputAudio_Play_Doing_Msg(Keyboard keyboard, InputAudioPlayDoingMsgData data) {
-        Keyboard.Config config = keyboard.getConfig();
-
-        switch (data.audioType) {
-            case SingleTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_single);
-                }
-                break;
-            case DoubleTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_double);
-                }
-                break;
-            case ClockTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_clock);
-                }
-                break;
-            case PingTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_ping);
-                }
-                break;
-            case PageFlip:
-                if (!config.isPagingAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.page_flip);
-                }
-                break;
-        }
     }
 
     private void reset() {

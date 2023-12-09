@@ -54,7 +54,7 @@ public class InputViewGestureListener implements ViewGestureDetector.Listener {
 
         UserInputMsg msg = UserInputMsg.Input_Choose_Doing;
         UserInputMsgData msgData = new UserInputMsgData(input);
-        msg.send(this.inputListView.getInputList(), msgData);
+        this.inputListView.getInputList().fireUserInputMsg(msg, msgData);
     }
 
     private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {

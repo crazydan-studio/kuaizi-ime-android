@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
  */
 public class ExerciseListView extends RecyclerView {
     public final ExerciseListViewAdapter adapter;
+    private final PagerSnapHelper pager;
 
     private ExerciseActiveListener exerciseActiveListener;
 
@@ -53,13 +54,13 @@ public class ExerciseListView extends RecyclerView {
         // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置: https://cloud.tencent.com/developer/article/1041258
         // - 用RecyclerView打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
         // - RecyclerView实现Gallery画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
-        PagerSnapHelper pager = new PagerSnapHelper();
-        pager.attachToRecyclerView(this);
+        this.pager = new PagerSnapHelper();
+        this.pager.attachToRecyclerView(this);
 
         addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                ExerciseView exerciseView = getActive(pager);
+                ExerciseView exerciseView = getActiveExerciseView();
                 ExerciseActiveListener listener = ((ExerciseListView) recyclerView).exerciseActiveListener;
 
                 if (exerciseView == null || listener == null) {
@@ -69,16 +70,6 @@ public class ExerciseListView extends RecyclerView {
                 listener.onActive(exerciseView);
             }
         });
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        destroy();
-    }
-
-    public void destroy() {
-        ExerciseView.stopAll();
     }
 
     public void active(int position) {
@@ -98,9 +89,9 @@ public class ExerciseListView extends RecyclerView {
         this.exerciseActiveListener = exerciseActiveListener;
     }
 
-    public ExerciseView getActive(PagerSnapHelper pager) {
+    public ExerciseView getActiveExerciseView() {
         // https://stackoverflow.com/questions/43305295/how-to-get-the-center-item-after-recyclerview-snapped-it-to-center#answer-43305341
-        View view = pager.findSnapView(getLayoutManager());
+        View view = this.pager.findSnapView(getLayoutManager());
 
         return view != null ? (ExerciseView) getChildViewHolder(view) : null;
     }

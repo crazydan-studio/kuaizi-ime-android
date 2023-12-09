@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.LatinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 
 /**
  * {@link Keyboard.Type#Latin 拉丁文键盘}
@@ -29,6 +30,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.LatinKeyTable;
  * @date 2023-07-29
  */
 public class LatinKeyboard extends DirectInputKeyboard {
+
+    public LatinKeyboard(InputMsgListener listener) {
+        super(listener);
+    }
 
     @Override
     protected KeyFactory doGetKeyFactory() {

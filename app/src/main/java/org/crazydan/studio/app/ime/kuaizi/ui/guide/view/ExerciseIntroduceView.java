@@ -19,6 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 
@@ -36,7 +39,11 @@ public class ExerciseIntroduceView extends ExerciseView {
 
     @Override
     public void withIme(ImeInputView ime) {
-        stopAll();
+        // keep it empty
+    }
+
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        // keep it empty
     }
 
     @Override

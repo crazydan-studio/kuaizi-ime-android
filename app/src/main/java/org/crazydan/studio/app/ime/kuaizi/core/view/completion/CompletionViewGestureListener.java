@@ -53,6 +53,6 @@ public class CompletionViewGestureListener implements ViewGestureDetector.Listen
 
         UserInputMsg msg = UserInputMsg.Input_Completion_Choose_Doing;
         UserInputMsgData msgData = new UserInputMsgData(completion);
-        msg.send(this.inputCompletionsView.getInputList(), msgData);
+        this.inputCompletionsView.getInputList().fireUserInputMsg(msg, msgData);
     }
 }

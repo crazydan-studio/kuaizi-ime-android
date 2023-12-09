@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 
 /** 输入消息 */
-public enum InputMsg implements Msg {
+public enum InputMsg {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
 

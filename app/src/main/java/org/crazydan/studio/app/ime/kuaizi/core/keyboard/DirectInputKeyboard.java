@@ -21,6 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
@@ -37,11 +38,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
  */
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
+    public DirectInputKeyboard(InputMsgListener listener) {super(listener);}
+
     @Override
-    protected void onUserInputMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
+    public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         // Note: 在输入列表为空且消息为非输入列表清空消息时，直输键盘无预处理过程，故不对输入列表事件做响应
         if (!inputList.isEmpty() || msg == UserInputMsg.Inputs_Clean_Done) {
-            super.onUserInputMsg(inputList, msg, msgData);
+            super.onMsg(inputList, msg, msgData);
         }
     }
 

@@ -41,7 +41,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Msg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchDoneMsgData;
@@ -54,16 +57,21 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
 public class ImeInputView extends FrameLayout
-        implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener {
+        implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener, UserInputMsgListener {
     private final SharedPreferences preferences;
     private final InputList inputList;
+    private final AudioPlayer audioPlayer;
+
     private Keyboard keyboard;
+    private InputMsgListener listener;
+
     private KeyboardView keyboardView;
     private InputListView inputListView;
     private PopupWindow inputCompletionsPopupWindow;
@@ -77,17 +85,6 @@ public class ImeInputView extends FrameLayout
     private Boolean disableInputKeyPopupTips;
     private Boolean disableXInputPad;
     private Boolean disableCandidateVariantFirst;
-    private final InputMsgListener inputMsgListener = (keyboard, msg, msgData) -> {
-        // 忽略非绑定键盘的消息
-        if (getKeyboard() != keyboard) {
-            return;
-        }
-
-        this.inputListView.onMsg(keyboard, msg, msgData);
-        this.keyboardView.onMsg(keyboard, msg, msgData);
-
-        this.onMsg(keyboard, msg, msgData);
-    };
     private boolean disableSettingsBtn;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -99,24 +96,17 @@ public class ImeInputView extends FrameLayout
         this.preferences.registerOnSharedPreferenceChangeListener(this);
 
         this.inputList = new InputList();
+        this.inputList.setListener(this);
+
+        this.audioPlayer = new AudioPlayer();
+        this.audioPlayer.load(getContext(),
+                              R.raw.tick_single,
+                              R.raw.tick_double,
+                              R.raw.page_flip,
+                              R.raw.tick_clock,
+                              R.raw.tick_ping);
 
         relayoutViews();
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        Msg.Registry.register(InputMsg.class, this.inputMsgListener);
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        destroy();
-    }
-
-    public void destroy() {
-        Msg.Registry.unregister(this.inputMsgListener);
     }
 
     public InputList getInputList() {
@@ -125,6 +115,10 @@ public class ImeInputView extends FrameLayout
 
     public Keyboard getKeyboard() {
         return this.keyboard;
+    }
+
+    public void setListener(InputMsgListener listener) {
+        this.listener = listener;
     }
 
     public XPadKeyView getXPadKeyView() {
@@ -224,12 +218,31 @@ public class ImeInputView extends FrameLayout
         updateKeyboardConfig();
     }
 
+    /** 响应 {@link UserInputMsg} 消息 */
+    @Override
+    public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
+        if (getKeyboard() != null) {
+            getKeyboard().onMsg(inputList, msg, msgData);
+        }
+    }
+
+    /** 响应 {@link InputMsg} 消息 */
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        if (this.listener != null) {
+            this.listener.onMsg(keyboard, msg, msgData);
+        }
+        this.keyboardView.onMsg(keyboard, msg, msgData);
+        this.inputListView.onMsg(keyboard, msg, msgData);
+
         boolean completionsShown = getInputList().hasCompletions();
         showInputCompletionsPopupWindow(completionsShown);
 
         switch (msg) {
+            case InputAudio_Play_Doing: {
+                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msgData);
+                break;
+            }
             case Keyboard_Switch_Doing: {
                 Keyboard.Type source = ((KeyboardSwitchDoingMsgData) msgData).source;
                 Keyboard.Type target = ((KeyboardSwitchDoingMsgData) msgData).target;
@@ -240,7 +253,7 @@ public class ImeInputView extends FrameLayout
                 updateKeyboard(config);
 
                 // Note：消息发送者需为更新后的 Keyboard
-                InputMsg.Keyboard_Switch_Done.send(getKeyboard(), msgData);
+                onMsg(getKeyboard(), InputMsg.Keyboard_Switch_Done, msgData);
                 break;
             }
             case Keyboard_HandMode_Switch_Done: {
@@ -312,7 +325,7 @@ public class ImeInputView extends FrameLayout
         if (needToRelayoutViews(oldConfig, newConfig)) {
             relayoutViews();
 
-            InputMsg.Keyboard_Theme_Update_Done.send(keyboard, new InputCommonMsgData());
+            onMsg(keyboard, InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
         }
         // Note: 仅需更新视图，无需更新监听等
         else if (oldConfig.getHandMode() != newConfig.getHandMode()) {
@@ -320,7 +333,7 @@ public class ImeInputView extends FrameLayout
                 this.keyboardHandMode = newConfig.getHandMode();
             }
 
-            InputMsg.Keyboard_Theme_Update_Done.send(keyboard, new InputCommonMsgData());
+            onMsg(keyboard, InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
         }
 
         updateInputListOption(newConfig);
@@ -468,13 +481,13 @@ public class ImeInputView extends FrameLayout
     private Keyboard createKeyboard(Keyboard.Type type) {
         switch (type) {
             case Math:
-                return new MathKeyboard();
+                return new MathKeyboard(this::onMsg);
             case Latin:
-                return new LatinKeyboard();
+                return new LatinKeyboard(this::onMsg);
             case Number:
-                return new NumberKeyboard();
+                return new NumberKeyboard(this::onMsg);
             default:
-                return new PinyinKeyboard();
+                return new PinyinKeyboard(this::onMsg);
         }
     }
 
@@ -555,10 +568,16 @@ public class ImeInputView extends FrameLayout
     }
 
     private void onCleanInputList(View v) {
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayDoingMsgData(null,
+                                                                    InputAudioPlayDoingMsgData.AudioType.SingleTick));
+
         getInputList().reset(true);
     }
 
     private void onCancelCleanInputList(View v) {
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayDoingMsgData(null,
+                                                                    InputAudioPlayDoingMsgData.AudioType.SingleTick));
+
         getInputList().cancelDelete();
     }
 
@@ -610,5 +629,37 @@ public class ImeInputView extends FrameLayout
 
     private void updateInputListOption(Keyboard.Config config) {
         getInputList().setDefaultUseWordVariant(config.isCandidateVariantFirstEnabled());
+    }
+
+    private void on_InputAudio_Play_Doing_Msg(InputAudioPlayDoingMsgData data) {
+        Keyboard.Config config = getKeyboardConfig();
+
+        switch (data.audioType) {
+            case SingleTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_single);
+                }
+                break;
+            case DoubleTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_double);
+                }
+                break;
+            case ClockTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_clock);
+                }
+                break;
+            case PingTick:
+                if (!config.isKeyClickedAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.tick_ping);
+                }
+                break;
+            case PageFlip:
+                if (!config.isPagingAudioDisabled()) {
+                    this.audioPlayer.play(R.raw.page_flip);
+                }
+                break;
+        }
     }
 }

@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 
@@ -32,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public interface Keyboard {
+public interface Keyboard extends UserInputMsgListener {
 
     Config getConfig();
 

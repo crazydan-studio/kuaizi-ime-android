@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
  */
 public interface UserKeyMsgListener {
 
-    void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
+    void onMsg(UserKeyMsg msg, UserKeyMsgData data);
 
     interface Trigger {
         void onGesture(Key<?> key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);

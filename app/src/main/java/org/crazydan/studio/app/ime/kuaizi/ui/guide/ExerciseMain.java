@@ -55,6 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitDoingMsgData;
@@ -73,7 +74,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExerciseMain extends FollowSystemThemeActivity {
+public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgListener {
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
@@ -112,6 +113,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
         PinyinDict.getInstance().open(getApplicationContext());
 
         this.imeView.refresh();
+        this.imeView.setListener(this);
 
         super.onStart();
     }
@@ -119,9 +121,7 @@ public class ExerciseMain extends FollowSystemThemeActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        this.imeView.destroy();
-        this.exerciseListView.destroy();
+        this.imeView.setListener(null);
     }
 
     @Override
@@ -244,6 +244,12 @@ public class ExerciseMain extends FollowSystemThemeActivity {
 
         // Note：延迟激活指定的练习，以确保始终能被选中
         this.exerciseListView.post(() -> activeExercise(1));
+    }
+
+    @Override
+    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+        ExerciseView exerciseView = this.exerciseListView.getActiveExerciseView();
+        exerciseView.onMsg(keyboard, msg, msgData);
     }
 
     private List<Exercise> createExercises(

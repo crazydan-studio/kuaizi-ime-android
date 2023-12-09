@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
-public enum UserInputMsg implements Msg {
+public enum UserInputMsg {
     /** 输入列表配置已更新 */
     InputList_Option_Update_Done,
 

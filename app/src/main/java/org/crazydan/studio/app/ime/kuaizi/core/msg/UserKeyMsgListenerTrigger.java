@@ -105,7 +105,7 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
 
     private void onLongPressEnd(Key<?> key, ViewGestureDetector.GestureData data) {
         UserKeyMsgData msgData = new UserKeyMsgData(null);
-        this.listener.onUserKeyMsg(UserKeyMsg.KeyLongPressEnd, msgData);
+        this.listener.onMsg(UserKeyMsg.KeyLongPressEnd, msgData);
     }
 
     private void onSingleTap(Key<?> key, ViewGestureDetector.GestureData data) {
@@ -120,7 +120,7 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
         Motion motion = ((ViewGestureDetector.MovingGestureData) data).motion;
         UserFingerMovingMsgData msgData = new UserFingerMovingMsgData(key, motion);
 
-        this.listener.onUserKeyMsg(UserKeyMsg.FingerMoving, msgData);
+        this.listener.onMsg(UserKeyMsg.FingerMoving, msgData);
     }
 
     private void onMovingStart(Key<?> key, ViewGestureDetector.GestureData data) {
@@ -129,14 +129,14 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
 
     private void onMovingEnd(Key<?> key, ViewGestureDetector.GestureData data) {
         UserKeyMsgData msgData = new UserKeyMsgData(key);
-        this.listener.onUserKeyMsg(UserKeyMsg.FingerMovingEnd, msgData);
+        this.listener.onMsg(UserKeyMsg.FingerMovingEnd, msgData);
     }
 
     private void onFlipping(Key<?> key, ViewGestureDetector.GestureData data) {
         Motion motion = ((ViewGestureDetector.FlippingGestureData) data).motion;
         UserFingerFlippingMsgData msgData = new UserFingerFlippingMsgData(key, motion);
 
-        this.listener.onUserKeyMsg(UserKeyMsg.FingerFlipping, msgData);
+        this.listener.onMsg(UserKeyMsg.FingerFlipping, msgData);
     }
 
     private void onUserKeyMsg(UserKeyMsg msg, Key<?> key, ViewGestureDetector.GestureData data) {
@@ -157,6 +157,6 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
                 break;
         }
 
-        this.listener.onUserKeyMsg(msg, msgData);
+        this.listener.onMsg(msg, msgData);
     }
 }
