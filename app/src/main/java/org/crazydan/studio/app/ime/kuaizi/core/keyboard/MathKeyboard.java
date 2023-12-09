@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
+import java.util.function.Supplier;
+
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
@@ -258,8 +260,8 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void setInputList(InputList inputList) {
-        setTopInputList(inputList);
+    public void setInputList(Supplier<InputList> getter) {
+        setTopInputList(getter);
     }
 
     @Override
@@ -390,8 +392,8 @@ public class MathKeyboard extends BaseKeyboard {
         return super.getInputList();
     }
 
-    private void setTopInputList(InputList topInputList) {
-        super.setInputList(topInputList);
+    private void setTopInputList(Supplier<InputList> getter) {
+        super.setInputList(getter);
     }
 
     private void dropMathInputList() {

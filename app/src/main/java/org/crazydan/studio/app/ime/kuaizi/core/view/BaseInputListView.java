@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.view;
 
+import java.util.function.Supplier;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -45,7 +47,7 @@ public class BaseInputListView extends RecyclerView {
     private final InputViewLayoutManager layoutManager;
     private final RecyclerViewGestureDetector gesture;
 
-    private InputList inputList;
+    private Supplier<InputList> inputListGetter;
 
     public BaseInputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -68,25 +70,19 @@ public class BaseInputListView extends RecyclerView {
         super.onDetachedFromWindow();
 
         this.gesture.reset();
-        updateInputList(null);
+    }
+
+    public void setInputList(Supplier<InputList> inputListGetter) {
+        this.inputListGetter = inputListGetter;
     }
 
     public InputList getInputList() {
-        return this.inputList;
+        return this.inputListGetter.get();
     }
 
-    public void updateInputList(InputList inputList) {
-        updateInputList(inputList, true);
-    }
-
-    public void updateInputList(InputList inputList, boolean canBeSelected) {
-        this.inputList = inputList;
-
-        this.adapter.updateInputList(this.inputList, canBeSelected);
-    }
-
-    protected void refreshInputList(InputList inputList) {
-        updateInputList(inputList);
+    public void update(boolean canBeSelected) {
+        InputList inputList = getInputList();
+        this.adapter.updateInputList(inputList, canBeSelected);
 
         int position = inputList.getSelectedIndex();
         scrollToSelected(position);

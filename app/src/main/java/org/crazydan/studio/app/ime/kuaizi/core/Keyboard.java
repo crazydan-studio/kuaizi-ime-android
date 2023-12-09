@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import java.util.function.Supplier;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -38,7 +40,7 @@ public interface Keyboard {
 
     KeyFactory getKeyFactory();
 
-    void setInputList(InputList inputList);
+    void setInputList(Supplier<InputList> getter);
 
     boolean isXInputPadEnabled();
 

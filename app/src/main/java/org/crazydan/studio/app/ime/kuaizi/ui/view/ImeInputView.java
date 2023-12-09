@@ -320,7 +320,7 @@ public class ImeInputView extends FrameLayout
                 this.keyboardHandMode = newConfig.getHandMode();
             }
 
-            this.keyboardView.updateKeyboard(keyboard);
+            InputMsg.Keyboard_Theme_Update_Done.send(keyboard, new InputCommonMsgData());
         }
 
         updateInputListOption(newConfig);
@@ -349,13 +349,15 @@ public class ImeInputView extends FrameLayout
         toggleShowInputListCleanBtn();
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
+        this.keyboardView.setKeyboard(this::getKeyboard);
+
         this.inputListView = rootView.findViewById(R.id.input_list);
+        this.inputListView.setInputList(this::getInputList);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
+        this.inputCompletionsView.setInputList(this::getInputList);
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
-
-        this.inputListView.updateInputList(this.inputList);
 
         Keyboard keyboard = getKeyboard();
         bindKeyboard(keyboard);
@@ -400,10 +402,8 @@ public class ImeInputView extends FrameLayout
             return;
         }
 
-        keyboard.setInputList(this.inputList);
+        keyboard.setInputList(this::getInputList);
         keyboard.start();
-
-        this.keyboardView.updateKeyboard(keyboard);
     }
 
     private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
@@ -507,7 +507,7 @@ public class ImeInputView extends FrameLayout
             return;
         }
 
-        this.inputCompletionsView.updateInputList(getInputList());
+        this.inputCompletionsView.update();
         if (window.isShowing()) {
             return;
         }

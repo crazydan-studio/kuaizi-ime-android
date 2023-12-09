@@ -96,7 +96,7 @@ public class Guide extends FollowSystemThemeActivity {
             showNewFeatures();
         }
 
-        //tryExercises(null);
+        tryExercises(null);
     }
 
     private boolean isImeEnabled() {

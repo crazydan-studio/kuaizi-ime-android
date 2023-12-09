@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core.view;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -36,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
 /**
  * 输入补全列表视图
  * <p/>
- * 注：在需要显示前调用 {@link #updateInputList} 更新列表数据
+ * 注：在需要显示前调用 {@link #update} 更新列表数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
@@ -44,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
 public class InputCompletionsView extends RecyclerView {
     private final CompletionViewAdapter adapter;
 
-    private InputList inputList;
+    private Supplier<InputList> inputListGetter;
 
     public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -60,14 +61,18 @@ public class InputCompletionsView extends RecyclerView {
                .addListener(new CompletionViewGestureListener(this));
     }
 
-    public InputList getInputList() {
-        return this.inputList;
+    public void setInputList(Supplier<InputList> inputListGetter) {
+        this.inputListGetter = inputListGetter;
     }
 
-    public void updateInputList(InputList inputList) {
-        this.inputList = inputList;
+    public InputList getInputList() {
+        return this.inputListGetter.get();
+    }
 
+    public void update() {
+        InputList inputList = getInputList();
         List<CompletionInput> completions = inputList.getCompletions();
+
         this.adapter.updateDataList(completions);
     }
 

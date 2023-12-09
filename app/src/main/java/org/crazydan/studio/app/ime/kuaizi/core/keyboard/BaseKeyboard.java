@@ -79,6 +79,7 @@ public abstract class BaseKeyboard implements Keyboard {
     private Config config;
     /** 输入列表 */
     private InputList inputList;
+    private Supplier<InputList> inputListGetter;
     // Note：在 MathKeyboard#topUserInputMsgListener 中会负责监听上级 InputList 的消息
     private final UserInputMsgListener userInputMsgListener = (inputList, msg, msgData) -> {
         if (getInputList() == inputList) {
@@ -159,12 +160,12 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     public InputList getInputList() {
-        return this.inputList;
+        return this.inputListGetter.get();
     }
 
     @Override
-    public void setInputList(InputList inputList) {
-        this.inputList = inputList;
+    public void setInputList(Supplier<InputList> getter) {
+        this.inputListGetter = getter;
     }
 
     @Override
