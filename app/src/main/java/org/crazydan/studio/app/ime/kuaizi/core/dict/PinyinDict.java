@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
@@ -71,8 +70,6 @@ public class PinyinDict {
     private static final String file_user_dict_db = "pinyin_user_dict.db";
 
     private static final PinyinDict instance = new PinyinDict();
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     private Future<Boolean> dbInited;
     private Future<Boolean> dbOpened;
@@ -216,7 +213,7 @@ public class PinyinDict {
             return;
         }
 
-        this.dbInited = this.executor.submit(() -> {
+        this.dbInited = Async.executor.submit(() -> {
             doInit(context);
             return true;
         });
@@ -228,7 +225,7 @@ public class PinyinDict {
             return;
         }
 
-        this.dbOpened = this.executor.submit(() -> {
+        this.dbOpened = Async.executor.submit(() -> {
             // 等待初始化完成后，再开启数据库
             if (isInited()) {
                 doOpen(context);
@@ -296,11 +293,11 @@ public class PinyinDict {
 
         Future<BestCandidateWords> userBestFuture = userDataDisabled
                                                     ? null
-                                                    : this.executor.submit(() -> findTopBestPinyinWordsFromUserDB(
+                                                    : Async.executor.submit(() -> findTopBestPinyinWordsFromUserDB(
                                                             inputPinyinCharsId,
                                                             top,
                                                             prevPhrase));
-        Future<BestCandidateWords> appBestFuture = this.executor.submit(() -> findTopBestPinyinWordsFromAppDB(
+        Future<BestCandidateWords> appBestFuture = Async.executor.submit(() -> findTopBestPinyinWordsFromAppDB(
                 inputPinyinCharsId,
                 top,
                 prevPhrase));
@@ -423,7 +420,7 @@ public class PinyinDict {
             return;
         }
 
-        this.executor.execute(() -> {
+        Async.executor.execute(() -> {
             data.phrases.forEach(this::doSaveUsedPinyinPhrase);
             doSaveUsedEmojis(data.emojis);
             doSaveUsedLatins(data.latins);
@@ -436,7 +433,7 @@ public class PinyinDict {
             return;
         }
 
-        this.executor.execute(() -> {
+        Async.executor.execute(() -> {
             data.phrases.forEach(this::undoSaveUsedPinyinPhrase);
             undoSaveUsedEmojis(data.emojis);
             undoSaveUsedLatins(data.latins);
@@ -824,13 +821,13 @@ public class PinyinDict {
         // 查找繁/简字
         Future<Map<String, List<String>>> tradWithSimpleWordIdMapFuture = tradWordMap.isEmpty()
                                                                           ? null
-                                                                          : this.executor.submit(() -> findPinyinWordVariantIds(
+                                                                          : Async.executor.submit(() -> findPinyinWordVariantIds(
                                                                                   db,
                                                                                   "link_word_with_simple_word",
                                                                                   tradWordMap.keySet()));
         Future<Map<String, List<String>>> simpleWithTradWordIdMapFuture = simpleWordMap.isEmpty()
                                                                           ? null
-                                                                          : this.executor.submit(() -> findPinyinWordVariantIds(
+                                                                          : Async.executor.submit(() -> findPinyinWordVariantIds(
                                                                                   db,
                                                                                   "link_word_with_traditional_word",
                                                                                   simpleWordMap.keySet()));
@@ -884,13 +881,13 @@ public class PinyinDict {
 
         Future<Map<String, List<String>>> tradWithSimpleWordMapFuture = tradWordMap.isEmpty()
                                                                         ? null
-                                                                        : this.executor.submit(() -> findPinyinWordVariants(
+                                                                        : Async.executor.submit(() -> findPinyinWordVariants(
                                                                                 db,
                                                                                 "simple_word",
                                                                                 tradWordMap.keySet()));
         Future<Map<String, List<String>>> simpleWithTradWordMapFuture = simpleWordMap.isEmpty()
                                                                         ? null
-                                                                        : this.executor.submit(() -> findPinyinWordVariants(
+                                                                        : Async.executor.submit(() -> findPinyinWordVariants(
                                                                                 db,
                                                                                 "traditional_word",
                                                                                 simpleWordMap.keySet()));

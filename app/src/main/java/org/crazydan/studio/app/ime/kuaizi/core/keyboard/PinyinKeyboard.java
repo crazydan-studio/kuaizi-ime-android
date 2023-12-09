@@ -613,8 +613,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void end_InputChars_Inputting(InputList inputList, CharInput pending, Key<?> key, boolean reset) {
-        // 无候选字的输入，视为无效输入，直接丢弃
-        if (!pending.hasWord()) {
+        // 非拼音输入，视为无效输入，直接丢弃
+        if (!this.pinyinDict.getPinyinTree().hasValidPinyin(pending)) {
             drop_InputList_Pending(inputList, key);
         } else {
             determine_NotConfirmed_InputWords_Before(inputList, pending);
@@ -1053,6 +1053,10 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入中实时调用
      */
     private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
+        if (!this.pinyinDict.getPinyinTree().hasValidPinyin(input)) {
+            return;
+        }
+
         determine_NotConfirmed_InputWord(inputList, input, () -> getTopBestInputCandidateWords(inputList, input, 1));
     }
 
