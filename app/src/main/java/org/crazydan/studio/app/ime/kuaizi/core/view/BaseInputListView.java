@@ -48,7 +48,6 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
 public class BaseInputListView extends RecyclerView implements ViewGestureDetector.Listener {
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
-    private final RecyclerViewGestureDetector gesture;
 
     private Supplier<InputList> inputListGetter;
 
@@ -63,16 +62,9 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         // Note：取消动画以确保输入能够直接显隐，不做淡化
         setItemAnimator(null);
 
-        this.gesture = new RecyclerViewGestureDetector();
-        this.gesture.bind(this) //
-                    .addListener(this);
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-
-        this.gesture.reset();
+        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
+        gesture.bind(this) //
+               .addListener(this);
     }
 
     public void setInputList(Supplier<InputList> inputListGetter) {
