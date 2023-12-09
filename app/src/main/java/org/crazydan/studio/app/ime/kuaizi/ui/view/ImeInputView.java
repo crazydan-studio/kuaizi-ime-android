@@ -229,9 +229,11 @@ public class ImeInputView extends FrameLayout
     /** 响应 {@link InputMsg} 消息 */
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
-        if (this.listener != null) {
-            this.listener.onMsg(keyboard, msg, msgData);
+        // Note：存在在相邻消息中切换键盘的情况，故而，需忽略切换前的键盘消息
+        if (getKeyboard() != keyboard) {
+            return;
         }
+
         this.keyboardView.onMsg(keyboard, msg, msgData);
         this.inputListView.onMsg(keyboard, msg, msgData);
 
@@ -278,6 +280,11 @@ public class ImeInputView extends FrameLayout
 
                 toggleShowInputListCleanBtn();
             }
+        }
+
+        // 最后处理外部监听，以确保内部已经处理完成
+        if (this.listener != null) {
+            this.listener.onMsg(keyboard, msg, msgData);
         }
     }
 
