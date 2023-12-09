@@ -28,10 +28,12 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.completion.CompletionView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.completion.CompletionViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.view.completion.CompletionViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.core.view.completion.CompletionViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
@@ -42,7 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class InputCompletionsView extends RecyclerView {
+public class InputCompletionsView extends RecyclerView implements ViewGestureDetector.Listener {
     private final CompletionViewAdapter adapter;
 
     private Supplier<InputList> inputListGetter;
@@ -58,7 +60,7 @@ public class InputCompletionsView extends RecyclerView {
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
         gesture.bind(this) //
-               .addListener(new CompletionViewGestureListener(this));
+               .addListener(this);
     }
 
     public void setInputList(Supplier<InputList> inputListGetter) {
@@ -76,7 +78,27 @@ public class InputCompletionsView extends RecyclerView {
         this.adapter.updateDataList(completions);
     }
 
-    public CompletionView findCompletionViewUnder(float x, float y) {
+    @Override
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+        CompletionView completionView = findCompletionViewUnder(data.x, data.y);
+        if (completionView == null) {
+            return;
+        }
+
+        if (type == ViewGestureDetector.GestureType.SingleTap) {
+            onSingleTap(completionView, data);
+        }
+    }
+
+    private void onSingleTap(CompletionView completionView, ViewGestureDetector.GestureData data) {
+        CompletionInput completion = completionView.getData();
+
+        UserInputMsg msg = UserInputMsg.Input_Completion_Choose_Doing;
+        UserInputMsgData msgData = new UserInputMsgData(completion);
+        getInputList().fireUserInputMsg(msg, msgData);
+    }
+
+    private CompletionView findCompletionViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
         if (view == null) {
             return null;

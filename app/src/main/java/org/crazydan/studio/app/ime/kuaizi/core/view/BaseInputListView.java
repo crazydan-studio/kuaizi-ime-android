@@ -26,14 +26,17 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDetector;
 
 /**
@@ -42,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewGestureDet
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class BaseInputListView extends RecyclerView {
+public class BaseInputListView extends RecyclerView implements ViewGestureDetector.Listener {
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
     private final RecyclerViewGestureDetector gesture;
@@ -62,7 +65,7 @@ public class BaseInputListView extends RecyclerView {
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
-                    .addListener(new InputViewGestureListener(this));
+                    .addListener(this);
     }
 
     @Override
@@ -86,6 +89,40 @@ public class BaseInputListView extends RecyclerView {
 
         int position = inputList.getSelectedIndex();
         scrollToSelected(position);
+    }
+
+    @Override
+    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
+        InputView<?> inputView = findVisibleInputViewUnder(data.x, data.y);
+
+        if (type == ViewGestureDetector.GestureType.SingleTap) {
+            onSingleTap(inputView, data);
+        }
+    }
+
+    private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
+        Input<?> input = determineInput(inputView, data);
+        if (input == null) {
+            return;
+        }
+
+        UserInputMsg msg = UserInputMsg.Input_Choose_Doing;
+        UserInputMsgData msgData = new UserInputMsgData(input);
+        getInputList().fireUserInputMsg(msg, msgData);
+    }
+
+    private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {
+        Input<?> input = inputView != null ? inputView.getData() : null;
+
+        if (input == null) {
+            InputList inputList = getInputList();
+            if (data.x < getPaddingStart()) {
+                input = inputList.getFirstInput();
+            } else {
+                input = inputList.getLastInput();
+            }
+        }
+        return input;
     }
 
     private void scrollToSelected(int position) {
@@ -132,7 +169,7 @@ public class BaseInputListView extends RecyclerView {
     }
 
     /** 找到指定坐标下可见的{@link  InputView 输入视图} */
-    public InputView<?> findVisibleInputViewUnder(float x, float y) {
+    private InputView<?> findVisibleInputViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
         InputView<?> inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
 
