@@ -17,9 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.Objects;
+
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -33,6 +34,8 @@ import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.MathKeyboard;
@@ -47,8 +50,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCommonMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.InputListView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.KeyboardView;
@@ -63,28 +66,28 @@ import org.crazydan.studio.app.ime.kuaizi.widget.AudioPlayer;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class ImeInputView extends FrameLayout
-        implements SharedPreferences.OnSharedPreferenceChangeListener, InputMsgListener, UserInputMsgListener {
-    private final SharedPreferences preferences;
-    private final InputList inputList;
+public class ImeInputView extends FrameLayout implements InputMsgListener, UserInputMsgListener {
+    /** 记录系统的持久化配置 */
+    private final Configuration sysConf;
+    /** 记录应用临时变更的配置 */
+    private final Configuration appConf;
+
     private final AudioPlayer audioPlayer;
 
-    private Keyboard keyboard;
     private InputMsgListener listener;
 
+    private Keyboard keyboard;
     private KeyboardView keyboardView;
+    private final InputList inputList;
     private InputListView inputListView;
-    private PopupWindow inputCompletionsPopupWindow;
+
     private PopupWindow inputKeyPopupWindow;
+    private PopupWindow inputCompletionsPopupWindow;
     private InputCompletionsView inputCompletionsView;
+
     private View settingsBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
-    private Keyboard.HandMode keyboardHandMode;
-    private Boolean disableUserInputData;
-    private Boolean disableInputKeyPopupTips;
-    private Boolean disableXInputPad;
-    private Boolean disableCandidateVariantFirst;
     private boolean disableSettingsBtn;
 
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -92,10 +95,13 @@ public class ImeInputView extends FrameLayout
 
         PinyinDict.getInstance().init(getContext());
 
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        this.preferences.registerOnSharedPreferenceChangeListener(this);
+        this.appConf = new Configuration();
+        this.sysConf = new Configuration(this::onConfigurationChanged);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        this.sysConf.bind(preferences);
 
         this.inputList = new InputList();
+        this.inputList.setConfig(this::getConfig);
         this.inputList.setListener(this);
 
         this.audioPlayer = new AudioPlayer();
@@ -109,6 +115,10 @@ public class ImeInputView extends FrameLayout
         relayoutViews();
     }
 
+    public void setListener(InputMsgListener listener) {
+        this.listener = listener;
+    }
+
     public InputList getInputList() {
         return this.inputList;
     }
@@ -117,74 +127,61 @@ public class ImeInputView extends FrameLayout
         return this.keyboard;
     }
 
-    public void setListener(InputMsgListener listener) {
-        this.listener = listener;
+    public Configuration getConfig() {
+        Configuration config = this.sysConf.copy();
+        config.merge(this.appConf);
+
+        Keyboard.Orientation orientation;
+        if (getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            orientation = Keyboard.Orientation.landscape;
+        } else {
+            orientation = Keyboard.Orientation.portrait;
+        }
+        config.set(Conf.orientation, orientation);
+
+        return config;
     }
 
     public XPadKeyView getXPadKeyView() {
         return this.keyboardView.getXPadKeyView();
     }
 
-    public void refresh() {
-        updateKeyboardConfig();
+    // =================================================
+    public void setSubtype(Keyboard.Subtype subtype) {
+        this.appConf.set(Conf.subtype, subtype);
     }
 
-    public void disableUserInputData(boolean disabled) {
-        this.disableUserInputData = disabled;
-
-        Keyboard keyboard = getKeyboard();
-        if (keyboard != null) {
-            keyboard.getConfig().setUserInputDataDisabled(disabled);
-        }
+    public void setSingleLineInput(Boolean enabled) {
+        this.appConf.set(Conf.single_line_input, enabled);
     }
 
-    public void disableInputKeyPopupTips(boolean disabled) {
-        this.disableInputKeyPopupTips = disabled;
-
-        Keyboard keyboard = getKeyboard();
-        if (keyboard != null) {
-            keyboard.getConfig().setInputKeyPopupTipsDisabled(disabled);
-        }
+    public void disableUserInputData(Boolean disabled) {
+        this.appConf.set(Conf.disable_user_input_data, disabled);
     }
 
-    public void disableXInputPad(Boolean disabled) {
-        this.disableXInputPad = disabled;
+    public void disableInputKeyPopupTips(Boolean disabled) {
+        this.appConf.set(Conf.disable_input_key_popup_tips, disabled);
+    }
 
-        if (disabled == null) {
-            disabled = !Keyboard.Config.isXInputPadEnabled(this.preferences);
-        }
+    public void enableXInputPad(Boolean enabled) {
+        Boolean old = this.appConf.get(Conf.enable_x_input_pad);
+        this.appConf.set(Conf.enable_x_input_pad, enabled);
 
-        Keyboard keyboard = getKeyboard();
-        if (keyboard != null) {
-            keyboard.getConfig().setXInputPadEnabled(!disabled);
-
-            updateBottomSpacing(keyboard);
+        if (!Objects.equals(old, enabled)) {
+            updateBottomSpacing();
         }
     }
 
-    public void disableCandidateVariantFirst(Boolean disabled) {
-        this.disableCandidateVariantFirst = disabled;
-
-        if (disabled == null) {
-            disabled = Keyboard.Config.isCandidateVariantFirstEnabled(this.preferences);
-        }
-
-        if (this.keyboard != null) {
-            this.keyboard.getConfig().setCandidateVariantFirstEnabled(!disabled);
-        }
+    public void enableCandidateVariantFirst(Boolean enabled) {
+        this.appConf.set(Conf.enable_candidate_variant_first, enabled);
     }
 
     public void disableSettingsBtn(boolean disabled) {
         this.disableSettingsBtn = disabled;
 
-        if (disabled) {
-            this.settingsBtnView.setAlpha(0.4f);
-            this.settingsBtnView.setOnClickListener(null);
-        } else {
-            this.settingsBtnView.setAlpha(1.0f);
-            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
-        }
+        toggleEnableSettingsBtn();
     }
+    // ============================================
 
     /** 启动指定类型的键盘，并清空输入列表 */
     public void startInput(Keyboard.Type type) {
@@ -194,12 +191,7 @@ public class ImeInputView extends FrameLayout
     /** 启动指定类型的键盘 */
     public void startInput(Keyboard.Type type, boolean resetInputList) {
         //Log.i("SwitchKeyboard", String.format("%s - %s", type, resetInputList));
-        startInput(new Keyboard.Config(type), resetInputList);
-    }
-
-    /** 开始输入 */
-    public void startInput(Keyboard.Config config, boolean resetInputList) {
-        updateKeyboard(config);
+        updateKeyboard(type);
 
         // 先更新键盘，再重置输入列表
         if (resetInputList) {
@@ -213,17 +205,36 @@ public class ImeInputView extends FrameLayout
         getKeyboard().reset();
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        updateKeyboardConfig();
+    private void onConfigurationChanged(Conf conf, Object oldValue, Object newValue) {
+        Keyboard keyboard = getKeyboard();
+        if (keyboard == null) {
+            return;
+        }
+
+        // Note：仅当新旧配置值不相等时才会触发配置更新，故而，仅需检查哪些配置项发生了变更即可
+        switch (conf) {
+            case theme: {
+                relayoutViews();
+                break;
+            }
+            case adapt_desktop_swipe_up_gesture: {
+                updateBottomSpacing();
+                break;
+            }
+        }
+
+        onMsg(keyboard, InputMsg.Keyboard_Config_Update_Done, new InputCommonMsgData());
     }
 
     /** 响应 {@link UserInputMsg} 消息 */
     @Override
     public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
-        if (getKeyboard() != null) {
-            getKeyboard().onMsg(inputList, msg, msgData);
+        Keyboard keyboard = getKeyboard();
+        if (keyboard == null) {
+            return;
         }
+
+        keyboard.onMsg(inputList, msg, msgData);
     }
 
     /** 响应 {@link InputMsg} 消息 */
@@ -243,34 +254,31 @@ public class ImeInputView extends FrameLayout
         switch (msg) {
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msgData);
-                break;
+                return;
             }
             case Keyboard_Switch_Doing: {
-                Keyboard.Type source = ((KeyboardSwitchDoingMsgData) msgData).source;
-                Keyboard.Type target = ((KeyboardSwitchDoingMsgData) msgData).target;
-
-                Keyboard.Config config = new Keyboard.Config(target, keyboard.getConfig());
-                config.setSwitchFromType(source);
-
-                updateKeyboard(config);
+                Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
+                updateKeyboard(target);
 
                 // Note：消息发送者需为更新后的 Keyboard
                 onMsg(getKeyboard(), InputMsg.Keyboard_Switch_Done, msgData);
-                break;
+                return;
             }
-            case Keyboard_HandMode_Switch_Done: {
-                // Note：仅记录切换到的模式以便于切换到其他类型键盘时按该模式绘制按键
-                this.keyboardHandMode = ((KeyboardHandModeSwitchDoneMsgData) msgData).mode;
-                break;
+            case Keyboard_HandMode_Switch_Doing: {
+                Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msgData).mode;
+                this.appConf.set(Conf.hand_mode, mode);
+
+                onMsg(keyboard, InputMsg.Keyboard_HandMode_Switch_Done, msgData);
+                return;
             }
             case InputChars_Input_Popup_Show_Doing: {
                 showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) msgData).text,
                                         ((InputCharsInputPopupShowingMsgData) msgData).hideDelayed);
-                break;
+                return;
             }
             case InputChars_Input_Popup_Hide_Doing: {
                 showInputKeyPopupWindow(null, false);
-                break;
+                return;
             }
             default: {
                 // 有新输入，则清空 删除撤销数据
@@ -289,86 +297,46 @@ public class ImeInputView extends FrameLayout
     }
 
     /** 根据配置更新键盘：涉及键盘切换等 */
-    private void updateKeyboard(Keyboard.Config config) {
+    private void updateKeyboard(Keyboard.Type type) {
         Keyboard oldKeyboard = this.keyboard;
+        Keyboard.Type oldType = oldKeyboard != null ? oldKeyboard.getType() : null;
 
-        Keyboard newKeyboard = createKeyboard(config.getType());
-        if (oldKeyboard != null && newKeyboard.getClass().equals(oldKeyboard.getClass())) {
-            newKeyboard = oldKeyboard;
-        }
-
-        Keyboard.Config patchedConfig = patchKeyboardConfig(config);
-        newKeyboard.setConfig(patchedConfig);
-
-        if (oldKeyboard != newKeyboard) {
+        if (oldType != null && (oldType == type || type == null)) {
+            oldKeyboard.reset();
+        } else if (type != null) {
             if (oldKeyboard != null) {
                 oldKeyboard.destroy();
             }
+
+            Keyboard newKeyboard = createKeyboard(type, oldType);
+            newKeyboard.setInputList(this::getInputList);
+            newKeyboard.setConfig(this::getConfig);
+
             this.keyboard = newKeyboard;
-
-            bindKeyboard(newKeyboard);
-        } else {
-            newKeyboard.reset();
+            newKeyboard.start();
         }
-
-        updateBottomSpacing(newKeyboard);
-        updateInputListOption(patchedConfig);
-
-        toggleShowInputListCleanBtn();
-    }
-
-    private void updateKeyboardConfig() {
-        Keyboard keyboard = getKeyboard();
-        if (keyboard == null) {
-            return;
-        }
-
-        Keyboard.Config oldConfig = keyboard.getConfig();
-        Keyboard.Config newConfig = patchKeyboardConfig(oldConfig);
-
-        keyboard.setConfig(newConfig);
-
-        // 主题发生变化，重新绑定视图
-        if (needToRelayoutViews(oldConfig, newConfig)) {
-            relayoutViews();
-
-            onMsg(keyboard, InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
-        }
-        // Note: 仅需更新视图，无需更新监听等
-        else if (oldConfig.getHandMode() != newConfig.getHandMode()) {
-            if (this.keyboardHandMode != null) {
-                this.keyboardHandMode = newConfig.getHandMode();
-            }
-
-            onMsg(keyboard, InputMsg.Keyboard_Theme_Update_Done, new InputCommonMsgData());
-        }
-
-        updateInputListOption(newConfig);
-    }
-
-    private void reset() {
-        resetPopupWindows();
     }
 
     private void relayoutViews() {
-        reset();
+        resetPopupWindows();
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
-        Keyboard.Config config = getKeyboardConfig();
-        Keyboard.ThemeType theme = config.getTheme();
+        Configuration config = getConfig();
+        Keyboard.ThemeType theme = config.get(Conf.theme);
         int themeResId = Keyboard.Config.getThemeResId(getContext(), theme);
 
         View rootView = inflateWithTheme(R.layout.ime_input_view_layout, themeResId);
 
         this.settingsBtnView = rootView.findViewById(R.id.settings);
-        disableSettingsBtn(this.disableSettingsBtn);
+        toggleEnableSettingsBtn();
 
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
         toggleShowInputListCleanBtn();
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
+        this.keyboardView.setConfig(this::getConfig);
         this.keyboardView.setKeyboard(this::getKeyboard);
 
         this.inputListView = rootView.findViewById(R.id.input_list);
@@ -379,29 +347,17 @@ public class ImeInputView extends FrameLayout
         this.inputCompletionsView.setInputList(this::getInputList);
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
-        Keyboard keyboard = getKeyboard();
-        bindKeyboard(keyboard);
-        updateBottomSpacing(keyboard);
+        updateBottomSpacing();
     }
 
-    private boolean needToRelayoutViews(Keyboard.Config oldConfig, Keyboard.Config newConfig) {
-        return oldConfig.getTheme() != newConfig.getTheme()
-               || oldConfig.isDesktopSwipeUpGestureAdapted() != newConfig.isDesktopSwipeUpGestureAdapted()
-               || oldConfig.isXInputPadEnabled() != newConfig.isXInputPadEnabled()
-               || (newConfig.isXInputPadEnabled() //
-                   && (oldConfig.isLatinUsePinyinKeysInXInputPadEnabled()
-                       != newConfig.isLatinUsePinyinKeysInXInputPadEnabled()));
-    }
-
-    private void updateBottomSpacing(Keyboard keyboard) {
-        Keyboard.Config config = keyboard != null ? keyboard.getConfig() : null;
+    private void updateBottomSpacing() {
+        Configuration config = getConfig();
 
         // Note：仅竖屏模式下需要添加底部空白
         addBottomSpacing(this,
-                         config != null
-                         && config.isDesktopSwipeUpGestureAdapted()
+                         config.bool(Conf.adapt_desktop_swipe_up_gesture)
                          && !config.isXInputPadEnabled()
-                         && config.getOrientation() == Keyboard.Orientation.Portrait);
+                         && Objects.equals(config.get(Conf.orientation), Keyboard.Orientation.portrait));
     }
 
     private void addBottomSpacing(View rootView, boolean needSpacing) {
@@ -417,64 +373,6 @@ public class ImeInputView extends FrameLayout
         }
     }
 
-    private void bindKeyboard(Keyboard keyboard) {
-        if (keyboard == null) {
-            return;
-        }
-
-        keyboard.setInputList(this::getInputList);
-        keyboard.start();
-    }
-
-    private Keyboard.Config patchKeyboardConfig(Keyboard.Config config) {
-        Keyboard.Config patchedConfig = new Keyboard.Config(config.getType(), config);
-
-        patchedConfig.syncWith(this.preferences);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            patchedConfig.setOrientation(Keyboard.Orientation.Landscape);
-        } else {
-            patchedConfig.setOrientation(Keyboard.Orientation.Portrait);
-        }
-
-        Keyboard.Subtype subtype = SystemUtils.getImeSubtype(getContext());
-        patchedConfig.setSubtype(subtype);
-
-        // 临时修改左右手模式
-        if (this.keyboardHandMode != null) {
-            patchedConfig.setHandMode(this.keyboardHandMode);
-        }
-        // 临时禁用对用户输入的记录
-        if (this.disableUserInputData != null) {
-            patchedConfig.setUserInputDataDisabled(this.disableUserInputData);
-        }
-        // 临时禁用按键气泡提示：主要用于密码输入场景
-        if (this.disableInputKeyPopupTips != null) {
-            patchedConfig.setInputKeyPopupTipsDisabled(this.disableInputKeyPopupTips);
-        }
-        // 临时禁用 X 型输入
-        if (this.disableXInputPad != null) {
-            patchedConfig.setXInputPadEnabled(!this.disableXInputPad);
-        }
-        // 临时禁用 繁体候选字优先
-        if (this.disableCandidateVariantFirst != null) {
-            patchedConfig.setCandidateVariantFirstEnabled(!this.disableCandidateVariantFirst);
-        }
-
-        return patchedConfig;
-    }
-
-    public Keyboard.Config getKeyboardConfig() {
-        Keyboard keyboard = getKeyboard();
-        if (keyboard != null) {
-            return keyboard.getConfig();
-        }
-
-        // 默认以保存的应用配置数据为准
-        Keyboard.Config config = new Keyboard.Config(null);
-        return patchKeyboardConfig(config);
-    }
-
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
         return inflateWithTheme(resId, themeResId, true);
     }
@@ -485,16 +383,16 @@ public class ImeInputView extends FrameLayout
         return ThemeUtils.inflate(this, resId, themeResId, attachToRoot);
     }
 
-    private Keyboard createKeyboard(Keyboard.Type type) {
+    private Keyboard createKeyboard(Keyboard.Type type, Keyboard.Type oldType) {
         switch (type) {
             case Math:
-                return new MathKeyboard(this::onMsg);
+                return new MathKeyboard(this, oldType);
             case Latin:
-                return new LatinKeyboard(this::onMsg);
+                return new LatinKeyboard(this, oldType);
             case Number:
-                return new NumberKeyboard(this::onMsg);
+                return new NumberKeyboard(this, oldType);
             default:
-                return new PinyinKeyboard(this::onMsg);
+                return new PinyinKeyboard(this, oldType);
         }
     }
 
@@ -542,7 +440,8 @@ public class ImeInputView extends FrameLayout
     }
 
     private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
-        if (getKeyboardConfig().isInputKeyPopupTipsDisabled()) {
+        Configuration config = getConfig();
+        if (config.bool(Conf.disable_input_key_popup_tips)) {
             return;
         }
 
@@ -586,6 +485,16 @@ public class ImeInputView extends FrameLayout
                                                                     InputAudioPlayDoingMsgData.AudioType.SingleTick));
 
         getInputList().cancelDelete();
+    }
+
+    private void toggleEnableSettingsBtn() {
+        if (this.disableSettingsBtn) {
+            this.settingsBtnView.setAlpha(0.4f);
+            this.settingsBtnView.setOnClickListener(null);
+        } else {
+            this.settingsBtnView.setAlpha(1.0f);
+            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
+        }
     }
 
     private void toggleShowInputListCleanBtn() {
@@ -634,38 +543,31 @@ public class ImeInputView extends FrameLayout
         post(() -> window.showAtLocation(parent, gravity, x, y));
     }
 
-    private void updateInputListOption(Keyboard.Config config) {
-        getInputList().setDefaultUseWordVariant(config.isCandidateVariantFirstEnabled());
-    }
-
     private void on_InputAudio_Play_Doing_Msg(InputAudioPlayDoingMsgData data) {
-        Keyboard.Config config = getKeyboardConfig();
+        Configuration config = getConfig();
+        if (data.audioType == InputAudioPlayDoingMsgData.AudioType.PageFlip) {
+            if (config.bool(Conf.disable_input_candidates_paging_audio)) {
+                return;
+            }
+        } else if (config.bool(Conf.disable_key_clicked_audio)) {
+            return;
+        }
 
         switch (data.audioType) {
             case SingleTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_single);
-                }
+                this.audioPlayer.play(R.raw.tick_single);
                 break;
             case DoubleTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_double);
-                }
+                this.audioPlayer.play(R.raw.tick_double);
                 break;
             case ClockTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_clock);
-                }
+                this.audioPlayer.play(R.raw.tick_clock);
                 break;
             case PingTick:
-                if (!config.isKeyClickedAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.tick_ping);
-                }
+                this.audioPlayer.play(R.raw.tick_ping);
                 break;
             case PageFlip:
-                if (!config.isPagingAudioDisabled()) {
-                    this.audioPlayer.play(R.raw.page_flip);
-                }
+                this.audioPlayer.play(R.raw.page_flip);
                 break;
         }
     }

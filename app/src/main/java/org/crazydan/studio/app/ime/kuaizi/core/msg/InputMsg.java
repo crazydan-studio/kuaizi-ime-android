@@ -68,9 +68,9 @@ public enum InputMsg {
     Keyboard_State_Change_Done,
     /** 键盘配置已更新 */
     Keyboard_Config_Update_Done,
-    /** 键盘主题样式已更新 */
-    Keyboard_Theme_Update_Done,
     /** 键盘左右手模式切换中 */
+    Keyboard_HandMode_Switch_Doing,
+    /** 键盘左右手模式已切换 */
     Keyboard_HandMode_Switch_Done,
     /** 键盘切换中 */
     Keyboard_Switch_Doing,

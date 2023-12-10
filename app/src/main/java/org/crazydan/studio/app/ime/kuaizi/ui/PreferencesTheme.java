@@ -26,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
@@ -79,8 +80,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             inputList.confirmPending();
         }
 
-        Keyboard.Config config = new Keyboard.Config(Keyboard.Type.Pinyin);
-        this.imeView.startInput(config, false);
+        this.imeView.startInput(Keyboard.Type.Pinyin, false);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -92,9 +92,9 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences_theme, rootKey);
 
-            SwitchPreferenceCompat xPad = findPreference("enable_x_input_pad");
-            Preference latinUsePinyinKeys = findPreference("enable_latin_use_pinyin_keys_in_x_input_pad");
-            Preference adaptGesture = findPreference("adapt_desktop_swipe_up_gesture");
+            SwitchPreferenceCompat xPad = findPreference(Conf.enable_x_input_pad.name());
+            Preference latinUsePinyinKeys = findPreference(Conf.enable_latin_use_pinyin_keys_in_x_input_pad.name());
+            Preference adaptGesture = findPreference(Conf.adapt_desktop_swipe_up_gesture.name());
 
             xPad.setOnPreferenceClickListener(pref -> {
                 latinUsePinyinKeys.setEnabled(xPad.isChecked());
@@ -110,8 +110,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
 
             // 显示配置后的拉丁文键盘布局
             latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {
-                Keyboard.Config config = new Keyboard.Config(Keyboard.Type.Latin);
-                this.imeView.startInput(config, false);
+                this.imeView.startInput(Keyboard.Type.Latin, false);
                 return true;
             });
         }

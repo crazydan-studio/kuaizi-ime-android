@@ -26,6 +26,8 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
@@ -508,21 +510,23 @@ public abstract class KeyTable {
     }
 
     public static class Config {
-        private final Keyboard.Config keyboardConfig;
+        private final Configuration keyboardConfig;
+
         private final boolean hasInputs;
         /** 是否有待撤回输入 */
         private final boolean hasRevokingInputs;
         /** 是否已选中字符输入 */
         private final boolean charInputSelected;
 
-        public Config(Keyboard.Config keyboardConfig) {
+        public Config(Configuration keyboardConfig) {
             this(keyboardConfig, false, false, false);
         }
 
         public Config(
-                Keyboard.Config keyboardConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
+                Configuration keyboardConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
         ) {
             this.keyboardConfig = keyboardConfig;
+
             this.hasInputs = hasInputs;
             this.hasRevokingInputs = hasRevokingInputs;
             this.charInputSelected = charInputSelected;
@@ -540,12 +544,13 @@ public abstract class KeyTable {
             return this.charInputSelected;
         }
 
+        // ================================================================
         public boolean isLeftHandMode() {
-            return this.keyboardConfig.getHandMode() == Keyboard.HandMode.Left;
+            return this.keyboardConfig.isLeftHandMode();
         }
 
         public boolean isSingleLineInput() {
-            return this.keyboardConfig.isSingleLineInput();
+            return this.keyboardConfig.bool(Conf.single_line_input);
         }
 
         public boolean isXInputPadEnabled() {

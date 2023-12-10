@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
@@ -36,7 +38,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardConfigUpdateDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.core.view.key.KeyViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
@@ -59,6 +60,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
 
+    private Supplier<Configuration> configGetter;
     private Supplier<Keyboard> keyboardGetter;
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -84,17 +86,26 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    public void setKeyboard(Supplier<Keyboard> getter) {
-        this.keyboardGetter = getter;
-    }
-
     public Keyboard getKeyboard() {
         return this.keyboardGetter.get();
     }
 
+    public void setKeyboard(Supplier<Keyboard> getter) {
+        this.keyboardGetter = getter;
+    }
+
+    public Configuration getConfig() {
+        return this.configGetter.get();
+    }
+
+    public void setConfig(Supplier<Configuration> getter) {
+        this.configGetter = getter;
+    }
+
     public boolean isGestureTrailerDisabled() {
-        Keyboard keyboard = getKeyboard();
-        return keyboard != null && keyboard.getConfig().isGestureSlippingTrailDisabled();
+        Configuration config = getConfig();
+
+        return config.bool(Conf.disable_gesture_slipping_trail);
     }
 
     /** 响应按键点击、双击等消息 */
@@ -107,7 +118,8 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
                 // 对光标移动和文本选择按键启用轨迹
                 if ((CtrlKey.is(data.target, CtrlKey.Type.Editor_Cursor_Locator) //
                      || CtrlKey.is(data.target, CtrlKey.Type.Editor_Range_Selector)) //
-                    && !keyboard.getConfig().isGestureSlippingTrailDisabled()) {
+                    && !isGestureTrailerDisabled() //
+                ) {
                     this.gestureTrailer.setDisabled(false);
                 }
                 break;
@@ -128,34 +140,34 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
         Keyboard.KeyFactory keyFactory = msgData.getKeyFactory();
+        Configuration config = getConfig();
 
         switch (msg) {
+            case Keyboard_Switch_Done:
+            case Keyboard_HandMode_Switch_Done:
             case Keyboard_Config_Update_Done: {
-                Keyboard.Config config = ((KeyboardConfigUpdateDoneMsgData) msgData).after;
-                if (config.isKeyAnimationDisabled()) {
+                keyFactory = keyboard.getKeyFactory();
+
+                if (config.bool(Conf.disable_key_animation)) {
                     setItemAnimator(null);
                 } else {
                     setItemAnimator(this.animator);
                 }
+                reset();
                 break;
             }
             case InputChars_Input_Doing: {
                 // 滑屏输入显示轨迹
                 if (((InputCharsInputtingMsgData) msgData).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
-                    && !keyboard.getConfig().isGestureSlippingTrailDisabled()) {
+                    && !isGestureTrailerDisabled() //
+                ) {
                     this.gestureTrailer.setDisabled(false);
                 }
                 break;
             }
-            case Keyboard_Switch_Done:
-            case Keyboard_Theme_Update_Done: {
-                keyFactory = keyboard.getKeyFactory();
-                reset();
-                break;
-            }
         }
 
-        updateKeys(keyboard, keyFactory);
+        updateKeys(config, keyFactory);
     }
 
     private void reset() {
@@ -166,7 +178,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         //updateKeys(new Key[][] {});
     }
 
-    private void updateKeys(Keyboard keyboard, Keyboard.KeyFactory keyFactory) {
+    private void updateKeys(Configuration config, Keyboard.KeyFactory keyFactory) {
         if (keyFactory == null) {
             return;
         }
@@ -182,6 +194,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
             post(() -> setItemAnimator(this.animator));
         }
 
-        super.updateKeys(keys, keyboard.getConfig().isLeftHandMode());
+        super.updateKeys(keys, config.isLeftHandMode());
     }
 }

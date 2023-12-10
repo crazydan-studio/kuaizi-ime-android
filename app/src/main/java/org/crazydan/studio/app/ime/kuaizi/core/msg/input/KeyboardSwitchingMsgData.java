@@ -22,19 +22,18 @@ import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 
 /**
- * {@link InputMsg#Keyboard_Switch_Doing} 消息数据
+ * {@link InputMsg#Keyboard_Switch_Doing}
+ * 和 {@link InputMsg#Keyboard_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-27
  */
-public class KeyboardSwitchDoingMsgData extends InputCommonMsgData {
-    public final Keyboard.Type source;
+public class KeyboardSwitchingMsgData extends InputCommonMsgData {
     public final Keyboard.Type target;
 
-    public KeyboardSwitchDoingMsgData(Key<?> key, Keyboard.Type source, Keyboard.Type target) {
+    public KeyboardSwitchingMsgData(Key<?> key, Keyboard.Type target) {
         super(key);
 
-        this.source = source;
         this.target = target;
     }
 }

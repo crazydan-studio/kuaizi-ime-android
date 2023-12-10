@@ -31,23 +31,24 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 public class NumberKeyboard extends DirectInputKeyboard {
     private boolean needToShowExit;
 
-    public NumberKeyboard(InputMsgListener listener) {
-        super(listener);
+    public NumberKeyboard(InputMsgListener listener, Type prevType) {super(listener, prevType);}
+
+    @Override
+    public Type getType() {
+        return Type.Number;
     }
 
     @Override
-    public void setConfig(Config newConfig) {
+    public void start() {
         // 若是在 X 型输入中切换过来的，则需要在禁用 X 型输入后，提供退出按钮以回到前一键盘
-        this.needToShowExit = getConfig() != null
-                              && !newConfig.isXInputPadEnabled()
-                              && getConfig().isXInputPadEnabled();
+        this.needToShowExit = isXInputPadEnabled();
 
-        super.setConfig(newConfig);
+        super.start();
     }
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfigure());
+        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfig());
 
         return () -> keyTable.createKeys(this.needToShowExit);
     }

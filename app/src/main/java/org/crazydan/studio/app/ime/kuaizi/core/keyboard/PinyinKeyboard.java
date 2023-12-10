@@ -68,12 +68,17 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  */
 public class PinyinKeyboard extends BaseKeyboard {
 
-    public PinyinKeyboard(InputMsgListener listener) {super(listener);}
+    public PinyinKeyboard(InputMsgListener listener, Type prevType) {super(listener, prevType);}
+
+    @Override
+    public Type getType() {
+        return Type.Pinyin;
+    }
 
     @Override
     protected KeyFactory doGetKeyFactory() {
         InputList inputList = getInputList();
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure());
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig());
 
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
@@ -759,7 +764,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputCandidateChooseDoingStateData prevStateData = (InputCandidateChooseDoingStateData) this.state.data;
         InputCandidateChooseDoingStateData.AdvanceFilter advanceFilter = prevStateData.getAdvanceFilter();
 
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
@@ -846,7 +851,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 进入候选字选择状态，并处理候选字翻页 */
     private void start_InputCandidate_Choosing(InputList inputList, CharInput input, boolean inputPinyinChanged) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfigure(inputList));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getInputCandidateKeysPageSize();
         int bestCandidatesTop = 17;
         int bestEmojisTop = pageSize - bestCandidatesTop;

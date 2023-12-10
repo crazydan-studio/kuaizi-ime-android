@@ -52,17 +52,22 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 public class MathKeyboard extends BaseKeyboard {
     private InputList mathInputList;
 
-    public MathKeyboard(InputMsgListener listener) {super(listener);}
+    public MathKeyboard(InputMsgListener listener, Type prevType) {super(listener, prevType);}
+
+    @Override
+    public Type getType() {
+        return Type.Math;
+    }
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfigure());
+        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig());
 
         return keyTable::createKeys;
     }
 
     @Override
-    protected KeyTable.Config createKeyTableConfigure() {
+    protected KeyTable.Config createKeyTableConfig() {
         return new KeyTable.Config(getConfig(),
                                    !getTopInputList().isEmpty(),
                                    getTopInputList().canRevokeCommit(),

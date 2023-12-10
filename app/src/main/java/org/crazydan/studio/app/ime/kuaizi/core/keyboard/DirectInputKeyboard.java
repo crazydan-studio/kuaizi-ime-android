@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
  */
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
-    public DirectInputKeyboard(InputMsgListener listener) {super(listener);}
+    public DirectInputKeyboard(InputMsgListener listener, Type prevType) {super(listener, prevType);}
 
     @Override
     public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {

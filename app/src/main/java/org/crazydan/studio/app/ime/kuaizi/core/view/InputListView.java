@@ -43,8 +43,8 @@ public class InputListView extends BaseInputListView implements InputMsgListener
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData data) {
         switch (msg) {
-            case Keyboard_Theme_Update_Done:
-            case Keyboard_Switch_Doing:
+            case Keyboard_Config_Update_Done:
+            case Keyboard_Switch_Done:
             case Keyboard_State_Change_Done:
             case InputChars_Input_Doing:
             case InputChars_Input_Done:

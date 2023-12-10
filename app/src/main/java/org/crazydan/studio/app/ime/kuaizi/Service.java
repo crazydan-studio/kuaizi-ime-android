@@ -47,7 +47,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
  */
 public class Service extends InputMethodService implements InputMsgListener {
     private ImeInputView imeView;
-    private Keyboard.Config imeKeyboardConfig;
 
     private int prevFieldId;
     private EditorSelection editorSelection;
@@ -88,8 +87,8 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
-        Keyboard.Config config = this.imeKeyboardConfig;
-        Keyboard.Type keyboardType = config != null ? config.getType() : Keyboard.Type.Pinyin;
+        // Note：默认保持键盘类型
+        Keyboard.Type keyboardType = null;
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
@@ -115,23 +114,18 @@ public class Service extends InputMethodService implements InputMsgListener {
                 }
         }
 
-        // Note: 此接口内只是根据输入目标的类型对键盘类型做临时切换，
-        // 故不直接修改 this.imeKeyboardConfig
-        config = new Keyboard.Config(keyboardType, config);
-        config.setSingleLineInput(singleLineInput);
-
         int prevFieldId = this.prevFieldId;
         this.prevFieldId = attribute.fieldId;
 
+        this.imeView.setSingleLineInput(singleLineInput);
         this.imeView.disableInputKeyPopupTips(passwordInputting);
 
-        startImeInput(config, prevFieldId != attribute.fieldId);
+        startImeInput(keyboardType, prevFieldId != attribute.fieldId);
     }
 
     /** 响应系统对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        Keyboard.Config config = this.imeKeyboardConfig;
         Keyboard.Subtype keyboardSubtype = SystemUtils.parseImeSubtype(subtype);
 
         Keyboard.Type keyboardType;
@@ -141,15 +135,16 @@ public class Service extends InputMethodService implements InputMsgListener {
             keyboardType = Keyboard.Type.Pinyin;
         }
 
-        this.imeKeyboardConfig = new Keyboard.Config(keyboardType, config);
-        startImeInput(this.imeKeyboardConfig, false);
+        this.imeView.setSubtype(keyboardSubtype);
+
+        startImeInput(keyboardType, false);
     }
 
-    private void startImeInput(Keyboard.Config config, boolean resetInputList) {
+    private void startImeInput(Keyboard.Type keyboardType, boolean resetInputList) {
         this.editorSelection = null;
 
         this.imeView.setListener(this);
-        this.imeView.startInput(config, resetInputList);
+        this.imeView.startInput(keyboardType, resetInputList);
     }
 
     /** 输入结束隐藏键盘 */

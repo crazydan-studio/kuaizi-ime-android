@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.env;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
+
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 
 /**
- * 负责管理运行和配置环境相关的数据
+ * {@link InputMsg#Keyboard_HandMode_Switch_Doing}
+ * 和 {@link InputMsg#Keyboard_HandMode_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-12-05
+ * @date 2023-08-23
  */
-public class Environments {}
+public class KeyboardHandModeSwitchingMsgData extends InputCommonMsgData {
+    public final Keyboard.HandMode mode;
+
+    public KeyboardHandModeSwitchingMsgData(Key<?> key, Keyboard.HandMode mode) {
+        super(key);
+
+        this.mode = mode;
+    }
+}

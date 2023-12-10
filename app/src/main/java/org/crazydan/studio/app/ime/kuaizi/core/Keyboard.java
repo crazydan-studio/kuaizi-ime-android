@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
@@ -35,15 +35,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
  */
 public interface Keyboard extends UserInputMsgListener {
 
-    Config getConfig();
+    Type getType();
 
-    void setConfig(Config config);
+    Configuration getConfig();
+
+    void setConfig(Supplier<Configuration> getter);
 
     KeyFactory getKeyFactory();
 
     void setInputList(Supplier<InputList> getter);
-
-    boolean isXInputPadEnabled();
 
     /** 启动 */
     void start();
@@ -72,17 +72,17 @@ public interface Keyboard extends UserInputMsgListener {
     /** 键盘布局方向 */
     enum Orientation {
         /** 纵向 */
-        Portrait,
+        portrait,
         /** 横向 */
-        Landscape,
+        landscape,
     }
 
     /** 左右手模式 */
     enum HandMode {
         /** 左手模式 */
-        Left,
+        left,
         /** 右手模式 */
-        Right,
+        right,
     }
 
     enum ThemeType {
@@ -102,6 +102,7 @@ public interface Keyboard extends UserInputMsgListener {
         }
     }
 
+    /** 键盘子类型 */
     enum Subtype {
         /** 拉丁文 */
         latin,
@@ -148,9 +149,9 @@ public interface Keyboard extends UserInputMsgListener {
         /** 是否为单行输入 */
         private boolean singleLineInput;
         /** 键盘布局方向 */
-        private Orientation orientation = Orientation.Portrait;
+        private Orientation orientation = Orientation.portrait;
         /** 左右手模式 */
-        private HandMode handMode = HandMode.Right;
+        private HandMode handMode = HandMode.right;
         /** 主题类型 */
         private ThemeType theme;
         private Subtype subtype;
@@ -227,9 +228,9 @@ public interface Keyboard extends UserInputMsgListener {
             String handMode = preferences.getString(Keyboard.Config.pref_key_hand_mode, "right");
 
             if ("left".equals(handMode)) {
-                return Keyboard.HandMode.Left;
+                return Keyboard.HandMode.left;
             } else {
-                return Keyboard.HandMode.Right;
+                return Keyboard.HandMode.right;
             }
         }
 
@@ -260,12 +261,13 @@ public interface Keyboard extends UserInputMsgListener {
                     themeResId = R.style.Theme_Kuaizi_IME_Night;
                     break;
                 case follow_system:
-                    int themeMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                    int themeMode = context.getResources().getConfiguration().uiMode
+                                    & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
                     switch (themeMode) {
-                        case Configuration.UI_MODE_NIGHT_NO:
+                        case android.content.res.Configuration.UI_MODE_NIGHT_NO:
                             themeResId = R.style.Theme_Kuaizi_IME_Light;
                             break;
-                        case Configuration.UI_MODE_NIGHT_YES:
+                        case android.content.res.Configuration.UI_MODE_NIGHT_YES:
                             themeResId = R.style.Theme_Kuaizi_IME_Night;
                             break;
                     }
@@ -311,7 +313,7 @@ public interface Keyboard extends UserInputMsgListener {
         }
 
         public boolean isLeftHandMode() {
-            return getHandMode() == HandMode.Left;
+            return getHandMode() == HandMode.left;
         }
 
         public ThemeType getTheme() {
@@ -384,9 +386,7 @@ public interface Keyboard extends UserInputMsgListener {
         }
 
         public void syncWith(SharedPreferences preferences) {
-            boolean disableUserInputData = isUserInputDataDisabled(preferences);
-            setUserInputDataDisabled(disableUserInputData);
-
+            this.userInputDataDisabled = isUserInputDataDisabled(preferences);
             this.keyClickedAudioDisabled = isKeyClickedAudioDisabled(preferences);
             this.keyAnimationDisabled = isKeyAnimationDisabled(preferences);
             this.pagingAudioDisabled = isPagingAudioDisabled(preferences);
@@ -397,10 +397,8 @@ public interface Keyboard extends UserInputMsgListener {
             this.xInputPadEnabled = isXInputPadEnabled(preferences);
             this.latinUsePinyinKeysInXInputPadEnabled = isLatinUsePinyinKeysInXInputPadEnabled(preferences);
 
-            Keyboard.HandMode handMode = Keyboard.Config.getHandMode(preferences);
-            setHandMode(handMode);
-
-            this.theme = Keyboard.Config.getTheme(preferences);
+            this.handMode = getHandMode(preferences);
+            this.theme = getTheme(preferences);
         }
     }
 }

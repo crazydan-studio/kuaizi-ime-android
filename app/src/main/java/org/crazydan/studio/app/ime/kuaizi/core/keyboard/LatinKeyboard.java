@@ -31,13 +31,16 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
  */
 public class LatinKeyboard extends DirectInputKeyboard {
 
-    public LatinKeyboard(InputMsgListener listener) {
-        super(listener);
+    public LatinKeyboard(InputMsgListener listener, Type prevType) {super(listener, prevType);}
+
+    @Override
+    public Type getType() {
+        return Type.Latin;
     }
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        LatinKeyTable keyTable = LatinKeyTable.create(createKeyTableConfigure());
+        LatinKeyTable keyTable = LatinKeyTable.create(createKeyTableConfig());
 
         return keyTable::createKeys;
     }

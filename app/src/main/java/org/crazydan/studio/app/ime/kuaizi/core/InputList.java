@@ -26,9 +26,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
@@ -49,16 +51,24 @@ public class InputList {
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
+    private Supplier<Configuration> configGetter;
     private UserInputMsgListener listener;
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
     private Staged staged;
 
     private Input.Option option;
-    private boolean defaultUseWordVariant;
     private List<CompletionInput> phraseCompletions;
 
     public InputList() {
         this.staged = doReset(Staged.Type.none);
+    }
+
+    public Configuration getConfig() {
+        return this.configGetter.get();
+    }
+
+    public void setConfig(Supplier<Configuration> getter) {
+        this.configGetter = getter;
     }
 
     public void setListener(UserInputMsgListener listener) {
@@ -187,24 +197,15 @@ public class InputList {
 
     public Input.Option getOption() {
         if (this.option == null) {
-            this.option = new Input.Option(null, this.defaultUseWordVariant);
+            Configuration config = getConfig();
+
+            this.option = new Input.Option(null, config.isCandidateVariantFirstEnabled());
         }
         return this.option;
     }
 
     public void setOption(Input.Option option) {
         this.option = option;
-    }
-
-    public void setDefaultUseWordVariant(boolean defaultUseWordVariant) {
-        this.option = null;
-
-        if (this.defaultUseWordVariant != defaultUseWordVariant) {
-            this.defaultUseWordVariant = defaultUseWordVariant;
-
-            UserInputMsgData msgData = new UserInputMsgData();
-            fireUserInputMsg(UserInputMsg.InputList_Option_Update_Done, msgData);
-        }
     }
 
     /** 设置短语输入补全 */

@@ -26,6 +26,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Symbol;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.SymbolGroup;
@@ -61,10 +63,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitDoingMsg
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListInputCompletionApplyDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListInputDeletedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardConfigUpdateDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 
@@ -75,12 +76,18 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 public abstract class BaseKeyboard implements Keyboard {
     protected final PinyinDict pinyinDict = PinyinDict.getInstance();
     private final InputMsgListener listener;
+    /** 前序键盘类型：仅发生了键盘切换时才会被赋值 */
+    private final Type prevType;
 
-    private Config config;
-    protected State state = new State(State.Type.InputChars_Input_Waiting);
+    private Supplier<Configuration> configGetter;
     private Supplier<InputList> inputListGetter;
 
-    protected BaseKeyboard(InputMsgListener listener) {this.listener = listener;}
+    protected State state = new State(State.Type.InputChars_Input_Waiting);
+
+    protected BaseKeyboard(InputMsgListener listener, Type prevType) {
+        this.listener = listener;
+        this.prevType = prevType;
+    }
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
     protected State getInitState() {
@@ -94,27 +101,8 @@ public abstract class BaseKeyboard implements Keyboard {
         return new State(State.Type.InputChars_Input_Waiting);
     }
 
-    @Override
-    public Config getConfig() {
-        return this.config;
-    }
-
-    @Override
-    public void setConfig(Config newConfig) {
-        Config oldConfig = this.config;
-        this.config = newConfig;
-
-        if (newConfig.equals(oldConfig)) {
-            return;
-        }
-
-        InputMsgData data = new KeyboardConfigUpdateDoneMsgData(oldConfig, newConfig);
-        fire_InputMsg(InputMsg.Keyboard_Config_Update_Done, data);
-    }
-
-    @Override
     public boolean isXInputPadEnabled() {
-        return getConfig() != null && getConfig().isXInputPadEnabled();
+        return getConfig().isXInputPadEnabled();
     }
 
     @Override
@@ -124,8 +112,8 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = getInputList();
         Input<?> pending = inputList.getPending();
         boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
-                                       && getConfig().getSwitchFromType() != null //
-                                       && getConfig().getType() == Type.Pinyin;
+                                       && this.prevType != null //
+                                       && getType() == Type.Pinyin;
         // 在 X 型输入中，切换到拼音键盘时，先确认新输入（非新输入将做输入替换）
         if (isXPadSwitchToPinyin && inputList.isGapSelected()) {
             inputList.confirmPendingAndSelectNext();
@@ -133,7 +121,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
-        if ((getConfig().getSwitchFromType() == Type.Math //
+        if ((this.prevType == Type.Math //
              && !pending.isMathExpr()) //
             || (isXPadSwitchToPinyin && pending.isPinyin()) //
         ) {
@@ -148,7 +136,16 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void destroy() {
-        this.config = null;
+    }
+
+    @Override
+    public Configuration getConfig() {
+        return this.configGetter.get();
+    }
+
+    @Override
+    public void setConfig(Supplier<Configuration> getter) {
+        this.configGetter = getter;
     }
 
     public InputList getInputList() {
@@ -164,12 +161,12 @@ public abstract class BaseKeyboard implements Keyboard {
     public KeyFactory getKeyFactory() {
         switch (this.state.type) {
             case Editor_Edit_Doing: {
-                EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfigure());
+                EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig());
 
                 return keyTable::createKeys;
             }
             case Emoji_Choose_Doing: {
-                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
 
                 EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
 
@@ -179,7 +176,7 @@ public abstract class BaseKeyboard implements Keyboard {
                                                       stateData.getPageStart());
             }
             case Symbol_Choose_Doing: {
-                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
 
                 SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
 
@@ -193,11 +190,11 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected abstract KeyFactory doGetKeyFactory();
 
-    protected KeyTable.Config createKeyTableConfigure() {
-        return createKeyTableConfigure(getInputList());
+    protected KeyTable.Config createKeyTableConfig() {
+        return createKeyTableConfig(getInputList());
     }
 
-    protected KeyTable.Config createKeyTableConfigure(InputList inputList) {
+    protected KeyTable.Config createKeyTableConfig(InputList inputList) {
         return new KeyTable.Config(getConfig(),
                                    !inputList.isEmpty(),
                                    inputList.canRevokeCommit(),
@@ -612,34 +609,32 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Type target, Key<?> key) {
-        Keyboard.Type source = getConfig().getType();
-        InputMsgData data = new KeyboardSwitchDoingMsgData(key, source, target);
+        InputMsgData data = new KeyboardSwitchingMsgData(key, target);
 
         fire_InputMsg(InputMsg.Keyboard_Switch_Doing, data);
     }
 
     /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
     protected void switchTo_Previous_Keyboard(Key<?> key) {
-        Keyboard.Type target = getConfig().getSwitchFromType();
-
-        switch_Keyboard(target, key);
+        switch_Keyboard(this.prevType, key);
     }
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode(Key<?> key) {
-        Keyboard.Config config = getConfig();
+        Configuration config = getConfig();
+        HandMode mode = config.get(Conf.hand_mode);
 
-        switch (config.getHandMode()) {
-            case Left:
-                config.setHandMode(HandMode.Right);
+        switch (mode) {
+            case left:
+                mode = HandMode.right;
                 break;
-            case Right:
-                config.setHandMode(HandMode.Left);
+            case right:
+                mode = HandMode.left;
                 break;
         }
 
-        InputMsgData data = new KeyboardHandModeSwitchDoneMsgData(getKeyFactory(), key, config.getHandMode());
-        fire_InputMsg(InputMsg.Keyboard_HandMode_Switch_Done, data);
+        InputMsgData data = new KeyboardHandModeSwitchingMsgData(key, mode);
+        fire_InputMsg(InputMsg.Keyboard_HandMode_Switch_Doing, data);
     }
 
     /** 切换系统输入法 */
@@ -1167,7 +1162,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     // <<<<<<<< 表情符号选择逻辑
     protected void start_Emoji_Choosing(Key<?> key) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getEmojiKeysPageSize();
 
         Emojis emojis = this.pinyinDict.findTopBestEmojis(pageSize / 2);
@@ -1251,7 +1246,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     // <<<<<<<<<<< 对标点符号的操作
     protected void start_Symbol_Choosing(Key<?> key, boolean onlyPair) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfigure());
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pageSize, onlyPair);
@@ -1259,7 +1254,7 @@ public abstract class BaseKeyboard implements Keyboard {
         change_State_To(key, state);
 
         SymbolGroup group = SymbolGroup.latin;
-        if (getConfig().getType() == Type.Pinyin) {
+        if (getType() == Type.Pinyin) {
             group = SymbolGroup.han;
         }
 
@@ -1426,7 +1421,7 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (isXInputPadEnabled()) {
             // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
             // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
-            if (pending.isPinyin() && getConfig().getType() != Type.Pinyin) {
+            if (pending.isPinyin() && getType() != Type.Pinyin) {
                 switch_Keyboard(Type.Pinyin, null);
                 return;
             }

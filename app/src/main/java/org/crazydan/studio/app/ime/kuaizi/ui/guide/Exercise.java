@@ -98,17 +98,12 @@ public class Exercise implements ViewData, InputMsgListener {
                 } else {
                     break;
                 }
-            case InputChars_Input_Popup_Show_Doing:
-            case InputChars_Input_Popup_Hide_Doing:
-            case InputAudio_Play_Doing:
             case InputList_Pending_Drop_Done:
             case InputList_Input_Choose_Done:
             case InputList_Update_Done:
             case InputList_Input_Completion_Update_Done:
             case InputList_Input_Completion_Apply_Done:
             case Keyboard_Config_Update_Done:
-            case Keyboard_Theme_Update_Done:
-            case Keyboard_Switch_Doing:
                 return;
         }
 
