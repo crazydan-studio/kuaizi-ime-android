@@ -427,6 +427,7 @@ public class MathKeyboard extends BaseKeyboard {
         // 在上层输入列表中绑定算数输入列表
         CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
         this.mathInputList = input.getInputList();
+        this.mathInputList.setConfig(topInputList::getConfig);
         this.mathInputList.setListener(this::onMathUserInputMsg);
     }
 }

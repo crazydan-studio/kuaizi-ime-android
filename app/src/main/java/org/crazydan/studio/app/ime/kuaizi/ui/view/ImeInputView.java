@@ -217,8 +217,13 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
                 relayoutViews();
                 break;
             }
+            case enable_x_input_pad:
             case adapt_desktop_swipe_up_gesture: {
                 updateBottomSpacing();
+                break;
+            }
+            case enable_candidate_variant_first: {
+                getInputList().setOption(null);
                 break;
             }
         }

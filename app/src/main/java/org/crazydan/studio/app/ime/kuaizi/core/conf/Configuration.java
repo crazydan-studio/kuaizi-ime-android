@@ -56,10 +56,10 @@ public class Configuration implements SharedPreferences.OnSharedPreferenceChange
      * @param value
      *         若为 null，则删除配置项 conf
      */
-    public <T> void set(Conf conf, T value) {
+    public <T> boolean set(Conf conf, T value) {
         T oldValue = get(conf);
         if (Objects.equals(oldValue, value)) {
-            return;
+            return false;
         }
 
         if (value == null) {
@@ -67,6 +67,7 @@ public class Configuration implements SharedPreferences.OnSharedPreferenceChange
         } else {
             this.vars.put(conf, value);
         }
+        return true;
     }
 
     public void merge(Configuration other) {
@@ -81,10 +82,12 @@ public class Configuration implements SharedPreferences.OnSharedPreferenceChange
     public void bind(SharedPreferences preferences) {
         Map<String, ?> all = preferences.getAll();
 
+        // 遍历所有枚举项以便于为各项赋默认值
         for (Conf conf : Conf.values()) {
             Object value = all.get(conf.name());
+            value = conf.parse(value);
 
-            set(conf, conf.parse(value));
+            set(conf, value);
         }
 
         preferences.registerOnSharedPreferenceChangeListener(this);
@@ -100,12 +103,11 @@ public class Configuration implements SharedPreferences.OnSharedPreferenceChange
             // Note：暂时不对赋值为 null 或移除配置项的情况做处理
             Object oldValue = get(conf);
             Object newValue = preferences.getAll().get(key);
+            newValue = conf.parse(newValue);
 
-            if (!Objects.equals(oldValue, newValue)) {
-                set(conf, newValue);
+            if (set(conf, newValue)) {
                 this.listener.onChanged(conf, oldValue, newValue);
             }
-
             break;
         }
     }
