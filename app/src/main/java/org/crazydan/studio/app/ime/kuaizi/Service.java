@@ -42,6 +42,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
 
 /**
+ * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
@@ -65,16 +67,17 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
-        super.onDestroy();
-
         // 确保拼音字典库能够被及时关闭
         PinyinDict.getInstance().close();
+
+        super.onDestroy();
     }
 
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
         this.imeView = (ImeInputView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
+        this.imeView.setListener(this);
 
         return this.imeView;
     }
@@ -136,19 +139,16 @@ public class Service extends InputMethodService implements InputMsgListener {
     private void startImeInput(Keyboard.Type keyboardType, boolean resetInputList) {
         this.editorSelection = null;
 
-        this.imeView.setListener(this);
         this.imeView.startInput(keyboardType, resetInputList);
     }
 
     /** 输入结束隐藏键盘 */
     @Override
     public void onFinishInput() {
-        super.onFinishInput();
-
         if (this.imeView != null) {
-            this.imeView.setListener(null);
             this.imeView.finishInput();
         }
+        super.onFinishInput();
     }
 
     @Override
