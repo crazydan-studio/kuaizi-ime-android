@@ -1309,15 +1309,7 @@ public class PinyinDict {
     private void initAppDB(SQLiteDatabase db) {
         String[] clauses = new String[] {
                 // 创建索引以加速查询
-                "CREATE INDEX IF NOT EXISTS idx_meta_word_with_pinyin"
-                + " ON meta_word_with_pinyin"
-                + " (weight_, glyph_weight_, spell_id_);",
-                //
-                "CREATE INDEX IF NOT EXISTS idx_meta_phrase ON meta_phrase (weight_);",
-                "CREATE INDEX IF NOT EXISTS idx_meta_phrase_with_pinyin_word"
-                + " ON meta_phrase_with_pinyin_word"
-                + " (phrase_id_, word_index_);",
-                };
+        };
 
         for (String clause : clauses) {
             db.execSQL(clause);
