@@ -129,6 +129,11 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 响应系统对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
+        // Note：切换系统子键盘时，视图可能还未创建
+        if (this.imeView == null) {
+            return;
+        }
+
         Keyboard.Subtype keyboardSubtype = SystemUtils.parseImeSubtype(subtype);
         this.imeView.setSubtype(keyboardSubtype);
 
@@ -145,9 +150,11 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 输入结束隐藏键盘 */
     @Override
     public void onFinishInput() {
+        this.editorSelection = null;
         if (this.imeView != null) {
             this.imeView.finishInput();
         }
+
         super.onFinishInput();
     }
 
