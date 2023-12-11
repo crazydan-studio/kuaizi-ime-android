@@ -151,18 +151,21 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         this.appConf.set(Conf.subtype, subtype);
     }
 
-    public void setSingleLineInput(Boolean enabled) {
+    public void setSingleLineInput(boolean enabled) {
         this.appConf.set(Conf.single_line_input, enabled);
     }
 
+    /** 若传参 null，则表示使用系统持久化配置值 */
     public void disableUserInputData(Boolean disabled) {
         this.appConf.set(Conf.disable_user_input_data, disabled);
     }
 
+    /** 若传参 null，则表示使用系统持久化配置值 */
     public void disableInputKeyPopupTips(Boolean disabled) {
         this.appConf.set(Conf.disable_input_key_popup_tips, disabled);
     }
 
+    /** 若传参 null，则表示使用系统持久化配置值 */
     public void enableXInputPad(Boolean enabled) {
         Boolean old = this.appConf.get(Conf.enable_x_input_pad);
         this.appConf.set(Conf.enable_x_input_pad, enabled);
@@ -172,6 +175,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         }
     }
 
+    /** 若传参 null，则表示使用系统持久化配置值 */
     public void enableCandidateVariantFirst(Boolean enabled) {
         this.appConf.set(Conf.enable_candidate_variant_first, enabled);
     }

@@ -223,7 +223,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 case introduce: {
                     this.imeView.enableXInputPad(exercise.mode == Exercise.Mode.free ? null : false);
                     this.imeView.enableCandidateVariantFirst(null);
-                    this.imeView.disableUserInputData(false);
+                    this.imeView.disableUserInputData(null);
                     this.imeView.disableSettingsBtn(false);
                     break;
                 }
