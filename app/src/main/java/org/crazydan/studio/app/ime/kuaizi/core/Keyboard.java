@@ -67,6 +67,10 @@ public interface Keyboard extends UserInputMsgListener {
         Latin,
         /** 数字键盘：纯数字和 +、-、#、* 等符号 */
         Number,
+
+        // 临时控制键盘切换
+        By_Subtype,
+        Keep_Current,
     }
 
     /** 键盘布局方向 */

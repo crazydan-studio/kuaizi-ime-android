@@ -87,8 +87,8 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
-        // Note：默认保持键盘类型
-        Keyboard.Type keyboardType = null;
+        // Note：默认保持键盘类型不变
+        Keyboard.Type keyboardType = Keyboard.Type.Keep_Current;
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
@@ -127,17 +127,10 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
         Keyboard.Subtype keyboardSubtype = SystemUtils.parseImeSubtype(subtype);
-
-        Keyboard.Type keyboardType;
-        if (keyboardSubtype == Keyboard.Subtype.latin) {
-            keyboardType = Keyboard.Type.Latin;
-        } else {
-            keyboardType = Keyboard.Type.Pinyin;
-        }
-
         this.imeView.setSubtype(keyboardSubtype);
 
-        startImeInput(keyboardType, false);
+        // 在 imeView 内部通过 subtype 确认键盘类型
+        startImeInput(Keyboard.Type.By_Subtype, false);
     }
 
     private void startImeInput(Keyboard.Type keyboardType, boolean resetInputList) {

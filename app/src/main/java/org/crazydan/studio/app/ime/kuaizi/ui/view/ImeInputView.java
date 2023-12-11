@@ -310,20 +310,43 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         Keyboard oldKeyboard = this.keyboard;
         Keyboard.Type oldType = oldKeyboard != null ? oldKeyboard.getType() : null;
 
-        if (oldType != null && (oldType == type || type == null)) {
+        if (oldType != null && (oldType == type || type == Keyboard.Type.Keep_Current)) {
             oldKeyboard.reset();
-        } else if (type != null) {
-            if (oldKeyboard != null) {
-                oldKeyboard.destroy();
-            }
-
-            Keyboard newKeyboard = createKeyboard(type, oldType);
-            newKeyboard.setInputList(this::getInputList);
-            newKeyboard.setConfig(this::getConfig);
-
-            this.keyboard = newKeyboard;
-            newKeyboard.start();
+            return;
         }
+
+        // ====================================================
+        Keyboard.Subtype subtype = null;
+        switch (type) {
+            // 切换系统子键盘时的情况
+            case By_Subtype: {
+                subtype = this.appConf.get(Conf.subtype);
+                break;
+            }
+            // 仅首次切换到本输入法时的情况
+            case Keep_Current: {
+                subtype = SystemUtils.getImeSubtype(getContext());
+                break;
+            }
+        }
+        if (subtype != null) {
+            if (subtype == Keyboard.Subtype.latin) {
+                type = Keyboard.Type.Latin;
+            } else {
+                type = Keyboard.Type.Pinyin;
+            }
+        }
+
+        if (oldKeyboard != null) {
+            oldKeyboard.destroy();
+        }
+
+        Keyboard newKeyboard = createKeyboard(type, oldType);
+        newKeyboard.setInputList(this::getInputList);
+        newKeyboard.setConfig(this::getConfig);
+
+        this.keyboard = newKeyboard;
+        newKeyboard.start();
     }
 
     private void relayoutViews() {
