@@ -119,7 +119,7 @@ public abstract class BaseKeyboard implements Keyboard {
             inputList.confirmPendingAndSelectNext();
         }
 
-        // 将算数键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
+        // 将算术键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
         // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
         if ((this.prevType == Type.Math //
              && !pending.isMathExpr()) //

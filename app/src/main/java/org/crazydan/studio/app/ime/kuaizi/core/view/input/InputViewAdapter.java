@@ -71,26 +71,26 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         boolean selected = this.canBeSelected && needToBeSelected(input);
         boolean needGapSpace = this.inputList.needGapSpace(input);
 
-        // 前序正在输入的 Gap 位为算数待输入，则当前位置需多加一个空白位
+        // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
         boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
         int gapSpaceCount = needGapSpace ? preGapIsMathExprInput ? 2 : 1 : 0;
 
         if (mathExprInput != null) {
             // 第一个普通输入不需要添加空白，
-            // 但是对于第一个不为空的算数待输入则需要提前添加，
-            // 因为，在输入过程中，算数待输入的前面没有 Gap 占位，
+            // 但是对于第一个不为空的算术待输入则需要提前添加，
+            // 因为，在输入过程中，算术待输入的前面没有 Gap 占位，
             // 输入完毕后才会添加 Gap 占位
             if (position == 0) {
                 gapSpaceCount = !Input.isEmpty(mathExprInput) ? 1 : 0;
             }
-            // 算数输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
-            // 为避免视觉干扰，故在该算数的待输入之前先多附加一个空白
+            // 算术输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
+            // 为避免视觉干扰，故在该算术的待输入之前先多附加一个空白
             else if (needGapSpace && input.isGap() && !Input.isEmpty(mathExprInput)) {
                 gapSpaceCount = 2;
             }
 
-            // Note：视图始终与待输入的算数输入绑定，
-            // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算数表达式中的字符
+            // Note：视图始终与待输入的算术输入绑定，
+            // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算术表达式中的字符
             ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected, gapSpaceCount);
         } else if (input.isGap()) {
             if (!Input.isEmpty(pending)) {
@@ -147,12 +147,12 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         CharInput pending = this.inputList.getPendingOn(input);
 
         return isMathExprInput(pending)
-               // 待输入的算数不能为空，否则，原输入需为空，才能将待输入作为算数输入，
-               // 从而确保在未修改非算数输入时能够正常显示原始输入
+               // 待输入的算术不能为空，否则，原输入需为空，才能将待输入作为算术输入，
+               // 从而确保在未修改非算术输入时能够正常显示原始输入
                && (!Input.isEmpty(pending) || Input.isEmpty(input)) //
                ? (CharMathExprInput) pending //
                : isMathExprInput(input)
-                 // 若算数输入 没有 被替换为非算数输入，则返回其自身
+                 // 若算术输入 没有 被替换为非算术输入，则返回其自身
                  && Input.isEmpty(pending) //
                  ? (CharMathExprInput) input : null;
     }

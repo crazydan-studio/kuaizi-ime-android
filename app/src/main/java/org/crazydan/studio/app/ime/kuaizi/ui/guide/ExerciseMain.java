@@ -328,14 +328,14 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_cursor_locator)
                 + "\"/>为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，"
-                + "长按则将进入<b>内容编辑</b>模式；",
+                + "长按或双击则将进入<b>内容编辑</b>模式；",
                 // 其他按键
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_hand_mode)
                 + "\"/>为左右手输入模式切换按键，用于临时切换<b>左右手使用</b>模式；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_switch_math)
-                + "\"/>为算数键盘切换按键，用于切换到<b>算数输入</b>键盘；",
+                + "\"/>为算术键盘切换按键，用于切换到<b>算术输入</b>键盘；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_switch_latin)
                 + "\"/>为拉丁文键盘切换按键，用于从拼音键盘切换到拉丁文（英文、数字）输入键盘；",
@@ -371,7 +371,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 + "单击可删除当前选中的输入；",
                 "<img src=\""
                 + sandboxView.withKey(key_ctrl_range_selector)
-                + "\"/>为内容选择按键，在长按<img src=\""
+                + "\"/>为内容选择按键，在长按或双击<img src=\""
                 + sandboxView.withKey(key_ctrl_cursor_locator)
                 + "\"/>后显示。在其上滑动手指可移动目标编辑器中的光标，并选中光标移动范围内的内容，"
                 + "可进一步执行复制、粘贴、剪切等操作；",
@@ -583,7 +583,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
             }
             warning("请按当前步骤的指导要求移动目标编辑器中的光标");
         });
-        exercise.addStep("请<span style=\"color:#ed4c67;\">长按</span>光标定位按键<img src=\"" //
+        exercise.addStep("请<span style=\"color:#ed4c67;\">长按或双击</span>光标定位按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_cursor_locator) //
                          + "\"/>以进入<b>内容编辑</b>模式；", (msg, data) -> {
             if (msg == InputMsg.Keyboard_State_Change_Done) {
@@ -592,7 +592,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 if (key != null && key.equals(key_ctrl_cursor_locator)) {
                     exercise.gotoNextStep();
                 } else {
-                    warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span>"
+                    warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按或双击</span>"
                             + " <b>光标定位按键</b>");
                 }
             }
@@ -739,13 +739,13 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         Key<?> key_ctrl_switch_math = keyTable.keyboardSwitchKey(Keyboard.Type.Math);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
-        Exercise exercise = Exercise.normal("算数输入", sandboxView::getImage);
+        Exercise exercise = Exercise.normal("算术输入", sandboxView::getImage);
 
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">3 × (2 + 1) =</span>；");
         exercise.addStep("<b>提示</b>：若计算式以等号开头，则提交内容将仅包含计算结果。"
                          + "若计算式以等号结尾，则提交内容除了计算结果以外还将包括计算式本身。"
                          + "对于无效的计算式，则将保持原样输出；");
-        exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_switch_math) + "\"/>以切换到算数键盘；",
+        exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_switch_math) + "\"/>以切换到算术键盘；",
                          (msg, data) -> {
                              if (msg == InputMsg.Keyboard_Switch_Done) {
                                  Keyboard.Type type = ((KeyboardSwitchingMsgData) data).target;
@@ -755,7 +755,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                      return;
                                  }
                              }
-                             warning("请按当前步骤的指导要求切换到算数键盘");
+                             warning("请按当前步骤的指导要求切换到算术键盘");
                          });
         String[] chars = new String[] {
                 "3",

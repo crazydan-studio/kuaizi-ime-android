@@ -61,7 +61,7 @@ public interface Keyboard extends UserInputMsgListener {
     enum Type {
         /** 汉语拼音键盘 */
         Pinyin,
-        /** 算数键盘：支持数学计算 */
+        /** 算术键盘：支持数学计算 */
         Math,
         /** 拉丁文键盘：含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件 */
         Latin,

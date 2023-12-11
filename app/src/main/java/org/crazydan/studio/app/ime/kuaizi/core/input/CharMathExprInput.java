@@ -226,7 +226,7 @@ public class CharMathExprInput extends CharInput {
         // Note：
         // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
         // - 只有新建 pending 时才会做复制操作，
-        //   此时，对算数表达式的原输入或 pending 做修改操作都是等效的，
+        //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
         //   不需要通过副本规避
         return new CharMathExprInput(getInputList());
     }

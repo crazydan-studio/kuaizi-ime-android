@@ -349,14 +349,14 @@ public class InputList {
         }
 
         if (hasEmptyPending()) {
-            // 若当前为空白算数输入，则直接将其移除
+            // 若当前为空白算术输入，则直接将其移除
             if (getSelected().isMathExpr() && getSelected().isEmpty()) {
                 removeCharInputAt(selectedIndex);
                 // 选中相邻的后继 Gap
                 doSelect(selectedIndex - 1);
             }
 
-            // Note：当前待输入可能为空白的算数输入，
+            // Note：当前待输入可能为空白的算术输入，
             // 为了确保确认后能继续接受普通输入，需重置当前的待输入
             newPending();
 

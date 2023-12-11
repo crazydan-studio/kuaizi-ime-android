@@ -39,11 +39,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 
 /**
- * {@link Keyboard.Type#Math 算数键盘}
+ * {@link Keyboard.Type#Math 算术键盘}
  * <p/>
  * 含数字、计算符号等
  * <p/>
- * 算数键盘涉及对 {@link InputList} 的嵌套处理，
+ * 算术键盘涉及对 {@link InputList} 的嵌套处理，
  * 故而，必须采用独立的子键盘模式，而不能采用嵌入模式
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -74,7 +74,7 @@ public class MathKeyboard extends BaseKeyboard {
                                    !getInputList().isGapSelected());
     }
 
-    /** 处理来自本层的算数 InputList 的消息 */
+    /** 处理来自本层的算术 InputList 的消息 */
     protected void onMathUserInputMsg(InputList matchInputList, UserInputMsg msg, UserInputMsgData msgData) {
         // 数字、数学符号不做候选切换：需支持更多符号时，可增加数学计算符的候选键盘
         if (msg == UserInputMsg.Input_Choose_Doing) {
@@ -110,7 +110,7 @@ public class MathKeyboard extends BaseKeyboard {
                 // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
                 topInputList.confirmPendingAndSelect(input);
 
-                // 仅处理算数表达式输入
+                // 仅处理算术表达式输入
                 if (!input.isMathExpr()) {
                     super.switchTo_Previous_Keyboard(null);
                 } else {
@@ -151,7 +151,7 @@ public class MathKeyboard extends BaseKeyboard {
                     play_SingleTick_InputAudio(key);
                     show_InputChars_Input_Popup(key);
 
-                    // 若当前算数输入不为空，则对其做删除，否则，对上层输入做删除
+                    // 若当前算术输入不为空，则对其做删除，否则，对上层输入做删除
                     if (!mathInputList.isEmpty()) {
                         backspace_InputList_or_Editor(mathInputList, key);
                     } else {
@@ -165,13 +165,13 @@ public class MathKeyboard extends BaseKeyboard {
                     // 提交上层输入
                     commit_InputList(topInputList, true, false);
 
-                    // Note：在 X 型输入中仅需重置算数输入，而不需要退出当前键盘
+                    // Note：在 X 型输入中仅需重置算术输入，而不需要退出当前键盘
                     if (isXInputPadEnabled()) {
                         resetMathInputList();
                         return true;
                     }
 
-                    // 若是在 内嵌键盘 内提交，则需新建算数输入，以接收新的输入
+                    // 若是在 内嵌键盘 内提交，则需新建算术输入，以接收新的输入
                     if (this.state.previous != null) {
                         resetMathInputList();
                     }
@@ -188,12 +188,12 @@ public class MathKeyboard extends BaseKeyboard {
                     play_SingleTick_InputAudio(key);
                     show_InputChars_Input_Popup(key);
 
-                    // Note：对于上层 InputList 而言，当前正在输入的一定是算数输入
+                    // Note：对于上层 InputList 而言，当前正在输入的一定是算术输入
                     topInputList.confirmPendingAndSelectNext();
 
                     confirm_InputList_Input_Enter_or_Space(topInputList, key);
 
-                    // 若不是直输空格，则新建算数输入
+                    // 若不是直输空格，则新建算术输入
                     if (!topInputList.isEmpty()) {
                         resetMathInputList();
                     }
@@ -248,7 +248,7 @@ public class MathKeyboard extends BaseKeyboard {
 
                     mathInputList.getPending().appendKey(key);
 
-                    // Note：单算数符号不支持追加输入
+                    // Note：单算术符号不支持追加输入
                     mathInputList.confirmPendingAndSelectNext();
             }
         }
@@ -258,7 +258,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public InputList getInputList() {
-        // 基类的输入列表操作均做用到算数输入列表上
+        // 基类的输入列表操作均做用到算术输入列表上
         return getMathInputList();
     }
 
@@ -315,18 +315,18 @@ public class MathKeyboard extends BaseKeyboard {
                 super.do_InputList_Backspacing(inputList, key);
             }
         }
-        // 处理算数输入
+        // 处理算术输入
         else {
             super.do_InputList_Backspacing(inputList, key);
 
-            // 当前算数输入已清空，且该输入在上层中不是 Gap 的待输入，则从上层输入中移除该输入
+            // 当前算术输入已清空，且该输入在上层中不是 Gap 的待输入，则从上层输入中移除该输入
             if (!topInputList.isGapSelected() && inputList.isEmpty()) {
                 topInputList.deleteBackward();
                 fire_InputChars_Input_Doing(key);
             }
         }
 
-        // 不管哪个层级的输入列表为空，均重置算数输入列表，以接受新的算数输入
+        // 不管哪个层级的输入列表为空，均重置算术输入列表，以接受新的算术输入
         resetMathInputList();
     }
 
@@ -375,8 +375,8 @@ public class MathKeyboard extends BaseKeyboard {
     private void before_ChangeState_Or_SwitchKeyboard(InputList topInputList) {
         topInputList.getPending().clearCompletions();
 
-        // 在切换前，确保当前的算数输入列表已被确认
-        // Note：新位置的待输入将被设置为普通输入，可接受非算数输入，故，不需要处理
+        // 在切换前，确保当前的算术输入列表已被确认
+        // Note：新位置的待输入将被设置为普通输入，可接受非算术输入，故，不需要处理
         if (topInputList.getSelected().isMathExpr() //
             || topInputList.getPending().isMathExpr() //
         ) {
@@ -403,7 +403,7 @@ public class MathKeyboard extends BaseKeyboard {
         this.mathInputList = null;
     }
 
-    /** 重置当前键盘的算数输入列表（已输入内容将保持不变） */
+    /** 重置当前键盘的算术输入列表（已输入内容将保持不变） */
     private void resetMathInputList() {
         InputList topInputList = getTopInputList();
 
@@ -411,7 +411,7 @@ public class MathKeyboard extends BaseKeyboard {
         withMathExprPending(topInputList);
     }
 
-    /** 确保当前的待输入为算数输入 */
+    /** 确保当前的待输入为算术输入 */
     private void withMathExprPending(InputList topInputList) {
         Input<?> selected = topInputList.getSelected();
         CharInput pending = topInputList.getPending();
@@ -426,7 +426,7 @@ public class MathKeyboard extends BaseKeyboard {
             topInputList.withPending(pending);
         }
 
-        // 在上层输入列表中绑定算数输入列表
+        // 在上层输入列表中绑定算术输入列表
         CharMathExprInput input = (CharMathExprInput) topInputList.getPending();
         this.mathInputList = input.getInputList();
         this.mathInputList.setConfig(topInputList::getConfig);
