@@ -203,6 +203,11 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         }
     }
 
+    /** 隐藏输入 */
+    public void hideInput() {
+        showInputCompletionsPopupWindow(false);
+    }
+
     /** 结束输入 */
     public void finishInput() {
         getInputList().clear();

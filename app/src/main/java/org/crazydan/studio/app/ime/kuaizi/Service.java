@@ -118,6 +118,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         int prevFieldId = this.prevFieldId;
+        // Note：熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
         this.prevFieldId = attribute.fieldId;
 
         this.imeView.setSingleLineInput(singleLineInput);
@@ -147,9 +148,20 @@ public class Service extends InputMethodService implements InputMsgListener {
         this.imeView.startInput(keyboardType, resetInputList);
     }
 
-    /** 输入结束隐藏键盘 */
+    /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
+    @Override
+    public void onFinishInputView(boolean finishingInput) {
+        if (this.imeView != null) {
+            this.imeView.hideInput();
+        }
+
+        super.onFinishInputView(finishingInput);
+    }
+
+    /** 输入结束：彻底退出编辑 */
     @Override
     public void onFinishInput() {
+        // Note：熄屏也会调用该接口
         this.editorSelection = null;
         if (this.imeView != null) {
             this.imeView.finishInput();
