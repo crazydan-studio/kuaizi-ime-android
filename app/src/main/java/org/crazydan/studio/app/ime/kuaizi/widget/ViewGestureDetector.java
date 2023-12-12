@@ -91,11 +91,14 @@ public class ViewGestureDetector {
                 break;
             }
             case MotionEvent.ACTION_UP: {
-                if (!this.longPressing.get() //
-                    && !this.moving) {
-                    onSingleTap(data);
-                } else if (!this.longPressing.get() && isFlipping()) {
-                    onFlipping(data);
+                // Note: ACTION_UP 会触发多次，需确保仅与最近的 ACTION_DOWN 相邻的才有效
+                if (this.latestPressStart != null) {
+                    if (!this.longPressing.get() //
+                        && !this.moving) {
+                        onSingleTap(data);
+                    } else if (!this.longPressing.get() && isFlipping()) {
+                        onFlipping(data);
+                    }
                 }
 
                 onGestureEnd(data);
@@ -309,6 +312,24 @@ public class ViewGestureDetector {
         }
 
         return new Motion(direction, (int) distance, timestamp);
+    }
+
+    protected String getActionName(MotionEvent e) {
+        switch (e.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                return "ACTION_DOWN";
+            }
+            case MotionEvent.ACTION_MOVE: {
+                return "ACTION_MOVE";
+            }
+            case MotionEvent.ACTION_UP: {
+                return "ACTION_UP";
+            }
+            case MotionEvent.ACTION_CANCEL: {
+                return "ACTION_CANCEL";
+            }
+        }
+        return null;
     }
 
     public enum GestureType {

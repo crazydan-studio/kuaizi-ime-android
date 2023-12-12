@@ -32,4 +32,9 @@ public class ReadonlyInputListView extends BaseInputListView {
     public ReadonlyInputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
+
+    @Override
+    protected void scrollToSelected(int position) {
+        // 由父 InputList 处理定位
+    }
 }

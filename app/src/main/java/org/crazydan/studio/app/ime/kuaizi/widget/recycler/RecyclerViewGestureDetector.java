@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.widget.recycler;
 
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -60,6 +61,9 @@ public class RecyclerViewGestureDetector extends ViewGestureDetector implements 
                 reset();
             }
         }
+
+        Log.d(getClass().getSimpleName(),
+              String.format("%s: action - %s", rv.getClass().getSimpleName(), getActionName(e)));
 
         onTouchEvent(e);
     }

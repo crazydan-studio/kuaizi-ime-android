@@ -72,9 +72,16 @@ public class ViewUtils {
         layoutParams.height = height;
     }
 
-    public static Point getLocationInWindow(View view) {
+    /**
+     * 获取视图在屏幕上的位置
+     * <p/>
+     * 注：{@link View#getLocationInWindow} 为相对于窗口的坐标，
+     * 在多层嵌套的视图中，其值会返回 (0,0)，
+     * 所以，在不同层次间的视图定位中，需使用更大范围的相对坐标
+     */
+    public static Point getLocationOnScreen(View view) {
         int[] location = new int[2];
-        view.getLocationInWindow(location);
+        view.getLocationOnScreen(location);
 
         int x = location[0];
         int y = location[1];

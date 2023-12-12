@@ -23,13 +23,12 @@ import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.CharInputView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.core.view.input.InputViewAdapter;
@@ -49,6 +48,7 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
 
+    private boolean needToLockScrolling;
     private Supplier<InputList> inputListGetter;
 
     public BaseInputListView(Context context, @Nullable AttributeSet attrs) {
@@ -79,8 +79,10 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         InputList inputList = getInputList();
         this.adapter.updateInputList(inputList, canBeSelected);
 
-        int position = inputList.getSelectedIndex();
-        scrollToSelected(position);
+        if (!this.needToLockScrolling) {
+            int position = inputList.getSelectedIndex();
+            scrollToSelected(position);
+        }
     }
 
     @Override
@@ -94,13 +96,24 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
 
     private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
         Input<?> input = determineInput(inputView, data);
-        if (input == null) {
-            return;
-        }
 
-        UserInputMsg msg = UserInputMsg.Input_Choose_Doing;
-        UserInputMsgData msgData = new UserInputMsgData(input);
-        getInputList().fireUserInputMsg(msg, msgData);
+        InputList inputList = getInputList();
+        boolean isMathExprSelected = input.isMathExpr() //
+                                     && (inputList.isSelected(input) //
+                                         || inputList.getPending() == input);
+        // 忽略对已选中算术表达式的处理，由其自身的视图做响应
+        if (!isMathExprSelected) {
+            // 若首次选中算术表达式，则需保持滚动条不动。
+            // 因为在算术表达式长度超出可见区域时，
+            // 滚动条移动会造成算术表达式视图直接接收 ACTION_CANCEL
+            // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
+            // 注：事件是从父 InputList 传递到子 InputList 的，
+            // 所以，无法优先处理子 InputList的事件
+            this.needToLockScrolling = input.isMathExpr();
+
+            inputList.trySelect(input);
+        }
+        this.needToLockScrolling = false;
     }
 
     private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {
@@ -117,18 +130,24 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         return input;
     }
 
-    private void scrollToSelected(int position) {
+    protected void scrollToSelected(int position) {
         View item = this.layoutManager.findViewByPosition(position);
+        View itemInChildInputList = getSelectedInChildInputList(item);
+
+        // 按子 InputList 中的选中输入进行滚动，以确保选中的算术输入在可见位置
+        if (itemInChildInputList != null) {
+            item = itemInChildInputList;
+        }
 
         int offset = 0;
         if (item != null) {
-            Point parentLocation = ViewUtils.getLocationInWindow(this);
+            Point parentLocation = ViewUtils.getLocationOnScreen(this);
             int parentWidth = getMeasuredWidth();
             int parentPadding = getPaddingLeft() + getPaddingRight();
             int parentLeft = parentLocation.x;
             int parentRight = parentLeft + parentWidth;
 
-            Point itemLocation = ViewUtils.getLocationInWindow(item);
+            Point itemLocation = ViewUtils.getLocationOnScreen(item);
             int itemWidth = item.getMeasuredWidth();
             int itemLeft = itemLocation.x;
             int itemRight = itemLeft + itemWidth;
@@ -185,5 +204,23 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         }
 
         return inputView;
+    }
+
+    private View getSelectedInChildInputList(View view) {
+        if (view == null) {
+            return null;
+        }
+
+        for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
+            View child = ((ViewGroup) view).getChildAt(j);
+
+            if (child instanceof ReadonlyInputListView) {
+                ReadonlyInputListView ro = (ReadonlyInputListView) child;
+                int position = ro.getInputList().getSelectedIndex();
+
+                return ro.getLayoutManager().findViewByPosition(position);
+            }
+        }
+        return null;
     }
 }

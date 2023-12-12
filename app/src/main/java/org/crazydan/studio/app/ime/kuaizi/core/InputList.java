@@ -108,6 +108,18 @@ public class InputList {
         return text;
     }
 
+    /** 尝试选中指定输入：实际仅发送 {@link UserInputMsg#Input_Choose_Doing} 消息 */
+    public void trySelect(Input<?> input) {
+        if (input == null) {
+            return;
+        }
+
+        UserInputMsg msg = UserInputMsg.Input_Choose_Doing;
+        UserInputMsgData msgData = new UserInputMsgData(input);
+
+        fireUserInputMsg(msg, msgData);
+    }
+
     /** 是否可撤回已提交输入 */
     public boolean canRevokeCommit() {
         return this.staged.type == Staged.Type.committed;

@@ -107,8 +107,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start() {
-        change_State_To(null, this.state);
-
         InputList inputList = getInputList();
         Input<?> pending = inputList.getPending();
         boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
@@ -204,13 +202,13 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
         switch (msg) {
-            case Input_Choose_Doing:
             case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
                 inputList.clearPhraseCompletions();
                 // 继续后续处理
             }
             case InputList_Option_Update_Done: {
+                // Note: Xxx_Doing 消息不能触发 Xxx_Done 消息，因为选中等操作还未执行
                 fire_InputList_Update_Done();
                 break;
             }
@@ -222,6 +220,8 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         if (msg == UserInputMsg.Input_Choose_Doing) {
+            inputList.clearPhraseCompletions();
+
             switch (this.state.type) {
                 case InputChars_Input_Waiting:
                 case Emoji_Choose_Doing:
