@@ -125,6 +125,8 @@ public abstract class BaseKeyboard implements Keyboard {
         ) {
             start_Selected_Input_ReChoosing(getInputList());
         }
+
+        fire_Common_InputMsg(InputMsg.Keyboard_Start_Done, null);
     }
 
     @Override

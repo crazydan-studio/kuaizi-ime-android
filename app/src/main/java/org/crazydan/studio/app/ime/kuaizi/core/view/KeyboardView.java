@@ -144,6 +144,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
 
         switch (msg) {
             case Keyboard_Switch_Done:
+            case Keyboard_Start_Done:
             case Keyboard_HandMode_Switch_Done:
             case Keyboard_Config_Update_Done: {
                 keyFactory = keyboard.getKeyFactory();
