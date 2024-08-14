@@ -127,6 +127,10 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         return this.keyboard;
     }
 
+    public Keyboard.Type getKeyboardType() {
+        return this.keyboard != null ? this.keyboard.getType() : null;
+    }
+
     public Configuration getConfig() {
         Configuration config = this.sysConf.copy();
         config.merge(this.appConf);
@@ -220,7 +224,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
             return;
         }
 
-        // Note：仅当新旧配置值不相等时才会触发配置更新，故而，仅需检查哪些配置项发生了变更即可
+        // Note: 仅当新旧配置值不相等时才会触发配置更新，故而，仅需检查哪些配置项发生了变更即可
         switch (conf) {
             case theme: {
                 relayoutViews();
@@ -254,7 +258,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
     /** 响应 {@link InputMsg} 消息 */
     @Override
     public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
-        // Note：存在在相邻消息中切换键盘的情况，故而，需忽略切换前的键盘消息
+        // Note: 存在在相邻消息中切换键盘的情况，故而，需忽略切换前的键盘消息
         if (getKeyboard() != keyboard) {
             return;
         }
@@ -274,7 +278,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
                 Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
                 updateKeyboard(target);
 
-                // Note：消息发送者需为更新后的 Keyboard
+                // Note: 消息发送者需为更新后的 Keyboard
                 onMsg(getKeyboard(), InputMsg.Keyboard_Switch_Done, msgData);
                 return;
             }
@@ -390,7 +394,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
     private void updateBottomSpacing() {
         Configuration config = getConfig();
 
-        // Note：仅竖屏模式下需要添加底部空白
+        // Note: 仅竖屏模式下需要添加底部空白
         addBottomSpacing(this,
                          config.bool(Conf.adapt_desktop_swipe_up_gesture)
                          && !config.isXInputPadEnabled()
@@ -469,7 +473,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
 
         // https://android.googlesource.com/platform/packages/inputmethods/PinyinIME/+/40056ae7c2757681d88d2e226c4681281bd07129/src/com/android/inputmethod/pinyin/PinyinIME.java#1247
         // https://stackoverflow.com/questions/3514392/android-ime-showing-a-custom-pop-up-dialog-like-swype-keyboard-which-can-ente#answer-32858312
-        // Note：自动补全视图的高度和宽度是固定的，故而，只用取一次
+        // Note: 自动补全视图的高度和宽度是固定的，故而，只用取一次
         int width = getMeasuredWidth();
         int height = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.input_completions_view_height);
 
@@ -485,7 +489,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         PopupWindow window = this.inputKeyPopupWindow;
 
         if (key == null || key.isEmpty()) {
-            // Note：存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
+            // Note: 存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
             post(window::dismiss);
             return;
         }

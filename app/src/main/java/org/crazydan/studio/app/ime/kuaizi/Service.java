@@ -90,7 +90,7 @@ public class Service extends InputMethodService implements InputMsgListener {
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;
-        // Note：默认保持键盘类型不变
+        // Note: 默认保持键盘类型不变
         Keyboard.Type keyboardType = Keyboard.Type.Keep_Current;
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
@@ -100,6 +100,11 @@ public class Service extends InputMethodService implements InputMsgListener {
                 keyboardType = Keyboard.Type.Number;
                 break;
             case InputType.TYPE_CLASS_TEXT:
+                // Note: 切换前为数字键盘时，需强制切换到拼音键盘，否则无法输入文本
+                if (this.imeView.getKeyboardType() == Keyboard.Type.Number) {
+                    keyboardType = Keyboard.Type.Pinyin;
+                }
+
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
@@ -118,7 +123,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
 
         int prevFieldId = this.prevFieldId;
-        // Note：熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
+        // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
         this.prevFieldId = attribute.fieldId;
 
         this.imeView.setSingleLineInput(singleLineInput);
@@ -130,7 +135,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 响应系统对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        // Note：切换系统子键盘时，视图可能还未创建
+        // Note: 切换系统子键盘时，视图可能还未创建
         if (this.imeView == null) {
             return;
         }
@@ -161,7 +166,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     /** 输入结束：彻底退出编辑 */
     @Override
     public void onFinishInput() {
-        // Note：熄屏也会调用该接口
+        // Note: 熄屏也会调用该接口
         this.editorSelection = null;
         if (this.imeView != null) {
             this.imeView.finishInput();
@@ -280,7 +285,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     }
 
     private void revokeTextCommitting() {
-        // Note：撤销由编辑器控制，其可能会撤销间隔时间较短的多个输入，
+        // Note: 撤销由编辑器控制，其可能会撤销间隔时间较短的多个输入，
         // 故而，只能采用记录输入前的范围，再还原的方式实现输入的撤回
         //editEditor(EditorEditAction.undo);
         EditorSelection selection = this.editorSelection;
@@ -305,7 +310,7 @@ public class Service extends InputMethodService implements InputMsgListener {
         }
         this.editorSelection = null;
 
-        // Note：假设替换字符的长度均相同
+        // Note: 假设替换字符的长度均相同
         CharSequence raw = ic.getTextBeforeCursor(text.length(), 0);
         // 替换字符
         if (replacements.contains(raw.toString())) {
@@ -341,10 +346,10 @@ public class Service extends InputMethodService implements InputMsgListener {
         int start = selection.start;
         int end = selection.end;
 
-        // Note：仅包含多个编辑动作时，才启用编辑批处理
+        // Note: 仅包含多个编辑动作时，才启用编辑批处理
         ic.beginBatchEdit();
 
-        // Note：先向选区尾部添加符号，以避免选区发生移动
+        // Note: 先向选区尾部添加符号，以避免选区发生移动
         addText(ic, right, end);
         addText(ic, left, start);
 
