@@ -5,15 +5,15 @@ plugins {
 
 android {
     namespace 'org.crazydan.studio.app.ime.kuaizi'
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         applicationId 'org.crazydan.studio.app.ime.kuaizi'
         minSdk 25
-        targetSdk 33
+        targetSdk 35
         // https://developer.android.com/studio/publish/versioning
-        versionCode 200
-        versionName '2.0.0'
+        versionCode 201
+        versionName '2.0.1'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
