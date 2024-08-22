@@ -42,11 +42,13 @@
         </service>
 
         <!-- Start: 配置
-        Note：视图主题在 FollowSystemThemeActivity 中动态设置
+        Note:
+        - 视图主题在 FollowSystemThemeActivity 中动态设置
+        - 配置子视图需设置 exported 为 true，否则，会出现异常 "No Activity found to handle Intent"
         -->
         <activity
                 android:name=".ui.Preferences"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_app_preferences">
             <intent-filter>
                 <action android:name=".ui.Preferences" />
@@ -56,7 +58,7 @@
 
         <activity
                 android:name=".ui.PreferencesTheme"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/label_config_theme">
             <intent-filter>
                 <action android:name=".ui.PreferencesTheme" />
@@ -65,7 +67,7 @@
         </activity>
         <activity
                 android:name=".ui.about.AboutApp"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_app">
             <intent-filter>
                 <action android:name=".ui.about.AboutApp" />
@@ -74,7 +76,7 @@
         </activity>
         <activity
                 android:name=".ui.about.AboutTeam"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_team">
             <intent-filter>
                 <action android:name=".ui.about.AboutTeam" />
@@ -83,7 +85,7 @@
         </activity>
         <activity
                 android:name=".ui.about.AboutThanks"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_thanks">
             <intent-filter>
                 <action android:name=".ui.about.AboutThanks" />
@@ -92,7 +94,7 @@
         </activity>
         <activity
                 android:name=".ui.about.AboutChangeLog"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_change_log">
             <intent-filter>
                 <action android:name=".ui.about.AboutChangeLog" />
@@ -101,7 +103,7 @@
         </activity>
         <activity
                 android:name=".ui.about.SoftwareServiceAgreement"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_software_service_agreement">
             <intent-filter>
                 <action android:name=".ui.about.SoftwareServiceAgreement" />
@@ -110,7 +112,7 @@
         </activity>
         <activity
                 android:name=".ui.about.Copyright"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_copyright">
             <intent-filter>
                 <action android:name=".ui.about.Copyright" />
@@ -119,7 +121,7 @@
         </activity>
         <activity
                 android:name=".ui.about.AlphaUserAgreement"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/title_about_alpha_user_agreement">
             <intent-filter>
                 <action android:name=".ui.about.AlphaUserAgreement" />
