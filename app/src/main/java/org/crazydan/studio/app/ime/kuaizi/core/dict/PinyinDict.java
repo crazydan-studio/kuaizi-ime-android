@@ -66,16 +66,11 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
  * @date 2023-07-24
  */
 public class PinyinDict {
-    private static final String file_app_dict_db = "pinyin_app_dict.db";
-    private static final String file_user_dict_db = "pinyin_user_dict.db";
-
     private static final PinyinDict instance = new PinyinDict();
 
     private Future<Boolean> dbInited;
     private Future<Boolean> dbOpened;
 
-    /** 内置字典数据库 */
-    private SQLiteDatabase appDB;
     /** 用户字典数据库 */
     private SQLiteDatabase userDB;
 
@@ -88,119 +83,6 @@ public class PinyinDict {
 
     public static PinyinDict getInstance() {
         return instance;
-    }
-
-    private static SQLiteDatabase openSQLite(File file, boolean readonly) {
-        if (!file.exists() && !readonly) {
-            return SQLiteDatabase.openOrCreateDatabase(file, null);
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
-            SQLiteDatabase.OpenParams.Builder builder = new SQLiteDatabase.OpenParams.Builder();
-
-            if (!readonly) {
-                builder.setOpenFlags(SQLiteDatabase.OPEN_READWRITE);
-            } else {
-                builder.setOpenFlags(SQLiteDatabase.OPEN_READONLY);
-            }
-
-            return SQLiteDatabase.openDatabase(file, builder.build());
-        } else {
-            return SQLiteDatabase.openDatabase(file.getPath(),
-                                               null,
-                                               readonly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE);
-        }
-    }
-
-    private static void closeSQLite(SQLiteDatabase db) {
-        if (db != null) {
-            db.close();
-        }
-    }
-
-    private static void copySQLite(Context context, File targetDBFile, int dbRawResId, int dbHashRawResId) {
-        String dbHash = FileUtils.read(context, dbHashRawResId, true);
-
-        File targetDBHashFile = new File(targetDBFile.getPath() + ".hash");
-        String targetHash = FileUtils.read(targetDBHashFile, true);
-
-        if (dbHash != null && Objects.equals(dbHash, targetHash)) {
-            return;
-        }
-
-        try {
-            FileUtils.copy(context, dbRawResId, targetDBFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (dbHash != null) {
-            try {
-                FileUtils.write(targetDBHashFile, dbHash);
-            } catch (IOException ignore) {
-            }
-        }
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params,
-            Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, null, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
-            Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, orderBy, null, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String orderBy,
-            String limit, Function<Cursor, T> creator
-    ) {
-        return doSQLiteQuery(db, table, columns, where, params, null, orderBy, limit, creator);
-    }
-
-    private static <T> List<T> doSQLiteQuery(
-            SQLiteDatabase db, String table, String[] columns, String where, String[] params, String groupBy,
-            String orderBy, String limit, Function<Cursor, T> creator
-    ) {
-        try (
-                // Note：在有 group by 时，只能通过 having 过滤结果，而不能使用 where
-                Cursor cursor = db.query(table,
-                                         columns,
-                                         groupBy != null ? null : where,
-                                         params,
-                                         groupBy,
-                                         groupBy != null ? where : null,
-                                         orderBy,
-                                         limit)
-        ) {
-            if (cursor == null) {
-                return new ArrayList<>();
-            }
-
-            List<T> list = new ArrayList<>(cursor.getCount());
-            while (cursor.moveToNext()) {
-                T data = creator.apply(cursor);
-
-                if (data != null) {
-                    list.add(data);
-                }
-            }
-
-            return list;
-        }
-    }
-
-    private File getAppDBFile(Context context) {
-        return new File(context.getFilesDir(), file_app_dict_db);
-    }
-
-    private File getUserDBFile(Context context) {
-        return new File(context.getFilesDir(), file_user_dict_db);
     }
 
     /**
@@ -1086,6 +968,18 @@ public class PinyinDict {
         return text != null && text.length() > 3;
     }
 
+    private <T> T value(Future<T> f) {
+        return value(f, null);
+    }
+
+    private <T> T value(Future<T> f, T defaultVale) {
+        try {
+            return f != null ? f.get() : defaultVale;
+        } catch (Exception e) {
+            return defaultVale;
+        }
+    }
+
     /**
      * 更新数据权重，并将权重为 0 的数据删除
      *
@@ -1141,22 +1035,12 @@ public class PinyinDict {
         return existDataMap;
     }
 
-    private void doSQLiteSave(SQLiteDatabase db, String sql_1, String sql_2, SQLiteSaver saver) {
-        db.beginTransaction();
-        try {
-            SQLiteStatement sql_1_statement = sql_1 != null ? db.compileStatement(sql_1) : null;
-            SQLiteStatement sql_2_statement = sql_2 != null ? db.compileStatement(sql_2) : null;
-
-            saver.save(sql_1_statement, sql_2_statement);
-
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
+    private File getAppDBFile(Context context, AppDBType dbType) {
+        return new File(context.getFilesDir(), dbType.fileName);
     }
 
-    private SQLiteDatabase getAppDB() {
-        return isOpened() ? this.appDB : null;
+    private File getUserDBFile(Context context) {
+        return new File(context.getFilesDir(), user_db_file);
     }
 
     private SQLiteDatabase getUserDB() {
@@ -1164,12 +1048,8 @@ public class PinyinDict {
     }
 
     private void doInit(Context context) {
-        File appDBFile = getAppDBFile(context);
-        copySQLite(context, appDBFile, R.raw.pinyin_dict, R.raw.pinyin_dict_db_hash);
-
-        try (SQLiteDatabase appDB = openSQLite(appDBFile, false);) {
-            initAppDB(appDB);
-        }
+        PinyinUserDictDB upgrader = new PinyinUserDictDB(context);
+        upgrader.upgrade();
 
         File userDBFile = getUserDBFile(context);
         try (SQLiteDatabase userDB = openSQLite(userDBFile, false);) {
@@ -1178,17 +1058,13 @@ public class PinyinDict {
     }
 
     private void doOpen(Context context) {
-        File appDBFile = getAppDBFile(context);
         File userDBFile = getUserDBFile(context);
 
-        this.appDB = openSQLite(appDBFile, true);
         this.userDB = openSQLite(userDBFile, false);
-
-        configSQLite(this.appDB);
         configSQLite(this.userDB);
 
         Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
-        doSQLiteQuery(this.appDB, "meta_pinyin_chars", new String[] {
+        doSQLiteQuery(this.userDB, "meta_pinyin_chars", new String[] {
                               "id_", "value_"
                       }, //
                       null, null, (cursor) -> {
@@ -1201,21 +1077,10 @@ public class PinyinDict {
     }
 
     private void doClose() {
-        closeSQLite(this.appDB);
         closeSQLite(this.userDB);
 
-        this.appDB = null;
         this.userDB = null;
         this.pinyinTree = null;
-    }
-
-    private void configSQLite(SQLiteDatabase db) {
-        String[] clauses = new String[] {
-                "PRAGMA cache_size = 2500;", "PRAGMA temp_store = MEMORY;",
-                };
-        for (String clause : clauses) {
-            db.execSQL(clause);
-        }
     }
 
     private void initUserDB(SQLiteDatabase db) {
@@ -1304,31 +1169,5 @@ public class PinyinDict {
         for (String clause : clauses) {
             db.execSQL(clause);
         }
-    }
-
-    private void initAppDB(SQLiteDatabase db) {
-        String[] clauses = new String[] {
-                // 创建索引以加速查询
-        };
-
-        for (String clause : clauses) {
-            db.execSQL(clause);
-        }
-    }
-
-    private <T> T value(Future<T> f) {
-        return value(f, null);
-    }
-
-    private <T> T value(Future<T> f, T defaultVale) {
-        try {
-            return f != null ? f.get() : defaultVale;
-        } catch (Exception e) {
-            return defaultVale;
-        }
-    }
-
-    private interface SQLiteSaver {
-        void save(SQLiteStatement statement_1, SQLiteStatement statement_2);
     }
 }

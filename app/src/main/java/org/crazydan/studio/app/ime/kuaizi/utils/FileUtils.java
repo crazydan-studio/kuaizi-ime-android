@@ -98,4 +98,21 @@ public class FileUtils {
             return new FileInputStream(file);
         }
     }
+
+    public static void deleteFile(File file) {
+        if (file.exists() && file.isFile()) {
+            file.delete();
+        }
+    }
+
+    public static void moveFile(File source, File target) {
+        if (!source.exists()) {
+            return;
+        }
+
+        if (target.exists()) {
+            deleteFile(target);
+        }
+        source.renameTo(target);
+    }
 }
