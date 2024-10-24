@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -103,6 +104,16 @@ public class DBUtils {
     public static void execSQLite(SQLiteDatabase db, String... clauses) {
         for (String clause : clauses) {
             db.execSQL(clause);
+        }
+    }
+
+    public static void execSQLite(SQLiteDatabase db, String clause, Collection<Object[]> argsList) {
+        db.beginTransaction();
+        try {
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 

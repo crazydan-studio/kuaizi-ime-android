@@ -36,8 +36,39 @@ public class HMM {
     /** 短语总数 */
     public static final String TOTAL = "TOTAL";
 
+    /** 汉字权重，其结构为 <code>{'字': 出现次数, ...}</code> */
+    public final Map<String, Integer> wordWeight = new HashMap<>();
+    /** 汉字（状态）间转移概率，其结构为 <code>{'当前字': {'前序字': 出现次数}, ...}</code> */
+    public final Map<String, Map<String, Integer>> transProb = new HashMap<>();
+
     /**
-     * 计算指定短语中的汉字（状态）间转移概率
+     * 计算含出现次数的短语中的汉字（状态）间转移概率
+     *
+     * @param phraseCountMap
+     *         结构为 <code>{'字1,字2,...': 出现次数}</code>
+     */
+    public static HMM calcTransProb(Map<String, Integer> phraseCountMap) {
+        HMM hmm = new HMM();
+
+        phraseCountMap.forEach((phrase, count) -> {
+            calcTransProb(hmm, List.of(phrase.split(",")), count);
+        });
+
+        return hmm;
+    }
+
+    /**
+     * 计算单个短语中的汉字（状态）间转移概率
+     *
+     * @param phraseWordList
+     *         短语中的字列表
+     */
+    public static HMM calcTransProb(List<String> phraseWordList) {
+        return calcTransProb(new HMM(), phraseWordList, 1);
+    }
+
+    /**
+     * 累积计算指定短语中的汉字（状态）间转移概率
      * <p/>
      * <code>转移概率 = math.log(前序字出现次数 / total)</code>
      * <p/>
@@ -49,26 +80,42 @@ public class HMM {
      * @param count
      *         短语出现的次数
      */
-    public static Map<String, Map<String, Integer>> calcTransProb(List<String> phraseWordList, Integer count) {
-        Map<String, Map<String, Integer>> transProb = new HashMap<>();
-        for (int i = 0; i <= phraseWordList.size(); i++) {
-            String curr = i == phraseWordList.size() ? EOS : phraseWordList.get(i);
+    private static HMM calcTransProb(
+            HMM hmm, List<String> phraseWordList, Integer count
+    ) {
+        Map<String, Integer> phraseWordWeight = new HashMap<>();
+        Map<String, Map<String, Integer>> phraseTransProb = new HashMap<>();
+
+        int wordTotal = phraseWordList.size();
+        for (int i = 0; i <= wordTotal; i++) {
+            String curr = i == wordTotal ? EOS : phraseWordList.get(i);
             String prev = i == 0 ? BOS : phraseWordList.get(i - 1);
 
-            Map<String, Integer> prob = transProb.computeIfAbsent(curr, (k) -> new HashMap<>());
+            Map<String, Integer> prob = phraseTransProb.computeIfAbsent(curr, (k) -> new HashMap<>());
 
+            // 前序字和总量需累加
             for (String key : new String[] { prev, TOTAL }) {
-                prob.put(key, prob.getOrDefault(key, 0) + 1);
+                prob.compute(key, (k, v) -> (v == null ? 0 : v) + 1);
+            }
+
+            if (i < wordTotal) {
+                phraseWordWeight.compute(curr, (k, v) -> (v == null ? 0 : v) + 1);
             }
         }
 
         // 累积短语出现次数
-        transProb.forEach((curr, prob) -> {
+        phraseTransProb.forEach((curr, prob) -> {
+            Map<String, Integer> hmmProb = hmm.transProb.computeIfAbsent(curr, (k) -> new HashMap<>());
+
             prob.forEach((prev, val) -> {
-                prob.put(prev, val * count);
+                hmmProb.compute(prev, (k, v) -> (v == null ? 0 : v) + (val * count));
             });
         });
 
-        return transProb;
+        phraseWordWeight.forEach((word, val) -> {
+            hmm.wordWeight.compute(word, (k, v) -> (v == null ? 0 : v) + (val * count));
+        });
+
+        return hmm;
     }
 }
