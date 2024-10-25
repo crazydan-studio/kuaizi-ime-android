@@ -101,15 +101,26 @@ public class DBUtils {
         }
     }
 
-    public static void execSQLite(SQLiteDatabase db, String... clauses) {
+    public static void execSQLite(SQLiteDatabase db, String[] clauses) {
         for (String clause : clauses) {
             db.execSQL(clause);
         }
     }
 
-    public static void execSQLite(SQLiteDatabase db, String clause, Collection<Object[]> argsList) {
+    public static void execSQLite(SQLiteDatabase db, String clause, Collection<String[]> argsList) {
+        if (argsList.isEmpty()) {
+            return;
+        }
+
         db.beginTransaction();
         try {
+            try (SQLiteStatement statement = db.compileStatement(clause);) {
+                for (String[] args : argsList) {
+                    statement.bindAllArgsAsStrings(args);
+
+                    statement.execute();
+                }
+            }
 
             db.setTransactionSuccessful();
         } finally {
@@ -132,7 +143,7 @@ public class DBUtils {
             List<T> list = new ArrayList<>(cursor.getCount());
 
             while (cursor.moveToNext()) {
-                T data = params.creator.apply(cursor);
+                T data = params.reader.apply(cursor);
 
                 if (data != null) {
                     list.add(data);
@@ -140,24 +151,6 @@ public class DBUtils {
             }
             return list;
         }
-    }
-
-    public static void saveSQLite(SQLiteDatabase db, String sql_1, String sql_2, SQLiteSaver saver) {
-        db.beginTransaction();
-        try {
-            SQLiteStatement sql_1_statement = sql_1 != null ? db.compileStatement(sql_1) : null;
-            SQLiteStatement sql_2_statement = sql_2 != null ? db.compileStatement(sql_2) : null;
-
-            saver.save(sql_1_statement, sql_2_statement);
-
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    public interface SQLiteSaver {
-        void save(SQLiteStatement statement_1, SQLiteStatement statement_2);
     }
 
     public static class SQLiteQueryParams<T> {
@@ -173,6 +166,7 @@ public class DBUtils {
         public String orderBy;
         public String limit;
 
-        public Function<Cursor, T> creator;
+        /** 行读取函数 */
+        public Function<Cursor, T> reader;
     }
 }

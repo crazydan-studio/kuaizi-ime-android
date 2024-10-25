@@ -89,13 +89,16 @@ public class HMM {
         int wordTotal = phraseWordList.size();
         for (int i = 0; i <= wordTotal; i++) {
             String curr = i == wordTotal ? EOS : phraseWordList.get(i);
-            String prev = i == 0 ? BOS : phraseWordList.get(i - 1);
 
-            Map<String, Integer> prob = phraseTransProb.computeIfAbsent(curr, (k) -> new HashMap<>());
+            // 仅短语内字数大于 1 时，才计算转移概率
+            if (wordTotal > 1) {
+                String prev = i == 0 ? BOS : phraseWordList.get(i - 1);
 
-            // 前序字和总量需累加
-            for (String key : new String[] { prev, TOTAL }) {
-                prob.compute(key, (k, v) -> (v == null ? 0 : v) + 1);
+                Map<String, Integer> prob = phraseTransProb.computeIfAbsent(curr, (k) -> new HashMap<>());
+                // 前序字和总量需累加
+                for (String key : new String[] { prev, TOTAL }) {
+                    prob.compute(key, (k, v) -> (v == null ? 0 : v) + 1);
+                }
             }
 
             if (i < wordTotal) {

@@ -29,7 +29,9 @@ import java.util.stream.Collectors;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.predict.HMM;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
@@ -53,6 +55,10 @@ public class PinyinUserDictDB {
     private String version;
     private SQLiteDatabase db;
 
+    // <<<<<<<<<<<<< 缓存常量数据
+    private PinyinTree pinyinTree;
+    // >>>>>>>>>>>>>
+
     private enum DictDBType {
         /** 用户库 */
         user("pinyin_user_dict.db"),
@@ -72,69 +78,6 @@ public class PinyinUserDictDB {
         this.context = context;
     }
 
-    /** 更新 HMM 数据 */
-    public void updateHMM(SQLiteDatabase db, HMM hmm) {
-        // 采用 SQLite 的 UPSET 机制插入或更新数据：https://www.sqlite.org/lang_upsert.html
-
-        // =============================================================================
-        Function<String, Integer[]> extractWordIds = (s) -> {
-            String[] splits = s.split(":");
-
-            return new Integer[] { Integer.parseInt(splits[0]), Integer.parseInt(splits[1]) };
-        };
-
-        List<Object[]> phraseWordData = hmm.wordWeight.keySet().stream().map((key) -> {
-            Integer[] wordIds = extractWordIds.apply(key);
-            Integer val = hmm.wordWeight.get(key);
-
-            return new Object[] { wordIds[0], wordIds[1], val, val };
-        }).collect(Collectors.toList());
-
-        execSQLite(db,
-                   "insert into"
-                   + "  phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
-                   + "    values(?, ?, 0, ?)"
-                   + "  on conflict(word_id_, spell_chars_id_)"
-                   + "  do update set "
-                   + "    weight_user_ = weight_user_ + ?",
-                   phraseWordData);
-
-        // ==============================================================================
-        Function<String, Integer> getWordId = (s) -> {
-            // EOS 用 -1 代替（句尾字）
-            // BOS 用 -1 代替（句首字）
-            // TOTAL 用 -2 代替（句子总数）
-            if (HMM.EOS.equals(s) || HMM.BOS.equals(s)) {
-                return -1;
-            } else if (HMM.TOTAL.equals(s)) {
-                return -2;
-            }
-
-            Integer[] wordIds = extractWordIds.apply(s);
-            return wordIds[0];
-        };
-
-        List<Object[]> phraseTransProbData = new ArrayList<>();
-        hmm.transProb.forEach((curr, prob) -> {
-            Integer currId = getWordId.apply(curr);
-
-            prob.forEach((prev, val) -> {
-                Integer prevId = getWordId.apply(prev);
-
-                phraseTransProbData.add(new Object[] { currId, prevId, val, val });
-            });
-        });
-
-        execSQLite(db,
-                   "insert into"
-                   + "  phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
-                   + "    values(?, ?, 0, ?)"
-                   + "  on conflict(word_id_, prev_word_id_)"
-                   + "  do update set "
-                   + "    value_user_ = value_user_ + ?",
-                   phraseTransProbData);
-    }
-
     /** 升级数据库 */
     public void upgrade() {
         String version = getVersion();
@@ -145,6 +88,29 @@ public class PinyinUserDictDB {
         }
     }
 
+    /**
+     * 保存用户输入的拼音短语
+     *
+     * @param reverse
+     *         是否反向操作，即，撤销对输入短语的保存
+     */
+    public void savePinyinPhrase(List<InputWord> phrase, boolean reverse) {
+        if (phrase.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = getDB();
+        HMM hmm = calcTransProb(phrase);
+        updateHMM(db, hmm, reverse);
+    }
+
+    /** 根据拼音的字母组合得到前 N 个最佳预测结果 */
+    public List<String[]> predict(List<String> pinyinCharsList, int top) {
+        List<String[]> phrases = new ArrayList<>(top);
+
+        return phrases;
+    }
+
     /** 获取应用本地的用户数据库的版本 */
     public String getVersion() {
         if (this.version == null) {
@@ -152,12 +118,12 @@ public class PinyinUserDictDB {
             File versionFile = getVersionFile();
 
             if (!versionFile.exists()) {
-                if (userDBFile.exists()) {
+                if (userDBFile.exists()) { // 应用 HMM 算法之前的版本
                     this.version = "v2";
-                } else {
+                } else { // 首次安装
                     this.version = LATEST_VERSION;
                 }
-            } else {
+            } else { // 实际记录的版本号
                 this.version = FileUtils.read(versionFile, true);
             }
         }
@@ -181,6 +147,135 @@ public class PinyinUserDictDB {
 
     private File getDBFile(Context context, DictDBType dbType) {
         return new File(context.getFilesDir(), dbType.fileName);
+    }
+
+    private SQLiteDatabase getDB() {
+        if (this.db == null) {
+            File userDBFile = getDBFile(this.context, DictDBType.user);
+
+            this.db = openSQLite(userDBFile, false);
+        }
+        return this.db;
+    }
+
+    private PinyinTree getPinyinTree() {
+        if (this.pinyinTree == null) {
+            Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
+
+            querySQLite(getDB(), new SQLiteQueryParams<Void>() {{
+                this.table = "meta_pinyin_chars";
+                this.columns = new String[] { "id_", "value_" };
+                this.reader = (cursor) -> {
+                    // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
+                    pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
+                    return null;
+                };
+            }});
+
+            this.pinyinTree = PinyinTree.create(pinyinCharsAndIdMap);
+        }
+        return this.pinyinTree;
+    }
+
+    /** 计算给定短语的 {@link HMM} 数据 */
+    private HMM calcTransProb(List<InputWord> phrase) {
+        return HMM.calcTransProb(phrase.stream()
+                                       // 以 拼音字 id 与 拼音字母组合 id 代表短语中的字
+                                       .map(word -> word.getUid() + ":" + ((PinyinInputWord) word).getCharsId())
+                                       .collect(Collectors.toList()));
+    }
+
+    /**
+     * 更新 {@link HMM} 数据
+     *
+     * @param reverse
+     *         是否反向更新，即，减掉 HMM 数据
+     */
+    private void updateHMM(SQLiteDatabase db, HMM hmm, boolean reverse) {
+        // 采用 SQLite 的 UPSET 机制插入或更新数据：https://www.sqlite.org/lang_upsert.html
+
+        // =============================================================================
+        Function<String, String[]> extractWordIds = (s) -> s.split(":");
+
+        List<String[]> phraseWordData = hmm.wordWeight.keySet().stream().map((key) -> {
+            String[] wordIds = extractWordIds.apply(key);
+            String val = hmm.wordWeight.get(key) + "";
+
+            return !reverse
+                   ? new String[] { wordIds[0], wordIds[1], val, val }
+                   : new String[] { val, wordIds[0], wordIds[1] };
+        }).collect(Collectors.toList());
+
+        if (!reverse) {
+            execSQLite(db,
+                       "insert into"
+                       + "  phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
+                       + "    values(?, ?, 0, ?)"
+                       + "  on conflict(word_id_, spell_chars_id_)"
+                       + "  do update set "
+                       + "    weight_user_ = weight_user_ + ?",
+                       phraseWordData);
+        } else {
+            execSQLite(db,
+                       "update phrase_word"
+                       + "  set weight_user_ = max(weight_user_ - ?, 0)"
+                       + "  where word_id_ = ? and spell_chars_id_ = ?",
+                       phraseWordData);
+        }
+
+        // ==============================================================================
+        Function<String, String> getWordId = (s) -> {
+            // EOS 用 -1 代替（句尾字）
+            // BOS 用 -1 代替（句首字）
+            // TOTAL 用 -2 代替（句子总数）
+            if (HMM.EOS.equals(s) || HMM.BOS.equals(s)) {
+                return "-1";
+            } else if (HMM.TOTAL.equals(s)) {
+                return "-2";
+            }
+
+            String[] wordIds = extractWordIds.apply(s);
+            return wordIds[0];
+        };
+
+        List<String[]> phraseTransProbData = new ArrayList<>();
+        hmm.transProb.forEach((curr, prob) -> {
+            String currId = getWordId.apply(curr);
+
+            prob.forEach((prev, value) -> {
+                String prevId = getWordId.apply(prev);
+                String val = value + "";
+
+                phraseTransProbData.add(!reverse
+                                        ? new String[] { currId, prevId, val, val }
+                                        : new String[] { val, currId, prevId });
+            });
+        });
+
+        if (!reverse) {
+            execSQLite(db,
+                       "insert into"
+                       + "  phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
+                       + "    values(?, ?, 0, ?)"
+                       + "  on conflict(word_id_, prev_word_id_)"
+                       + "  do update set "
+                       + "    value_user_ = value_user_ + ?",
+                       phraseTransProbData);
+        } else {
+            execSQLite(db,
+                       "update phrase_trans_prob"
+                       + "  set value_user_ = max(value_user_ - ?, 0)"
+                       + "  where word_id_ = ? and prev_word_id_ = ?",
+                       phraseTransProbData);
+        }
+
+        if (reverse) {
+            // 清理无用数据
+            execSQLite(db, new String[] {
+                    "delete from phrase_word where weight_app_ = 0 and weight_user_ = 0",
+                    "delete from phrase_trans_prob where value_app_ = 0 and value_user_ = 0",
+                    });
+        }
     }
 
     // ============================= Start: 数据库升级 ==============================
@@ -218,10 +313,17 @@ public class PinyinUserDictDB {
                     + "    primary key (word_id_, spell_chars_id_)" + "  );",
                     //
                     "create table" + "  if not exists phrase_trans_prob ("
-                    //  -- 当前拼音字 id: 其为 link_word_with_pinyin 中的 id_
+                    //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
+                    //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
                     + "    word_id_ integer not null,"
-                    //  -- 前序拼音字 id: 其为 link_word_with_pinyin 中的 id_
+                    //  -- 前序拼音字 id: BOS 用 -1 代替（句首字），TOTAL 用 -2 代替
+                    //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
                     + "    prev_word_id_ integer not null,"
+                    //  -- 当 word_id_ == -1 且 prev_word_id_ == -2 时，其代表训练数据的句子总数，用于计算句首字出现频率；
+                    //  -- 当 word_id_ == -1 且 prev_word_id_ != -1 时，其代表末尾字出现次数；
+                    //  -- 当 word_id_ != -1 且 prev_word_id_ == -1 时，其代表句首字出现次数；
+                    //  -- 当 word_id_ != -1 且 prev_word_id_ == -2 时，其代表当前拼音字的转移总数；
+                    //  -- 当 word_id_ != -1 且 prev_word_id_ != -1 时，其代表前序拼音字的出现次数；
                     // -- 应用字典中字出现的次数
                     + "    value_app_ integer not null,"
                     // -- 用户字典中字出现的次数
@@ -287,7 +389,7 @@ public class PinyinUserDictDB {
                 };
                 this.where = "weight_ > 0 ";
                 this.groupBy = "source_id_";
-                this.creator = (cursor) -> {
+                this.reader = (cursor) -> {
                     String phraseWords = cursor.getString(0);
                     int phraseCount = cursor.getInt(1);
 
@@ -299,13 +401,19 @@ public class PinyinUserDictDB {
 
             // <<<<<<<<<<<<<<<<<<<<<<<<< 更新用户输入短语权重
             HMM hmm = HMM.calcTransProb(usedPhraseCountMap);
-            updateHMM(transferDB, hmm);
+            updateHMM(transferDB, hmm, false);
             // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
             execSQLite(transferDB, new String[] {
                     // 回收无用空间
                     "vacuum;",
                     });
+        }
+
+        // TODO 待删除 - 测试备份
+        File userDBBakFile = new File(userDBFile.getParentFile(), userDBFile.getName() + ".bak");
+        if (!userDBBakFile.exists()) {
+            FileUtils.moveFile(userDBFile, userDBBakFile);
         }
 
         // 迁移库就地转换为用户库
