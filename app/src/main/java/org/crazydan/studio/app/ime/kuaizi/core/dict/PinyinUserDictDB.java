@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,16 +37,23 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.copySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-20
  */
 public class PinyinUserDictDB {
+    /** 代表 {@link HMM#TOTAL} 的字 id */
+    public static final String TOTAL_WORD_ID = "-2";
+    /** 代表 {@link HMM#EOS} 和 {@link HMM#BOS} 的字 id */
+    public static final String EOS_BOS_WORD_ID = "-1";
+
     /** 最新版本号 */
     public static final String LATEST_VERSION = "v3";
 
@@ -54,6 +63,8 @@ public class PinyinUserDictDB {
 
     private String version;
     private SQLiteDatabase db;
+    /** 用户词组数据的基础权重，以确保用户输入权重大于应用词组数据 */
+    private int userPhraseBaseWeight = 500;
 
     // <<<<<<<<<<<<< 缓存常量数据
     private PinyinTree pinyinTree;
@@ -105,7 +116,43 @@ public class PinyinUserDictDB {
     }
 
     /** 根据拼音的字母组合得到前 N 个最佳预测结果 */
-    public List<String[]> predict(List<String> pinyinCharsList, int top) {
+    public List<String[]> predict(List<String> pinyinCharsIdList, int top) {
+        if (pinyinCharsIdList.isEmpty()) {
+            return List.of();
+        }
+
+        Map<String, Map<String, Integer>> transProb = new HashMap<>();
+        Map<String, Set<String>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
+
+        rawQuerySQLite(getDB(), new SQLiteRawQueryParams<Void>() {{
+            // 查询结果列包括（按顺序）：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
+            this.sql = createTransProbQuerySQL(pinyinCharsIdList);
+
+            this.reader = (cursor) -> {
+                // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
+                String wordId = cursor.getString(0);
+                String preWordId = cursor.getString(1);
+                String pinyinCharsId = cursor.getString(2);
+                Integer appValue = cursor.getInt(3);
+                Integer userValue = cursor.getInt(4);
+
+                Map<String, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
+                prob.compute(preWordId, (k, v) -> (v == null ? 0 : v) //
+                                                  + appValue + userValue
+                                                  // 用户数据需加上基础权重
+                                                  + (userValue > 0 ? PinyinUserDictDB.this.userPhraseBaseWeight : 0));
+
+                if (pinyinCharsId != null) {
+                    pinyinCharsIdAndWordIdsMap.computeIfAbsent(pinyinCharsId, (k) -> new HashSet<>()).add(wordId);
+                }
+
+                return null;
+            };
+        }});
+
+        // <<<<<<<<<<<<<<<
+        Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, pinyinCharsIdAndWordIdsMap);
+
         List<String[]> phrases = new ArrayList<>(top);
 
         return phrases;
@@ -166,7 +213,7 @@ public class PinyinUserDictDB {
                 this.table = "meta_pinyin_chars";
                 this.columns = new String[] { "id_", "value_" };
                 this.reader = (cursor) -> {
-                    // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
+                    // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
                     pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
                     return null;
                 };
@@ -177,7 +224,7 @@ public class PinyinUserDictDB {
         return this.pinyinTree;
     }
 
-    /** 计算给定短语的 {@link HMM} 数据 */
+    /** 计算给定短语的 {@link HMM#transProb} 数据 */
     private HMM calcTransProb(List<InputWord> phrase) {
         return HMM.calcTransProb(phrase.stream()
                                        // 以 拼音字 id 与 拼音字母组合 id 代表短语中的字
@@ -229,9 +276,9 @@ public class PinyinUserDictDB {
             // BOS 用 -1 代替（句首字）
             // TOTAL 用 -2 代替（句子总数）
             if (HMM.EOS.equals(s) || HMM.BOS.equals(s)) {
-                return "-1";
+                return EOS_BOS_WORD_ID;
             } else if (HMM.TOTAL.equals(s)) {
-                return "-2";
+                return TOTAL_WORD_ID;
             }
 
             String[] wordIds = extractWordIds.apply(s);
@@ -278,6 +325,187 @@ public class PinyinUserDictDB {
         }
     }
 
+    /** 构造 {@link HMM#transProb} 数据查询 SQL */
+    private String createTransProbQuerySQL(List<String> pinyinCharsIdList) {
+        List<String> charsIdList = new ArrayList<>(pinyinCharsIdList);
+
+        // <<<<<<<<<<<<<< 构造通过拼音字母组合做字查询的递归 SQL
+        // https://www.sqlite.org/lang_with.html
+        Set<String> charsIdSet = new HashSet<>(charsIdList);
+
+        List<String> wordTableSQLList = charsIdSet.stream()
+                                                  .map((charsId) -> String.format(
+                                                          "word_ids_%s(word_id_, spell_chars_id_) as ("
+                                                          + " select word_id_, spell_chars_id_"
+                                                          + " from phrase_word"
+                                                          + " where spell_chars_id_ = %s"
+                                                          + ")",
+                                                          charsId,
+                                                          charsId))
+                                                  .collect(Collectors.toList());
+
+        String noneWordCharsId = "none";
+        wordTableSQLList.add(String.format("word_ids_%s(word_id_, spell_chars_id_) as ( values(-1, null) )",
+                                           noneWordCharsId));
+
+        // 补充短语首字和尾字
+        charsIdList.add(0, noneWordCharsId);
+        charsIdList.add(noneWordCharsId);
+
+        Map<String, String> wordUnionSQLMap = new HashMap<>(charsIdList.size());
+        for (int i = 1; i < charsIdList.size(); i++) {
+            String prevCharsId = charsIdList.get(i - 1);
+            String currCharsId = charsIdList.get(i);
+
+            String unionCode = prevCharsId + "_" + currCharsId;
+            if (wordUnionSQLMap.containsKey(unionCode)) {
+                continue;
+            }
+
+            wordUnionSQLMap.put(unionCode,
+                                String.format("    select"
+                                              + " prev_.word_id_ as prev_word_id_,"
+                                              + " curr_.word_id_ as curr_word_id_,"
+                                              + " curr_.spell_chars_id_ as curr_word_spell_chars_id_"
+                                              + " from word_ids_%s prev_ , word_ids_%s curr_",
+                                              prevCharsId,
+                                              currCharsId));
+        }
+
+        wordTableSQLList.add("word_ids(prev_word_id_, curr_word_id_, curr_word_spell_chars_id_) as (\n" //
+                             + String.join("\nunion\n", wordUnionSQLMap.values()) //
+                             + "\n  )");
+
+        return "with recursive\n  "
+               + String.join(",\n  ", wordTableSQLList)
+               + "\nselect distinct "
+               + " s_.word_id_, s_.prev_word_id_,"
+               + " t_.curr_word_spell_chars_id_ as word_spell_chars_id_,"
+               + " s_.value_app_, s_.value_user_"
+               + " from phrase_trans_prob s_, word_ids t_"
+               + " where"
+               + " s_.word_id_ = t_.curr_word_id_"
+               + " and ("
+               + "  s_.prev_word_id_ = t_.prev_word_id_"
+               // 当前拼音字都包含 TOTAL 列
+               + ("  or s_.prev_word_id_ = " + TOTAL_WORD_ID)
+               + ")";
+    }
+
+    /**
+     * 计算 Viterbi
+     *
+     * @param pinyinCharsIdList
+     *         输入拼音的字母组合 id 列表
+     * @param transProb
+     *         汉字（状态）间转移概率
+     * @param pinyinCharsIdAndWordIdsMap
+     *         输入拼音的字母组合 id 所对应的可选字 id 集合
+     */
+    private static Map<String, Object[]>[] calcViterbi(
+            List<String> pinyinCharsIdList, Map<String, Map<String, Integer>> transProb,
+            Map<String, Set<String>> pinyinCharsIdAndWordIdsMap
+    ) {
+        int total = pinyinCharsIdList.size();
+        // 用于 log 平滑时所取的最小值，用于代替 0
+        double minProb = -3.14e100;
+        // pos 是目前节点的位置，word 为当前汉字即当前状态，
+        // probability 为从 pre_word 上一汉字即上一状态转移到目前状态的概率
+        // viterbi[pos][word] = (probability, pre_word)
+        Map<String, Object[]>[] viterbi = new Map[total];
+
+        // 训练数据的句子总数: word_id_ == -1 且 prev_word_id_ == -2
+        int basePhraseSize = getTransProbValue(transProb, EOS_BOS_WORD_ID, TOTAL_WORD_ID);
+
+        int lastIndex = total - 1;
+        for (int i = -1; i < lastIndex; i++) {
+            int prevIndex = i;
+            int currentIndex = prevIndex + 1;
+
+            String currentPinyinCharsId = pinyinCharsIdList.get(currentIndex);
+            Set<String> currentWordIds = pinyinCharsIdAndWordIdsMap.get(currentPinyinCharsId);
+            assert currentWordIds != null;
+
+            // Note：句首字的前序字设为 -1
+            String prevPinyinCharsId = prevIndex < 0 ? null : pinyinCharsIdList.get(prevIndex);
+            Set<String> prevWordIds = prevPinyinCharsId == null
+                                      ? Set.of(EOS_BOS_WORD_ID)
+                                      : pinyinCharsIdAndWordIdsMap.get(prevPinyinCharsId);
+            assert prevWordIds != null;
+
+            if (viterbi[currentIndex] == null) {
+                viterbi[currentIndex] = new HashMap<>();
+            }
+            Map<String, Object[]> currentWordViterbi = viterbi[currentIndex];
+
+            // 遍历 current_word_ids 和 prev_word_ids，找出所有可能与当前拼音相符的汉字 s，
+            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率 viterbi[i+1][s]
+            currentWordIds.forEach((currentWordId) -> {
+                Object[] result = prevWordIds.stream().map((prevWordId) -> {
+                    double prob = 0;
+
+                    // 句首字的初始概率 = math.log(句首字出现次数 / 训练数据的句子总数)
+                    if (currentIndex == 0) {
+                        prob += calcViterbiProb(
+                                // 句首字的出现次数
+                                getTransProbValue(transProb, currentWordId, EOS_BOS_WORD_ID), //
+                                basePhraseSize, minProb //
+                        );
+                    } else {
+                        Object[] pair = viterbi[prevIndex].get(prevWordId);
+                        assert pair != null;
+
+                        prob += (double) pair[0];
+                    }
+
+                    prob += calcViterbiProb(
+                            // 前序拼音字的出现次数
+                            getTransProbValue(transProb, currentWordId, prevWordId),
+                            // 当前拼音字的转移总数
+                            getTransProbValue(transProb, currentWordId, TOTAL_WORD_ID), //
+                            minProb //
+                    );
+
+                    // 加上末尾字的转移概率
+                    if (currentIndex == lastIndex) {
+                        prob += calcViterbiProb(
+                                //
+                                getTransProbValue(transProb, EOS_BOS_WORD_ID, currentWordId), //
+                                basePhraseSize, minProb //
+                        );
+                    }
+
+                    return new Object[] { prob, prevWordId };
+                }).reduce(null, (acc, pair) -> //
+                        acc == null || ((double) acc[0]) < ((double) pair[0]) ? pair : acc //
+                );
+
+                currentWordViterbi.put(currentWordId, result);
+            });
+        }
+
+        return viterbi;
+    }
+
+    private static int getTransProbValue(
+            Map<String, Map<String, Integer>> transProb, String currWordId, String prevWordId
+    ) {
+        Map<String, Integer> prob = transProb.get(currWordId);
+        if (prob == null) {
+            return 0;
+        }
+
+        Integer value = prob.get(prevWordId);
+        if (value == null) {
+            return 0;
+        }
+        return value;
+    }
+
+    private static double calcViterbiProb(int count, int total, double min) {
+        return count == 0 || total == 0 ? min : Math.log(count * 1.0 / total);
+    }
+
     // ============================= Start: 数据库升级 ==============================
 
     /** 数据库从 v2 版本升级到 v3 版本 */
@@ -301,7 +529,8 @@ public class PinyinUserDictDB {
                     "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app;",
                     "attach database '" + userDBFile.getAbsolutePath() + "' as user;",
                     // 创建包含用户和应用权重数据的词典表
-                    "create table" + "  if not exists phrase_word ("
+                    "create table" //
+                    + "  if not exists phrase_word ("
                     //  -- 拼音字 id: 其为 link_word_with_pinyin 中的 id_
                     + "    word_id_ integer not null,"
                     //  -- 拼音字母组合 id: 其为 link_word_with_pinyin 中的 spell_chars_id_
@@ -312,7 +541,8 @@ public class PinyinUserDictDB {
                     + "    weight_user_ integer not null," //
                     + "    primary key (word_id_, spell_chars_id_)" + "  );",
                     //
-                    "create table" + "  if not exists phrase_trans_prob ("
+                    "create table" //
+                    + "  if not exists phrase_trans_prob ("
                     //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
                     //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
                     + "    word_id_ integer not null,"

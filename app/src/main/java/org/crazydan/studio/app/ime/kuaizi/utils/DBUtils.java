@@ -153,6 +153,23 @@ public class DBUtils {
         }
     }
 
+    public static <T> List<T> rawQuerySQLite(SQLiteDatabase db, SQLiteRawQueryParams<T> params) {
+        try (
+                Cursor cursor = db.rawQuery(params.sql, params.params)
+        ) {
+            List<T> list = new ArrayList<>(cursor.getCount());
+
+            while (cursor.moveToNext()) {
+                T data = params.reader.apply(cursor);
+
+                if (data != null) {
+                    list.add(data);
+                }
+            }
+            return list;
+        }
+    }
+
     public static class SQLiteQueryParams<T> {
         public String table;
         public String[] columns;
@@ -165,6 +182,14 @@ public class DBUtils {
 
         public String orderBy;
         public String limit;
+
+        /** 行读取函数 */
+        public Function<Cursor, T> reader;
+    }
+
+    public static class SQLiteRawQueryParams<T> {
+        public String sql;
+        public String[] params;
 
         /** 行读取函数 */
         public Function<Cursor, T> reader;
