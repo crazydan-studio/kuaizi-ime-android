@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -39,19 +38,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
+
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
 
 /**
  * 拼音字典（数据库版）
@@ -66,12 +69,20 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
  * @date 2023-07-24
  */
 public class PinyinDict {
+    /** 最新版本号 */
+    public static final String LATEST_VERSION = "v3";
+
     private static final PinyinDict instance = new PinyinDict();
+    private static final String db_version_file = "pinyin_user_dict.version";
+
+    /** 用户词组数据的基础权重，以确保用户输入权重大于应用词组数据 */
+    private final int userPhraseBaseWeight = 500;
 
     private Future<Boolean> dbInited;
     private Future<Boolean> dbOpened;
 
-    /** 用户字典数据库 */
+    private String version;
+    /** 用户库 */
     private SQLiteDatabase userDB;
 
     // <<<<<<<<<<<<< 缓存常量数据
@@ -81,7 +92,7 @@ public class PinyinDict {
     private PinyinDict() {
     }
 
-    public static PinyinDict getInstance() {
+    public static PinyinDict instance() {
         return instance;
     }
 
@@ -124,12 +135,16 @@ public class PinyinDict {
         this.dbOpened = null;
     }
 
-    public boolean isInited() {
+    private boolean isInited() {
         return Boolean.TRUE.equals(value(this.dbInited));
     }
 
-    public boolean isOpened() {
+    private boolean isOpened() {
         return Boolean.TRUE.equals(value(this.dbOpened));
+    }
+
+    public File getDBFile(Context context, PinyinDictDBType dbType) {
+        return new File(context.getFilesDir(), dbType.fileName);
     }
 
     public void saveUserDB(Context context, OutputStream output) {
@@ -1035,25 +1050,12 @@ public class PinyinDict {
         return existDataMap;
     }
 
-    private File getAppDBFile(Context context, AppDBType dbType) {
-        return new File(context.getFilesDir(), dbType.fileName);
-    }
-
-    private File getUserDBFile(Context context) {
-        return new File(context.getFilesDir(), user_db_file);
-    }
-
-    private SQLiteDatabase getUserDB() {
-        return isOpened() ? this.userDB : null;
-    }
-
     private void doInit(Context context) {
-        PinyinUserDictDB upgrader = new PinyinUserDictDB(context);
-        upgrader.upgrade();
+        String version = getVersion(context);
 
-        File userDBFile = getUserDBFile(context);
-        try (SQLiteDatabase userDB = openSQLite(userDBFile, false);) {
-            initUserDB(userDB);
+        if ("v2".equals(version) && LATEST_VERSION.equals("v3")) {
+            From_v2_to_v3.upgrade(context, this);
+            updateToLatestVersion(context);
         }
     }
 
@@ -1064,14 +1066,17 @@ public class PinyinDict {
         configSQLite(this.userDB);
 
         Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
-        doSQLiteQuery(this.userDB, "meta_pinyin_chars", new String[] {
-                              "id_", "value_"
-                      }, //
-                      null, null, (cursor) -> {
-                    // Note: android sqlite 从 0 开始取，与 jdbc 的规范不一样
-                    pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
-                    return null;
-                });
+        querySQLite(this.userDB, new DBUtils.SQLiteQueryParams<Void>() {{
+            this.table = "meta_pinyin_chars";
+            this.columns = new String[] {
+                    "id_", "value_"
+            };
+            this.reader = (cursor) -> {
+                // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
+                pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
+                return null;
+            };
+        }});
 
         this.pinyinTree = PinyinTree.create(pinyinCharsAndIdMap);
     }
@@ -1081,6 +1086,48 @@ public class PinyinDict {
 
         this.userDB = null;
         this.pinyinTree = null;
+    }
+
+    private File getUserDBFile(Context context) {
+        return getDBFile(context, PinyinDictDBType.user);
+    }
+
+    private SQLiteDatabase getUserDB() {
+        return isOpened() ? this.userDB : null;
+    }
+
+    /** 获取应用本地的用户数据库的版本 */
+    public String getVersion(Context context) {
+        if (this.version == null) {
+            File userDBFile = getDBFile(context, PinyinDictDBType.user);
+            File versionFile = getVersionFile(context);
+
+            if (!versionFile.exists()) {
+                if (userDBFile.exists()) { // 应用 HMM 算法之前的版本
+                    this.version = "v2";
+                } else { // 首次安装
+                    this.version = LATEST_VERSION;
+                }
+            } else { // 实际记录的版本号
+                this.version = FileUtils.read(versionFile, true);
+            }
+        }
+
+        return this.version;
+    }
+
+    private void updateToLatestVersion(Context context) {
+        File file = getVersionFile(context);
+
+        try {
+            FileUtils.write(file, LATEST_VERSION);
+            this.version = LATEST_VERSION;
+        } catch (IOException ignore) {
+        }
+    }
+
+    private File getVersionFile(Context context) {
+        return new File(context.getFilesDir(), db_version_file);
     }
 
     private void initUserDB(SQLiteDatabase db) {

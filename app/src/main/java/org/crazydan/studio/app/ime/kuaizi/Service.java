@@ -68,7 +68,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onDestroy() {
         // 确保拼音字典库能够被及时关闭
-        PinyinDict.getInstance().close();
+        PinyinDict.instance().close();
 
         super.onDestroy();
     }
@@ -86,7 +86,7 @@ public class Service extends InputMethodService implements InputMsgListener {
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
         // 确保拼音字典库保持就绪状态
-        PinyinDict.getInstance().open(getApplicationContext());
+        PinyinDict.instance().open(getApplicationContext());
 
         boolean singleLineInput = false;
         boolean passwordInputting = false;

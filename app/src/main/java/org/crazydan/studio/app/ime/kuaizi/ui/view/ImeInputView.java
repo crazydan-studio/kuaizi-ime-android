@@ -93,7 +93,7 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
     public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        PinyinDict.getInstance().init(getContext());
+        PinyinDict.instance().init(getContext());
 
         this.appConf = new Configuration();
         this.sysConf = new Configuration(this::onConfigurationChanged);

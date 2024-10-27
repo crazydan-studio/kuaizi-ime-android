@@ -72,7 +72,7 @@ public class Preferences extends FollowSystemThemeActivity {
             Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
 
             try (OutputStream output = resolver.openOutputStream(uri)) {
-                PinyinDict.getInstance().saveUserDB(context, output);
+                PinyinDict.instance().saveUserDB(context, output);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
@@ -80,7 +80,7 @@ public class Preferences extends FollowSystemThemeActivity {
             File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + fileName);
 
             try (OutputStream output = FileUtils.newOutput(dir)) {
-                PinyinDict.getInstance().saveUserDB(context, output);
+                PinyinDict.instance().saveUserDB(context, output);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

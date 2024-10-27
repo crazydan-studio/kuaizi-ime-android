@@ -113,7 +113,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     @Override
     protected void onStart() {
         // 确保拼音字典库保持就绪状态
-        PinyinDict.getInstance().open(getApplicationContext());
+        PinyinDict.instance().open(getApplicationContext());
 
         this.imeView.setListener(this);
 

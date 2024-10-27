@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.dict.predict;
+package org.crazydan.studio.app.ime.kuaizi.core.dict.hmm;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.Map;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-20
  */
-public class HMM {
+public class Hmm {
     /** 短语句尾符号 */
     public static final String EOS = "EOS";
     /** 短语句首符号 */
@@ -47,8 +47,8 @@ public class HMM {
      * @param phraseCountMap
      *         结构为 <code>{'字1,字2,...': 出现次数}</code>
      */
-    public static HMM calcTransProb(Map<String, Integer> phraseCountMap) {
-        HMM hmm = new HMM();
+    public static Hmm calcTransProb(Map<String, Integer> phraseCountMap) {
+        Hmm hmm = new Hmm();
 
         phraseCountMap.forEach((phrase, count) -> {
             calcTransProb(hmm, List.of(phrase.split(",")), count);
@@ -63,8 +63,8 @@ public class HMM {
      * @param phraseWordList
      *         短语中的字列表
      */
-    public static HMM calcTransProb(List<String> phraseWordList) {
-        return calcTransProb(new HMM(), phraseWordList, 1);
+    public static Hmm calcTransProb(List<String> phraseWordList) {
+        return calcTransProb(new Hmm(), phraseWordList, 1);
     }
 
     /**
@@ -80,8 +80,8 @@ public class HMM {
      * @param count
      *         短语出现的次数
      */
-    private static HMM calcTransProb(
-            HMM hmm, List<String> phraseWordList, Integer count
+    private static Hmm calcTransProb(
+            Hmm hmm, List<String> phraseWordList, Integer count
     ) {
         Map<String, Integer> phraseWordWeight = new HashMap<>();
         Map<String, Map<String, Integer>> phraseTransProb = new HashMap<>();

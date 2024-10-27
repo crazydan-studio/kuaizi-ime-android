@@ -74,7 +74,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    protected final PinyinDict pinyinDict = PinyinDict.getInstance();
+    protected final PinyinDict pinyinDict = PinyinDict.instance();
     private final InputMsgListener listener;
     /** 前序键盘类型：仅发生了键盘切换时才会被赋值 */
     private final Type prevType;
