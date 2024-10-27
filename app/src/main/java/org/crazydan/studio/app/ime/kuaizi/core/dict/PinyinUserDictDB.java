@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.dict;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,9 +116,17 @@ public class PinyinUserDictDB {
         updateHMM(db, hmm, reverse);
     }
 
-    /** 根据拼音的字母组合得到前 N 个最佳预测结果 */
+    /**
+     * 根据拼音的字母组合得到前 N 个最佳预测结果
+     *
+     * @param pinyinCharsIdList
+     *         拼音的字母组合 id 列表
+     * @param top
+     *         最佳预测结果数
+     * @return 元素为 短语的字数组 的列表，最靠前的为最佳预测的短语
+     */
     public List<String[]> predict(List<String> pinyinCharsIdList, int top) {
-        if (pinyinCharsIdList.isEmpty()) {
+        if (pinyinCharsIdList.isEmpty() || top < 1) {
             return List.of();
         }
 
@@ -153,7 +162,55 @@ public class PinyinUserDictDB {
         // <<<<<<<<<<<<<<<
         Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, pinyinCharsIdAndWordIdsMap);
 
+        // <<<<<<<<<<<<< 对串进行回溯即可得对应拼音的汉字
+        int lastIndex = pinyinCharsIdList.size() - 1;
+
+        // 结构: viterbiWords[n] = [[probability, s], ...]，其每一纵列是一个短语的字数组
+        Object[][][] viterbiWords = new Object[lastIndex + 1][][];
+
+        // Note：取概率最大的前 top 个末尾汉字
+        viterbiWords[lastIndex] = viterbi[lastIndex].keySet().stream().map((wordId) -> {
+            Object[] pair = viterbi[lastIndex].get(wordId);
+            assert pair != null;
+
+            double prob = (double) pair[0];
+            return new Object[] { prob, wordId };
+        }).sorted((a, b) -> //
+                          Double.compare(((double) b[0]), ((double) a[0])) //
+        ).limit(top).toArray(Object[][]::new);
+
+        for (int i = lastIndex - 1; i > -1; i--) {
+            int currIndex = i;
+            int nextIndex = currIndex + 1;
+
+            viterbiWords[currIndex] = Arrays.stream(viterbiWords[nextIndex]).map((pair) -> {
+                String wordId = (String) pair[1];
+                Object[] newPair = viterbi[nextIndex].get(wordId);
+                assert newPair != null;
+
+                return newPair;
+            }).toArray(Object[][]::new);
+        }
+
+        // <<<<<<<<<<<< 获取最佳预测的短语列表
         List<String[]> phrases = new ArrayList<>(top);
+        // Note: 需做二维数组的行列翻转才能得到短语的字数组
+        for (int i = 0; i < viterbiWords.length; i++) {
+            Object[][] viterbiWord = viterbiWords[i];
+
+            for (int j = 0; j < viterbiWord.length; j++) {
+                String[] phraseWord;
+                if (i == 0) {
+                    phraseWord = new String[viterbiWords.length];
+                    phrases.add(phraseWord);
+                } else {
+                    phraseWord = phrases.get(j);
+                }
+
+                String wordId = (String) viterbiWord[j][1];
+                phraseWord[i] = wordId;
+            }
+        }
 
         return phrases;
     }
@@ -414,8 +471,8 @@ public class PinyinUserDictDB {
         // viterbi[pos][word] = (probability, pre_word)
         Map<String, Object[]>[] viterbi = new Map[total];
 
-        // 训练数据的句子总数: word_id_ == -1 且 prev_word_id_ == -2
-        int basePhraseSize = getTransProbValue(transProb, EOS_BOS_WORD_ID, TOTAL_WORD_ID);
+        // 句子总数: word_id_ == -1 且 prev_word_id_ == -2
+        int phraseTotal = getTransProbValue(transProb, EOS_BOS_WORD_ID, TOTAL_WORD_ID);
 
         int lastIndex = total - 1;
         for (int i = -1; i < lastIndex; i++) {
@@ -438,18 +495,18 @@ public class PinyinUserDictDB {
             }
             Map<String, Object[]> currentWordViterbi = viterbi[currentIndex];
 
-            // 遍历 current_word_ids 和 prev_word_ids，找出所有可能与当前拼音相符的汉字 s，
-            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率 viterbi[i+1][s]
+            // 遍历 current_word_ids 和 prev_word_ids，找出所有可能与当前拼音相符的汉字 curr，
+            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率 viterbi[i+1][curr] = {prob, prev}
             currentWordIds.forEach((currentWordId) -> {
                 Object[] result = prevWordIds.stream().map((prevWordId) -> {
                     double prob = 0;
 
-                    // 句首字的初始概率 = math.log(句首字出现次数 / 训练数据的句子总数)
+                    // 句首字的初始概率 = math.log(句首字出现次数 / 句子总数)
                     if (currentIndex == 0) {
                         prob += calcViterbiProb(
                                 // 句首字的出现次数
                                 getTransProbValue(transProb, currentWordId, EOS_BOS_WORD_ID), //
-                                basePhraseSize, minProb //
+                                phraseTotal, minProb //
                         );
                     } else {
                         Object[] pair = viterbi[prevIndex].get(prevWordId);
@@ -471,7 +528,7 @@ public class PinyinUserDictDB {
                         prob += calcViterbiProb(
                                 //
                                 getTransProbValue(transProb, EOS_BOS_WORD_ID, currentWordId), //
-                                basePhraseSize, minProb //
+                                phraseTotal, minProb //
                         );
                     }
 
