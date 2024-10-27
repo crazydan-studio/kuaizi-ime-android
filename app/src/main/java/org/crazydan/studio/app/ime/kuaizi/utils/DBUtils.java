@@ -101,7 +101,12 @@ public class DBUtils {
         }
     }
 
-    public static void execSQLite(SQLiteDatabase db, String[] clauses) {
+    /** 回收无用空间 */
+    public static void vacuumSQLite(SQLiteDatabase db) {
+        execSQLite(db, "vacuum;");
+    }
+
+    public static void execSQLite(SQLiteDatabase db, String... clauses) {
         for (String clause : clauses) {
             db.execSQL(clause);
         }

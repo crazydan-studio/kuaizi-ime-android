@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
@@ -69,11 +70,17 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
  * @date 2023-07-24
  */
 public class PinyinDict {
+    public static final String VERSION_V0 = "v0";
+    public static final String VERSION_V2 = "v2";
+    public static final String VERSION_V3 = "v3";
     /** 最新版本号 */
-    public static final String LATEST_VERSION = "v3";
+    public static final String LATEST_VERSION = VERSION_V3;
+    /** 首次安装版本号 */
+    public static final String FIRST_INSTALL_VERSION = VERSION_V0;
+
+    private static final String db_version_file = "pinyin_user_dict.version";
 
     private static final PinyinDict instance = new PinyinDict();
-    private static final String db_version_file = "pinyin_user_dict.version";
 
     /** 用户词组数据的基础权重，以确保用户输入权重大于应用词组数据 */
     private final int userPhraseBaseWeight = 500;
@@ -281,7 +288,7 @@ public class PinyinDict {
                                              String.valueOf(top), //
                                              (cursor) -> cursor.getString(0));
 
-        return matched;
+        return List.of();
     }
 
     /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
@@ -351,7 +358,7 @@ public class PinyinDict {
     private BestCandidateWords findTopBestPinyinWordsFromAppDB(
             String inputPinyinCharsId, int top, List<InputWord> prevPhrase
     ) {
-        return findTopBestPinyinWordsFromDB(getAppDB(),
+        return findTopBestPinyinWordsFromDB(getUserDB(),
                                             "link_word_with_pinyin",
                                             "pinyin_phrase",
                                             inputPinyinCharsId,
@@ -701,7 +708,7 @@ public class PinyinDict {
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */
     private void patchPinyinWordVariantInCandidatesFromAppDB(Collection<InputWord> candidates) {
-        SQLiteDatabase db = getAppDB();
+        SQLiteDatabase db = getUserDB();
 
         Map<String, InputWord> tradWordMap = new HashMap<>();
         Map<String, InputWord> simpleWordMap = new HashMap<>();
@@ -762,7 +769,7 @@ public class PinyinDict {
 
     /** 查找各个字的繁/简形式 */
     private void patchPinyinWordVariantFromAppDB(Collection<InputWord> candidates) {
-        SQLiteDatabase db = getAppDB();
+        SQLiteDatabase db = getUserDB();
 
         Map<String, InputWord> tradWordMap = new HashMap<>();
         Map<String, InputWord> simpleWordMap = new HashMap<>();
@@ -1051,12 +1058,17 @@ public class PinyinDict {
     }
 
     private void doInit(Context context) {
+        // <<<<<<<<<< 版本升级
         String version = getVersion(context);
 
-        if ("v2".equals(version) && LATEST_VERSION.equals("v3")) {
+        if (FIRST_INSTALL_VERSION.equals(version)) {
+            From_v0.upgrade(context, this);
+        } else if (VERSION_V2.equals(version) && LATEST_VERSION.equals(VERSION_V3)) {
             From_v2_to_v3.upgrade(context, this);
-            updateToLatestVersion(context);
         }
+
+        updateToLatestVersion(context);
+        // >>>>>>>>>>>>>>
     }
 
     private void doOpen(Context context) {
@@ -1068,9 +1080,7 @@ public class PinyinDict {
         Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
         querySQLite(this.userDB, new DBUtils.SQLiteQueryParams<Void>() {{
             this.table = "meta_pinyin_chars";
-            this.columns = new String[] {
-                    "id_", "value_"
-            };
+            this.columns = new String[] { "id_", "value_" };
             this.reader = (cursor) -> {
                 // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
                 pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
@@ -1104,9 +1114,9 @@ public class PinyinDict {
 
             if (!versionFile.exists()) {
                 if (userDBFile.exists()) { // 应用 HMM 算法之前的版本
-                    this.version = "v2";
+                    this.version = VERSION_V2;
                 } else { // 首次安装
-                    this.version = LATEST_VERSION;
+                    this.version = FIRST_INSTALL_VERSION;
                 }
             } else { // 实际记录的版本号
                 this.version = FileUtils.read(versionFile, true);
@@ -1117,8 +1127,11 @@ public class PinyinDict {
     }
 
     private void updateToLatestVersion(Context context) {
-        File file = getVersionFile(context);
+        if (LATEST_VERSION.equals(this.version)) {
+            return;
+        }
 
+        File file = getVersionFile(context);
         try {
             FileUtils.write(file, LATEST_VERSION);
             this.version = LATEST_VERSION;
