@@ -72,13 +72,13 @@ public class HmmDBHelper {
             // 查询结果列包括（按顺序）：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
             this.sql = createTransProbQuerySQL(pinyinCharsIdList);
 
-            this.reader = (cursor) -> {
+            this.reader = (row) -> {
                 // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
-                String wordId = cursor.getString(0);
-                String preWordId = cursor.getString(1);
-                String pinyinCharsId = cursor.getString(2);
-                Integer appValue = cursor.getInt(3);
-                Integer userValue = cursor.getInt(4);
+                String wordId = row.getString("word_id_");
+                String preWordId = row.getString("prev_word_id_");
+                String pinyinCharsId = row.getString("word_spell_chars_id_");
+                Integer appValue = row.getInt("value_app_");
+                Integer userValue = row.getInt("value_user_");
 
                 Map<String, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
                 prob.compute(preWordId, (k, v) -> (v == null ? 0 : v) //
@@ -189,17 +189,17 @@ public class HmmDBHelper {
         if (!reverse) {
             execSQLite(db,
                        "insert into"
-                       + "  phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
-                       + "    values(?, ?, 0, ?)"
-                       + "  on conflict(word_id_, spell_chars_id_)"
-                       + "  do update set "
-                       + "    weight_user_ = weight_user_ + ?",
+                       + " phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
+                       + "   values(?, ?, 0, ?)"
+                       + " on conflict(word_id_, spell_chars_id_)"
+                       + " do update set "
+                       + "   weight_user_ = weight_user_ + ?",
                        phraseWordData);
         } else {
             execSQLite(db,
                        "update phrase_word"
-                       + "  set weight_user_ = max(weight_user_ - ?, 0)"
-                       + "  where word_id_ = ? and spell_chars_id_ = ?",
+                       + " set weight_user_ = max(weight_user_ - ?, 0)"
+                       + " where word_id_ = ? and spell_chars_id_ = ?",
                        phraseWordData);
         }
 
@@ -235,17 +235,17 @@ public class HmmDBHelper {
         if (!reverse) {
             execSQLite(db,
                        "insert into"
-                       + "  phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
-                       + "    values(?, ?, 0, ?)"
-                       + "  on conflict(word_id_, prev_word_id_)"
-                       + "  do update set "
-                       + "    value_user_ = value_user_ + ?",
+                       + " phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
+                       + "   values(?, ?, 0, ?)"
+                       + " on conflict(word_id_, prev_word_id_)"
+                       + " do update set "
+                       + "   value_user_ = value_user_ + ?",
                        phraseTransProbData);
         } else {
             execSQLite(db,
                        "update phrase_trans_prob"
-                       + "  set value_user_ = max(value_user_ - ?, 0)"
-                       + "  where word_id_ = ? and prev_word_id_ = ?",
+                       + " set value_user_ = max(value_user_ - ?, 0)"
+                       + " where word_id_ = ? and prev_word_id_ = ?",
                        phraseTransProbData);
         }
 
@@ -320,17 +320,17 @@ public class HmmDBHelper {
         return "with recursive\n  "
                + String.join(",\n  ", wordTableSQLList)
                + "\nselect distinct "
-               + " s_.word_id_, s_.prev_word_id_,"
-               + " t_.curr_word_spell_chars_id_ as word_spell_chars_id_,"
-               + " s_.value_app_, s_.value_user_"
+               + "   s_.word_id_, s_.prev_word_id_,"
+               + "   t_.curr_word_spell_chars_id_ as word_spell_chars_id_,"
+               + "   s_.value_app_, s_.value_user_"
                + " from phrase_trans_prob s_, word_ids t_"
                + " where"
-               + " s_.word_id_ = t_.curr_word_id_"
-               + " and ("
-               + "  s_.prev_word_id_ = t_.prev_word_id_"
+               + "   s_.word_id_ = t_.curr_word_id_"
+               + "   and ("
+               + "     s_.prev_word_id_ = t_.prev_word_id_"
                // 当前拼音字都包含 TOTAL 列
-               + ("  or s_.prev_word_id_ = " + TOTAL_WORD_ID)
-               + ")";
+               + ("    or s_.prev_word_id_ = " + TOTAL_WORD_ID)
+               + "   )";
     }
 
     /**

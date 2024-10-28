@@ -112,6 +112,10 @@ public class DBUtils {
         }
     }
 
+    /**
+     * @param argsList
+     *         参数列表为空时，不执行 <code>clause</code>
+     */
     public static void execSQLite(SQLiteDatabase db, String clause, Collection<String[]> argsList) {
         if (argsList.isEmpty()) {
             return;
@@ -148,7 +152,7 @@ public class DBUtils {
             List<T> list = new ArrayList<>(cursor.getCount());
 
             while (cursor.moveToNext()) {
-                T data = params.reader.apply(cursor);
+                T data = params.reader.apply(new SQLiteRow(cursor));
 
                 if (data != null) {
                     list.add(data);
@@ -165,7 +169,7 @@ public class DBUtils {
             List<T> list = new ArrayList<>(cursor.getCount());
 
             while (cursor.moveToNext()) {
-                T data = params.reader.apply(cursor);
+                T data = params.reader.apply(new SQLiteRow(cursor));
 
                 if (data != null) {
                     list.add(data);
@@ -189,7 +193,7 @@ public class DBUtils {
         public String limit;
 
         /** 行读取函数 */
-        public Function<Cursor, T> reader;
+        public Function<SQLiteRow, T> reader;
     }
 
     public static class SQLiteRawQueryParams<T> {
@@ -197,6 +201,28 @@ public class DBUtils {
         public String[] params;
 
         /** 行读取函数 */
-        public Function<Cursor, T> reader;
+        public Function<SQLiteRow, T> reader;
+    }
+
+    public static class SQLiteRow {
+        private final Cursor cursor;
+
+        public SQLiteRow(Cursor cursor) {
+            this.cursor = cursor;
+        }
+
+        public String getString(String columnName) {
+            return get(columnName, this.cursor::getString);
+        }
+
+        public int getInt(String columnName) {
+            return get(columnName, this.cursor::getInt);
+        }
+
+        private <T> T get(String columnName, Function<Integer, T> getter) {
+            int columnIndex = this.cursor.getColumnIndexOrThrow(columnName);
+
+            return getter.apply(columnIndex);
+        }
     }
 }

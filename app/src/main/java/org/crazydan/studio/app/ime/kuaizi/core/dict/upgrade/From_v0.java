@@ -51,66 +51,66 @@ public class From_v0 {
     protected static void doUpgrade(SQLiteDatabase targetDB, File appPhraseDBFile) {
         String[] clauses = new String[] {
                 // 连接应用库
-                "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app;",
+                "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
                 // 创建包含用户和应用权重数据的词典表
                 "create table" //
-                + "  if not exists phrase_word ("
+                + " if not exists phrase_word ("
                 //  -- 拼音字 id: 其为 link_word_with_pinyin 中的 id_
-                + "    word_id_ integer not null,"
+                + "   word_id_ integer not null,"
                 //  -- 拼音字母组合 id: 其为 link_word_with_pinyin 中的 spell_chars_id_
-                + "    spell_chars_id_ integer not null,"
+                + "   spell_chars_id_ integer not null,"
                 // -- 应用字典中短语内的字权重：出现次数
-                + "    weight_app_ integer not null,"
+                + "   weight_app_ integer not null,"
                 // -- 用户字典中短语内的字权重：出现次数
-                + "    weight_user_ integer not null," //
-                + "    primary key (word_id_, spell_chars_id_)" //
-                + "  );",
+                + "   weight_user_ integer not null," //
+                + "   primary key (word_id_, spell_chars_id_)" //
+                + " )",
                 //
                 "create table" //
-                + "  if not exists phrase_trans_prob ("
+                + " if not exists phrase_trans_prob ("
                 //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
                 //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
-                + "    word_id_ integer not null,"
+                + "   word_id_ integer not null,"
                 //  -- 前序拼音字 id: BOS 用 -1 代替（句首字），TOTAL 用 -2 代替
                 //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
-                + "    prev_word_id_ integer not null,"
+                + "   prev_word_id_ integer not null,"
                 //  -- 当 word_id_ == -1 且 prev_word_id_ == -2 时，其代表训练数据的句子总数，用于计算句首字出现频率；
                 //  -- 当 word_id_ == -1 且 prev_word_id_ != -1 时，其代表末尾字出现次数；
                 //  -- 当 word_id_ != -1 且 prev_word_id_ == -1 时，其代表句首字出现次数；
                 //  -- 当 word_id_ != -1 且 prev_word_id_ == -2 时，其代表当前拼音字的转移总数；
                 //  -- 当 word_id_ != -1 且 prev_word_id_ != -1 时，其代表前序拼音字的出现次数；
                 // -- 应用字典中字出现的次数
-                + "    value_app_ integer not null,"
+                + "   value_app_ integer not null,"
                 // -- 用户字典中字出现的次数
-                + "    value_user_ integer not null," //
-                + "    primary key (word_id_, prev_word_id_)" //
-                + "  );",
+                + "   value_user_ integer not null," //
+                + "   primary key (word_id_, prev_word_id_)" //
+                + " )",
                 // 添加用户库表
                 "create table" //
-                + "  if not exists meta_latin (" //
-                + "    id_ integer not null primary key,"
+                + " if not exists meta_latin (" //
+                + "   id_ integer not null primary key,"
                 // -- 拉丁文内容
-                + "    value_ text not null,"
+                + "   value_ text not null,"
                 // -- 按使用频率等排序的权重
-                + "    weight_user_ integer not null," //
-                + "    unique (value_)" //
-                + "  );",
+                + "   weight_user_ integer not null," //
+                + "   unique (value_)" //
+                + " )",
                 // 通过 SQL 迁移数据
                 "insert into phrase_word"
-                + "  (word_id_, spell_chars_id_, weight_app_, weight_user_)"
-                + "select"
-                + "  word_id_, spell_chars_id_,"
-                + "  app_.weight_ as weight_app_,"
-                + "  0 as weight_user_"
-                + "from app.phrase_word as app_;",
+                + "   (word_id_, spell_chars_id_, weight_app_, weight_user_)"
+                + " select"
+                + "   word_id_, spell_chars_id_,"
+                + "   app_.weight_ as weight_app_,"
+                + "   0 as weight_user_"
+                + " from app.phrase_word as app_",
                 //
                 "insert into phrase_trans_prob"
-                + "  (word_id_, prev_word_id_, value_app_, value_user_)"
-                + "select"
-                + "  word_id_, prev_word_id_,"
-                + "  app_.value_ as value_app_,"
-                + "  0 as value_user_"
-                + "from app.phrase_trans_prob as app_;",
+                + "   (word_id_, prev_word_id_, value_app_, value_user_)"
+                + " select"
+                + "   word_id_, prev_word_id_,"
+                + "   app_.value_ as value_app_,"
+                + "   0 as value_user_"
+                + " from app.phrase_trans_prob as app_",
                 };
 
         execSQLite(targetDB, clauses);

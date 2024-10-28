@@ -63,22 +63,22 @@ public class From_v2_to_v3 {
 
         // <<<<<<<<<<<<<<<<<<< 迁移现有的用户数据
         String[] clauses = new String[] {
-                "attach database '" + userDBFile.getAbsolutePath() + "' as user;",
+                "attach database '" + userDBFile.getAbsolutePath() + "' as user",
                 // 添加用户库表所需字段
                 "alter table meta_emoji"
                 // -- 按使用频率等排序的权重
-                + "  add column weight_user_ integer default 0;",
+                + "  add column weight_user_ integer default 0",
                 //
                 "update meta_emoji as emoji_"
-                + "  set emoji_.weight_user_ = user_.weight_"
-                + "  from user.used_emoji as user_"
-                + "    where user_.id_ = emoji_.id_;",
+                + "   set emoji_.weight_user_ = user_.weight_"
+                + " from user.used_emoji as user_"
+                + " where user_.id_ = emoji_.id_",
                 //
                 "insert into meta_latin"
-                + "  (id_, value_, weight_user_)"
-                + "select"
-                + "  user_.id_, user_.value_, user_.weight_"
-                + "from user.used_latin as user_;",
+                + "   (id_, value_, weight_user_)"
+                + " select"
+                + "   user_.id_, user_.value_, user_.weight_"
+                + " from user.used_latin as user_",
                 };
         execSQLite(targetDB, clauses);
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -98,9 +98,9 @@ public class From_v2_to_v3 {
             };
             this.where = "weight_ > 0 ";
             this.groupBy = "source_id_";
-            this.reader = (cursor) -> {
-                String phraseWords = cursor.getString(0);
-                int phraseCount = cursor.getInt(1);
+            this.reader = (row) -> {
+                String phraseWords = row.getString("target_ids_");
+                int phraseCount = row.getInt("weight_");
 
                 usedPhraseCountMap.put(phraseWords, phraseCount);
                 return null;

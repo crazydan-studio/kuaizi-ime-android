@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -43,19 +41,21 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.Async;
-import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRow;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
 /**
  * 拼音字典（数据库版）
@@ -168,20 +168,40 @@ public class PinyinDict {
         return this.pinyinTree;
     }
 
-    /** 获取指定拼音的候选字 */
+    /** 获取指定拼音的候选字列表：已按权重等排序 */
     public List<InputWord> getPinyinCandidateWords(CharInput input) {
-        String inputPinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
-        if (inputPinyinCharsId == null) {
-            return new ArrayList<>();
+        String pinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
+        if (pinyinCharsId == null) {
+            return List.of();
         }
 
-        List<InputWord> wordList = queryPinyinWordsFromAppDB("spell_chars_id_ = ?",
-                                                             new String[] { inputPinyinCharsId },
-                                                             // Note：拼音的 id 排序即为其字母排序
-                                                             // 按拼音使用频率（weight_）、拼音内字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
-                                                             "weight_ desc, glyph_weight_ desc, spell_id_ asc");
+        SQLiteDatabase db = getUserDB();
+        List<InputWord> wordList = rawQuerySQLite(db, new SQLiteRawQueryParams<InputWord>() {{
+            this.sql = "select distinct"
+                       + "   py_.id_, py_.word_, py_.word_id_,"
+                       + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
+                       + "   py_.traditional_, py_.stroke_order_,"
+                       + "   py_.radical_, py_.radical_stroke_count_"
+                       + " from pinyin_word py_"
+                       + "   left join phrase_word ph_"
+                       + "     on ph_.word_id_ = py_.id_"
+                       + " where"
+                       + "   py_.spell_chars_id_ = ?"
+                       + " order by"
+                       // 短语中的常用字最靠前
+                       + "   ( ifnull(ph_.weight_app_, 0) +"
+                       + "     ifnull(ph_.weight_user_, 0) +"
+                       + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
+                       + "   ) desc,"
+                       // 再按拼音字的使用频率（weight_）、拼音字的字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
+                       + "   py_.weight_ desc, py_.glyph_weight_ desc, py_.spell_id_ asc";
 
-        patchPinyinWordVariantInCandidatesFromAppDB(wordList);
+            this.params = new String[] { pinyinCharsId, PinyinDict.this.userPhraseBaseWeight + "" };
+
+            this.reader = PinyinDict.this::createPinyinInputWord;
+        }});
+
+        patchPinyinWordVariantInCandidates(db, wordList);
 
         return wordList;
     }
@@ -228,46 +248,46 @@ public class PinyinDict {
 
     /** 查找最靠前的 <code>top</code> 各表情符号 */
     public Emojis findTopBestEmojis(int top) {
-        SQLiteDatabase userDB = getUserDB();
-        SQLiteDatabase appDB = getAppDB();
+//        SQLiteDatabase userDB = getUserDB();
+//        SQLiteDatabase appDB = getAppDB();
+//
+//        Map<String, List<InputWord>> groups = new LinkedHashMap<>();
+//        // 高优先级的分组先占位
+//        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>());
+//
+//        Map<String, InputWord> idAndDataMap = new HashMap<>();
+//        doSQLiteQuery(appDB, "group_emoji", new String[] {
+//                              "id_", "value_", "group_"
+//                      }, //
+//                      null, //
+//                      null, //
+//                      "group_ asc, id_ asc", //
+//                      (cursor) -> {
+//                          String uid = cursor.getString(0);
+//                          String value = cursor.getString(1);
+//                          String group = cursor.getString(2);
+//
+//                          if (CharUtils.isPrintable(value)) {
+//                              InputWord emoji = new EmojiInputWord(uid, value);
+//
+//                              idAndDataMap.put(uid, emoji);
+//                              groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
+//                          }
+//
+//                          return null;
+//                      });
+//
+//        List<InputWord> used = doSQLiteQuery(userDB, "used_emoji", new String[] {
+//                                                     "id_"
+//                                             }, //
+//                                             null, //
+//                                             null, //
+//                                             "weight_ desc", //
+//                                             String.valueOf(top), //
+//                                             (cursor) -> idAndDataMap.get(cursor.getString(0)));
+//        groups.put(Emojis.GROUP_GENERAL, used);
 
-        Map<String, List<InputWord>> groups = new LinkedHashMap<>();
-        // 高优先级的分组先占位
-        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>());
-
-        Map<String, InputWord> idAndDataMap = new HashMap<>();
-        doSQLiteQuery(appDB, "group_emoji", new String[] {
-                              "id_", "value_", "group_"
-                      }, //
-                      null, //
-                      null, //
-                      "group_ asc, id_ asc", //
-                      (cursor) -> {
-                          String uid = cursor.getString(0);
-                          String value = cursor.getString(1);
-                          String group = cursor.getString(2);
-
-                          if (CharUtils.isPrintable(value)) {
-                              InputWord emoji = new EmojiInputWord(uid, value);
-
-                              idAndDataMap.put(uid, emoji);
-                              groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
-                          }
-
-                          return null;
-                      });
-
-        List<InputWord> used = doSQLiteQuery(userDB, "used_emoji", new String[] {
-                                                     "id_"
-                                             }, //
-                                             null, //
-                                             null, //
-                                             "weight_ desc", //
-                                             String.valueOf(top), //
-                                             (cursor) -> idAndDataMap.get(cursor.getString(0)));
-        groups.put(Emojis.GROUP_GENERAL, used);
-
-        return new Emojis(groups);
+        return new Emojis(new HashMap<>());
     }
 
     /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
@@ -278,15 +298,15 @@ public class PinyinDict {
 
         SQLiteDatabase db = getUserDB();
 
-        List<String> matched = doSQLiteQuery(db, "used_latin", //
-                                             new String[] { "value_" }, //
-                                             // like 为大小写不敏感的匹配，glob 为大小写敏感匹配
-                                             // https://www.sqlitetutorial.net/sqlite-glob/
-                                             "weight_ > 0 and value_ glob ?", //
-                                             new String[] { text + "*" }, //
-                                             "weight_ desc", //
-                                             String.valueOf(top), //
-                                             (cursor) -> cursor.getString(0));
+//        List<String> matched = doSQLiteQuery(db, "used_latin", //
+//                                             new String[] { "value_" }, //
+//                                             // like 为大小写不敏感的匹配，glob 为大小写敏感匹配
+//                                             // https://www.sqlitetutorial.net/sqlite-glob/
+//                                             "weight_ > 0 and value_ glob ?", //
+//                                             new String[] { text + "*" }, //
+//                                             "weight_ desc", //
+//                                             String.valueOf(top), //
+//                                             (cursor) -> cursor.getString(0));
 
         return List.of();
     }
@@ -299,7 +319,7 @@ public class PinyinDict {
             return new ArrayList<>();
         }
 
-        List<List<String>> phraseWordsList = findTopBestMatchedPinyinPhraseWordFromUserDB(prevPhrase, top);
+        List<List<String>> phraseWordsList = findTopBestMatchedPinyinPhraseWord(prevPhrase, top);
         if (phraseWordsList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -307,9 +327,9 @@ public class PinyinDict {
         Set<String> wordIdSet = new HashSet<>();
         phraseWordsList.forEach(wordIdSet::addAll);
 
-        Map<String, InputWord> wordMap = getPinyinWordsFromAppDB(wordIdSet);
+        Map<String, InputWord> wordMap = getPinyinWords(wordIdSet);
         if (variantFirst) {
-            patchPinyinWordVariantFromAppDB(wordMap.values());
+            patchPinyinWordVariant(wordMap.values());
         }
 
         return phraseWordsList.stream()
@@ -375,129 +395,130 @@ public class PinyinDict {
             SQLiteDatabase db, String wordTable, String phraseTable, String inputPinyinCharsId, int top,
             List<InputWord> prevPhrase
     ) {
-        List<InputWord> pinyinWords = prevPhrase != null ? new ArrayList<>(prevPhrase) : new ArrayList<>();
-        Collections.reverse(pinyinWords);
+//        List<InputWord> pinyinWords = prevPhrase != null ? new ArrayList<>(prevPhrase) : new ArrayList<>();
+//        Collections.reverse(pinyinWords);
+//
+//        // 匹配短语中的常用字：倒序分析
+//        List<String> inputPhraseWordCharsIdList = pinyinWords.stream()
+//                                                             .map((word) -> ((PinyinInputWord) word).getCharsId())
+//                                                             .collect(Collectors.toList());
+//        inputPhraseWordCharsIdList.add(0, inputPinyinCharsId);
+//
+//        // 已确认的拼音字 id
+//        List<String> confirmedPhraseWordIdList = pinyinWords.stream()
+//                                                            .map(word -> word.isConfirmed() ? word.getUid() : null)
+//                                                            .collect(Collectors.toList());
+//        confirmedPhraseWordIdList.add(0, null);
+//
+//        Set<String> invalidPhraseIdSet = new HashSet<>();
+//
+//        Map<String, List<String[]>> bestPhraseMap = new LinkedHashMap<>();
+//        doSQLiteQuery(db, phraseTable, new String[] {
+//                              "source_id_", "target_id_", "target_spell_chars_id_", "target_index_"
+//                      }, //
+//                      "weight_ > 0 and target_spell_chars_id_ in (" //
+//                      + inputPhraseWordCharsIdList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
+//                      + ")", //
+//                      inputPhraseWordCharsIdList.toArray(new String[0]), //
+//                      "weight_ desc, source_id_ asc" +
+//                      // Note：只有一个字时，应该将其视为短语的开头（升序排序短语中的字），
+//                      // 否则，视其为短语的结尾（降序排序短语中的字）
+//                      (", target_index_ " + (inputPhraseWordCharsIdList.size() == 1 ? "asc" : "desc")), //
+//                      (cursor) -> {
+//                          String phraseId = cursor.getString(0);
+//                          if (invalidPhraseIdSet.contains(phraseId)) {
+//                              return null;
+//                          }
+//
+//                          String phraseWordId = cursor.getString(1);
+//                          String phraseWordCharsId = cursor.getString(2);
+//                          String phraseWordIndex = cursor.getString(3);
+//
+//                          List<String[]> phraseWords = bestPhraseMap.computeIfAbsent(phraseId,
+//                                                                                     (k) -> new ArrayList<>());
+//
+//                          int phraseWordSize = phraseWords.size();
+//                          String[] prev = CollectionUtils.last(phraseWords);
+//                          if ( // 去掉 搜索的字 在 短语 中 不相邻 的数据：对短语内的字顺序做了降序处理，故而，prev 的序号应该比当前字的序号更大
+//                                  (prev != null //
+//                                   && Integer.parseInt(prev[1]) - Integer.parseInt(phraseWordIndex) != 1)
+//                                  // 去掉与 查询短语 在 相同位置 读音（或已确认的字）不匹配 的数据
+//                                  || (phraseWordSize < inputPhraseWordCharsIdList.size() //
+//                                      && (!inputPhraseWordCharsIdList.get(phraseWordSize).equals(phraseWordCharsId) //
+//                                          || (confirmedPhraseWordIdList.get(phraseWordSize) != null //
+//                                              && !confirmedPhraseWordIdList.get(phraseWordSize)
+//                                                                           .equals(phraseWordId))))) {
+//                              invalidPhraseIdSet.add(phraseId);
+//
+//                              // Note：及时删除有助于匹配某个短语内部的部分组合
+//                              bestPhraseMap.remove(phraseId);
+//
+//                              return null;
+//                          }
+//
+//                          phraseWords.add(new String[] { phraseWordId, phraseWordIndex, phraseWordCharsId });
+//
+//                          return null;
+//                      });
+//
+//        List<String[]> bestPhraseWordIdsList = bestPhraseMap.values()
+//                                                            .stream()
+//                                                            .map(tupleList -> tupleList.stream()
+//                                                                                       .map(tuple -> tuple[0])
+//                                                                                       .toArray(String[]::new))
+//                                                            // 根据匹配短语长度排序，长度越长，其匹配性最佳。
+//                                                            // 长度相同的，再看其权重大小。
+//                                                            // 不过，原结果已经是权重排序结果，故而，长度相同的保持位置不变即可
+//                                                            .sorted((a1, a2) -> Integer.compare(a2.length, a1.length))
+//                                                            .collect(Collectors.toList());
+//        List<String[]> bestPhrases = bestPhraseWordIdsList.stream()
+//                                                          .filter(phrase -> phrase.length > 1)
+//                                                          .collect(Collectors.toList());
+//
+//        // Note：短语中的最佳候选字，仅针对短语长度大于 1 的情况，等于 1 的就应该使用高频的单字
+//        Set<String> firstWordIdInBestPhrasesSet = bestPhrases.stream()
+//                                                             .map(phrase -> phrase[0])
+//                                                             .collect(Collectors.toCollection(LinkedHashSet::new));
+//        List<String> bestWords = CollectionUtils.topPatch(new ArrayList<>(firstWordIdInBestPhrasesSet), top,
+//                                                          // 匹配高频字
+//                                                          () -> doSQLiteQuery(db, wordTable,
+//                                                                              //
+//                                                                              new String[] { "id_" },
+//                                                                              //
+//                                                                              "weight_ > 0 and target_chars_id_ = ?",
+//                                                                              //
+//                                                                              new String[] { inputPinyinCharsId },
+//                                                                              //
+//                                                                              "weight_ desc", String.valueOf(top),
+//                                                                              //
+//                                                                              (cursor) -> cursor.getString(0)));
 
-        // 匹配短语中的常用字：倒序分析
-        List<String> inputPhraseWordCharsIdList = pinyinWords.stream()
-                                                             .map((word) -> ((PinyinInputWord) word).getCharsId())
-                                                             .collect(Collectors.toList());
-        inputPhraseWordCharsIdList.add(0, inputPinyinCharsId);
-
-        // 已确认的拼音字 id
-        List<String> confirmedPhraseWordIdList = pinyinWords.stream()
-                                                            .map(word -> word.isConfirmed() ? word.getUid() : null)
-                                                            .collect(Collectors.toList());
-        confirmedPhraseWordIdList.add(0, null);
-
-        Set<String> invalidPhraseIdSet = new HashSet<>();
-
-        Map<String, List<String[]>> bestPhraseMap = new LinkedHashMap<>();
-        doSQLiteQuery(db, phraseTable, new String[] {
-                              "source_id_", "target_id_", "target_spell_chars_id_", "target_index_"
-                      }, //
-                      "weight_ > 0 and target_spell_chars_id_ in (" //
-                      + inputPhraseWordCharsIdList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-                      + ")", //
-                      inputPhraseWordCharsIdList.toArray(new String[0]), //
-                      "weight_ desc, source_id_ asc" +
-                      // Note：只有一个字时，应该将其视为短语的开头（升序排序短语中的字），
-                      // 否则，视其为短语的结尾（降序排序短语中的字）
-                      (", target_index_ " + (inputPhraseWordCharsIdList.size() == 1 ? "asc" : "desc")), //
-                      (cursor) -> {
-                          String phraseId = cursor.getString(0);
-                          if (invalidPhraseIdSet.contains(phraseId)) {
-                              return null;
-                          }
-
-                          String phraseWordId = cursor.getString(1);
-                          String phraseWordCharsId = cursor.getString(2);
-                          String phraseWordIndex = cursor.getString(3);
-
-                          List<String[]> phraseWords = bestPhraseMap.computeIfAbsent(phraseId,
-                                                                                     (k) -> new ArrayList<>());
-
-                          int phraseWordSize = phraseWords.size();
-                          String[] prev = CollectionUtils.last(phraseWords);
-                          if ( // 去掉 搜索的字 在 短语 中 不相邻 的数据：对短语内的字顺序做了降序处理，故而，prev 的序号应该比当前字的序号更大
-                                  (prev != null //
-                                   && Integer.parseInt(prev[1]) - Integer.parseInt(phraseWordIndex) != 1)
-                                  // 去掉与 查询短语 在 相同位置 读音（或已确认的字）不匹配 的数据
-                                  || (phraseWordSize < inputPhraseWordCharsIdList.size() //
-                                      && (!inputPhraseWordCharsIdList.get(phraseWordSize).equals(phraseWordCharsId) //
-                                          || (confirmedPhraseWordIdList.get(phraseWordSize) != null //
-                                              && !confirmedPhraseWordIdList.get(phraseWordSize)
-                                                                           .equals(phraseWordId))))) {
-                              invalidPhraseIdSet.add(phraseId);
-
-                              // Note：及时删除有助于匹配某个短语内部的部分组合
-                              bestPhraseMap.remove(phraseId);
-
-                              return null;
-                          }
-
-                          phraseWords.add(new String[] { phraseWordId, phraseWordIndex, phraseWordCharsId });
-
-                          return null;
-                      });
-
-        List<String[]> bestPhraseWordIdsList = bestPhraseMap.values()
-                                                            .stream()
-                                                            .map(tupleList -> tupleList.stream()
-                                                                                       .map(tuple -> tuple[0])
-                                                                                       .toArray(String[]::new))
-                                                            // 根据匹配短语长度排序，长度越长，其匹配性最佳。
-                                                            // 长度相同的，再看其权重大小。
-                                                            // 不过，原结果已经是权重排序结果，故而，长度相同的保持位置不变即可
-                                                            .sorted((a1, a2) -> Integer.compare(a2.length, a1.length))
-                                                            .collect(Collectors.toList());
-        List<String[]> bestPhrases = bestPhraseWordIdsList.stream()
-                                                          .filter(phrase -> phrase.length > 1)
-                                                          .collect(Collectors.toList());
-
-        // Note：短语中的最佳候选字，仅针对短语长度大于 1 的情况，等于 1 的就应该使用高频的单字
-        Set<String> firstWordIdInBestPhrasesSet = bestPhrases.stream()
-                                                             .map(phrase -> phrase[0])
-                                                             .collect(Collectors.toCollection(LinkedHashSet::new));
-        List<String> bestWords = CollectionUtils.topPatch(new ArrayList<>(firstWordIdInBestPhrasesSet), top,
-                                                          // 匹配高频字
-                                                          () -> doSQLiteQuery(db, wordTable,
-                                                                              //
-                                                                              new String[] { "id_" },
-                                                                              //
-                                                                              "weight_ > 0 and target_chars_id_ = ?",
-                                                                              //
-                                                                              new String[] { inputPinyinCharsId },
-                                                                              //
-                                                                              "weight_ desc", String.valueOf(top),
-                                                                              //
-                                                                              (cursor) -> cursor.getString(0)));
-
-        return new BestCandidateWords(bestWords, bestPhrases);
+//        return new BestCandidateWords(bestWords, bestPhrases);
+        return new BestCandidateWords(new ArrayList<>(), new ArrayList<>());
     }
 
-    private List<List<String>> findTopBestMatchedPinyinPhraseWordFromUserDB(List<InputWord> prevPhrase, int top) {
+    private List<List<String>> findTopBestMatchedPinyinPhraseWord(List<InputWord> prevPhrase, int top) {
         SQLiteDatabase db = getUserDB();
 
         String prevPhraseWordIds = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.joining(",")) + ",";
 
         Map<String, String> bestPhraseMap = new LinkedHashMap<>();
-        doSQLiteQuery(db, "used_pinyin_phrase", new String[] {
-                              "source_id_", "group_concat(target_id_) as target_ids_",
-                              }, //
-                      "weight_ > 0 and (target_ids_ like ? or target_ids_ like ?)", //
-                      new String[] { prevPhraseWordIds + "%", "%," + prevPhraseWordIds + "%" }, //
-                      "source_id_", //
-                      // Note：视图 used_pinyin_phrase 已默认按 target_id_ 升序排序
-                      "weight_ desc", //
-                      String.valueOf(top), //
-                      (cursor) -> {
-                          String phraseId = cursor.getString(0);
-                          String phraseWordIds = cursor.getString(1);
-
-                          bestPhraseMap.put(phraseId, phraseWordIds);
-                          return null;
-                      });
+//        doSQLiteQuery(db, "used_pinyin_phrase", new String[] {
+//                              "source_id_", "group_concat(target_id_) as target_ids_",
+//                              }, //
+//                      "weight_ > 0 and (target_ids_ like ? or target_ids_ like ?)", //
+//                      new String[] { prevPhraseWordIds + "%", "%," + prevPhraseWordIds + "%" }, //
+//                      "source_id_", //
+//                      // Note：视图 used_pinyin_phrase 已默认按 target_id_ 升序排序
+//                      "weight_ desc", //
+//                      String.valueOf(top), //
+//                      (cursor) -> {
+//                          String phraseId = cursor.getString(0);
+//                          String phraseWordIds = cursor.getString(1);
+//
+//                          bestPhraseMap.put(phraseId, phraseWordIds);
+//                          return null;
+//                      });
 
         Set<List<String>> matchedPhraseWordsSet = new LinkedHashSet<>();
         bestPhraseMap.forEach((k, phraseWordIds) -> {
@@ -511,7 +532,7 @@ public class PinyinDict {
         return new ArrayList<>(matchedPhraseWordsSet);
     }
 
-    private Map<String, InputWord> getPinyinWordsFromAppDB(Collection<String> wordIds) {
+    private Map<String, InputWord> getPinyinWords(Collection<String> wordIds) {
         List<InputWord> wordList = queryPinyinWordsFromAppDB("id_ in ("
                                                              + wordIds.stream()
                                                                       .map((id) -> "?")
@@ -525,26 +546,30 @@ public class PinyinDict {
 
     /** 查找拼音候选字的变体 id */
     private Map<String, List<String>> findPinyinWordVariantIds(
-            SQLiteDatabase db, String table, Collection<String> sourceIds
+            SQLiteDatabase db, String variantTable, Collection<String> sourceIds
     ) {
         if (sourceIds.isEmpty()) {
             return new HashMap<>();
         }
 
         Map<String, List<String>> map = new HashMap<>(sourceIds.size());
-        doSQLiteQuery(db, table, new String[] { "source_id_", "target_id_" },
-                      //
-                      "source_id_ in (" //
-                      + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-                      + ")", //
-                      sourceIds.toArray(new String[0]), //
-                      (cursor) -> {
-                          String sourceId = cursor.getString(0);
-                          String targetId = cursor.getString(1);
-                          map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetId);
+        querySQLite(db, new SQLiteQueryParams<Void>() {{
+            this.table = variantTable;
+            this.columns = new String[] { "source_id_", "target_id_" };
+            this.where = "source_id_ in (" //
+                         + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
+                         + ")";
 
-                          return null;
-                      });
+            this.params = sourceIds.toArray(new String[0]);
+            this.reader = (row) -> {
+                String sourceId = row.getString("source_id_");
+                String targetId = row.getString("target_id_");
+
+                map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetId);
+                return null;
+            };
+        }});
+
         return map;
     }
 
@@ -557,159 +582,159 @@ public class PinyinDict {
         }
 
         Map<String, List<String>> map = new HashMap<>(sourceIds.size());
-        doSQLiteQuery(db, table, new String[] { "id_", "target_value_" },
-                      //
-                      "id_ in (" //
-                      + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-                      + ")", //
-                      sourceIds.toArray(new String[0]), //
-                      (cursor) -> {
-                          String sourceId = cursor.getString(0);
-                          String targetValue = cursor.getString(1);
-                          map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetValue);
-
-                          return null;
-                      });
+//        doSQLiteQuery(db, table, new String[] { "id_", "target_value_" },
+//                      //
+//                      "id_ in (" //
+//                      + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
+//                      + ")", //
+//                      sourceIds.toArray(new String[0]), //
+//                      (cursor) -> {
+//                          String sourceId = cursor.getString(0);
+//                          String targetValue = cursor.getString(1);
+//                          map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetValue);
+//
+//                          return null;
+//                      });
         return map;
     }
 
     private List<InputWord> findEmojisMatchedPhraseFromAppDB(CharInput input, int top, List<InputWord> prevPhrase) {
-        SQLiteDatabase db = getAppDB();
-
-        List<String> phraseWordUidList = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.toList());
-        Collections.reverse(phraseWordUidList);
-
-        phraseWordUidList.add(0, input.getWord().getUid());
-
-        Set<String> invalidEmojiKeywordIdSet = new HashSet<>();
-        Map<String, List<String[]>> keywordAndWordIndexesMap = new HashMap<>();
-
-        Map<String, InputWord> emojiMap = new HashMap<>();
-        doSQLiteQuery(db, "emoji", new String[] {
-                              "id_", "value_", "keyword_index_", "keyword_word_spell_link_id_", "keyword_word_index_"
-                      }, //
-                      "keyword_word_spell_link_id_ in (" //
-                      + phraseWordUidList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-                      + ")", //
-                      phraseWordUidList.toArray(new String[0]), //
-                      "id_ asc, keyword_index_ asc, keyword_word_index_ desc", //
-                      (cursor) -> {
-                          String emojiId = cursor.getString(0);
-                          String emojiValue = cursor.getString(1);
-                          // 表情的关键字唯一标识由 表情 id 和 关键字的序号 组合而成
-                          String emojiKeywordId = emojiId + ":" + cursor.getString(2);
-                          String emojiKeywordWordUid = cursor.getString(3);
-                          String emojiKeywordWordIndex = cursor.getString(4);
-
-                          if (!CharUtils.isPrintable(emojiValue) //
-                              || invalidEmojiKeywordIdSet.contains(emojiKeywordId)) {
-                              return null;
-                          }
-
-                          List<String[]> keywordAndWordIndexes
-                                  = keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>());
-
-                          int keywordWordSize = keywordAndWordIndexes.size();
-                          String[] prev = CollectionUtils.last(keywordAndWordIndexes);
-                          if ( // 去掉 关键字 在 短语 中 不相邻 的数据
-                                  (prev != null //
-                                   && Integer.parseInt(prev[1]) - Integer.parseInt(emojiKeywordWordIndex) != 1)
-                                  // 去掉与 短语 在 相同位置的字 不匹配 的数据
-                                  || (keywordWordSize < phraseWordUidList.size() //
-                                      && (!phraseWordUidList.get(keywordWordSize).equals(emojiKeywordWordUid)))) {
-                              invalidEmojiKeywordIdSet.add(emojiKeywordId);
-
-                              keywordAndWordIndexesMap.remove(emojiKeywordId);
-
-                              return null;
-                          }
-
-                          keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>())
-                                                  .add(new String[] {
-                                                          emojiKeywordWordUid, emojiKeywordWordIndex, emojiId
-                                                  });
-
-                          if (!emojiMap.containsKey(emojiId)) {
-                              InputWord emoji = new EmojiInputWord(emojiId, emojiValue);
-                              emojiMap.put(emojiId, emoji);
-                          }
-
-                          return null;
-                      });
-
-        // 按关键字匹配到的输入长度排序，匹配越长的越靠前
-        Map<String, Integer> emojiAndWeightMap = new HashMap<>();
-        keywordAndWordIndexesMap.forEach((keywordId, tupleList) -> {
-            tupleList.forEach((tuple) -> {
-                String emojiId = tuple[2];
-                int weight = emojiAndWeightMap.getOrDefault(emojiId, 0);
-
-                emojiAndWeightMap.put(emojiId, tupleList.size() > weight ? tupleList.size() : weight);
-            });
-        });
-
-        List<InputWord> emojiList = emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
-            int a1Weight = emojiAndWeightMap.get(a1.getUid());
-            int a2Weight = emojiAndWeightMap.get(a2.getUid());
-            int order = Integer.compare(a2Weight, a1Weight);
-            // Note：相邻 id 的表情更有可能在同一个分组内，
-            // 故而，对匹配度相同的表情采用 id 排序
-            return order != 0 //
-                   ? order //
-                   : Integer.compare(Integer.parseInt(a1.getUid()), Integer.parseInt(a2.getUid()));
-        }).collect(Collectors.toList());
-
-        return CollectionUtils.subList(emojiList, 0, top);
+//        SQLiteDatabase db = getAppDB();
+//
+//        List<String> phraseWordUidList = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.toList());
+//        Collections.reverse(phraseWordUidList);
+//
+//        phraseWordUidList.add(0, input.getWord().getUid());
+//
+//        Set<String> invalidEmojiKeywordIdSet = new HashSet<>();
+//        Map<String, List<String[]>> keywordAndWordIndexesMap = new HashMap<>();
+//
+//        Map<String, InputWord> emojiMap = new HashMap<>();
+//        doSQLiteQuery(db, "emoji", new String[] {
+//                              "id_", "value_", "keyword_index_", "keyword_word_spell_link_id_", "keyword_word_index_"
+//                      }, //
+//                      "keyword_word_spell_link_id_ in (" //
+//                      + phraseWordUidList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
+//                      + ")", //
+//                      phraseWordUidList.toArray(new String[0]), //
+//                      "id_ asc, keyword_index_ asc, keyword_word_index_ desc", //
+//                      (cursor) -> {
+//                          String emojiId = cursor.getString(0);
+//                          String emojiValue = cursor.getString(1);
+//                          // 表情的关键字唯一标识由 表情 id 和 关键字的序号 组合而成
+//                          String emojiKeywordId = emojiId + ":" + cursor.getString(2);
+//                          String emojiKeywordWordUid = cursor.getString(3);
+//                          String emojiKeywordWordIndex = cursor.getString(4);
+//
+//                          if (!CharUtils.isPrintable(emojiValue) //
+//                              || invalidEmojiKeywordIdSet.contains(emojiKeywordId)) {
+//                              return null;
+//                          }
+//
+//                          List<String[]> keywordAndWordIndexes
+//                                  = keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>());
+//
+//                          int keywordWordSize = keywordAndWordIndexes.size();
+//                          String[] prev = CollectionUtils.last(keywordAndWordIndexes);
+//                          if ( // 去掉 关键字 在 短语 中 不相邻 的数据
+//                                  (prev != null //
+//                                   && Integer.parseInt(prev[1]) - Integer.parseInt(emojiKeywordWordIndex) != 1)
+//                                  // 去掉与 短语 在 相同位置的字 不匹配 的数据
+//                                  || (keywordWordSize < phraseWordUidList.size() //
+//                                      && (!phraseWordUidList.get(keywordWordSize).equals(emojiKeywordWordUid)))) {
+//                              invalidEmojiKeywordIdSet.add(emojiKeywordId);
+//
+//                              keywordAndWordIndexesMap.remove(emojiKeywordId);
+//
+//                              return null;
+//                          }
+//
+//                          keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>())
+//                                                  .add(new String[] {
+//                                                          emojiKeywordWordUid, emojiKeywordWordIndex, emojiId
+//                                                  });
+//
+//                          if (!emojiMap.containsKey(emojiId)) {
+//                              InputWord emoji = new EmojiInputWord(emojiId, emojiValue);
+//                              emojiMap.put(emojiId, emoji);
+//                          }
+//
+//                          return null;
+//                      });
+//
+//        // 按关键字匹配到的输入长度排序，匹配越长的越靠前
+//        Map<String, Integer> emojiAndWeightMap = new HashMap<>();
+//        keywordAndWordIndexesMap.forEach((keywordId, tupleList) -> {
+//            tupleList.forEach((tuple) -> {
+//                String emojiId = tuple[2];
+//                int weight = emojiAndWeightMap.getOrDefault(emojiId, 0);
+//
+//                emojiAndWeightMap.put(emojiId, tupleList.size() > weight ? tupleList.size() : weight);
+//            });
+//        });
+//
+//        List<InputWord> emojiList = emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
+//            int a1Weight = emojiAndWeightMap.get(a1.getUid());
+//            int a2Weight = emojiAndWeightMap.get(a2.getUid());
+//            int order = Integer.compare(a2Weight, a1Weight);
+//            // Note：相邻 id 的表情更有可能在同一个分组内，
+//            // 故而，对匹配度相同的表情采用 id 排序
+//            return order != 0 //
+//                   ? order //
+//                   : Integer.compare(Integer.parseInt(a1.getUid()), Integer.parseInt(a2.getUid()));
+//        }).collect(Collectors.toList());
+//
+//        return CollectionUtils.subList(emojiList, 0, top);
+        return List.of();
     }
 
     private List<InputWord> queryPinyinWordsFromAppDB(String where, String[] params, String orderBy) {
-        SQLiteDatabase db = getAppDB();
-
-        return doSQLiteQuery(db, "pinyin_word", //
-                             new String[] {
-                                     "id_",
-                                     "word_",
-                                     "spell_",
-                                     "word_id_",
-                                     "spell_chars_id_",
-                                     "traditional_",
-                                     "stroke_order_",
-                                     "spell_id_",
-                                     "radical_",
-                                     "radical_stroke_count_",
-                                     }, //
-                             where, params, orderBy, //
-                             (cursor) -> {
-                                 String uid = cursor.getString(0);
-                                 String value = cursor.getString(1);
-                                 String spellValue = cursor.getString(2);
-                                 String wordId = cursor.getString(3);
-                                 String spellCharsId = cursor.getString(4);
-                                 boolean traditional = cursor.getInt(5) > 0;
-                                 String strokeOrder = cursor.getString(6);
-                                 int spellId = cursor.getInt(7);
-                                 String radicalValue = cursor.getString(8);
-                                 int radicalStrokeCount = cursor.getInt(9);
-                                 PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId,
-                                                                                         spellValue,
-                                                                                         spellCharsId);
-                                 PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue,
-                                                                                               radicalStrokeCount);
-
-                                 return new PinyinInputWord(uid,
-                                                            value,
-                                                            wordId,
-                                                            spell,
-                                                            radical,
-                                                            traditional,
-                                                            strokeOrder);
-                             });
+//        SQLiteDatabase db = getAppDB();
+//
+//        return doSQLiteQuery(db, "pinyin_word", //
+//                             new String[] {
+//                                     "id_",
+//                                     "word_",
+//                                     "spell_",
+//                                     "word_id_",
+//                                     "spell_chars_id_",
+//                                     "traditional_",
+//                                     "stroke_order_",
+//                                     "spell_id_",
+//                                     "radical_",
+//                                     "radical_stroke_count_",
+//                                     }, //
+//                             where, params, orderBy, //
+//                             (cursor) -> {
+//                                 String uid = cursor.getString(0);
+//                                 String value = cursor.getString(1);
+//                                 String spellValue = cursor.getString(2);
+//                                 String wordId = cursor.getString(3);
+//                                 String spellCharsId = cursor.getString(4);
+//                                 boolean traditional = cursor.getInt(5) > 0;
+//                                 String strokeOrder = cursor.getString(6);
+//                                 int spellId = cursor.getInt(7);
+//                                 String radicalValue = cursor.getString(8);
+//                                 int radicalStrokeCount = cursor.getInt(9);
+//                                 PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId,
+//                                                                                         spellValue,
+//                                                                                         spellCharsId);
+//                                 PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue,
+//                                                                                               radicalStrokeCount);
+//
+//                                 return new PinyinInputWord(uid,
+//                                                            value,
+//                                                            wordId,
+//                                                            spell,
+//                                                            radical,
+//                                                            traditional,
+//                                                            strokeOrder);
+//                             });
+        return List.of();
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */
-    private void patchPinyinWordVariantInCandidatesFromAppDB(Collection<InputWord> candidates) {
-        SQLiteDatabase db = getUserDB();
-
+    private void patchPinyinWordVariantInCandidates(SQLiteDatabase db, Collection<InputWord> candidates) {
         Map<String, InputWord> tradWordMap = new HashMap<>();
         Map<String, InputWord> simpleWordMap = new HashMap<>();
 
@@ -768,7 +793,7 @@ public class PinyinDict {
     }
 
     /** 查找各个字的繁/简形式 */
-    private void patchPinyinWordVariantFromAppDB(Collection<InputWord> candidates) {
+    private void patchPinyinWordVariant(Collection<InputWord> candidates) {
         SQLiteDatabase db = getUserDB();
 
         Map<String, InputWord> tradWordMap = new HashMap<>();
@@ -835,23 +860,23 @@ public class PinyinDict {
             return;
         }
 
-        // 保存短语中的字
-        doSQLiteSave(db,
-                     "insert into"
-                     + " used_phrase_pinyin_word"
-                     + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
-                     + " values ((select id_ from used_phrase where value_ = ?), ?, ?, ?)",
-                     null,
-                     (insert, _ignore) -> {
-                         for (int i = 0; i < phrase.size(); i++) {
-                             InputWord word = phrase.get(i);
-
-                             insert.bindAllArgsAsStrings(new String[] {
-                                     phraseCode, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
-                             });
-                             insert.execute();
-                         }
-                     });
+//        // 保存短语中的字
+//        doSQLiteSave(db,
+//                     "insert into"
+//                     + " used_phrase_pinyin_word"
+//                     + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
+//                     + " values ((select id_ from used_phrase where value_ = ?), ?, ?, ?)",
+//                     null,
+//                     (insert, _ignore) -> {
+//                         for (int i = 0; i < phrase.size(); i++) {
+//                             InputWord word = phrase.get(i);
+//
+//                             insert.bindAllArgsAsStrings(new String[] {
+//                                     phraseCode, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
+//                             });
+//                             insert.execute();
+//                         }
+//                     });
     }
 
     /** 保存表情的使用频率等信息 */
@@ -915,20 +940,21 @@ public class PinyinDict {
 
     /** @return 若为新增，则返回 <code>true</code>，否则，返回 <code>false</code> */
     private boolean doSaveUsedPinyinPhrase(SQLiteDatabase db, String phraseCode, boolean shouldIncreaseWeight) {
-        Map<String, Integer> oldDataMap = doUpdateDataWeight(db,
-                                                             "used_phrase",
-                                                             "value_",
-                                                             Collections.singleton(phraseCode),
-                                                             null,
-                                                             "insert into used_phrase (weight_, value_) values (?, ?)",
-                                                             "update used_phrase set weight_ = ? where value_ = ?",
-                                                             new String[] {
-                                                                     "delete from used_phrase_pinyin_word"
-                                                                     + " where source_id_ in (select id_ from used_phrase where weight_ = 0)",
-                                                                     "delete from used_phrase where weight_ = 0"
-                                                             },
-                                                             shouldIncreaseWeight);
-        return !oldDataMap.containsKey(phraseCode);
+//        Map<String, Integer> oldDataMap = doUpdateDataWeight(db,
+//                                                             "used_phrase",
+//                                                             "value_",
+//                                                             Collections.singleton(phraseCode),
+//                                                             null,
+//                                                             "insert into used_phrase (weight_, value_) values (?, ?)",
+//                                                             "update used_phrase set weight_ = ? where value_ = ?",
+//                                                             new String[] {
+//                                                                     "delete from used_phrase_pinyin_word"
+//                                                                     + " where source_id_ in (select id_ from used_phrase where weight_ = 0)",
+//                                                                     "delete from used_phrase where weight_ = 0"
+//                                                             },
+//                                                             shouldIncreaseWeight);
+//        return !oldDataMap.containsKey(phraseCode);
+        return false;
     }
 
     /** 保存拼音短语中字的使用频率等信息 */
@@ -938,41 +964,41 @@ public class PinyinDict {
                                                                                     (word) -> ((PinyinInputWord) word).getCharsId(),
                                                                                     (v1, v2) -> v1));
 
-        doUpdateDataWeight(db,
-                           "used_pinyin_word",
-                           "id_",
-                           idAndTargetCharsIdMap.keySet(),
-                           (id) -> new String[] { idAndTargetCharsIdMap.get(id) },
-                           "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
-                           "update used_pinyin_word set weight_ = ? where id_ = ?",
-                           new String[] { "delete from used_pinyin_word where weight_ = 0" },
-                           shouldIncreaseWeight);
+//        doUpdateDataWeight(db,
+//                           "used_pinyin_word",
+//                           "id_",
+//                           idAndTargetCharsIdMap.keySet(),
+//                           (id) -> new String[] { idAndTargetCharsIdMap.get(id) },
+//                           "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
+//                           "update used_pinyin_word set weight_ = ? where id_ = ?",
+//                           new String[] { "delete from used_pinyin_word where weight_ = 0" },
+//                           shouldIncreaseWeight);
     }
 
     private void doSaveUsedEmojis(SQLiteDatabase db, List<InputWord> emojis, boolean shouldIncreaseWeight) {
         Set<String> dataIdSet = emojis.stream().map(InputWord::getUid).collect(Collectors.toSet());
 
-        doUpdateDataWeight(db,
-                           "used_emoji",
-                           "id_",
-                           dataIdSet,
-                           null,
-                           "insert into used_emoji (weight_, id_) values (?, ?)",
-                           "update used_emoji set weight_ = ? where id_ = ?",
-                           new String[] { "delete from used_emoji where weight_ = 0" },
-                           shouldIncreaseWeight);
+//        doUpdateDataWeight(db,
+//                           "used_emoji",
+//                           "id_",
+//                           dataIdSet,
+//                           null,
+//                           "insert into used_emoji (weight_, id_) values (?, ?)",
+//                           "update used_emoji set weight_ = ? where id_ = ?",
+//                           new String[] { "delete from used_emoji where weight_ = 0" },
+//                           shouldIncreaseWeight);
     }
 
     private void doSaveUsedLatins(SQLiteDatabase db, Set<String> latins, boolean shouldIncreaseWeight) {
-        doUpdateDataWeight(db,
-                           "used_latin",
-                           "value_",
-                           latins,
-                           null,
-                           "insert into used_latin (weight_, value_) values (?, ?)",
-                           "update used_latin set weight_ = ? where value_ = ?",
-                           new String[] { "delete from used_latin where weight_ = 0" },
-                           shouldIncreaseWeight);
+//        doUpdateDataWeight(db,
+//                           "used_latin",
+//                           "value_",
+//                           latins,
+//                           null,
+//                           "insert into used_latin (weight_, value_) values (?, ?)",
+//                           "update used_latin set weight_ = ? where value_ = ?",
+//                           new String[] { "delete from used_latin where weight_ = 0" },
+//                           shouldIncreaseWeight);
     }
 
     private String calculatePinyinPhraseCode(List<InputWord> phrase) {
@@ -1002,61 +1028,27 @@ public class PinyinDict {
         }
     }
 
-    /**
-     * 更新数据权重，并将权重为 0 的数据删除
-     *
-     * @return 返回更新前的数据唯一标识和权重映射数据
-     */
-    private Map<String, Integer> doUpdateDataWeight(
-            SQLiteDatabase db, String weightTable, String dataIdField, Collection<String> dataIds,
-            Function<String, String[]> insertExtraArgsSupplier, String insertSQL, String updateSQL, String[] deleteSQLs,
-            boolean shouldIncreaseWeight
-    ) {
-        Map<String, Integer> existDataMap = new HashMap<>();
-        doSQLiteQuery(db,
-                      weightTable,
-                      new String[] { dataIdField, "weight_" },
-                      dataIdField + " in (" + dataIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) + ")",
-                      dataIds.toArray(new String[0]),
-                      (cursor) -> {
-                          existDataMap.put(cursor.getString(0), cursor.getInt(1));
-                          return null;
-                      });
+    private PinyinInputWord createPinyinInputWord(SQLiteRow row) {
+        String uid = row.getString("id_");
+        String wordId = row.getString("word_id_");
+        String wordValue = row.getString("word_");
 
-        doSQLiteSave(db, insertSQL, updateSQL, (insert, update) -> {
-            dataIds.forEach((dataId) -> {
-                int dataWeight = existDataMap.getOrDefault(dataId, 0);
+        boolean traditional = row.getInt("traditional_") > 0;
+        String strokeOrder = row.getString("stroke_order_");
 
-                if (shouldIncreaseWeight) {
-                    dataWeight += 1;
-                } else {
-                    dataWeight = Math.max(0, dataWeight - 1);
-                }
+        int spellId = row.getInt("spell_id_");
+        String spellValue = row.getString("spell_");
+        String spellCharsId = row.getString("spell_chars_id_");
+        PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId, spellValue, spellCharsId);
 
-                if (existDataMap.containsKey(dataId)) {
-                    update.bindAllArgsAsStrings(new String[] { String.valueOf(dataWeight), dataId });
-                    update.execute();
-                } else {
-                    String[] args = new String[] { String.valueOf(dataWeight), dataId };
-                    if (insertExtraArgsSupplier != null) {
-                        String[] extraArgs = insertExtraArgsSupplier.apply(dataId);
+        String radicalValue = row.getString("radical_");
+        int radicalStrokeCount = row.getInt("radical_stroke_count_");
+        PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue, radicalStrokeCount);
 
-                        args = Stream.concat(Arrays.stream(args), Arrays.stream(extraArgs)).toArray(String[]::new);
-                    }
-
-                    insert.bindAllArgsAsStrings(args);
-                    insert.execute();
-                }
-            });
-        });
-
-        for (String deleteSQL : deleteSQLs) {
-            doSQLiteSave(db, deleteSQL, null, (delete, _ignore) -> delete.execute());
-        }
-
-        return existDataMap;
+        return new PinyinInputWord(uid, wordValue, wordId, spell, radical, traditional, strokeOrder);
     }
 
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     private void doInit(Context context) {
         // <<<<<<<<<< 版本升级
         String version = getVersion(context);
@@ -1081,9 +1073,8 @@ public class PinyinDict {
         querySQLite(this.userDB, new DBUtils.SQLiteQueryParams<Void>() {{
             this.table = "meta_pinyin_chars";
             this.columns = new String[] { "id_", "value_" };
-            this.reader = (cursor) -> {
-                // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
-                pinyinCharsAndIdMap.put(cursor.getString(1), cursor.getString(0));
+            this.reader = (row) -> {
+                pinyinCharsAndIdMap.put(row.getString("value_"), row.getString("id_"));
                 return null;
             };
         }});
@@ -1105,6 +1096,9 @@ public class PinyinDict {
     private SQLiteDatabase getUserDB() {
         return isOpened() ? this.userDB : null;
     }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /** 获取应用本地的用户数据库的版本 */
     public String getVersion(Context context) {
@@ -1142,6 +1136,7 @@ public class PinyinDict {
     private File getVersionFile(Context context) {
         return new File(context.getFilesDir(), db_version_file);
     }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     private void initUserDB(SQLiteDatabase db) {
         String[] clauses = new String[] {
