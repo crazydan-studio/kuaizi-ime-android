@@ -53,8 +53,6 @@ android {
             // TINY_PNG、TINY_9PNG、TINY_XML这3个byte数组的预定义版本。
             // 资源压缩工具默认是采用安全压缩模式来运行，可以通过开启严格压缩模式来达到更好的瘦身效果。
             shrinkResources true
-            // 开启zipAlign可以让安装包中的资源按4字节对齐，这样可以减少应用在运行时的内存消耗
-            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField('String', 'BUILD_TYPE', '"release"')
@@ -114,9 +112,9 @@ android.buildTypes.all { buildType ->
 dependencies {
     //implementation 'com.tencent.vasdolly:helper:3.0.6'
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.12.0'
     // https://jitpack.io/#Hexworks/Mixite/2020.1.0
     // https://github.com/Hexworks/mixite
     // Note: Java 版本的包名需添加后缀 -jvm
@@ -130,6 +128,6 @@ dependencies {
     testImplementation 'org.json:json:20230618'
     testImplementation 'com.google.code.gson:gson:2.10.1'
 
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
