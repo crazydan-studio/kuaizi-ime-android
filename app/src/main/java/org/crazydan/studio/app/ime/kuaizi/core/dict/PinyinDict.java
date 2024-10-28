@@ -90,7 +90,7 @@ public class PinyinDict {
 
     private String version;
     /** 用户库 */
-    private SQLiteDatabase userDB;
+    private SQLiteDatabase db;
 
     // <<<<<<<<<<<<< 缓存常量数据
     private PinyinTree pinyinTree;
@@ -175,31 +175,10 @@ public class PinyinDict {
             return List.of();
         }
 
-        SQLiteDatabase db = getUserDB();
-        List<InputWord> wordList = rawQuerySQLite(db, new SQLiteRawQueryParams<InputWord>() {{
-            this.sql = "select distinct"
-                       + "   py_.id_, py_.word_, py_.word_id_,"
-                       + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
-                       + "   py_.traditional_, py_.stroke_order_,"
-                       + "   py_.radical_, py_.radical_stroke_count_"
-                       + " from pinyin_word py_"
-                       + "   left join phrase_word ph_"
-                       + "     on ph_.word_id_ = py_.id_"
-                       + " where"
-                       + "   py_.spell_chars_id_ = ?"
-                       + " order by"
-                       // 短语中的常用字最靠前
-                       + "   ( ifnull(ph_.weight_app_, 0) +"
-                       + "     ifnull(ph_.weight_user_, 0) +"
-                       + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
-                       + "   ) desc,"
-                       // 再按拼音字的使用频率（weight_）、拼音字的字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
-                       + "   py_.weight_ desc, py_.glyph_weight_ desc, py_.spell_id_ asc";
-
-            this.params = new String[] { pinyinCharsId, PinyinDict.this.userPhraseBaseWeight + "" };
-
-            this.reader = PinyinDict.this::createPinyinInputWord;
-        }});
+        SQLiteDatabase db = getDB();
+        List<InputWord> wordList = queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] {
+                pinyinCharsId, PinyinDict.this.userPhraseBaseWeight + ""
+        });
 
         patchPinyinWordVariantInCandidates(db, wordList);
 
@@ -296,7 +275,7 @@ public class PinyinDict {
             return new ArrayList<>();
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
 
 //        List<String> matched = doSQLiteQuery(db, "used_latin", //
 //                                             new String[] { "value_" }, //
@@ -367,7 +346,7 @@ public class PinyinDict {
     private BestCandidateWords findTopBestPinyinWordsFromUserDB(
             String inputPinyinCharsId, int top, List<InputWord> prevPhrase
     ) {
-        return findTopBestPinyinWordsFromDB(getUserDB(),
+        return findTopBestPinyinWordsFromDB(getDB(),
                                             "used_pinyin_word",
                                             "used_pinyin_phrase",
                                             inputPinyinCharsId,
@@ -378,7 +357,7 @@ public class PinyinDict {
     private BestCandidateWords findTopBestPinyinWordsFromAppDB(
             String inputPinyinCharsId, int top, List<InputWord> prevPhrase
     ) {
-        return findTopBestPinyinWordsFromDB(getUserDB(),
+        return findTopBestPinyinWordsFromDB(getDB(),
                                             "link_word_with_pinyin",
                                             "pinyin_phrase",
                                             inputPinyinCharsId,
@@ -498,7 +477,7 @@ public class PinyinDict {
     }
 
     private List<List<String>> findTopBestMatchedPinyinPhraseWord(List<InputWord> prevPhrase, int top) {
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
 
         String prevPhraseWordIds = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.joining(",")) + ",";
 
@@ -532,14 +511,14 @@ public class PinyinDict {
         return new ArrayList<>(matchedPhraseWordsSet);
     }
 
-    private Map<String, InputWord> getPinyinWords(Collection<String> wordIds) {
-        List<InputWord> wordList = queryPinyinWordsFromAppDB("id_ in ("
-                                                             + wordIds.stream()
-                                                                      .map((id) -> "?")
-                                                                      .collect(Collectors.joining(", "))
-                                                             + ")", //
-                                                             wordIds.toArray(new String[0]), //
-                                                             null);
+    public Map<String, InputWord> getPinyinWords(Collection<String> wordIds) {
+        SQLiteDatabase db = getDB();
+
+        List<InputWord> wordList = queryPinyinWords(db,
+                                                    "id_ in (" + wordIds.stream()
+                                                                        .map((id) -> "?")
+                                                                        .collect(Collectors.joining(", ")) + ")",
+                                                    wordIds.toArray(new String[0]));
 
         return wordList.stream().collect(Collectors.toMap(InputWord::getUid, Function.identity()));
     }
@@ -688,49 +667,32 @@ public class PinyinDict {
         return List.of();
     }
 
-    private List<InputWord> queryPinyinWordsFromAppDB(String where, String[] params, String orderBy) {
-//        SQLiteDatabase db = getAppDB();
-//
-//        return doSQLiteQuery(db, "pinyin_word", //
-//                             new String[] {
-//                                     "id_",
-//                                     "word_",
-//                                     "spell_",
-//                                     "word_id_",
-//                                     "spell_chars_id_",
-//                                     "traditional_",
-//                                     "stroke_order_",
-//                                     "spell_id_",
-//                                     "radical_",
-//                                     "radical_stroke_count_",
-//                                     }, //
-//                             where, params, orderBy, //
-//                             (cursor) -> {
-//                                 String uid = cursor.getString(0);
-//                                 String value = cursor.getString(1);
-//                                 String spellValue = cursor.getString(2);
-//                                 String wordId = cursor.getString(3);
-//                                 String spellCharsId = cursor.getString(4);
-//                                 boolean traditional = cursor.getInt(5) > 0;
-//                                 String strokeOrder = cursor.getString(6);
-//                                 int spellId = cursor.getInt(7);
-//                                 String radicalValue = cursor.getString(8);
-//                                 int radicalStrokeCount = cursor.getInt(9);
-//                                 PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId,
-//                                                                                         spellValue,
-//                                                                                         spellCharsId);
-//                                 PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue,
-//                                                                                               radicalStrokeCount);
-//
-//                                 return new PinyinInputWord(uid,
-//                                                            value,
-//                                                            wordId,
-//                                                            spell,
-//                                                            radical,
-//                                                            traditional,
-//                                                            strokeOrder);
-//                             });
-        return List.of();
+    private List<InputWord> queryPinyinWords(SQLiteDatabase db, String queryWhere, String[] queryParams) {
+        return rawQuerySQLite(db, new SQLiteRawQueryParams<InputWord>() {{
+            this.sql = "select distinct"
+                       + "   py_.id_, py_.word_, py_.word_id_,"
+                       + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
+                       + "   py_.traditional_, py_.stroke_order_,"
+                       + "   py_.radical_, py_.radical_stroke_count_"
+                       + " from pinyin_word py_"
+                       + "   left join phrase_word ph_"
+                       + "     on ph_.word_id_ = py_.id_"
+                       + (" where " + queryWhere)
+                       + " order by"
+                       // 短语中的常用字最靠前
+                       + "   ( ifnull(ph_.weight_app_, 0) +"
+                       + "     ifnull(ph_.weight_user_, 0) +"
+                       // Note: 低版本 SQLite 不支持 iif，需采用 case when
+                       + "     (case when ifnull(ph_.weight_user_, 0) > 0 then ? else 0 end)"
+                       // + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
+                       + "   ) desc,"
+                       // 再按拼音字的使用频率（weight_）、拼音字的字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
+                       + "   py_.weight_ desc, py_.glyph_weight_ desc, py_.spell_id_ asc";
+
+            this.params = queryParams;
+
+            this.reader = PinyinDict.this::createPinyinInputWord;
+        }});
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */
@@ -794,7 +756,7 @@ public class PinyinDict {
 
     /** 查找各个字的繁/简形式 */
     private void patchPinyinWordVariant(Collection<InputWord> candidates) {
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
 
         Map<String, InputWord> tradWordMap = new HashMap<>();
         Map<String, InputWord> simpleWordMap = new HashMap<>();
@@ -847,7 +809,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedWordInPinyinPhrase(db, phrase, true);
 
         if (phrase.size() < 2) {
@@ -885,7 +847,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedEmojis(db, emojis, true);
     }
 
@@ -897,7 +859,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedLatins(db, validLatins, true);
     }
 
@@ -907,7 +869,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedWordInPinyinPhrase(db, phrase, false);
 
         if (phrase.size() < 2) {
@@ -924,7 +886,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedEmojis(db, emojis, false);
     }
 
@@ -934,7 +896,7 @@ public class PinyinDict {
             return;
         }
 
-        SQLiteDatabase db = getUserDB();
+        SQLiteDatabase db = getDB();
         doSaveUsedLatins(db, latins, false);
     }
 
@@ -1066,11 +1028,11 @@ public class PinyinDict {
     private void doOpen(Context context) {
         File userDBFile = getUserDBFile(context);
 
-        this.userDB = openSQLite(userDBFile, false);
-        configSQLite(this.userDB);
+        this.db = openSQLite(userDBFile, false);
+        configSQLite(this.db);
 
         Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
-        querySQLite(this.userDB, new DBUtils.SQLiteQueryParams<Void>() {{
+        querySQLite(this.db, new DBUtils.SQLiteQueryParams<Void>() {{
             this.table = "meta_pinyin_chars";
             this.columns = new String[] { "id_", "value_" };
             this.reader = (row) -> {
@@ -1083,9 +1045,9 @@ public class PinyinDict {
     }
 
     private void doClose() {
-        closeSQLite(this.userDB);
+        closeSQLite(this.db);
 
-        this.userDB = null;
+        this.db = null;
         this.pinyinTree = null;
     }
 
@@ -1093,8 +1055,8 @@ public class PinyinDict {
         return getDBFile(context, PinyinDictDBType.user);
     }
 
-    private SQLiteDatabase getUserDB() {
-        return isOpened() ? this.userDB : null;
+    public SQLiteDatabase getDB() {
+        return isOpened() ? this.db : null;
     }
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
