@@ -48,14 +48,12 @@ import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.queryPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRow;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
 /**
  * 拼音字典（数据库版）
@@ -176,9 +174,9 @@ public class PinyinDict {
         }
 
         SQLiteDatabase db = getDB();
-        List<InputWord> wordList = queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] {
+        List<InputWord> wordList = queryPinyinInputWords(db, "py_.spell_chars_id_ = ?", new String[] {
                 pinyinCharsId, PinyinDict.this.userPhraseBaseWeight + ""
-        });
+        }, true).stream().map(w -> (InputWord) w).collect(Collectors.toList());
 
         patchPinyinWordVariantInCandidates(db, wordList);
 
@@ -514,11 +512,14 @@ public class PinyinDict {
     public Map<String, InputWord> getPinyinWords(Collection<String> wordIds) {
         SQLiteDatabase db = getDB();
 
-        List<InputWord> wordList = queryPinyinWords(db,
-                                                    "id_ in (" + wordIds.stream()
+        List<PinyinInputWord> wordList = queryPinyinInputWords(db,
+                                                               "py_.id_ in ("
+                                                               + wordIds.stream()
                                                                         .map((id) -> "?")
-                                                                        .collect(Collectors.joining(", ")) + ")",
-                                                    wordIds.toArray(new String[0]));
+                                                                        .collect(Collectors.joining(", "))
+                                                               + ")",
+                                                               wordIds.toArray(new String[0]),
+                                                               false);
 
         return wordList.stream().collect(Collectors.toMap(InputWord::getUid, Function.identity()));
     }
@@ -665,34 +666,6 @@ public class PinyinDict {
 //
 //        return CollectionUtils.subList(emojiList, 0, top);
         return List.of();
-    }
-
-    private List<InputWord> queryPinyinWords(SQLiteDatabase db, String queryWhere, String[] queryParams) {
-        return rawQuerySQLite(db, new SQLiteRawQueryParams<InputWord>() {{
-            this.sql = "select distinct"
-                       + "   py_.id_, py_.word_, py_.word_id_,"
-                       + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
-                       + "   py_.traditional_, py_.stroke_order_,"
-                       + "   py_.radical_, py_.radical_stroke_count_"
-                       + " from pinyin_word py_"
-                       + "   left join phrase_word ph_"
-                       + "     on ph_.word_id_ = py_.id_"
-                       + (" where " + queryWhere)
-                       + " order by"
-                       // 短语中的常用字最靠前
-                       + "   ( ifnull(ph_.weight_app_, 0) +"
-                       + "     ifnull(ph_.weight_user_, 0) +"
-                       // Note: 低版本 SQLite 不支持 iif，需采用 case when
-                       + "     (case when ifnull(ph_.weight_user_, 0) > 0 then ? else 0 end)"
-                       // + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
-                       + "   ) desc,"
-                       // 再按拼音字的使用频率（weight_）、拼音字的字形相似性（glyph_weight_）、拼音字母顺序（spell_id_）排序
-                       + "   py_.weight_ desc, py_.glyph_weight_ desc, py_.spell_id_ asc";
-
-            this.params = queryParams;
-
-            this.reader = PinyinDict.this::createPinyinInputWord;
-        }});
     }
 
     /** 从拼音的候选字列表中查找各个字的繁/简形式 */
@@ -988,26 +961,6 @@ public class PinyinDict {
         } catch (Exception e) {
             return defaultVale;
         }
-    }
-
-    private PinyinInputWord createPinyinInputWord(SQLiteRow row) {
-        String uid = row.getString("id_");
-        String wordId = row.getString("word_id_");
-        String wordValue = row.getString("word_");
-
-        boolean traditional = row.getInt("traditional_") > 0;
-        String strokeOrder = row.getString("stroke_order_");
-
-        int spellId = row.getInt("spell_id_");
-        String spellValue = row.getString("spell_");
-        String spellCharsId = row.getString("spell_chars_id_");
-        PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId, spellValue, spellCharsId);
-
-        String radicalValue = row.getString("radical_");
-        int radicalStrokeCount = row.getInt("radical_stroke_count_");
-        PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue, radicalStrokeCount);
-
-        return new PinyinInputWord(uid, wordValue, wordId, spell, radical, traditional, strokeOrder);
     }
 
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

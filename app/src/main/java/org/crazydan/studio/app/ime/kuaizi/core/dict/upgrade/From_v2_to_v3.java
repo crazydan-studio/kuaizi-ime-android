@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.HmmDBHelper.saveHmm;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveHmm;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0.doWithTransferDB;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;

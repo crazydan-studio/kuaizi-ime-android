@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.dict.hmm;
+package org.crazydan.studio.app.ime.kuaizi.core.dict.db;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,10 +27,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
-import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.calcViterbi;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.getBestPhraseFromViterbi;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
@@ -42,10 +44,10 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
  * @date 2024-10-27
  */
 public class HmmDBHelper {
-    /** 代表 {@link Hmm#TOTAL} 的字 id */
-    public static final String TOTAL_WORD_ID = "-2";
-    /** 代表 {@link Hmm#EOS} 和 {@link Hmm#BOS} 的字 id */
-    public static final String EOS_BOS_WORD_ID = "-1";
+    /** 代表 {@link Hmm#TOTAL} 的字 */
+    private static final String WORD_TOTAL = "-2";
+    /** 代表 {@link Hmm#EOS} 和 {@link Hmm#BOS} 的字 */
+    private static final String WORD_EOS_BOS = "-1";
 
     /**
      * 根据拼音的字母组合得到前 N 个最佳预测结果
@@ -56,19 +58,20 @@ public class HmmDBHelper {
      *         用户词组数据的基础权重，以确保用户输入权重大于应用词组数据
      * @param top
      *         最佳预测结果数
-     * @return 元素为 短语的字数组 的列表，最靠前的为最佳预测的短语
+     * @return 列表元素为 短语的拼音字 id 数组，且列表中最靠前的为预测结果权重最高的短语
      */
-    public static List<String[]> predictPhrase(
+    public static List<String[]> predictPinyinPhrase(
             SQLiteDatabase db, List<String> pinyinCharsIdList, int userPhraseBaseWeight, int top
     ) {
         if (pinyinCharsIdList.isEmpty() || top < 1) {
             return List.of();
         }
 
+        // 取出 HMM 字间转移概率
         Map<String, Map<String, Integer>> transProb = new HashMap<>();
         Map<String, Set<String>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
 
-        rawQuerySQLite(db, new DBUtils.SQLiteRawQueryParams<Void>() {{
+        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // 查询结果列包括（按顺序）：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
             this.sql = createTransProbQuerySQL(pinyinCharsIdList);
 
@@ -94,60 +97,16 @@ public class HmmDBHelper {
             };
         }});
 
-        // <<<<<<<<<<<<<<<
-        Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, pinyinCharsIdAndWordIdsMap);
+        // 计算 viterbi 矩阵
+        Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, new Viterbi.Options() {{
+            this.wordTotal = WORD_TOTAL;
+            this.wordBos = WORD_EOS_BOS;
+            this.wordEos = WORD_EOS_BOS;
+            this.spellAndWordsMap = pinyinCharsIdAndWordIdsMap;
+        }});
 
-        // <<<<<<<<<<<<< 对串进行回溯即可得对应拼音的汉字
-        int lastIndex = pinyinCharsIdList.size() - 1;
-
-        // 结构: viterbiWords[n] = [[probability, s], ...]，其每一纵列是一个短语的字数组
-        Object[][][] viterbiWords = new Object[lastIndex + 1][][];
-
-        // Note：取概率最大的前 top 个末尾汉字
-        viterbiWords[lastIndex] = viterbi[lastIndex].keySet().stream().map((wordId) -> {
-            Object[] pair = viterbi[lastIndex].get(wordId);
-            assert pair != null;
-
-            double prob = (double) pair[0];
-            return new Object[] { prob, wordId };
-        }).sorted((a, b) -> //
-                          Double.compare(((double) b[0]), ((double) a[0])) //
-        ).limit(top).toArray(Object[][]::new);
-
-        for (int i = lastIndex - 1; i > -1; i--) {
-            int currIndex = i;
-            int nextIndex = currIndex + 1;
-
-            viterbiWords[currIndex] = Arrays.stream(viterbiWords[nextIndex]).map((pair) -> {
-                String wordId = (String) pair[1];
-                Object[] newPair = viterbi[nextIndex].get(wordId);
-                assert newPair != null;
-
-                return newPair;
-            }).toArray(Object[][]::new);
-        }
-
-        // <<<<<<<<<<<< 获取最佳预测的短语列表
-        List<String[]> phrases = new ArrayList<>(top);
-        // Note: 需做二维数组的行列翻转才能得到短语的字数组
-        for (int i = 0; i < viterbiWords.length; i++) {
-            Object[][] viterbiWord = viterbiWords[i];
-
-            for (int j = 0; j < viterbiWord.length; j++) {
-                String[] phraseWord;
-                if (i == 0) {
-                    phraseWord = new String[viterbiWords.length];
-                    phrases.add(phraseWord);
-                } else {
-                    phraseWord = phrases.get(j);
-                }
-
-                String wordId = (String) viterbiWord[j][1];
-                phraseWord[i] = wordId;
-            }
-        }
-
-        return phrases;
+        // 取出最佳短语
+        return getBestPhraseFromViterbi(viterbi, pinyinCharsIdList.size(), top);
     }
 
     /**
@@ -156,7 +115,7 @@ public class HmmDBHelper {
      * @param reverse
      *         是否反向操作，即，撤销对输入短语的保存
      */
-    public static void savePhrase(SQLiteDatabase db, List<InputWord> phrase, boolean reverse) {
+    public static void savePinyinPhrase(SQLiteDatabase db, List<PinyinInputWord> phrase, boolean reverse) {
         if (phrase.isEmpty()) {
             return;
         }
@@ -209,9 +168,9 @@ public class HmmDBHelper {
             // BOS 用 -1 代替（句首字）
             // TOTAL 用 -2 代替（句子总数）
             if (Hmm.EOS.equals(s) || Hmm.BOS.equals(s)) {
-                return EOS_BOS_WORD_ID;
+                return WORD_EOS_BOS;
             } else if (Hmm.TOTAL.equals(s)) {
-                return TOTAL_WORD_ID;
+                return WORD_TOTAL;
             }
 
             String[] wordIds = extractWordIds.apply(s);
@@ -259,16 +218,16 @@ public class HmmDBHelper {
     }
 
     /** 计算给定短语的 {@link Hmm#transProb} 数据 */
-    private static Hmm calcTransProb(List<InputWord> phrase) {
+    private static Hmm calcTransProb(List<PinyinInputWord> phrase) {
         return Hmm.calcTransProb(phrase.stream()
                                        // 以 拼音字 id 与 拼音字母组合 id 代表短语中的字
-                                       .map(word -> word.getUid() + ":" + ((PinyinInputWord) word).getCharsId())
+                                       .map(word -> word.getUid() + ":" + word.getCharsId())
                                        .collect(Collectors.toList()));
     }
 
     /** 构造 {@link Hmm#transProb} 数据查询 SQL */
-    private static String createTransProbQuerySQL(List<String> pinyinCharsIdList) {
-        List<String> charsIdList = new ArrayList<>(pinyinCharsIdList);
+    private static String createTransProbQuerySQL(List<String> spellCharsIdList) {
+        List<String> charsIdList = new ArrayList<>(spellCharsIdList);
 
         // <<<<<<<<<<<<<< 构造通过拼音字母组合做字查询的递归 SQL
         // https://www.sqlite.org/lang_with.html
@@ -329,121 +288,7 @@ public class HmmDBHelper {
                + "   and ("
                + "     s_.prev_word_id_ = t_.prev_word_id_"
                // 当前拼音字都包含 TOTAL 列
-               + ("    or s_.prev_word_id_ = " + TOTAL_WORD_ID)
+               + ("    or s_.prev_word_id_ = " + WORD_TOTAL)
                + "   )";
-    }
-
-    /**
-     * 计算 Viterbi
-     *
-     * @param pinyinCharsIdList
-     *         输入拼音的字母组合 id 列表
-     * @param transProb
-     *         汉字（状态）间转移概率
-     * @param pinyinCharsIdAndWordIdsMap
-     *         输入拼音的字母组合 id 所对应的可选字 id 集合
-     */
-    private static Map<String, Object[]>[] calcViterbi(
-            List<String> pinyinCharsIdList, Map<String, Map<String, Integer>> transProb,
-            Map<String, Set<String>> pinyinCharsIdAndWordIdsMap
-    ) {
-        int total = pinyinCharsIdList.size();
-        // 用于 log 平滑时所取的最小值，用于代替 0
-        double minProb = -3.14e100;
-        // pos 是目前节点的位置，word 为当前汉字即当前状态，
-        // probability 为从 pre_word 上一汉字即上一状态转移到目前状态的概率
-        // viterbi[pos][word] = (probability, pre_word)
-        Map<String, Object[]>[] viterbi = new Map[total];
-
-        // 句子总数: word_id_ == -1 且 prev_word_id_ == -2
-        int phraseTotal = getTransProbValue(transProb, EOS_BOS_WORD_ID, TOTAL_WORD_ID);
-
-        int lastIndex = total - 1;
-        for (int i = -1; i < lastIndex; i++) {
-            int prevIndex = i;
-            int currentIndex = prevIndex + 1;
-
-            String currentPinyinCharsId = pinyinCharsIdList.get(currentIndex);
-            Set<String> currentWordIds = pinyinCharsIdAndWordIdsMap.get(currentPinyinCharsId);
-            assert currentWordIds != null;
-
-            // Note：句首字的前序字设为 -1
-            String prevPinyinCharsId = prevIndex < 0 ? null : pinyinCharsIdList.get(prevIndex);
-            Set<String> prevWordIds = prevPinyinCharsId == null
-                                      ? Set.of(EOS_BOS_WORD_ID)
-                                      : pinyinCharsIdAndWordIdsMap.get(prevPinyinCharsId);
-            assert prevWordIds != null;
-
-            if (viterbi[currentIndex] == null) {
-                viterbi[currentIndex] = new HashMap<>();
-            }
-            Map<String, Object[]> currentWordViterbi = viterbi[currentIndex];
-
-            // 遍历 current_word_ids 和 prev_word_ids，找出所有可能与当前拼音相符的汉字 curr，
-            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率 viterbi[i+1][curr] = {prob, prev}
-            currentWordIds.forEach((currentWordId) -> {
-                Object[] result = prevWordIds.stream().map((prevWordId) -> {
-                    double prob = 0;
-
-                    // 句首字的初始概率 = math.log(句首字出现次数 / 句子总数)
-                    if (currentIndex == 0) {
-                        prob += calcViterbiProb(
-                                // 句首字的出现次数
-                                getTransProbValue(transProb, currentWordId, EOS_BOS_WORD_ID), //
-                                phraseTotal, minProb //
-                        );
-                    } else {
-                        Object[] pair = viterbi[prevIndex].get(prevWordId);
-                        assert pair != null;
-
-                        prob += (double) pair[0];
-                    }
-
-                    prob += calcViterbiProb(
-                            // 前序拼音字的出现次数
-                            getTransProbValue(transProb, currentWordId, prevWordId),
-                            // 当前拼音字的转移总数
-                            getTransProbValue(transProb, currentWordId, TOTAL_WORD_ID), //
-                            minProb //
-                    );
-
-                    // 加上末尾字的转移概率
-                    if (currentIndex == lastIndex) {
-                        prob += calcViterbiProb(
-                                //
-                                getTransProbValue(transProb, EOS_BOS_WORD_ID, currentWordId), //
-                                phraseTotal, minProb //
-                        );
-                    }
-
-                    return new Object[] { prob, prevWordId };
-                }).reduce(null, (acc, pair) -> //
-                        acc == null || ((double) acc[0]) < ((double) pair[0]) ? pair : acc //
-                );
-
-                currentWordViterbi.put(currentWordId, result);
-            });
-        }
-
-        return viterbi;
-    }
-
-    private static int getTransProbValue(
-            Map<String, Map<String, Integer>> transProb, String currWordId, String prevWordId
-    ) {
-        Map<String, Integer> prob = transProb.get(currWordId);
-        if (prob == null) {
-            return 0;
-        }
-
-        Integer value = prob.get(prevWordId);
-        if (value == null) {
-            return 0;
-        }
-        return value;
-    }
-
-    private static double calcViterbiProb(int count, int total, double min) {
-        return count == 0 || total == 0 ? min : Math.log(count * 1.0 / total);
     }
 }
