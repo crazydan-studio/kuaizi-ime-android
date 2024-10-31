@@ -121,8 +121,7 @@ public class DBUtils {
             return;
         }
 
-        db.beginTransaction();
-        try {
+        withTransaction(db, () -> {
             try (SQLiteStatement statement = db.compileStatement(clause);) {
                 for (String[] args : argsList) {
                     statement.bindAllArgsAsStrings(args);
@@ -130,11 +129,32 @@ public class DBUtils {
                     statement.execute();
                 }
             }
+        });
+    }
 
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
+    /**
+     * 模拟 [upsert](https://www.sqlite.org/lang_upsert.html) 功能，
+     * 即，先尝试执行 update 语句，若无数据更新，则视为新增，改为执行 insert 语句
+     */
+    public static void upsertSQLite(SQLiteDatabase db, SQLiteRawUpsertParams params) {
+        withTransaction(db, () -> {
+            try (
+                    SQLiteStatement update = db.compileStatement(params.updateSQL);
+                    SQLiteStatement insert = db.compileStatement(params.insertSql);
+            ) {
+                for (int i = 0; i < params.updateParamsList.size(); i++) {
+                    String[] updateParams = params.updateParamsList.get(i);
+
+                    update.bindAllArgsAsStrings(updateParams);
+                    if (update.executeUpdateDelete() > 0) {
+                        continue;
+                    }
+
+                    insert.bindAllArgsAsStrings(params.insertParamsList.get(i));
+                    insert.executeInsert();
+                }
+            }
+        });
     }
 
     public static <T> List<T> querySQLite(SQLiteDatabase db, SQLiteQueryParams<T> params) {
@@ -179,6 +199,17 @@ public class DBUtils {
         }
     }
 
+    private static void withTransaction(SQLiteDatabase db, Runnable call) {
+        db.beginTransaction();
+        try {
+            call.run();
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public static class SQLiteQueryParams<T> {
         public String table;
         public String[] columns;
@@ -202,6 +233,15 @@ public class DBUtils {
 
         /** 行读取函数 */
         public Function<SQLiteRow, T> reader;
+    }
+
+    public static class SQLiteRawUpsertParams {
+        public String updateSQL;
+        public String insertSql;
+
+        public List<String[]> updateParamsList;
+        public List<String[]> insertParamsList;
+
     }
 
     public static class SQLiteRow {

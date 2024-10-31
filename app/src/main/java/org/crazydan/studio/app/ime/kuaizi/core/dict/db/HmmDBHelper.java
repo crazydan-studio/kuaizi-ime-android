@@ -34,8 +34,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.calcViterbi;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.getBestPhraseFromViterbi;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawUpsertParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.upsertSQLite;
 
 /**
  * {@link Hmm} 数据库，提供对 HMM 数据的持久化处理接口
@@ -140,20 +142,28 @@ public class HmmDBHelper {
             String[] wordIds = extractWordIds.apply(key);
             String val = hmm.wordWeight.get(key) + "";
 
-            return !reverse
-                   ? new String[] { wordIds[0], wordIds[1], val, val }
-                   : new String[] { val, wordIds[0], wordIds[1] };
+            return new String[] { val, wordIds[0], wordIds[1] };
         }).collect(Collectors.toList());
 
         if (!reverse) {
-            execSQLite(db,
-                       "insert into"
-                       + " phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
-                       + "   values(?, ?, 0, ?)"
-                       + " on conflict(word_id_, spell_chars_id_)"
-                       + " do update set "
-                       + "   weight_user_ = weight_user_ + ?",
-                       phraseWordData);
+//            execSQLite(db,
+//                       "insert into"
+//                       + " phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
+//                       + "   values(?, ?, 0, ?)"
+//                       + " on conflict(word_id_, spell_chars_id_)"
+//                       + " do update set "
+//                       + "   weight_user_ = weight_user_ + ?",
+//                       phraseWordData);
+            upsertSQLite(db, new SQLiteRawUpsertParams() {{
+                // Note: 确保更新和新增的参数位置相同
+                this.updateSQL = "update phrase_word"
+                                 + " set weight_user_ = weight_user_ + ?"
+                                 + " where word_id_ = ? and spell_chars_id_ = ?";
+                this.insertSql = "insert into"
+                                 + " phrase_word(weight_app_, weight_user_, word_id_, spell_chars_id_)"
+                                 + "   values(0, ?, ?, ?)";
+                this.updateParamsList = this.insertParamsList = phraseWordData;
+            }});
         } else {
             execSQLite(db,
                        "update phrase_word"
@@ -185,21 +195,29 @@ public class HmmDBHelper {
                 String prevId = getWordId.apply(prev);
                 String val = value + "";
 
-                phraseTransProbData.add(!reverse
-                                        ? new String[] { currId, prevId, val, val }
-                                        : new String[] { val, currId, prevId });
+                phraseTransProbData.add(new String[] { val, currId, prevId });
             });
         });
 
         if (!reverse) {
-            execSQLite(db,
-                       "insert into"
-                       + " phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
-                       + "   values(?, ?, 0, ?)"
-                       + " on conflict(word_id_, prev_word_id_)"
-                       + " do update set "
-                       + "   value_user_ = value_user_ + ?",
-                       phraseTransProbData);
+//            execSQLite(db,
+//                       "insert into"
+//                       + " phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
+//                       + "   values(?, ?, 0, ?)"
+//                       + " on conflict(word_id_, prev_word_id_)"
+//                       + " do update set "
+//                       + "   value_user_ = value_user_ + ?",
+//                       phraseTransProbData);
+            upsertSQLite(db, new SQLiteRawUpsertParams() {{
+                // Note: 确保更新和新增的参数位置相同
+                this.updateSQL = "update phrase_trans_prob"
+                                 + " set value_user_ = value_user_ + ?"
+                                 + " where word_id_ = ? and prev_word_id_ = ?";
+                this.insertSql = "insert into"
+                                 + " phrase_trans_prob(value_app_, value_user_, word_id_, prev_word_id_)"
+                                 + "   values(0, ?, ?, ?)";
+                this.updateParamsList = this.insertParamsList = phraseTransProbData;
+            }});
         } else {
             execSQLite(db,
                        "update phrase_trans_prob"

@@ -68,7 +68,7 @@ public class From_v2_to_v3 {
                 "alter table meta_emoji"
                 // -- 按使用频率等排序的权重
                 + "  add column weight_user_ integer default 0",
-                //
+                // TODO 在 3.39 中语法报错？
                 "update meta_emoji as emoji_"
                 + "   set emoji_.weight_user_ = user_.weight_"
                 + " from user.used_emoji as user_"

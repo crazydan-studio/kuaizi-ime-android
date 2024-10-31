@@ -109,7 +109,7 @@ public class PinyinDictTest {
             phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
             bestPhrase = CollectionUtils.first(phraseList);
 
-            Assert.assertEquals(bestPhrase, expectWordStr);
+            Assert.assertEquals(expectWordStr, bestPhrase);
         });
     }
 
@@ -126,7 +126,7 @@ public class PinyinDictTest {
                                  .collect(Collectors.joining(","));
                 }).collect(Collectors.toList());
 
-        Assert.assertNotEquals(phraseList.size(), 0);
+        Assert.assertNotEquals(0, phraseList.size());
         phraseList.forEach((phrase) -> {
             Log.i(LOG_TAG, pinyinCharsStr + ": " + phrase);
         });
