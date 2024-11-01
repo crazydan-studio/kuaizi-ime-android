@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.dict.db;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +26,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
@@ -119,6 +125,43 @@ public class PinyinDictDBHelper {
         }});
     }
 
+    /**
+     * 获取各分组下的所有表情
+     *
+     * @param groupGeneralCount
+     *         {@link Emojis#GROUP_GENERAL} 分组中的表情数量
+     */
+    public static Emojis getAllGroupedEmojis(SQLiteDatabase db, int groupGeneralCount) {
+        Map<String, List<InputWord>> groups = new LinkedHashMap<>();
+
+        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
+            // Note: 确保 常用 分组的结果在最前面
+            this.sql = "select * from (" //
+                       + "  select id_, value_, ? as group_" //
+                       + "  from meta_emoji" //
+                       + "  where weight_user_ > 0" //
+                       + "  order by weight_user_ desc" //
+                       + "  limit ?" //
+                       + ")" //
+                       + "union" //
+                       + "  select id_, value_, group_" //
+                       + "  from group_emoji order by group_ asc, id_ asc";
+            this.params = new String[] { Emojis.GROUP_GENERAL, groupGeneralCount + "" };
+
+            this.reader = (row) -> {
+                String group = row.getString("group_");
+                EmojiInputWord emoji = createEmojiInputWord(row);
+
+                if (emoji != null) {
+                    groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
+                }
+                return null;
+            };
+        }});
+
+        return new Emojis(groups);
+    }
+
     private static PinyinInputWord createPinyinInputWord(SQLiteRow row) {
         // 拼音字 id
         String uid = row.getString("id_");
@@ -148,5 +191,15 @@ public class PinyinDictDBHelper {
         word.setWeight(usedWeight);
 
         return word;
+    }
+
+    private static EmojiInputWord createEmojiInputWord(SQLiteRow row) {
+        String uid = row.getString("id_");
+        String value = row.getString("value_");
+
+        if (CharUtils.isPrintable(value)) {
+            return new EmojiInputWord(uid, value);
+        }
+        return null;
     }
 }

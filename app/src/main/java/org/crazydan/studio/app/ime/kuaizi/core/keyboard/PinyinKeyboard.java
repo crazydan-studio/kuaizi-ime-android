@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -853,7 +852,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void start_InputCandidate_Choosing(InputList inputList, CharInput input, boolean inputPinyinChanged) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getInputCandidateKeysPageSize();
-        int bestCandidatesTop = 17;
+        int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
@@ -1088,14 +1087,15 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private List<InputWord> getTopBestInputCandidateWords(InputList inputList, CharInput input, int top) {
-        BestCandidateWords best = getTopBestCandidateWords(inputList, input, top);
-        if (best.words.isEmpty()) {
-            return new ArrayList<>();
-        }
-
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
 
-        return best.words.stream().map(candidateMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+        // 前 top 个权重大于 0 的输入字即为最终结果
+        // Note: 在一次输入中，输入字的权重不会发生变化，故而，可以重复使用
+        return candidateMap.values()
+                           .stream()
+                           .filter((word) -> word.getWeight() > 0)
+                           .limit(top)
+                           .collect(Collectors.toList());
     }
 
     /**
@@ -1118,13 +1118,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private BestCandidateWords getTopBestCandidateWords(InputList inputList, CharInput input, int top) {
-        // 根据当前位置之前的输入确定当前位置的最佳候选字
-        List<InputWord> prevPhrase = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
-
-        return this.pinyinDict.findTopBestPinyinCandidateWords(input,
-                                                               top,
-                                                               prevPhrase,
-                                                               getConfig().isUserInputDataDisabled());
+        return new BestCandidateWords();
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {

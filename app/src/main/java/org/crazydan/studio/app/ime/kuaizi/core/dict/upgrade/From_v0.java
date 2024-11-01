@@ -52,7 +52,7 @@ public class From_v0 {
         String[] clauses = new String[] {
                 // 连接应用库
                 "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
-                // 创建包含用户和应用权重数据的词典表
+                // <<<<<<<<<<<<<<<<<<< 创建包含用户和应用权重数据的词典表
                 "create table" //
                 + " if not exists phrase_word ("
                 //  -- 拼音字 id: 其为 link_word_with_pinyin 中的 id_
@@ -85,7 +85,8 @@ public class From_v0 {
                 + "   value_user_ integer not null," //
                 + "   primary key (word_id_, prev_word_id_)" //
                 + " )",
-                // 添加用户库表
+                // >>>>>>>>>>>>>>>>>>>>>>>>
+                // <<<<<<<<<<<<< 补充或调整用户库表
                 "create table" //
                 + " if not exists meta_latin (" //
                 + "   id_ integer not null primary key,"
@@ -95,7 +96,40 @@ public class From_v0 {
                 + "   weight_user_ integer not null," //
                 + "   unique (value_)" //
                 + " )",
-                // 通过 SQL 迁移数据
+                // 表情及其关键字
+                "alter table meta_emoji"
+                // -- 补充用户使用权重列
+                + "  add column weight_user_ integer default 0",
+                "create view"
+                + " if not exists group_emoji ("
+                + "   id_, value_, weight_,"
+                + "   group_"
+                + " ) as"
+                + " select"
+                + "   emo_.id_, emo_.value_, emo_.weight_user_,"
+                + "   grp_.value_"
+                + " from"
+                + "   meta_emoji emo_"
+                + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
+                "create view"
+                + " if not exists emoji ("
+                + "   id_, value_, weight_,"
+                + "   group_, keyword_words_"
+                + " ) as"
+                + " select"
+                + "   emo_.id_, emo_.value_, emo_.weight_user_,"
+                + "   grp_.value_,"
+                + "   (select group_concat(word_.value_, '')"
+                + "     from json_each(lnk_.target_word_ids_) word_id_"
+                + "       inner join meta_word word_"
+                + "         on word_.id_ = word_id_.value"
+                + "   )"
+                + " from"
+                + "   meta_emoji emo_"
+                + "   inner join link_emoji_with_keyword lnk_ on lnk_.source_id_ = emo_.id_"
+                + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
+                // >>>>>>>>>>>>>>>>>>>>>>>
+                // <<<<<<<<<<<<<<<< 通过 SQL 迁移数据
                 "insert into phrase_word"
                 + "   (word_id_, spell_chars_id_, weight_app_, weight_user_)"
                 + " select"
@@ -111,7 +145,8 @@ public class From_v0 {
                 + "   app_.value_ as value_app_,"
                 + "   0 as value_user_"
                 + " from app.phrase_trans_prob as app_",
-                };
+                // >>>>>>>>>>>>>>>>>>>>>>
+        };
 
         execSQLite(targetDB, clauses);
     }

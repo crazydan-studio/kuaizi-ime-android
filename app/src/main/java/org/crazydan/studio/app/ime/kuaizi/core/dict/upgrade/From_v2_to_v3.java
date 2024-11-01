@@ -140,10 +140,7 @@ public class From_v2_to_v3 {
         // <<<<<<<<<<<<<<<<<<< 迁移现有的用户数据
         String[] clauses = new String[] {
                 "attach database '" + userDBFile.getAbsolutePath() + "' as user",
-                // 添加用户库表所需字段
-                "alter table meta_emoji"
-                // -- 按使用频率等排序的权重
-                + "  add column weight_user_ integer default 0",
+                // <<<<<<<<<<<<<<< 迁移现有数据
                 // TODO 在 3.39 中语法报错？
                 "update meta_emoji as emoji_"
                 + "   set emoji_.weight_user_ = user_.weight_"
@@ -155,6 +152,7 @@ public class From_v2_to_v3 {
                 + " select"
                 + "   user_.id_, user_.value_, user_.weight_"
                 + " from user.used_latin as user_",
+                // >>>>>>>>>>>>>>>
                 };
         execSQLite(targetDB, clauses);
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

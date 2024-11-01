@@ -1167,7 +1167,7 @@ public abstract class BaseKeyboard implements Keyboard {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getEmojiKeysPageSize();
 
-        Emojis emojis = this.pinyinDict.findTopBestEmojis(pageSize / 2);
+        Emojis emojis = this.pinyinDict.getAllEmojis(pageSize / 2);
 
         EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
         State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());

@@ -441,6 +441,11 @@ public class PinyinKeyTable extends KeyTable {
         return countGridSize(getLevelKeyCoords());
     }
 
+    /** 在键盘上可显示的最佳候选字的数量 */
+    public int getBestCandidatesCount() {
+        return 17;
+    }
+
     /** 创建输入候选字按键 */
     public Key<?>[][] createInputCandidateKeys(
             PinyinTree pinyinTree, //
