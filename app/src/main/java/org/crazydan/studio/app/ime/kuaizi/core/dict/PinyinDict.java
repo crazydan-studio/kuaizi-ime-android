@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
@@ -247,7 +248,7 @@ public class PinyinDict {
 
         Async.executor.execute(() -> {
             data.phrases.forEach(this::doSaveUsedPinyinPhrase);
-            doSaveUsedEmojis(data.emojis);
+            saveUsedEmojis(data.emojis, false);
             doSaveUsedLatins(data.latins);
         });
     }
@@ -260,7 +261,7 @@ public class PinyinDict {
 
         Async.executor.execute(() -> {
             data.phrases.forEach(this::undoSaveUsedPinyinPhrase);
-            undoSaveUsedEmojis(data.emojis);
+            saveUsedEmojis(data.emojis, true);
             undoSaveUsedLatins(data.latins);
         });
     }
@@ -556,13 +557,12 @@ public class PinyinDict {
     }
 
     /** 保存表情的使用频率等信息 */
-    private void doSaveUsedEmojis(List<InputWord> emojis) {
-        if (emojis.isEmpty()) {
-            return;
-        }
-
+    private void saveUsedEmojis(List<InputWord> emojis, boolean reverse) {
         SQLiteDatabase db = getDB();
-        doSaveUsedEmojis(db, emojis, true);
+
+        PinyinDictDBHelper.saveUsedEmojis(db,
+                                          emojis.stream().map(InputWord::getUid).collect(Collectors.toList()),
+                                          reverse);
     }
 
     /** 保存拉丁文的使用频率等信息 */
@@ -592,16 +592,6 @@ public class PinyinDict {
 
         String phraseCode = calculatePinyinPhraseCode(phrase);
         doSaveUsedPinyinPhrase(db, phraseCode, false);
-    }
-
-    /** 撤销 {@link #doSaveUsedEmojis} */
-    private void undoSaveUsedEmojis(List<InputWord> emojis) {
-        if (emojis.isEmpty()) {
-            return;
-        }
-
-        SQLiteDatabase db = getDB();
-        doSaveUsedEmojis(db, emojis, false);
     }
 
     /** 撤销 {@link #doSaveUsedLatins} */
@@ -648,20 +638,6 @@ public class PinyinDict {
 //                           "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
 //                           "update used_pinyin_word set weight_ = ? where id_ = ?",
 //                           new String[] { "delete from used_pinyin_word where weight_ = 0" },
-//                           shouldIncreaseWeight);
-    }
-
-    private void doSaveUsedEmojis(SQLiteDatabase db, List<InputWord> emojis, boolean shouldIncreaseWeight) {
-        Set<String> dataIdSet = emojis.stream().map(InputWord::getUid).collect(Collectors.toSet());
-
-//        doUpdateDataWeight(db,
-//                           "used_emoji",
-//                           "id_",
-//                           dataIdSet,
-//                           null,
-//                           "insert into used_emoji (weight_, id_) values (?, ?)",
-//                           "update used_emoji set weight_ = ? where id_ = ?",
-//                           new String[] { "delete from used_emoji where weight_ = 0" },
 //                           shouldIncreaseWeight);
     }
 

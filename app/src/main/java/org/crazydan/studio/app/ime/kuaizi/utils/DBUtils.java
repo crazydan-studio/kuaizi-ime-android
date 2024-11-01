@@ -117,7 +117,7 @@ public class DBUtils {
      *         参数列表为空时，不执行 <code>clause</code>
      */
     public static void execSQLite(SQLiteDatabase db, String clause, Collection<String[]> argsList) {
-        if (argsList.isEmpty()) {
+        if (CollectionUtils.isEmpty(argsList)) {
             return;
         }
 
@@ -125,11 +125,25 @@ public class DBUtils {
             try (SQLiteStatement statement = db.compileStatement(clause);) {
                 for (String[] args : argsList) {
                     statement.bindAllArgsAsStrings(args);
-
                     statement.execute();
                 }
             }
         });
+    }
+
+    /**
+     * @param args
+     *         参数为空时，不执行 <code>clause</code>
+     */
+    public static void execSQLite(SQLiteDatabase db, String clause, String[] args) {
+        if (CollectionUtils.isEmpty(args)) {
+            return;
+        }
+
+        try (SQLiteStatement statement = db.compileStatement(clause);) {
+            statement.bindAllArgsAsStrings(args);
+            statement.execute();
+        }
     }
 
     /**

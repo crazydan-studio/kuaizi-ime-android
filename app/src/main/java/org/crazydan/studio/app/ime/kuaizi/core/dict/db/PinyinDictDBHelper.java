@@ -18,6 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.core.dict.db;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +35,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRow;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
 /**
@@ -43,7 +48,7 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
  */
 public class PinyinDictDBHelper {
 
-    /** 根据字及其拼音获取其 {@link PinyinInputWord 拼音字} */
+    /** 根据字及其拼音获取其 {@link PinyinInputWord 拼音字对象} */
     public static PinyinInputWord getPinyinInputWord(SQLiteDatabase db, String word, String pinyin) {
         List<PinyinInputWord> wordList = queryPinyinInputWords(db,
                                                                "py_.word_ = ? and py_.spell_ = ?",
@@ -52,7 +57,7 @@ public class PinyinDictDBHelper {
         return CollectionUtils.first(wordList);
     }
 
-    /** 根据拼音字 id 获取其 {@link PinyinInputWord 拼音字} */
+    /** 根据拼音字 id 获取其 {@link PinyinInputWord 拼音字对象} */
     public static Map<String, PinyinInputWord> getPinyinInputWords(SQLiteDatabase db, Set<String> pinyinWordIds) {
         String placeholder = pinyinWordIds.stream().map((id) -> "?").collect(Collectors.joining(", "));
 
@@ -65,7 +70,7 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 根据拼音字母组合 id 获取其对应的全部 {@link PinyinInputWord 拼音字}
+     * 根据拼音字母组合 id 获取其对应的全部 {@link PinyinInputWord 拼音字对象}
      * <p/>
      * 返回结果已按使用和字形权重等排序
      */
@@ -79,7 +84,7 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 查询拼音字表 pinyin_word 以获得 {{@link PinyinInputWord 拼音字}列表
+     * 查询拼音字表 pinyin_word 以获得 {{@link PinyinInputWord 拼音字对象}列表
      *
      * @param sort
      *         若为 <code>true</code>，则结果依次按使用权重、拼音字母顺序、字形相似性排序
@@ -125,6 +130,20 @@ public class PinyinDictDBHelper {
         }});
     }
 
+    /** 根据表情符号获取其 {@link EmojiInputWord 表情对象} */
+    public static EmojiInputWord getEmoji(SQLiteDatabase db, String emoji) {
+        List<EmojiInputWord> emojiList = querySQLite(db, new SQLiteQueryParams<EmojiInputWord>() {{
+            this.table = "meta_emoji";
+            this.columns = new String[] { "id_", "value_" };
+            this.where = "value_ = ?";
+            this.params = new String[] { emoji };
+
+            this.reader = PinyinDictDBHelper::createEmojiInputWord;
+        }});
+
+        return CollectionUtils.first(emojiList);
+    }
+
     /**
      * 获取各分组下的所有表情
      *
@@ -140,12 +159,13 @@ public class PinyinDictDBHelper {
                        + "  select id_, value_, ? as group_" //
                        + "  from meta_emoji" //
                        + "  where weight_user_ > 0" //
-                       + "  order by weight_user_ desc" //
+                       + "  order by weight_user_ desc, id_ asc" //
                        + "  limit ?" //
                        + ")" //
                        + "union" //
                        + "  select id_, value_, group_" //
-                       + "  from group_emoji order by group_ asc, id_ asc";
+                       + "  from group_emoji" //
+                       + "  order by group_ asc, id_ asc";
             this.params = new String[] { Emojis.GROUP_GENERAL, groupGeneralCount + "" };
 
             this.reader = (row) -> {
@@ -160,6 +180,34 @@ public class PinyinDictDBHelper {
         }});
 
         return new Emojis(groups);
+    }
+
+    /**
+     * 更新使用的表情
+     *
+     * @param reverse
+     *         是否反向更新，即，减掉对表情的使用权重
+     */
+    public static void saveUsedEmojis(SQLiteDatabase db, Collection<String> emojiIds, boolean reverse) {
+        Map<String, Integer> argsMap = new HashMap<>(emojiIds.size());
+        emojiIds.forEach((emojiId) -> {
+            argsMap.compute(emojiId, (k, v) -> (v == null ? 0 : v) + 1);
+        });
+
+        List<String[]> argsList = new ArrayList<>(argsMap.size());
+        argsMap.forEach((emojiId, weight) -> {
+            argsList.add(new String[] { weight + "", emojiId });
+        });
+
+        if (!reverse) {
+            execSQLite(db, "update meta_emoji" //
+                           + " set weight_user_ = weight_user_ + ?" //
+                           + " where id_ = ?", argsList);
+        } else {
+            execSQLite(db, "update meta_emoji" //
+                           + " set weight_user_ = max(weight_user_ - ?, 0)" //
+                           + " where id_ = ?", argsList);
+        }
     }
 
     private static PinyinInputWord createPinyinInputWord(SQLiteRow row) {

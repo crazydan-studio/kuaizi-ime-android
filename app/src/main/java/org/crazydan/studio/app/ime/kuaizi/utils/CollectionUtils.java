@@ -43,15 +43,23 @@ public class CollectionUtils {
         return false;
     }
 
+    public static <T> boolean isEmpty(T[] c) {
+        return c == null || c.length == 0;
+    }
+
+    public static <T> boolean isEmpty(Collection<T> c) {
+        return c == null || c.isEmpty();
+    }
+
     public static <T> T first(Collection<T> c) {
-        return c == null || c.isEmpty() ? null : c.iterator().next();
+        return isEmpty(c) ? null : c.iterator().next();
     }
 
     public static <T> T last(Collection<T> c) {
-        return c == null || c.isEmpty() ? null //
-                                        : c.size() == 1 //
-                                          ? first(c) //
-                                          : c.stream().reduce((prev, next) -> next).orElse(null);
+        return isEmpty(c) ? null //
+                          : c.size() == 1 //
+                            ? first(c) //
+                            : c.stream().reduce((prev, next) -> next).orElse(null);
     }
 
     /** 通过 对象引用 是否相等确定指定元素在列表中的位置 */

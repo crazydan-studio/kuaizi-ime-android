@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,8 +46,10 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getP
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.savePinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
@@ -155,10 +158,46 @@ public class PinyinDictTest {
         emojis.groups.forEach((group, emojiList) -> {
             Log.i(LOG_TAG,
                   group + ": " + emojiList.stream()
-                                          .map(InputWord::getValue)
+                                          .map((emoji) -> emoji.getValue() + ":" + emoji.getUid())
                                           .limit(top)
                                           .collect(Collectors.joining(", ")));
         });
+
+        // <<<<<<<<<<<<<<<<<<<<< 更新使用权重
+        String[] usedEmojis = new String[] {
+                "\uD83D\uDE00", // 😀
+                "\uD83D\uDE00", // 😀
+                "\uD83D\uDE00", // 😀
+                "\uD83D\uDC4B", // 👋
+                "\uD83D\uDC4B", // 👋
+                "\uD83D\uDC35", // 🐵
+                "\uD83C\uDF47", // 🍇
+                "\uD83C\uDF83", // 🎃
+        };
+        List<String> usedEmojiIdList = Arrays.stream(usedEmojis)
+                                             .map((emoji) -> getEmoji(db, emoji).getUid())
+                                             .collect(Collectors.toList());
+        saveUsedEmojis(db, usedEmojiIdList, false);
+
+        emojis = getAllGroupedEmojis(db, top);
+        List<InputWord> generalEmojiList = emojis.groups.get(Emojis.GROUP_GENERAL);
+        Assert.assertNotNull(generalEmojiList);
+
+        // Note: 直接调用 LinkedHashSet#toArray 将报方法不存在
+        Assert.assertArrayEquals(new LinkedHashSet<>(usedEmojiIdList).stream().toArray(String[]::new),
+                                 generalEmojiList.stream().map(InputWord::getUid).toArray(String[]::new));
+        Log.i(LOG_TAG,
+              Emojis.GROUP_GENERAL + ": " + generalEmojiList.stream()
+                                                            .map((emoji) -> emoji.getValue() + ":" + emoji.getUid())
+                                                            .collect(Collectors.joining(", ")));
+        // >>>>>>>>>>>>>>>>>>>>>>>
+
+        // <<<<<<<<<<<<<< 撤销使用
+        saveUsedEmojis(db, usedEmojiIdList, true);
+
+        emojis = getAllGroupedEmojis(db, top);
+        Assert.assertNull(emojis.groups.get(Emojis.GROUP_GENERAL));
+        // >>>>>>>>>>>>>>
     }
 
     private List<String> getTop5Phrases(
