@@ -24,7 +24,7 @@ import java.util.Objects;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 
 /**
- * 拼音输入{@link InputWord 候选字}
+ * 拼音{@link InputWord 字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26

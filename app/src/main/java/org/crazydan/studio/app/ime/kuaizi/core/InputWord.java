@@ -39,6 +39,8 @@ public class InputWord {
     private Source source = Source.single;
     /** 字的变体 */
     private String variant;
+    /** 字的权重 */
+    private int weight;
 
     public InputWord(String uid, String value) {
         this(uid, value, null);
@@ -109,6 +111,14 @@ public class InputWord {
 
     public boolean hasVariant() {
         return this.variant != null;
+    }
+
+    public int getWeight() {
+        return this.weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
     }
 
     @NonNull

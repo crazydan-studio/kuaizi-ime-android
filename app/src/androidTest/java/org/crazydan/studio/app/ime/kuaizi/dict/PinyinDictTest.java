@@ -30,6 +30,7 @@ import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.junit.AfterClass;
@@ -53,6 +54,8 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 @RunWith(AndroidJUnit4.class)
 public class PinyinDictTest {
     private static final String LOG_TAG = PinyinDictTest.class.getSimpleName();
+
+    private static final int userPhraseBaseWeight = 500;
 
     @BeforeClass
     public static void before() {
@@ -113,11 +116,35 @@ public class PinyinDictTest {
         });
     }
 
+    @Test
+    public void test_top_candidate_words() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        String[] samples = new String[] { "zhong", "guo" };
+        for (String pinyinChars : samples) {
+            String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
+            Assert.assertNotNull(pinyinCharsId);
+
+            List<PinyinInputWord> wordList = PinyinDictDBHelper.getAllPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight);
+            Assert.assertNotEquals(0, wordList.size());
+
+            String result = wordList.stream()
+                                    .map((word) -> String.format("%s:%s:%d",
+                                                                 word.getValue(),
+                                                                 word.getSpell().value,
+                                                                 word.getWeight()))
+                                    .collect(Collectors.joining(", "));
+
+            Log.i(LOG_TAG, pinyinChars + " => " + result);
+        }
+    }
+
     private List<String> getTop5Phrases(
             SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList
     ) {
         List<String> phraseList = //
-                predictPinyinPhrase(db, pinyinCharsIdList, 500, 5).stream().map((phrase) -> {
+                predictPinyinPhrase(db, pinyinCharsIdList, userPhraseBaseWeight, 5).stream().map((phrase) -> {
                     Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, Set.of(phrase));
 
                     return Arrays.stream(phrase)
