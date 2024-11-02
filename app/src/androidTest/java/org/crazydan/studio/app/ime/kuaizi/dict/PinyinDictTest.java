@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -33,6 +34,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.junit.AfterClass;
@@ -48,8 +50,10 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
@@ -225,6 +229,23 @@ public class PinyinDictTest {
         emojis = getAllGroupedEmojis(db, top);
         Assert.assertNull(emojis.groups.get(Emojis.GROUP_GENERAL));
         // >>>>>>>>>>>>>>
+    }
+
+    @Test
+    public void test_query_emojis_by_keyword() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        List<String[]> keywordIdsList = Stream.of("地球", "笑脸")
+                                              .map((keyword) -> keyword.chars()
+                                                                       .mapToObj((word) -> getWordId(db,
+                                                                                                     String.valueOf((char) word)))
+                                                                       .toArray(String[]::new))
+                                              .collect(Collectors.toList());
+        List<EmojiInputWord> emojiList = getEmojisByKeyword(db, keywordIdsList, 10);
+
+        Assert.assertNotEquals(0, emojiList.size());
+        Log.i(LOG_TAG, emojiList.stream().map(EmojiInputWord::getValue).collect(Collectors.joining(", ")));
     }
 
     private List<String> getTop5Phrases(

@@ -182,6 +182,29 @@ public class PinyinDictDBHelper {
         return new Emojis(groups);
     }
 
+    /** 根据关键字的字 id 获取表情 */
+    public static List<EmojiInputWord> getEmojisByKeyword(SQLiteDatabase db, List<String[]> keywordIdsList, int top) {
+        List<String> args = new ArrayList<>(keywordIdsList.size() * 4);
+        keywordIdsList.forEach((keywordIds) -> {
+            String ids = String.join(",", keywordIds);
+            args.add("%[" + ids + "]%");
+            args.add("%," + ids + "]%");
+            args.add("%[" + ids + ",%");
+            args.add("%," + ids + ",%");
+        });
+
+        return querySQLite(db, new SQLiteQueryParams<EmojiInputWord>() {{
+            this.table = "meta_emoji";
+            this.columns = new String[] { "id_", "value_", "weight_user_ as weight_" };
+            this.where = args.stream().map((arg) -> "keyword_ids_list_ like ?").collect(Collectors.joining(" or "));
+            this.params = args.toArray(new String[0]);
+            this.orderBy = "weight_ desc, id_ asc";
+            this.limit = top + "";
+
+            this.reader = PinyinDictDBHelper::createEmojiInputWord;
+        }});
+    }
+
     /**
      * 更新使用的表情
      *
@@ -263,6 +286,20 @@ public class PinyinDictDBHelper {
                 return null;
             };
         }});
+    }
+
+    /** 获取指定汉字的字 id */
+    public static String getWordId(SQLiteDatabase db, String word) {
+        List<String> wordIdList = querySQLite(db, new SQLiteQueryParams<String>() {{
+            this.table = "meta_word";
+            this.columns = new String[] { "id_" };
+            this.where = "value_ = ?";
+            this.params = new String[] { word };
+
+            this.reader = (row) -> row.getString("id_");
+        }});
+
+        return CollectionUtils.first(wordIdList);
     }
 
     private static PinyinInputWord createPinyinInputWord(SQLiteRow row) {

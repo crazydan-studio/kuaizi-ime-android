@@ -48,6 +48,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predic
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
@@ -181,7 +182,28 @@ public class PinyinDict {
 
     /** 根据拼音输入分析得出最靠前的 <code>top</code> 个匹配的表情 */
     public List<InputWord> findTopBestEmojisMatchedPhrase(CharInput input, int top, List<InputWord> prevPhrase) {
-        return findEmojisMatchedPhraseFromAppDB(input, top, prevPhrase);
+        if (!(input.getWord() instanceof PinyinInputWord)) {
+            return List.of();
+        }
+
+        List<String> phraseWordIdList = prevPhrase.stream()
+                                                  .map((word) -> ((PinyinInputWord) word).getWordId())
+                                                  .collect(Collectors.toList());
+        phraseWordIdList.add(((PinyinInputWord) input.getWord()).getWordId());
+
+        int tries = 4;
+        int total = phraseWordIdList.size();
+        List<String[]> keywordIdsList = new ArrayList<>(tries);
+        for (int i = total - 1; i >= 0 && i >= total - tries; i--) {
+            String[] keywordIds = phraseWordIdList.subList(i, total).toArray(new String[0]);
+            keywordIdsList.add(keywordIds);
+        }
+
+        SQLiteDatabase db = getDB();
+
+        return getEmojisByKeyword(db, keywordIdsList, top).stream()
+                                                          .map((word) -> (InputWord) word)
+                                                          .collect(Collectors.toList());
     }
 
     /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
@@ -264,96 +286,6 @@ public class PinyinDict {
             saveUsedEmojis(data.emojis, true);
             undoSaveUsedLatins(data.latins);
         });
-    }
-
-    private List<InputWord> findEmojisMatchedPhraseFromAppDB(CharInput input, int top, List<InputWord> prevPhrase) {
-//        SQLiteDatabase db = getAppDB();
-//
-//        List<String> phraseWordUidList = prevPhrase.stream().map(InputWord::getUid).collect(Collectors.toList());
-//        Collections.reverse(phraseWordUidList);
-//
-//        phraseWordUidList.add(0, input.getWord().getUid());
-//
-//        Set<String> invalidEmojiKeywordIdSet = new HashSet<>();
-//        Map<String, List<String[]>> keywordAndWordIndexesMap = new HashMap<>();
-//
-//        Map<String, InputWord> emojiMap = new HashMap<>();
-//        doSQLiteQuery(db, "emoji", new String[] {
-//                              "id_", "value_", "keyword_index_", "keyword_word_spell_link_id_", "keyword_word_index_"
-//                      }, //
-//                      "keyword_word_spell_link_id_ in (" //
-//                      + phraseWordUidList.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-//                      + ")", //
-//                      phraseWordUidList.toArray(new String[0]), //
-//                      "id_ asc, keyword_index_ asc, keyword_word_index_ desc", //
-//                      (cursor) -> {
-//                          String emojiId = cursor.getString(0);
-//                          String emojiValue = cursor.getString(1);
-//                          // 表情的关键字唯一标识由 表情 id 和 关键字的序号 组合而成
-//                          String emojiKeywordId = emojiId + ":" + cursor.getString(2);
-//                          String emojiKeywordWordUid = cursor.getString(3);
-//                          String emojiKeywordWordIndex = cursor.getString(4);
-//
-//                          if (!CharUtils.isPrintable(emojiValue) //
-//                              || invalidEmojiKeywordIdSet.contains(emojiKeywordId)) {
-//                              return null;
-//                          }
-//
-//                          List<String[]> keywordAndWordIndexes
-//                                  = keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>());
-//
-//                          int keywordWordSize = keywordAndWordIndexes.size();
-//                          String[] prev = CollectionUtils.last(keywordAndWordIndexes);
-//                          if ( // 去掉 关键字 在 短语 中 不相邻 的数据
-//                                  (prev != null //
-//                                   && Integer.parseInt(prev[1]) - Integer.parseInt(emojiKeywordWordIndex) != 1)
-//                                  // 去掉与 短语 在 相同位置的字 不匹配 的数据
-//                                  || (keywordWordSize < phraseWordUidList.size() //
-//                                      && (!phraseWordUidList.get(keywordWordSize).equals(emojiKeywordWordUid)))) {
-//                              invalidEmojiKeywordIdSet.add(emojiKeywordId);
-//
-//                              keywordAndWordIndexesMap.remove(emojiKeywordId);
-//
-//                              return null;
-//                          }
-//
-//                          keywordAndWordIndexesMap.computeIfAbsent(emojiKeywordId, (k) -> new ArrayList<>())
-//                                                  .add(new String[] {
-//                                                          emojiKeywordWordUid, emojiKeywordWordIndex, emojiId
-//                                                  });
-//
-//                          if (!emojiMap.containsKey(emojiId)) {
-//                              InputWord emoji = new EmojiInputWord(emojiId, emojiValue);
-//                              emojiMap.put(emojiId, emoji);
-//                          }
-//
-//                          return null;
-//                      });
-//
-//        // 按关键字匹配到的输入长度排序，匹配越长的越靠前
-//        Map<String, Integer> emojiAndWeightMap = new HashMap<>();
-//        keywordAndWordIndexesMap.forEach((keywordId, tupleList) -> {
-//            tupleList.forEach((tuple) -> {
-//                String emojiId = tuple[2];
-//                int weight = emojiAndWeightMap.getOrDefault(emojiId, 0);
-//
-//                emojiAndWeightMap.put(emojiId, tupleList.size() > weight ? tupleList.size() : weight);
-//            });
-//        });
-//
-//        List<InputWord> emojiList = emojiAndWeightMap.keySet().stream().map(emojiMap::get).sorted((a1, a2) -> {
-//            int a1Weight = emojiAndWeightMap.get(a1.getUid());
-//            int a2Weight = emojiAndWeightMap.get(a2.getUid());
-//            int order = Integer.compare(a2Weight, a1Weight);
-//            // Note：相邻 id 的表情更有可能在同一个分组内，
-//            // 故而，对匹配度相同的表情采用 id 排序
-//            return order != 0 //
-//                   ? order //
-//                   : Integer.compare(Integer.parseInt(a1.getUid()), Integer.parseInt(a2.getUid()));
-//        }).collect(Collectors.toList());
-//
-//        return CollectionUtils.subList(emojiList, 0, top);
-        return List.of();
     }
 
     private void doSaveUsedPinyinPhrase(List<InputWord> phrase) {
