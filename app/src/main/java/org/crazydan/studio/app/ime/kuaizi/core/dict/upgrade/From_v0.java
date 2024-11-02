@@ -92,7 +92,7 @@ public class From_v0 {
                 + "   id_ integer not null primary key,"
                 // -- 拉丁文内容
                 + "   value_ text not null,"
-                // -- 按使用频率等排序的权重
+                // -- 使用权重
                 + "   weight_user_ integer not null," //
                 + "   unique (value_)" //
                 + " )",
@@ -101,32 +101,15 @@ public class From_v0 {
                 // -- 补充用户使用权重列
                 + "  add column weight_user_ integer default 0",
                 "create view"
-                + " if not exists group_emoji ("
-                + "   id_, value_, weight_,"
-                + "   group_"
-                + " ) as"
-                + " select"
-                + "   emo_.id_, emo_.value_, emo_.weight_user_,"
-                + "   grp_.value_"
-                + " from"
-                + "   meta_emoji emo_"
-                + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
-                "create view"
                 + " if not exists emoji ("
                 + "   id_, value_, weight_,"
-                + "   group_, keyword_words_"
+                + "   group_, keyword_ids_list_"
                 + " ) as"
                 + " select"
                 + "   emo_.id_, emo_.value_, emo_.weight_user_,"
-                + "   grp_.value_,"
-                + "   (select group_concat(word_.value_, '')"
-                + "     from json_each(lnk_.target_word_ids_) word_id_"
-                + "       inner join meta_word word_"
-                + "         on word_.id_ = word_id_.value"
-                + "   )"
+                + "   grp_.value_, emo_.keyword_ids_list_"
                 + " from"
                 + "   meta_emoji emo_"
-                + "   inner join link_emoji_with_keyword lnk_ on lnk_.source_id_ = emo_.id_"
                 + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
                 // >>>>>>>>>>>>>>>>>>>>>>>
                 // <<<<<<<<<<<<<<<< 通过 SQL 迁移数据

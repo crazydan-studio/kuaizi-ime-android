@@ -157,14 +157,14 @@ public class PinyinDictDBHelper {
             // Note: 确保 常用 分组的结果在最前面
             this.sql = "select * from (" //
                        + "  select id_, value_, ? as group_" //
-                       + "  from meta_emoji" //
-                       + "  where weight_user_ > 0" //
-                       + "  order by weight_user_ desc, id_ asc" //
+                       + "  from emoji" //
+                       + "  where weight_ > 0" //
+                       + "  order by weight_ desc, id_ asc" //
                        + "  limit ?" //
                        + ")" //
                        + "union" //
                        + "  select id_, value_, group_" //
-                       + "  from group_emoji" //
+                       + "  from emoji" //
                        + "  order by group_ asc, id_ asc";
             this.params = new String[] { Emojis.GROUP_GENERAL, groupGeneralCount + "" };
 
