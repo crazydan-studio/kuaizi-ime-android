@@ -48,7 +48,7 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
  */
 public class PinyinDictDBHelper {
 
-    /** 根据字及其拼音获取其 {@link PinyinInputWord 拼音字对象} */
+    /** 根据字及其拼音获取其{@link PinyinInputWord 拼音字对象} */
     public static PinyinInputWord getPinyinInputWord(SQLiteDatabase db, String word, String pinyin) {
         List<PinyinInputWord> wordList = queryPinyinInputWords(db,
                                                                "py_.word_ = ? and py_.spell_ = ?",
@@ -70,7 +70,7 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 根据拼音字母组合 id 获取其对应的全部 {@link PinyinInputWord 拼音字对象}
+     * 根据拼音字母组合 id 获取其对应的全部{@link PinyinInputWord 拼音字对象}
      * <p/>
      * 返回结果已按使用和字形权重等排序
      */
@@ -84,7 +84,7 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 查询拼音字表 pinyin_word 以获得 {{@link PinyinInputWord 拼音字对象}列表
+     * 查询拼音字表 pinyin_word 以获得{@link PinyinInputWord 拼音字对象}列表
      *
      * @param sort
      *         若为 <code>true</code>，则结果依次按使用权重、拼音字母顺序、字形相似性排序
@@ -208,6 +208,61 @@ public class PinyinDictDBHelper {
                            + " set weight_user_ = max(weight_user_ - ?, 0)" //
                            + " where id_ = ?", argsList);
         }
+    }
+
+    /** 向{@link PinyinInputWord 拼音字}附加其繁/简变体 */
+    public static void attachVariantToPinyinInputWord(SQLiteDatabase db, Collection<PinyinInputWord> pinyinWordList) {
+        Map<String, List<PinyinInputWord>> pinyinWordMap = pinyinWordList.stream()
+                                                                         .collect(Collectors.groupingBy(PinyinInputWord::getWordId,
+                                                                                                        HashMap::new,
+                                                                                                        Collectors.toCollection(
+                                                                                                                ArrayList::new)));
+
+        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
+            String placeholder = pinyinWordMap.keySet().stream().map((k) -> "?").collect(Collectors.joining(", "));
+
+            this.params = pinyinWordMap.keySet().toArray(new String[0]);
+            this.sql = "select t_.* from (" //
+                       + "   select source_id_, target_id_, target_value_" //
+                       + "   from simple_word" //
+                       + "   union" //
+                       + "   select source_id_, target_id_, target_value_" //
+                       + "   from traditional_word" //
+                       + " ) t_" //
+                       + " where t_.source_id_ in (" + placeholder + ")";
+
+            this.reader = (row) -> {
+                String sourceWordId = row.getString("source_id_");
+                List<PinyinInputWord> sourceWords = pinyinWordMap.get(sourceWordId);
+                assert sourceWords != null;
+
+                String targetWordId = row.getString("target_id_");
+                String targetWordValue = row.getString("target_value_");
+                List<PinyinInputWord> targetWords = pinyinWordMap.get(targetWordId);
+
+                sourceWords.forEach((sourceWord) -> {
+                    if (sourceWord.getVariant() != null) {
+                        return;
+                    }
+
+                    // 适用于为某个拼音下的所有候选字附加变体
+                    if (!CollectionUtils.isEmpty(targetWords)) {
+                        // 繁/简字的拼音需一致
+                        targetWords.forEach((targetWord) -> {
+                            if (targetWord.getNotation().equals(sourceWord.getNotation())) {
+                                sourceWord.setVariant(targetWordValue);
+                            }
+                        });
+                    }
+                    // 适用于为不同拼音的字附加各自的变体
+                    else {
+                        sourceWord.setVariant(targetWordValue);
+                    }
+                });
+
+                return null;
+            };
+        }});
     }
 
     private static PinyinInputWord createPinyinInputWord(SQLiteRow row) {

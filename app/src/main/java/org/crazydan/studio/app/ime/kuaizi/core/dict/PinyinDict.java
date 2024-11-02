@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,10 +45,10 @@ import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
@@ -162,7 +161,8 @@ public class PinyinDict {
         SQLiteDatabase db = getDB();
         List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, this.userPhraseBaseWeight);
 
-        patchPinyinWordVariantInCandidates(db, wordList);
+        // 附加拼音字的繁/简字
+        attachVariantToPinyinInputWord(db, wordList);
 
         return wordList.stream().map(w -> (InputWord) w).collect(Collectors.toList());
     }
@@ -228,7 +228,7 @@ public class PinyinDict {
 
         Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, wordIdSet);
         if (variantFirst) {
-            patchPinyinWordVariant(wordMap.values());
+            attachVariantToPinyinInputWord(db, wordMap.values());
         }
 
         return phraseWordsList.stream()
@@ -264,60 +264,6 @@ public class PinyinDict {
             saveUsedEmojis(data.emojis, true);
             undoSaveUsedLatins(data.latins);
         });
-    }
-
-    /** 查找拼音候选字的变体 id */
-    private Map<String, List<String>> findPinyinWordVariantIds(
-            SQLiteDatabase db, String variantTable, Collection<String> sourceIds
-    ) {
-        if (sourceIds.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        Map<String, List<String>> map = new HashMap<>(sourceIds.size());
-        querySQLite(db, new SQLiteQueryParams<Void>() {{
-            this.table = variantTable;
-            this.columns = new String[] { "source_id_", "target_id_" };
-            this.where = "source_id_ in (" //
-                         + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-                         + ")";
-
-            this.params = sourceIds.toArray(new String[0]);
-            this.reader = (row) -> {
-                String sourceId = row.getString("source_id_");
-                String targetId = row.getString("target_id_");
-
-                map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetId);
-                return null;
-            };
-        }});
-
-        return map;
-    }
-
-    /** 查找拼音字的变体 */
-    private Map<String, List<String>> findPinyinWordVariants(
-            SQLiteDatabase db, String table, Collection<String> sourceIds
-    ) {
-        if (sourceIds.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        Map<String, List<String>> map = new HashMap<>(sourceIds.size());
-//        doSQLiteQuery(db, table, new String[] { "id_", "target_value_" },
-//                      //
-//                      "id_ in (" //
-//                      + sourceIds.stream().map((id) -> "?").collect(Collectors.joining(", ")) //
-//                      + ")", //
-//                      sourceIds.toArray(new String[0]), //
-//                      (cursor) -> {
-//                          String sourceId = cursor.getString(0);
-//                          String targetValue = cursor.getString(1);
-//                          map.computeIfAbsent(sourceId, (k) -> new ArrayList<>()).add(targetValue);
-//
-//                          return null;
-//                      });
-        return map;
     }
 
     private List<InputWord> findEmojisMatchedPhraseFromAppDB(CharInput input, int top, List<InputWord> prevPhrase) {
@@ -408,115 +354,6 @@ public class PinyinDict {
 //
 //        return CollectionUtils.subList(emojiList, 0, top);
         return List.of();
-    }
-
-    /** 从拼音的候选字列表中查找各个字的繁/简形式 */
-    private void patchPinyinWordVariantInCandidates(SQLiteDatabase db, Collection<PinyinInputWord> candidates) {
-        Map<String, InputWord> tradWordMap = new HashMap<>();
-        Map<String, InputWord> simpleWordMap = new HashMap<>();
-
-        candidates.forEach((word) -> {
-            String wordId = word.getWordId();
-            if (word.isTraditional()) {
-                tradWordMap.put(wordId, word);
-            } else {
-                simpleWordMap.put(wordId, word);
-            }
-        });
-
-        // 查找繁/简字
-        Future<Map<String, List<String>>> tradWithSimpleWordIdMapFuture = tradWordMap.isEmpty()
-                                                                          ? null
-                                                                          : Async.executor.submit(() -> findPinyinWordVariantIds(
-                                                                                  db,
-                                                                                  "link_word_with_simple_word",
-                                                                                  tradWordMap.keySet()));
-        Future<Map<String, List<String>>> simpleWithTradWordIdMapFuture = simpleWordMap.isEmpty()
-                                                                          ? null
-                                                                          : Async.executor.submit(() -> findPinyinWordVariantIds(
-                                                                                  db,
-                                                                                  "link_word_with_traditional_word",
-                                                                                  simpleWordMap.keySet()));
-
-        value(tradWithSimpleWordIdMapFuture, new HashMap<>()).forEach((sourceId, targetIds) -> {
-            InputWord sourceWord = tradWordMap.get(sourceId);
-            if (sourceWord == null || sourceWord.getVariant() != null) {
-                return;
-            }
-
-            targetIds.forEach((targetId) -> {
-                InputWord targetWord = simpleWordMap.get(targetId);
-                // 读音需一致
-                if (targetWord != null && targetWord.getNotation().equals(sourceWord.getNotation())) {
-                    sourceWord.setVariant(targetWord.getValue());
-                }
-            });
-        });
-
-        value(simpleWithTradWordIdMapFuture, new HashMap<>()).forEach((sourceId, targetIds) -> {
-            InputWord sourceWord = simpleWordMap.get(sourceId);
-            if (sourceWord == null || sourceWord.getVariant() != null) {
-                return;
-            }
-
-            targetIds.forEach((targetId) -> {
-                InputWord targetWord = tradWordMap.get(targetId);
-                // 读音需一致
-                if (targetWord != null && targetWord.getNotation().equals(sourceWord.getNotation())) {
-                    sourceWord.setVariant(targetWord.getValue());
-                }
-            });
-        });
-    }
-
-    /** 查找各个字的繁/简形式 */
-    private void patchPinyinWordVariant(Collection<PinyinInputWord> candidates) {
-        SQLiteDatabase db = getDB();
-
-        Map<String, InputWord> tradWordMap = new HashMap<>();
-        Map<String, InputWord> simpleWordMap = new HashMap<>();
-
-        candidates.forEach((word) -> {
-            String wordId = word.getWordId();
-            if (word.isTraditional()) {
-                tradWordMap.put(wordId, word);
-            } else {
-                simpleWordMap.put(wordId, word);
-            }
-        });
-
-        Future<Map<String, List<String>>> tradWithSimpleWordMapFuture = tradWordMap.isEmpty()
-                                                                        ? null
-                                                                        : Async.executor.submit(() -> findPinyinWordVariants(
-                                                                                db,
-                                                                                "simple_word",
-                                                                                tradWordMap.keySet()));
-        Future<Map<String, List<String>>> simpleWithTradWordMapFuture = simpleWordMap.isEmpty()
-                                                                        ? null
-                                                                        : Async.executor.submit(() -> findPinyinWordVariants(
-                                                                                db,
-                                                                                "traditional_word",
-                                                                                simpleWordMap.keySet()));
-
-        value(tradWithSimpleWordMapFuture, new HashMap<>()).forEach((sourceId, variants) -> {
-            InputWord sourceWord = tradWordMap.get(sourceId);
-            if (sourceWord == null || sourceWord.getVariant() != null) {
-                return;
-            }
-
-            String variant = variants.get(0);
-            sourceWord.setVariant(variant);
-        });
-
-        value(simpleWithTradWordMapFuture, new HashMap<>()).forEach((sourceId, variants) -> {
-            InputWord sourceWord = simpleWordMap.get(sourceId);
-            if (sourceWord == null || sourceWord.getVariant() != null) {
-                return;
-            }
-
-            String variant = variants.get(0);
-            sourceWord.setVariant(variant);
-        });
     }
 
     private void doSaveUsedPinyinPhrase(List<InputWord> phrase) {

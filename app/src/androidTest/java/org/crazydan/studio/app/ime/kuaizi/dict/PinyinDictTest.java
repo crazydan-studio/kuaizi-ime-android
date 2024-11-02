@@ -33,7 +33,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.junit.AfterClass;
@@ -45,7 +44,9 @@ import org.junit.runner.RunWith;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.savePinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
@@ -132,9 +133,7 @@ public class PinyinDictTest {
             String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
-            List<PinyinInputWord> wordList = PinyinDictDBHelper.getAllPinyinInputWords(db,
-                                                                                       pinyinCharsId,
-                                                                                       userPhraseBaseWeight);
+            List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight);
             Assert.assertNotEquals(0, wordList.size());
 
             String result = wordList.stream()
@@ -146,6 +145,30 @@ public class PinyinDictTest {
 
             Log.i(LOG_TAG, pinyinChars + " => " + result);
         }
+    }
+
+    @Test
+    public void test_word_variant() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        String pinyinChars = "guo";
+        String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
+        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight);
+
+        attachVariantToPinyinInputWord(db, wordList);
+
+        wordList = wordList.stream().filter((word) -> word.getVariant() != null).collect(Collectors.toList());
+        Assert.assertNotEquals(0, wordList.size());
+
+        Log.i(LOG_TAG,
+              pinyinChars + " => " + wordList.stream()
+                                             .map((word) -> word.getValue()
+                                                            + ":"
+                                                            + word.getSpell().value
+                                                            + ":"
+                                                            + word.getVariant())
+                                             .collect(Collectors.joining(", ")));
     }
 
     @Test
