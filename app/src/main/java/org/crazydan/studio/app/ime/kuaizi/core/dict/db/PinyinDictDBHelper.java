@@ -134,7 +134,7 @@ public class PinyinDictDBHelper {
     public static EmojiInputWord getEmoji(SQLiteDatabase db, String emoji) {
         List<EmojiInputWord> emojiList = querySQLite(db, new SQLiteQueryParams<EmojiInputWord>() {{
             this.table = "meta_emoji";
-            this.columns = new String[] { "id_", "value_" };
+            this.columns = new String[] { "id_", "value_", "weight_user_ as weight_" };
             this.where = "value_ = ?";
             this.params = new String[] { emoji };
 
@@ -156,14 +156,14 @@ public class PinyinDictDBHelper {
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // Note: 确保 常用 分组的结果在最前面
             this.sql = "select * from (" //
-                       + "  select id_, value_, ? as group_" //
+                       + "  select id_, value_, weight_, ? as group_" //
                        + "  from emoji" //
                        + "  where weight_ > 0" //
                        + "  order by weight_ desc, id_ asc" //
                        + "  limit ?" //
                        + ")" //
                        + "union" //
-                       + "  select id_, value_, group_" //
+                       + "  select id_, value_, weight_, group_" //
                        + "  from emoji" //
                        + "  order by group_ asc, id_ asc";
             this.params = new String[] { Emojis.GROUP_GENERAL, groupGeneralCount + "" };
@@ -244,10 +244,13 @@ public class PinyinDictDBHelper {
     private static EmojiInputWord createEmojiInputWord(SQLiteRow row) {
         String uid = row.getString("id_");
         String value = row.getString("value_");
+        int weight = row.getInt("weight_");
 
+        EmojiInputWord word = null;
         if (CharUtils.isPrintable(value)) {
-            return new EmojiInputWord(uid, value);
+            word = new EmojiInputWord(uid, value);
+            word.setWeight(weight);
         }
-        return null;
+        return word;
     }
 }

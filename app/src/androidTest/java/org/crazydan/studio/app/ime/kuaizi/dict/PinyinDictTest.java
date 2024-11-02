@@ -188,7 +188,11 @@ public class PinyinDictTest {
                                  generalEmojiList.stream().map(InputWord::getUid).toArray(String[]::new));
         Log.i(LOG_TAG,
               Emojis.GROUP_GENERAL + ": " + generalEmojiList.stream()
-                                                            .map((emoji) -> emoji.getValue() + ":" + emoji.getUid())
+                                                            .map((emoji) -> emoji.getValue()
+                                                                            + ":"
+                                                                            + emoji.getUid()
+                                                                            + ":"
+                                                                            + emoji.getWeight())
                                                             .collect(Collectors.joining(", ")));
         // >>>>>>>>>>>>>>>>>>>>>>>
 
