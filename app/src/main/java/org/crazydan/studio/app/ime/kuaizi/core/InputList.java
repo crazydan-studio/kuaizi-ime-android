@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -632,13 +631,13 @@ public class InputList {
     }
 
     /** 获取拉丁文输入 */
-    public Set<String> getLatins() {
+    public List<String> getLatins() {
         return getInputs().stream()
                           .filter(Input::isLatin)
                           .map(Input::getText)
                           .filter(Objects::nonNull)
                           .map(StringBuilder::toString)
-                          .collect(Collectors.toSet());
+                          .collect(Collectors.toList());
     }
 
     /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */

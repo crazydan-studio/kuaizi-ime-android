@@ -117,7 +117,7 @@ public class HmmDBHelper {
      * @param reverse
      *         是否反向操作，即，撤销对输入短语的保存
      */
-    public static void savePinyinPhrase(SQLiteDatabase db, List<PinyinInputWord> phrase, boolean reverse) {
+    public static void saveUsedPinyinPhrase(SQLiteDatabase db, List<PinyinInputWord> phrase, boolean reverse) {
         if (phrase.isEmpty()) {
             return;
         }

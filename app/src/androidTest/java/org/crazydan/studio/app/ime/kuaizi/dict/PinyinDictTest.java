@@ -45,16 +45,18 @@ import org.junit.runner.RunWith;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.savePinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
@@ -118,7 +120,7 @@ public class PinyinDictTest {
                 return getPinyinInputWord(db, splits[0], splits[1]);
             }).collect(Collectors.toList());
 
-            savePinyinPhrase(db, phraseWordList, false);
+            saveUsedPinyinPhrase(db, phraseWordList, false);
 
             phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
             bestPhrase = CollectionUtils.first(phraseList);
@@ -246,6 +248,27 @@ public class PinyinDictTest {
 
         Assert.assertNotEquals(0, emojiList.size());
         Log.i(LOG_TAG, emojiList.stream().map(EmojiInputWord::getValue).collect(Collectors.joining(", ")));
+    }
+
+    @Test
+    public void test_query_latins() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        List<String> samples = List.of("I love China", "I love earth", "I love you");
+        for (String sample : samples) {
+            List<String> latins = List.of(sample.split("\\s+"));
+
+            saveUsedLatins(db, latins, false);
+        }
+
+        List<String> latins = getLatinsByStarts(db, "lov", 5);
+        Assert.assertEquals(1, latins.size());
+        Assert.assertEquals("love", latins.get(0));
+
+        latins = getLatinsByStarts(db, "Ch", 5);
+        Assert.assertEquals(1, latins.size());
+        Assert.assertEquals("China", latins.get(0));
     }
 
     private List<String> getTop5Phrases(

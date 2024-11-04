@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
@@ -45,11 +44,15 @@ import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
@@ -180,7 +183,7 @@ public class PinyinDict {
         return getAllGroupedEmojis(db, groupGeneralCount);
     }
 
-    /** 根据拼音输入分析得出最靠前的 <code>top</code> 个匹配的表情 */
+    /** 根据拼音输入短语的后 4 个字作为关键字查询得到最靠前的 <code>top</code> 个表情 */
     public List<InputWord> findTopBestEmojisMatchedPhrase(CharInput input, int top, List<InputWord> prevPhrase) {
         if (!(input.getWord() instanceof PinyinInputWord)) {
             return List.of();
@@ -209,30 +212,20 @@ public class PinyinDict {
     /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
     public List<String> findTopBestMatchedLatin(String text, int top) {
         if (text == null || text.length() < 3) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         SQLiteDatabase db = getDB();
 
-//        List<String> matched = doSQLiteQuery(db, "used_latin", //
-//                                             new String[] { "value_" }, //
-//                                             // like 为大小写不敏感的匹配，glob 为大小写敏感匹配
-//                                             // https://www.sqlitetutorial.net/sqlite-glob/
-//                                             "weight_ > 0 and value_ glob ?", //
-//                                             new String[] { text + "*" }, //
-//                                             "weight_ desc", //
-//                                             String.valueOf(top), //
-//                                             (cursor) -> cursor.getString(0));
-
-        return List.of();
+        return getLatinsByStarts(db, text, top);
     }
 
     /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
-    public List<List<InputWord>> findTopBestMatchedPinyinPhrase(
+    public List<List<InputWord>> findTopBestMatchedPhrase(
             List<InputWord> prevPhrase, int top, boolean variantFirst
     ) {
         if (prevPhrase == null || prevPhrase.size() < 2) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         SQLiteDatabase db = getDB();
@@ -264,179 +257,51 @@ public class PinyinDict {
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
     public void saveUserInputData(UserInputData data) {
-        if (data.isEmpty()) {
-            return;
-        }
-
-        Async.executor.execute(() -> {
-            data.phrases.forEach(this::doSaveUsedPinyinPhrase);
-            saveUsedEmojis(data.emojis, false);
-            doSaveUsedLatins(data.latins);
-        });
+        doSaveUserInputData(data, false);
     }
 
     /** 对 {@link #saveUserInputData} 的撤销处理（异步） */
     public void revokeSavedUserInputData(UserInputData data) {
+        doSaveUserInputData(data, true);
+    }
+
+    /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
+    private void doSaveUserInputData(UserInputData data, boolean reverse) {
         if (data.isEmpty()) {
             return;
         }
 
         Async.executor.execute(() -> {
-            data.phrases.forEach(this::undoSaveUsedPinyinPhrase);
-            saveUsedEmojis(data.emojis, true);
-            undoSaveUsedLatins(data.latins);
+            data.phrases.forEach((phrase) -> doSaveUsedPhrase(phrase, reverse));
+            doSaveUsedEmojis(data.emojis, reverse);
+            doSaveUsedLatins(data.latins, reverse);
         });
     }
 
-    private void doSaveUsedPinyinPhrase(List<InputWord> phrase) {
-        if (phrase.isEmpty()) {
-            return;
-        }
-
+    private void doSaveUsedPhrase(List<InputWord> phrase, boolean reverse) {
         SQLiteDatabase db = getDB();
-        doSaveUsedWordInPinyinPhrase(db, phrase, true);
 
-        if (phrase.size() < 2) {
-            return;
-        }
-
-        String phraseCode = calculatePinyinPhraseCode(phrase);
-        boolean isNew = doSaveUsedPinyinPhrase(db, phraseCode, true);
-        if (!isNew) {
-            return;
-        }
-
-//        // 保存短语中的字
-//        doSQLiteSave(db,
-//                     "insert into"
-//                     + " used_phrase_pinyin_word"
-//                     + " (source_id_, target_id_, target_spell_chars_id_, target_index_)"
-//                     + " values ((select id_ from used_phrase where value_ = ?), ?, ?, ?)",
-//                     null,
-//                     (insert, _ignore) -> {
-//                         for (int i = 0; i < phrase.size(); i++) {
-//                             InputWord word = phrase.get(i);
-//
-//                             insert.bindAllArgsAsStrings(new String[] {
-//                                     phraseCode, word.getUid(), ((PinyinInputWord) word).getCharsId(), String.valueOf(i)
-//                             });
-//                             insert.execute();
-//                         }
-//                     });
+        saveUsedPinyinPhrase(db,
+                             phrase.stream().map((word) -> (PinyinInputWord) word).collect(Collectors.toList()),
+                             reverse);
     }
 
     /** 保存表情的使用频率等信息 */
-    private void saveUsedEmojis(List<InputWord> emojis, boolean reverse) {
+    private void doSaveUsedEmojis(List<InputWord> emojis, boolean reverse) {
         SQLiteDatabase db = getDB();
 
-        PinyinDictDBHelper.saveUsedEmojis(db,
-                                          emojis.stream().map(InputWord::getUid).collect(Collectors.toList()),
-                                          reverse);
+        saveUsedEmojis(db, emojis.stream().map(InputWord::getUid).collect(Collectors.toList()), reverse);
     }
 
     /** 保存拉丁文的使用频率等信息 */
-    private void doSaveUsedLatins(Set<String> latins) {
+    private void doSaveUsedLatins(List<String> latins, boolean reverse) {
+        SQLiteDatabase db = getDB();
+
         // 仅针对长单词
-        Set<String> validLatins = latins.stream().filter(this::isValidUsedLatin).collect(Collectors.toSet());
-        if (validLatins.isEmpty()) {
-            return;
-        }
-
-        SQLiteDatabase db = getDB();
-        doSaveUsedLatins(db, validLatins, true);
+        saveUsedLatins(db, latins.stream().filter((latin) -> latin.length() > 3).collect(Collectors.toList()), reverse);
     }
 
-    /** 撤销 {@link #doSaveUsedPinyinPhrase} */
-    private void undoSaveUsedPinyinPhrase(List<InputWord> phrase) {
-        if (phrase.isEmpty()) {
-            return;
-        }
-
-        SQLiteDatabase db = getDB();
-        doSaveUsedWordInPinyinPhrase(db, phrase, false);
-
-        if (phrase.size() < 2) {
-            return;
-        }
-
-        String phraseCode = calculatePinyinPhraseCode(phrase);
-        doSaveUsedPinyinPhrase(db, phraseCode, false);
-    }
-
-    /** 撤销 {@link #doSaveUsedLatins} */
-    private void undoSaveUsedLatins(Set<String> latins) {
-        if (latins.isEmpty()) {
-            return;
-        }
-
-        SQLiteDatabase db = getDB();
-        doSaveUsedLatins(db, latins, false);
-    }
-
-    /** @return 若为新增，则返回 <code>true</code>，否则，返回 <code>false</code> */
-    private boolean doSaveUsedPinyinPhrase(SQLiteDatabase db, String phraseCode, boolean shouldIncreaseWeight) {
-//        Map<String, Integer> oldDataMap = doUpdateDataWeight(db,
-//                                                             "used_phrase",
-//                                                             "value_",
-//                                                             Collections.singleton(phraseCode),
-//                                                             null,
-//                                                             "insert into used_phrase (weight_, value_) values (?, ?)",
-//                                                             "update used_phrase set weight_ = ? where value_ = ?",
-//                                                             new String[] {
-//                                                                     "delete from used_phrase_pinyin_word"
-//                                                                     + " where source_id_ in (select id_ from used_phrase where weight_ = 0)",
-//                                                                     "delete from used_phrase where weight_ = 0"
-//                                                             },
-//                                                             shouldIncreaseWeight);
-//        return !oldDataMap.containsKey(phraseCode);
-        return false;
-    }
-
-    /** 保存拼音短语中字的使用频率等信息 */
-    private void doSaveUsedWordInPinyinPhrase(SQLiteDatabase db, List<InputWord> phrase, boolean shouldIncreaseWeight) {
-        Map<String, String> idAndTargetCharsIdMap = phrase.stream()
-                                                          .collect(Collectors.toMap(InputWord::getUid,
-                                                                                    (word) -> ((PinyinInputWord) word).getCharsId(),
-                                                                                    (v1, v2) -> v1));
-
-//        doUpdateDataWeight(db,
-//                           "used_pinyin_word",
-//                           "id_",
-//                           idAndTargetCharsIdMap.keySet(),
-//                           (id) -> new String[] { idAndTargetCharsIdMap.get(id) },
-//                           "insert into used_pinyin_word (weight_, id_, target_chars_id_) values (?, ?, ?)",
-//                           "update used_pinyin_word set weight_ = ? where id_ = ?",
-//                           new String[] { "delete from used_pinyin_word where weight_ = 0" },
-//                           shouldIncreaseWeight);
-    }
-
-    private void doSaveUsedLatins(SQLiteDatabase db, Set<String> latins, boolean shouldIncreaseWeight) {
-//        doUpdateDataWeight(db,
-//                           "used_latin",
-//                           "value_",
-//                           latins,
-//                           null,
-//                           "insert into used_latin (weight_, value_) values (?, ?)",
-//                           "update used_latin set weight_ = ? where value_ = ?",
-//                           new String[] { "delete from used_latin where weight_ = 0" },
-//                           shouldIncreaseWeight);
-    }
-
-    private String calculatePinyinPhraseCode(List<InputWord> phrase) {
-        int sum = 0;
-        for (int i = 0; i < phrase.size(); i++) {
-            InputWord word = phrase.get(i);
-            int code = Integer.parseInt(word.getUid() + i);
-            sum += code;
-        }
-
-        return String.valueOf(sum) + phrase.size();
-    }
-
-    private boolean isValidUsedLatin(String text) {
-        return text != null && text.length() > 3;
-    }
-
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     private <T> T value(Future<T> f) {
         return value(f, null);
     }
@@ -462,6 +327,7 @@ public class PinyinDict {
             throw new IllegalStateException(e);
         }
     }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     private void doInit(Context context) {

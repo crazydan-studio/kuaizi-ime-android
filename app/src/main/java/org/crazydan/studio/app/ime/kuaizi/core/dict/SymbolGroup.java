@@ -54,7 +54,7 @@ public enum SymbolGroup {
             //
             single("﹁"), single("﹂"), single("﹃"), single("﹄"),
             //
-            single("―"), single("_"), single("￣"), single("＿"),
+            single("―"), single("￣"), single("＿"),
             //
             single("﹋"), single("﹏"), single("︵"), single("︶"),
             //
@@ -68,7 +68,7 @@ public enum SymbolGroup {
             //
             single("@"), single("#"), single("$"), single("%"), single("^"),
             //
-            single("&"), single("*"), single("-"), single("+"), single("="),
+            single("&"), single("*"), single("-"), single("_"), single("+"), single("="),
             //
             single("/"), single("\\"), single("|"), single("~"), single("`"),
             //

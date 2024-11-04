@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
@@ -41,6 +42,7 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRow;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.upsertSQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -206,21 +208,13 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 更新使用的表情
+     * 更新表情的使用信息
      *
      * @param reverse
      *         是否反向更新，即，减掉对表情的使用权重
      */
     public static void saveUsedEmojis(SQLiteDatabase db, Collection<String> emojiIds, boolean reverse) {
-        Map<String, Integer> argsMap = new HashMap<>(emojiIds.size());
-        emojiIds.forEach((emojiId) -> {
-            argsMap.compute(emojiId, (k, v) -> (v == null ? 0 : v) + 1);
-        });
-
-        List<String[]> argsList = new ArrayList<>(argsMap.size());
-        argsMap.forEach((emojiId, weight) -> {
-            argsList.add(new String[] { weight + "", emojiId });
-        });
+        List<String[]> argsList = statsWeightArgsList(emojiIds);
 
         if (!reverse) {
             execSQLite(db, "update meta_emoji" //
@@ -230,6 +224,53 @@ public class PinyinDictDBHelper {
             execSQLite(db, "update meta_emoji" //
                            + " set weight_user_ = max(weight_user_ - ?, 0)" //
                            + " where id_ = ?", argsList);
+        }
+    }
+
+    /** 获取以指定字符开头的拉丁文，并按使用权重降序排序返回 */
+    public static List<String> getLatinsByStarts(SQLiteDatabase db, String text, int top) {
+        return querySQLite(db, new SQLiteQueryParams<String>() {{
+            this.table = "meta_latin";
+            this.columns = new String[] { "value_" };
+            // like 为大小写不敏感的匹配，glob 为大小写敏感匹配
+            // https://www.sqlitetutorial.net/sqlite-glob/
+            this.where = "weight_user_ > 0 and value_ glob ?";
+            this.params = new String[] { text + "*" };
+            this.orderBy = "weight_user_ desc, id_ asc";
+            this.limit = top + "";
+
+            this.reader = (row) -> row.getString("value_");
+        }});
+    }
+
+    /**
+     * 更新拉丁文的使用信息
+     *
+     * @param reverse
+     *         是否反向更新，即，减掉对拉丁文的使用权重
+     */
+    public static void saveUsedLatins(SQLiteDatabase db, Collection<String> latins, boolean reverse) {
+        List<String[]> argsList = statsWeightArgsList(latins);
+
+        if (!reverse) {
+            upsertSQLite(db, new DBUtils.SQLiteRawUpsertParams() {{
+                // Note: 确保更新和新增的参数位置相同
+                this.updateSQL = "update meta_latin set weight_user_ = weight_user_ + ? where value_ = ?";
+                this.insertSql = "insert into meta_latin(weight_user_, value_) values(?, ?)";
+
+                this.updateParamsList = this.insertParamsList = argsList;
+            }});
+        } else {
+            execSQLite(db, "update meta_latin" //
+                           + " set weight_user_ = max(weight_user_ - ?, 0)" //
+                           + " where value_ = ?", argsList);
+        }
+
+        if (reverse) {
+            // 清理无用数据
+            execSQLite(db, new String[] {
+                    "delete from meta_latin where weight_user_ = 0",
+                    });
         }
     }
 
@@ -344,5 +385,20 @@ public class PinyinDictDBHelper {
             word.setWeight(weight);
         }
         return word;
+    }
+
+    /** 统计字符串列表中的字符串权重，并返回 SQLite 参数列表：<code>[[weight, str], [...], ...]</code> */
+    private static List<String[]> statsWeightArgsList(Collection<String> list) {
+        Map<String, Integer> argsMap = new HashMap<>(list.size());
+        list.forEach((str) -> {
+            argsMap.compute(str, (k, v) -> (v == null ? 0 : v) + 1);
+        });
+
+        List<String[]> argsList = new ArrayList<>(argsMap.size());
+        argsMap.forEach((str, weight) -> {
+            argsList.add(new String[] { weight + "", str });
+        });
+
+        return argsList;
     }
 }

@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.core.dict;
 
 import java.util.List;
-import java.util.Set;
 
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 
@@ -29,9 +28,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 public class UserInputData {
     public final List<List<InputWord>> phrases;
     public final List<InputWord> emojis;
-    public final Set<String> latins;
+    public final List<String> latins;
 
-    public UserInputData(List<List<InputWord>> phrases, List<InputWord> emojis, Set<String> latins) {
+    public UserInputData(List<List<InputWord>> phrases, List<InputWord> emojis, List<String> latins) {
         this.phrases = phrases;
         this.emojis = emojis;
         this.latins = latins;

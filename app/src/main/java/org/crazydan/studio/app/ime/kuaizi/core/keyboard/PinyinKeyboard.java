@@ -1031,7 +1031,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
-        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPinyinPhrase(words, 5, variantFirst);
+        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(words, 5, variantFirst);
         List<CompletionInput> phraseCompletions = topBestPhrases.stream()
                                                                 .map((phrase) -> createPhraseCompletion(words.size(),
                                                                                                         phrase))
@@ -1252,7 +1252,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         List<List<InputWord>> phrases = inputList.getPinyinPhraseWords();
         List<InputWord> emojis = inputList.getEmojis();
-        Set<String> latins = inputList.getLatins();
+        List<String> latins = inputList.getLatins();
 
         UserInputData data = new UserInputData(phrases, emojis, latins);
 
