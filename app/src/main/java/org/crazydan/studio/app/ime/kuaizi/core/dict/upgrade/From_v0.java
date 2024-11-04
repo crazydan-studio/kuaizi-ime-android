@@ -119,7 +119,7 @@ public class From_v0 {
                 + "   word_id_, spell_chars_id_,"
                 + "   app_.weight_ as weight_app_,"
                 + "   0 as weight_user_"
-                + " from app.phrase_word as app_",
+                + " from app.phrase_word app_",
                 //
                 "insert into phrase_trans_prob"
                 + "   (word_id_, prev_word_id_, value_app_, value_user_)"
@@ -127,7 +127,7 @@ public class From_v0 {
                 + "   word_id_, prev_word_id_,"
                 + "   app_.value_ as value_app_,"
                 + "   0 as value_user_"
-                + " from app.phrase_trans_prob as app_",
+                + " from app.phrase_trans_prob app_",
                 // >>>>>>>>>>>>>>>>>>>>>>
         };
 

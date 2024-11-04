@@ -134,17 +134,16 @@ public class From_v2_to_v3 {
         String[] clauses = new String[] {
                 "attach database '" + userDBFile.getAbsolutePath() + "' as user",
                 // <<<<<<<<<<<<<<< 迁移现有数据
-                // TODO 在 3.39 中语法报错？
                 "update meta_emoji as emoji_"
-                + "   set emoji_.weight_user_ = user_.weight_"
-                + " from user.used_emoji as user_"
+                + "   set weight_user_ = user_.weight_"
+                + " from user.used_emoji user_"
                 + " where user_.id_ = emoji_.id_",
                 //
                 "insert into meta_latin"
                 + "   (id_, value_, weight_user_)"
                 + " select"
                 + "   user_.id_, user_.value_, user_.weight_"
-                + " from user.used_latin as user_",
+                + " from user.used_latin user_",
                 // >>>>>>>>>>>>>>>
         };
         execSQLite(targetDB, clauses);
