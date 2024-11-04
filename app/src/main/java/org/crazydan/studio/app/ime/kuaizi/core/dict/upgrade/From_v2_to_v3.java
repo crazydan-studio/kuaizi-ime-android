@@ -25,7 +25,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
-import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveHmm;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0.doWithTransferDB;
@@ -44,16 +43,10 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.vacuumSQLite;
 public class From_v2_to_v3 {
 
     public static void upgrade(Context context, PinyinDict dict) {
-        doWithTransferDB(context, dict, (transferDBFile, userDBFile, appPhraseDBFile) -> {
-            try (SQLiteDatabase transferDB = openSQLite(transferDBFile, false)) {
-                doUpgrade(transferDB, userDBFile, appPhraseDBFile);
+        doWithTransferDB(context, dict, (dbFiles) -> {
+            try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
+                doUpgrade(transferDB, dbFiles.user, dbFiles.appPhrase);
                 vacuumSQLite(transferDB);
-            }
-
-            // TODO 待删除 - 测试备份
-            File userDBBakFile = new File(userDBFile.getParentFile(), userDBFile.getName() + ".bak");
-            if (!userDBBakFile.exists()) {
-                FileUtils.moveFile(userDBFile, userDBBakFile);
             }
         });
     }
@@ -153,7 +146,7 @@ public class From_v2_to_v3 {
                 + "   user_.id_, user_.value_, user_.weight_"
                 + " from user.used_latin as user_",
                 // >>>>>>>>>>>>>>>
-                };
+        };
         execSQLite(targetDB, clauses);
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

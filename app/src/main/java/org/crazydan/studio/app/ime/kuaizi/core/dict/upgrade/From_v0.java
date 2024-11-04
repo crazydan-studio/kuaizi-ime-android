@@ -40,9 +40,9 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.vacuumSQLite;
 public class From_v0 {
 
     public static void upgrade(Context context, PinyinDict dict) {
-        doWithTransferDB(context, dict, (transferDBFile, userDBFile, appPhraseDBFile) -> {
-            try (SQLiteDatabase transferDB = openSQLite(transferDBFile, false)) {
-                doUpgrade(transferDB, appPhraseDBFile);
+        doWithTransferDB(context, dict, (dbFiles) -> {
+            try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
+                doUpgrade(transferDB, dbFiles.appPhrase);
                 vacuumSQLite(transferDB);
             }
         });
@@ -147,13 +147,20 @@ public class From_v0 {
         copySQLite(context, transferDBFile, R.raw.pinyin_word_dict);
 
         try {
-            consumer.transfer(transferDBFile, userDBFile, appPhraseDBFile);
+            consumer.transfer(new DBFiles() {{
+                this.user = userDBFile;
+                this.transfer = transferDBFile;
+                this.appPhrase = appPhraseDBFile;
+            }});
+
+            // TODO 待删除 - 测试备份
+            File userDBBakFile = new File(userDBFile.getParentFile(), userDBFile.getName() + ".bak");
+            if (!userDBBakFile.exists()) {
+                FileUtils.moveFile(userDBFile, userDBBakFile);
+            }
 
             // 迁移库就地转换为用户库
             FileUtils.moveFile(transferDBFile, userDBFile);
-        } catch (Exception e) {
-            // 避免库迁移异常造成文件残留
-            FileUtils.deleteFile(userDBFile);
         } finally {
             FileUtils.deleteFile(transferDBFile);
             FileUtils.deleteFile(appPhraseDBFile);
@@ -161,6 +168,12 @@ public class From_v0 {
     }
 
     protected interface TransferConsumer {
-        void transfer(File transferDBFile, File userDBFile, File appPhraseDBFile);
+        void transfer(DBFiles dbFiles);
+    }
+
+    protected static class DBFiles {
+        protected File transfer;
+        protected File user;
+        protected File appPhrase;
     }
 }
