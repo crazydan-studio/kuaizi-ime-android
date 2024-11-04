@@ -130,6 +130,32 @@ public class PinyinDictTest {
     }
 
     @Test
+    public void test_predict_new_phrase_after_used() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        List<PinyinInputWord> phraseWordList = Arrays.stream("筷:kuài,字:zì,输:shū,入:rù,法:fǎ".split(","))
+                                                     .map((word) -> {
+                                                         String[] splits = word.split(":");
+                                                         return getPinyinInputWord(db, splits[0], splits[1]);
+                                                     })
+                                                     .collect(Collectors.toList());
+        saveUsedPinyinPhrase(db, phraseWordList, false);
+
+        Log.i(LOG_TAG,
+              phraseWordList.stream()
+                            .map((word) -> word.getValue() + ":" + word.getSpell().value)
+                            .collect(Collectors.joining(",")));
+
+        String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
+        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+        List<String> phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
+
+        String bestPhrase = CollectionUtils.first(phraseList);
+        Assert.assertEquals("我:wǒ,爱:ài,筷:kuài,字:zì,输:shū,入:rù,法:fǎ", bestPhrase);
+    }
+
+    @Test
     public void test_top_candidate_words() {
         PinyinDict dict = PinyinDict.instance();
         SQLiteDatabase db = dict.getDB();
