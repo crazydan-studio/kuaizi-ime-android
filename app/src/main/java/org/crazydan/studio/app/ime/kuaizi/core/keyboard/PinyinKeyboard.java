@@ -18,10 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -30,7 +28,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.BestCandidateWords;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
@@ -929,7 +926,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         Input<?> selected = inputList.selectNextFirstMatched(Input::isPinyin);
         boolean hasNextPinyin = selected != null;
 
-        // Note：前序已确认，则继续自动确认下一个拼音输入
         if (hasNextPinyin) {
             determine_NotConfirmed_InputWords_Before(inputList, (CharInput) selected);
         } else {
@@ -952,51 +948,26 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (inputs == null || inputs.isEmpty()) {
             return;
         }
+        inputs.add(input);
 
-        // Note: top 取 0 以避免查询单字
-        BestCandidateWords best = getTopBestCandidateWords(inputList, input, 0);
-        if (best.phrases.isEmpty()) {
+        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
+        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(inputs.stream()
+                                                                                              .map(CharInput::getWord)
+                                                                                              .collect(Collectors.toList()),
+                                                                                        1,
+                                                                                        variantFirst);
+        if (topBestPhrases.isEmpty()) {
             return;
         }
 
-        inputs.add(input);
-        // Note: phrase 为倒序匹配，故，前序 输入集 需倒置
-        Collections.reverse(inputs);
-
-        String[] bestMatchedPhrase = new String[0];
-        for (String[] phrase : best.phrases) {
-            int matchedSize = 0;
-            for (int i = 0; i < phrase.length && i < inputs.size(); i++) {
-                String phraseWordId = phrase[i];
-                InputWord inputWord = inputs.get(i).getWord();
-
-                // 对于已确认的字，需要做确切匹配
-                if (inputWord.isConfirmed()) {
-                    matchedSize += inputWord.getUid().equals(phraseWordId) ? 1 : 0;
-                }
-                // 对于根据短语自动确定的字，需要存在更长的匹配短语
-                else if (inputWord.isFromPhrase()) {
-                    matchedSize += i + 1 < phrase.length ? 1 : 0;
-                } else {
-                    matchedSize += 1;
-                }
-            }
-
-            if (matchedSize > 1 && matchedSize > bestMatchedPhrase.length) {
-                bestMatchedPhrase = phrase;
-            }
-        }
-
-        for (int i = 0; i < bestMatchedPhrase.length && i < inputs.size(); i++) {
+        List<InputWord> topBestPhrase = topBestPhrases.get(0);
+        for (int i = 0; i < topBestPhrase.size(); i++) {
             CharInput target = inputs.get(i);
             if (target.getWord().isConfirmed()) {
                 continue;
             }
 
-            String wordId = bestMatchedPhrase[i];
-            Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, target);
-            InputWord word = candidateMap.get(wordId);
-
+            InputWord word = topBestPhrase.get(i);
             // Note：可能存在用户数据与内置字典数据不一致的情况
             if (word != null) {
                 target.setWord(word);
@@ -1115,10 +1086,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             words = inputList.getCachedCandidateWords(input);
         }
         return words;
-    }
-
-    private BestCandidateWords getTopBestCandidateWords(InputList inputList, CharInput input, int top) {
-        return new BestCandidateWords();
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {

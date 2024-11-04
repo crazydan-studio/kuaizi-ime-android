@@ -19,10 +19,10 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -276,7 +276,7 @@ public class PinyinDictTest {
     ) {
         List<String> phraseList = //
                 predictPinyinPhrase(db, pinyinCharsIdList, userPhraseBaseWeight, 5).stream().map((phrase) -> {
-                    Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, Set.of(phrase));
+                    Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, new HashSet<>(List.of(phrase)));
 
                     return Arrays.stream(phrase)
                                  .map(wordMap::get)

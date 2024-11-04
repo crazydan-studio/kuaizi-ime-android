@@ -154,6 +154,8 @@ public class PinyinDictDBHelper {
      */
     public static Emojis getAllGroupedEmojis(SQLiteDatabase db, int groupGeneralCount) {
         Map<String, List<InputWord>> groups = new LinkedHashMap<>();
+        // Note: 确保常用始终在第一的位置
+        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>());
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // Note: 确保 常用 分组的结果在最前面

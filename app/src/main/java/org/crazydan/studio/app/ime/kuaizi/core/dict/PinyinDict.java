@@ -211,7 +211,7 @@ public class PinyinDict {
 
     /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
     public List<String> findTopBestMatchedLatin(String text, int top) {
-        if (text == null || text.length() < 3) {
+        if (text == null || text.length() < 2) {
             return List.of();
         }
 
@@ -239,7 +239,7 @@ public class PinyinDict {
         }
 
         Set<String> wordIdSet = new HashSet<>();
-        phraseWordsList.forEach((wordIds) -> wordIdSet.addAll(Set.of(wordIds)));
+        phraseWordsList.forEach((wordIds) -> wordIdSet.addAll(List.of(wordIds)));
 
         Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, wordIdSet);
         if (variantFirst) {
