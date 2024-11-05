@@ -867,17 +867,22 @@ public class PinyinKeyboard extends BaseKeyboard {
         topBestCandidates.addAll(topBestEmojis);
 
         if (!topBestCandidates.isEmpty()) {
-            // 若只有一页，则合并最佳候选字，并确保最佳候选字在最前面位置
-            if (allCandidates.size() <= pageSize) {
-                allCandidates.removeAll(topBestCandidates);
+            int allCandidatesCount = allCandidates.size();
+
+            // 最佳候选字不再重复出现在普通候选字列表
+            allCandidates.removeAll(topBestCandidates);
+
+            // 若候选字列表总共只有一页，则合并最佳候选字，并确保最佳候选字在最前面位置
+            if (allCandidatesCount <= pageSize) {
                 allCandidates.addAll(0, topBestCandidates);
 
-                allCandidates = reorder_TopBest_CandidateWords_and_Emojis(allCandidates, bestCandidatesTop, pageSize);
+                allCandidates = reorder_TopBest_CandidateWords_and_Emojis_In_Page(allCandidates,
+                                                                                  bestCandidatesTop,
+                                                                                  pageSize);
             } else {
-                topBestCandidates = reorder_TopBest_CandidateWords_and_Emojis(topBestCandidates,
-                                                                              bestCandidatesTop,
-                                                                              pageSize);
-
+                topBestCandidates = reorder_TopBest_CandidateWords_and_Emojis_In_Page(topBestCandidates,
+                                                                                      bestCandidatesTop,
+                                                                                      pageSize);
                 allCandidates.addAll(0, topBestCandidates);
             }
         }
@@ -1095,11 +1100,11 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     /**
-     * 重新排序最佳候选字和表情符号列表，
+     * 在一页内重新排序最佳候选字和表情符号列表，
      * 确保表情符号和候选字各自独占特定区域，
      * 并填充 <code>null</code> 以占满一页
      */
-    private List<InputWord> reorder_TopBest_CandidateWords_and_Emojis(
+    private List<InputWord> reorder_TopBest_CandidateWords_and_Emojis_In_Page(
             List<InputWord> candidates, int wordCount, int pageSize
     ) {
         List<InputWord> results = new ArrayList<>(pageSize);
