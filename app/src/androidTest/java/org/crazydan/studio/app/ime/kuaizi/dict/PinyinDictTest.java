@@ -51,6 +51,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
@@ -143,8 +144,13 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
-            List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight);
-            Assert.assertNotEquals(0, wordList.size());
+            int top = 10;
+            List<PinyinInputWord> wordList = getTopBestPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight, top);
+            Assert.assertTrue(wordList.size() <= top && !wordList.isEmpty());
+
+            for (PinyinInputWord word : wordList) {
+                Assert.assertTrue(word.getWeight() > 0);
+            }
 
             String result = wordList.stream()
                                     .map((word) -> String.format("%s:%s:%d",
@@ -164,7 +170,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
 
         String pinyinChars = "guo";
         String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
-        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight);
+        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId);
 
         attachVariantToPinyinInputWord(db, wordList);
 

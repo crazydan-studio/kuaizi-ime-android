@@ -54,8 +54,7 @@ public class PinyinDictDBHelper {
     public static PinyinInputWord getPinyinInputWord(SQLiteDatabase db, String word, String pinyin) {
         List<PinyinInputWord> wordList = queryPinyinInputWords(db,
                                                                "py_.word_ = ? and py_.spell_ = ?",
-                                                               new String[] { word, pinyin },
-                                                               false);
+                                                               new String[] { word, pinyin });
         return CollectionUtils.first(wordList);
     }
 
@@ -65,8 +64,7 @@ public class PinyinDictDBHelper {
 
         List<PinyinInputWord> wordList = queryPinyinInputWords(db,
                                                                "py_.id_ in (" + placeholder + ")",
-                                                               pinyinWordIds.toArray(new String[0]),
-                                                               false);
+                                                               pinyinWordIds.toArray(new String[0]));
 
         return wordList.stream().collect(Collectors.toMap(PinyinInputWord::getUid, Function.identity()));
     }
@@ -74,62 +72,69 @@ public class PinyinDictDBHelper {
     /**
      * 根据拼音字母组合 id 获取其对应的全部{@link PinyinInputWord 拼音字对象}
      * <p/>
-     * 返回结果已按使用和字形权重等排序
+     * 返回结果已按拼音声调、字形权重排序
      */
-    public static List<PinyinInputWord> getAllPinyinInputWords(
-            SQLiteDatabase db, String pinyinCharsId, int userPhraseBaseWeight
-    ) {
-        return queryPinyinInputWords(db, "py_.spell_chars_id_ = ?", new String[] {
-                // Note: 注意占位参数的位置
-                userPhraseBaseWeight + "", pinyinCharsId
-        }, true);
+    public static List<PinyinInputWord> getAllPinyinInputWords(SQLiteDatabase db, String pinyinCharsId) {
+        return queryPinyinInputWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId });
     }
 
     /**
-     * 查询拼音字表 pinyin_word 以获得{@link PinyinInputWord 拼音字对象}列表
+     * 根据拼音字母组合 id 获取其对应的前 <code>top</code> 个{@link PinyinInputWord 拼音字对象}
      *
-     * @param sort
-     *         若为 <code>true</code>，则结果依次按使用权重、拼音字母顺序、字形相似性排序
+     * @return 结果的权重均大于 0
      */
-    public static List<PinyinInputWord> queryPinyinInputWords(
-            SQLiteDatabase db, String queryWhere, String[] queryParams, boolean sort
+    public static List<PinyinInputWord> getTopBestPinyinInputWords(
+            SQLiteDatabase db, String pinyinCharsId, int userPhraseBaseWeight, int top
     ) {
         return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinInputWord>() {{
             this.sql = "select distinct"
                        + "   py_.id_, py_.word_, py_.word_id_,"
                        + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
                        + "   py_.traditional_, py_.stroke_order_,"
-                       + "   py_.radical_, py_.radical_stroke_count_";
-            if (sort) {
-                this.sql += ",   ( ifnull(ph_.weight_app_, 0) +" //
-                            + "     ifnull(ph_.weight_user_, 0) +"
-                            // 补充用户输入的基础权重
-                            // Note: 低版本 SQLite 不支持 iif，需采用 case when
-                            + "     (case when ifnull(ph_.weight_user_, 0) > 0 then ? else 0 end)"
-                            // + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
-                            + "   ) used_weight_";
-            } else { // 确保列取值正常
-                this.sql += ",   0 as used_weight_";
-            }
+                       + "   py_.radical_, py_.radical_stroke_count_,"
+                       + "   ( ifnull(ph_.weight_app_, 0) +"
+                       + "     ifnull(ph_.weight_user_, 0) +"
+                       // 补充用户输入的基础权重
+                       // Note: 低版本 SQLite 不支持 iif，需采用 case when
+                       + "     (case when ifnull(ph_.weight_user_, 0) > 0 then ? else 0 end)"
+                       // + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
+                       + "   ) used_weight_"
+                       + " from pinyin_word py_"
+                       + " left join phrase_word ph_ on ph_.word_id_ = py_.id_"
+                       + " where used_weight_ > 0 and py_.spell_chars_id_ = ?"
+                       + " order by used_weight_ desc"
+                       + " limit ?";
 
-            this.sql += " from pinyin_word py_";
-            if (sort) {
-                this.sql += " left join phrase_word ph_ on ph_.word_id_ = py_.id_";
-            }
-
-            this.sql += " where " + queryWhere;
-            if (sort) {
-                this.sql += " order by"
-                            // 短语中的常用字最靠前
-                            + "   used_weight_ desc,"
-                            // 再按拼音字的拼音字母顺序（spell_id_）、字形相似性（glyph_weight_）排序
-                            + "   py_.spell_id_ asc, py_.glyph_weight_ desc";
-            }
-
-            this.params = queryParams;
+            this.params = new String[] { userPhraseBaseWeight + "", pinyinCharsId, top + "" };
 
             this.reader = PinyinDictDBHelper::createPinyinInputWord;
         }});
+    }
+
+    /**
+     * 查询拼音字表 pinyin_word 以获得{@link PinyinInputWord 拼音字对象}列表
+     */
+    private static List<PinyinInputWord> queryPinyinInputWords(
+            SQLiteDatabase db, String queryWhere, String[] queryParams
+    ) {
+        return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinInputWord>() {
+            {
+                this.sql = "select distinct"
+                           + "   py_.id_, py_.word_, py_.word_id_,"
+                           + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
+                           + "   py_.traditional_, py_.stroke_order_,"
+                           + "   py_.radical_, py_.radical_stroke_count_,"
+                           + "   0 as used_weight_"
+                           + " from pinyin_word py_"
+                           + (" where " + queryWhere)
+                           + " order by"
+                           // 按拼音字的拼音字母顺序（spell_id_）、字形相似性（glyph_weight_）排序
+                           + "   py_.spell_id_ asc, py_.glyph_weight_ desc";
+                this.params = queryParams;
+
+                this.reader = PinyinDictDBHelper::createPinyinInputWord;
+            }
+        });
     }
 
     /** 根据表情符号获取其 {@link EmojiInputWord 表情对象} */

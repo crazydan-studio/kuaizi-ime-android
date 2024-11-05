@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import android.content.Context;
@@ -51,6 +52,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinInputWords;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
@@ -155,18 +157,35 @@ public class PinyinDict {
         return this.pinyinTree;
     }
 
-    /** 获取指定拼音的候选字列表：已按权重等排序 */
+    /** 获取指定拼音的候选字列表：已按拼音声调等排序 */
     public List<InputWord> getPinyinCandidateWords(CharInput input) {
+        return queryPinyinCandidateWords(input, (db, pinyinCharsId) -> {
+            List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId);
+
+            // 附加拼音字的繁/简字
+            attachVariantToPinyinInputWord(db, wordList);
+
+            return wordList;
+        });
+    }
+
+    /** 获取指定拼音的前 <code>top</code> 个高权重的候选字 */
+    public List<InputWord> getTopBestPinyinCandidateWords(CharInput input, int top) {
+        return queryPinyinCandidateWords(input, (db, pinyinCharsId) -> { //
+            return getTopBestPinyinInputWords(db, pinyinCharsId, this.userPhraseBaseWeight, top);
+        });
+    }
+
+    private List<InputWord> queryPinyinCandidateWords(
+            CharInput input, BiFunction<SQLiteDatabase, String, List<PinyinInputWord>> consumer
+    ) {
         String pinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
         if (pinyinCharsId == null) {
             return List.of();
         }
 
         SQLiteDatabase db = getDB();
-        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId, this.userPhraseBaseWeight);
-
-        // 附加拼音字的繁/简字
-        attachVariantToPinyinInputWord(db, wordList);
+        List<PinyinInputWord> wordList = consumer.apply(db, pinyinCharsId);
 
         return wordList.stream().map(w -> (InputWord) w).collect(Collectors.toList());
     }

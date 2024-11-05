@@ -854,7 +854,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-        List<InputWord> topBestCandidates = getTopBestInputCandidateWords(inputList, input, bestCandidatesTop);
+        List<InputWord> topBestCandidates = this.pinyinDict.getTopBestPinyinCandidateWords(input, bestCandidatesTop);
 
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
@@ -955,6 +955,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
         inputs.add(input);
 
+        // TODO 异步纠正？
         boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
         List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(inputs.stream()
                                                                                               .map(CharInput::getWord)
@@ -1040,7 +1041,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        determine_NotConfirmed_InputWord(inputList, input, () -> getTopBestInputCandidateWords(inputList, input, 1));
+        determine_NotConfirmed_InputWord(inputList,
+                                         input,
+                                         () -> this.pinyinDict.getTopBestPinyinCandidateWords(input, 1));
     }
 
     /** 在滑屏输入中，以及拼音纠正切换中被调用 */
@@ -1060,18 +1063,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
             input.setWord(bestCandidate);
         }
-    }
-
-    private List<InputWord> getTopBestInputCandidateWords(InputList inputList, CharInput input, int top) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
-
-        // 前 top 个权重大于 0 的输入字即为最终结果
-        // Note: 在一次输入中，输入字的权重不会发生变化，故而，可以重复使用
-        return candidateMap.values()
-                           .stream()
-                           .filter((word) -> word.getWeight() > 0)
-                           .limit(top)
-                           .collect(Collectors.toList());
     }
 
     /**
