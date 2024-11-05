@@ -1001,13 +1001,13 @@ public class PinyinKeyboard extends BaseKeyboard {
             words.add(input.getWord());
         }
 
-        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
-        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(words, 5, variantFirst);
-        List<CompletionInput> phraseCompletions = topBestPhrases.stream()
-                                                                .map((phrase) -> createPhraseCompletion(words.size(),
-                                                                                                        phrase))
-                                                                .collect(Collectors.toList());
-        inputList.setPhraseCompletions(phraseCompletions);
+//        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
+//        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(words, 5, variantFirst);
+//        List<CompletionInput> phraseCompletions = topBestPhrases.stream()
+//                                                                .map((phrase) -> createPhraseCompletion(words.size(),
+//                                                                                                        phrase))
+//                                                                .collect(Collectors.toList());
+//        inputList.setPhraseCompletions(phraseCompletions);
     }
 
     private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {

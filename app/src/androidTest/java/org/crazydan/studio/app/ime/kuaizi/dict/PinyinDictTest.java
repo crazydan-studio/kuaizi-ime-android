@@ -26,20 +26,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
+import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,24 +62,10 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
  * @date 2024-10-28
  */
 @RunWith(AndroidJUnit4.class)
-public class PinyinDictTest {
+public class PinyinDictTest extends PinyinDictBaseTest {
     private static final String LOG_TAG = PinyinDictTest.class.getSimpleName();
 
     private static final int userPhraseBaseWeight = 500;
-
-    @BeforeClass
-    public static void before() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-
-        PinyinDict dict = PinyinDict.instance();
-        dict.init(context);
-        dict.open(context);
-    }
-
-    @AfterClass
-    public static void after() {
-        PinyinDict.instance().close();
-    }
 
     @Test
     public void test_hmm_predict_phrase() {
@@ -141,11 +124,6 @@ public class PinyinDictTest {
                                                      })
                                                      .collect(Collectors.toList());
         saveUsedPinyinPhrase(db, phraseWordList, false);
-
-        Log.i(LOG_TAG,
-              phraseWordList.stream()
-                            .map((word) -> word.getValue() + ":" + word.getSpell().value)
-                            .collect(Collectors.joining(",")));
 
         String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
         List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));

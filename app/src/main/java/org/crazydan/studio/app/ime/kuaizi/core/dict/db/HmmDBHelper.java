@@ -46,6 +46,8 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.upsertSQLite;
  * @date 2024-10-27
  */
 public class HmmDBHelper {
+    private static final String LOG_TAG = HmmDBHelper.class.getSimpleName();
+
     /** 代表 {@link Hmm#TOTAL} 的字 */
     private static final String WORD_TOTAL = "-2";
     /** 代表 {@link Hmm#EOS} 和 {@link Hmm#BOS} 的字 */
@@ -74,11 +76,10 @@ public class HmmDBHelper {
         Map<String, Set<String>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
-            // 查询结果列包括（按顺序）：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
+            // 查询结果列包括：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
             this.sql = createTransProbQuerySQL(pinyinCharsIdList);
 
             this.reader = (row) -> {
-                // Note: Android SQLite 从 0 开始取，与 jdbc 的规范不一样
                 String wordId = row.getString("word_id_");
                 String preWordId = row.getString("prev_word_id_");
                 String pinyinCharsId = row.getString("word_spell_chars_id_");
@@ -99,6 +100,8 @@ public class HmmDBHelper {
             };
         }});
 
+//        Log.i(LOG_TAG, "TransProb: " + new Gson().toJson(transProb));
+
         // 计算 viterbi 矩阵
         Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, new Viterbi.Options() {{
             this.wordTotal = WORD_TOTAL;
@@ -106,6 +109,8 @@ public class HmmDBHelper {
             this.wordEos = WORD_EOS_BOS;
             this.spellAndWordsMap = pinyinCharsIdAndWordIdsMap;
         }});
+
+//        Log.i(LOG_TAG, "Viterbi: " + new Gson().toJson(viterbi));
 
         // 取出最佳短语
         return getBestPhraseFromViterbi(viterbi, pinyinCharsIdList.size(), top);

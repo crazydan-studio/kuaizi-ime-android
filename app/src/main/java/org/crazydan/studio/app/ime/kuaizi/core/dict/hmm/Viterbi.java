@@ -29,6 +29,7 @@ import java.util.Set;
  * @date 2024-10-31
  */
 public class Viterbi {
+    private static final String LOG_TAG = Viterbi.class.getSimpleName();
 
     public static class Options {
         /** 代表 {@link Hmm#TOTAL} 的字 */
@@ -79,6 +80,8 @@ public class Viterbi {
             }).toArray(Object[][]::new);
         }
 
+//        Log.i(LOG_TAG, "Viterbi Words: " + new Gson().toJson(viterbiWords));
+
         // <<<<<<<<<<<< 获取最佳预测的短语列表
         List<String[]> phrases = new ArrayList<>(top);
         // Note: 需做二维数组的行列翻转才能得到短语的字数组
@@ -104,6 +107,8 @@ public class Viterbi {
 
     /**
      * 计算 Viterbi 矩阵
+     * <p/>
+     * https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95#.E4.BE.8B.E5.AD.90
      *
      * @param spellList
      *         读音列表
@@ -113,9 +118,10 @@ public class Viterbi {
     public static Map<String, Object[]>[] calcViterbi(
             List<String> spellList, Map<String, Map<String, Integer>> transProb, Options options
     ) {
+        // https://github.com/wmhst7/THU_AI_Course_Pinyin
         int total = spellList.size();
         // 用于 log 平滑时所取的最小值，用于代替 0
-        double minProb = -3.14e100;
+        double minProb = -50;
         // pos 是目前节点的位置，word 为当前汉字即当前状态，
         // probability 为从 pre_word 上一汉字即上一状态转移到目前状态的概率
         // viterbi[pos][word] = (probability, pre_word)
@@ -145,8 +151,9 @@ public class Viterbi {
             }
             Map<String, Object[]> currentWordViterbi = viterbi[currentIndex];
 
-            // 遍历 current_word_ids 和 prev_word_ids，找出所有可能与当前拼音相符的汉字 curr，
-            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率 viterbi[i+1][curr] = {prob, prev}
+            // 遍历 current_words 和 prev_words，找出所有可能与当前拼音相符的汉字 curr_word，
+            // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率
+            // viterbi[curr_index][curr_word] = {prob, prev}
             currentWords.forEach((currentWord) -> {
                 Object[] result = prevWords.stream().map((prevWord) -> {
                     double prob = 0;
@@ -184,7 +191,8 @@ public class Viterbi {
 
                     return new Object[] { prob, prevWord };
                 }).reduce(null, (acc, pair) -> //
-                        acc == null || ((double) acc[0]) < ((double) pair[0]) ? pair : acc //
+                        acc == null || Double.compare(((double) acc[0]), ((double) pair[0])) < 0 //
+                        ? pair : acc //
                 );
 
                 currentWordViterbi.put(currentWord, result);
