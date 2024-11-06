@@ -867,6 +867,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
+
         List<String> topBestCandidateIds = this.pinyinDict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
         List<InputWord> topBestCandidates = topBestCandidateIds.stream()
                                                                .map(candidateMap::get)
@@ -875,6 +876,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
             determine_NotConfirmed_InputWord(inputList, input, () -> topBestCandidateIds);
+        }
+
+        // 当前输入确定的拼音字放在最前面
+        if (input.getWord() instanceof PinyinInputWord //
+            && !topBestCandidates.contains(input.getWord()) //
+        ) {
+            topBestCandidates.add(0, input.getWord());
+
+            topBestCandidates = CollectionUtils.subList(topBestCandidates, 0, bestCandidatesTop);
         }
 
         // Note：以最新确定的输入候选字做为表情的关键字查询条件
