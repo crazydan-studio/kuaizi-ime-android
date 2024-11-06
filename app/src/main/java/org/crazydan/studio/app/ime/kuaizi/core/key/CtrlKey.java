@@ -87,9 +87,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
                 return " ";
             case Enter:
                 return "\n";
-            case Filter_PinyinInputCandidate_by_Stroke:
-                CodeOption option = (CodeOption) getOption();
-                return option.text;
             default:
                 return getLabel();
         }
@@ -156,8 +153,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Toggle_PinyinInput_spell,
         /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
         Filter_PinyinInputCandidate_advance,
-        /** 在候选字状态下根据笔画过滤候选字 */
-        Filter_PinyinInputCandidate_by_Stroke,
         /** 在候选字状态下根据读音过滤候选字 */
         Filter_PinyinInputCandidate_by_Spell,
         /** 在候选字状态下根据部首过滤候选字 */

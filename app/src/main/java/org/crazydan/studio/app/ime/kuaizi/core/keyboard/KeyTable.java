@@ -143,7 +143,6 @@ public abstract class KeyTable {
                             KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_PinyinInput_spell, key_ctrl_label_style);
-        ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinInputCandidate_advance,
                             KeyStyle.withIcon(R.drawable.ic_filter_empty, R.attr.key_ctrl_switcher_bg_color));

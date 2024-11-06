@@ -449,8 +449,9 @@ public class PinyinKeyTable extends KeyTable {
     /** 创建输入候选字按键 */
     public Key<?>[][] createInputCandidateKeys(
             PinyinTree pinyinTree, //
-            CharInput input, List<InputWord> words, Map<String, Integer> strokes, //
-            int startIndex, boolean hasAdvanceFilter
+            CharInput input, List<InputWord> words, //
+            List<PinyinInputWord.Spell> spells, //
+            int startIndex, PinyinInputWord.Filter wordFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -463,11 +464,11 @@ public class PinyinKeyTable extends KeyTable {
         int index_mid = getGridMiddleColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        if (totalPage > 2 || hasAdvanceFilter) {
+        if (totalPage > 2 || !wordFilter.isEmpty()) {
             CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_advance);
             gridKeys[2][0] = key;
 
-            if (hasAdvanceFilter) {
+            if (!wordFilter.isEmpty()) {
                 key.setIconResId(R.drawable.ic_filter_filled);
             }
         }
@@ -477,20 +478,19 @@ public class PinyinKeyTable extends KeyTable {
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
-        // 笔画过滤按键
-        String[] filterStrokes = PinyinInputWord.getStrokeNames();
-        GridCoord[] filterStrokeKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
-        for (int i = 0, j = 0; i < filterStrokeKeyCorrds.length && j < filterStrokes.length; i++, j++) {
-            GridCoord keyCoord = filterStrokeKeyCorrds[i];
-            String stroke = filterStrokes[j];
+        // 声调过滤按键
+        GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
+        for (int i = 0, j = 0; i < spellKeyCorrds.length && j < spells.size(); i++, j++) {
+            GridCoord keyCoord = spellKeyCorrds[i];
+            PinyinInputWord.Spell spell = spells.get(j);
 
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            String strokeCode = PinyinInputWord.getStrokeCode(stroke);
-            Integer strokeCount = strokes.get(strokeCode);
+            boolean disabled = wordFilter.spells.contains(spell);
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
 
-            gridKeys[row][column] = strokeFilterKey(stroke, strokeCount);
+            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
         }
 
         // 拼音变换按键
@@ -580,9 +580,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字高级过滤按键 */
     public Key<?>[][] createInputCandidateAdvanceFilterKeys(
-            List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Spell> selectedSpells, //
-            List<PinyinInputWord.Radical> radicals, List<PinyinInputWord.Radical> selectedRadicals, //
-            int startIndex
+            List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals, //
+            int startIndex, PinyinInputWord.Filter wordFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -605,7 +604,7 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            boolean disabled = selectedSpells.contains(spell);
+            boolean disabled = wordFilter.spells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
 
             gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
@@ -627,7 +626,7 @@ public class PinyinKeyTable extends KeyTable {
                 }
 
                 PinyinInputWord.Radical radical = radicals.get(dataIndex++);
-                boolean disabled = selectedRadicals.contains(radical);
+                boolean disabled = wordFilter.radicals.contains(radical);
                 KeyColor color = key_input_word_level_colors[level];
                 CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical;
 
@@ -698,15 +697,6 @@ public class PinyinKeyTable extends KeyTable {
         KeyColor color = key_input_word_level_colors[level];
 
         return InputWordKey.create(word).setColor(color);
-    }
-
-    public CtrlKey strokeFilterKey(String stroke, Integer strokeCount) {
-        String strokeCode = PinyinInputWord.getStrokeCode(stroke);
-        String label = strokeCount != null ? stroke + "/" + strokeCount : stroke;
-
-        CtrlKey.Option<?> option = new CtrlKey.CodeOption(strokeCode, stroke);
-
-        return ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Stroke).setOption(option).setLabel(label);
     }
 
     public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value) {

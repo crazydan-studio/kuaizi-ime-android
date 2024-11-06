@@ -18,9 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -33,28 +32,35 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
 /**
  * {@link State.Type#InputCandidate_Choose_Doing} 的状态数据
+ * <p/>
+ * 仅针对拼音候选字
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class InputCandidateChooseDoingStateData extends PagingStateData<InputWord> {
+public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<InputWord> {
     private final CharInput target;
     private final List<InputWord> candidates;
-    private final Map<String, Integer> strokes;
+    private final List<PinyinInputWord.Spell> spells;
 
-    private AdvanceFilter advanceFilter;
+    private PinyinInputWord.Filter filter;
     private List<InputWord> cachedFilterCandidates;
 
-    public InputCandidateChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
+    public CandidatePinyinWordChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
         super(pageSize);
 
         this.target = target;
         this.candidates = candidates;
 
-        this.strokes = new HashMap<>();
         this.cachedFilterCandidates = candidates;
+        this.filter = new PinyinInputWord.Filter();
 
-        this.advanceFilter = new AdvanceFilter();
+        this.spells = candidates.stream()
+                                .filter((word) -> word instanceof PinyinInputWord)
+                                .map((word) -> ((PinyinInputWord) word).getSpell())
+                                .sorted(Comparator.comparingInt(a -> a.id))
+                                .distinct()
+                                .collect(Collectors.toList());
     }
 
     public CharInput getTarget() {
@@ -66,47 +72,29 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
         return this.cachedFilterCandidates;
     }
 
-    public Map<String, Integer> getStrokes() {
-        return this.strokes;
+    public List<InputWord> getCandidates() {
+        return this.candidates;
     }
 
-    /** @return 若添加笔画且其数量大于 0 则返回 <code>true</code>，否则返回 <code>false</code> */
-    public boolean addStroke(String stroke, int increment) {
-        if (stroke == null) {
-            return false;
-        }
+    public List<PinyinInputWord.Spell> getSpells() {
+        return this.spells;
+    }
 
-        int count = this.strokes.getOrDefault(stroke, 0);
-        count += increment;
+    public PinyinInputWord.Filter getFilter() {
+        return new PinyinInputWord.Filter(this.filter);
+    }
 
-        boolean changed = true;
-        if (count > 0) {
-            this.strokes.put(stroke, count);
-        } else {
-            changed = this.strokes.remove(stroke) != null;
-        }
+    public void setFilter(PinyinInputWord.Filter filter) {
+        PinyinInputWord.Filter oldFilter = this.filter;
+        this.filter = new PinyinInputWord.Filter(filter);
 
-        if (changed) {
+        if (!oldFilter.equals(this.filter)) {
             this.cachedFilterCandidates = filterCandidates(this.candidates);
         }
-        return changed;
-    }
-
-    public void newAdvanceFilter(List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals) {
-        AdvanceFilter oldFilter = this.advanceFilter;
-        this.advanceFilter = new AdvanceFilter(spells, radicals);
-
-        if (!oldFilter.equals(this.advanceFilter)) {
-            this.cachedFilterCandidates = filterCandidates(this.candidates);
-        }
-    }
-
-    public AdvanceFilter getAdvanceFilter() {
-        return this.advanceFilter;
     }
 
     private List<InputWord> filterCandidates(List<InputWord> candidates) {
-        if (this.strokes.isEmpty() && this.advanceFilter.isEmpty()) {
+        if (this.filter.isEmpty()) {
             return candidates;
         }
 
@@ -154,72 +142,6 @@ public class InputCandidateChooseDoingStateData extends PagingStateData<InputWor
             return true;
         }
 
-        if (!this.advanceFilter.matched(word)) {
-            return false;
-        }
-
-        Map<String, Integer> wordStrokes = ((PinyinInputWord) word).getStrokes();
-        if (wordStrokes.isEmpty() || this.strokes.isEmpty()) {
-            return true;
-        }
-
-        for (Map.Entry<String, Integer> entry : this.strokes.entrySet()) {
-            String stroke = entry.getKey();
-            int expectedCount = entry.getValue();
-            int actualCount = wordStrokes.getOrDefault(stroke, 0);
-
-            if (actualCount < expectedCount) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static class AdvanceFilter {
-        public final List<PinyinInputWord.Spell> spells;
-        public final List<PinyinInputWord.Radical> radicals;
-
-        public AdvanceFilter() {
-            this(new ArrayList<>(), new ArrayList<>());
-        }
-
-        public AdvanceFilter(List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals) {
-            this.spells = spells;
-            this.radicals = radicals;
-        }
-
-        public boolean isEmpty() {
-            return this.spells.isEmpty() //
-                   && this.radicals.isEmpty();
-        }
-
-        public boolean matched(InputWord word) {
-            if (!(word instanceof PinyinInputWord)) {
-                return false;
-            }
-
-            return (this.spells.isEmpty() //
-                    || this.spells.contains(((PinyinInputWord) word).getSpell())) //
-                   && (this.radicals.isEmpty() //
-                       || this.radicals.contains(((PinyinInputWord) word).getRadical()));
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            AdvanceFilter that = (AdvanceFilter) o;
-            return this.spells.equals(that.spells) && this.radicals.equals(that.radicals);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.spells, this.radicals);
-        }
+        return this.filter.matched(word);
     }
 }

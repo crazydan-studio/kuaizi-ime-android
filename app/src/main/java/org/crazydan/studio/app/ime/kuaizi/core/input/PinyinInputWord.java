@@ -17,7 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -197,6 +199,63 @@ public class PinyinInputWord extends InputWord {
         @Override
         public int hashCode() {
             return Objects.hash(this.value);
+        }
+    }
+
+    public static class Filter {
+        public final List<Spell> spells;
+        public final List<Radical> radicals;
+
+        public Filter() {
+            this(new ArrayList<>(), new ArrayList<>());
+        }
+
+        public Filter(Filter filter) {
+            this(new ArrayList<>(filter.spells), new ArrayList<>(filter.radicals));
+        }
+
+        public Filter(List<Spell> spells, List<Radical> radicals) {
+            this.spells = spells;
+            this.radicals = radicals;
+        }
+
+        public void clear() {
+            this.spells.clear();
+            this.radicals.clear();
+        }
+
+        public boolean isEmpty() {
+            return this.spells.isEmpty() //
+                   && this.radicals.isEmpty();
+        }
+
+        public boolean matched(InputWord word) {
+            if (!(word instanceof PinyinInputWord)) {
+                return false;
+            }
+
+            return (this.spells.isEmpty() //
+                    || this.spells.contains(((PinyinInputWord) word).getSpell())) //
+                   && (this.radicals.isEmpty() //
+                       || this.radicals.contains(((PinyinInputWord) word).getRadical()));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Filter that = (Filter) o;
+            return this.spells.equals(that.spells) && this.radicals.equals(that.radicals);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.spells, this.radicals);
         }
     }
 }

@@ -428,12 +428,6 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         Key<?> key_level_0 = keyTable.level0CharKey("sh");
         Key<?> key_level_1 = keyTable.level1CharKey("u");
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_ctrl_filter_heng = keyTable.strokeFilterKey("一", null);
-        Key<?> key_ctrl_filter_shu = keyTable.strokeFilterKey("丨", null);
-        Key<?> key_ctrl_filter_pie = keyTable.strokeFilterKey("丿", null);
-        Key<?> key_ctrl_filter_na = keyTable.strokeFilterKey("㇏", null);
-        // 𠃋
-        Key<?> key_ctrl_filter_zhe = keyTable.strokeFilterKey("\uD840\uDCCB", null);
 
         Exercise exercise = Exercise.normal("拼音候选字过滤", sandboxView::getImage);
 
@@ -450,24 +444,22 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                    key_case_word,
                                    expected_auto_word,
                                    "请在候选字列表区域上方依次点击"
-                                   + "<span style=\"color:#ed4c67;\">5</span>次<img src=\""
-                                   + sandboxView.withKey(key_ctrl_filter_heng)
-                                   + "\"/>（横）"
-                                   + "、<span style=\"color:#ed4c67;\">4</span>次<img src=\""
-                                   + sandboxView.withKey(key_ctrl_filter_shu)
-                                   + "\"/>（竖，其包含竖钩等变形笔画）"
-                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
-                                   + sandboxView.withKey(key_ctrl_filter_pie)
-                                   + "\"/>（撇）"
-                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
-                                   + sandboxView.withKey(key_ctrl_filter_na)
-                                   + "\"/>（捺，其包含点、提等变形笔画）"
-                                   + "、<span style=\"color:#ed4c67;\">2</span>次<img src=\""
-                                   + sandboxView.withKey(key_ctrl_filter_zhe)
-                                   + "\"/>（折，其包含任意含折的笔画）"
-                                   + "，再点击正确的候选字<img src=\""
-                                   + sandboxView.withKey(key_case_word)
-                                   + "\"/>；");
+//                                   + "<span style=\"color:#ed4c67;\">5</span>次<img src=\""
+//                                   + sandboxView.withKey(key_ctrl_filter_heng)
+//                                   + "\"/>（横）"
+//                                   + "、<span style=\"color:#ed4c67;\">4</span>次<img src=\""
+//                                   + sandboxView.withKey(key_ctrl_filter_shu)
+//                                   + "\"/>（竖，其包含竖钩等变形笔画）"
+//                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
+//                                   + sandboxView.withKey(key_ctrl_filter_pie)
+//                                   + "\"/>（撇）"
+//                                   + "、<span style=\"color:#ed4c67;\">1</span>次<img src=\""
+//                                   + sandboxView.withKey(key_ctrl_filter_na)
+//                                   + "\"/>（捺，其包含点、提等变形笔画）"
+//                                   + "、<span style=\"color:#ed4c67;\">2</span>次<img src=\""
+//                                   + sandboxView.withKey(key_ctrl_filter_zhe)
+//                                   + "\"/>（折，其包含任意含折的笔画）"
+                                   + "，再点击正确的候选字<img src=\"" + sandboxView.withKey(key_case_word) + "\"/>；");
 
         exercise.addStep(-1,
                          "<b>提示</b>：笔画过滤是按字所包含的各类笔画的数量进行筛选的。"

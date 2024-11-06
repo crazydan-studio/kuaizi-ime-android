@@ -50,7 +50,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static final int VIEW_TYPE_NULL_KEY = 2;
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
     private static final int VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY = 4;
-    private static final int VIEW_TYPE_FILTER_INPUT_WORD_KEY = 5;
     private static final int VIEW_TYPE_SYMBOL_KEY = 6;
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
     private static final int VIEW_TYPE_XPAD_KEY = 8;
@@ -67,8 +66,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     protected static int getKeyViewType(Key<?> key) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case Filter_PinyinInputCandidate_by_Stroke:
-                    return VIEW_TYPE_FILTER_INPUT_WORD_KEY;
                 case Toggle_PinyinInput_spell:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
@@ -93,10 +90,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static KeyView<?, ?> createKeyView(Context context, ViewGroup root, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyView(inflateItemView(context, root, R.layout.key_ctrl_view));
-        } else if (viewType == VIEW_TYPE_FILTER_INPUT_WORD_KEY) {
-            return new CtrlFilterInputWordKeyView(inflateItemView(context,
-                                                                  root,
-                                                                  R.layout.key_ctrl_filter_input_word_view));
         } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
             return new CtrlToggleInputSpellKeyView(inflateItemView(context,
                                                                    root,
@@ -119,9 +112,6 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
     private static void bindKeyView(KeyView<?, ?> view, Key<?> key, HexagonOrientation orientation) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
-                case Filter_PinyinInputCandidate_by_Stroke:
-                    ((CtrlFilterInputWordKeyView) view).bind((CtrlKey) key, orientation);
-                    break;
                 case Toggle_PinyinInput_spell:
                     ((CtrlToggleInputSpellKeyView) view).bind((CtrlKey) key, orientation);
                     break;
