@@ -115,6 +115,9 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 获取输入字符列表 */
     List<String> getChars();
 
+    /** 获取合并后的输入字符的字符串 */
+    String getJoinedChars();
+
     /** 获取输入文本内容 */
     StringBuilder getText();
 

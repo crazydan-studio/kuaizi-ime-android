@@ -79,35 +79,31 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 根据拼音字母组合 id 获取其对应的前 <code>top</code> 个{@link PinyinInputWord 拼音字对象}
+     * 根据拼音字母组合 id 获取其对应的前 <code>top</code> 个拼音字 id
      *
-     * @return 结果的权重均大于 0
+     * @return 结果拼音字的权重均大于 0
      */
-    public static List<PinyinInputWord> getTopBestPinyinInputWords(
+    public static List<String> getTopBestPinyinWordIds(
             SQLiteDatabase db, String pinyinCharsId, int userPhraseBaseWeight, int top
     ) {
-        return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinInputWord>() {{
+        return rawQuerySQLite(db, new SQLiteRawQueryParams<String>() {{
             this.sql = "select distinct"
-                       + "   py_.id_, py_.word_, py_.word_id_,"
-                       + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
-                       + "   py_.traditional_, py_.stroke_order_,"
-                       + "   py_.radical_, py_.radical_stroke_count_,"
-                       + "   ( ifnull(ph_.weight_app_, 0) +"
-                       + "     ifnull(ph_.weight_user_, 0) +"
+                       + "   word_id_,"
+                       + "   ( ifnull(weight_app_, 0) +"
+                       + "     ifnull(weight_user_, 0) +"
                        // 补充用户输入的基础权重
                        // Note: 低版本 SQLite 不支持 iif，需采用 case when
-                       + "     (case when ifnull(ph_.weight_user_, 0) > 0 then ? else 0 end)"
-                       // + "     iif(ifnull(ph_.weight_user_, 0) > 0, ?, 0)"
+                       + "     (case when ifnull(weight_user_, 0) > 0 then ? else 0 end)"
+                       // + "     iif(ifnull(weight_user_, 0) > 0, ?, 0)"
                        + "   ) used_weight_"
-                       + " from pinyin_word py_"
-                       + " left join phrase_word ph_ on ph_.word_id_ = py_.id_"
-                       + " where used_weight_ > 0 and py_.spell_chars_id_ = ?"
+                       + " from phrase_word"
+                       + " where used_weight_ > 0 and spell_chars_id_ = ?"
                        + " order by used_weight_ desc"
                        + " limit ?";
 
             this.params = new String[] { userPhraseBaseWeight + "", pinyinCharsId, top + "" };
 
-            this.reader = PinyinDictDBHelper::createPinyinInputWord;
+            this.reader = (row) -> row.getString("word_id_");
         }});
     }
 
@@ -123,8 +119,7 @@ public class PinyinDictDBHelper {
                            + "   py_.id_, py_.word_, py_.word_id_,"
                            + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
                            + "   py_.traditional_, py_.stroke_order_,"
-                           + "   py_.radical_, py_.radical_stroke_count_,"
-                           + "   0 as used_weight_"
+                           + "   py_.radical_, py_.radical_stroke_count_"
                            + " from pinyin_word py_"
                            + (" where " + queryWhere)
                            + " order by"
@@ -366,8 +361,6 @@ public class PinyinDictDBHelper {
         String spellCharsId = row.getString("spell_chars_id_");
         PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId, spellValue, spellCharsId);
 
-        int usedWeight = row.getInt("used_weight_");
-
         boolean traditional = row.getInt("traditional_") > 0;
         String strokeOrder = row.getString("stroke_order_");
 
@@ -375,10 +368,7 @@ public class PinyinDictDBHelper {
         int radicalStrokeCount = row.getInt("radical_stroke_count_");
         PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue, radicalStrokeCount);
 
-        PinyinInputWord word = new PinyinInputWord(uid, wordValue, wordId, spell, radical, traditional, strokeOrder);
-        word.setWeight(usedWeight);
-
-        return word;
+        return new PinyinInputWord(uid, wordValue, wordId, spell, radical, traditional, strokeOrder);
     }
 
     private static EmojiInputWord createEmojiInputWord(SQLiteRow row) {

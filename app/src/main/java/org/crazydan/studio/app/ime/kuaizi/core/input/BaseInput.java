@@ -185,6 +185,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
+    public String getJoinedChars() {
+        return String.join("", getChars());
+    }
+
+    @Override
     public StringBuilder getText() {
         return getText(null);
     }

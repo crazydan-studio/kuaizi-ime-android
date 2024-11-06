@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,7 +52,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinWordIds;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
@@ -144,19 +145,24 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
+            Map<String, PinyinInputWord> wordMap = getAllPinyinInputWords(db, pinyinCharsId).stream()
+                                                                                            .collect(Collectors.toMap(
+                                                                                                    InputWord::getUid,
+                                                                                                    Function.identity(),
+                                                                                                    (a, b) -> a,
+                                                                                                    HashMap::new));
+
             int top = 10;
-            List<PinyinInputWord> wordList = getTopBestPinyinInputWords(db, pinyinCharsId, userPhraseBaseWeight, top);
+            List<PinyinInputWord> wordList = getTopBestPinyinWordIds(db,
+                                                                     pinyinCharsId,
+                                                                     userPhraseBaseWeight,
+                                                                     top).stream()
+                                                                         .map(wordMap::get)
+                                                                         .collect(Collectors.toList());
             Assert.assertTrue(wordList.size() <= top && !wordList.isEmpty());
 
-            for (PinyinInputWord word : wordList) {
-                Assert.assertTrue(word.getWeight() > 0);
-            }
-
             String result = wordList.stream()
-                                    .map((word) -> String.format("%s:%s:%d",
-                                                                 word.getValue(),
-                                                                 word.getSpell().value,
-                                                                 word.getWeight()))
+                                    .map((word) -> word.getValue() + ":" + word.getSpell().value)
                                     .collect(Collectors.joining(", "));
 
             Log.i(LOG_TAG, pinyinChars + " => " + result);

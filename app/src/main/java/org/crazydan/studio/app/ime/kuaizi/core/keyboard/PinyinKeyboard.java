@@ -854,12 +854,14 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-        List<InputWord> topBestCandidates = this.pinyinDict.getTopBestPinyinCandidateWords(input, bestCandidatesTop);
+        List<String> topBestCandidateIds = this.pinyinDict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
+        List<InputWord> topBestCandidates = topBestCandidateIds.stream()
+                                                               .map(candidateMap::get)
+                                                               .collect(Collectors.toList());
 
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
-            List<InputWord> finalTopBestCandidates = topBestCandidates;
-            determine_NotConfirmed_InputWord(inputList, input, () -> finalTopBestCandidates);
+            determine_NotConfirmed_InputWord(inputList, input, () -> topBestCandidateIds);
         }
 
         // Note：以最新确定的输入候选字做为表情的关键字查询条件
@@ -956,12 +958,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         inputs.add(input);
 
         // TODO 异步纠正？
-        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
-        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(inputs.stream()
-                                                                                              .map(CharInput::getWord)
-                                                                                              .collect(Collectors.toList()),
-                                                                                        1,
-                                                                                        variantFirst);
+        List<List<InputWord>> topBestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
         if (topBestPhrases.isEmpty()) {
             return;
         }
@@ -1016,6 +1013,14 @@ public class PinyinKeyboard extends BaseKeyboard {
 //        inputList.setPhraseCompletions(phraseCompletions);
     }
 
+    private List<List<InputWord>> getTopBestMatchedPhrase(InputList inputList, List<CharInput> inputs, int top) {
+        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
+
+        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, variantFirst, (pinyinChars, pinyinWordId) -> { //
+            return (PinyinInputWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
+        });
+    }
+
     private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {
         CompletionInput completion = new CompletionInput(startIndex);
 
@@ -1043,26 +1048,37 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         determine_NotConfirmed_InputWord(inputList,
                                          input,
-                                         () -> this.pinyinDict.getTopBestPinyinCandidateWords(input, 1));
+                                         () -> this.pinyinDict.getTopBestCandidatePinyinWordIds(input, 1));
     }
 
     /** 在滑屏输入中，以及拼音纠正切换中被调用 */
     private void determine_NotConfirmed_InputWord(
-            InputList inputList, CharInput input, Supplier<List<InputWord>> topBestCandidatesGetter
+            InputList inputList, CharInput input, Supplier<List<String>> topBestCandidateIdsGetter
     ) {
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
 
         if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
-            List<InputWord> topBestCandidates = topBestCandidatesGetter.get();
+            InputWord bestCandidate = inputList.getCachedBestCandidateWords(input);
 
-            InputWord bestCandidate = CollectionUtils.first(topBestCandidates);
-            // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
             if (bestCandidate == null) {
-                bestCandidate = CollectionUtils.first(candidateMap.values());
+                List<String> topBestCandidateIds = topBestCandidateIdsGetter.get();
+                bestCandidate = candidateMap.get(CollectionUtils.first(topBestCandidateIds));
+
+                // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
+                if (bestCandidate == null) {
+                    bestCandidate = CollectionUtils.first(candidateMap.values());
+                    assert bestCandidate != null;
+
+                    inputList.cacheBestCandidateWord(input, bestCandidate);
+                }
             }
 
             input.setWord(bestCandidate);
         }
+    }
+
+    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
+        return getInputCandidateWords(inputList, input.getJoinedChars());
     }
 
     /**
@@ -1072,14 +1088,14 @@ public class PinyinKeyboard extends BaseKeyboard {
      *
      * @return 不为 <code>null</code>
      */
-    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
-        Map<String, InputWord> words = inputList.getCachedCandidateWords(input);
+    private Map<String, InputWord> getInputCandidateWords(InputList inputList, String inputChars) {
+        Map<String, InputWord> words = inputList.getCachedCandidateWords(inputChars);
 
         if (words == null) {
-            List<InputWord> candidates = this.pinyinDict.getPinyinCandidateWords(input);
-            inputList.cacheCandidateWords(input, candidates);
+            List<InputWord> candidates = this.pinyinDict.getCandidatePinyinWords(inputChars);
+            inputList.cacheCandidateWords(inputChars, candidates);
 
-            words = inputList.getCachedCandidateWords(input);
+            words = inputList.getCachedCandidateWords(inputChars);
         }
         return words;
     }

@@ -82,7 +82,7 @@ public class PinyinTree {
 
     /** 判断指定的输入的拼音字母组合的 id */
     public String getPinyinCharsId(CharInput input) {
-        String pinyinChars = String.join("", input.getChars());
+        String pinyinChars = input.getJoinedChars();
 
         return getPinyinCharsId(pinyinChars);
     }

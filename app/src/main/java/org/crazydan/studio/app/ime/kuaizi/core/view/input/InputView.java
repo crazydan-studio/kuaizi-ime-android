@@ -65,7 +65,7 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
 
     protected void showWord(Input.Option option, CharInput input, boolean selected, boolean hideWordNotation) {
         InputWord word = input.getWord();
-        String value = word != null ? word.getValue() : String.join("", input.getChars());
+        String value = word != null ? word.getValue() : input.getJoinedChars();
         String notation = word != null && !hideWordNotation ? word.getNotation() : null;
 
         if (option != null && word != null) {
