@@ -1,5 +1,5 @@
 筷字输入法 Android 客户端
-====================================
+===================================
 
 ## 参考资料
 
@@ -10,5 +10,9 @@
   - [动态赋值](https://developer.android.com/build/gradle-tips#simplify-app-development)
   - [签名](https://developer.android.com/build/gradle-tips#remove-private-signing-information-from-your-project)
   - [为不同构建类型添加不同资源配置](https://stackoverflow.com/questions/24785270/how-to-change-app-name-per-gradle-build-type#answer-24786371)
-- [Android自定义View篇之（三）Canvas绘制文字](https://www.cnblogs.com/andy-songwei/p/10968358.html):
+- [Android 自定义 View 篇之（三）Canvas 绘制文字](https://www.cnblogs.com/andy-songwei/p/10968358.html):
   涉及详细的文字尺寸、基线等计算方式的说明
+- [HMM 和 Viterbi 算法](https://lesley0416.github.io/2019/03/01/HMM_IM/)
+- [维特比算法](https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95)
+- [wmhst7/THU_AI_Course_Pinyin](https://github.com/wmhst7/THU_AI_Course_Pinyin)
+- [基于 Bigram+HMM 的拼音汉字转换](https://github.com/iseesaw/Pinyin2ChineseChars)
