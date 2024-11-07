@@ -66,7 +66,7 @@ public class PinyinDictDBHelper {
                                                      "py_.id_ in (" + placeholder + ")",
                                                      pinyinWordIds.toArray(new String[0]));
 
-        return wordList.stream().collect(Collectors.toMap(PinyinWord::getUid, Function.identity()));
+        return wordList.stream().collect(Collectors.toMap(PinyinWord::getId, Function.identity()));
     }
 
     /**
@@ -279,16 +279,16 @@ public class PinyinDictDBHelper {
 
     /** 向{@link PinyinWord 拼音字}附加其繁/简变体 */
     public static void attachVariantToPinyinWord(SQLiteDatabase db, Collection<PinyinWord> pinyinWordList) {
-        Map<String, List<PinyinWord>> pinyinWordMap = pinyinWordList.stream()
-                                                                    .collect(Collectors.groupingBy(PinyinWord::getWordId,
-                                                                                                   HashMap::new,
-                                                                                                   Collectors.toCollection(
-                                                                                                           ArrayList::new)));
+        Map<String, List<PinyinWord>> wordMap = pinyinWordList.stream()
+                                                              .collect(Collectors.groupingBy(PinyinWord::getGlyphId,
+                                                                                             HashMap::new,
+                                                                                             Collectors.toCollection(
+                                                                                                     ArrayList::new)));
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
-            String placeholder = pinyinWordMap.keySet().stream().map((k) -> "?").collect(Collectors.joining(", "));
+            String placeholder = wordMap.keySet().stream().map((k) -> "?").collect(Collectors.joining(", "));
 
-            this.params = pinyinWordMap.keySet().toArray(new String[0]);
+            this.params = wordMap.keySet().toArray(new String[0]);
             this.sql = "select t_.* from (" //
                        + "   select source_id_, target_id_, target_value_" //
                        + "   from simple_word" //
@@ -299,31 +299,31 @@ public class PinyinDictDBHelper {
                        + " where t_.source_id_ in (" + placeholder + ")";
 
             this.reader = (row) -> {
-                String sourceWordId = row.getString("source_id_");
-                List<PinyinWord> sourceWords = pinyinWordMap.get(sourceWordId);
-                assert sourceWords != null;
+                String sourceId = row.getString("source_id_");
+                List<PinyinWord> sources = wordMap.get(sourceId);
+                assert sources != null;
 
-                String targetWordId = row.getString("target_id_");
-                String targetWordValue = row.getString("target_value_");
-                List<PinyinWord> targetWords = pinyinWordMap.get(targetWordId);
+                String targetId = row.getString("target_id_");
+                String targetValue = row.getString("target_value_");
+                List<PinyinWord> targets = wordMap.get(targetId);
 
-                sourceWords.forEach((sourceWord) -> {
-                    if (sourceWord.getVariant() != null) {
+                sources.forEach((source) -> {
+                    if (source.getVariant() != null) {
                         return;
                     }
 
                     // 适用于为某个拼音下的所有候选字附加变体
-                    if (!CollectionUtils.isEmpty(targetWords)) {
+                    if (!CollectionUtils.isEmpty(targets)) {
                         // 繁/简字的拼音需一致
-                        targetWords.forEach((targetWord) -> {
-                            if (targetWord.getNotation().equals(sourceWord.getNotation())) {
-                                sourceWord.setVariant(targetWordValue);
+                        targets.forEach((target) -> {
+                            if (target.getSpell().value.equals(source.getSpell().value)) {
+                                source.setVariant(targetValue);
                             }
                         });
                     }
                     // 适用于为不同拼音的字附加各自的变体
                     else {
-                        sourceWord.setVariant(targetWordValue);
+                        source.setVariant(targetValue);
                     }
                 });
 
@@ -348,19 +348,19 @@ public class PinyinDictDBHelper {
 
     private static PinyinWord createPinyinWord(SQLiteRow row) {
         // 拼音字 id
-        String uid = row.getString("id_");
-        // 字 id
-        String wordId = row.getString("word_id_");
+        String id = row.getString("id_");
         // 字
-        String wordValue = row.getString("word_");
+        String value = row.getString("word_");
+        // 字形 id
+        String glyphId = row.getString("word_id_");
 
         // 拼音 id
-        int spellId = row.getInt("spell_id_");
+        String spellId = row.getString("spell_id_");
         // 拼音
         String spellValue = row.getString("spell_");
         // 拼音字母组合 id
         String spellCharsId = row.getString("spell_chars_id_");
-        PinyinWord.Spell spell = new PinyinWord.Spell(spellId, spellValue, spellCharsId);
+        PinyinWord.Spell spell = new PinyinWord.Spell(spellValue, spellId, spellCharsId);
 
         boolean traditional = row.getInt("traditional_") > 0;
 
@@ -368,17 +368,17 @@ public class PinyinDictDBHelper {
         int radicalStrokeCount = row.getInt("radical_stroke_count_");
         PinyinWord.Radical radical = new PinyinWord.Radical(radicalValue, radicalStrokeCount);
 
-        return new PinyinWord(uid, wordValue, wordId, spell, radical, traditional);
+        return new PinyinWord(id, value, spell, glyphId, radical, traditional);
     }
 
     private static EmojiWord createEmojiWord(SQLiteRow row) {
-        String uid = row.getString("id_");
+        String id = row.getString("id_");
         String value = row.getString("value_");
         int weight = row.getInt("weight_");
 
         EmojiWord word = null;
         if (CharUtils.isPrintable(value)) {
-            word = new EmojiWord(uid, value);
+            word = new EmojiWord(id, value);
             word.setWeight(weight);
         }
         return word;

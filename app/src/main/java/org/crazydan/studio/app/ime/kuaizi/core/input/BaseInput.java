@@ -200,7 +200,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
         if (this.word != null) {
             String value = this.word.getValue();
-            String notation = this.word.getNotation();
+            String spell = this.word.getSpell().value;
             String variant = this.word.getVariant();
 
             if (option != null) {
@@ -208,13 +208,13 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
                     value = variant;
                 }
 
-                if (option.wordNotationType != null && notation != null) {
-                    switch (option.wordNotationType) {
+                if (option.wordSpellUsedType != null && spell != null) {
+                    switch (option.wordSpellUsedType) {
                         case following:
-                            value = String.format("%s(%s)", value, notation);
+                            value = String.format("%s(%s)", value, spell);
                             break;
                         case replacing:
-                            value = notation;
+                            value = spell;
                             break;
                     }
                 }
@@ -230,11 +230,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public boolean isTextOnlyWordNotation(Option option) {
+    public boolean isTextOnlyWordSpell(Option option) {
         return option != null
-               && option.wordNotationType == InputWord.NotationType.replacing
+               && option.wordSpellUsedType == InputWord.SpellUsedType.replacing
                && hasWord()
-               && getWord().hasNotation();
+               && getWord().hasSpell();
     }
 
     @Override
@@ -272,7 +272,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             return true;
         }
 
-        BaseInput that = (BaseInput) o;
+        BaseInput<?> that = (BaseInput<?>) o;
         return this.keys.equals(that.keys);
     }
 
@@ -285,7 +285,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             return false;
         }
 
-        BaseInput that = (BaseInput) o;
+        BaseInput<?> that = (BaseInput<?>) o;
         return this.keys.equals(that.keys) && Objects.equals(this.word, that.word);
     }
 

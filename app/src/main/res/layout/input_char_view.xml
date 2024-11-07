@@ -27,10 +27,10 @@
         android:background="?attr/input_bg_color">
 
     <TextView
-            android:id="@+id/notation_view"
+            android:id="@+id/spell_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/char_input_notation_text_size"
+            android:textSize="@dimen/char_input_word_spell_text_size"
             android:gravity="center"
             android:textColor="?attr/input_fg_color" />
 

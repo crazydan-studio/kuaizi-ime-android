@@ -26,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
@@ -37,14 +38,14 @@ import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
  * @date 2023-07-07
  */
 public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I> {
-    private final TextView notationView;
+    private final TextView spellView;
     private final TextView wordView;
     private final ImageView spaceView;
 
     public InputView(@NonNull View itemView) {
         super(itemView);
 
-        this.notationView = itemView.findViewById(R.id.notation_view);
+        this.spellView = itemView.findViewById(R.id.spell_view);
         this.wordView = itemView.findViewById(R.id.word_view);
         this.spaceView = itemView.findViewById(R.id.space_view);
     }
@@ -63,16 +64,16 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
         showWord(option, input, selected, false);
     }
 
-    protected void showWord(Input.Option option, CharInput input, boolean selected, boolean hideWordNotation) {
+    protected void showWord(Input.Option option, CharInput input, boolean selected, boolean hideWordSpell) {
         InputWord word = input.getWord();
         String value = word != null ? word.getValue() : input.getJoinedChars();
-        String notation = word != null && !hideWordNotation ? word.getNotation() : null;
+        String spell = word != null && !hideWordSpell ? word.getSpell().value : null;
 
         if (option != null && word != null) {
             value = input.getText(option).toString();
 
-            if (notation != null && value.contains(notation)) {
-                notation = null;
+            if (spell != null && value.contains(spell)) {
+                spell = null;
             }
         }
 
@@ -86,11 +87,11 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
             ViewUtils.hide(this.spaceView);
         }
 
-        if (notation != null) {
-            ViewUtils.show(this.notationView).setText(notation);
-            setSelectedTextColor(this.notationView, selected);
+        if (!CharUtils.isBlank(spell)) {
+            ViewUtils.show(this.spellView).setText(spell);
+            setSelectedTextColor(this.spellView, selected);
         } else {
-            ViewUtils.hide(this.notationView);
+            ViewUtils.hide(this.spellView);
         }
     }
 

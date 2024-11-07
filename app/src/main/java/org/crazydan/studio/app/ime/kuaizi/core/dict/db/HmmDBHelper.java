@@ -248,7 +248,7 @@ public class HmmDBHelper {
     private static Hmm calcTransProb(List<PinyinWord> phrase) {
         return Hmm.calcTransProb(phrase.stream()
                                        // 以 拼音字 id 与 拼音字母组合 id 代表短语中的字
-                                       .map(word -> word.getUid() + ":" + word.getCharsId())
+                                       .map(word -> word.getId() + ":" + word.getCharsId())
                                        .collect(Collectors.toList()));
     }
 

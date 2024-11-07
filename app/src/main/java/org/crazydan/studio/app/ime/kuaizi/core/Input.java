@@ -124,8 +124,8 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 获取输入文本内容 */
     StringBuilder getText(Option option);
 
-    /** 输入文本内容是否只有{@link InputWord#getNotation() 候选字的标注} */
-    boolean isTextOnlyWordNotation(Option option);
+    /** 输入文本内容是否只有{@link InputWord#getSpell() 字的读音} */
+    boolean isTextOnlyWordSpell(Option option);
 
     /** 是否有可输入字 */
     boolean hasWord();
@@ -138,12 +138,12 @@ public interface Input<T extends Input<?>> extends ViewData {
     InputWord getWord();
 
     class Option {
-        public final InputWord.NotationType wordNotationType;
+        public final InputWord.SpellUsedType wordSpellUsedType;
         /** 是否使用候选字变体 */
         public final boolean wordVariantUsed;
 
-        public Option(InputWord.NotationType wordNotationType, boolean wordVariantUsed) {
-            this.wordNotationType = wordNotationType;
+        public Option(InputWord.SpellUsedType wordSpellUsedType, boolean wordVariantUsed) {
+            this.wordSpellUsedType = wordSpellUsedType;
             this.wordVariantUsed = wordVariantUsed;
         }
     }

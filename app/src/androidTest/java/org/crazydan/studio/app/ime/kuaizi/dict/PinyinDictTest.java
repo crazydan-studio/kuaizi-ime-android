@@ -137,7 +137,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
 
             Map<String, PinyinWord> wordMap = getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
                                                                                            .collect(Collectors.toMap(
-                                                                                                   InputWord::getUid,
+                                                                                                   InputWord::getId,
                                                                                                    Function.identity(),
                                                                                                    (a, b) -> a,
                                                                                                    HashMap::new));
@@ -191,7 +191,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         emojis.groups.forEach((group, emojiList) -> {
             Log.i(LOG_TAG,
                   group + ": " + emojiList.stream()
-                                          .map((emoji) -> emoji.getValue() + ":" + emoji.getUid())
+                                          .map((emoji) -> emoji.getValue() + ":" + emoji.getId())
                                           .limit(top)
                                           .collect(Collectors.joining(", ")));
         });
@@ -208,7 +208,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
                 "\uD83C\uDF83", // 🎃
         };
         List<String> usedEmojiIdList = Arrays.stream(usedEmojis)
-                                             .map((emoji) -> getEmoji(db, emoji).getUid())
+                                             .map((emoji) -> getEmoji(db, emoji).getId())
                                              .collect(Collectors.toList());
         saveUsedEmojis(db, usedEmojiIdList, false);
 
@@ -218,12 +218,12 @@ public class PinyinDictTest extends PinyinDictBaseTest {
 
         // Note: 直接调用 LinkedHashSet#toArray 将报方法不存在
         Assert.assertArrayEquals(new LinkedHashSet<>(usedEmojiIdList).stream().toArray(String[]::new),
-                                 generalEmojiList.stream().map(InputWord::getUid).toArray(String[]::new));
+                                 generalEmojiList.stream().map(InputWord::getId).toArray(String[]::new));
         Log.i(LOG_TAG,
               Emojis.GROUP_GENERAL + ": " + generalEmojiList.stream()
                                                             .map((emoji) -> emoji.getValue()
                                                                             + ":"
-                                                                            + emoji.getUid()
+                                                                            + emoji.getId()
                                                                             + ":"
                                                                             + emoji.getWeight())
                                                             .collect(Collectors.joining(", ")));

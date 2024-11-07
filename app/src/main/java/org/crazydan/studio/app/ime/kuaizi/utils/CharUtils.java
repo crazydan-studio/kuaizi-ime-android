@@ -31,6 +31,10 @@ import android.os.Build;
  */
 public class CharUtils {
 
+    public static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     /** 部分中文占用的字节数不同，需要单独处理 */
     public static String[] getChars(String s) {
         List<String> chars = new ArrayList<>();

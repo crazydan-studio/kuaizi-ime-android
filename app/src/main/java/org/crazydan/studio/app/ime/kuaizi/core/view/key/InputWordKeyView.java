@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -35,14 +36,14 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-07-09
  */
 public class InputWordKeyView extends KeyView<InputWordKey, View> {
-    private final TextView notationView;
+    private final TextView spellView;
     private final TextView wordView;
     private final View traditionalMarkView;
 
     public InputWordKeyView(@NonNull View itemView) {
         super(itemView);
 
-        this.notationView = this.fgView.findViewById(R.id.notation_view);
+        this.spellView = this.fgView.findViewById(R.id.spell_view);
         this.wordView = this.fgView.findViewById(R.id.word_view);
         this.traditionalMarkView = itemView.findViewById(R.id.traditional_mark_view);
     }
@@ -59,15 +60,15 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
         }
 
         String value = word != null ? word.getValue() : "";
-        String notation = word != null ? word.getNotation() : null;
+        String spell = word != null ? word.getSpell().value : null;
         this.wordView.setText(value);
         setTextColorByAttrId(this.wordView, key.getColor().fg);
 
-        if (notation == null || notation.isEmpty()) {
-            ViewUtils.hide(this.notationView);
+        if (CharUtils.isBlank(spell)) {
+            ViewUtils.hide(this.spellView);
         } else {
-            ViewUtils.show(this.notationView).setText(notation);
-            setTextColorByAttrId(this.notationView, key.getColor().fg);
+            ViewUtils.show(this.spellView).setText(spell);
+            setTextColorByAttrId(this.spellView, key.getColor().fg);
         }
     }
 }

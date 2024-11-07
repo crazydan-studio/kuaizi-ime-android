@@ -401,7 +401,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">"
                          + case_word.getValue()
                          + "("
-                         + case_word.getNotation()
+                         + case_word.getSpell().value
                          + ")</span>；");
 
         add_Pinyin_Inputting_Steps(sandboxView,
@@ -437,7 +437,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">"
                          + case_word.getValue()
                          + "("
-                         + case_word.getNotation()
+                         + case_word.getSpell().value
                          + ")</span>，并通过拼音声调过滤筛选其候选字；");
         add_Pinyin_Inputting_Steps(sandboxView,
                                    exercise,
@@ -478,7 +478,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">"
                          + case_word.getValue()
                          + "("
-                         + case_word.getNotation()
+                         + case_word.getSpell().value
                          + ")</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；");
 
         add_Pinyin_Inputting_Steps(sandboxView,
@@ -973,14 +973,14 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 Key<?> key = keys[j];
                 boolean isFirstStep = i == 1 && j == 0;
 
-                String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.getUid());
+                String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.getId());
                 String simulatorStepName = j == 0
                                            ? firstSimulatorStepName
                                            : String.format(Locale.getDefault(),
                                                            "pinyin-input-step:%d-%d:%s",
                                                            i,
                                                            j,
-                                                           word.getUid());
+                                                           word.getId());
                 Runnable restart = () -> {
                     warning("当前输入的字符与练习内容不符，请按演示动画重新输入");
 

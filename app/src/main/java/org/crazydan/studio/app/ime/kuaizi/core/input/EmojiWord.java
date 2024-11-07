@@ -27,13 +27,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
  */
 public class EmojiWord extends InputWord {
 
-    public EmojiWord(String uid, String value) {
-        super(uid, value);
+    public EmojiWord(String id, String value) {
+        super(id, value);
     }
 
     @Override
     public EmojiWord copy() {
-        EmojiWord copied = new EmojiWord(getUid(), getValue());
+        EmojiWord copied = new EmojiWord(getId(), getValue());
         copy(copied, this);
 
         return copied;

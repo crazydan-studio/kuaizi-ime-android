@@ -33,7 +33,7 @@
     <dimen name="key_view_bg_min_radius">22dp</dimen>
 
     <dimen name="gap_input_width">4dp</dimen>
-    <dimen name="char_input_notation_text_size">10sp</dimen>
+    <dimen name="char_input_word_spell_text_size">10sp</dimen>
     <dimen name="char_input_word_text_size">18sp</dimen>
     <dimen name="char_key_text_size">26sp</dimen>
     <dimen name="char_key_text_size_1d">22sp</dimen>
@@ -45,7 +45,7 @@
     <dimen name="ctrl_key_sub_text_size">10sp</dimen>
     <dimen name="char_symbol_key_text_size">14sp</dimen>
     <dimen name="input_spell_toggle_key_text_size">12sp</dimen>
-    <dimen name="input_word_key_notation_text_size">10sp</dimen>
+    <dimen name="input_word_key_word_spell_text_size">10sp</dimen>
     <dimen name="input_word_key_word_text_size">16sp</dimen>
 
     <dimen name="guide_exercise_step_icon_size">32dp</dimen>

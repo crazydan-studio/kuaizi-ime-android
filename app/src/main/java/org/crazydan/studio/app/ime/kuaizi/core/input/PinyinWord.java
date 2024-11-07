@@ -30,61 +30,50 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
  * @date 2023-08-26
  */
 public class PinyinWord extends InputWord {
-    /** 字 id */
-    private final String wordId;
-    /** 拼音 */
-    private final Spell spell;
+    /** 字形 id */
+    private final String glyphId;
     /** 部首 */
     private final Radical radical;
-
     /** 是否繁体 */
     private final boolean traditional;
 
-    public PinyinWord(
-            String uid, String value, String wordId, //
-            Spell spell, Radical radical, //
-            boolean traditional
-    ) {
-        super(uid, value, spell.value);
+    public PinyinWord(String id, String value, Spell spell) {
+        this(id, value, spell, null, null, false);
+    }
 
-        this.wordId = wordId;
-        this.spell = spell;
+    public PinyinWord(
+            String id, String value, Spell spell, //
+            String glyphId, Radical radical, boolean traditional
+    ) {
+        super(id, value, spell);
+
+        this.glyphId = glyphId;
         this.radical = radical;
         this.traditional = traditional;
     }
 
     public static PinyinWord from(InputWord word) {
-        return new PinyinWord(word.getUid(),
-                              word.getValue(),
-                              word.getUid(),
-                              new Spell(-1, word.getNotation(), "-1"),
-                              null,
-                              false);
+        if (word instanceof PinyinWord) {
+            return ((PinyinWord) word).copy();
+        }
+        return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
     }
 
     @Override
     public PinyinWord copy() {
-        PinyinWord copied = new PinyinWord(getUid(),
-                                           getValue(),
-                                           getWordId(),
-                                           getSpell(),
-                                           getRadical(),
-                                           isTraditional());
+        PinyinWord copied = new PinyinWord(getId(), getValue(), getSpell(), //
+                                           getGlyphId(), getRadical(), isTraditional());
         copy(copied, this);
 
         return copied;
     }
 
-    public String getWordId() {
-        return this.wordId;
+    public String getGlyphId() {
+        return this.glyphId;
     }
 
     public String getCharsId() {
         return getSpell().charsId;
-    }
-
-    public Spell getSpell() {
-        return this.spell;
     }
 
     public Radical getRadical() {
@@ -93,37 +82,6 @@ public class PinyinWord extends InputWord {
 
     public boolean isTraditional() {
         return this.traditional;
-    }
-
-    public static class Spell {
-        public final int id;
-        public final String value;
-        /** 字母组合 id */
-        public final String charsId;
-
-        public Spell(int id, String value, String charsId) {
-            this.id = id;
-            this.value = value;
-            this.charsId = charsId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Spell that = (Spell) o;
-            return this.id == that.id && this.value.equals(that.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.id, this.value);
-        }
     }
 
     public static class Radical {
@@ -187,7 +145,7 @@ public class PinyinWord extends InputWord {
             }
 
             return (this.spells.isEmpty() //
-                    || this.spells.contains(((PinyinWord) word).getSpell())) //
+                    || this.spells.contains(word.getSpell())) //
                    && (this.radicals.isEmpty() //
                        || this.radicals.contains(((PinyinWord) word).getRadical()));
         }

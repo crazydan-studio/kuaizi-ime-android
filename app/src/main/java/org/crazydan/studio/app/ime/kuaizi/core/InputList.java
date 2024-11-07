@@ -188,7 +188,7 @@ public class InputList {
         if (!this.candidateWordsCache.containsKey(inputChars)) {
             this.candidateWordsCache.put(inputChars,
                                          candidateWords.stream()
-                                                       .collect(Collectors.toMap(InputWord::getUid,
+                                                       .collect(Collectors.toMap(InputWord::getId,
                                                                                  Function.identity(),
                                                                                  (a, b) -> a,
                                                                                  // 保持候选字的顺序不变
@@ -205,7 +205,7 @@ public class InputList {
     public void cacheBestCandidateWord(CharInput input, InputWord bestCandidateWord) {
         String inputChars = input.getJoinedChars();
 
-        this.bestCandidateWordIdCache.put(inputChars, bestCandidateWord.getUid());
+        this.bestCandidateWordIdCache.put(inputChars, bestCandidateWord.getId());
     }
 
     /** 获取已缓存的输入的最佳候选字 */
@@ -790,9 +790,9 @@ public class InputList {
         } else if (left.isMathOperator() || right.isMathOperator()) {
             // 数学运算符前后都有空格
             return true;
-        } else if (left.isTextOnlyWordNotation(option)) {
+        } else if (left.isTextOnlyWordSpell(option)) {
             return !right.isSymbol();
-        } else if (right.isTextOnlyWordNotation(option)) {
+        } else if (right.isTextOnlyWordSpell(option)) {
             return !left.isSymbol();
         }
         return false;

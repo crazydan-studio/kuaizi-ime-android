@@ -57,8 +57,9 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
 
         this.spells = candidates.stream()
                                 .filter((word) -> word instanceof PinyinWord)
-                                .map((word) -> ((PinyinWord) word).getSpell())
-                                .sorted(Comparator.comparingInt(a -> a.id))
+                                .map(InputWord::getSpell)
+                                .filter((spell) -> spell.id != null)
+                                .sorted(Comparator.comparingInt(a -> Integer.parseInt(a.id)))
                                 .distinct()
                                 .collect(Collectors.toList());
     }

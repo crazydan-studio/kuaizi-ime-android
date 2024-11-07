@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 
 /**
  * {@link Input 输入}对应的{@link Input#getWord() 字}
@@ -28,10 +29,12 @@ import androidx.annotation.NonNull;
  * @date 2023-07-08
  */
 public class InputWord {
-    /** 唯一 id，对应持久化标识 */
-    private final String uid;
+    /** 对象 id，一般对应持久化的主键值 */
+    private final String id;
+    /** 值 */
     private final String value;
-    private final String notation;
+    /** 读音 */
+    private final Spell spell;
 
     /** 是否已确认 */
     private boolean confirmed;
@@ -42,31 +45,36 @@ public class InputWord {
     /** 字的权重 */
     private int weight;
 
-    public InputWord(String uid, String value) {
-        this(uid, value, null);
+    public InputWord(String id, String value) {
+        this(id, value, (String) null);
     }
 
-    public InputWord(String uid, String value, String notation) {
-        this.uid = uid;
+    public InputWord(String id, String value, String spell) {
+        this(id, value, new Spell(spell != null ? spell : ""));
+    }
+
+    public InputWord(String id, String value, Spell spell) {
+        this.id = id;
         this.value = value;
-        this.notation = notation;
+        this.spell = new Spell(spell);
     }
 
     protected void copy(InputWord target, InputWord source) {
-        target.setSource(source.getSource());
         target.setConfirmed(source.isConfirmed());
+        target.setSource(source.getSource());
         target.setVariant(source.getVariant());
+        target.setWeight(source.getWeight());
     }
 
     public InputWord copy() {
-        InputWord copied = new InputWord(getUid(), getValue(), getNotation());
+        InputWord copied = new InputWord(getId(), getValue(), getSpell());
         copy(copied, this);
 
         return copied;
     }
 
-    public String getUid() {
-        return this.uid;
+    public String getId() {
+        return this.id;
     }
 
     public boolean isConfirmed() {
@@ -93,12 +101,12 @@ public class InputWord {
         return this.value;
     }
 
-    public String getNotation() {
-        return this.notation;
+    public Spell getSpell() {
+        return this.spell;
     }
 
-    public boolean hasNotation() {
-        return this.notation != null;
+    public boolean hasSpell() {
+        return !CharUtils.isBlank(this.spell.value);
     }
 
     public String getVariant() {
@@ -124,10 +132,10 @@ public class InputWord {
     @NonNull
     @Override
     public String toString() {
-        if (!hasNotation()) {
+        if (!hasSpell()) {
             return this.value;
         }
-        return this.value + '(' + this.notation + ')';
+        return this.value + '(' + this.spell.value + ')';
     }
 
     @Override
@@ -138,18 +146,61 @@ public class InputWord {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         // Note: 不处理与视图更细相关的变更判断，如有必要则在视图对象中处理
         InputWord that = (InputWord) o;
-        return this.value.equals(that.value) && Objects.equals(this.notation, that.notation);
+        return this.value.equals(that.value) && Objects.equals(this.spell, that.spell);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.value, this.notation);
+        return Objects.hash(this.value, this.spell);
     }
 
-    /** 标注类型 */
-    public enum NotationType {
+    /** 读音 */
+    public static class Spell {
+        /** 值 */
+        public final String value;
+        /** 读音 id */
+        public final String id;
+        /** 字母组合 id */
+        public final String charsId;
+
+        public Spell(String value) {
+            this(value, null, null);
+        }
+
+        public Spell(Spell spell) {
+            this(spell.value, spell.id, spell.charsId);
+        }
+
+        public Spell(String value, String id, String charsId) {
+            this.value = value;
+            this.id = id;
+            this.charsId = charsId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Spell that = (Spell) o;
+            return Objects.equals(this.id, that.id) && this.value.equals(that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.id, this.value);
+        }
+    }
+
+    /** 读音使用类型 */
+    public enum SpellUsedType {
         /** 替代 {@link InputWord} */
         replacing,
         /** 跟随 {@link InputWord} */

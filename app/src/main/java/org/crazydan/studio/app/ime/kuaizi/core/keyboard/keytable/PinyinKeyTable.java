@@ -640,27 +640,30 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建 输入列表 提交选项 按键 */
     public Key<?>[][] createInputListCommittingOptionKeys(
-            Input.Option currentOption, boolean hasNotation, boolean hasVariant
+            Input.Option currentOption, boolean hasSpell, boolean hasVariant
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
         boolean isOnlyPinyin = currentOption != null
-                               && currentOption.wordNotationType == InputWord.NotationType.replacing;
+                               && currentOption.wordSpellUsedType == InputWord.SpellUsedType.replacing;
         boolean isWithPinyin = currentOption != null
-                               && currentOption.wordNotationType == InputWord.NotationType.following;
+                               && currentOption.wordSpellUsedType == InputWord.SpellUsedType.following;
         boolean isVariantUsed = currentOption != null && currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[1][index_end]
-                = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin).setDisabled(!hasNotation
-                                                                                                || isOnlyPinyin);
-        gridKeys[2][index_end]
-                = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin).setDisabled(!hasNotation
-                                                                                                || isWithPinyin);
-        gridKeys[4][index_end] = commitOptionKey(isVariantUsed
-                                                 ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
-                                                 : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad).setDisabled(
-                !hasVariant || isOnlyPinyin);
+        gridKeys[1][index_end] = commitOptionKey( //
+                                                  CtrlKey.InputListCommitOption.Option.only_pinyin //
+        ).setDisabled(!hasSpell || isOnlyPinyin);
+
+        gridKeys[2][index_end] = commitOptionKey( //
+                                                  CtrlKey.InputListCommitOption.Option.with_pinyin //
+        ).setDisabled(!hasSpell || isWithPinyin);
+
+        gridKeys[4][index_end] = commitOptionKey( //
+                                                  isVariantUsed
+                                                  ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
+                                                  : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad //
+        ).setDisabled(!hasVariant || isOnlyPinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
 

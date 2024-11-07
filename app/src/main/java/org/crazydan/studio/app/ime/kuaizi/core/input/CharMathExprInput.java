@@ -283,7 +283,7 @@ public class CharMathExprInput extends CharInput {
     public List<String> getChars() {return new ArrayList<>();}
 
     @Override
-    public boolean isTextOnlyWordNotation(Option option) {return false;}
+    public boolean isTextOnlyWordSpell(Option option) {return false;}
 
     @Override
     public boolean hasWord() {return false;}

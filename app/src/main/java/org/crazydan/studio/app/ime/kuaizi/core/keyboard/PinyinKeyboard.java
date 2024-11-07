@@ -140,7 +140,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                             stateData.getFilter());
             }
             case InputList_Committing_Option_Choose_Doing: {
-                boolean hasNotation = false;
+                boolean hasSpell = false;
                 boolean hasVariant = false;
 
                 for (CharInput input : inputList.getCharInputs()) {
@@ -149,18 +149,18 @@ public class PinyinKeyboard extends BaseKeyboard {
                         continue;
                     }
 
-                    if (word.hasNotation()) {
-                        hasNotation = true;
+                    if (word.hasSpell()) {
+                        hasSpell = true;
                     }
                     if (word.hasVariant()) {
                         hasVariant = true;
                     }
                 }
 
-                boolean finalHasNotation = hasNotation;
+                boolean finalHasSpell = hasSpell;
                 boolean finalHasVariant = hasVariant;
                 return () -> keyTable.createInputListCommittingOptionKeys(inputList.getOption(),
-                                                                          finalHasNotation,
+                                                                          finalHasSpell,
                                                                           finalHasVariant);
             }
             default: {
@@ -1175,32 +1175,32 @@ public class PinyinKeyboard extends BaseKeyboard {
                     Input.Option newInputOption = null;
                     switch (option) {
                         case only_pinyin: {
-                            InputWord.NotationType notationType = oldInputOption.wordNotationType;
-                            if (notationType == InputWord.NotationType.replacing) {
-                                notationType = null;
+                            InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
+                            if (spellUsedType == InputWord.SpellUsedType.replacing) {
+                                spellUsedType = null;
                             } else {
-                                notationType = InputWord.NotationType.replacing;
+                                spellUsedType = InputWord.SpellUsedType.replacing;
                             }
 
-                            newInputOption = new Input.Option(notationType, oldInputOption.wordVariantUsed);
+                            newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
                             break;
                         }
                         case with_pinyin: {
-                            InputWord.NotationType notationType = oldInputOption.wordNotationType;
-                            if (notationType == InputWord.NotationType.following) {
-                                notationType = null;
+                            InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
+                            if (spellUsedType == InputWord.SpellUsedType.following) {
+                                spellUsedType = null;
                             } else {
-                                notationType = InputWord.NotationType.following;
+                                spellUsedType = InputWord.SpellUsedType.following;
                             }
 
-                            newInputOption = new Input.Option(notationType, oldInputOption.wordVariantUsed);
+                            newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
                             break;
                         }
                         case switch_trad_to_simple:
                         case switch_simple_to_trad: {
                             // 被禁用的繁简转换按钮不做响应
                             if (!key.isDisabled()) {
-                                newInputOption = new Input.Option(oldInputOption.wordNotationType,
+                                newInputOption = new Input.Option(oldInputOption.wordSpellUsedType,
                                                                   !oldInputOption.wordVariantUsed);
                             }
                             break;

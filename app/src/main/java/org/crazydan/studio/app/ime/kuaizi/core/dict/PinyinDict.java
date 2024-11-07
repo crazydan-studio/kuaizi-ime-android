@@ -200,16 +200,16 @@ public class PinyinDict {
             return List.of();
         }
 
-        List<String> phraseWordIdList = prevPhrase.stream()
-                                                  .map((word) -> ((PinyinWord) word).getWordId())
-                                                  .collect(Collectors.toList());
-        phraseWordIdList.add(((PinyinWord) input.getWord()).getWordId());
+        List<String> wordGlyphIdList = prevPhrase.stream()
+                                                 .map((word) -> ((PinyinWord) word).getGlyphId())
+                                                 .collect(Collectors.toList());
+        wordGlyphIdList.add(((PinyinWord) input.getWord()).getGlyphId());
 
         int tries = 4;
-        int total = phraseWordIdList.size();
+        int total = wordGlyphIdList.size();
         List<String[]> keywordIdsList = new ArrayList<>(tries);
         for (int i = total - 1; i >= 0 && i >= total - tries; i--) {
-            String[] keywordIds = phraseWordIdList.subList(i, total).toArray(new String[0]);
+            String[] keywordIds = wordGlyphIdList.subList(i, total).toArray(new String[0]);
             keywordIdsList.add(keywordIds);
         }
 
@@ -310,7 +310,7 @@ public class PinyinDict {
     private void doSaveUsedEmojis(List<InputWord> emojis, boolean reverse) {
         SQLiteDatabase db = getDB();
 
-        saveUsedEmojis(db, emojis.stream().map(InputWord::getUid).collect(Collectors.toList()), reverse);
+        saveUsedEmojis(db, emojis.stream().map(InputWord::getId).collect(Collectors.toList()), reverse);
     }
 
     /** 保存拉丁文的使用频率等信息 */
