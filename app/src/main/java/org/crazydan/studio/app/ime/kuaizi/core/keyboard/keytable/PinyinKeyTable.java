@@ -646,15 +646,21 @@ public class PinyinKeyTable extends KeyTable {
 
         boolean isOnlyPinyin = currentOption != null
                                && currentOption.wordNotationType == InputWord.NotationType.replacing;
+        boolean isWithPinyin = currentOption != null
+                               && currentOption.wordNotationType == InputWord.NotationType.following;
+        boolean isVariantUsed = currentOption != null && currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 
         gridKeys[1][index_end]
-                = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin).setDisabled(!hasNotation);
+                = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin).setDisabled(!hasNotation
+                                                                                                || isOnlyPinyin);
         gridKeys[2][index_end]
-                = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin).setDisabled(!hasNotation);
-        gridKeys[4][index_end]
-                = commitOptionKey(CtrlKey.InputListCommitOption.Option.switch_simple_trad).setDisabled(!hasVariant
-                                                                                                       || isOnlyPinyin);
+                = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin).setDisabled(!hasNotation
+                                                                                                || isWithPinyin);
+        gridKeys[4][index_end] = commitOptionKey(isVariantUsed
+                                                 ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
+                                                 : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad).setDisabled(
+                !hasVariant || isOnlyPinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
 
@@ -715,8 +721,11 @@ public class PinyinKeyTable extends KeyTable {
             case with_pinyin:
                 label = "带拼音";
                 break;
-            case switch_simple_trad:
-                label = "简/繁";
+            case switch_simple_to_trad:
+                label = "简➙繁";
+                break;
+            case switch_trad_to_simple:
+                label = "繁➙简";
                 break;
         }
 

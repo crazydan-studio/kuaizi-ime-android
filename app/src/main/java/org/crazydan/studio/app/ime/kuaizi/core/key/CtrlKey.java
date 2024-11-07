@@ -270,8 +270,10 @@ public class CtrlKey extends BaseKey<CtrlKey> {
             only_pinyin,
             /** 携带拼音 */
             with_pinyin,
-            /** 繁简转换 */
-            switch_simple_trad,
+            /** 简体 转换为 繁体 */
+            switch_simple_to_trad,
+            /** 繁体 转换为 简体 */
+            switch_trad_to_simple,
         }
     }
 

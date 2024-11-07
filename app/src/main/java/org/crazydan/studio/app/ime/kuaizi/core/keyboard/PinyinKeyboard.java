@@ -208,9 +208,12 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
         if (try_OnUserKeyMsg(msg, data) //
-            // Note：被禁用的部首和读音按键也需要接受处理
+            // Note：被禁用的部分按键也需要接受处理
             && (!CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell) //
-                && !CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical))) {
+                && !CtrlKey.is(key, CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical) //
+                && !CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option) //
+            ) //
+        ) {
             return;
         }
 
@@ -1165,8 +1168,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg) {
             case KeySingleTap: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
-                    play_SingleTick_InputAudio(key);
-
                     CtrlKey.InputListCommitOption.Option option
                             = ((CtrlKey.InputListCommitOption) key.getOption()).value();
 
@@ -1195,14 +1196,23 @@ public class PinyinKeyboard extends BaseKeyboard {
                             newInputOption = new Input.Option(notationType, oldInputOption.wordVariantUsed);
                             break;
                         }
-                        case switch_simple_trad: {
-                            newInputOption = new Input.Option(oldInputOption.wordNotationType,
-                                                              !oldInputOption.wordVariantUsed);
+                        case switch_trad_to_simple:
+                        case switch_simple_to_trad: {
+                            // 被禁用的繁简转换按钮不做响应
+                            if (!key.isDisabled()) {
+                                newInputOption = new Input.Option(oldInputOption.wordNotationType,
+                                                                  !oldInputOption.wordVariantUsed);
+                            }
                             break;
                         }
                     }
+
+                    if (newInputOption == null) {
+                        return;
+                    }
                     inputList.setOption(newInputOption);
 
+                    play_SingleTick_InputAudio(key);
                     fire_InputChars_Input_Done(key);
                 }
                 break;
