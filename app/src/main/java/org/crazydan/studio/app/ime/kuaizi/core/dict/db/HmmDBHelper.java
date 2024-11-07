@@ -151,6 +151,8 @@ public class HmmDBHelper {
         }).collect(Collectors.toList());
 
         if (!reverse) {
+            // Note: SQLite 3.24.0 版本才支持 upsert
+            // https://www.sqlite.org/lang_upsert.html#history
 //            execSQLite(db,
 //                       "insert into"
 //                       + " phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
@@ -205,6 +207,8 @@ public class HmmDBHelper {
         });
 
         if (!reverse) {
+            // Note: SQLite 3.24.0 版本才支持 upsert
+            // https://www.sqlite.org/lang_upsert.html#history
 //            execSQLite(db,
 //                       "insert into"
 //                       + " phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"

@@ -92,7 +92,8 @@ public class PinyinDictDBHelper {
                        + "   ( ifnull(weight_app_, 0) +"
                        + "     ifnull(weight_user_, 0) +"
                        // 补充用户输入的基础权重
-                       // Note: 低版本 SQLite 不支持 iif，需采用 case when
+                       // Note: SQLite 3.32.0 版本才支持 iif
+                       // https://sqlite.org/forum/info/97a66708939d518e
                        + "     (case when ifnull(weight_user_, 0) > 0 then ? else 0 end)"
                        // + "     iif(ifnull(weight_user_, 0) > 0, ?, 0)"
                        + "   ) used_weight_"

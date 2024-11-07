@@ -56,8 +56,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -73,12 +71,6 @@ public class PinyinDictTest extends PinyinDictBaseTest {
     public void test_hmm_predict_phrase() {
         PinyinDict dict = PinyinDict.instance();
         SQLiteDatabase db = dict.getDB();
-
-        List<String> dbVersion = rawQuerySQLite(db, new SQLiteRawQueryParams<String>() {{
-            this.sql = "SELECT sqlite_version() as version";
-            this.reader = (row) -> row.getString("version");
-        }});
-        Log.i(LOG_TAG, "SQLite version: " + CollectionUtils.first(dbVersion));
 
         Map<String, String> sampleMap = new HashMap<String, String>() {{
             put("zhong,hua,ren,min,gong,he,guo,wan,sui",

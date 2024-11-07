@@ -151,6 +151,8 @@ public class DBUtils {
      * 即，先尝试执行 update 语句，若无数据更新，则视为新增，改为执行 insert 语句
      */
     public static void upsertSQLite(SQLiteDatabase db, SQLiteRawUpsertParams params) {
+        // Note: SQLite 3.24.0 版本才支持 upsert
+        // https://www.sqlite.org/lang_upsert.html#history
         withTransaction(db, () -> {
             try (
                     SQLiteStatement update = db.compileStatement(params.updateSQL);

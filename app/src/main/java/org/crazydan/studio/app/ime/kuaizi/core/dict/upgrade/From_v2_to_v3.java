@@ -134,10 +134,18 @@ public class From_v2_to_v3 {
         String[] clauses = new String[] {
                 "attach database '" + userDBFile.getAbsolutePath() + "' as user",
                 // <<<<<<<<<<<<<<< 迁移现有数据
-                "update meta_emoji as emoji_"
-                + "   set weight_user_ = user_.weight_"
-                + " from user.used_emoji user_"
-                + " where user_.id_ = emoji_.id_",
+                // Note: SQLite 3.33.0 版本才支持 update-from
+                // https://www.sqlite.org/lang_update.html#upfrom
+//                "update meta_emoji as emoji_"
+//                + "   set weight_user_ = user_.weight_"
+//                + " from user.used_emoji user_"
+//                + " where user_.id_ = emoji_.id_",
+                "update meta_emoji"
+                + " set weight_user_ = ifnull(("
+                + "   select weight_"
+                + "   from user.used_emoji user_"
+                + "   where user_.id_ = meta_emoji.id_"
+                + " ), weight_user_)",
                 //
                 "insert into meta_latin"
                 + "   (id_, value_, weight_user_)"
