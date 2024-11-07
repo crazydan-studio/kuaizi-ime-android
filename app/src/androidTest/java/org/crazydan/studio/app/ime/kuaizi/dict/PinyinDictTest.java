@@ -34,8 +34,8 @@ import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,14 +44,14 @@ import org.junit.runner.RunWith;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWord;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWord;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWordsByWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinWordIds;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
@@ -92,9 +92,9 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             // 预测得到的短语与预期的不符，则进行短语修正后再尝试预测
             Log.i(LOG_TAG, pinyinCharsStr + " hasn't expected phrase, try again");
 
-            List<PinyinInputWord> phraseWordList = Arrays.stream(expectWordStr.split(",")).map((word) -> {
+            List<PinyinWord> phraseWordList = Arrays.stream(expectWordStr.split(",")).map((word) -> {
                 String[] splits = word.split(":");
-                return getPinyinInputWord(db, splits[0], splits[1]);
+                return getPinyinWord(db, splits[0], splits[1]);
             }).collect(Collectors.toList());
 
             saveUsedPinyinPhrase(db, phraseWordList, false);
@@ -111,12 +111,10 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         PinyinDict dict = PinyinDict.instance();
         SQLiteDatabase db = dict.getDB();
 
-        List<PinyinInputWord> phraseWordList = Arrays.stream("筷:kuài,字:zì,输:shū,入:rù,法:fǎ".split(","))
-                                                     .map((word) -> {
-                                                         String[] splits = word.split(":");
-                                                         return getPinyinInputWord(db, splits[0], splits[1]);
-                                                     })
-                                                     .collect(Collectors.toList());
+        List<PinyinWord> phraseWordList = Arrays.stream("筷:kuài,字:zì,输:shū,入:rù,法:fǎ".split(",")).map((word) -> {
+            String[] splits = word.split(":");
+            return getPinyinWord(db, splits[0], splits[1]);
+        }).collect(Collectors.toList());
         saveUsedPinyinPhrase(db, phraseWordList, false);
 
         String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
@@ -137,20 +135,18 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
-            Map<String, PinyinInputWord> wordMap = getAllPinyinInputWords(db, pinyinCharsId).stream()
-                                                                                            .collect(Collectors.toMap(
-                                                                                                    InputWord::getUid,
-                                                                                                    Function.identity(),
-                                                                                                    (a, b) -> a,
-                                                                                                    HashMap::new));
+            Map<String, PinyinWord> wordMap = getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
+                                                                                           .collect(Collectors.toMap(
+                                                                                                   InputWord::getUid,
+                                                                                                   Function.identity(),
+                                                                                                   (a, b) -> a,
+                                                                                                   HashMap::new));
 
             int top = 10;
-            List<PinyinInputWord> wordList = getTopBestPinyinWordIds(db,
-                                                                     pinyinCharsId,
-                                                                     userPhraseBaseWeight,
-                                                                     top).stream()
-                                                                         .map(wordMap::get)
-                                                                         .collect(Collectors.toList());
+            List<PinyinWord> wordList = getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, top).stream()
+                                                                                                             .map(wordMap::get)
+                                                                                                             .collect(
+                                                                                                                     Collectors.toList());
             Assert.assertTrue(wordList.size() <= top && !wordList.isEmpty());
 
             String result = wordList.stream()
@@ -168,9 +164,9 @@ public class PinyinDictTest extends PinyinDictBaseTest {
 
         String pinyinChars = "guo";
         String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
-        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId);
+        List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
 
-        attachVariantToPinyinInputWord(db, wordList);
+        attachVariantToPinyinWord(db, wordList);
 
         wordList = wordList.stream().filter((word) -> word.getVariant() != null).collect(Collectors.toList());
         Assert.assertNotEquals(0, wordList.size());
@@ -252,10 +248,10 @@ public class PinyinDictTest extends PinyinDictBaseTest {
                                                                                                      String.valueOf((char) word)))
                                                                        .toArray(String[]::new))
                                               .collect(Collectors.toList());
-        List<EmojiInputWord> emojiList = getEmojisByKeyword(db, keywordIdsList, 10);
+        List<EmojiWord> emojiList = getEmojisByKeyword(db, keywordIdsList, 10);
 
         Assert.assertNotEquals(0, emojiList.size());
-        Log.i(LOG_TAG, emojiList.stream().map(EmojiInputWord::getValue).collect(Collectors.joining(", ")));
+        Log.i(LOG_TAG, emojiList.stream().map(EmojiWord::getValue).collect(Collectors.joining(", ")));
     }
 
     @Test
@@ -284,7 +280,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
     ) {
         List<String> phraseList = //
                 predictPinyinPhrase(db, pinyinCharsIdList, userPhraseBaseWeight, 5).stream().map((phrase) -> {
-                    Map<String, PinyinInputWord> wordMap = getPinyinInputWords(db, new HashSet<>(List.of(phrase)));
+                    Map<String, PinyinWord> wordMap = getPinyinWordsByWordId(db, new HashSet<>(List.of(phrase)));
 
                     return Arrays.stream(phrase)
                                  .map(wordMap::get)

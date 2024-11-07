@@ -21,7 +21,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
 
 /**
  * {@link InputWord 输入候选字}按键
@@ -42,7 +42,7 @@ public class InputWordKey extends BaseKey<InputWordKey> {
 
     @Override
     public boolean isEmoji() {
-        return getWord() instanceof EmojiInputWord;
+        return getWord() instanceof EmojiWord;
     }
 
     @Override

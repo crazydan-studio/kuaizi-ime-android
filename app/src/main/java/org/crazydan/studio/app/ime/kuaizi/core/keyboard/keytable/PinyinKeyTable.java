@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyColor;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
@@ -450,8 +450,8 @@ public class PinyinKeyTable extends KeyTable {
     public Key<?>[][] createInputCandidateKeys(
             PinyinTree pinyinTree, //
             CharInput input, List<InputWord> words, //
-            List<PinyinInputWord.Spell> spells, //
-            int startIndex, PinyinInputWord.Filter wordFilter
+            List<PinyinWord.Spell> spells, //
+            int startIndex, PinyinWord.Filter wordFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -482,7 +482,7 @@ public class PinyinKeyTable extends KeyTable {
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
         for (int i = 0, j = 0; i < spellKeyCorrds.length && j < spells.size(); i++, j++) {
             GridCoord keyCoord = spellKeyCorrds[i];
-            PinyinInputWord.Spell spell = spells.get(j);
+            PinyinWord.Spell spell = spells.get(j);
 
             int row = keyCoord.row;
             int column = keyCoord.column;
@@ -580,8 +580,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字高级过滤按键 */
     public Key<?>[][] createInputCandidateAdvanceFilterKeys(
-            List<PinyinInputWord.Spell> spells, List<PinyinInputWord.Radical> radicals, //
-            int startIndex, PinyinInputWord.Filter wordFilter
+            List<PinyinWord.Spell> spells, List<PinyinWord.Radical> radicals, //
+            int startIndex, PinyinWord.Filter wordFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
@@ -599,7 +599,7 @@ public class PinyinKeyTable extends KeyTable {
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
         for (int i = 0, j = 0; i < spellKeyCorrds.length && j < spells.size(); i++, j++) {
             GridCoord keyCoord = spellKeyCorrds[i];
-            PinyinInputWord.Spell spell = spells.get(j);
+            PinyinWord.Spell spell = spells.get(j);
 
             int row = keyCoord.row;
             int column = keyCoord.column;
@@ -625,7 +625,7 @@ public class PinyinKeyTable extends KeyTable {
                     break;
                 }
 
-                PinyinInputWord.Radical radical = radicals.get(dataIndex++);
+                PinyinWord.Radical radical = radicals.get(dataIndex++);
                 boolean disabled = wordFilter.radicals.contains(radical);
                 KeyColor color = key_input_word_level_colors[level];
                 CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical;

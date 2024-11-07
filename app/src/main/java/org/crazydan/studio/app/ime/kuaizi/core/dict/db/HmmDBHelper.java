@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.calcViterbi;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.getBestPhraseFromViterbi;
@@ -122,7 +122,7 @@ public class HmmDBHelper {
      * @param reverse
      *         是否反向操作，即，撤销对输入短语的保存
      */
-    public static void saveUsedPinyinPhrase(SQLiteDatabase db, List<PinyinInputWord> phrase, boolean reverse) {
+    public static void saveUsedPinyinPhrase(SQLiteDatabase db, List<PinyinWord> phrase, boolean reverse) {
         if (phrase.isEmpty()) {
             return;
         }
@@ -245,7 +245,7 @@ public class HmmDBHelper {
     }
 
     /** 计算给定短语的 {@link Hmm#transProb} 数据 */
-    private static Hmm calcTransProb(List<PinyinInputWord> phrase) {
+    private static Hmm calcTransProb(List<PinyinWord> phrase) {
         return Hmm.calcTransProb(phrase.stream()
                                        // 以 拼音字 id 与 拼音字母组合 id 代表短语中的字
                                        .map(word -> word.getUid() + ":" + word.getCharsId())

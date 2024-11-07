@@ -20,20 +20,20 @@ package org.crazydan.studio.app.ime.kuaizi.core.input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 
 /**
- * 表情符号输入{@link InputWord 候选字}
+ * 表情符号的{@link InputWord 输入字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
-public class EmojiInputWord extends InputWord {
+public class EmojiWord extends InputWord {
 
-    public EmojiInputWord(String uid, String value) {
+    public EmojiWord(String uid, String value) {
         super(uid, value);
     }
 
     @Override
-    public EmojiInputWord copy() {
-        EmojiInputWord copied = new EmojiInputWord(getUid(), getValue());
+    public EmojiWord copy() {
+        EmojiWord copied = new EmojiWord(getUid(), getValue());
         copy(copied, this);
 
         return copied;

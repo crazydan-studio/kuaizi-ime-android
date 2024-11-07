@@ -18,20 +18,18 @@
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 
 /**
- * 拼音{@link InputWord 字}
+ * 拼音的{@link InputWord 输入字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
-public class PinyinInputWord extends InputWord {
+public class PinyinWord extends InputWord {
     /** 字 id */
     private final String wordId;
     /** 拼音 */
@@ -41,13 +39,11 @@ public class PinyinInputWord extends InputWord {
 
     /** 是否繁体 */
     private final boolean traditional;
-    /** 笔画顺序 */
-    private final Map<String, Integer> strokes;
 
-    public PinyinInputWord(
+    public PinyinWord(
             String uid, String value, String wordId, //
             Spell spell, Radical radical, //
-            boolean traditional, String strokeOrder
+            boolean traditional
     ) {
         super(uid, value, spell.value);
 
@@ -55,66 +51,26 @@ public class PinyinInputWord extends InputWord {
         this.spell = spell;
         this.radical = radical;
         this.traditional = traditional;
-        this.strokes = new HashMap<>();
-
-        if (strokeOrder != null) {
-            for (int i = 0; i < strokeOrder.length(); i++) {
-                String stroke = strokeOrder.charAt(i) + "";
-                int count = this.strokes.getOrDefault(stroke, 0);
-                this.strokes.put(stroke, count + 1);
-            }
-        }
     }
 
-    public static PinyinInputWord from(InputWord word) {
-        return new PinyinInputWord(word.getUid(),
-                                   word.getValue(),
-                                   word.getUid(),
-                                   new Spell(-1, word.getNotation(), "-1"),
-                                   null,
-                                   false,
-                                   null);
-    }
-
-    public static String[] getStrokeNames() {
-        return new String[] { "一", "丨", "丿", "㇏", "\uD840\uDCCB" /* 𠃋 */ };
-    }
-
-    public static String getStrokeCode(String stroke) {
-        String code = null;
-        switch (stroke) {
-            case "一":
-                code = "1";
-                break;
-            case "丨":
-                code = "2";
-                break;
-            case "丿":
-                code = "3";
-                break;
-            case "㇏":
-                code = "4";
-                break;
-            // 𠃋
-            case "\uD840\uDCCB":
-                code = "5";
-                break;
-        }
-        return code;
+    public static PinyinWord from(InputWord word) {
+        return new PinyinWord(word.getUid(),
+                              word.getValue(),
+                              word.getUid(),
+                              new Spell(-1, word.getNotation(), "-1"),
+                              null,
+                              false);
     }
 
     @Override
-    public PinyinInputWord copy() {
-        PinyinInputWord copied = new PinyinInputWord(getUid(),
-                                                     getValue(),
-                                                     getWordId(),
-                                                     getSpell(),
-                                                     getRadical(),
-                                                     isTraditional(),
-                                                     null);
+    public PinyinWord copy() {
+        PinyinWord copied = new PinyinWord(getUid(),
+                                           getValue(),
+                                           getWordId(),
+                                           getSpell(),
+                                           getRadical(),
+                                           isTraditional());
         copy(copied, this);
-
-        copied.strokes.putAll(this.strokes);
 
         return copied;
     }
@@ -137,10 +93,6 @@ public class PinyinInputWord extends InputWord {
 
     public boolean isTraditional() {
         return this.traditional;
-    }
-
-    public Map<String, Integer> getStrokes() {
-        return this.strokes;
     }
 
     public static class Spell {
@@ -230,14 +182,14 @@ public class PinyinInputWord extends InputWord {
         }
 
         public boolean matched(InputWord word) {
-            if (!(word instanceof PinyinInputWord)) {
+            if (!(word instanceof PinyinWord)) {
                 return false;
             }
 
             return (this.spells.isEmpty() //
-                    || this.spells.contains(((PinyinInputWord) word).getSpell())) //
+                    || this.spells.contains(((PinyinWord) word).getSpell())) //
                    && (this.radicals.isEmpty() //
-                       || this.radicals.contains(((PinyinInputWord) word).getRadical()));
+                       || this.radicals.contains(((PinyinWord) word).getRadical()));
         }
 
         @Override

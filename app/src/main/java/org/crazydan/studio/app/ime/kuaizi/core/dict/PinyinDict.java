@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
@@ -44,9 +44,9 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinInputWord;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinInputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getTopBestPinyinWordIds;
@@ -162,10 +162,10 @@ public class PinyinDict {
         }
 
         SQLiteDatabase db = getDB();
-        List<PinyinInputWord> wordList = getAllPinyinInputWords(db, pinyinCharsId);
+        List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
 
         // 附加拼音字的繁/简字
-        attachVariantToPinyinInputWord(db, wordList);
+        attachVariantToPinyinWord(db, wordList);
 
         return wordList.stream().map(w -> (InputWord) w).collect(Collectors.toList());
     }
@@ -196,14 +196,14 @@ public class PinyinDict {
 
     /** 根据拼音输入短语的后 4 个字作为关键字查询得到最靠前的 <code>top</code> 个表情 */
     public List<InputWord> findTopBestEmojisMatchedPhrase(CharInput input, int top, List<InputWord> prevPhrase) {
-        if (!(input.getWord() instanceof PinyinInputWord)) {
+        if (!(input.getWord() instanceof PinyinWord)) {
             return List.of();
         }
 
         List<String> phraseWordIdList = prevPhrase.stream()
-                                                  .map((word) -> ((PinyinInputWord) word).getWordId())
+                                                  .map((word) -> ((PinyinWord) word).getWordId())
                                                   .collect(Collectors.toList());
-        phraseWordIdList.add(((PinyinInputWord) input.getWord()).getWordId());
+        phraseWordIdList.add(((PinyinWord) input.getWord()).getWordId());
 
         int tries = 4;
         int total = phraseWordIdList.size();
@@ -234,7 +234,7 @@ public class PinyinDict {
     /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
     public List<List<InputWord>> findTopBestMatchedPhrase(
             List<CharInput> inputs, int top, boolean variantFirst,
-            BiFunction<String, String, PinyinInputWord> pinyinInputWordGetter
+            BiFunction<String, String, PinyinWord> pinyinWordGetter
     ) {
         if (inputs == null || inputs.size() < 2) {
             return List.of();
@@ -251,19 +251,19 @@ public class PinyinDict {
             return new ArrayList<>();
         }
 
-        Map<String, PinyinInputWord> wordMap = new HashMap<>(phraseWordsList.size() * pinyinCharsList.size());
+        Map<String, PinyinWord> wordMap = new HashMap<>(phraseWordsList.size() * pinyinCharsList.size());
         phraseWordsList.forEach((wordIds) -> {
             for (int i = 0; i < wordIds.length; i++) {
                 String pinyinChars = pinyinCharsList.get(i);
                 String wordId = wordIds[i];
-                PinyinInputWord word = pinyinInputWordGetter.apply(pinyinChars, wordId);
+                PinyinWord word = pinyinWordGetter.apply(pinyinChars, wordId);
 
                 wordMap.put(wordId, word);
             }
         });
 
         if (variantFirst) {
-            attachVariantToPinyinInputWord(db, wordMap.values());
+            attachVariantToPinyinWord(db, wordMap.values());
         }
 
         return phraseWordsList.stream()
@@ -302,7 +302,7 @@ public class PinyinDict {
         SQLiteDatabase db = getDB();
 
         saveUsedPinyinPhrase(db,
-                             phrase.stream().map((word) -> (PinyinInputWord) word).collect(Collectors.toList()),
+                             phrase.stream().map((word) -> (PinyinWord) word).collect(Collectors.toList()),
                              reverse);
     }
 

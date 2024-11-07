@@ -32,8 +32,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
@@ -466,7 +466,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             InputWord word = key.getWord();
 
             // 候选字列表中的表情作为新增插入，不对当前候选字做替换
-            if (word instanceof EmojiInputWord) {
+            if (word instanceof EmojiWord) {
                 inputList.confirmPendingAndSelectNext();
 
                 // Note：补充输入按键，以避免待输入为空
@@ -527,8 +527,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                         = (CandidatePinyinWordChooseDoingStateData) this.state.data;
 
                 CtrlKey.Option<?> option = key.getOption();
-                PinyinInputWord.Spell value = (PinyinInputWord.Spell) option.value();
-                PinyinInputWord.Filter filter = stateData.getFilter();
+                PinyinWord.Spell value = (PinyinWord.Spell) option.value();
+                PinyinWord.Filter filter = stateData.getFilter();
 
                 filter.clear();
                 if (!key.isDisabled()) {
@@ -770,7 +770,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void start_InputCandidate_Advance_Filtering(InputList inputList, CharInput input, Key<?> key) {
         CandidatePinyinWordChooseDoingStateData prevStateData
                 = (CandidatePinyinWordChooseDoingStateData) this.state.data;
-        PinyinInputWord.Filter filter = prevStateData.getFilter();
+        PinyinWord.Filter filter = prevStateData.getFilter();
 
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
@@ -801,11 +801,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 show_InputChars_Input_Popup(key);
 
                 CtrlKey.Option<?> option = key.getOption();
-                PinyinInputWord.Filter filter = stateData.getFilter();
+                PinyinWord.Filter filter = stateData.getFilter();
 
                 switch (key.getType()) {
                     case Filter_PinyinInputCandidate_by_Spell: {
-                        PinyinInputWord.Spell value = (PinyinInputWord.Spell) option.value();
+                        PinyinWord.Spell value = (PinyinWord.Spell) option.value();
 
                         filter.clear();
                         if (!key.isDisabled()) {
@@ -814,7 +814,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         break;
                     }
                     case Filter_PinyinInputCandidate_by_Radical: {
-                        PinyinInputWord.Radical value = (PinyinInputWord.Radical) option.value();
+                        PinyinWord.Radical value = (PinyinWord.Radical) option.value();
                         if (key.isDisabled()) {
                             filter.radicals.remove(value);
                         } else {
@@ -879,7 +879,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         // 当前输入确定的拼音字放在最前面
-        if (input.getWord() instanceof PinyinInputWord //
+        if (input.getWord() instanceof PinyinWord //
             && !topBestCandidates.contains(input.getWord()) //
         ) {
             topBestCandidates.add(0, input.getWord());
@@ -1029,7 +1029,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
 
         return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, variantFirst, (pinyinChars, pinyinWordId) -> { //
-            return (PinyinInputWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
+            return (PinyinWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
         });
     }
 
@@ -1037,7 +1037,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         CompletionInput completion = new CompletionInput(startIndex);
 
         for (int i = 0; i < phrase.size(); i++) {
-            PinyinInputWord word = (PinyinInputWord) phrase.get(i);
+            PinyinWord word = (PinyinWord) phrase.get(i);
             String pinyin = this.pinyinDict.getPinyinTree().getPinyinCharsById(word.getCharsId());
 
             CharInput charInput = CharInput.from(CharKey.from(pinyin));
@@ -1131,7 +1131,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         int emojiCount = pageSize - wordCount;
         List<InputWord> emojis = new ArrayList<>(emojiCount);
         candidates.forEach((candidate) -> {
-            if (candidate instanceof EmojiInputWord) {
+            if (candidate instanceof EmojiWord) {
                 emojis.add(candidate);
             } else {
                 results.add(candidate);

@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
@@ -52,7 +52,7 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         InputWord word = key.getWord();
 
-        if (word instanceof PinyinInputWord && ((PinyinInputWord) word).isTraditional()) {
+        if (word instanceof PinyinWord && ((PinyinWord) word).isTraditional()) {
             ViewUtils.show(this.traditionalMarkView);
         } else {
             ViewUtils.hide(this.traditionalMarkView);

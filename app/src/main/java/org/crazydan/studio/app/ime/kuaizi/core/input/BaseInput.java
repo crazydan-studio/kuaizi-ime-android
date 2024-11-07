@@ -73,7 +73,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean isPinyin() {
-        return this.word instanceof PinyinInputWord;
+        return this.word instanceof PinyinWord;
     }
 
     @Override
@@ -83,7 +83,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean isEmoji() {
-        return this.word instanceof EmojiInputWord || test(Key::isEmoji);
+        return this.word instanceof EmojiWord || test(Key::isEmoji);
     }
 
     @Override

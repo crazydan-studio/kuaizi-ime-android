@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
@@ -50,32 +50,32 @@ import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.upsertSQLite;
  */
 public class PinyinDictDBHelper {
 
-    /** 根据字及其拼音获取其{@link PinyinInputWord 拼音字对象} */
-    public static PinyinInputWord getPinyinInputWord(SQLiteDatabase db, String word, String pinyin) {
-        List<PinyinInputWord> wordList = queryPinyinInputWords(db,
-                                                               "py_.word_ = ? and py_.spell_ = ?",
-                                                               new String[] { word, pinyin });
+    /** 根据字及其拼音获取其{@link PinyinWord 拼音字对象} */
+    public static PinyinWord getPinyinWord(SQLiteDatabase db, String word, String pinyin) {
+        List<PinyinWord> wordList = queryPinyinWords(db,
+                                                     "py_.word_ = ? and py_.spell_ = ?",
+                                                     new String[] { word, pinyin });
         return CollectionUtils.first(wordList);
     }
 
-    /** 根据拼音字 id 获取其 {@link PinyinInputWord 拼音字对象} */
-    public static Map<String, PinyinInputWord> getPinyinInputWords(SQLiteDatabase db, Set<String> pinyinWordIds) {
+    /** 根据拼音字 id 获取其 {@link PinyinWord 拼音字对象} */
+    public static Map<String, PinyinWord> getPinyinWordsByWordId(SQLiteDatabase db, Set<String> pinyinWordIds) {
         String placeholder = pinyinWordIds.stream().map((id) -> "?").collect(Collectors.joining(", "));
 
-        List<PinyinInputWord> wordList = queryPinyinInputWords(db,
-                                                               "py_.id_ in (" + placeholder + ")",
-                                                               pinyinWordIds.toArray(new String[0]));
+        List<PinyinWord> wordList = queryPinyinWords(db,
+                                                     "py_.id_ in (" + placeholder + ")",
+                                                     pinyinWordIds.toArray(new String[0]));
 
-        return wordList.stream().collect(Collectors.toMap(PinyinInputWord::getUid, Function.identity()));
+        return wordList.stream().collect(Collectors.toMap(PinyinWord::getUid, Function.identity()));
     }
 
     /**
-     * 根据拼音字母组合 id 获取其对应的全部{@link PinyinInputWord 拼音字对象}
+     * 根据拼音字母组合 id 获取其对应的全部{@link PinyinWord 拼音字对象}
      * <p/>
      * 返回结果已按拼音声调、字形权重排序
      */
-    public static List<PinyinInputWord> getAllPinyinInputWords(SQLiteDatabase db, String pinyinCharsId) {
-        return queryPinyinInputWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId });
+    public static List<PinyinWord> getAllPinyinWordsByCharsId(SQLiteDatabase db, String pinyinCharsId) {
+        return queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId });
     }
 
     /**
@@ -109,17 +109,17 @@ public class PinyinDictDBHelper {
     }
 
     /**
-     * 查询拼音字表 pinyin_word 以获得{@link PinyinInputWord 拼音字对象}列表
+     * 查询拼音字表 pinyin_word 以获得{@link PinyinWord 拼音字对象}列表
      */
-    private static List<PinyinInputWord> queryPinyinInputWords(
+    private static List<PinyinWord> queryPinyinWords(
             SQLiteDatabase db, String queryWhere, String[] queryParams
     ) {
-        return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinInputWord>() {
+        return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinWord>() {
             {
                 this.sql = "select distinct"
                            + "   py_.id_, py_.word_, py_.word_id_,"
                            + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
-                           + "   py_.traditional_, py_.stroke_order_,"
+                           + "   py_.traditional_,"
                            + "   py_.radical_, py_.radical_stroke_count_"
                            + " from pinyin_word py_"
                            + (" where " + queryWhere)
@@ -128,20 +128,20 @@ public class PinyinDictDBHelper {
                            + "   py_.spell_id_ asc, py_.glyph_weight_ desc";
                 this.params = queryParams;
 
-                this.reader = PinyinDictDBHelper::createPinyinInputWord;
+                this.reader = PinyinDictDBHelper::createPinyinWord;
             }
         });
     }
 
-    /** 根据表情符号获取其 {@link EmojiInputWord 表情对象} */
-    public static EmojiInputWord getEmoji(SQLiteDatabase db, String emoji) {
-        List<EmojiInputWord> emojiList = querySQLite(db, new SQLiteQueryParams<EmojiInputWord>() {{
+    /** 根据表情符号获取其 {@link EmojiWord 表情对象} */
+    public static EmojiWord getEmoji(SQLiteDatabase db, String emoji) {
+        List<EmojiWord> emojiList = querySQLite(db, new SQLiteQueryParams<EmojiWord>() {{
             this.table = "meta_emoji";
             this.columns = new String[] { "id_", "value_", "weight_user_ as weight_" };
             this.where = "value_ = ?";
             this.params = new String[] { emoji };
 
-            this.reader = PinyinDictDBHelper::createEmojiInputWord;
+            this.reader = PinyinDictDBHelper::createEmojiWord;
         }});
 
         return CollectionUtils.first(emojiList);
@@ -175,7 +175,7 @@ public class PinyinDictDBHelper {
 
             this.reader = (row) -> {
                 String group = row.getString("group_");
-                EmojiInputWord emoji = createEmojiInputWord(row);
+                EmojiWord emoji = createEmojiWord(row);
 
                 if (emoji != null) {
                     groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
@@ -188,7 +188,7 @@ public class PinyinDictDBHelper {
     }
 
     /** 根据关键字的字 id 获取表情 */
-    public static List<EmojiInputWord> getEmojisByKeyword(SQLiteDatabase db, List<String[]> keywordIdsList, int top) {
+    public static List<EmojiWord> getEmojisByKeyword(SQLiteDatabase db, List<String[]> keywordIdsList, int top) {
         List<String> args = new ArrayList<>(keywordIdsList.size() * 4);
         keywordIdsList.forEach((keywordIds) -> {
             String ids = String.join(",", keywordIds);
@@ -198,7 +198,7 @@ public class PinyinDictDBHelper {
             args.add("%," + ids + ",%");
         });
 
-        return querySQLite(db, new SQLiteQueryParams<EmojiInputWord>() {{
+        return querySQLite(db, new SQLiteQueryParams<EmojiWord>() {{
             this.table = "meta_emoji";
             this.columns = new String[] { "id_", "value_", "weight_user_ as weight_" };
             this.where = args.stream().map((arg) -> "keyword_ids_list_ like ?").collect(Collectors.joining(" or "));
@@ -206,7 +206,7 @@ public class PinyinDictDBHelper {
             this.orderBy = "weight_ desc, id_ asc";
             this.limit = top + "";
 
-            this.reader = PinyinDictDBHelper::createEmojiInputWord;
+            this.reader = PinyinDictDBHelper::createEmojiWord;
         }});
     }
 
@@ -277,13 +277,13 @@ public class PinyinDictDBHelper {
         }
     }
 
-    /** 向{@link PinyinInputWord 拼音字}附加其繁/简变体 */
-    public static void attachVariantToPinyinInputWord(SQLiteDatabase db, Collection<PinyinInputWord> pinyinWordList) {
-        Map<String, List<PinyinInputWord>> pinyinWordMap = pinyinWordList.stream()
-                                                                         .collect(Collectors.groupingBy(PinyinInputWord::getWordId,
-                                                                                                        HashMap::new,
-                                                                                                        Collectors.toCollection(
-                                                                                                                ArrayList::new)));
+    /** 向{@link PinyinWord 拼音字}附加其繁/简变体 */
+    public static void attachVariantToPinyinWord(SQLiteDatabase db, Collection<PinyinWord> pinyinWordList) {
+        Map<String, List<PinyinWord>> pinyinWordMap = pinyinWordList.stream()
+                                                                    .collect(Collectors.groupingBy(PinyinWord::getWordId,
+                                                                                                   HashMap::new,
+                                                                                                   Collectors.toCollection(
+                                                                                                           ArrayList::new)));
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             String placeholder = pinyinWordMap.keySet().stream().map((k) -> "?").collect(Collectors.joining(", "));
@@ -300,12 +300,12 @@ public class PinyinDictDBHelper {
 
             this.reader = (row) -> {
                 String sourceWordId = row.getString("source_id_");
-                List<PinyinInputWord> sourceWords = pinyinWordMap.get(sourceWordId);
+                List<PinyinWord> sourceWords = pinyinWordMap.get(sourceWordId);
                 assert sourceWords != null;
 
                 String targetWordId = row.getString("target_id_");
                 String targetWordValue = row.getString("target_value_");
-                List<PinyinInputWord> targetWords = pinyinWordMap.get(targetWordId);
+                List<PinyinWord> targetWords = pinyinWordMap.get(targetWordId);
 
                 sourceWords.forEach((sourceWord) -> {
                     if (sourceWord.getVariant() != null) {
@@ -346,7 +346,7 @@ public class PinyinDictDBHelper {
         return CollectionUtils.first(wordIdList);
     }
 
-    private static PinyinInputWord createPinyinInputWord(SQLiteRow row) {
+    private static PinyinWord createPinyinWord(SQLiteRow row) {
         // 拼音字 id
         String uid = row.getString("id_");
         // 字 id
@@ -360,26 +360,25 @@ public class PinyinDictDBHelper {
         String spellValue = row.getString("spell_");
         // 拼音字母组合 id
         String spellCharsId = row.getString("spell_chars_id_");
-        PinyinInputWord.Spell spell = new PinyinInputWord.Spell(spellId, spellValue, spellCharsId);
+        PinyinWord.Spell spell = new PinyinWord.Spell(spellId, spellValue, spellCharsId);
 
         boolean traditional = row.getInt("traditional_") > 0;
-        String strokeOrder = row.getString("stroke_order_");
 
         String radicalValue = row.getString("radical_");
         int radicalStrokeCount = row.getInt("radical_stroke_count_");
-        PinyinInputWord.Radical radical = new PinyinInputWord.Radical(radicalValue, radicalStrokeCount);
+        PinyinWord.Radical radical = new PinyinWord.Radical(radicalValue, radicalStrokeCount);
 
-        return new PinyinInputWord(uid, wordValue, wordId, spell, radical, traditional, strokeOrder);
+        return new PinyinWord(uid, wordValue, wordId, spell, radical, traditional);
     }
 
-    private static EmojiInputWord createEmojiInputWord(SQLiteRow row) {
+    private static EmojiWord createEmojiWord(SQLiteRow row) {
         String uid = row.getString("id_");
         String value = row.getString("value_");
         int weight = row.getInt("weight_");
 
-        EmojiInputWord word = null;
+        EmojiWord word = null;
         if (CharUtils.isPrintable(value)) {
-            word = new EmojiInputWord(uid, value);
+            word = new EmojiWord(uid, value);
             word.setWeight(weight);
         }
         return word;

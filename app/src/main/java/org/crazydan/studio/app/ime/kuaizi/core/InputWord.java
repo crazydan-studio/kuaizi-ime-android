@@ -22,7 +22,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 /**
- * {@link Input 输入}候选字
+ * {@link Input 输入}对应的{@link Input#getWord() 字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08

@@ -46,7 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
@@ -1289,6 +1289,6 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private void changePinyinWord(InputWord word) {
-        this.imeView.getInputList().getLastCharInput().setWord(PinyinInputWord.from(word));
+        this.imeView.getInputList().getLastCharInput().setWord(PinyinWord.from(word));
     }
 }

@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiInputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 
@@ -41,9 +41,9 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<InputWord> {
     private final CharInput target;
     private final List<InputWord> candidates;
-    private final List<PinyinInputWord.Spell> spells;
+    private final List<PinyinWord.Spell> spells;
 
-    private PinyinInputWord.Filter filter;
+    private PinyinWord.Filter filter;
     private List<InputWord> cachedFilterCandidates;
 
     public CandidatePinyinWordChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
@@ -53,11 +53,11 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
         this.candidates = candidates;
 
         this.cachedFilterCandidates = candidates;
-        this.filter = new PinyinInputWord.Filter();
+        this.filter = new PinyinWord.Filter();
 
         this.spells = candidates.stream()
-                                .filter((word) -> word instanceof PinyinInputWord)
-                                .map((word) -> ((PinyinInputWord) word).getSpell())
+                                .filter((word) -> word instanceof PinyinWord)
+                                .map((word) -> ((PinyinWord) word).getSpell())
                                 .sorted(Comparator.comparingInt(a -> a.id))
                                 .distinct()
                                 .collect(Collectors.toList());
@@ -76,17 +76,17 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
         return this.candidates;
     }
 
-    public List<PinyinInputWord.Spell> getSpells() {
+    public List<PinyinWord.Spell> getSpells() {
         return this.spells;
     }
 
-    public PinyinInputWord.Filter getFilter() {
-        return new PinyinInputWord.Filter(this.filter);
+    public PinyinWord.Filter getFilter() {
+        return new PinyinWord.Filter(this.filter);
     }
 
-    public void setFilter(PinyinInputWord.Filter filter) {
-        PinyinInputWord.Filter oldFilter = this.filter;
-        this.filter = new PinyinInputWord.Filter(filter);
+    public void setFilter(PinyinWord.Filter filter) {
+        PinyinWord.Filter oldFilter = this.filter;
+        this.filter = new PinyinWord.Filter(filter);
 
         if (!oldFilter.equals(this.filter)) {
             this.cachedFilterCandidates = filterCandidates(this.candidates);
@@ -134,7 +134,7 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
 
     private boolean matched(InputWord word) {
         // 表情符号不做匹配
-        if (word instanceof EmojiInputWord) {
+        if (word instanceof EmojiWord) {
             return false;
         }
         // 占位用的，不做过滤

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinInputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
 
 /**
@@ -35,11 +35,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-27
  */
-public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateData<PinyinInputWord.Radical> {
+public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateData<PinyinWord.Radical> {
     private final CharInput target;
-    private final Map<PinyinInputWord.Spell, List<WordRadical>> spellAndRadicalsMap;
+    private final Map<PinyinWord.Spell, List<WordRadical>> spellAndRadicalsMap;
 
-    private PinyinInputWord.Filter filter;
+    private PinyinWord.Filter filter;
 
     public CandidatePinyinWordAdvanceFilterDoingStateData(
             CharInput target, List<InputWord> candidates, int pageSize
@@ -53,7 +53,7 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
 
     /** 获取可用的过滤部首列表 */
     @Override
-    public List<PinyinInputWord.Radical> getPagingData() {
+    public List<PinyinWord.Radical> getPagingData() {
         return getRadicals();
     }
 
@@ -61,23 +61,23 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
         return this.target;
     }
 
-    public PinyinInputWord.Filter getFilter() {
-        return new PinyinInputWord.Filter(this.filter);
+    public PinyinWord.Filter getFilter() {
+        return new PinyinWord.Filter(this.filter);
     }
 
-    public void setFilter(PinyinInputWord.Filter filter) {
-        this.filter = new PinyinInputWord.Filter(filter);
+    public void setFilter(PinyinWord.Filter filter) {
+        this.filter = new PinyinWord.Filter(filter);
     }
 
-    public List<PinyinInputWord.Spell> getSpells() {
+    public List<PinyinWord.Spell> getSpells() {
         return this.spellAndRadicalsMap.keySet()
                                        .stream()
                                        .sorted(Comparator.comparing(s -> s.id))
                                        .collect(Collectors.toList());
     }
 
-    public List<PinyinInputWord.Radical> getRadicals() {
-        Map<PinyinInputWord.Radical, Integer> map = new HashMap<>();
+    public List<PinyinWord.Radical> getRadicals() {
+        Map<PinyinWord.Radical, Integer> map = new HashMap<>();
 
         this.spellAndRadicalsMap.forEach((spell, radicals) -> {
             if (!this.filter.spells.isEmpty() && !this.filter.spells.contains(spell)) {
@@ -98,21 +98,21 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
         }).map((radical) -> radical.value).collect(Collectors.toList());
     }
 
-    private Map<PinyinInputWord.Spell, List<WordRadical>> initSpellAndRadicalsMap(List<InputWord> candidates) {
-        Map<PinyinInputWord.Spell, Map<PinyinInputWord.Radical, Integer>> map = new HashMap<>();
+    private Map<PinyinWord.Spell, List<WordRadical>> initSpellAndRadicalsMap(List<InputWord> candidates) {
+        Map<PinyinWord.Spell, Map<PinyinWord.Radical, Integer>> map = new HashMap<>();
 
         candidates.stream()
-                  .filter((word) -> word instanceof PinyinInputWord)
-                  .map((word) -> (PinyinInputWord) word)
+                  .filter((word) -> word instanceof PinyinWord)
+                  .map((word) -> (PinyinWord) word)
                   .forEach((word) -> {
-                      PinyinInputWord.Spell spell = word.getSpell();
-                      PinyinInputWord.Radical radical = word.getRadical();
+                      PinyinWord.Spell spell = word.getSpell();
+                      PinyinWord.Radical radical = word.getRadical();
 
                       map.computeIfAbsent(spell, (k) -> new HashMap<>())
                          .compute(radical, (k, v) -> (v == null ? 0 : v) + 1);
                   });
 
-        Map<PinyinInputWord.Spell, List<WordRadical>> result = new HashMap<>();
+        Map<PinyinWord.Spell, List<WordRadical>> result = new HashMap<>();
         map.forEach((spell, radicalMap) -> {
             List<WordRadical> radicals = new ArrayList<>();
 
@@ -127,10 +127,10 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
     }
 
     private static class WordRadical {
-        private final PinyinInputWord.Radical value;
+        private final PinyinWord.Radical value;
         private final int weight;
 
-        private WordRadical(PinyinInputWord.Radical value, int weight) {
+        private WordRadical(PinyinWord.Radical value, int weight) {
             this.value = value;
             this.weight = weight;
         }
