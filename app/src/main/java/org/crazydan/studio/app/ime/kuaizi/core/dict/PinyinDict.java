@@ -231,7 +231,7 @@ public class PinyinDict {
         return getLatinsByStarts(db, text, top);
     }
 
-    /** 根据前序输入的字词，查找最靠前的 <code>top</code> 个拼音短语 */
+    /** 根据输入的拼音，查找最靠前的 <code>top</code> 个拼音短语 */
     public List<List<InputWord>> findTopBestMatchedPhrase(
             List<CharInput> inputs, int top, boolean variantFirst,
             BiFunction<String, String, PinyinWord> pinyinWordGetter

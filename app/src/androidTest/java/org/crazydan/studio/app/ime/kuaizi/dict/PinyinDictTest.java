@@ -85,12 +85,10 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             List<String> phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
 
             String bestPhrase = CollectionUtils.first(phraseList);
-            if (bestPhrase.equals(expectWordStr)) {
-                return;
+            if (!bestPhrase.equals(expectWordStr)) {
+                // 预测得到的短语与预期的不符
+                Log.i(LOG_TAG, pinyinCharsStr + " hasn't expected phrase, try again");
             }
-
-            // 预测得到的短语与预期的不符，则进行短语修正后再尝试预测
-            Log.i(LOG_TAG, pinyinCharsStr + " hasn't expected phrase, try again");
 
             List<PinyinWord> phraseWordList = Arrays.stream(expectWordStr.split(",")).map((word) -> {
                 String[] splits = word.split(":");
@@ -233,7 +231,8 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         saveUsedEmojis(db, usedEmojiIdList, true);
 
         emojis = getAllGroupedEmojis(db, top);
-        Assert.assertNull(emojis.groups.get(Emojis.GROUP_GENERAL));
+        Assert.assertNotNull(emojis.groups.get(Emojis.GROUP_GENERAL));
+        Assert.assertTrue(emojis.groups.get(Emojis.GROUP_GENERAL).isEmpty());
         // >>>>>>>>>>>>>>
     }
 

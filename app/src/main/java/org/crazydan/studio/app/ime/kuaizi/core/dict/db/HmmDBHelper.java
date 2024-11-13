@@ -18,11 +18,13 @@
 package org.crazydan.studio.app.ime.kuaizi.core.dict.db;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.calcViterbi;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Viterbi.getBestPhraseFromViterbi;
@@ -75,30 +78,23 @@ public class HmmDBHelper {
         Map<String, Map<String, Integer>> transProb = new HashMap<>();
         Map<String, Set<String>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
 
-        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
-            // 查询结果列包括：word_id_, prev_word_id_, word_spell_chars_id_, value_app_, value_user_
-            this.sql = createTransProbQuerySQL(pinyinCharsIdList);
+        queryTransProb(db, pinyinCharsIdList, (row) -> {
+            String wordId = row.getString("word_id_");
+            String preWordId = row.getString("prev_word_id_");
+            int pinyinCharsId = row.getInt("word_spell_chars_id_");
+            int appValue = row.getInt("value_app_");
+            int userValue = row.getInt("value_user_");
 
-            this.reader = (row) -> {
-                String wordId = row.getString("word_id_");
-                String preWordId = row.getString("prev_word_id_");
-                String pinyinCharsId = row.getString("word_spell_chars_id_");
-                Integer appValue = row.getInt("value_app_");
-                Integer userValue = row.getInt("value_user_");
+            Map<String, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
+            prob.compute(preWordId, (k, v) -> (v == null ? 0 : v) //
+                                              + appValue + userValue
+                                              // 用户数据需加上基础权重
+                                              + (userValue > 0 ? userPhraseBaseWeight : 0));
 
-                Map<String, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
-                prob.compute(preWordId, (k, v) -> (v == null ? 0 : v) //
-                                                  + appValue + userValue
-                                                  // 用户数据需加上基础权重
-                                                  + (userValue > 0 ? userPhraseBaseWeight : 0));
-
-                if (pinyinCharsId != null) {
-                    pinyinCharsIdAndWordIdsMap.computeIfAbsent(pinyinCharsId, (k) -> new HashSet<>()).add(wordId);
-                }
-
-                return null;
-            };
-        }});
+            if (pinyinCharsId >= 0) {
+                pinyinCharsIdAndWordIdsMap.computeIfAbsent(pinyinCharsId + "", (k) -> new HashSet<>()).add(wordId);
+            }
+        });
 
 //        Log.i(LOG_TAG, "TransProb: " + new Gson().toJson(transProb));
 
@@ -141,78 +137,93 @@ public class HmmDBHelper {
         // 采用 SQLite 的 UPSET 机制插入或更新数据：https://www.sqlite.org/lang_upsert.html
 
         // =============================================================================
+        // @return ['word id', 'spell chars id']
         Function<String, String[]> extractWordIds = (s) -> s.split(":");
 
-        List<String[]> phraseWordData = hmm.wordWeight.keySet().stream().map((key) -> {
-            String[] wordIds = extractWordIds.apply(key);
-            String val = hmm.wordWeight.get(key) + "";
+        Function<Boolean, List<String[]>> phraseWordDataGetter = //
+                (updated) -> hmm.wordWeight.keySet().stream().map((key) -> {
+                    String[] wordIds = extractWordIds.apply(key);
+                    String val = hmm.wordWeight.get(key) + "";
 
-            return new String[] { val, wordIds[0], wordIds[1] };
-        }).collect(Collectors.toList());
+                    return updated ? new String[] { val, wordIds[0] } //
+                                   : new String[] { val, wordIds[0], wordIds[1] };
+                }).collect(Collectors.toList());
 
         if (!reverse) {
             // Note: SQLite 3.24.0 版本才支持 upsert
             // https://www.sqlite.org/lang_upsert.html#history
 //            execSQLite(db,
-//                       "insert into"
-//                       + " phrase_word(word_id_, spell_chars_id_, weight_app_, weight_user_)"
-//                       + "   values(?, ?, 0, ?)"
-//                       + " on conflict(word_id_, spell_chars_id_)"
+//                       "insert into phrase_word ("
+//                       + "   word_id_, spell_chars_id_,"
+//                       + "   weight_app_, weight_user_"
+//                       + " ) values(?, ?, 0, ?)"
+//                       + " on conflict(word_id_)"
 //                       + " do update set "
 //                       + "   weight_user_ = weight_user_ + ?",
 //                       phraseWordData);
             upsertSQLite(db, new SQLiteRawUpsertParams() {{
                 // Note: 确保更新和新增的参数位置相同
-                this.updateSQL = "update phrase_word"
-                                 + " set weight_user_ = weight_user_ + ?"
-                                 + " where word_id_ = ? and spell_chars_id_ = ?";
-                this.insertSql = "insert into"
-                                 + " phrase_word(weight_app_, weight_user_, word_id_, spell_chars_id_)"
-                                 + "   values(0, ?, ?, ?)";
-                this.updateParamsList = this.insertParamsList = phraseWordData;
+                this.updateSQL = "update phrase_word" //
+                                 + " set weight_user_ = weight_user_ + ?" //
+                                 + " where word_id_ = ?";
+                this.insertSql = "insert into phrase_word ("
+                                 + "   weight_app_, weight_user_,"
+                                 + "   word_id_, spell_chars_id_"
+                                 + " ) values(0, ?, ?, ?)";
+
+                this.insertParamsList = phraseWordDataGetter.apply(false);
+                this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 2);
             }});
         } else {
-            execSQLite(db,
-                       "update phrase_word"
-                       + " set weight_user_ = max(weight_user_ - ?, 0)"
-                       + " where word_id_ = ? and spell_chars_id_ = ?",
-                       phraseWordData);
+            execSQLite(db, "update phrase_word" //
+                           + " set weight_user_ = max(weight_user_ - ?, 0)" //
+                           + " where word_id_ = ?", phraseWordDataGetter.apply(true));
         }
 
         // ==============================================================================
-        Function<String, String> getWordId = (s) -> {
+        Function<String, String[]> getWordId = (s) -> {
             // EOS 用 -1 代替（句尾字）
             // BOS 用 -1 代替（句首字）
             // TOTAL 用 -2 代替（句子总数）
             if (Hmm.EOS.equals(s) || Hmm.BOS.equals(s)) {
-                return WORD_EOS_BOS;
+                return new String[] { WORD_EOS_BOS, WORD_EOS_BOS };
             } else if (Hmm.TOTAL.equals(s)) {
-                return WORD_TOTAL;
+                return new String[] { WORD_TOTAL, WORD_TOTAL };
             }
 
-            String[] wordIds = extractWordIds.apply(s);
-            return wordIds[0];
+            return extractWordIds.apply(s);
         };
 
-        List<String[]> phraseTransProbData = new ArrayList<>();
-        hmm.transProb.forEach((curr, prob) -> {
-            String currId = getWordId.apply(curr);
+        Function<Boolean, List<String[]>> phraseTransProbDataGetter = //
+                (updated) -> {
+                    List<String[]> phraseTransProbData = new ArrayList<>();
+                    hmm.transProb.forEach((curr, prob) -> {
+                        String[] currIds = getWordId.apply(curr);
 
-            prob.forEach((prev, value) -> {
-                String prevId = getWordId.apply(prev);
-                String val = value + "";
+                        prob.forEach((prev, value) -> {
+                            String[] prevIds = getWordId.apply(prev);
+                            String val = value + "";
 
-                phraseTransProbData.add(new String[] { val, currId, prevId });
-            });
-        });
+                            phraseTransProbData.add(updated
+                                                    ? new String[] { val, currIds[0], prevIds[0] }
+                                                    : new String[] {
+                                                            val, currIds[0], prevIds[0], //
+                                                            currIds[1], prevIds[1]
+                                                    });
+                        });
+                    });
+                    return phraseTransProbData;
+                };
 
         if (!reverse) {
             // Note: SQLite 3.24.0 版本才支持 upsert
             // https://www.sqlite.org/lang_upsert.html#history
 //            execSQLite(db,
-//                       "insert into"
-//                       + " phrase_trans_prob(word_id_, prev_word_id_, value_app_, value_user_)"
-//                       + "   values(?, ?, 0, ?)"
+//                       "insert into phrase_trans_prob ("
+//                       + "   word_id_, prev_word_id_,"
+//                       + "   word_spell_chars_id_, prev_word_spell_chars_id_,"
+//                       + "   value_app_, value_user_"
+//                       + " ) values(?, ?, ?, ?, 0, ?)"
 //                       + " on conflict(word_id_, prev_word_id_)"
 //                       + " do update set "
 //                       + "   value_user_ = value_user_ + ?",
@@ -222,17 +233,21 @@ public class HmmDBHelper {
                 this.updateSQL = "update phrase_trans_prob"
                                  + " set value_user_ = value_user_ + ?"
                                  + " where word_id_ = ? and prev_word_id_ = ?";
-                this.insertSql = "insert into"
-                                 + " phrase_trans_prob(value_app_, value_user_, word_id_, prev_word_id_)"
-                                 + "   values(0, ?, ?, ?)";
-                this.updateParamsList = this.insertParamsList = phraseTransProbData;
+                this.insertSql = "insert into phrase_trans_prob ("
+                                 + "   value_app_, value_user_,"
+                                 + "   word_id_, prev_word_id_,"
+                                 + "   word_spell_chars_id_, prev_word_spell_chars_id_"
+                                 + " ) values(0, ?, ?, ?, ?, ?)";
+
+                this.insertParamsList = phraseTransProbDataGetter.apply(false);
+                this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 3);
             }});
         } else {
             execSQLite(db,
                        "update phrase_trans_prob"
                        + " set value_user_ = max(value_user_ - ?, 0)"
                        + " where word_id_ = ? and prev_word_id_ = ?",
-                       phraseTransProbData);
+                       phraseTransProbDataGetter.apply(true));
         }
 
         if (reverse) {
@@ -252,70 +267,35 @@ public class HmmDBHelper {
                                        .collect(Collectors.toList()));
     }
 
-    /** 构造 {@link Hmm#transProb} 数据查询 SQL */
-    private static String createTransProbQuerySQL(List<String> spellCharsIdList) {
-        List<String> charsIdList = new ArrayList<>(spellCharsIdList);
+    private static void queryTransProb(
+            SQLiteDatabase db, List<String> spellCharsIdList, Consumer<DBUtils.SQLiteRow> consumer
+    ) {
+        // 短语前后序拼音组合
+        List<String[]> charsIdPairList = new ArrayList<>(spellCharsIdList.size() + 1);
+        for (int i = 0; i <= spellCharsIdList.size(); i++) {
+            String prevCharsId = i == 0 ? WORD_EOS_BOS : spellCharsIdList.get(i - 1);
+            String currCharsId = i == spellCharsIdList.size() ? WORD_EOS_BOS : spellCharsIdList.get(i);
 
-        // <<<<<<<<<<<<<< 构造通过拼音字母组合做字查询的递归 SQL
-        // https://www.sqlite.org/lang_with.html
-        Set<String> charsIdSet = new HashSet<>(charsIdList);
-
-        List<String> wordTableSQLList = charsIdSet.stream()
-                                                  .map((charsId) -> String.format(
-                                                          "word_ids_%s(word_id_, spell_chars_id_) as ("
-                                                          + " select word_id_, spell_chars_id_"
-                                                          + " from phrase_word"
-                                                          + " where spell_chars_id_ = %s"
-                                                          + ")",
-                                                          charsId,
-                                                          charsId))
-                                                  .collect(Collectors.toList());
-
-        String noneWordCharsId = "none";
-        wordTableSQLList.add(String.format("word_ids_%s(word_id_, spell_chars_id_) as ( values(-1, null) )",
-                                           noneWordCharsId));
-
-        // 补充短语首字和尾字
-        charsIdList.add(0, noneWordCharsId);
-        charsIdList.add(noneWordCharsId);
-
-        Map<String, String> wordUnionSQLMap = new HashMap<>(charsIdList.size());
-        for (int i = 1; i < charsIdList.size(); i++) {
-            String prevCharsId = charsIdList.get(i - 1);
-            String currCharsId = charsIdList.get(i);
-
-            String unionCode = prevCharsId + "_" + currCharsId;
-            if (wordUnionSQLMap.containsKey(unionCode)) {
-                continue;
-            }
-
-            wordUnionSQLMap.put(unionCode,
-                                String.format("    select"
-                                              + " prev_.word_id_ as prev_word_id_,"
-                                              + " curr_.word_id_ as curr_word_id_,"
-                                              + " curr_.spell_chars_id_ as curr_word_spell_chars_id_"
-                                              + " from word_ids_%s prev_ , word_ids_%s curr_",
-                                              prevCharsId,
-                                              currCharsId));
+            charsIdPairList.add(new String[] { prevCharsId, currCharsId });
+            // 当前拼音字都需包含 TOTAL 列，以得到其转移总数
+            charsIdPairList.add(new String[] { WORD_TOTAL, currCharsId });
         }
 
-        wordTableSQLList.add("word_ids(prev_word_id_, curr_word_id_, curr_word_spell_chars_id_) as (\n" //
-                             + String.join("\nunion\n", wordUnionSQLMap.values()) //
-                             + "\n  )");
+        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
+            // Note: 直接拼接参数，以避免参数解析
+            this.sql = "select distinct *" //
+                       + " from phrase_trans_prob" //
+                       + " where "
+                       // Note: 低版本不支持 where (a, b) in ((1, 2), (3, 4), ...) 形式，只能采用 or 实现
+                       + charsIdPairList.stream()
+                                        .map(pair -> "(prev_word_spell_chars_id_, word_spell_chars_id_)" //
+                                                     + (" = (" + pair[0] + ", " + pair[1] + ")"))
+                                        .collect(Collectors.joining(" or "));
 
-        return "with recursive\n  "
-               + String.join(",\n  ", wordTableSQLList)
-               + "\nselect distinct "
-               + "   s_.word_id_, s_.prev_word_id_,"
-               + "   t_.curr_word_spell_chars_id_ as word_spell_chars_id_,"
-               + "   s_.value_app_, s_.value_user_"
-               + " from phrase_trans_prob s_, word_ids t_"
-               + " where"
-               + "   s_.word_id_ = t_.curr_word_id_"
-               + "   and ("
-               + "     s_.prev_word_id_ = t_.prev_word_id_"
-               // 当前拼音字都包含 TOTAL 列
-               + ("    or s_.prev_word_id_ = " + WORD_TOTAL)
-               + "   )";
+            this.reader = (row) -> {
+                consumer.accept(row);
+                return null;
+            };
+        }});
     }
 }

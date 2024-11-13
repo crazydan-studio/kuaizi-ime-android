@@ -89,6 +89,11 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
                 + " select"
                 + "   user_.id_, user_.weight_"
                 + " from tmp_meta_emoji_2 user_",
+                //
+                "select * from tmp_meta_emoji_1" //
+                + " where (id_, weight_user_) = (1, 2)",
+                "select * from tmp_meta_emoji_1" //
+                + " where (id_, weight_user_) in ((1, 2), (3, 4))",
                 };
 
         for (String clause : clauses) {
@@ -96,7 +101,7 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
                 execSQLite(db, clause);
                 Log.i(LOG_TAG, "[OK] SQL: " + clause);
             } catch (Exception e) {
-                Log.e(LOG_TAG, "[ERROR] SQL: " + clause, e);
+                Log.e(LOG_TAG, "[ERROR] SQL: " + clause + " ==> " + e.getMessage());
             }
         }
     }

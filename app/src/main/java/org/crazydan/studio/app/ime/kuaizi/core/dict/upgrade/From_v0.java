@@ -21,6 +21,7 @@ import java.io.File;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictDBType;
@@ -63,7 +64,7 @@ public class From_v0 {
                 + "   weight_app_ integer not null,"
                 // -- 用户字典中短语内的字权重：出现次数
                 + "   weight_user_ integer not null," //
-                + "   primary key (word_id_, spell_chars_id_)" //
+                + "   primary key (word_id_)" //
                 + " )",
                 //
                 "create table" //
@@ -71,9 +72,15 @@ public class From_v0 {
                 //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
                 //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
                 + "   word_id_ integer not null,"
+                // -- 当前拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
+                // -- Note：其为字典库中 字及其拼音表（link_word_with_pinyin）中的 spell_chars_id_
+                + "   word_spell_chars_id_ integer not null,"
                 //  -- 前序拼音字 id: BOS 用 -1 代替（句首字），TOTAL 用 -2 代替
                 //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
                 + "   prev_word_id_ integer not null,"
+                // -- 前序拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
+                // -- Note：其为字典库中 字及其拼音表（link_word_with_pinyin）中的 spell_chars_id_
+                + "   prev_word_spell_chars_id_ integer not null,"
                 //  -- 当 word_id_ == -1 且 prev_word_id_ == -2 时，其代表训练数据的句子总数，用于计算句首字出现频率；
                 //  -- 当 word_id_ == -1 且 prev_word_id_ != -1 时，其代表末尾字出现次数；
                 //  -- 当 word_id_ != -1 且 prev_word_id_ == -1 时，其代表句首字出现次数；
@@ -113,21 +120,59 @@ public class From_v0 {
                 + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
                 // >>>>>>>>>>>>>>>>>>>>>>>
                 // <<<<<<<<<<<<<<<< 通过 SQL 迁移数据
-                "insert into phrase_word"
-                + "   (word_id_, spell_chars_id_, weight_app_, weight_user_)"
+                "insert into phrase_word ("
+                + "   word_id_, spell_chars_id_, weight_app_, weight_user_"
+                + " )"
                 + " select"
-                + "   word_id_, spell_chars_id_,"
+                + "   word_id_, -3 as spell_chars_id_,"
                 + "   app_.weight_ as weight_app_,"
                 + "   0 as weight_user_"
                 + " from app.phrase_word app_",
                 //
-                "insert into phrase_trans_prob"
-                + "   (word_id_, prev_word_id_, value_app_, value_user_)"
+                "insert into phrase_trans_prob ("
+                + "   word_id_, prev_word_id_,"
+                + "   word_spell_chars_id_, prev_word_spell_chars_id_,"
+                + "   value_app_, value_user_"
+                + " )"
                 + " select"
                 + "   word_id_, prev_word_id_,"
+                + "   (case"
+                + "     when word_id_ < 0 then word_id_"
+                + "     else -3"
+                + "   end) as word_spell_chars_id_,"
+                + "   (case"
+                + "     when prev_word_id_ < 0 then prev_word_id_"
+                + "     else -3"
+                + "   end) as prev_word_spell_chars_id_,"
                 + "   app_.value_ as value_app_,"
                 + "   0 as value_user_"
                 + " from app.phrase_trans_prob app_",
+                //
+                "update phrase_word"
+                + " set spell_chars_id_ = ("
+                + "   select spell_chars_id_"
+                + "   from link_word_with_pinyin"
+                + "   where id_ = phrase_word.word_id_"
+                + " )"
+                + " where spell_chars_id_ = -3",
+                "update phrase_trans_prob"
+                + " set word_spell_chars_id_ = ("
+                + "   select spell_chars_id_"
+                + "   from link_word_with_pinyin"
+                + "   where id_ = phrase_trans_prob.word_id_"
+                + " )"
+                + " where word_spell_chars_id_ = -3",
+                "update phrase_trans_prob"
+                + " set prev_word_spell_chars_id_ = ("
+                + "   select spell_chars_id_"
+                + "   from link_word_with_pinyin"
+                + "   where id_ = phrase_trans_prob.prev_word_id_"
+                + " )"
+                + " where prev_word_spell_chars_id_ = -3",
+                //
+                "create index idx_ph_wrd_spell_chars on phrase_word(spell_chars_id_)",
+                "create index idx_ph_trp_spell_chars"
+                + " on phrase_trans_prob(word_spell_chars_id_, prev_word_spell_chars_id_);",
                 // >>>>>>>>>>>>>>>>>>>>>>
         };
 
@@ -161,6 +206,9 @@ public class From_v0 {
 
             // 迁移库就地转换为用户库
             FileUtils.moveFile(transferDBFile, userDBFile);
+        } catch (Exception e) {
+            Log.e("DictUpgrade", "Failed to doWithTransferDB", e);
+            throw e;
         } finally {
             FileUtils.deleteFile(transferDBFile);
             FileUtils.deleteFile(appPhraseDBFile);

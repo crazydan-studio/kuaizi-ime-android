@@ -158,8 +158,11 @@ public class DBUtils {
                     SQLiteStatement update = db.compileStatement(params.updateSQL);
                     SQLiteStatement insert = db.compileStatement(params.insertSql);
             ) {
-                for (int i = 0; i < params.updateParamsList.size(); i++) {
-                    String[] updateParams = params.updateParamsList.get(i);
+                // insert 参数与 update 参数的数量需相同
+                for (int i = 0; i < params.insertParamsList.size(); i++) {
+                    String[] updateParams = params.updateParamsGetter != null
+                                            ? params.updateParamsGetter.apply(i)
+                                            : params.updateParamsList.get(i);
 
                     update.bindAllArgsAsStrings(updateParams);
                     if (update.executeUpdateDelete() > 0) {
@@ -258,6 +261,8 @@ public class DBUtils {
         public List<String[]> updateParamsList;
         public List<String[]> insertParamsList;
 
+        /** 获取指定序号的更新参数 */
+        public Function<Integer, String[]> updateParamsGetter;
     }
 
     public static class SQLiteRow {
