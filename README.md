@@ -1,6 +1,13 @@
 筷字输入法 Android 客户端
 ===================================
 
+**当前代码还在改进优化中，将会涉及较大改动，因此，不建议阅读或修改本仓库代码**
+
+**注意**：本仓库仅作为筷字输入法 Android 客户端的源码仓库，
+若有缺陷反馈和改进意见，请移步至
+[crazydan-studio/kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime/issues)
+创建 Issue。
+
 ## 参考资料
 
 - [APK 签名打包](https://developer.android.com/studio/publish/app-signing?hl=zh-cn)
