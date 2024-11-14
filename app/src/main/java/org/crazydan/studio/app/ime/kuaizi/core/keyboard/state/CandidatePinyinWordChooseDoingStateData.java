@@ -90,6 +90,7 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
         this.filter = new PinyinWord.Filter(filter);
 
         if (!oldFilter.equals(this.filter)) {
+            resetPageStart();
             this.cachedFilterCandidates = filterCandidates(this.candidates);
         }
     }

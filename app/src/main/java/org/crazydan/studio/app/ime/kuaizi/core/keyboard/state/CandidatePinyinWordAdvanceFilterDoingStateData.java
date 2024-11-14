@@ -66,7 +66,12 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
     }
 
     public void setFilter(PinyinWord.Filter filter) {
+        PinyinWord.Filter oldFilter = this.filter;
         this.filter = new PinyinWord.Filter(filter);
+
+        if (!oldFilter.equals(this.filter)) {
+            resetPageStart();
+        }
     }
 
     public List<PinyinWord.Spell> getSpells() {
