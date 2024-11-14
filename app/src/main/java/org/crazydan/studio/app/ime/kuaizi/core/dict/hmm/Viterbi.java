@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -38,8 +39,9 @@ public class Viterbi {
         public String wordEos;
         /** 代表 {@link Hmm#BOS} 的字 */
         public String wordBos;
-        /** 读音与其所对应的可选字集合 Map */
-        public Map<String, Set<String>> spellAndWordsMap;
+
+        /** 根据读音及其所在位置获取可选字列表的函数 */
+        public BiFunction<String, Integer, Set<String>> wordsGetter;
     }
 
     /**
@@ -136,14 +138,14 @@ public class Viterbi {
             int currentIndex = prevIndex + 1;
 
             String currentSpell = spellList.get(currentIndex);
-            Set<String> currentWords = options.spellAndWordsMap.get(currentSpell);
+            Set<String> currentWords = options.wordsGetter.apply(currentSpell, currentIndex);
             assert currentWords != null;
 
             // Note：句首字的前序字设为 -1
             String prevSpell = prevIndex < 0 ? null : spellList.get(prevIndex);
             Set<String> prevWords = prevSpell == null
                                     ? Set.of(options.wordBos)
-                                    : options.spellAndWordsMap.get(prevSpell);
+                                    : options.wordsGetter.apply(prevSpell, prevIndex);
             assert prevWords != null;
 
             if (viterbi[currentIndex] == null) {

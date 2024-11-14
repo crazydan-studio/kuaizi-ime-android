@@ -62,8 +62,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
  * @date 2024-10-28
  */
 @RunWith(AndroidJUnit4.class)
-public class PinyinDictTest extends PinyinDictBaseTest {
-    private static final String LOG_TAG = PinyinDictTest.class.getSimpleName();
+public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
+    private static final String LOG_TAG = PinyinDictDBHelperTest.class.getSimpleName();
 
     private static final int userPhraseBaseWeight = 500;
 
@@ -109,18 +109,66 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         PinyinDict dict = PinyinDict.instance();
         SQLiteDatabase db = dict.getDB();
 
-        List<PinyinWord> phraseWordList = Arrays.stream("筷:kuài,字:zì,输:shū,入:rù,法:fǎ".split(",")).map((word) -> {
+        String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
+        String usedPhrase = "筷:kuài,字:zì,输:shū,入:rù,法:fǎ";
+        String expectedPhrase = "我:wǒ,爱:ài," + usedPhrase;
+        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+
+        List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
+        String bestPhrase = CollectionUtils.first(phraseList);
+        Assert.assertNotEquals(expectedPhrase, bestPhrase);
+
+        List<PinyinWord> phraseWordList = Arrays.stream(usedPhrase.split(",")).map((word) -> {
             String[] splits = word.split(":");
             return getPinyinWord(db, splits[0], splits[1]);
         }).collect(Collectors.toList());
         saveUsedPinyinPhrase(db, phraseWordList, false);
 
-        String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
-        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
-        List<String> phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
+        phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
+        bestPhrase = CollectionUtils.first(phraseList);
+        Assert.assertEquals(expectedPhrase, bestPhrase);
+    }
 
+    @Test
+    public void test_predict_phrase_with_confirmed_word() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        String pinyinCharsStr = "shi,jie,da,yu,zhou";
+        String expectedPhrase = "世:shì,界:jiè,大:dà,宇:yǔ,宙:zhòu";
+        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+
+        List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
         String bestPhrase = CollectionUtils.first(phraseList);
-        Assert.assertEquals("我:wǒ,爱:ài,筷:kuài,字:zì,输:shū,入:rù,法:fǎ", bestPhrase);
+        Assert.assertNotEquals(expectedPhrase, bestPhrase);
+
+        PinyinWord shi = getPinyinWord(db, "世", "shì");
+        PinyinWord da = getPinyinWord(db, "大", "dà");
+        PinyinWord yu = getPinyinWord(db, "宇", "yǔ");
+        Map<Integer, String> confirmedPhraseWords = new HashMap() {{
+            put(0, shi.getId());
+            put(2, da.getId());
+            put(3, yu.getId());
+        }};
+
+        phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1, confirmedPhraseWords);
+        bestPhrase = CollectionUtils.first(phraseList);
+        Assert.assertEquals(expectedPhrase, bestPhrase);
+    }
+
+    @Test
+    public void test_predict_phrase_with_not_record_pinyin() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        // 在词典表中未收录的拼音不影响词组预测，相应位置置空
+        String pinyinCharsStr = "zi,m,zhong,guo";
+        String expectedPhrase = "自:zì,,中:zhōng,国:guó";
+        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+
+        List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
+        String bestPhrase = CollectionUtils.first(phraseList);
+        Assert.assertEquals(expectedPhrase, bestPhrase);
     }
 
     @Test
@@ -277,13 +325,29 @@ public class PinyinDictTest extends PinyinDictBaseTest {
     private List<String> getTop5Phrases(
             SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList
     ) {
+        return getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 5, null);
+    }
+
+    private List<String> getTopPhrases(
+            SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList, int top
+    ) {
+        return getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, top, null);
+    }
+
+    private List<String> getTopPhrases(
+            SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList, int top,
+            Map<Integer, String> confirmedPhraseWords
+    ) {
         List<String> phraseList = //
-                predictPinyinPhrase(db, pinyinCharsIdList, userPhraseBaseWeight, 5).stream().map((phrase) -> {
+                predictPinyinPhrase( //
+                                     db, pinyinCharsIdList, confirmedPhraseWords, //
+                                     userPhraseBaseWeight, top //
+                ).stream().map((phrase) -> {
                     Map<String, PinyinWord> wordMap = getPinyinWordsByWordId(db, new HashSet<>(List.of(phrase)));
 
                     return Arrays.stream(phrase)
                                  .map(wordMap::get)
-                                 .map((word) -> word.getValue() + ":" + word.getSpell().value)
+                                 .map((word) -> word != null ? word.getValue() + ":" + word.getSpell().value : "")
                                  .collect(Collectors.joining(","));
                 }).collect(Collectors.toList());
 

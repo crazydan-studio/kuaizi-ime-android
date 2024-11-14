@@ -55,12 +55,24 @@ public class HmmDBHelper {
     private static final String WORD_TOTAL = "-2";
     /** 代表 {@link Hmm#EOS} 和 {@link Hmm#BOS} 的字 */
     private static final String WORD_EOS_BOS = "-1";
+    /** 代表 未收录 的字，其没有对应的拼音字 */
+    private static final String WORD_IGNORED = "-10";
+
+    /** @see #predictPinyinPhrase(SQLiteDatabase, List, Map, int, int) */
+    public static List<String[]> predictPinyinPhrase(
+            SQLiteDatabase db, List<String> pinyinCharsIdList, int userPhraseBaseWeight, int top
+    ) {
+        return predictPinyinPhrase(db, pinyinCharsIdList, null, userPhraseBaseWeight, top);
+    }
 
     /**
      * 根据拼音的字母组合得到前 N 个最佳预测结果
      *
      * @param pinyinCharsIdList
      *         拼音的字母组合 id 列表
+     * @param confirmedPhraseWords
+     *         已经确认位置的拼音字 id，已确认的字将会影响其前后相邻字的预测结果。
+     *         为 null 或空时，表示无已确认的拼音字
      * @param userPhraseBaseWeight
      *         用户词组数据的基础权重，以确保用户输入权重大于应用词组数据
      * @param top
@@ -68,7 +80,9 @@ public class HmmDBHelper {
      * @return 列表元素为 短语的拼音字 id 数组，且列表中最靠前的为预测结果权重最高的短语
      */
     public static List<String[]> predictPinyinPhrase(
-            SQLiteDatabase db, List<String> pinyinCharsIdList, int userPhraseBaseWeight, int top
+            SQLiteDatabase db, //
+            List<String> pinyinCharsIdList, Map<Integer, String> confirmedPhraseWords, //
+            int userPhraseBaseWeight, int top
     ) {
         if (pinyinCharsIdList.isEmpty() || top < 1) {
             return List.of();
@@ -103,7 +117,15 @@ public class HmmDBHelper {
             this.wordTotal = WORD_TOTAL;
             this.wordBos = WORD_EOS_BOS;
             this.wordEos = WORD_EOS_BOS;
-            this.spellAndWordsMap = pinyinCharsIdAndWordIdsMap;
+
+            this.wordsGetter = (spell, index) -> {
+                String confirmed = confirmedPhraseWords != null ? confirmedPhraseWords.get(index) : null;
+                if (confirmed != null) {
+                    return Set.of(confirmed);
+                }
+                // Note: 在词典表中未收录的拼音，直接返回 WORD_IGNORED，以表示待忽略字
+                return pinyinCharsIdAndWordIdsMap.getOrDefault(spell, Set.of(WORD_IGNORED));
+            };
         }});
 
 //        Log.i(LOG_TAG, "Viterbi: " + new Gson().toJson(viterbi));
@@ -134,8 +156,6 @@ public class HmmDBHelper {
      *         是否反向更新，即，减掉 HMM 数据
      */
     public static void saveHmm(SQLiteDatabase db, Hmm hmm, boolean reverse) {
-        // 采用 SQLite 的 UPSET 机制插入或更新数据：https://www.sqlite.org/lang_upsert.html
-
         // =============================================================================
         // @return ['word id', 'spell chars id']
         Function<String, String[]> extractWordIds = (s) -> s.split(":");
