@@ -448,9 +448,8 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建输入候选字按键 */
     public Key<?>[][] createInputCandidateKeys(
-            PinyinTree pinyinTree, //
-            CharInput input, List<InputWord> words, //
-            List<PinyinWord.Spell> spells, //
+            PinyinTree pinyinTree, CharInput input,//
+            List<PinyinWord.Spell> spells, List<InputWord> words, //
             int startIndex, PinyinWord.Filter wordFilter
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();

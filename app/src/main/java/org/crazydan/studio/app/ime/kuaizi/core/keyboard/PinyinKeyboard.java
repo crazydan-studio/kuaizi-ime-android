@@ -125,8 +125,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 return () -> keyTable.createInputCandidateKeys(pinyinTree,
                                                                input,
-                                                               stateData.getPagingData(),
                                                                stateData.getSpells(),
+                                                               stateData.getPagingData(),
                                                                stateData.getPageStart(),
                                                                stateData.getFilter());
             }
@@ -135,7 +135,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         = (CandidatePinyinWordAdvanceFilterDoingStateData) this.state.data;
 
                 return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
-                                                                            stateData.getRadicals(),
+                                                                            stateData.getPagingData(),
                                                                             stateData.getPageStart(),
                                                                             stateData.getFilter());
             }
@@ -972,7 +972,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
         inputs.add(input);
 
-        // TODO 异步纠正？
         List<List<InputWord>> topBestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
         if (topBestPhrases.isEmpty()) {
             return;
@@ -981,17 +980,15 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> topBestPhrase = topBestPhrases.get(0);
         for (int i = 0; i < topBestPhrase.size(); i++) {
             CharInput target = inputs.get(i);
-            if (target.getWord().isConfirmed()) {
+            InputWord word = topBestPhrase.get(i);
+            // Note: 非拼音位置的输入，其拼音字为 null
+            if (word == null) {
                 continue;
             }
 
-            InputWord word = topBestPhrase.get(i);
-            // Note：可能存在用户数据与内置字典数据不一致的情况
-            if (word != null) {
-                target.setWord(word);
-                // Note：word 为缓存数据，不可直接修改其状态
-                target.getWord().setSource(InputWord.Source.phrase);
-            }
+            target.setWord(word);
+            // Note：word 为缓存数据，不可直接修改其状态
+            target.getWord().setSource(InputWord.Source.phrase);
         }
     }
 
@@ -1029,9 +1026,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private List<List<InputWord>> getTopBestMatchedPhrase(InputList inputList, List<CharInput> inputs, int top) {
-        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
-
-        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, variantFirst, (pinyinChars, pinyinWordId) -> { //
+        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, (pinyinChars, pinyinWordId) -> { //
             return (PinyinWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
         });
     }

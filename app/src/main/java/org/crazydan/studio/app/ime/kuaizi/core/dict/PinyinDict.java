@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,48 +230,75 @@ public class PinyinDict {
         return getLatinsByStarts(db, text, top);
     }
 
-    /** 根据输入的拼音，查找最靠前的 <code>top</code> 个拼音短语 */
+    /**
+     * 根据输入的拼音，查找最靠前的 <code>top</code> 个拼音短语
+     *
+     * @param pinyinWordGetter
+     *         根据拼音字母组合和拼音字 id 获取拼音字对象的函数，所得的拼音字需已附带字的繁/简形式
+     */
     public List<List<InputWord>> findTopBestMatchedPhrase(
-            List<CharInput> inputs, int top, boolean variantFirst,
-            BiFunction<String, String, PinyinWord> pinyinWordGetter
+            List<CharInput> inputs, int top, BiFunction<String, String, PinyinWord> pinyinWordGetter
     ) {
-        if (inputs == null || inputs.size() < 2) {
+        if (inputs.size() < 2) {
             return List.of();
         }
 
-        List<String> pinyinCharsList = inputs.stream().map(CharInput::getJoinedChars).collect(Collectors.toList());
-        List<String> pinyinCharsIdList = pinyinCharsList.stream()
-                                                        .map((chars) -> getPinyinTree().getPinyinCharsId(chars))
-                                                        .collect(Collectors.toList());
+        Map<String, String> pinyinCharsMap = new HashMap<>(inputs.size());
+        Map<Integer, Integer> pinyinCharsPlaceholderMap = new HashMap<>(inputs.size());
+
+        List<String> pinyinCharsIdList = new ArrayList<>(inputs.size());
+        Map<Integer, String> confirmedPhraseWords = new HashMap<>(inputs.size());
+        for (int i = 0; i < inputs.size(); i++) {
+            CharInput input = inputs.get(i);
+            String chars = input.getJoinedChars();
+            String charsId = getPinyinTree().getPinyinCharsId(chars);
+            if (charsId == null) {
+                continue;
+            }
+            pinyinCharsMap.put(charsId, chars);
+
+            int charsIndex = pinyinCharsIdList.size();
+            if (input.hasConfirmedWord()) {
+                confirmedPhraseWords.put(charsIndex, input.getWord().getId());
+            }
+            pinyinCharsPlaceholderMap.put(i, charsIndex);
+
+            pinyinCharsIdList.add(charsId);
+        }
 
         SQLiteDatabase db = getDB();
-        List<String[]> phraseWordsList = predictPinyinPhrase(db, pinyinCharsIdList, this.userPhraseBaseWeight, top);
+        List<String[]> phraseWordsList = predictPinyinPhrase(db,
+                                                             pinyinCharsIdList,
+                                                             confirmedPhraseWords,
+                                                             this.userPhraseBaseWeight,
+                                                             top);
         if (phraseWordsList.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Map<String, PinyinWord> wordMap = new HashMap<>(phraseWordsList.size() * pinyinCharsList.size());
-        phraseWordsList.forEach((wordIds) -> {
-            for (int i = 0; i < wordIds.length; i++) {
-                String pinyinChars = pinyinCharsList.get(i);
-                String wordId = wordIds[i];
-                PinyinWord word = pinyinWordGetter.apply(pinyinChars, wordId);
-
-                wordMap.put(wordId, word);
+        BiFunction<String[], Integer, InputWord> getWord = (wordIds, inputIndex) -> {
+            Integer pinyinCharsIndex = pinyinCharsPlaceholderMap.get(inputIndex);
+            if (pinyinCharsIndex == null) {
+                return null;
             }
-        });
 
-        if (variantFirst) {
-            attachVariantToPinyinWord(db, wordMap.values());
-        }
+            String wordId = wordIds[pinyinCharsIndex];
+            String pinyinCharsId = pinyinCharsIdList.get(pinyinCharsIndex);
+            String pinyinChars = pinyinCharsMap.get(pinyinCharsId);
 
-        return phraseWordsList.stream()
-                              .map((wordIds) -> Arrays.stream(wordIds)
-                                                      .map(wordMap::get)
-                                                      .map((word) -> (InputWord) word)
-                                                      .collect(Collectors.toList()))
-                              //.sorted(Comparator.comparingInt(List::size))
-                              .collect(Collectors.toList());
+            return pinyinWordGetter.apply(pinyinChars, wordId);
+        };
+
+        return phraseWordsList.stream().map((wordIds) -> {
+            List<InputWord> list = new ArrayList<>(inputs.size());
+
+            // 按拼音所在的位置填充拼音字
+            for (int i = 0; i < inputs.size(); i++) {
+                InputWord word = getWord.apply(wordIds, i);
+                list.add(word);
+            }
+            return list;
+        }).collect(Collectors.toList());
     }
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
