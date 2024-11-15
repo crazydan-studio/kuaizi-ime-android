@@ -1108,9 +1108,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {
-        List<InputWord> prevPhrase = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
+        List<PinyinWord> phraseWords = inputList.getPinyinPhraseWordsFrom(input);
 
-        return this.pinyinDict.findTopBestEmojisMatchedPhrase(input, top, prevPhrase);
+        return this.pinyinDict.findTopBestEmojisMatchedPhrase(phraseWords, top);
     }
 
     /**

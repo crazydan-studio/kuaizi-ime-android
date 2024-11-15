@@ -696,47 +696,26 @@ public class InputList {
         return phrases;
     }
 
-    /** 获取指定输入之前的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
-    public List<List<InputWord>> getPinyinPhraseWordsBefore(Input<?> untilToInput) {
-        return getPinyinPhraseInputsBefore(untilToInput).stream()
-                                                        .map(phrase -> phrase.stream()
-                                                                             .map(Input::getWord)
-                                                                             .collect(Collectors.toList()))
-                                                        .collect(Collectors.toList());
-    }
-
-    /**
-     * 获取指定输入之前的拼音短语输入（未被非拼音输入隔开的输入均视为短语，但可能为单字输入）
-     * <p/>
-     * 注：不包含参数本身
-     */
-    public List<List<CharInput>> getPinyinPhraseInputsBefore(Input<?> untilToInput) {
-        List<List<CharInput>> list = new ArrayList<>();
-
-        List<CharInput> phrase = new ArrayList<>();
-        for (Input<?> input : this.inputs) {
-            if (untilToInput != null //
-                && (input == untilToInput //
-                    || (getPending() == untilToInput //
-                        && getSelected() == input))) {
-                break;
-            }
-
-            if (input.isPinyin()) {
-                phrase.add((CharInput) input);
-            } else if (!input.isGap()) {
-                if (!phrase.isEmpty()) {
-                    list.add(phrase);
-                }
-                // 出现非拼音输入，重新开始下一个短语
-                phrase = new ArrayList<>();
-            }
+    /** 获取从指定输入开始及其之前的连续拼音字 */
+    public List<PinyinWord> getPinyinPhraseWordsFrom(Input<?> fromInput) {
+        int fromIndex = indexOf(fromInput, true);
+        if (fromIndex < 0) {
+            return List.of();
         }
 
-        // 最后一个可能为空，表示没有能与 指定输入 组成 短语 的输入
-        list.add(phrase);
+        List<PinyinWord> words = new ArrayList<>();
+        for (int i = fromIndex; i >= 0; i--) {
+            Input<?> input = getInput(i, true);
 
-        return list;
+            if (!input.isPinyin()) {
+                break;
+            }
+            words.add((PinyinWord) input.getWord());
+        }
+
+        Collections.reverse(words);
+
+        return words;
     }
 
     /**
@@ -746,13 +725,9 @@ public class InputList {
      *
      * @return 不返回 null
      */
-    public List<CharInput> getPinyinPhraseInputWhichContains(Input<?> targetInput) {
-        int targetInputIndex = indexOf(targetInput);
-
-        if (targetInputIndex < 0 && targetInput != null && getPending() == targetInput) {
-            targetInputIndex = getSelectedIndex();
-        }
-        if (targetInputIndex < 0) {
+    public List<CharInput> getPinyinPhraseInputWhichContains(Input<?> fromInput) {
+        int fromIndex = indexOf(fromInput, true);
+        if (fromIndex < 0) {
             return List.of();
         }
 
@@ -771,14 +746,15 @@ public class InputList {
         };
 
         // 先找之前的（不含起点）
-        for (int i = targetInputIndex - 1; i >= 0; i--) {
+        for (int i = fromIndex - 1; i >= 0; i--) {
             if (!addInputToPhrase.apply(i)) {
                 break;
             }
         }
         Collections.reverse(phrase);
+
         // 再找之后的（包含起点）
-        for (int i = targetInputIndex; i < this.inputs.size(); i++) {
+        for (int i = fromIndex; i < this.inputs.size(); i++) {
             if (!addInputToPhrase.apply(i)) {
                 break;
             }
@@ -916,8 +892,21 @@ public class InputList {
 
     /** 获取指定输入的位置 */
     public int indexOf(Input<?> input) {
+        return indexOf(input, false);
+    }
+
+    /**
+     * 获取指定输入所在的位置
+     *
+     * @param matchPending
+     *         在确定位置时，是否匹配{@link #getPending() 待输入}，
+     *         即，若指定输入为待输入，则返回{@link #getSelected() 已选中的输入}的位置
+     */
+    private int indexOf(Input<?> input, boolean matchPending) {
         if (input == null) {
             return -1;
+        } else if (matchPending && getPending() == input) {
+            input = getSelected();
         }
 
         // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择

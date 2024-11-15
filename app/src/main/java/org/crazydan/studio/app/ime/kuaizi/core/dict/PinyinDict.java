@@ -194,15 +194,12 @@ public class PinyinDict {
     }
 
     /** 根据拼音输入短语的后 4 个字作为关键字查询得到最靠前的 <code>top</code> 个表情 */
-    public List<InputWord> findTopBestEmojisMatchedPhrase(CharInput input, int top, List<InputWord> prevPhrase) {
-        if (!(input.getWord() instanceof PinyinWord)) {
+    public List<InputWord> findTopBestEmojisMatchedPhrase(List<PinyinWord> phraseWords, int top) {
+        if (phraseWords.isEmpty()) {
             return List.of();
         }
 
-        List<String> wordGlyphIdList = prevPhrase.stream()
-                                                 .map((word) -> ((PinyinWord) word).getGlyphId())
-                                                 .collect(Collectors.toList());
-        wordGlyphIdList.add(((PinyinWord) input.getWord()).getGlyphId());
+        List<String> wordGlyphIdList = phraseWords.stream().map(PinyinWord::getGlyphId).collect(Collectors.toList());
 
         int tries = 4;
         int total = wordGlyphIdList.size();
