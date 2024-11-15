@@ -250,6 +250,11 @@ public class PinyinDict {
         Map<Integer, String> confirmedPhraseWords = new HashMap<>(inputs.size());
         for (int i = 0; i < inputs.size(); i++) {
             CharInput input = inputs.get(i);
+            // Note: 英文字符也可能组成有效拼音，故而，需仅针对拼音键盘的输入
+            if (!input.isPinyin()) {
+                continue;
+            }
+
             String chars = input.getJoinedChars();
             String charsId = getPinyinTree().getPinyinCharsId(chars);
             if (charsId == null) {
@@ -258,7 +263,7 @@ public class PinyinDict {
             pinyinCharsMap.put(charsId, chars);
 
             int charsIndex = pinyinCharsIdList.size();
-            if (input.hasConfirmedWord()) {
+            if (input.isWordConfirmed()) {
                 confirmedPhraseWords.put(charsIndex, input.getWord().getId());
             }
             pinyinCharsPlaceholderMap.put(i, charsIndex);

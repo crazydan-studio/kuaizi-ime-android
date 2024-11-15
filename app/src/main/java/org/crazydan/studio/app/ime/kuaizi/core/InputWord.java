@@ -36,10 +36,6 @@ public class InputWord {
     /** 读音 */
     private final Spell spell;
 
-    /** 是否已确认 */
-    private boolean confirmed;
-    /** 候选字来源 */
-    private Source source = Source.single;
     /** 字的变体 */
     private String variant;
     /** 字的权重 */
@@ -59,42 +55,8 @@ public class InputWord {
         this.spell = new Spell(spell);
     }
 
-    protected void copy(InputWord target, InputWord source) {
-        target.setConfirmed(source.isConfirmed());
-        target.setSource(source.getSource());
-        target.setVariant(source.getVariant());
-        target.setWeight(source.getWeight());
-    }
-
-    public InputWord copy() {
-        InputWord copied = new InputWord(getId(), getValue(), getSpell());
-        copy(copied, this);
-
-        return copied;
-    }
-
     public String getId() {
         return this.id;
-    }
-
-    public boolean isConfirmed() {
-        return this.confirmed;
-    }
-
-    public void setConfirmed(boolean confirmed) {
-        this.confirmed = confirmed;
-    }
-
-    public Source getSource() {
-        return this.source != null ? this.source : Source.single;
-    }
-
-    public void setSource(Source source) {
-        this.source = source;
-    }
-
-    public boolean isFromPhrase() {
-        return getSource() == Source.phrase;
     }
 
     public String getValue() {
@@ -205,13 +167,5 @@ public class InputWord {
         replacing,
         /** 跟随 {@link InputWord} */
         following,
-    }
-
-    /** 来源 */
-    public enum Source {
-        /** 单字 */
-        single,
-        /** 短语中的字 */
-        phrase,
     }
 }

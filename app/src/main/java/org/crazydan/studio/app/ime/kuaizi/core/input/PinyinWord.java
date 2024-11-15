@@ -52,20 +52,22 @@ public class PinyinWord extends InputWord {
         this.traditional = traditional;
     }
 
-    public static PinyinWord from(InputWord word) {
-        if (word instanceof PinyinWord) {
-            return ((PinyinWord) word).copy();
-        }
-        return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
+    public static PinyinWord none() {
+        return new PinyinWord(null, null, new Spell(null, null, null));
     }
 
-    @Override
-    public PinyinWord copy() {
-        PinyinWord copied = new PinyinWord(getId(), getValue(), getSpell(), //
-                                           getGlyphId(), getRadical(), isTraditional());
-        copy(copied, this);
+    public static PinyinWord from(InputWord word) {
+        if (word instanceof PinyinWord) {
+            PinyinWord w = (PinyinWord) word;
 
-        return copied;
+            PinyinWord copied = new PinyinWord(w.getId(), w.getValue(), w.getSpell(), //
+                                               w.getGlyphId(), w.getRadical(), w.isTraditional());
+            copied.setVariant(w.getVariant());
+            copied.setWeight(w.getWeight());
+
+            return copied;
+        }
+        return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
     }
 
     public String getGlyphId() {

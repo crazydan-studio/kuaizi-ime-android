@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     private List<Key<?>> keys = new ArrayList<>();
 
-    private InputWord word;
+    private ConfirmableWord word = new ConfirmableWord(null);
 
     @Override
     public T copy() {
@@ -47,8 +47,8 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             throw new RuntimeException(e);
         }
 
-        getKeys().forEach(copied::appendKey);
         copied.setWord(getWord());
+        getKeys().forEach(copied::appendKey);
 
         return copied;
     }
@@ -73,7 +73,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean isPinyin() {
-        return this.word instanceof PinyinWord;
+        return getWord() instanceof PinyinWord;
     }
 
     @Override
@@ -83,7 +83,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean isEmoji() {
-        return this.word instanceof EmojiWord || test(Key::isEmoji);
+        return getWord() instanceof EmojiWord || test(Key::isEmoji);
     }
 
     @Override
@@ -198,10 +198,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     public StringBuilder getText(Option option) {
         StringBuilder sb = new StringBuilder();
 
-        if (this.word != null) {
-            String value = this.word.getValue();
-            String spell = this.word.getSpell().value;
-            String variant = this.word.getVariant();
+        InputWord word = getWord();
+        if (word != null) {
+            String value = word.getValue();
+            String spell = word.getSpell().value;
+            String variant = word.getVariant();
 
             if (option != null) {
                 if (option.wordVariantUsed && variant != null) {
@@ -239,19 +240,25 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean hasWord() {
-        return this.word != null;
+        return getWord() != null;
     }
 
     @Override
     public InputWord getWord() {
-        return this.word;
+        return this.word.value;
     }
 
-    /**
-     * 注：入参会被复制，以确保后续修改 {@link InputWord} 状态时，不会影响原数据
-     */
+    @Override
+    public boolean isWordConfirmed() {
+        return this.word.confirmed;
+    }
+
+    public void markWordConfirmed() {
+        this.word.confirmed = true;
+    }
+
     public void setWord(InputWord word) {
-        this.word = word != null ? word.copy() : null;
+        this.word = new ConfirmableWord(word);
     }
 
     protected void replaceKeys(List<Key<?>> keys) {
@@ -286,12 +293,12 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
         }
 
         BaseInput<?> that = (BaseInput<?>) o;
-        return this.keys.equals(that.keys) && Objects.equals(this.word, that.word);
+        return this.keys.equals(that.keys) && Objects.equals(getWord(), that.getWord());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.keys, this.word);
+        return Objects.hash(this.keys, getWord());
     }
 
     private boolean test(Predicate<Key<?>> predicate) {
@@ -301,5 +308,15 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             }
         }
         return !isEmpty();
+    }
+
+    /** 已确认的字不会被词组预测等替换 */
+    private static class ConfirmableWord {
+        private final InputWord value;
+        private boolean confirmed;
+
+        public ConfirmableWord(InputWord value) {
+            this.value = value;
+        }
     }
 }

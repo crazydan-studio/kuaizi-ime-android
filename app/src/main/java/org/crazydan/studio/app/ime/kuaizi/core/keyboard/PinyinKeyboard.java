@@ -938,8 +938,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void confirm_Selected_InputCandidate(InputList inputList) {
         CharInput pending = inputList.getPending();
+        pending.markWordConfirmed();
 
-        pending.getWord().setConfirmed(true);
         inputList.confirmPendingAndSelectNext();
 
         fire_InputCandidate_Choose_Done(pending);
@@ -980,15 +980,16 @@ public class PinyinKeyboard extends BaseKeyboard {
         List<InputWord> topBestPhrase = topBestPhrases.get(0);
         for (int i = 0; i < topBestPhrase.size(); i++) {
             CharInput target = inputs.get(i);
-            InputWord word = topBestPhrase.get(i);
-            // Note: 非拼音位置的输入，其拼音字为 null
-            if (word == null) {
+            // 已确认的输入，则不做处理
+            if (target.isWordConfirmed()) {
                 continue;
             }
 
-            target.setWord(word);
-            // Note：word 为缓存数据，不可直接修改其状态
-            target.getWord().setSource(InputWord.Source.phrase);
+            InputWord word = topBestPhrase.get(i);
+            // Note: 非拼音位置的输入，其拼音字为 null，不覆盖其 word
+            if (word != null) {
+                target.setWord(word);
+            }
         }
     }
 
@@ -1067,7 +1068,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     ) {
         Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
 
-        if (!candidateMap.containsValue(input.getWord()) || !input.getWord().isConfirmed()) {
+        if (!candidateMap.containsValue(input.getWord()) || !input.isWordConfirmed()) {
             InputWord bestCandidate = inputList.getCachedBestCandidateWords(input);
 
             if (bestCandidate == null) {

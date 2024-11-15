@@ -130,10 +130,8 @@ public interface Input<T extends Input<?>> extends ViewData {
     /** 是否有可输入字 */
     boolean hasWord();
 
-    /** 是否有已确认的字 */
-    default boolean hasConfirmedWord() {
-        return hasWord() && getWord().isConfirmed();
-    }
+    /** 输入字是否已确认，已确认的字不会被词组预测等替换 */
+    boolean isWordConfirmed();
 
     /**
      * 获取已选择候选字

@@ -64,7 +64,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
 
         // 中英文混合的词组预测：英文被忽略掉
         String[] inputCharsArray = new String[] { "zhe", "shi", "Android", "shu", "ru", "fa" };
-        List<CharInput> inputs = parseCharInputs(inputCharsArray);
+        List<CharInput> inputs = parseCharInputs(dict, inputCharsArray);
 
         List<List<InputWord>> phrases = dict.findTopBestMatchedPhrase(inputs, 1, (pinyinChars, pinyinWordId) -> {
             Map<String, PinyinWord> map = getPinyinWordsByWordId(db, Set.of(pinyinWordId));
@@ -89,7 +89,15 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         Assert.assertEquals("这:zhè 是:shì Android 输:shū 入:rù 法:fǎ", phraseText);
     }
 
-    private List<CharInput> parseCharInputs(String[] texts) {
-        return Arrays.stream(texts).map((text) -> CharInput.from(CharKey.from(text))).collect(Collectors.toList());
+    private List<CharInput> parseCharInputs(PinyinDict dict, String[] texts) {
+        return Arrays.stream(texts).map((text) -> {
+            CharInput input = CharInput.from(CharKey.from(text));
+            // Note: 这里仅用于标记输入为拼音输入
+            if (dict.getPinyinTree().hasValidPinyin(input)) {
+                input.setWord(PinyinWord.none());
+            }
+
+            return input;
+        }).collect(Collectors.toList());
     }
 }
