@@ -966,26 +966,22 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
      */
     private void determine_NotConfirmed_InputWords_Before(InputList inputList, CharInput input) {
-        List<CharInput> inputs = CollectionUtils.last(inputList.getPinyinPhraseInputsBefore(input));
-        if (inputs == null || inputs.isEmpty()) {
-            return;
-        }
-        inputs.add(input);
+        List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(input);
+        List<List<InputWord>> bestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
 
-        List<List<InputWord>> topBestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
-        if (topBestPhrases.isEmpty()) {
+        List<InputWord> bestPhrase = CollectionUtils.first(bestPhrases);
+        if (bestPhrase == null) {
             return;
         }
 
-        List<InputWord> topBestPhrase = topBestPhrases.get(0);
-        for (int i = 0; i < topBestPhrase.size(); i++) {
+        for (int i = 0; i < bestPhrase.size(); i++) {
             CharInput target = inputs.get(i);
             // 已确认的输入，则不做处理
             if (target.isWordConfirmed()) {
                 continue;
             }
 
-            InputWord word = topBestPhrase.get(i);
+            InputWord word = bestPhrase.get(i);
             // Note: 非拼音位置的输入，其拼音字为 null，不覆盖其 word
             if (word != null) {
                 target.setWord(word);
@@ -993,29 +989,35 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    private List<List<InputWord>> getTopBestMatchedPhrase(InputList inputList, List<CharInput> inputs, int top) {
+        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, (pinyinChars, pinyinWordId) -> { //
+            return (PinyinWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
+        });
+    }
+
     @Override
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {
-        Input<?> pending = inputList.getPendingOn(input);
-        // 仅查找占位输入（且其待输入不能为拉丁文）之前的补全短语
-        if (!input.isGap() || (pending != null && pending.isLatin())) {
-            return;
-        }
-
-        // Note: InputList#getPinyinPhraseWordsBefore 获取的不是紧挨者 input 的短语，
-        // 二者之间可能存在其他非拼音输入
-        Input<?> before = inputList.getInputBefore(input);
-        if (before == null || !before.isPinyin()) {
-            return;
-        }
-
-        List<InputWord> words = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
-        if (words == null || words.isEmpty()) {
-            return;
-        }
-
-        if (input.isPinyin()) {
-            words.add(input.getWord());
-        }
+//        Input<?> pending = inputList.getPendingOn(input);
+//        // 仅查找占位输入（且其待输入不能为拉丁文）之前的补全短语
+//        if (!input.isGap() || (pending != null && pending.isLatin())) {
+//            return;
+//        }
+//
+//        // Note: InputList#getPinyinPhraseWordsBefore 获取的不是紧挨者 input 的短语，
+//        // 二者之间可能存在其他非拼音输入
+//        Input<?> before = inputList.getInputBefore(input);
+//        if (before == null || !before.isPinyin()) {
+//            return;
+//        }
+//
+//        List<InputWord> words = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
+//        if (words == null || words.isEmpty()) {
+//            return;
+//        }
+//
+//        if (input.isPinyin()) {
+//            words.add(input.getWord());
+//        }
 
 //        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
 //        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(words, 5, variantFirst);
@@ -1024,12 +1026,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 //                                                                                                        phrase))
 //                                                                .collect(Collectors.toList());
 //        inputList.setPhraseCompletions(phraseCompletions);
-    }
-
-    private List<List<InputWord>> getTopBestMatchedPhrase(InputList inputList, List<CharInput> inputs, int top) {
-        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, (pinyinChars, pinyinWordId) -> { //
-            return (PinyinWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
-        });
     }
 
     private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {
@@ -1247,7 +1243,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        List<List<InputWord>> phrases = inputList.getPinyinPhraseWords();
+        List<List<PinyinWord>> phrases = inputList.getPinyinPhraseWords();
         List<InputWord> emojis = inputList.getEmojis();
         List<String> latins = inputList.getLatins();
 

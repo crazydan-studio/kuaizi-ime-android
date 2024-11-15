@@ -48,6 +48,10 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
         }
 
         copied.setWord(getWord());
+        if (isWordConfirmed()) {
+            copied.markWordConfirmed();
+        }
+
         getKeys().forEach(copied::appendKey);
 
         return copied;

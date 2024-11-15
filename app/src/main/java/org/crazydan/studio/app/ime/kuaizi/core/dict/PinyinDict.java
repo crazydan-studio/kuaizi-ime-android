@@ -278,7 +278,7 @@ public class PinyinDict {
                                                              this.userPhraseBaseWeight,
                                                              top);
         if (phraseWordsList.isEmpty()) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         BiFunction<String[], Integer, InputWord> getWord = (wordIds, inputIndex) -> {
@@ -329,12 +329,10 @@ public class PinyinDict {
         });
     }
 
-    private void doSaveUsedPhrase(List<InputWord> phrase, boolean reverse) {
+    private void doSaveUsedPhrase(List<PinyinWord> phrase, boolean reverse) {
         SQLiteDatabase db = getDB();
 
-        saveUsedPinyinPhrase(db,
-                             phrase.stream().map((word) -> (PinyinWord) word).collect(Collectors.toList()),
-                             reverse);
+        saveUsedPinyinPhrase(db, phrase, reverse);
     }
 
     /** 保存表情的使用频率等信息 */

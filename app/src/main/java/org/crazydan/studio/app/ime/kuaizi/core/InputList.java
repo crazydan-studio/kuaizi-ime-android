@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
@@ -489,10 +491,24 @@ public class InputList {
 
     /** 获取指定位置的输入 */
     public Input<?> getInput(int index) {
+        return getInput(index, false);
+    }
+
+    /**
+     * 获取指定位置的输入
+     *
+     * @param pendingFirst
+     *         {@link #getPending() 待输入}优先，
+     *         即，当指定位置为{@link #getSelected() 已选中输入}时，
+     *         返回待输入
+     */
+    private Input<?> getInput(int index, boolean pendingFirst) {
         if (index < 0 || index >= this.inputs.size()) {
             return null;
         }
-        return this.inputs.get(index);
+
+        Input<?> input = this.inputs.get(index);
+        return pendingFirst && input == getSelected() ? getPending() : input;
     }
 
     /** 获取待输入 */
@@ -655,9 +671,29 @@ public class InputList {
                           .collect(Collectors.toList());
     }
 
-    /** 获取全部的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
-    public List<List<InputWord>> getPinyinPhraseWords() {
-        return getPinyinPhraseWordsBefore(null);
+    /** 获取全部的拼音短语 */
+    public List<List<PinyinWord>> getPinyinPhraseWords() {
+        List<List<PinyinWord>> phrases = new ArrayList<>();
+
+        List<PinyinWord> phrase = new ArrayList<>();
+        for (int i = 0; i < this.inputs.size(); i++) {
+            Input<?> input = getInput(i, true);
+
+            if (isPinyinPhraseEndAt(i)) {
+                if (!phrase.isEmpty()) {
+                    phrases.add(phrase);
+                    phrase = new ArrayList<>();
+                }
+            } else if (input.isPinyin()) {
+                phrase.add((PinyinWord) input.getWord());
+            }
+        }
+
+        if (!phrase.isEmpty()) {
+            phrases.add(phrase);
+        }
+
+        return phrases;
     }
 
     /** 获取指定输入之前的拼音短语（未被非拼音输入隔开的输入均视为短语，但可能为单字） */
@@ -701,6 +737,80 @@ public class InputList {
         list.add(phrase);
 
         return list;
+    }
+
+    /**
+     * 获取指定输入所在的拼音短语输入
+     * <p/>
+     * 段落为不包含逗号、分号、冒号、句号等符号的连续输入
+     *
+     * @return 不返回 null
+     */
+    public List<CharInput> getPinyinPhraseInputWhichContains(Input<?> targetInput) {
+        int targetInputIndex = indexOf(targetInput);
+
+        if (targetInputIndex < 0 && targetInput != null && getPending() == targetInput) {
+            targetInputIndex = getSelectedIndex();
+        }
+        if (targetInputIndex < 0) {
+            return List.of();
+        }
+
+        List<CharInput> phrase = new ArrayList<>(this.inputs.size());
+        // @return false - 中止添加；true - 继续添加
+        Function<Integer, Boolean> addInputToPhrase = (index) -> {
+            if (isPinyinPhraseEndAt(index)) {
+                return false;
+            }
+
+            Input<?> input = getInput(index, true);
+            if (!input.isGap()) {
+                phrase.add((CharInput) input);
+            }
+            return true;
+        };
+
+        // 先找之前的（不含起点）
+        for (int i = targetInputIndex - 1; i >= 0; i--) {
+            if (!addInputToPhrase.apply(i)) {
+                break;
+            }
+        }
+        Collections.reverse(phrase);
+        // 再找之后的（包含起点）
+        for (int i = targetInputIndex; i < this.inputs.size(); i++) {
+            if (!addInputToPhrase.apply(i)) {
+                break;
+            }
+        }
+
+        return phrase;
+    }
+
+    /** 指定的输入是否代表段落结束 */
+    private boolean isPinyinPhraseEndAt(int index) {
+        Input<?> input = getInput(index, true);
+        if (input == null || input.isSpace()) {
+            return true;
+        } else if (!input.isSymbol()) {
+            return false;
+        }
+
+        String chars = input.getJoinedChars();
+        // 英文结束标点符号左右两边为中文时，则从该符号处结束短语
+        if (List.of(new String[] {
+                ",", ".", ";", ":", "?", "!", //
+        }).contains(chars)) {
+            Input<?> left = getInput(index - 1, true);
+            Input<?> right = getInput(index + 1, true);
+
+            return (left == null || left.isPinyin()) && (right == null || right.isPinyin());
+        }
+
+        return List.of(new String[] {
+                "，", "。", "；", "：", "？", "！", //
+                "∶", "…", //
+        }).contains(chars);
     }
 
     /** 获取已选中输入之前的输入 */
