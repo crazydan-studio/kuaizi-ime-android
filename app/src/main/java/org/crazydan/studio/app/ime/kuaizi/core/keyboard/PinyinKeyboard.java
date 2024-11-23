@@ -143,6 +143,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 boolean hasSpell = false;
                 boolean hasVariant = false;
 
+                // TODO 若是未启用繁体优先配置，则为全部的拼音字补充其繁/简形式
                 for (CharInput input : inputList.getCharInputs()) {
                     InputWord word = input.getWord();
                     if (word == null) {
@@ -635,7 +636,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (!this.pinyinDict.getPinyinTree().hasValidPinyin(pending)) {
             drop_InputList_Pending(inputList, key);
         } else {
-            determine_NotConfirmed_InputWords_Before(inputList, pending);
+            predict_NotConfirmed_Phrase_InputWords(inputList, pending);
             confirm_InputList_Pending(inputList, key);
         }
 
@@ -949,7 +950,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
-            determine_NotConfirmed_InputWords_Before(inputList, (CharInput) selected);
+            predict_NotConfirmed_Phrase_InputWords(inputList, (CharInput) selected);
         } else {
             selected = inputList.getSelected();
         }
@@ -958,14 +959,11 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     /**
-     * 确定 <code>input</code> 的 前序 未确认输入 的最佳候选字
+     * 预测 <code>input</code> 所在拼音短语中 未确认输入 的字
      * <p/>
-     * <code>input</code> 也将根据前序确定的候选字而进行调整
-     * <p/>
-     * 在滑屏输入完成后，对未确认前序的候选字按匹配到的最佳短语进行调整，
-     * 或者，在前序候选字确认后，自动对选中的下一个输入的候选字进行调整
+     * <code>input</code> 也将根据预测的短语结果而进行调整
      */
-    private void determine_NotConfirmed_InputWords_Before(InputList inputList, CharInput input) {
+    private void predict_NotConfirmed_Phrase_InputWords(InputList inputList, CharInput input) {
         List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(input);
         List<List<InputWord>> bestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
 

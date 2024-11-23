@@ -53,6 +53,14 @@ public class From_v0 {
         String[] clauses = new String[] {
                 // 连接应用库
                 "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
+                // 为字典相关的只读表补充索引
+                "create index idx_meta_py_chars_val on meta_pinyin_chars(value_)",
+                "create index idx_meta_py_val on meta_pinyin(value_)",
+                "create index idx_meta_py_chars on meta_pinyin(chars_id_)",
+                "create index idx_meta_wrd_val on meta_word(value_)",
+                "create index idx_meta_wrd_radical on meta_word(radical_id_)",
+                "create index idx_meta_py_wrd_with_spell on meta_word_with_pinyin(word_id_, spell_id_)",
+                "create index idx_meta_emj_grp on meta_emoji(group_id_)",
                 // <<<<<<<<<<<<<<<<<<< 创建包含用户和应用权重数据的词典表
                 "create table" //
                 + " if not exists phrase_word ("
