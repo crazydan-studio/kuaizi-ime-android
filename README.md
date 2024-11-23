@@ -8,6 +8,12 @@
 [crazydan-studio/kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime/issues)
 创建 Issue。
 
+## 字词库
+
+字典和词典库由
+[kuaizi-ime/tools/pinyin-dict](https://github.com/crazydan-studio/kuaizi-ime/blob/master/tools/pinyin-dict/README.md)
+生成。其中，字典数据来自于[汉典网](https://www.zdic.net)，词典数据来自于[古文之家](https://www.cngwzj.com)。
+
 ## 参考资料
 
 - [APK 签名打包](https://developer.android.com/studio/publish/app-signing?hl=zh-cn)
