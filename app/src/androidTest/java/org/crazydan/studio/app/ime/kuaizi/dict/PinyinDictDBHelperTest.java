@@ -44,7 +44,6 @@ import org.junit.runner.RunWith;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
@@ -211,8 +210,6 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         String pinyinChars = "guo";
         String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
         List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
-
-        attachVariantToPinyinWord(db, wordList);
 
         wordList = wordList.stream().filter((word) -> word.getVariant() != null).collect(Collectors.toList());
         Assert.assertNotEquals(0, wordList.size());

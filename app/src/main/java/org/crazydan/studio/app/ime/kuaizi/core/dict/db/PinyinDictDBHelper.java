@@ -120,7 +120,8 @@ public class PinyinDictDBHelper {
                            + "   py_.id_, py_.word_, py_.word_id_,"
                            + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
                            + "   py_.traditional_,"
-                           + "   py_.radical_, py_.radical_stroke_count_"
+                           + "   py_.radical_, py_.radical_stroke_count_,"
+                           + "   py_.variant_"
                            + " from pinyin_word py_"
                            + (" where " + queryWhere)
                            + " order by"
@@ -277,61 +278,6 @@ public class PinyinDictDBHelper {
         }
     }
 
-    /** 向{@link PinyinWord 拼音字}附加其繁/简变体 */
-    public static void attachVariantToPinyinWord(SQLiteDatabase db, Collection<PinyinWord> pinyinWordList) {
-        Map<String, List<PinyinWord>> wordMap = pinyinWordList.stream()
-                                                              .collect(Collectors.groupingBy(PinyinWord::getGlyphId,
-                                                                                             HashMap::new,
-                                                                                             Collectors.toCollection(
-                                                                                                     ArrayList::new)));
-
-        rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
-            String placeholder = wordMap.keySet().stream().map((k) -> "?").collect(Collectors.joining(", "));
-
-            this.params = wordMap.keySet().toArray(new String[0]);
-            this.sql = "select t_.* from (" //
-                       + "   select source_id_, target_id_, target_value_" //
-                       + "   from simple_word" //
-                       + "   union" //
-                       + "   select source_id_, target_id_, target_value_" //
-                       + "   from traditional_word" //
-                       + " ) t_" //
-                       + " where t_.source_id_ in (" + placeholder + ")";
-
-            this.reader = (row) -> {
-                String sourceId = row.getString("source_id_");
-                List<PinyinWord> sources = wordMap.get(sourceId);
-                assert sources != null;
-
-                String targetId = row.getString("target_id_");
-                String targetValue = row.getString("target_value_");
-                List<PinyinWord> targets = wordMap.get(targetId);
-
-                sources.forEach((source) -> {
-                    if (source.getVariant() != null) {
-                        return;
-                    }
-
-                    // 适用于为某个拼音下的所有候选字附加变体
-                    if (!CollectionUtils.isEmpty(targets)) {
-                        // 繁/简字的拼音需一致
-                        targets.forEach((target) -> {
-                            if (target.getSpell().value.equals(source.getSpell().value)) {
-                                source.setVariant(targetValue);
-                            }
-                        });
-                    }
-                    // 适用于为不同拼音的字附加各自的变体
-                    else {
-                        source.setVariant(targetValue);
-                    }
-                });
-
-                return null;
-            };
-        }});
-    }
-
     /** 获取指定汉字的字 id */
     public static String getWordId(SQLiteDatabase db, String word) {
         List<String> wordIdList = querySQLite(db, new SQLiteQueryParams<String>() {{
@@ -363,12 +309,16 @@ public class PinyinDictDBHelper {
         PinyinWord.Spell spell = new PinyinWord.Spell(spellValue, spellId, spellCharsId);
 
         boolean traditional = row.getInt("traditional_") > 0;
+        String variant = row.getString("variant_");
 
         String radicalValue = row.getString("radical_");
         int radicalStrokeCount = row.getInt("radical_stroke_count_");
         PinyinWord.Radical radical = new PinyinWord.Radical(radicalValue, radicalStrokeCount);
 
-        return new PinyinWord(id, value, spell, glyphId, radical, traditional);
+        PinyinWord word = new PinyinWord(id, value, spell, glyphId, radical, traditional);
+        word.setVariant(variant);
+
+        return word;
     }
 
     private static EmojiWord createEmojiWord(SQLiteRow row) {

@@ -43,7 +43,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.attachVariantToPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
@@ -162,9 +161,6 @@ public class PinyinDict {
 
         SQLiteDatabase db = getDB();
         List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
-
-        // 附加拼音字的繁/简字
-        attachVariantToPinyinWord(db, wordList);
 
         return wordList.stream().map(w -> (InputWord) w).collect(Collectors.toList());
     }
