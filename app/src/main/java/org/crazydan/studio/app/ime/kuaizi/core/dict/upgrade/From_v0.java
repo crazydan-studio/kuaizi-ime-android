@@ -53,54 +53,55 @@ public class From_v0 {
         String[] clauses = new String[] {
                 // 连接应用库
                 "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
-                // 为字典相关的只读表补充索引
+                // 为内置表补充索引
                 "create index idx_meta_py_chars_val on meta_pinyin_chars(value_)",
-                "create index idx_meta_py_val on meta_pinyin(value_)",
-                "create index idx_meta_py_chars on meta_pinyin(chars_id_)",
-                "create index idx_meta_wrd_val on meta_word(value_)",
-                "create index idx_meta_wrd_radical on meta_word(radical_id_)",
-                "create index idx_meta_py_wrd_with_spell on meta_word_with_pinyin(word_id_, spell_id_)",
-                "create index idx_meta_emj_grp on meta_emoji(group_id_)",
-                // <<<<<<<<<<<<<<<<<<< 创建包含用户和应用权重数据的词典表
-                "create table" //
-                + " if not exists phrase_word ("
-                //  -- 拼音字 id: 其为 link_word_with_pinyin 中的 id_
+                // <<<<<<<<<<<<<<<< 拼音与字相关的表合并为一个大表，从而避免联表查询，并降低数据库文件大小
+                "create table"
+                + " if not exists tmp_pinyin_word ("
+                + "   id_ integer not null primary key,"
+                //  -- 字
+                + "   word_ text not null,"
                 + "   word_id_ integer not null,"
-                //  -- 拼音字母组合 id: 其为 link_word_with_pinyin 中的 spell_chars_id_
+                //  -- 拼音
+                + "   spell_ text not null,"
+                + "   spell_id_ integer not null,"
                 + "   spell_chars_id_ integer not null,"
-                // -- 应用字典中短语内的字权重：出现次数
-                + "   weight_app_ integer not null,"
-                // -- 用户字典中短语内的字权重：出现次数
-                + "   weight_user_ integer not null," //
-                + "   primary key (word_id_)" //
+                //  -- 字使用权重
+                + "   used_weight_ integer default 0,"
+                //  -- 按拼音分组计算的字形权重
+                + "   glyph_weight_ integer default 0,"
+                + "   traditional_ integer default 0,"
+                + "   radical_ text default null,"
+                + "   radical_stroke_count_ integer default 0,"
+                //  -- 当前拼音字的繁/简字及其 id（对应 pinyin_word 表的 id_）
+                + "   variant_ text default null,"
+                + "   variant_id_ integer default null"
                 + " )",
+                "insert into tmp_pinyin_word ("
+                + "   id_, word_, word_id_,"
+                + "   spell_, spell_id_, spell_chars_id_,"
+                + "   used_weight_, glyph_weight_,"
+                + "   traditional_, radical_, radical_stroke_count_,"
+                + "   variant_, variant_id_"
+                + " )"
+                + " select"
+                + "   id_, word_, word_id_,"
+                + "   spell_, spell_id_, spell_chars_id_,"
+                + "   used_weight_, glyph_weight_,"
+                + "   traditional_, radical_, radical_stroke_count_,"
+                + "   variant_, variant_id_"
+                + " from pinyin_word",
                 //
-                "create table" //
-                + " if not exists phrase_trans_prob ("
-                //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
-                //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
-                + "   word_id_ integer not null,"
-                // -- 当前拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
-                // -- Note：其为字典库中 字及其拼音表（link_word_with_pinyin）中的 spell_chars_id_
-                + "   word_spell_chars_id_ integer not null,"
-                //  -- 前序拼音字 id: BOS 用 -1 代替（句首字），TOTAL 用 -2 代替
-                //  -- Note：其为字典库中 link_word_with_pinyin 中的 id_
-                + "   prev_word_id_ integer not null,"
-                // -- 前序拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
-                // -- Note：其为字典库中 字及其拼音表（link_word_with_pinyin）中的 spell_chars_id_
-                + "   prev_word_spell_chars_id_ integer not null,"
-                //  -- 当 word_id_ == -1 且 prev_word_id_ == -2 时，其代表训练数据的句子总数，用于计算句首字出现频率；
-                //  -- 当 word_id_ == -1 且 prev_word_id_ != -1 时，其代表末尾字出现次数；
-                //  -- 当 word_id_ != -1 且 prev_word_id_ == -1 时，其代表句首字出现次数；
-                //  -- 当 word_id_ != -1 且 prev_word_id_ == -2 时，其代表当前拼音字的转移总数；
-                //  -- 当 word_id_ != -1 且 prev_word_id_ != -1 时，其代表前序拼音字的出现次数；
-                // -- 应用字典中字出现的次数
-                + "   value_app_ integer not null,"
-                // -- 用户字典中字出现的次数
-                + "   value_user_ integer not null," //
-                + "   primary key (word_id_, prev_word_id_)" //
-                + " )",
-                // >>>>>>>>>>>>>>>>>>>>>>>>
+                "drop view pinyin_word",
+                "drop table meta_pinyin",
+                "drop table meta_word",
+                "drop table meta_word_radical",
+                "drop table meta_word_with_pinyin",
+                "alter table tmp_pinyin_word rename to pinyin_word;",
+                //
+                "create index idx_py_word_word on pinyin_word(word_, word_id_)",
+                "create index idx_py_word_spell on pinyin_word(spell_, spell_id_, spell_chars_id_)",
+                // >>>>>>>>>>>>>>>>>>>>>>
                 // <<<<<<<<<<<<< 补充或调整用户库表
                 "create table" //
                 + " if not exists meta_latin (" //
@@ -115,6 +116,7 @@ public class From_v0 {
                 "alter table meta_emoji"
                 // -- 补充用户使用权重列
                 + "  add column weight_user_ integer default 0",
+                "create index idx_meta_emj_grp on meta_emoji(group_id_)",
                 "create view"
                 + " if not exists emoji ("
                 + "   id_, value_, weight_,"
@@ -127,7 +129,46 @@ public class From_v0 {
                 + "   meta_emoji emo_"
                 + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
                 // >>>>>>>>>>>>>>>>>>>>>>>
-                // <<<<<<<<<<<<<<<< 通过 SQL 迁移数据
+                // <<<<<<<<<<<<<<<<<<< 创建包含用户和应用权重数据的词典表
+                "create table" //
+                + " if not exists phrase_word ("
+                //  -- 拼音字 id: 其为 pinyin_word 中的 id_
+                + "   word_id_ integer not null,"
+                //  -- 拼音字母组合 id: 其为 pinyin_word 中的 spell_chars_id_
+                + "   spell_chars_id_ integer not null,"
+                // -- 应用字典中短语内的字权重：出现次数
+                + "   weight_app_ integer not null,"
+                // -- 用户字典中短语内的字权重：出现次数
+                + "   weight_user_ integer not null," //
+                + "   primary key (word_id_)" //
+                + " )",
+                //
+                "create table" //
+                + " if not exists phrase_trans_prob ("
+                //  -- 当前拼音字 id: EOS 用 -1 代替（句尾字）
+                //  -- Note：其为字典库中 pinyin_word 中的 id_
+                + "   word_id_ integer not null,"
+                // -- 当前拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
+                // -- Note：其为字典库中 字及其拼音表（pinyin_word）中的 spell_chars_id_
+                + "   word_spell_chars_id_ integer not null,"
+                //  -- 前序拼音字 id: BOS 用 -1 代替（句首字），TOTAL 用 -2 代替
+                //  -- Note：其为字典库中 pinyin_word 中的 id_
+                + "   prev_word_id_ integer not null,"
+                // -- 前序拼音字的拼音字母组合 id: 方便直接按拼音字母组合搜索
+                // -- Note：其为字典库中 字及其拼音表（pinyin_word）中的 spell_chars_id_
+                + "   prev_word_spell_chars_id_ integer not null,"
+                //  -- 当 word_id_ == -1 且 prev_word_id_ == -2 时，其代表训练数据的句子总数，用于计算句首字出现频率；
+                //  -- 当 word_id_ == -1 且 prev_word_id_ != -1 时，其代表末尾字出现次数；
+                //  -- 当 word_id_ != -1 且 prev_word_id_ == -1 时，其代表句首字出现次数；
+                //  -- 当 word_id_ != -1 且 prev_word_id_ == -2 时，其代表当前拼音字的转移总数；
+                //  -- 当 word_id_ != -1 且 prev_word_id_ != -1 时，其代表前序拼音字的出现次数；
+                // -- 应用字典中字出现的次数
+                + "   value_app_ integer not null,"
+                // -- 用户字典中字出现的次数
+                + "   value_user_ integer not null," //
+                + "   primary key (word_id_, prev_word_id_)" //
+                + " )",
+                // 通过 SQL 补齐数据
                 "insert into phrase_word ("
                 + "   word_id_, spell_chars_id_, weight_app_, weight_user_"
                 + " )"
@@ -159,21 +200,21 @@ public class From_v0 {
                 "update phrase_word"
                 + " set spell_chars_id_ = ("
                 + "   select spell_chars_id_"
-                + "   from link_word_with_pinyin"
+                + "   from pinyin_word"
                 + "   where id_ = phrase_word.word_id_"
                 + " )"
                 + " where spell_chars_id_ = -3",
                 "update phrase_trans_prob"
                 + " set word_spell_chars_id_ = ("
                 + "   select spell_chars_id_"
-                + "   from link_word_with_pinyin"
+                + "   from pinyin_word"
                 + "   where id_ = phrase_trans_prob.word_id_"
                 + " )"
                 + " where word_spell_chars_id_ = -3",
                 "update phrase_trans_prob"
                 + " set prev_word_spell_chars_id_ = ("
                 + "   select spell_chars_id_"
-                + "   from link_word_with_pinyin"
+                + "   from pinyin_word"
                 + "   where id_ = phrase_trans_prob.prev_word_id_"
                 + " )"
                 + " where prev_word_spell_chars_id_ = -3",

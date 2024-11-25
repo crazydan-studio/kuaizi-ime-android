@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.dict.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 
+import static org.crazydan.studio.app.ime.kuaizi.utils.CharUtils.isBlank;
+import static org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils.subList;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.SQLiteRow;
@@ -155,60 +158,68 @@ public class PinyinDictDBHelper {
      *         {@link Emojis#GROUP_GENERAL} 分组中的表情数量
      */
     public static Emojis getAllGroupedEmojis(SQLiteDatabase db, int groupGeneralCount) {
+        int listCapacity = 500;
         Map<String, List<InputWord>> groups = new LinkedHashMap<>();
         // Note: 确保常用始终在第一的位置
-        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>());
+        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>(listCapacity));
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
-            // Note: 确保 常用 分组的结果在最前面
-            this.sql = "select * from (" //
-                       + "  select id_, value_, weight_, ? as group_" //
-                       + "  from emoji" //
-                       + "  where weight_ > 0" //
-                       + "  order by weight_ desc, id_ asc" //
-                       + "  limit ?" //
-                       + ")" //
-                       + "union" //
-                       + "  select id_, value_, weight_, group_" //
-                       + "  from emoji" //
-                       + "  order by group_ asc, id_ asc";
-            this.params = new String[] { Emojis.GROUP_GENERAL, groupGeneralCount + "" };
+            // 非常用分组的表情保持其位置不变，以便于快速翻阅
+            this.sql = "select id_, value_, weight_, group_" //
+                       + " from emoji" //
+                       + " order by group_ asc, id_ asc";
 
             this.reader = (row) -> {
                 String group = row.getString("group_");
                 EmojiWord emoji = createEmojiWord(row);
 
                 if (emoji != null) {
-                    groups.computeIfAbsent(group, (k) -> new ArrayList<>(500)).add(emoji);
+                    groups.computeIfAbsent(group, (k) -> new ArrayList<>(listCapacity)).add(emoji);
                 }
                 return null;
             };
         }});
+
+        // 按使用权重收集常用表情
+        List<InputWord> general = groups.get(Emojis.GROUP_GENERAL);
+        groups.forEach((group, emojis) -> {
+            if (!group.equals(Emojis.GROUP_GENERAL)) {
+                general.addAll(emojis.stream().filter(emoji -> emoji.getWeight() > 0).collect(Collectors.toList()));
+            }
+        });
+        general.sort(Comparator.comparingInt(InputWord::getWeight).reversed());
+        groups.put(Emojis.GROUP_GENERAL, subList(general, 0, groupGeneralCount));
 
         return new Emojis(groups);
     }
 
     /** 根据关键字的字 id 获取表情 */
     public static List<EmojiWord> getEmojisByKeyword(SQLiteDatabase db, List<String[]> keywordIdsList, int top) {
-        List<String> args = new ArrayList<>(keywordIdsList.size() * 4);
-        keywordIdsList.forEach((keywordIds) -> {
-            String ids = String.join(",", keywordIds);
-            args.add("%[" + ids + "]%");
-            args.add("%," + ids + "]%");
-            args.add("%[" + ids + ",%");
-            args.add("%," + ids + ",%");
-        });
-
-        return querySQLite(db, new SQLiteQueryParams<EmojiWord>() {{
+        // 直接查出全部表情，再对其做关键字过滤，以避免模糊查询存在性能问题
+        List<KeywordEmoji> emojiWordList = querySQLite(db, new SQLiteQueryParams<KeywordEmoji>() {{
             this.table = "meta_emoji";
-            this.columns = new String[] { "id_", "value_", "weight_user_ as weight_" };
-            this.where = args.stream().map((arg) -> "keyword_ids_list_ like ?").collect(Collectors.joining(" or "));
-            this.params = args.toArray(new String[0]);
+            this.columns = new String[] { "id_", "value_", "weight_user_ as weight_", "keyword_ids_list_" };
             this.orderBy = "weight_ desc, id_ asc";
-            this.limit = top + "";
 
-            this.reader = PinyinDictDBHelper::createEmojiWord;
+            this.reader = (row) -> {
+                String keywords = row.getString("keyword_ids_list_");
+                EmojiWord emoji = createEmojiWord(row);
+
+                return emoji != null && !isBlank(keywords) ? new KeywordEmoji(emoji, keywords) : null;
+            };
         }});
+
+        List<String> keywordList = keywordIdsList.stream()
+                                                 .map(ids -> String.join(",", ids))
+                                                 .collect(Collectors.toList());
+        return emojiWordList.stream().filter(emoji -> {
+            for (String keyword : keywordList) {
+                if (emoji.matched(keyword)) {
+                    return true;
+                }
+            }
+            return false;
+        }).map(KeywordEmoji::getEmoji).limit(top).collect(Collectors.toList());
     }
 
     /**
@@ -281,12 +292,12 @@ public class PinyinDictDBHelper {
     /** 获取指定汉字的字 id */
     public static String getWordId(SQLiteDatabase db, String word) {
         List<String> wordIdList = querySQLite(db, new SQLiteQueryParams<String>() {{
-            this.table = "meta_word";
-            this.columns = new String[] { "id_" };
-            this.where = "value_ = ?";
+            this.table = "pinyin_word";
+            this.columns = new String[] { "word_id_" };
+            this.where = "word_ = ?";
             this.params = new String[] { word };
 
-            this.reader = (row) -> row.getString("id_");
+            this.reader = (row) -> row.getString("word_id_");
         }});
 
         return CollectionUtils.first(wordIdList);
@@ -347,5 +358,26 @@ public class PinyinDictDBHelper {
         });
 
         return argsList;
+    }
+
+    private static class KeywordEmoji {
+        private final EmojiWord emoji;
+        private final String keywords;
+
+        private KeywordEmoji(EmojiWord emoji, String keywords) {
+            this.emoji = emoji;
+            this.keywords = keywords;
+        }
+
+        public EmojiWord getEmoji() {
+            return this.emoji;
+        }
+
+        public boolean matched(String keyword) {
+            return this.keywords.contains("[" + keyword + "]")
+                   || this.keywords.contains("," + keyword + "]")
+                   || this.keywords.contains("[" + keyword + ",")
+                   || this.keywords.contains("," + keyword + ",");
+        }
     }
 }

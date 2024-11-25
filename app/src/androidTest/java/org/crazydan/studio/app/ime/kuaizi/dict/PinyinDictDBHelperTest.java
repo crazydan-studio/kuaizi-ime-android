@@ -162,7 +162,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         // 在词典表中未收录的拼音不影响词组预测，相应位置置空
         String pinyinCharsStr = "zi,m,zhong,guo";
-        String expectedPhrase = "自:zì,,中:zhōng,国:guó";
+        String expectedPhrase = "子:zǐ,,中:zhōng,国:guó";
         List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
 
         List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
@@ -247,8 +247,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
                 "\uD83D\uDC4B", // 👋
                 "\uD83D\uDC4B", // 👋
                 "\uD83D\uDC35", // 🐵
-                "\uD83C\uDF47", // 🍇
                 "\uD83C\uDF83", // 🎃
+                "\uD83C\uDF47", // 🍇
         };
         List<String> usedEmojiIdList = Arrays.stream(usedEmojis)
                                              .map((emoji) -> getEmoji(db, emoji).getId())

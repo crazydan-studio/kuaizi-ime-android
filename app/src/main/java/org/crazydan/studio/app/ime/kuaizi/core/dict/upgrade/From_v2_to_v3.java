@@ -56,7 +56,7 @@ public class From_v2_to_v3 {
         /*
         CREATE TABLE
             IF NOT EXISTS used_pinyin_word (
-                -- id_, target_chars_id_ 与内置字典中的 link_word_with_pinyin 表的数据保持一致
+                -- id_, target_chars_id_ 与内置字典中的 pinyin_word 表的 id_ 一致
                 id_ INTEGER NOT NULL PRIMARY KEY,
                 target_chars_id_ INTEGER NOT NUll,
                 weight_ INTEGER DEFAULT 0
@@ -76,7 +76,7 @@ public class From_v2_to_v3 {
                 id_ INTEGER NOT NULL PRIMARY KEY,
                 -- used_phrase 中的 id_
                 source_id_ INTEGER NOT NULL,
-                -- 与内置字典中的 link_word_with_pinyin 表的 id_ 一致
+                -- 与内置字典中的 pinyin_word 表的 id_ 一致
                 target_id_ INTEGER NOT NULL,
                 -- 拼音字母组合 id
                 target_spell_chars_id_ INTEGER NOT NULL,
