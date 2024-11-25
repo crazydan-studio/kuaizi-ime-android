@@ -19,8 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
@@ -32,14 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWord;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWordsByWordId;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -66,10 +62,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         String[] inputCharsArray = new String[] { "zhe", "shi", "Android", "shu", "ru", "fa" };
         List<CharInput> inputs = parseCharInputs(dict, inputCharsArray);
 
-        List<List<InputWord>> phrases = dict.findTopBestMatchedPhrase(inputs, 1, (pinyinChars, pinyinWordId) -> {
-            Map<String, PinyinWord> map = getPinyinWordsByWordId(db, Set.of(pinyinWordId));
-            return map.isEmpty() ? null : CollectionUtils.first(map.values());
-        });
+        List<List<InputWord>> phrases = dict.findTopBestMatchedPhrase(inputs, 1);
         Assert.assertEquals(1, phrases.size());
 
         List<InputWord> phrase = phrases.get(0);

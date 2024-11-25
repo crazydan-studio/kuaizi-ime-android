@@ -48,6 +48,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getFirstBestPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getLatinsByStarts;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWordsByWordId;
@@ -199,6 +200,10 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
                                     .collect(Collectors.joining(", "));
 
             Log.i(LOG_TAG, pinyinChars + " => " + result);
+
+            PinyinWord first = getFirstBestPinyinWord(db, pinyinCharsId, userPhraseBaseWeight);
+            Assert.assertNotNull(first);
+            Log.i(LOG_TAG, pinyinChars + " 的最佳拼音字：" + first.getValue() + ":" + first.getSpell().value);
         }
     }
 

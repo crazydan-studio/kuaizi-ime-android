@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
@@ -879,11 +879,11 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
-            determine_NotConfirmed_InputWord(inputList, input, () -> topBestCandidateIds);
+            determine_NotConfirmed_InputWord(inputList, input);
         }
 
         // 当前输入确定的拼音字放在最前面
-        if (input.getWord() instanceof PinyinWord //
+        if (input.isPinyin() //
             && !topBestCandidates.contains(input.getWord()) //
         ) {
             topBestCandidates.add(0, input.getWord());
@@ -965,7 +965,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      */
     private void predict_NotConfirmed_Phrase_InputWords(InputList inputList, CharInput input) {
         List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(input);
-        List<List<InputWord>> bestPhrases = getTopBestMatchedPhrase(inputList, inputs, 1);
+        List<List<InputWord>> bestPhrases = this.pinyinDict.findTopBestMatchedPhrase(inputs, 1);
 
         List<InputWord> bestPhrase = CollectionUtils.first(bestPhrases);
         if (bestPhrase == null) {
@@ -985,12 +985,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                 target.setWord(word);
             }
         }
-    }
-
-    private List<List<InputWord>> getTopBestMatchedPhrase(InputList inputList, List<CharInput> inputs, int top) {
-        return this.pinyinDict.findTopBestMatchedPhrase(inputs, top, (pinyinChars, pinyinWordId) -> { //
-            return (PinyinWord) getInputCandidateWords(inputList, pinyinChars).get(pinyinWordId);
-        });
     }
 
     @Override
@@ -1047,62 +1041,28 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入中实时调用
      */
     private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
-        if (!this.pinyinDict.getPinyinTree().hasValidPinyin(input)) {
+        String pinyinCharsId = this.pinyinDict.getPinyinTree().getPinyinCharsId(input);
+        if (pinyinCharsId == null) {
+            input.setWord(null);
             return;
         }
 
-        determine_NotConfirmed_InputWord(inputList,
-                                         input,
-                                         () -> this.pinyinDict.getTopBestCandidatePinyinWordIds(input, 1));
-    }
-
-    /** 在滑屏输入中，以及拼音纠正切换中被调用 */
-    private void determine_NotConfirmed_InputWord(
-            InputList inputList, CharInput input, Supplier<List<String>> topBestCandidateIdsGetter
-    ) {
-        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
-
-        if (!candidateMap.containsValue(input.getWord()) || !input.isWordConfirmed()) {
-            InputWord bestCandidate = inputList.getCachedBestCandidateWords(input);
-
-            if (bestCandidate == null) {
-                List<String> topBestCandidateIds = topBestCandidateIdsGetter.get();
-                bestCandidate = candidateMap.get(CollectionUtils.first(topBestCandidateIds));
-
-                // Note：无最佳候选字时，选择候选字列表中的第一个作为最佳候选字
-                if (bestCandidate == null) {
-                    bestCandidate = CollectionUtils.first(candidateMap.values());
-                    assert bestCandidate != null;
-
-                    inputList.cacheBestCandidateWord(input, bestCandidate);
-                }
-            }
-
-            input.setWord(bestCandidate);
+        if (!input.isWordConfirmed() || !input.hasWord() //
+            || !Objects.equals(input.getWord().getSpell().charsId, pinyinCharsId) //
+        ) {
+            InputWord word = this.pinyinDict.getFirstBestCandidatePinyinWord(pinyinCharsId);
+            input.setWord(word);
         }
-    }
-
-    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
-        return getInputCandidateWords(inputList, input.getJoinedChars());
     }
 
     /**
      * 获取输入的候选字列表
-     * <p/>
-     * 仅在首次获取时才查询拼音字典，后续的相同拼音都直接从缓存中取
      *
      * @return 不为 <code>null</code>
      */
-    private Map<String, InputWord> getInputCandidateWords(InputList inputList, String inputChars) {
-        Map<String, InputWord> words = inputList.getCachedCandidateWords(inputChars);
-
-        if (words == null) {
-            List<InputWord> candidates = this.pinyinDict.getCandidatePinyinWords(inputChars);
-            inputList.cacheCandidateWords(inputChars, candidates);
-
-            words = inputList.getCachedCandidateWords(inputChars);
-        }
-        return words;
+    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
+        String inputChars = input.getJoinedChars();
+        return this.pinyinDict.getCandidatePinyinWords(inputChars);
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {

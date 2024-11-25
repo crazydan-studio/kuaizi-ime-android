@@ -20,10 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -48,9 +45,6 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
  * @date 2023-06-28
  */
 public class InputList {
-    private final Map<String, Map<String, InputWord>> candidateWordsCache = new HashMap<>(50);
-    private final Map<String, String> bestCandidateWordIdCache = new HashMap<>(50);
-
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
@@ -170,8 +164,6 @@ public class InputList {
 
         this.inputs.clear();
         this.cursor.reset();
-        this.candidateWordsCache.clear();
-        this.bestCandidateWordIdCache.clear();
 
         clearPhraseCompletions();
 
@@ -183,39 +175,6 @@ public class InputList {
         this.staged = Staged.none();
 
         return staged;
-    }
-
-    /** 缓存输入的候选字列表 */
-    public void cacheCandidateWords(String inputChars, List<InputWord> candidateWords) {
-        if (!this.candidateWordsCache.containsKey(inputChars)) {
-            this.candidateWordsCache.put(inputChars,
-                                         candidateWords.stream()
-                                                       .collect(Collectors.toMap(InputWord::getId,
-                                                                                 Function.identity(),
-                                                                                 (a, b) -> a,
-                                                                                 // 保持候选字的顺序不变
-                                                                                 LinkedHashMap::new)));
-        }
-    }
-
-    /** 获取已缓存的输入的候选字列表 */
-    public Map<String, InputWord> getCachedCandidateWords(String inputChars) {
-        return this.candidateWordsCache.get(inputChars);
-    }
-
-    /** 缓存输入的最佳候选字 */
-    public void cacheBestCandidateWord(CharInput input, InputWord bestCandidateWord) {
-        String inputChars = input.getJoinedChars();
-
-        this.bestCandidateWordIdCache.put(inputChars, bestCandidateWord.getId());
-    }
-
-    /** 获取已缓存的输入的最佳候选字 */
-    public InputWord getCachedBestCandidateWords(CharInput input) {
-        String inputChars = input.getJoinedChars();
-        String bestCandidateWordId = this.bestCandidateWordIdCache.get(inputChars);
-
-        return this.candidateWordsCache.getOrDefault(inputChars, new HashMap<>()).get(bestCandidateWordId);
     }
 
     /** 当前的待输入是否为空 */
