@@ -186,7 +186,8 @@ public class PinyinDictDBHelper {
         int listCapacity = 500;
         Map<String, List<InputWord>> groups = new LinkedHashMap<>();
         // Note: 确保常用始终在第一的位置
-        groups.put(Emojis.GROUP_GENERAL, new ArrayList<>(listCapacity));
+        List<InputWord> general = new ArrayList<>(listCapacity);
+        groups.put(Emojis.GROUP_GENERAL, general);
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // 非常用分组的表情保持其位置不变，以便于快速翻阅
@@ -199,17 +200,14 @@ public class PinyinDictDBHelper {
                 String group = row.getString("group_");
                 EmojiWord emoji = createEmojiWord(row);
 
+                if (emoji.getWeight() > 0) {
+                    general.add(emoji);
+                }
                 groups.computeIfAbsent(group, (k) -> new ArrayList<>(listCapacity)).add(emoji);
             };
         }});
 
         // 按使用权重收集常用表情
-        List<InputWord> general = groups.get(Emojis.GROUP_GENERAL);
-        groups.forEach((group, emojis) -> {
-            if (!group.equals(Emojis.GROUP_GENERAL)) {
-                general.addAll(emojis.stream().filter(emoji -> emoji.getWeight() > 0).collect(Collectors.toList()));
-            }
-        });
         general.sort(Comparator.comparingInt(InputWord::getWeight).reversed());
         groups.put(Emojis.GROUP_GENERAL, subList(general, 0, groupGeneralCount));
 
