@@ -55,50 +55,6 @@ public class From_v0 {
                 "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
                 // 为内置表补充索引
                 "create index idx_meta_py_chars_val on meta_pinyin_chars(value_)",
-                // <<<<<<<<<<<<<<<< 拼音与字相关的表合并为一个大表，从而避免联表查询，并降低数据库文件大小
-                "create table"
-                + " if not exists tmp_pinyin_word ("
-                + "   id_ integer not null primary key,"
-                //  -- 字
-                + "   word_ text not null,"
-                + "   word_id_ integer not null,"
-                //  -- 拼音
-                + "   spell_ text not null,"
-                + "   spell_id_ integer not null,"
-                + "   spell_chars_id_ integer not null,"
-                //  -- 字使用权重
-                + "   used_weight_ integer default 0,"
-                //  -- 按拼音分组计算的字形权重
-                + "   glyph_weight_ integer default 0,"
-                + "   traditional_ integer default 0,"
-                + "   radical_ text default null,"
-                + "   radical_stroke_count_ integer default 0,"
-                //  -- 当前拼音字的繁/简字及其 id（对应 pinyin_word 表的 id_）
-                + "   variant_ text default null,"
-                + "   variant_id_ integer default null"
-                + " )",
-                "insert into tmp_pinyin_word ("
-                + "   id_, word_, word_id_,"
-                + "   spell_, spell_id_, spell_chars_id_,"
-                + "   used_weight_, glyph_weight_,"
-                + "   traditional_, radical_, radical_stroke_count_,"
-                + "   variant_, variant_id_"
-                + " )"
-                + " select"
-                + "   id_, word_, word_id_,"
-                + "   spell_, spell_id_, spell_chars_id_,"
-                + "   used_weight_, glyph_weight_,"
-                + "   traditional_, radical_, radical_stroke_count_,"
-                + "   variant_, variant_id_"
-                + " from pinyin_word",
-                //
-                "drop view pinyin_word",
-                "drop table meta_pinyin",
-                "drop table meta_word",
-                "drop table meta_word_radical",
-                "drop table meta_word_with_pinyin",
-                "alter table tmp_pinyin_word rename to pinyin_word;",
-                //
                 "create index idx_py_word_word on pinyin_word(word_, word_id_)",
                 "create index idx_py_word_spell on pinyin_word(spell_, spell_id_, spell_chars_id_)",
                 // >>>>>>>>>>>>>>>>>>>>>>
