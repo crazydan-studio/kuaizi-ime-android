@@ -312,10 +312,7 @@ public class HmmDBHelper {
                                                      + (" = (" + pair[0] + ", " + pair[1] + ")"))
                                         .collect(Collectors.joining(" or "));
 
-            this.reader = (row) -> {
-                consumer.accept(row);
-                return null;
-            };
+            this.voidReader = consumer;
         }});
     }
 }

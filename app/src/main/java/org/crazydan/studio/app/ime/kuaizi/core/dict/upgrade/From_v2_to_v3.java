@@ -170,14 +170,14 @@ public class From_v2_to_v3 {
                     + ", ',') as target_ids_", //
                     "weight_"
             };
-            this.where = "weight_ > 0 ";
             this.groupBy = "source_id_";
-            this.reader = (row) -> {
+            this.having = "weight_ > 0";
+
+            this.voidReader = (row) -> {
                 String phraseWords = row.getString("target_ids_");
                 int phraseCount = row.getInt("weight_");
 
                 usedPhraseCountMap.put(phraseWords, phraseCount);
-                return null;
             };
         }});
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

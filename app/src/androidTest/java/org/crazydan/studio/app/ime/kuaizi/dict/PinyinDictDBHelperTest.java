@@ -36,7 +36,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +46,7 @@ import org.junit.runner.RunWith;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.enableAllPrintableEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmoji;
@@ -56,6 +59,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -301,6 +305,39 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         Assert.assertNotEquals(0, emojiList.size());
         Log.i(LOG_TAG, emojiList.stream().map(EmojiWord::getValue).collect(Collectors.joining(", ")));
+    }
+
+    @Test
+    public void test_enable_all_printable_emojis() {
+        PinyinDict dict = PinyinDict.instance();
+        SQLiteDatabase db = dict.getDB();
+
+        List<String> notPrintableEmojis = querySQLite(db, new DBUtils.SQLiteQueryParams<String>() {{
+            this.table = "meta_emoji";
+            this.columns = new String[] { "value_" };
+
+            this.reader = (row) -> {
+                String value = row.getString("value_");
+
+                if (!CharUtils.isPrintable(value)) {
+                    return value;
+                }
+                return null;
+            };
+        }});
+        Assert.assertFalse(notPrintableEmojis.isEmpty());
+        Log.i(LOG_TAG,
+              "Not printable emojis (" + notPrintableEmojis.size() + "): " + String.join(", ", notPrintableEmojis));
+
+        enableAllPrintableEmojis(db);
+
+        Emojis emojis = getAllGroupedEmojis(db, 0);
+
+        emojis.groups.forEach((group, list) -> {
+            list.forEach(emoji -> {
+                Assert.assertTrue(CharUtils.isPrintable(emoji.getValue()));
+            });
+        });
     }
 
     @Test

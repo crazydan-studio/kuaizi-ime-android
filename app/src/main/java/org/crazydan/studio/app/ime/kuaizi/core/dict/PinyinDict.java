@@ -47,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.enableAllPrintableEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
@@ -402,13 +403,16 @@ public class PinyinDict {
         this.db = openSQLite(userDBFile, false);
         configSQLite(this.db);
 
+        // 启用系统支持的可显示的表情
+        enableAllPrintableEmojis(this.db);
+
         Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
         querySQLite(this.db, new DBUtils.SQLiteQueryParams<Void>() {{
             this.table = "meta_pinyin_chars";
             this.columns = new String[] { "id_", "value_" };
-            this.reader = (row) -> {
+
+            this.voidReader = (row) -> {
                 pinyinCharsAndIdMap.put(row.getString("value_"), row.getString("id_"));
-                return null;
             };
         }});
 

@@ -72,15 +72,17 @@ public class From_v0 {
                 "alter table meta_emoji"
                 // -- 补充用户使用权重列
                 + "  add column weight_user_ integer default 0",
-                "create index idx_meta_emj_grp on meta_emoji(group_id_)",
+                "alter table meta_emoji"
+                // -- 补充在系统内是否可用的标记
+                + "  add column enabled_ integer default 1",
                 "create view"
                 + " if not exists emoji ("
-                + "   id_, value_, weight_,"
+                + "   id_, value_, weight_, enabled_,"
                 + "   group_, keyword_ids_list_"
                 + " ) as"
                 + " select"
                 + "   emo_.id_, emo_.value_, emo_.weight_user_,"
-                + "   grp_.value_, emo_.keyword_ids_list_"
+                + "   emo_.enabled_, grp_.value_, emo_.keyword_ids_list_"
                 + " from"
                 + "   meta_emoji emo_"
                 + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",

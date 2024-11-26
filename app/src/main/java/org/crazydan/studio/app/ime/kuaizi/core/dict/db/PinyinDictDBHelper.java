@@ -192,16 +192,14 @@ public class PinyinDictDBHelper {
             // 非常用分组的表情保持其位置不变，以便于快速翻阅
             this.sql = "select id_, value_, weight_, group_" //
                        + " from emoji" //
+                       + " where enabled_ = 1" //
                        + " order by group_ asc, id_ asc";
 
-            this.reader = (row) -> {
+            this.voidReader = (row) -> {
                 String group = row.getString("group_");
                 EmojiWord emoji = createEmojiWord(row);
 
-                if (emoji != null) {
-                    groups.computeIfAbsent(group, (k) -> new ArrayList<>(listCapacity)).add(emoji);
-                }
-                return null;
+                groups.computeIfAbsent(group, (k) -> new ArrayList<>(listCapacity)).add(emoji);
             };
         }});
 
@@ -224,13 +222,14 @@ public class PinyinDictDBHelper {
         List<KeywordEmoji> emojiWordList = querySQLite(db, new SQLiteQueryParams<KeywordEmoji>() {{
             this.table = "meta_emoji";
             this.columns = new String[] { "id_", "value_", "weight_user_ as weight_", "keyword_ids_list_" };
+            this.where = "enabled_ = 1";
             this.orderBy = "weight_ desc, id_ asc";
 
             this.reader = (row) -> {
                 String keywords = row.getString("keyword_ids_list_");
                 EmojiWord emoji = createEmojiWord(row);
 
-                return emoji != null && !isBlank(keywords) ? new KeywordEmoji(emoji, keywords) : null;
+                return !isBlank(keywords) ? new KeywordEmoji(emoji, keywords) : null;
             };
         }});
 
@@ -264,6 +263,42 @@ public class PinyinDictDBHelper {
             execSQLite(db, "update meta_emoji" //
                            + " set weight_user_ = max(weight_user_ - ?, 0)" //
                            + " where id_ = ?", argsList);
+        }
+    }
+
+    /** 启用所有系统支持的可显示的表情 */
+    public static void enableAllPrintableEmojis(SQLiteDatabase db) {
+        List<String> enabledIds = new ArrayList<>();
+        List<String> disabledIds = new ArrayList<>();
+
+        querySQLite(db, new SQLiteQueryParams<Void>() {{
+            this.table = "meta_emoji";
+            this.columns = new String[] { "id_", "value_", "enabled_" };
+
+            this.voidReader = (row) -> {
+                String id = row.getString("id_");
+                String value = row.getString("value_");
+                boolean enabled = row.getInt("enabled_") > 0;
+
+                if (CharUtils.isPrintable(value)) {
+                    if (!enabled) {
+                        enabledIds.add(id);
+                    }
+                } else if (enabled) {
+                    disabledIds.add(id);
+                }
+            };
+        }});
+
+        List<String>[] idsArray = new List[] { disabledIds, enabledIds };
+        for (int i = 0; i < idsArray.length; i++) {
+            List<String> ids = idsArray[i];
+            if (ids.isEmpty()) {
+                continue;
+            }
+
+            execSQLite(db, "update meta_emoji set enabled_ = " + i //
+                           + " where id_ in (" + String.join(", ", ids) + ")");
         }
     }
 
@@ -362,11 +397,9 @@ public class PinyinDictDBHelper {
         String value = row.getString("value_");
         int weight = row.getInt("weight_");
 
-        EmojiWord word = null;
-        if (CharUtils.isPrintable(value)) {
-            word = new EmojiWord(id, value);
-            word.setWeight(weight);
-        }
+        EmojiWord word = new EmojiWord(id, value);
+        word.setWeight(weight);
+
         return word;
     }
 

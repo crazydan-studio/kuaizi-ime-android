@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import android.content.Context;
@@ -178,7 +179,6 @@ public class DBUtils {
 
     public static <T> List<T> querySQLite(SQLiteDatabase db, SQLiteQueryParams<T> params) {
         try (
-                // Note：在有 group by 时，只能通过 having 过滤结果，而不能使用 where
                 Cursor cursor = db.query(params.table,
                                          params.columns,
                                          params.where,
@@ -188,16 +188,7 @@ public class DBUtils {
                                          params.orderBy,
                                          params.limit)
         ) {
-            List<T> list = new ArrayList<>(cursor.getCount());
-
-            while (cursor.moveToNext()) {
-                T data = params.reader.apply(new SQLiteRow(cursor));
-
-                if (data != null) {
-                    list.add(data);
-                }
-            }
-            return list;
+            return doQuerySQLite(cursor, params.reader, params.voidReader);
         }
     }
 
@@ -205,17 +196,29 @@ public class DBUtils {
         try (
                 Cursor cursor = db.rawQuery(params.sql, params.params)
         ) {
-            List<T> list = new ArrayList<>(cursor.getCount());
+            return doQuerySQLite(cursor, params.reader, params.voidReader);
+        }
+    }
 
-            while (cursor.moveToNext()) {
-                T data = params.reader.apply(new SQLiteRow(cursor));
+    private static <T> List<T> doQuerySQLite(
+            Cursor cursor, Function<SQLiteRow, T> reader, Consumer<SQLiteRow> voidReader
+    ) {
+        // 通过 voidReader 避免无用的空间预设
+        List<T> list = voidReader != null ? null : new ArrayList<>(cursor.getCount());
 
+        while (cursor.moveToNext()) {
+            SQLiteRow row = new SQLiteRow(cursor);
+
+            if (voidReader != null) {
+                voidReader.accept(row);
+            } else {
+                T data = reader.apply(row);
                 if (data != null) {
                     list.add(data);
                 }
             }
-            return list;
         }
+        return list;
     }
 
     private static void withTransaction(SQLiteDatabase db, Runnable call) {
@@ -229,29 +232,31 @@ public class DBUtils {
         }
     }
 
-    public static class SQLiteQueryParams<T> {
+    private static class BaseSQLiteQueryParams<T> {
+        public String[] params;
+
+        /** 行读取函数：有返回值 */
+        public Function<SQLiteRow, T> reader;
+        /** 行读取函数：无返回值，优先于 {@link #reader} */
+        public Consumer<SQLiteRow> voidReader;
+    }
+
+    public static class SQLiteQueryParams<T> extends BaseSQLiteQueryParams<T> {
         public String table;
         public String[] columns;
 
+        /** Note：在有 group by 时，只能通过 having 过滤结果，而不能使用 where */
         public String where;
-        public String[] params;
 
         public String groupBy;
         public String having;
 
         public String orderBy;
         public String limit;
-
-        /** 行读取函数 */
-        public Function<SQLiteRow, T> reader;
     }
 
-    public static class SQLiteRawQueryParams<T> {
+    public static class SQLiteRawQueryParams<T> extends BaseSQLiteQueryParams<T> {
         public String sql;
-        public String[] params;
-
-        /** 行读取函数 */
-        public Function<SQLiteRow, T> reader;
     }
 
     public static class SQLiteRawUpsertParams {

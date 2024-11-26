@@ -31,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
@@ -989,50 +988,6 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {
-//        Input<?> pending = inputList.getPendingOn(input);
-//        // 仅查找占位输入（且其待输入不能为拉丁文）之前的补全短语
-//        if (!input.isGap() || (pending != null && pending.isLatin())) {
-//            return;
-//        }
-//
-//        // Note: InputList#getPinyinPhraseWordsBefore 获取的不是紧挨者 input 的短语，
-//        // 二者之间可能存在其他非拼音输入
-//        Input<?> before = inputList.getInputBefore(input);
-//        if (before == null || !before.isPinyin()) {
-//            return;
-//        }
-//
-//        List<InputWord> words = CollectionUtils.last(inputList.getPinyinPhraseWordsBefore(input));
-//        if (words == null || words.isEmpty()) {
-//            return;
-//        }
-//
-//        if (input.isPinyin()) {
-//            words.add(input.getWord());
-//        }
-
-//        boolean variantFirst = getConfig().isCandidateVariantFirstEnabled();
-//        List<List<InputWord>> topBestPhrases = this.pinyinDict.findTopBestMatchedPhrase(words, 5, variantFirst);
-//        List<CompletionInput> phraseCompletions = topBestPhrases.stream()
-//                                                                .map((phrase) -> createPhraseCompletion(words.size(),
-//                                                                                                        phrase))
-//                                                                .collect(Collectors.toList());
-//        inputList.setPhraseCompletions(phraseCompletions);
-    }
-
-    private CompletionInput createPhraseCompletion(int startIndex, List<InputWord> phrase) {
-        CompletionInput completion = new CompletionInput(startIndex);
-
-        for (int i = 0; i < phrase.size(); i++) {
-            PinyinWord word = (PinyinWord) phrase.get(i);
-            String pinyin = this.pinyinDict.getPinyinTree().getPinyinCharsById(word.getCharsId());
-
-            CharInput charInput = CharInput.from(CharKey.from(pinyin));
-            charInput.setWord(word);
-
-            completion.add(charInput);
-        }
-        return completion;
     }
 
     /**
@@ -1042,17 +997,16 @@ public class PinyinKeyboard extends BaseKeyboard {
      */
     private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
         String pinyinCharsId = this.pinyinDict.getPinyinTree().getPinyinCharsId(input);
-        if (pinyinCharsId == null) {
-            input.setWord(null);
-            return;
-        }
 
-        if (!input.isWordConfirmed() || !input.hasWord() //
-            || !Objects.equals(input.getWord().getSpell().charsId, pinyinCharsId) //
+        InputWord word = null;
+        if (pinyinCharsId != null //
+            && (!input.isWordConfirmed() || !input.hasWord() //
+                || !Objects.equals(input.getWord().getSpell().charsId, pinyinCharsId) //
+            ) //
         ) {
-            InputWord word = this.pinyinDict.getFirstBestCandidatePinyinWord(pinyinCharsId);
-            input.setWord(word);
+            word = this.pinyinDict.getFirstBestCandidatePinyinWord(pinyinCharsId);
         }
+        input.setWord(word);
     }
 
     /**
