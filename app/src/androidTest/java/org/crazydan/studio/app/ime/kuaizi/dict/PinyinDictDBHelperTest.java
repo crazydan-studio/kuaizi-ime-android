@@ -84,11 +84,13 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         }};
 
         sampleMap.forEach((pinyinCharsStr, expectWordStr) -> {
-            List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+            List<Integer> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
 
             List<String> phraseList = getTop5Phrases(db, pinyinCharsStr, pinyinCharsIdList);
 
             String bestPhrase = CollectionUtils.first(phraseList);
+            Assert.assertNotNull(bestPhrase);
+
             if (!bestPhrase.equals(expectWordStr)) {
                 // 预测得到的短语与预期的不符
                 Log.i(LOG_TAG, pinyinCharsStr + " hasn't expected phrase, try again");
@@ -116,7 +118,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
         String usedPhrase = "筷:kuài,字:zì,输:shū,入:rù,法:fǎ";
         String expectedPhrase = "我:wǒ,爱:ài," + usedPhrase;
-        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+        List<Integer> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
 
         List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
         String bestPhrase = CollectionUtils.first(phraseList);
@@ -140,7 +142,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         String pinyinCharsStr = "shi,jie,da,yu,zhou";
         String expectedPhrase = "世:shì,界:jiè,大:dà,宇:yǔ,宙:zhòu";
-        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+        List<Integer> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
 
         List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
         String bestPhrase = CollectionUtils.first(phraseList);
@@ -149,7 +151,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         PinyinWord shi = getPinyinWord(db, "世", "shì");
         PinyinWord da = getPinyinWord(db, "大", "dà");
         PinyinWord yu = getPinyinWord(db, "宇", "yǔ");
-        Map<Integer, String> confirmedPhraseWords = new HashMap() {{
+        Map<Integer, Integer> confirmedPhraseWords = new HashMap() {{
             put(0, shi.getId());
             put(2, da.getId());
             put(3, yu.getId());
@@ -168,7 +170,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         // 在词典表中未收录的拼音不影响词组预测，相应位置置空
         String pinyinCharsStr = "zi,m,zhong,guo";
         String expectedPhrase = "子:zǐ,,中:zhōng,国:guó";
-        List<String> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
+        List<Integer> pinyinCharsIdList = getPinyinCharsIdList(dict, pinyinCharsStr.split(","));
 
         List<String> phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1);
         String bestPhrase = CollectionUtils.first(phraseList);
@@ -182,15 +184,15 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         String[] samples = new String[] { "zhong", "guo" };
         for (String pinyinChars : samples) {
-            String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
+            Integer pinyinCharsId = dict.getPinyinCharsTree().getCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
-            Map<String, PinyinWord> wordMap = getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
-                                                                                           .collect(Collectors.toMap(
-                                                                                                   InputWord::getId,
-                                                                                                   Function.identity(),
-                                                                                                   (a, b) -> a,
-                                                                                                   HashMap::new));
+            Map<Integer, PinyinWord> wordMap = getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
+                                                                                            .collect(Collectors.toMap(
+                                                                                                    InputWord::getId,
+                                                                                                    Function.identity(),
+                                                                                                    (a, b) -> a,
+                                                                                                    HashMap::new));
 
             int top = 10;
             List<PinyinWord> wordList = getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, top).stream()
@@ -217,7 +219,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         SQLiteDatabase db = dict.getDB();
 
         String pinyinChars = "guo";
-        String pinyinCharsId = dict.getPinyinTree().getPinyinCharsId(pinyinChars);
+        Integer pinyinCharsId = dict.getPinyinCharsTree().getCharsId(pinyinChars);
         List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
 
         wordList = wordList.stream().filter((word) -> word.getVariant() != null).collect(Collectors.toList());
@@ -259,9 +261,9 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
                 "\uD83C\uDF83", // 🎃
                 "\uD83C\uDF47", // 🍇
         };
-        List<String> usedEmojiIdList = Arrays.stream(usedEmojis)
-                                             .map((emoji) -> getEmoji(db, emoji).getId())
-                                             .collect(Collectors.toList());
+        List<Integer> usedEmojiIdList = Arrays.stream(usedEmojis)
+                                              .map((emoji) -> getEmoji(db, emoji).getId())
+                                              .collect(Collectors.toList());
         saveUsedEmojis(db, usedEmojiIdList, false);
 
         emojis = getAllGroupedEmojis(db, top);
@@ -269,8 +271,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         Assert.assertNotNull(generalEmojiList);
 
         // Note: 直接调用 LinkedHashSet#toArray 将报方法不存在
-        Assert.assertArrayEquals(new LinkedHashSet<>(usedEmojiIdList).stream().toArray(String[]::new),
-                                 generalEmojiList.stream().map(InputWord::getId).toArray(String[]::new));
+        Assert.assertArrayEquals(new LinkedHashSet<>(usedEmojiIdList).stream().toArray(Integer[]::new),
+                                 generalEmojiList.stream().map(InputWord::getId).toArray(Integer[]::new));
         Log.i(LOG_TAG,
               Emojis.GROUP_GENERAL + ": " + generalEmojiList.stream()
                                                             .map((emoji) -> emoji.getValue()
@@ -295,12 +297,12 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         PinyinDict dict = PinyinDict.instance();
         SQLiteDatabase db = dict.getDB();
 
-        List<String[]> keywordIdsList = Stream.of("地球", "笑脸")
-                                              .map((keyword) -> keyword.chars()
-                                                                       .mapToObj((word) -> getWordId(db,
-                                                                                                     String.valueOf((char) word)))
-                                                                       .toArray(String[]::new))
-                                              .collect(Collectors.toList());
+        List<Integer[]> keywordIdsList = Stream.of("地球", "笑脸")
+                                               .map((keyword) -> keyword.chars()
+                                                                        .mapToObj((word) -> getWordId(db,
+                                                                                                      String.valueOf((char) word)))
+                                                                        .toArray(Integer[]::new))
+                                               .collect(Collectors.toList());
         List<EmojiWord> emojiList = getEmojisByKeyword(db, keywordIdsList, 10);
 
         Assert.assertNotEquals(0, emojiList.size());
@@ -362,27 +364,27 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
     }
 
     private List<String> getTop5Phrases(
-            SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList
+            SQLiteDatabase db, String pinyinCharsStr, List<Integer> pinyinCharsIdList
     ) {
         return getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 5, null);
     }
 
     private List<String> getTopPhrases(
-            SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList, int top
+            SQLiteDatabase db, String pinyinCharsStr, List<Integer> pinyinCharsIdList, int top
     ) {
         return getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, top, null);
     }
 
     private List<String> getTopPhrases(
-            SQLiteDatabase db, String pinyinCharsStr, List<String> pinyinCharsIdList, int top,
-            Map<Integer, String> confirmedPhraseWords
+            SQLiteDatabase db, String pinyinCharsStr, List<Integer> pinyinCharsIdList, int top,
+            Map<Integer, Integer> confirmedPhraseWords
     ) {
         List<String> phraseList = //
                 predictPinyinPhrase( //
                                      db, pinyinCharsIdList, confirmedPhraseWords, //
                                      userPhraseBaseWeight, top //
                 ).stream().map((phrase) -> {
-                    Map<String, PinyinWord> wordMap = getPinyinWordsByWordId(db, new HashSet<>(List.of(phrase)));
+                    Map<Integer, PinyinWord> wordMap = getPinyinWordsByWordId(db, new HashSet<>(List.of(phrase)));
 
                     return Arrays.stream(phrase)
                                  .map(wordMap::get)

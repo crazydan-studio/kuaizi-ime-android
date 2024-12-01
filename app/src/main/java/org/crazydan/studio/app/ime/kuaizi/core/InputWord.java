@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
  */
 public class InputWord {
     /** 对象 id，一般对应持久化的主键值 */
-    private final String id;
+    private final Integer id;
     /** 值 */
     private final String value;
     /** 读音 */
@@ -41,21 +41,21 @@ public class InputWord {
     /** 字的权重 */
     private int weight;
 
-    public InputWord(String id, String value) {
+    public InputWord(Integer id, String value) {
         this(id, value, (String) null);
     }
 
-    public InputWord(String id, String value, String spell) {
+    public InputWord(Integer id, String value, String spell) {
         this(id, value, new Spell(spell != null ? spell : ""));
     }
 
-    public InputWord(String id, String value, Spell spell) {
+    public InputWord(Integer id, String value, Spell spell) {
         this.id = id;
         this.value = value;
         this.spell = new Spell(spell);
     }
 
-    public String getId() {
+    public Integer getId() {
         return this.id;
     }
 
@@ -124,9 +124,9 @@ public class InputWord {
         /** 值 */
         public final String value;
         /** 读音 id */
-        public final String id;
+        public final Integer id;
         /** 字母组合 id */
-        public final String charsId;
+        public final Integer charsId;
 
         public Spell(String value) {
             this(value, null, null);
@@ -136,7 +136,7 @@ public class InputWord {
             this(spell.value, spell.id, spell.charsId);
         }
 
-        public Spell(String value, String id, String charsId) {
+        public Spell(String value, Integer id, Integer charsId) {
             this.value = value;
             this.id = id;
             this.charsId = charsId;

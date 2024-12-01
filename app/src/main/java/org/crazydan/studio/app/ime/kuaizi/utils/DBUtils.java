@@ -93,15 +93,6 @@ public class DBUtils {
         }
     }
 
-    public static void configSQLite(SQLiteDatabase db) {
-        String[] clauses = new String[] {
-                "pragma cache_size = 2500;", "pragma temp_store = memory;",
-                };
-        for (String clause : clauses) {
-            db.execSQL(clause);
-        }
-    }
-
     /** 回收无用空间 */
     public static void vacuumSQLite(SQLiteDatabase db) {
         execSQLite(db, "vacuum;");

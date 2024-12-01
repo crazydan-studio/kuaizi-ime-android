@@ -52,15 +52,15 @@ public class HmmDBHelper {
     private static final String LOG_TAG = HmmDBHelper.class.getSimpleName();
 
     /** 代表 {@link Hmm#TOTAL} 的字 */
-    private static final String WORD_TOTAL = "-2";
+    private static final Integer WORD_TOTAL = -2;
     /** 代表 {@link Hmm#EOS} 和 {@link Hmm#BOS} 的字 */
-    private static final String WORD_EOS_BOS = "-1";
+    private static final Integer WORD_EOS_BOS = -1;
     /** 代表 未收录 的字，其没有对应的拼音字 */
-    private static final String WORD_IGNORED = "-10";
+    private static final Integer WORD_IGNORED = -10;
 
     /** @see #predictPinyinPhrase(SQLiteDatabase, List, Map, int, int) */
-    public static List<String[]> predictPinyinPhrase(
-            SQLiteDatabase db, List<String> pinyinCharsIdList, int userPhraseBaseWeight, int top
+    public static List<Integer[]> predictPinyinPhrase(
+            SQLiteDatabase db, List<Integer> pinyinCharsIdList, int userPhraseBaseWeight, int top
     ) {
         return predictPinyinPhrase(db, pinyinCharsIdList, null, userPhraseBaseWeight, top);
     }
@@ -79,9 +79,9 @@ public class HmmDBHelper {
      *         最佳预测结果数
      * @return 列表元素为 短语的拼音字 id 数组，且列表中最靠前的为预测结果权重最高的短语
      */
-    public static List<String[]> predictPinyinPhrase(
+    public static List<Integer[]> predictPinyinPhrase(
             SQLiteDatabase db, //
-            List<String> pinyinCharsIdList, Map<Integer, String> confirmedPhraseWords, //
+            List<Integer> pinyinCharsIdList, Map<Integer, Integer> confirmedPhraseWords, //
             int userPhraseBaseWeight, int top
     ) {
         if (pinyinCharsIdList.isEmpty() || top < 1) {
@@ -89,37 +89,37 @@ public class HmmDBHelper {
         }
 
         // 取出 HMM 字间转移概率
-        Map<String, Map<String, Integer>> transProb = new HashMap<>();
-        Map<String, Set<String>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
+        Map<Integer, Map<Integer, Integer>> transProb = new HashMap<>();
+        Map<Integer, Set<Integer>> pinyinCharsIdAndWordIdsMap = new HashMap<>(pinyinCharsIdList.size());
 
         queryTransProb(db, pinyinCharsIdList, (row) -> {
-            String wordId = row.getString("word_id_");
-            String preWordId = row.getString("prev_word_id_");
+            Integer wordId = row.getInt("word_id_");
+            Integer preWordId = row.getInt("prev_word_id_");
             int pinyinCharsId = row.getInt("word_spell_chars_id_");
             int appValue = row.getInt("value_app_");
             int userValue = row.getInt("value_user_");
 
-            Map<String, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
+            Map<Integer, Integer> prob = transProb.computeIfAbsent(wordId, (k) -> new HashMap<>());
             prob.compute(preWordId, (k, v) -> (v == null ? 0 : v) //
                                               + appValue + userValue
                                               // 用户数据需加上基础权重
                                               + (userValue > 0 ? userPhraseBaseWeight : 0));
 
             if (pinyinCharsId >= 0) {
-                pinyinCharsIdAndWordIdsMap.computeIfAbsent(pinyinCharsId + "", (k) -> new HashSet<>()).add(wordId);
+                pinyinCharsIdAndWordIdsMap.computeIfAbsent(pinyinCharsId, (k) -> new HashSet<>()).add(wordId);
             }
         });
 
 //        Log.i(LOG_TAG, "TransProb: " + new Gson().toJson(transProb));
 
         // 计算 viterbi 矩阵
-        Map<String, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, new Viterbi.Options() {{
+        Map<Integer, Object[]>[] viterbi = calcViterbi(pinyinCharsIdList, transProb, new Viterbi.Options() {{
             this.wordTotal = WORD_TOTAL;
             this.wordBos = WORD_EOS_BOS;
             this.wordEos = WORD_EOS_BOS;
 
             this.wordsGetter = (spell, index) -> {
-                String confirmed = confirmedPhraseWords != null ? confirmedPhraseWords.get(index) : null;
+                Integer confirmed = confirmedPhraseWords != null ? confirmedPhraseWords.get(index) : null;
                 if (confirmed != null) {
                     return Set.of(confirmed);
                 }
@@ -206,9 +206,9 @@ public class HmmDBHelper {
             // BOS 用 -1 代替（句首字）
             // TOTAL 用 -2 代替（句子总数）
             if (Hmm.EOS.equals(s) || Hmm.BOS.equals(s)) {
-                return new String[] { WORD_EOS_BOS, WORD_EOS_BOS };
+                return new String[] { WORD_EOS_BOS + "", WORD_EOS_BOS + "" };
             } else if (Hmm.TOTAL.equals(s)) {
-                return new String[] { WORD_TOTAL, WORD_TOTAL };
+                return new String[] { WORD_TOTAL + "", WORD_TOTAL + "" };
             }
 
             return extractWordIds.apply(s);
@@ -272,10 +272,9 @@ public class HmmDBHelper {
 
         if (reverse) {
             // 清理无用数据
-            execSQLite(db, new String[] {
-                    "delete from phrase_word where weight_app_ = 0 and weight_user_ = 0",
-                    "delete from phrase_trans_prob where value_app_ = 0 and value_user_ = 0",
-                    });
+            execSQLite(db,
+                       "delete from phrase_word where weight_app_ = 0 and weight_user_ = 0",
+                       "delete from phrase_trans_prob where value_app_ = 0 and value_user_ = 0");
         }
     }
 
@@ -288,17 +287,17 @@ public class HmmDBHelper {
     }
 
     private static void queryTransProb(
-            SQLiteDatabase db, List<String> spellCharsIdList, Consumer<DBUtils.SQLiteRow> consumer
+            SQLiteDatabase db, List<Integer> spellCharsIdList, Consumer<DBUtils.SQLiteRow> consumer
     ) {
         // 短语前后序拼音组合
-        List<String[]> charsIdPairList = new ArrayList<>(spellCharsIdList.size() + 1);
+        List<Integer[]> charsIdPairList = new ArrayList<>(spellCharsIdList.size() + 1);
         for (int i = 0; i <= spellCharsIdList.size(); i++) {
-            String prevCharsId = i == 0 ? WORD_EOS_BOS : spellCharsIdList.get(i - 1);
-            String currCharsId = i == spellCharsIdList.size() ? WORD_EOS_BOS : spellCharsIdList.get(i);
+            Integer prevCharsId = i == 0 ? WORD_EOS_BOS : spellCharsIdList.get(i - 1);
+            Integer currCharsId = i == spellCharsIdList.size() ? WORD_EOS_BOS : spellCharsIdList.get(i);
 
-            charsIdPairList.add(new String[] { prevCharsId, currCharsId });
+            charsIdPairList.add(new Integer[] { prevCharsId, currCharsId });
             // 当前拼音字都需包含 TOTAL 列，以得到其转移总数
-            charsIdPairList.add(new String[] { WORD_TOTAL, currCharsId });
+            charsIdPairList.add(new Integer[] { WORD_TOTAL, currCharsId });
         }
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{

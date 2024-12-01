@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinTree;
+import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.EmojiWord;
@@ -84,11 +84,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                     return null;
                 }
 
-                PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+                PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
                 String level1Char = stateData.getLevel1Key() != null ? stateData.getLevel1Key().getText() : null;
                 String level2Char = stateData.getLevel2Key() != null ? stateData.getLevel2Key().getText() : null;
 
-                return (NoAnimationKeyFactory) () -> keyTable.createNextCharKeys(pinyinTree,
+                return (NoAnimationKeyFactory) () -> keyTable.createNextCharKeys(charsTree,
                                                                                  level0Char,
                                                                                  level1Char,
                                                                                  level2Char,
@@ -96,9 +96,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case InputChars_Flip_Doing: {
                 InputCharsFlipDoingStateData stateData = ((InputCharsFlipDoingStateData) this.state.data);
-                PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+                PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
 
-                return (NoAnimationKeyFactory) () -> keyTable.createFullCharKeys(pinyinTree, stateData.startChar);
+                return (NoAnimationKeyFactory) () -> keyTable.createFullCharKeys(charsTree, stateData.startChar);
             }
             case InputChars_XPad_Input_Doing: {
                 InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
@@ -108,10 +108,10 @@ public class PinyinKeyboard extends BaseKeyboard {
                     return null;
                 }
 
-                PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+                PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
                 String level1Char = stateData.getLevel1Key() != null ? stateData.getLevel1Key().getText() : null;
 
-                return () -> keyTable.createXPadNextCharKeys(pinyinTree,
+                return () -> keyTable.createXPadNextCharKeys(charsTree,
                                                              level0Char,
                                                              level1Char,
                                                              stateData.getLevel2NextChars());
@@ -120,9 +120,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                 CandidatePinyinWordChooseDoingStateData stateData
                         = (CandidatePinyinWordChooseDoingStateData) this.state.data;
                 CharInput input = stateData.getTarget();
-                PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+                PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
 
-                return () -> keyTable.createInputCandidateKeys(pinyinTree,
+                return () -> keyTable.createInputCandidateKeys(charsTree,
                                                                input,
                                                                stateData.getSpells(),
                                                                stateData.getPagingData(),
@@ -574,7 +574,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void do_InputChars_Slipping(InputList inputList, CharInput pending, Key<?> currentKey) {
         InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
         Key.Level currentKeyLevel = currentKey.getLevel();
-        PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+        PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
 
         // 添加后继字母，
         switch (currentKeyLevel) {
@@ -593,10 +593,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 String level0Char = stateData.getLevel0Key().getText();
                 String level1Char = currentKey.getText();
-                PinyinTree level1PinyinTree = pinyinTree.getChild(level0Char).getChild(level1Char);
+                PinyinCharsTree level1CharsTree = charsTree.getChild(level0Char).getChild(level1Char);
 
-                List<String> level2NextChars = level1PinyinTree != null
-                                               ? level1PinyinTree.getNextCharsList()
+                List<String> level2NextChars = level1CharsTree != null
+                                               ? level1CharsTree.getNextChars()
                                                : new ArrayList<>();
 
                 stateData.setLevel1Key(currentKey);
@@ -632,7 +632,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void end_InputChars_Inputting(InputList inputList, CharInput pending, Key<?> key, boolean reset) {
         // 非拼音输入，视为无效输入，直接丢弃
-        if (!this.pinyinDict.getPinyinTree().hasValidPinyin(pending)) {
+        if (!this.pinyinDict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
             drop_InputList_Pending(inputList, key);
         } else {
             predict_NotConfirmed_Phrase_InputWords(inputList, pending);
@@ -650,7 +650,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void start_InputChars_Flipping(InputList inputList, Key<?> key) {
         String startChar = key.getText();
         // 若无以输入按键开头的拼音，则不进入该状态
-        if (this.pinyinDict.getPinyinTree().getChild(startChar) == null) {
+        if (this.pinyinDict.getPinyinCharsTree().getChild(startChar) == null) {
             return;
         }
 
@@ -693,7 +693,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputCharsSlipDoingStateData stateData = ((InputCharsSlipDoingStateData) this.state.data);
         Key.Level currentKeyLevel = currentKey.getLevel();
 
-        PinyinTree pinyinTree = this.pinyinDict.getPinyinTree();
+        PinyinCharsTree charsTree = this.pinyinDict.getPinyinCharsTree();
         boolean needToEndInputting = false;
         boolean needToContinueInputting = false;
 
@@ -701,7 +701,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (currentKeyLevel) {
             case level_0: {
                 // 当前 pending 为有效拼音，则结束当前输入，并创建新输入
-                if (this.pinyinDict.getPinyinTree().hasValidPinyin(pending)) {
+                if (this.pinyinDict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
                     needToEndInputting = true;
                     needToContinueInputting = true;
                     break;
@@ -710,7 +710,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 pending.appendKey(currentKey);
 
                 String level0Char = currentKey.getText();
-                PinyinTree level0PinyinTree = pinyinTree.getChild(level0Char);
+                PinyinCharsTree level0CharsTree = charsTree.getChild(level0Char);
 
                 stateData.setLevel0Key(currentKey);
                 stateData.setLevel1Key(null);
@@ -718,7 +718,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 stateData.setLevel2Key(null);
                 stateData.setLevel2NextChars(new ArrayList<>());
 
-                needToEndInputting = level0PinyinTree == null || level0PinyinTree.children.isEmpty();
+                needToEndInputting = level0CharsTree == null || !level0CharsTree.hasChild();
                 break;
             }
             case level_1: {
@@ -726,9 +726,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 String level0Char = stateData.getLevel0Key().getText();
                 String level1Char = currentKey.getText();
-                PinyinTree level1PinyinTree = pinyinTree.getChild(level0Char).getChild(level1Char);
+                PinyinCharsTree level1CharsTree = charsTree.getChild(level0Char).getChild(level1Char);
 
-                List<String> level2NextChars = level1PinyinTree.getNextCharsList();
+                List<String> level2NextChars = level1CharsTree.getNextChars();
 
                 stateData.setLevel1Key(currentKey);
 
@@ -868,10 +868,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        Map<String, InputWord> candidateMap = getInputCandidateWords(inputList, input);
+        Map<Integer, InputWord> candidateMap = getInputCandidateWords(inputList, input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
 
-        List<String> topBestCandidateIds = this.pinyinDict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
+        List<Integer> topBestCandidateIds = this.pinyinDict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
         List<InputWord> topBestCandidates = topBestCandidateIds.stream()
                                                                .map(candidateMap::get)
                                                                .collect(Collectors.toList());
@@ -996,7 +996,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * 在滑屏输入中实时调用
      */
     private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
-        String pinyinCharsId = this.pinyinDict.getPinyinTree().getPinyinCharsId(input);
+        Integer pinyinCharsId = this.pinyinDict.getPinyinCharsTree().getCharsId(input);
 
         InputWord word = null;
         if (pinyinCharsId != null //
@@ -1014,7 +1014,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      *
      * @return 不为 <code>null</code>
      */
-    private Map<String, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
+    private Map<Integer, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
         String inputChars = input.getJoinedChars();
         return this.pinyinDict.getCandidatePinyinWords(inputChars);
     }

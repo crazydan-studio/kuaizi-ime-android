@@ -33,15 +33,15 @@ public class Viterbi {
     private static final String LOG_TAG = Viterbi.class.getSimpleName();
 
     public static class Options {
-        /** 代表 {@link Hmm#TOTAL} 的字 */
-        public String wordTotal;
-        /** 代表 {@link Hmm#EOS} 的字 */
-        public String wordEos;
-        /** 代表 {@link Hmm#BOS} 的字 */
-        public String wordBos;
+        /** 代表 {@link Hmm#TOTAL} 的字标识 */
+        public Integer wordTotal;
+        /** 代表 {@link Hmm#EOS} 的字标识 */
+        public Integer wordEos;
+        /** 代表 {@link Hmm#BOS} 的字标识 */
+        public Integer wordBos;
 
         /** 根据读音及其所在位置获取可选字列表的函数 */
-        public BiFunction<String, Integer, Set<String>> wordsGetter;
+        public BiFunction<Integer, Integer, Set<Integer>> wordsGetter;
     }
 
     /**
@@ -51,7 +51,7 @@ public class Viterbi {
      *         最佳匹配结果数
      * @return 列表元素为 短语的拼音字 id 数组，且列表中最靠前的为匹配权重最高的短语
      */
-    public static List<String[]> getBestPhraseFromViterbi(Map<String, Object[]>[] viterbi, int phraseSize, int top) {
+    public static List<Integer[]> getBestPhraseFromViterbi(Map<Integer, Object[]>[] viterbi, int phraseSize, int top) {
         // <<<<<<<<<<<<< 对串进行回溯即可得对应拼音的汉字
         int lastIndex = phraseSize - 1;
 
@@ -69,12 +69,11 @@ public class Viterbi {
                           Double.compare(((double) b[0]), ((double) a[0])) //
         ).limit(top).toArray(Object[][]::new);
 
-        for (int i = lastIndex - 1; i > -1; i--) {
-            int currIndex = i;
+        for (int currIndex = lastIndex - 1; currIndex > -1; currIndex--) {
             int nextIndex = currIndex + 1;
 
             viterbiWords[currIndex] = Arrays.stream(viterbiWords[nextIndex]).map((pair) -> {
-                String wordId = (String) pair[1];
+                Integer wordId = (Integer) pair[1];
                 Object[] newPair = viterbi[nextIndex].get(wordId);
                 assert newPair != null;
 
@@ -85,21 +84,21 @@ public class Viterbi {
 //        Log.i(LOG_TAG, "Viterbi Words: " + new Gson().toJson(viterbiWords));
 
         // <<<<<<<<<<<< 获取最佳预测的短语列表
-        List<String[]> phrases = new ArrayList<>(top);
+        List<Integer[]> phrases = new ArrayList<>(top);
         // Note: 需做二维数组的行列翻转才能得到短语的字数组
         for (int i = 0; i < viterbiWords.length; i++) {
             Object[][] viterbiWord = viterbiWords[i];
 
             for (int j = 0; j < viterbiWord.length; j++) {
-                String[] phraseWord;
+                Integer[] phraseWord;
                 if (i == 0) {
-                    phraseWord = new String[viterbiWords.length];
+                    phraseWord = new Integer[viterbiWords.length];
                     phrases.add(phraseWord);
                 } else {
                     phraseWord = phrases.get(j);
                 }
 
-                String wordId = (String) viterbiWord[j][1];
+                Integer wordId = (Integer) viterbiWord[j][1];
                 phraseWord[i] = wordId;
             }
         }
@@ -117,8 +116,8 @@ public class Viterbi {
      * @param transProb
      *         汉字（状态）间转移概率
      */
-    public static Map<String, Object[]>[] calcViterbi(
-            List<String> spellList, Map<String, Map<String, Integer>> transProb, Options options
+    public static Map<Integer, Object[]>[] calcViterbi(
+            List<Integer> spellList, Map<Integer, Map<Integer, Integer>> transProb, Options options
     ) {
         // https://github.com/wmhst7/THU_AI_Course_Pinyin
         int total = spellList.size();
@@ -127,7 +126,7 @@ public class Viterbi {
         // pos 是目前节点的位置，word 为当前汉字即当前状态，
         // probability 为从 pre_word 上一汉字即上一状态转移到目前状态的概率
         // viterbi[pos][word] = (probability, pre_word)
-        Map<String, Object[]>[] viterbi = new Map[total];
+        Map<Integer, Object[]>[] viterbi = new Map[total];
 
         // 句子总数: word_id_ == -1 且 prev_word_id_ == -2
         int phraseTotal = getTransProbValue(transProb, options.wordEos, options.wordTotal);
@@ -137,21 +136,21 @@ public class Viterbi {
             int prevIndex = i;
             int currentIndex = prevIndex + 1;
 
-            String currentSpell = spellList.get(currentIndex);
-            Set<String> currentWords = options.wordsGetter.apply(currentSpell, currentIndex);
+            Integer currentSpell = spellList.get(currentIndex);
+            Set<Integer> currentWords = options.wordsGetter.apply(currentSpell, currentIndex);
             assert currentWords != null;
 
             // Note：句首字的前序字设为 -1
-            String prevSpell = prevIndex < 0 ? null : spellList.get(prevIndex);
-            Set<String> prevWords = prevSpell == null
-                                    ? Set.of(options.wordBos)
-                                    : options.wordsGetter.apply(prevSpell, prevIndex);
+            Integer prevSpell = prevIndex < 0 ? null : spellList.get(prevIndex);
+            Set<Integer> prevWords = prevSpell == null
+                                     ? Set.of(options.wordBos)
+                                     : options.wordsGetter.apply(prevSpell, prevIndex);
             assert prevWords != null;
 
             if (viterbi[currentIndex] == null) {
                 viterbi[currentIndex] = new HashMap<>();
             }
-            Map<String, Object[]> currentWordViterbi = viterbi[currentIndex];
+            Map<Integer, Object[]> currentWordViterbi = viterbi[currentIndex];
 
             // 遍历 current_words 和 prev_words，找出所有可能与当前拼音相符的汉字 curr_word，
             // 利用动态规划算法从前往后，推出每个拼音汉字状态的概率
@@ -205,9 +204,9 @@ public class Viterbi {
     }
 
     private static int getTransProbValue(
-            Map<String, Map<String, Integer>> transProb, String currWord, String prevWord
+            Map<Integer, Map<Integer, Integer>> transProb, Integer currWord, Integer prevWord
     ) {
-        Map<String, Integer> prob = transProb.get(currWord);
+        Map<Integer, Integer> prob = transProb.get(currWord);
         if (prob == null) {
             return 0;
         }

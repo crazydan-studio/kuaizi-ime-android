@@ -65,11 +65,11 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
         inputList.reset(false);
 
         InputWord[] words = new InputWord[] {
-                new InputWord("kuai", "筷", "kuài"),
-                new InputWord("zi", "字", "zì"),
-                new InputWord("shu", "输", "shū"),
-                new InputWord("ru", "入", "rù"),
-                new InputWord("fa", "法", "fǎ"),
+                new InputWord(100, "筷", "kuài"),
+                new InputWord(101, "字", "zì"),
+                new InputWord(102, "输", "shū"),
+                new InputWord(103, "入", "rù"),
+                new InputWord(104, "法", "fǎ"),
                 };
         for (InputWord word : words) {
             CharInput input = CharInput.from(InputWordKey.create(word));

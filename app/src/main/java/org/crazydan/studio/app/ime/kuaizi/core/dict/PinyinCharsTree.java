@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,38 +23,34 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 
 /**
- * 拼音树
+ * 拼音字母组合树
  * <p/>
  * 按拼音的字母组合逐层分解，最多只有三层，
  * 即，第一层为声母，第二层为除去声母后的第一个字母，
  * 第三层为除去第一二层之后的部分
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-12-06
  */
-public class PinyinTree {
+public class PinyinCharsTree {
     /** 当前节点所对应的拼音字母组合的 id，若不是有效拼音，则其值为 null */
-    public final String id;
-    /** 当前节点所对应的拼音字母组合中的字母：后继字母 */
+    public final Integer id;
+    /** 当前节点所对应的拼音字母组合中的字母 */
     public final String value;
 
     /** 后继字母及其子树：按字母顺序升序排序 */
-    public final Map<String, PinyinTree> children = new LinkedHashMap<>();
+    private final Map<String, PinyinCharsTree> children = new LinkedHashMap<>();
 
-    public PinyinTree(String id, String value) {
+    PinyinCharsTree(Integer id, String value) {
         this.id = id;
         this.value = value;
     }
 
-    /** 根据拼音字母组合及其 id 构造拼音树 */
-    public static PinyinTree create(Map<String, String> pinyinCharsAndIdMap) {
-        PinyinTree root = new PinyinTree(null, "");
+    /** 根据拼音字母组合及其 id 构造 {@link PinyinCharsTree} */
+    public static PinyinCharsTree create(Map<String, Integer> pinyinCharsAndIdMap) {
+        PinyinCharsTree root = new PinyinCharsTree(null, "");
 
         pinyinCharsAndIdMap.keySet().stream()
                            // 必须先按长度升序排序，以确保没有后继字母的拼音最先被加入树结构中
@@ -70,72 +66,21 @@ public class PinyinTree {
         return root;
     }
 
-    /** 当前节点是否为拼音 */
-    public boolean isPinyin() {
-        return this.id != null;
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    /** 获取子树的数量 */
+    public int countChild() {
+        return this.children.size();
     }
 
-    /** 判断指定的输入是否为有效拼音 */
-    public boolean hasValidPinyin(CharInput input) {
-        return getPinyinCharsId(input) != null;
-    }
-
-    /** 判断指定的输入的拼音字母组合的 id */
-    public String getPinyinCharsId(CharInput input) {
-        String pinyinChars = input.getJoinedChars();
-
-        return getPinyinCharsId(pinyinChars);
-    }
-
-    /** 获取指定拼音字母组合的 id */
-    public String getPinyinCharsId(String chars) {
-        PinyinTree child = getChildByChars(chars);
-
-        return child != null ? child.id : null;
-    }
-
-    /** 通过 id 获取拼音字母组合 */
-    public String getPinyinCharsById(String charsId) {
-        if (charsId == null) {
-            return null;
-        }
-
-        for (Map.Entry<String, PinyinTree> entry : this.children.entrySet()) {
-            PinyinTree child = entry.getValue();
-
-            if (Objects.equals(child.id, charsId)) {
-                return child.value;
-            } else {
-                String childChars = child.getPinyinCharsById(charsId);
-                if (childChars != null) {
-                    return child.value + childChars;
-                }
-            }
-        }
-        return null;
+    /** 是否有子树 */
+    public boolean hasChild() {
+        return countChild() != 0;
     }
 
     /** 获取以指定字符开头的子树 */
-    public PinyinTree getChild(String start) {
+    public PinyinCharsTree getChild(String start) {
         return this.children.get(start);
-    }
-
-    /** 获取指定拼音字母组合的子树 */
-    public PinyinTree getChildByChars(String chars) {
-        String[] segments = splitChars(chars);
-        if (segments.length == 0) {
-            return null;
-        }
-
-        PinyinTree child = this;
-        for (String segment : segments) {
-            if (segment == null || child == null) {
-                break;
-            }
-
-            child = child.getChild(segment);
-        }
-        return child;
     }
 
     /**
@@ -143,13 +88,46 @@ public class PinyinTree {
      * <p/>
      * 结果先按字符长度升序排列，再按字符顺序排列
      */
-    public List<String> getNextCharsList() {
+    public List<String> getNextChars() {
         return this.children.keySet()
                             .stream()
                             .map((ch) -> this.value + ch)
                             .sorted(Comparator.comparing(String::length))
                             .sorted(String::compareTo)
                             .collect(Collectors.toList());
+    }
+
+    /** 获取指定{@link CharInput 输入}的拼音字母组合的 id */
+    public Integer getCharsId(CharInput input) {
+        String chars = input.getJoinedChars();
+
+        return getCharsId(chars);
+    }
+
+    /** 获取指定拼音字母组合的 id */
+    public Integer getCharsId(String chars) {
+        String[] segments = splitChars(chars);
+        if (segments.length == 0) {
+            return null;
+        }
+
+        PinyinCharsTree child = this;
+        for (String segment : segments) {
+            if (segment == null || child == null) {
+                break;
+            }
+            child = child.getChild(segment);
+        }
+
+        return child != null ? child.id : null;
+    }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    /** 当前节点是否为拼音 */
+    public boolean isPinyin() {
+        return this.id != null;
     }
 
     /**
@@ -170,18 +148,25 @@ public class PinyinTree {
         return list.stream().map((ch) -> this.value + ch).collect(Collectors.toList());
     }
 
-    private void add(String topChar, String[] charsSegments, Map<String, String> pinyinCharsAndIdMap) {
+    /** 判断指定的{@link CharInput 输入}是否为拼音字母组合 */
+    public boolean isPinyinCharsInput(CharInput input) {
+        return getCharsId(input) != null;
+    }
+    // >>>>>>>>>>>>>>>>>>>>>>>>
+
+    private void add(String topChar, String[] charsSegments, Map<String, Integer> pinyinCharsAndIdMap) {
         String start = charsSegments[0];
         if (start == null) {
             return;
         }
 
-        String pinyin = topChar + start;
+        String subChar = topChar + start;
 
-        PinyinTree child = this.children.computeIfAbsent(start,
-                                                         (k) -> new PinyinTree(pinyinCharsAndIdMap.get(pinyin), start));
+        PinyinCharsTree child = this.children.computeIfAbsent(start,
+                                                              (k) -> new PinyinCharsTree(pinyinCharsAndIdMap.get(subChar),
+                                                                                         start));
         if (charsSegments.length > 1) {
-            child.add(pinyin, Arrays.copyOfRange(charsSegments, 1, charsSegments.length), pinyinCharsAndIdMap);
+            child.add(subChar, Arrays.copyOfRange(charsSegments, 1, charsSegments.length), pinyinCharsAndIdMap);
         }
     }
 
@@ -190,16 +175,16 @@ public class PinyinTree {
             return new String[0];
         }
 
-        int startLength = 1;
+        int nextCharIndex = 1;
         if (chars.startsWith("ch") || chars.startsWith("sh") || chars.startsWith("zh")) {
-            startLength = 2;
+            nextCharIndex = 2;
         }
 
         // 将拼音拆分为三层，再依次添加到树中
         String[] charsSegments = new String[3];
-        charsSegments[0] = chars.substring(0, startLength);
-        charsSegments[1] = chars.length() > startLength ? chars.substring(startLength, startLength + 1) : null;
-        charsSegments[2] = chars.length() > startLength + 1 ? chars.substring(startLength + 1) : null;
+        charsSegments[0] = chars.substring(0, nextCharIndex);
+        charsSegments[1] = chars.length() > nextCharIndex ? chars.substring(nextCharIndex, nextCharIndex + 1) : null;
+        charsSegments[2] = chars.length() > nextCharIndex + 1 ? chars.substring(nextCharIndex + 1) : null;
 
         return charsSegments;
     }

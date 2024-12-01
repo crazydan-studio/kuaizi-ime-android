@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 public class PinyinDictHelper {
 
     /** 获取拼音字母组合的 id 列表 */
-    public static List<String> getPinyinCharsIdList(PinyinDict dict, String... pinyinCharsArray) {
+    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, String... pinyinCharsArray) {
         return getPinyinCharsIdList(dict, List.of(pinyinCharsArray));
     }
 
     /** 获取拼音字母组合的 id 列表 */
-    public static List<String> getPinyinCharsIdList(PinyinDict dict, List<String> pinyinCharsList) {
+    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, List<String> pinyinCharsList) {
         return pinyinCharsList.stream()
-                              .map(chars -> dict.getPinyinTree().getPinyinCharsId(chars))
+                              .map(chars -> dict.getPinyinCharsTree().getCharsId(chars))
                               .collect(Collectors.toList());
     }
 }

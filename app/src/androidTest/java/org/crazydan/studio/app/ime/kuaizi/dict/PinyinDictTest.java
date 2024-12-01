@@ -86,7 +86,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         return Arrays.stream(texts).map((text) -> {
             CharInput input = CharInput.from(CharKey.from(text));
             // Note: 这里仅用于标记输入为拼音输入
-            if (dict.getPinyinTree().hasValidPinyin(input)) {
+            if (dict.getPinyinCharsTree().isPinyinCharsInput(input)) {
                 input.setWord(PinyinWord.none());
             }
 

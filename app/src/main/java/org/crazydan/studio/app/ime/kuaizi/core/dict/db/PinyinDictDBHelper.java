@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -63,12 +64,14 @@ public class PinyinDictDBHelper {
     }
 
     /** 根据拼音字 id 获取其 {@link PinyinWord 拼音字对象} */
-    public static Map<String, PinyinWord> getPinyinWordsByWordId(SQLiteDatabase db, Set<String> pinyinWordIds) {
+    public static Map<Integer, PinyinWord> getPinyinWordsByWordId(SQLiteDatabase db, Set<Integer> pinyinWordIds) {
         String placeholder = pinyinWordIds.stream().map((id) -> "?").collect(Collectors.joining(", "));
 
         List<PinyinWord> wordList = queryPinyinWords(db,
                                                      "py_.id_ in (" + placeholder + ")",
-                                                     pinyinWordIds.toArray(new String[0]),
+                                                     pinyinWordIds.stream()
+                                                                  .map(Objects::toString)
+                                                                  .toArray(String[]::new),
                                                      null);
 
         return wordList.stream().collect(Collectors.toMap(PinyinWord::getId, Function.identity()));
@@ -79,8 +82,8 @@ public class PinyinDictDBHelper {
      * <p/>
      * 返回结果已按拼音声调、字形权重排序
      */
-    public static List<PinyinWord> getAllPinyinWordsByCharsId(SQLiteDatabase db, String pinyinCharsId) {
-        return queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId }, null);
+    public static List<PinyinWord> getAllPinyinWordsByCharsId(SQLiteDatabase db, Integer pinyinCharsId) {
+        return queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId + "" }, null);
     }
 
     /**
@@ -88,10 +91,10 @@ public class PinyinDictDBHelper {
      *
      * @return 结果拼音字的权重均大于 0
      */
-    public static List<String> getTopBestPinyinWordIds(
-            SQLiteDatabase db, String pinyinCharsId, int userPhraseBaseWeight, int top
+    public static List<Integer> getTopBestPinyinWordIds(
+            SQLiteDatabase db, Integer pinyinCharsId, int userPhraseBaseWeight, int top
     ) {
-        return rawQuerySQLite(db, new SQLiteRawQueryParams<String>() {{
+        return rawQuerySQLite(db, new SQLiteRawQueryParams<Integer>() {{
             this.sql = "select distinct"
                        + "   word_id_,"
                        + "   ( ifnull(weight_app_, 0) +"
@@ -107,9 +110,9 @@ public class PinyinDictDBHelper {
                        + " order by used_weight_ desc"
                        + " limit ?";
 
-            this.params = new String[] { userPhraseBaseWeight + "", pinyinCharsId, top + "" };
+            this.params = new String[] { userPhraseBaseWeight + "", pinyinCharsId + "", top + "" };
 
-            this.reader = (row) -> row.getString("word_id_");
+            this.reader = (row) -> row.getInt("word_id_");
         }});
     }
 
@@ -118,15 +121,17 @@ public class PinyinDictDBHelper {
      * <p/>
      * 首先从词典库中选择使用权重最高的拼音字，若不存在，则从拼音的候选字列表中选择第一个
      */
-    public static PinyinWord getFirstBestPinyinWord(SQLiteDatabase db, String pinyinCharsId, int userPhraseBaseWeight) {
-        List<String> wordIds = getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, 1);
-        String wordId = CollectionUtils.first(wordIds);
+    public static PinyinWord getFirstBestPinyinWord(
+            SQLiteDatabase db, Integer pinyinCharsId, int userPhraseBaseWeight
+    ) {
+        List<Integer> wordIds = getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, 1);
+        Integer wordId = CollectionUtils.first(wordIds);
 
         Collection<PinyinWord> words;
         if (wordId != null) {
             words = getPinyinWordsByWordId(db, Set.of(wordId)).values();
         } else {
-            words = queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId }, 1);
+            words = queryPinyinWords(db, "py_.spell_chars_id_ = ?", new String[] { pinyinCharsId + "" }, 1);
         }
 
         return CollectionUtils.first(words);
@@ -214,8 +219,13 @@ public class PinyinDictDBHelper {
         return new Emojis(groups);
     }
 
-    /** 根据关键字的字 id 获取表情 */
-    public static List<EmojiWord> getEmojisByKeyword(SQLiteDatabase db, List<String[]> keywordIdsList, int top) {
+    /**
+     * 根据关键字的字 id 获取表情
+     *
+     * @param keywordIdsList
+     *         关键字的{@link PinyinWord#getGlyphId() 字形} id 列表
+     */
+    public static List<EmojiWord> getEmojisByKeyword(SQLiteDatabase db, List<Integer[]> keywordIdsList, int top) {
         // 直接查出全部表情，再对其做关键字过滤，以避免模糊查询存在性能问题
         List<KeywordEmoji> emojiWordList = querySQLite(db, new SQLiteQueryParams<KeywordEmoji>() {{
             this.table = "meta_emoji";
@@ -232,7 +242,7 @@ public class PinyinDictDBHelper {
         }});
 
         List<String> keywordList = keywordIdsList.stream()
-                                                 .map(ids -> String.join(",", ids))
+                                                 .map(ids -> CharUtils.join(",", (Object[]) ids))
                                                  .collect(Collectors.toList());
         return emojiWordList.stream().filter(emoji -> {
             for (String keyword : keywordList) {
@@ -250,7 +260,7 @@ public class PinyinDictDBHelper {
      * @param reverse
      *         是否反向更新，即，减掉对表情的使用权重
      */
-    public static void saveUsedEmojis(SQLiteDatabase db, Collection<String> emojiIds, boolean reverse) {
+    public static void saveUsedEmojis(SQLiteDatabase db, Collection<Integer> emojiIds, boolean reverse) {
         List<String[]> argsList = statsWeightArgsList(emojiIds);
 
         if (!reverse) {
@@ -341,21 +351,19 @@ public class PinyinDictDBHelper {
 
         if (reverse) {
             // 清理无用数据
-            execSQLite(db, new String[] {
-                    "delete from meta_latin where weight_user_ = 0",
-                    });
+            execSQLite(db, "delete from meta_latin where weight_user_ = 0");
         }
     }
 
     /** 获取指定汉字的字 id */
-    public static String getWordId(SQLiteDatabase db, String word) {
-        List<String> wordIdList = querySQLite(db, new SQLiteQueryParams<String>() {{
+    public static Integer getWordId(SQLiteDatabase db, String word) {
+        List<Integer> wordIdList = querySQLite(db, new SQLiteQueryParams<Integer>() {{
             this.table = "pinyin_word";
             this.columns = new String[] { "word_id_" };
             this.where = "word_ = ?";
             this.params = new String[] { word };
 
-            this.reader = (row) -> row.getString("word_id_");
+            this.reader = (row) -> row.getInt("word_id_");
         }});
 
         return CollectionUtils.first(wordIdList);
@@ -363,18 +371,18 @@ public class PinyinDictDBHelper {
 
     private static PinyinWord createPinyinWord(SQLiteRow row) {
         // 拼音字 id
-        String id = row.getString("id_");
+        Integer id = row.getInt("id_");
         // 字
         String value = row.getString("word_");
         // 字形 id
-        String glyphId = row.getString("word_id_");
+        Integer glyphId = row.getInt("word_id_");
 
         // 拼音 id
-        String spellId = row.getString("spell_id_");
+        Integer spellId = row.getInt("spell_id_");
         // 拼音
         String spellValue = row.getString("spell_");
         // 拼音字母组合 id
-        String spellCharsId = row.getString("spell_chars_id_");
+        Integer spellCharsId = row.getInt("spell_chars_id_");
         PinyinWord.Spell spell = new PinyinWord.Spell(spellValue, spellId, spellCharsId);
 
         boolean traditional = row.getInt("traditional_") > 0;
@@ -391,7 +399,7 @@ public class PinyinDictDBHelper {
     }
 
     private static EmojiWord createEmojiWord(SQLiteRow row) {
-        String id = row.getString("id_");
+        Integer id = row.getInt("id_");
         String value = row.getString("value_");
         int weight = row.getInt("weight_");
 
@@ -401,16 +409,16 @@ public class PinyinDictDBHelper {
         return word;
     }
 
-    /** 统计字符串列表中的字符串权重，并返回 SQLite 参数列表：<code>[[weight, str], [...], ...]</code> */
-    private static List<String[]> statsWeightArgsList(Collection<String> list) {
-        Map<String, Integer> argsMap = new HashMap<>(list.size());
-        list.forEach((str) -> {
-            argsMap.compute(str, (k, v) -> (v == null ? 0 : v) + 1);
+    /** 统计字符串列表中的字符串权重，并返回 SQLite 参数列表：<code>[[weight, source], [...], ...]</code> */
+    private static List<String[]> statsWeightArgsList(Collection<?> list) {
+        Map<Object, Integer> argsMap = new HashMap<>(list.size());
+        list.forEach((source) -> {
+            argsMap.compute(source, (k, v) -> (v == null ? 0 : v) + 1);
         });
 
         List<String[]> argsList = new ArrayList<>(argsMap.size());
-        argsMap.forEach((str, weight) -> {
-            argsList.add(new String[] { weight + "", str });
+        argsMap.forEach((source, weight) -> {
+            argsList.add(new String[] { weight + "", Objects.toString(source) });
         });
 
         return argsList;

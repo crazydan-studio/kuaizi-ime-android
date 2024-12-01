@@ -59,7 +59,7 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
                                 .filter((word) -> word instanceof PinyinWord)
                                 .map(InputWord::getSpell)
                                 .filter((spell) -> spell.id != null)
-                                .sorted(Comparator.comparingInt(a -> Integer.parseInt(a.id)))
+                                .sorted(Comparator.comparingInt(a -> a.id))
                                 .distinct()
                                 .collect(Collectors.toList());
     }

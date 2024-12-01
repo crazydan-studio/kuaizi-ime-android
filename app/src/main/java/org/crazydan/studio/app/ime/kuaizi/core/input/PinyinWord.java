@@ -31,19 +31,19 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
  */
 public class PinyinWord extends InputWord {
     /** 字形 id */
-    private final String glyphId;
+    private final Integer glyphId;
     /** 部首 */
     private final Radical radical;
     /** 是否繁体 */
     private final boolean traditional;
 
-    public PinyinWord(String id, String value, Spell spell) {
+    public PinyinWord(Integer id, String value, Spell spell) {
         this(id, value, spell, null, null, false);
     }
 
     public PinyinWord(
-            String id, String value, Spell spell, //
-            String glyphId, Radical radical, boolean traditional
+            Integer id, String value, Spell spell, //
+            Integer glyphId, Radical radical, boolean traditional
     ) {
         super(id, value, spell);
 
@@ -70,11 +70,11 @@ public class PinyinWord extends InputWord {
         return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
     }
 
-    public String getGlyphId() {
+    public Integer getGlyphId() {
         return this.glyphId;
     }
 
-    public String getCharsId() {
+    public Integer getCharsId() {
         return getSpell().charsId;
     }
 

@@ -387,8 +387,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     private Exercise exercise_Pinyin_Slipping_Inputting(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
-        InputWord expected_auto_word = new InputWord("kuai", "块", "kuài");
-        InputWord case_word = new InputWord("kuai", "筷", "kuài");
+        InputWord expected_auto_word = new InputWord(100, "块", "kuài");
+        InputWord case_word = new InputWord(101, "筷", "kuài");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 
         Key<?> key_level_0 = keyTable.level0CharKey("k");
@@ -421,8 +421,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     private Exercise exercise_Pinyin_Candidate_Filtering(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
-        InputWord expected_auto_word = new InputWord("shu", "术", "shù");
-        InputWord case_word = new InputWord("shu", "输", "shū");
+        InputWord expected_auto_word = new InputWord(100, "术", "shù");
+        InputWord case_word = new InputWord(101, "输", "shū");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 1);
 
         Key<?> key_level_0 = keyTable.level0CharKey("sh");
@@ -462,8 +462,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     private Exercise exercise_Pinyin_Committed_Processing(DynamicLayoutSandboxView sandboxView) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
-        InputWord expected_auto_word = new InputWord("shu", "自", "zì");
-        InputWord case_word = new InputWord("zi", "字", "zì");
+        InputWord expected_auto_word = new InputWord(100, "自", "zì");
+        InputWord case_word = new InputWord(101, "字", "zì");
         Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
 
         Key<?> key_level_0 = keyTable.level0CharKey("z");
@@ -828,19 +828,19 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 keyTable.alphabetKey("d"),
                 };
         Map<InputWord, Key<?>[]> pinyinWordsSample = new LinkedHashMap<>();
-        pinyinWordsSample.put(new InputWord("kuai", "筷", "kuài"), new Key[] {
+        pinyinWordsSample.put(new InputWord(100, "筷", "kuài"), new Key[] {
                 keyTable.level0CharKey("k"), keyTable.level1CharKey("u"), keyTable.level2CharKey("", "uai"),
                 });
-        pinyinWordsSample.put(new InputWord("zi", "字", "zì"), new Key[] {
+        pinyinWordsSample.put(new InputWord(101, "字", "zì"), new Key[] {
                 keyTable.level0CharKey("z"), keyTable.levelFinalCharKey("zi"),
                 });
-        pinyinWordsSample.put(new InputWord("shu", "输", "shū"), new Key[] {
+        pinyinWordsSample.put(new InputWord(102, "输", "shū"), new Key[] {
                 keyTable.level0CharKey("sh"), keyTable.levelFinalCharKey("shu"),
                 });
-        pinyinWordsSample.put(new InputWord("ru", "入", "rù"), new Key[] {
+        pinyinWordsSample.put(new InputWord(103, "入", "rù"), new Key[] {
                 keyTable.level0CharKey("r"), keyTable.levelFinalCharKey("ru"),
                 });
-        pinyinWordsSample.put(new InputWord("fa", "法", "fǎ"), new Key[] {
+        pinyinWordsSample.put(new InputWord(104, "法", "fǎ"), new Key[] {
                 keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 

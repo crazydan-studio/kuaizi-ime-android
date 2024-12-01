@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
  */
 public class EmojiWord extends InputWord {
 
-    public EmojiWord(String id, String value) {
+    public EmojiWord(Integer id, String value) {
         super(id, value);
     }
 }

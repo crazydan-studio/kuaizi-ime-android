@@ -58,7 +58,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.saveUsedLatins;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.closeSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.configSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.querySQLite;
 
@@ -98,7 +98,7 @@ public class PinyinDict {
     private SQLiteDatabase db;
 
     // <<<<<<<<<<<<< 缓存常量数据
-    private PinyinTree pinyinTree;
+    private PinyinCharsTree pinyinCharsTree;
     // >>>>>>>>>>>>>
 
     private PinyinDict() {
@@ -148,20 +148,20 @@ public class PinyinDict {
     }
 
     private boolean isInited() {
-        return Boolean.TRUE.equals(value(this.dbInited));
+        return Boolean.TRUE.equals(Async.value(this.dbInited));
     }
 
     private boolean isOpened() {
-        return Boolean.TRUE.equals(value(this.dbOpened));
+        return Boolean.TRUE.equals(Async.value(this.dbOpened));
     }
 
-    public PinyinTree getPinyinTree() {
-        return this.pinyinTree;
+    public PinyinCharsTree getPinyinCharsTree() {
+        return this.pinyinCharsTree;
     }
 
     /** 获取指定拼音的候选拼音字列表：已按权重等排序 */
-    public Map<String, InputWord> getCandidatePinyinWords(String pinyinChars) {
-        String pinyinCharsId = this.pinyinTree.getPinyinCharsId(pinyinChars);
+    public Map<Integer, InputWord> getCandidatePinyinWords(String pinyinChars) {
+        Integer pinyinCharsId = getPinyinCharsTree().getCharsId(pinyinChars);
 
         SQLiteDatabase db = getDB();
 
@@ -178,15 +178,15 @@ public class PinyinDict {
      * <p/>
      * 优先选择使用权重最高的，否则，选择候选字列表中的第一个
      */
-    public InputWord getFirstBestCandidatePinyinWord(String pinyinCharsId) {
+    public InputWord getFirstBestCandidatePinyinWord(Integer pinyinCharsId) {
         SQLiteDatabase db = getDB();
 
         return getFirstBestPinyinWord(db, pinyinCharsId, this.userPhraseBaseWeight);
     }
 
     /** 获取指定拼音的前 <code>top</code> 个高权重的候选拼音字 id */
-    public List<String> getTopBestCandidatePinyinWordIds(CharInput input, int top) {
-        String pinyinCharsId = this.pinyinTree.getPinyinCharsId(input);
+    public List<Integer> getTopBestCandidatePinyinWordIds(CharInput input, int top) {
+        Integer pinyinCharsId = getPinyinCharsTree().getCharsId(input);
 
         SQLiteDatabase db = getDB();
 
@@ -203,8 +203,8 @@ public class PinyinDict {
 
         Map<Integer, Integer> pinyinCharsPlaceholderMap = new HashMap<>(inputs.size());
 
-        List<String> pinyinCharsIdList = new ArrayList<>(inputs.size());
-        Map<Integer, String> confirmedPhraseWords = new HashMap<>(inputs.size());
+        List<Integer> pinyinCharsIdList = new ArrayList<>(inputs.size());
+        Map<Integer, Integer> confirmedPhraseWords = new HashMap<>(inputs.size());
         for (int i = 0; i < inputs.size(); i++) {
             CharInput input = inputs.get(i);
             // Note: 英文字符也可能组成有效拼音，故而，需仅针对拼音键盘的输入
@@ -213,7 +213,7 @@ public class PinyinDict {
             }
 
             String chars = input.getJoinedChars();
-            String charsId = getPinyinTree().getPinyinCharsId(chars);
+            Integer charsId = getPinyinCharsTree().getCharsId(chars);
             if (charsId == null) {
                 continue;
             }
@@ -228,27 +228,27 @@ public class PinyinDict {
         }
 
         SQLiteDatabase db = getDB();
-        List<String[]> phraseWordsList = predictPinyinPhrase(db,
-                                                             pinyinCharsIdList,
-                                                             confirmedPhraseWords,
-                                                             this.userPhraseBaseWeight,
-                                                             top);
+        List<Integer[]> phraseWordsList = predictPinyinPhrase(db,
+                                                              pinyinCharsIdList,
+                                                              confirmedPhraseWords,
+                                                              this.userPhraseBaseWeight,
+                                                              top);
         if (phraseWordsList.isEmpty()) {
             return List.of();
         }
 
-        Set<String> pinyinWordIds = new HashSet<>();
+        Set<Integer> pinyinWordIds = new HashSet<>();
         phraseWordsList.forEach(wordIds -> pinyinWordIds.addAll(List.of(wordIds)));
 
-        Map<String, PinyinWord> pinyinWordMap = getPinyinWordsByWordId(db, pinyinWordIds);
+        Map<Integer, PinyinWord> pinyinWordMap = getPinyinWordsByWordId(db, pinyinWordIds);
 
-        BiFunction<String[], Integer, InputWord> getWord = (wordIds, inputIndex) -> {
+        BiFunction<Integer[], Integer, InputWord> getWord = (wordIds, inputIndex) -> {
             Integer pinyinCharsIndex = pinyinCharsPlaceholderMap.get(inputIndex);
             if (pinyinCharsIndex == null) {
                 return null;
             }
 
-            String wordId = wordIds[pinyinCharsIndex];
+            Integer wordId = wordIds[pinyinCharsIndex];
             return pinyinWordMap.get(wordId);
         };
 
@@ -282,13 +282,13 @@ public class PinyinDict {
             return List.of();
         }
 
-        List<String> wordGlyphIdList = phraseWords.stream().map(PinyinWord::getGlyphId).collect(Collectors.toList());
+        List<Integer> wordGlyphIdList = phraseWords.stream().map(PinyinWord::getGlyphId).collect(Collectors.toList());
 
         int tries = 4;
         int total = wordGlyphIdList.size();
-        List<String[]> keywordIdsList = new ArrayList<>(tries);
+        List<Integer[]> keywordIdsList = new ArrayList<>(tries);
         for (int i = total - 1; i >= 0 && i >= total - tries; i--) {
-            String[] keywordIds = wordGlyphIdList.subList(i, total).toArray(new String[0]);
+            Integer[] keywordIds = wordGlyphIdList.subList(i, total).toArray(new Integer[0]);
             keywordIdsList.add(keywordIds);
         }
 
@@ -355,18 +355,6 @@ public class PinyinDict {
     }
 
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    private <T> T value(Future<T> f) {
-        return value(f, null);
-    }
-
-    private <T> T value(Future<T> f, T defaultVale) {
-        try {
-            return f != null ? f.get() : defaultVale;
-        } catch (Exception e) {
-            return defaultVale;
-        }
-    }
-
     public File getDBFile(Context context, PinyinDictDBType dbType) {
         return new File(context.getFilesDir(), dbType.fileName);
     }
@@ -401,29 +389,31 @@ public class PinyinDict {
         File userDBFile = getUserDBFile(context);
 
         this.db = openSQLite(userDBFile, false);
-        configSQLite(this.db);
+        execSQLite(this.db, /*"pragma cache_size = 200;",*/ "pragma temp_store = memory;");
 
         // 启用系统支持的可显示的表情
         enableAllPrintableEmojis(this.db);
 
-        Map<String, String> pinyinCharsAndIdMap = new HashMap<>(600);
-        querySQLite(this.db, new DBUtils.SQLiteQueryParams<Void>() {{
-            this.table = "meta_pinyin_chars";
-            this.columns = new String[] { "id_", "value_" };
+        if (this.pinyinCharsTree == null) {
+            Map<String, Integer> pinyinCharsAndIdMap = new HashMap<>(600);
+            querySQLite(this.db, new DBUtils.SQLiteQueryParams<Void>() {{
+                this.table = "meta_pinyin_chars";
+                this.columns = new String[] { "id_", "value_" };
 
-            this.voidReader = (row) -> {
-                pinyinCharsAndIdMap.put(row.getString("value_"), row.getString("id_"));
-            };
-        }});
+                this.voidReader = (row) -> {
+                    pinyinCharsAndIdMap.put(row.getString("value_"), row.getInt("id_"));
+                };
+            }});
 
-        this.pinyinTree = PinyinTree.create(pinyinCharsAndIdMap);
+            this.pinyinCharsTree = PinyinCharsTree.create(pinyinCharsAndIdMap);
+        }
     }
 
     private void doClose() {
         closeSQLite(this.db);
 
         this.db = null;
-        this.pinyinTree = null;
+        this.pinyinCharsTree = null;
     }
 
     private File getUserDBFile(Context context) {

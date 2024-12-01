@@ -20,7 +20,11 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import android.graphics.Paint;
 import android.os.Build;
@@ -92,5 +96,13 @@ public class CharUtils {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public static String join(String separator, Collection<?> list) {
+        return list.stream().map(Objects::toString).collect(Collectors.joining(separator));
+    }
+
+    public static String join(String separator, Object... array) {
+        return join(separator, Arrays.asList(array));
     }
 }

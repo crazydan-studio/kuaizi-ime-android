@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -26,4 +27,16 @@ import java.util.concurrent.Executors;
  */
 public class Async {
     public final static ExecutorService executor = Executors.newFixedThreadPool(5);
+
+    public static <T> T value(Future<T> f) {
+        return value(f, null);
+    }
+
+    public static <T> T value(Future<T> f, T defaultVale) {
+        try {
+            return f != null ? f.get() : defaultVale;
+        } catch (Exception e) {
+            return defaultVale;
+        }
+    }
 }
