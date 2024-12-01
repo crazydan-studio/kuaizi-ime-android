@@ -45,6 +45,7 @@ public class InputListView extends BaseInputListView implements InputMsgListener
         switch (msg) {
             case Keyboard_Config_Update_Done:
             case Keyboard_Switch_Done:
+            case Keyboard_Start_Done:
             case Keyboard_State_Change_Done:
             case InputChars_Input_Doing:
             case InputChars_Input_Done:
