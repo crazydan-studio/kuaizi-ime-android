@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView;
-import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 
 /**
  * {@link ExerciseListView} 数据适配器

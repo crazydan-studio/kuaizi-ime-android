@@ -67,7 +67,7 @@
                     android:textSize="@dimen/char_input_word_text_size" />
 
             <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
-            <org.crazydan.studio.app.ime.kuaizi.core.view.InputListView
+            <org.crazydan.studio.app.ime.kuaizi.keyboard.view.InputListView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/input_list"
@@ -113,7 +113,7 @@
             android:orientation="vertical"
             android:visibility="visible">
 
-        <org.crazydan.studio.app.ime.kuaizi.core.view.KeyboardView
+        <org.crazydan.studio.app.ime.kuaizi.keyboard.view.KeyboardView
                 android:id="@+id/keyboard"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/keyboard_view_height"

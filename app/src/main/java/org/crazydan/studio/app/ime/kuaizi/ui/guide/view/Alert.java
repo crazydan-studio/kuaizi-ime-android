@@ -27,8 +27,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.utils.ResourceUtils;
-import org.crazydan.studio.app.ime.kuaizi.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

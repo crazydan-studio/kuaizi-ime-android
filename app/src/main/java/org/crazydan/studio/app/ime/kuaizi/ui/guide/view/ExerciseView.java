@@ -23,14 +23,14 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
-import org.crazydan.studio.app.ime.kuaizi.widget.recycler.RecyclerViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link Exercise 练习题}视图
@@ -82,7 +82,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
         this.textView.onMsg(keyboard, msg, msgData);
 
         getData().onMsg(keyboard, msg, msgData);

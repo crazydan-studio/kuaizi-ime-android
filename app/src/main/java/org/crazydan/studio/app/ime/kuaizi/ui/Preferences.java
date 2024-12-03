@@ -39,11 +39,11 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
-import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
-import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
-import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
  * 输入法配置界面

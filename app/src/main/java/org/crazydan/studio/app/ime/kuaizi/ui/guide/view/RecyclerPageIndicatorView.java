@@ -26,7 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

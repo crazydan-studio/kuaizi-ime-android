@@ -23,15 +23,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.utils.CollectionUtils;
-import org.crazydan.studio.app.ime.kuaizi.utils.DBUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.execSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.utils.DBUtils.rawQuerySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

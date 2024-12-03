@@ -22,15 +22,16 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
+import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
-import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.ImeInputView;
-import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -80,7 +81,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             inputList.confirmPending();
         }
 
-        this.imeView.startInput(Keyboard.Type.Pinyin, false);
+        this.imeView.startInput(Keyboard.Subtype.Pinyin, false);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -104,13 +105,13 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             latinUsePinyinKeys.setEnabled(xPad.isChecked());
             adaptGesture.setEnabled(!xPad.isChecked());
 
-            Keyboard.Subtype subtype = SystemUtils.getImeSubtype(getContext());
+            ImeSubtype subtype = SystemUtils.getImeSubtype(getContext());
             PreferenceCategory xPadCategory = findPreference("preference_x_input_pad");
-            xPadCategory.setVisible(subtype == Keyboard.Subtype.hans);
+            xPadCategory.setVisible(subtype == ImeSubtype.hans);
 
             // 显示配置后的拉丁文键盘布局
             latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {
-                this.imeView.startInput(Keyboard.Type.Latin, false);
+                this.imeView.startInput(Keyboard.Subtype.Latin, false);
                 return true;
             });
         }

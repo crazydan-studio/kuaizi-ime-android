@@ -25,17 +25,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
-import org.crazydan.studio.app.ime.kuaizi.core.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CharKey;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.PinyinDictDBHelper.getPinyinWord;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getPinyinWord;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

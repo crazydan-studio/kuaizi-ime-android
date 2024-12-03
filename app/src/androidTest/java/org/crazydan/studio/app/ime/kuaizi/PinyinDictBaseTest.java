@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
-import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 

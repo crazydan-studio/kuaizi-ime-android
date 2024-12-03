@@ -24,17 +24,17 @@ import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import androidx.appcompat.widget.AppCompatEditText;
-import org.crazydan.studio.app.ime.kuaizi.core.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorEditDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListPairSymbolCommitDoingMsgData;
 
 /**
  * 用于筷字输入法使用练习的编辑框
@@ -56,7 +56,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, InputMsg msg, InputMsgData data) {
+    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData data) {
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;

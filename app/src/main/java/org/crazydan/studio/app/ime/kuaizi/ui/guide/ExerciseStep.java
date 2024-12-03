@@ -18,9 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.widget.recycler.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
