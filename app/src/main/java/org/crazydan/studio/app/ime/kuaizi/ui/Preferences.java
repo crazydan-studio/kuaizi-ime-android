@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Random;
-import java.util.UUID;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -42,7 +41,6 @@ import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
-import org.crazydan.studio.app.ime.kuaizi.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.utils.SystemUtils;
@@ -91,28 +89,26 @@ public class Preferences extends FollowSystemThemeActivity {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String pref_key = "user_feedback_with_extra_info_enabled";
         String extraInfoEnabledStr = preferences.getString(pref_key, null);
-        Boolean extraInfoEnabled = extraInfoEnabledStr != null ? Boolean.parseBoolean(extraInfoEnabledStr) : null;
+        boolean extraInfoEnabled = extraInfoEnabledStr != null && Boolean.parseBoolean(extraInfoEnabledStr);
 
         Point screenSize = ScreenUtils.getScreenSize();
         PackageInfo pkgInfo = SystemUtils.getPackageInfo(context);
-        String clientInfo = Build.MANUFACTURER
-                            + " "
-                            + Build.MODEL
-                            + " / Android "
-                            + Build.VERSION.RELEASE
-                            + " (API "
-                            + Build.VERSION.SDK_INT
-                            + ") / "
-                            + screenSize.x
-                            + "x"
-                            + screenSize.y;
-        String customInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
+        String clientInfo = String.format(Locale.getDefault(),
+                                          "%s %s / Android %s (API %s) / %dx%d",
+                                          Build.MANUFACTURER,
+                                          Build.MODEL,
+                                          Build.VERSION.RELEASE,
+                                          Build.VERSION.SDK_INT,
+                                          screenSize.x,
+                                          screenSize.y);
+        String appInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
 
-        if (extraInfoEnabled != null) {
-            String url = extraInfoEnabled
-                         ? Preferences.createFeedbackUrl(preferences, clientInfo, customInfo)
-                         : Preferences.createFeedbackUrl(preferences, null, null);
-            SystemUtils.openLink(context, url);
+        String feedbackUrl = extraInfoEnabled
+                             ? Preferences.createFeedbackUrl(preferences, clientInfo, appInfo)
+                             : Preferences.createFeedbackUrl(preferences, null, null);
+
+        if (extraInfoEnabledStr != null) {
+            SystemUtils.openLink(context, feedbackUrl);
             return;
         }
 
@@ -120,66 +116,30 @@ public class Preferences extends FollowSystemThemeActivity {
              .setView(R.layout.guide_alert_view)
              .setCancelable(true)
              .setTitle(R.string.title_tips)
-             .setRawMessage(R.raw.text_about_suggestion, clientInfo, customInfo)
+             .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
              .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
                  savePreference(preferences, pref_key, Boolean.FALSE.toString());
 
-                 String url = Preferences.createFeedbackUrl(preferences, null, null);
-                 SystemUtils.openLink(context, url);
+                 SystemUtils.openLink(context, feedbackUrl);
              })
              .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
                  savePreference(preferences, pref_key, Boolean.TRUE.toString());
 
-                 String url = Preferences.createFeedbackUrl(preferences, clientInfo, customInfo);
-                 SystemUtils.openLink(context, url);
+                 SystemUtils.openLink(context, feedbackUrl);
              })
              .show();
     }
 
-    private static String createFeedbackUrl(SharedPreferences preferences, String clientInfo, String customInfo) {
-        String pref_key = "user_feedback_info";
-        String user_info = preferences.getString(pref_key, null);
+    private static String createFeedbackUrl(SharedPreferences preferences, String clientInfo, String appInfo) {
+        String title = Uri.encode("[Android] ");
+        String body = clientInfo != null && appInfo != null
+                      //
+                      ? Uri.encode(String.format("系统信息：%s\n" + "应用信息：%s\n" + "---\n\n", clientInfo, appInfo))
+                      : "";
 
-        String openid;
-        String nickname;
-        String avatar;
-        if (user_info == null) {
-            int millis = (int) (System.currentTimeMillis() % 10000);
-            int uid = millis + random.nextInt(10000) * random.nextInt(1000) + random.nextInt(100) * random.nextInt(10);
-
-            openid = UUID.randomUUID().toString();
-            nickname = "筷友" + String.format(Locale.getDefault(), "%06d", uid).substring(0, 6);
-            avatar = "https://api.multiavatar.com/kuaizi_" + uid + ".png";
-
-            user_info = String.format("%s,%s,%s", openid, nickname, avatar);
-
-            savePreference(preferences, pref_key, user_info);
-        } else {
-            String[] splits = user_info.split(",");
-            openid = splits[0];
-            nickname = splits[1];
-            avatar = splits[2];
-        }
-
-        String url = "https://txc.qq.com/products/613302";
-        String user_signature = CharUtils.md5(openid + nickname + avatar + "bqMO5230");
-
-        if (clientInfo != null && customInfo != null) {
-            return String.format("%s?openid=%s&nickname=%s&avatar=%s&user_signature=%s&clientInfo=%s&customInfo=%s",
-                                 url,
-                                 Uri.encode(openid),
-                                 Uri.encode(nickname),
-                                 Uri.encode(avatar),
-                                 Uri.encode(user_signature),
-                                 Uri.encode(clientInfo),
-                                 Uri.encode(customInfo));
-        }
-        return String.format("%s?openid=%s&nickname=%s&avatar=%s&user_signature=%s",
-                             url,
-                             Uri.encode(openid),
-                             Uri.encode(nickname),
-                             Uri.encode(avatar),
-                             Uri.encode(user_signature));
+        // Note: 可用的 label 需提前建好
+        return "https://github.com/crazydan-studio/kuaizi-ime/issues/new" //
+               + "?labels=android,feedback&title=" + title + "&body=" + body;
     }
 
     private static void savePreference(SharedPreferences preferences, String key, String value) {
