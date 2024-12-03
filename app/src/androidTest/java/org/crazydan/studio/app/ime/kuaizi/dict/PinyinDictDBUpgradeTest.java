@@ -59,19 +59,26 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
         SQLiteDatabase db = dict.getDB();
 
         String[] clauses = new String[] {
+                // 准备测试表
                 "create table" //
                 + " tmp_meta_emoji_1 (" //
                 + "   id_ integer not null primary key," //
                 + "   weight_user_ integer not null" //
                 + " )",
-                //
                 "create table" //
                 + " tmp_meta_emoji_2 (" //
                 + "   id_ integer not null primary key," //
                 + "   weight_ integer not null" //
                 + " )",
+                // ====================================
                 // 待测试 SQL
-                // Note: SQLite 3.33.0 版本才支持 update-from
+                // 基本都支持 insert-select
+                "insert into tmp_meta_emoji_1"
+                + "   (id_, weight_user_)"
+                + " select"
+                + "   user_.id_, user_.weight_"
+                + " from tmp_meta_emoji_2 user_",
+                // Note: SQLite 3.33.0 版本才支持 update-from，只能采用子查询方式
                 // https://www.sqlite.org/lang_update.html#upfrom
                 "update tmp_meta_emoji_1 as emoji_"
                 + "   set weight_user_ = user_.weight_"
@@ -83,17 +90,15 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
                 + "   from tmp_meta_emoji_2 user_"
                 + "   where user_.id_ = tmp_meta_emoji_1.id_"
                 + " ), weight_user_)",
-                //
-                "insert into tmp_meta_emoji_1"
-                + "   (id_, weight_user_)"
-                + " select"
-                + "   user_.id_, user_.weight_"
-                + " from tmp_meta_emoji_2 user_",
-                //
-                "select * from tmp_meta_emoji_1" //
-                + " where (id_, weight_user_) = (1, 2)",
+                // Note: 低版本不支持 where (a, b) in ((1, 2), (3, 4), ...) 形式，只能采用 or 形式
                 "select * from tmp_meta_emoji_1" //
                 + " where (id_, weight_user_) in ((1, 2), (3, 4))",
+                "select * from tmp_meta_emoji_1" //
+                + " where (id_, weight_user_) = (1, 2) or (id_, weight_user_) = (3, 4)",
+                // Note: SQLite 3.44.0 版本才支持 concat 函数，低版本需采用 || 替代
+                // https://sqlite.org/releaselog/3_44_0.html
+                "select concat(id_, ':', weight_user_) from tmp_meta_emoji_1",
+                "select id_ || ':' || weight_user_ from tmp_meta_emoji_1",
                 };
 
         for (String clause : clauses) {

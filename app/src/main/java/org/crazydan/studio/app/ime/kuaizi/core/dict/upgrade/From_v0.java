@@ -205,12 +205,6 @@ public class From_v0 {
                 this.appPhrase = appPhraseDBFile;
             }});
 
-            // TODO 待删除 - 测试备份
-            File userDBBakFile = new File(userDBFile.getParentFile(), userDBFile.getName() + ".bak");
-            if (!userDBBakFile.exists()) {
-                FileUtils.moveFile(userDBFile, userDBBakFile);
-            }
-
             // 迁移库就地转换为用户库
             FileUtils.moveFile(transferDBFile, userDBFile);
         } catch (Exception e) {

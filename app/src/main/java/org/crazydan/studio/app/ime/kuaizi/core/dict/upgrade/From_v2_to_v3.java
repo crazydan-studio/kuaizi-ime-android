@@ -25,6 +25,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.core.dict.hmm.Hmm;
+import org.crazydan.studio.app.ime.kuaizi.utils.FileUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.db.HmmDBHelper.saveHmm;
 import static org.crazydan.studio.app.ime.kuaizi.core.dict.upgrade.From_v0.doWithTransferDB;
@@ -47,6 +48,12 @@ public class From_v2_to_v3 {
             try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
                 doUpgrade(transferDB, dbFiles.user, dbFiles.appPhrase);
                 vacuumSQLite(transferDB);
+
+                // 清理无用文件
+                for (String name : new String[] { "pinyin_app_dict.db", "pinyin_app_dict.db.hash" }) {
+                    File file = new File(dbFiles.user.getParentFile(), name);
+                    FileUtils.deleteFile(file);
+                }
             }
         });
     }
@@ -164,9 +171,11 @@ public class From_v2_to_v3 {
         // 组合后的 target_id_ 与短语字的顺序是一致的
         querySQLite(targetDB, new SQLiteQueryParams<Void>() {{
             this.table = "user.used_pinyin_phrase";
+            // Note: SQLite 3.44.0 版本才支持 concat 函数，低版本需采用 || 替代
+            // https://sqlite.org/releaselog/3_44_0.html
             this.columns = new String[] {
-                    "group_concat("  //
-                    + "  concat(target_id_, ':', target_spell_chars_id_)"  //
+                    "group_concat(" //
+                    + "target_id_ || ':' || target_spell_chars_id_" //
                     + ", ',') as target_ids_", //
                     "weight_"
             };

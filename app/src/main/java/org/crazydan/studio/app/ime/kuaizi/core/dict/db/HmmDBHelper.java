@@ -151,13 +151,15 @@ public class HmmDBHelper {
 
     /**
      * 更新 {@link Hmm} 数据
+     * <p/>
+     * 注意，{@link Hmm} 中的字数据应该为<code>'拼音字 id' + ':' + '拼音字母组合 id'</code>
      *
      * @param reverse
      *         是否反向更新，即，减掉 HMM 数据
      */
     public static void saveHmm(SQLiteDatabase db, Hmm hmm, boolean reverse) {
         // =============================================================================
-        // @return ['word id', 'spell chars id']
+        // @return ['word_id_', 'spell_chars_id_']
         Function<String, String[]> extractWordIds = (s) -> s.split(":");
 
         Function<Boolean, List<String[]>> phraseWordDataGetter = //
@@ -189,7 +191,7 @@ public class HmmDBHelper {
                 this.insertSql = "insert into phrase_word ("
                                  + "   weight_app_, weight_user_,"
                                  + "   word_id_, spell_chars_id_"
-                                 + " ) values(0, ?, ?, ?)";
+                                 + " ) values (0, ?, ?, ?)";
 
                 this.insertParamsList = phraseWordDataGetter.apply(false);
                 this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 2);
@@ -257,7 +259,7 @@ public class HmmDBHelper {
                                  + "   value_app_, value_user_,"
                                  + "   word_id_, prev_word_id_,"
                                  + "   word_spell_chars_id_, prev_word_spell_chars_id_"
-                                 + " ) values(0, ?, ?, ?, ?, ?)";
+                                 + " ) values (0, ?, ?, ?, ?, ?)";
 
                 this.insertParamsList = phraseTransProbDataGetter.apply(false);
                 this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 3);
