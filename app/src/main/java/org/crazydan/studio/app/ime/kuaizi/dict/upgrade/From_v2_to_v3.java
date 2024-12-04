@@ -23,17 +23,17 @@ import java.util.Map;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper;
-import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Hmm;
 
-import static org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0.doWithTransferDB;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteQueryParams;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveHmm;
+import static org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0.doWithTransferDB;
 
 /**
  * 从 v2 版本升级到 v3 版本
@@ -46,7 +46,10 @@ public class From_v2_to_v3 {
     public static void upgrade(Context context, PinyinDict dict) {
         doWithTransferDB(context, dict, (dbFiles) -> {
             try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
-                doUpgrade(transferDB, dbFiles.user, dbFiles.appPhrase);
+                // 初始化 v0 版本
+                From_v0.doUpgrade(transferDB, dbFiles.appPhrase);
+
+                doUpgrade(transferDB, dbFiles.user);
                 vacuumSQLite(transferDB);
 
                 // 清理无用文件
@@ -58,7 +61,7 @@ public class From_v2_to_v3 {
         });
     }
 
-    private static void doUpgrade(SQLiteDatabase targetDB, File userDBFile, File appPhraseDBFile) {
+    private static void doUpgrade(SQLiteDatabase targetDB, File v2UserDBFile) {
         // v2 版本内建表结构
         /*
         CREATE TABLE
@@ -135,22 +138,22 @@ public class From_v2_to_v3 {
             );
         */
 
-        From_v0.doUpgrade(targetDB, appPhraseDBFile);
-
         // <<<<<<<<<<<<<<<<<<< 迁移现有的用户数据
+        File v2AppDBFile = new File(v2UserDBFile.getParentFile(), "pinyin_app_dict.db");
         String[] clauses = new String[] {
-                "attach database '" + userDBFile.getAbsolutePath() + "' as user",
+                "attach database '" + v2AppDBFile.getAbsolutePath() + "' as v2_app",
+                "attach database '" + v2UserDBFile.getAbsolutePath() + "' as v2_user",
                 // <<<<<<<<<<<<<<< 迁移现有数据
                 // Note: SQLite 3.33.0 版本才支持 update-from
                 // https://www.sqlite.org/lang_update.html#upfrom
 //                "update meta_emoji as emoji_"
 //                + "   set weight_user_ = user_.weight_"
-//                + " from user.used_emoji user_"
+//                + " from v2_user.used_emoji user_"
 //                + " where user_.id_ = emoji_.id_",
                 "update meta_emoji"
                 + " set weight_user_ = ifnull(("
                 + "   select weight_"
-                + "   from user.used_emoji user_"
+                + "   from v2_user.used_emoji user_"
                 + "   where user_.id_ = meta_emoji.id_"
                 + " ), weight_user_)",
                 //
@@ -158,29 +161,34 @@ public class From_v2_to_v3 {
                 + "   (id_, value_, weight_user_)"
                 + " select"
                 + "   user_.id_, user_.value_, user_.weight_"
-                + " from user.used_latin user_",
+                + " from v2_user.used_latin user_",
                 // >>>>>>>>>>>>>>>
         };
         execSQLite(targetDB, clauses);
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         // <<<<<<<<<<<<< 获取用户输入短语出现次数
+        // 新旧字典可能存在拼音、拼音字母组合、字的 id 不一致的问题，故而，需以 字+拼音 做关联查询
         // {'<字 id>:<字读音字母组合 id>,...': 10, ...}
         Map<String, Integer> usedPhraseCountMap = new HashMap<>();
         // Note：视图 used_pinyin_phrase 已默认按 target_index_ 升序排序，
         // 组合后的 target_id_ 与短语字的顺序是一致的
-        querySQLite(targetDB, new SQLiteQueryParams<Void>() {{
-            this.table = "user.used_pinyin_phrase";
+        rawQuerySQLite(targetDB, new SQLiteRawQueryParams<Void>() {{
             // Note: SQLite 3.44.0 版本才支持 concat 函数，低版本需采用 || 替代
             // https://sqlite.org/releaselog/3_44_0.html
-            this.columns = new String[] {
-                    "group_concat(" //
-                    + "target_id_ || ':' || target_spell_chars_id_" //
-                    + ", ',') as target_ids_", //
-                    "weight_"
-            };
-            this.groupBy = "source_id_";
-            this.having = "weight_ > 0";
+            this.sql = "select distinct"
+                       + "   group_concat("
+                       + "     pw_.id_ || ':' || pw_.spell_chars_id_, ','"
+                       + "   ) as target_ids_,"
+                       + "   ph2_.weight_"
+                       + " from"
+                       + "   v2_user.used_pinyin_phrase as ph2_"
+                       + "   inner join v2_app.pinyin_word as pw2_"
+                       + "     on pw2_.id_ = ph2_.target_id_"
+                       + "   inner join pinyin_word pw_"
+                       + "     on pw_.word_ = pw2_.word_ and pw_.spell_ = pw2_.spell_"
+                       + " group by ph2_.source_id_"
+                       + "   having ph2_.weight_ > 0";
 
             this.voidReader = (row) -> {
                 String phraseWords = row.getString("target_ids_");
@@ -193,7 +201,7 @@ public class From_v2_to_v3 {
 
         // <<<<<<<<<<<<<<<<<<<<<<<<< 更新用户输入短语权重
         Hmm hmm = Hmm.calcTransProb(usedPhraseCountMap);
-        HmmDBHelper.saveHmm(targetDB, hmm, false);
+        saveHmm(targetDB, hmm, false);
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     }
 }

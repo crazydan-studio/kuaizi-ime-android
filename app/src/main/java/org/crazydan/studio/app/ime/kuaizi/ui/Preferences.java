@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.Locale;
-import java.util.Random;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -39,11 +38,11 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 
 /**
  * 输入法配置界面
@@ -55,7 +54,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
  * @date 2023-08-06
  */
 public class Preferences extends FollowSystemThemeActivity {
-    private static final Random random = new Random();
 
     public static void backupUserData(Activity context) {
         String fileName = "kuaizi_user_data_backup.db";
