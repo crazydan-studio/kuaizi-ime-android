@@ -43,9 +43,9 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.CandidatePinyinWord
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.InputCharsFlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.InputCharsSlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
@@ -64,7 +64,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
  */
 public class PinyinKeyboard extends BaseKeyboard {
 
-    public PinyinKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
+    public PinyinKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
 
     @Override
     public Keyboard.Subtype getType() {
@@ -206,7 +206,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
         if (try_OnUserKeyMsg(msg, data) //
             // Note：被禁用的部分按键也需要接受处理
@@ -926,15 +926,15 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void fire_InputCandidate_Choose_Doing(CharInput input) {
-        InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+        KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fire_InputMsg(InputMsg.InputCandidate_Choose_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputCandidate_Choose_Doing, data);
     }
 
     private void fire_InputCandidate_Choose_Done(CharInput input) {
-        InputMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+        KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fire_InputMsg(InputMsg.InputCandidate_Choose_Done, data);
+        fire_InputMsg(KeyboardMsg.InputCandidate_Choose_Done, data);
     }
 
     private void confirm_Selected_InputCandidate(InputList inputList) {

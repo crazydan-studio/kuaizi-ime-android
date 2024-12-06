@@ -57,5 +57,5 @@ public interface SubKeyboard extends UserInputMsgListener {
     void destroy();
 
     /** 处理{@link UserKeyMsg 按键消息} */
-    void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data);
+    void onMsg(UserKeyMsg msg, UserKeyMsgData data);
 }

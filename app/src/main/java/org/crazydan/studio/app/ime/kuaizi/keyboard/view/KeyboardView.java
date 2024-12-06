@@ -26,43 +26,46 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.view.key.KeyViewGestureListener;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
+import org.crazydan.studio.app.ime.kuaizi.ImeView;
 
 /**
  * {@link SubKeyboard 键盘}视图
  * <p/>
  * 负责显示各类键盘的按键布局，并提供事件监听等处理
  * <p/>
- * 注：在 {@link org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView ImeInputView}
- * 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link ImeView ImeInputView}
+ * 中统一分发 {@link KeyboardMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener, InputMsgListener {
+public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener, KeyboardMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
 
+    private UserKeyMsgListener listener;
+
     private Supplier<Configuration> configGetter;
-    private Supplier<SubKeyboard> keyboardGetter;
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -87,12 +90,8 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    public SubKeyboard getKeyboard() {
-        return this.keyboardGetter.get();
-    }
-
-    public void setKeyboard(Supplier<SubKeyboard> getter) {
-        this.keyboardGetter = getter;
+    public void setListener(UserKeyMsgListener listener) {
+        this.listener = listener;
     }
 
     public Configuration getConfig() {
@@ -112,8 +111,6 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
     /** 响应按键点击、双击等消息 */
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        SubKeyboard keyboard = getKeyboard();
-
         switch (msg) {
             case FingerMovingStart: {
                 // 对光标移动和文本选择按键启用轨迹
@@ -135,11 +132,11 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
             }
         }
 
-        keyboard.onUserKeyMsg(msg, data);
+        this.listener.onMsg(msg, data);
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         KeyFactory keyFactory = msgData.getKeyFactory();
         Configuration config = getConfig();
 

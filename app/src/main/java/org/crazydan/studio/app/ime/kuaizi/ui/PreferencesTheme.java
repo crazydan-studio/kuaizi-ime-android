@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.ImeView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
  * @date 2023-10-15
  */
 public class PreferencesTheme extends FollowSystemThemeActivity {
-    private ImeInputView imeView;
+    private ImeView imeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +85,9 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private final ImeInputView imeView;
+        private final ImeView imeView;
 
-        public SettingsFragment(ImeInputView imeView) {this.imeView = imeView;}
+        public SettingsFragment(ImeView imeView) {this.imeView = imeView;}
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

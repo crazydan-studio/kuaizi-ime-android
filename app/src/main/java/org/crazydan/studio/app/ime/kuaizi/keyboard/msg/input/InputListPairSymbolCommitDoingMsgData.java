@@ -18,10 +18,10 @@
 package org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
 
 /**
- * {@link InputMsg#InputList_PairSymbol_Commit_Doing} 消息数据
+ * {@link KeyboardMsg#InputList_PairSymbol_Commit_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29

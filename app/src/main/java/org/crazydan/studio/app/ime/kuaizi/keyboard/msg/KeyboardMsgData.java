@@ -17,15 +17,20 @@
 
 package org.crazydan.studio.app.ime.kuaizi.keyboard.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
 
 /**
- * {@link InputMsg} 监听
+ * {@link KeyboardMsg} 携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public interface InputMsgListener {
+public interface KeyboardMsgData {
 
-    void onMsg(SubKeyboard sender, InputMsg msg, InputMsgData msgData);
+    /** 获取按键生成器，以便于重新布局按键 */
+    KeyFactory getKeyFactory();
+
+    /** 触发按键 */
+    Key<?> getKey();
 }

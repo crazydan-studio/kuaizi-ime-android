@@ -57,9 +57,9 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.EditorEditKeyTab
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListCommitDoingMsgData;
@@ -69,7 +69,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
-import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.ImeView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
@@ -78,11 +78,11 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgListener {
+public class ExerciseMain extends FollowSystemThemeActivity implements KeyboardMsgListener {
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
-    private ImeInputView imeView;
+    private ImeView imeView;
     private ExerciseListView exerciseListView;
 
     @Override
@@ -250,7 +250,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         ExerciseView exerciseView = this.exerciseListView.getActiveExerciseView();
         exerciseView.onMsg(keyboard, msg, msgData);
     }
@@ -495,7 +495,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请<span style=\"color:#ed4c67;\">长按</span>输入提交按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_commit) //
                          + "\"/>以进入<b>输入提交选项</b>模式；", (msg, data) -> {
-            if (msg == InputMsg.Keyboard_State_Change_Done) {
+            if (msg == KeyboardMsg.Keyboard_State_Change_Done) {
                 Key<?> key = data.getKey();
 
                 if (key != null && key.equals(key_ctrl_commit)) {
@@ -509,7 +509,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_commit_opt_with_pinyin)
                          + "\"/>以设置待提交的输入需携带拼音。"
                          + "<b>注</b>：可多次点击做形式切换；", (msg, data) -> {
-            if (msg == InputMsg.InputChars_Input_Done) {
+            if (msg == KeyboardMsg.InputChars_Input_Done) {
                 Key<?> key = data.getKey();
 
                 if (key != null && key.equals(key_ctrl_commit_opt_with_pinyin)) {
@@ -522,14 +522,14 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_commit)
                          + "\"/>将当前形式的输入提交至目标编辑器。"
                          + "<b>注</b>：长按该按键可退出<b>输入提交选项</b>模式；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
+            if (msg == KeyboardMsg.InputList_Commit_Doing) {
                 exercise.gotoNextStep();
             }
         });
         exercise.addStep("请点击按键<img src=\""
                          + sandboxView.withKey(key_ctrl_commit_revoke)
                          + "\"/>将刚刚提交的输入撤回；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Committed_Revoke_Doing) {
+            if (msg == KeyboardMsg.InputList_Committed_Revoke_Doing) {
                 exercise.gotoNextStep();
             } else {
                 warning("请按当前步骤的指导要求撤回输入内容");
@@ -556,7 +556,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请使用手指在光标定位按键<img src=\""
                          + sandboxView.withKey(key_ctrl_cursor_locator)
                          + "\"/>上向不同方向快速滑动，并观察目标编辑器中光标位置的变化；", (msg, data) -> {
-            if (msg == InputMsg.Editor_Cursor_Move_Doing) {
+            if (msg == KeyboardMsg.Editor_Cursor_Move_Doing) {
                 Key<?> key = data.getKey();
 
                 if (key.equals(key_ctrl_cursor_locator)) {
@@ -569,7 +569,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请<span style=\"color:#ed4c67;\">长按或双击</span>光标定位按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_cursor_locator) //
                          + "\"/>以进入<b>内容编辑</b>模式；", (msg, data) -> {
-            if (msg == InputMsg.Keyboard_State_Change_Done) {
+            if (msg == KeyboardMsg.Keyboard_State_Change_Done) {
                 Key<?> key = data.getKey();
 
                 if (key != null && key.equals(key_ctrl_cursor_locator)) {
@@ -583,7 +583,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请在内容选择按键<img src=\""
                          + sandboxView.withKey(key_ctrl_range_selector)
                          + "\"/>上快速滑动，并观察目标编辑器中内容的选择状态；", (msg, data) -> {
-            if (msg == InputMsg.Editor_Range_Select_Doing) {
+            if (msg == KeyboardMsg.Editor_Range_Select_Doing) {
                 Key<?> key = data.getKey();
 
                 if (key.equals(key_ctrl_range_selector)) {
@@ -597,14 +597,14 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_edit_paste)
                          + "\"/>等按键，"
                          + "并观察复制、粘贴、剪切、撤销和重做等操作的结果；", (msg, data) -> {
-            if (msg == InputMsg.Editor_Edit_Doing) {
+            if (msg == KeyboardMsg.Editor_Edit_Doing) {
                 exercise.gotoNextStep();
             }
         });
 
         exercise.addStep("请点击退出按键<img src=\"" + sandboxView.withKey(key_ctrl_exit) + "\"/>以切换回原键盘；",
                          (msg, data) -> {
-                             if (msg == InputMsg.Keyboard_State_Change_Done) {
+                             if (msg == KeyboardMsg.Keyboard_State_Change_Done) {
                                  exercise.gotoNextStep();
                              }
                          });
@@ -632,7 +632,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
             if (ch == ' ') {
                 exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_space) + "\"/>以输入空格；",
                                  (msg, data) -> {
-                                     if (msg == InputMsg.InputChars_Input_Done) {
+                                     if (msg == KeyboardMsg.InputChars_Input_Done) {
                                          Key<?> key = data.getKey();
 
                                          if (key.getText().equals(key_ctrl_space.getText())) {
@@ -653,7 +653,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  + "\"/>以输入大写字母 <span style=\"color:#ed4c67;\">"
                                  + ch
                                  + "</span>；", (msg, data) -> {
-                    if (msg == InputMsg.InputChars_Input_Doing) {
+                    if (msg == KeyboardMsg.InputChars_Input_Doing) {
                         Key<?> key = data.getKey();
 
                         if (((InputCharsInputtingMsgData) data).keyInputType
@@ -674,7 +674,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  + "\"/>以输入小写字母 <span style=\"color:#ed4c67;\">"
                                  + ch
                                  + "</span>；", (msg, data) -> {
-                    if (msg == InputMsg.InputChars_Input_Doing) {
+                    if (msg == KeyboardMsg.InputChars_Input_Doing) {
                         Key<?> key = data.getKey();
 
                         if (((InputCharsInputtingMsgData) data).keyInputType
@@ -696,7 +696,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          //
                          + sandboxView.withKey(key_symbol_tanhao)
                          + "\"/>以输入英文标点 <span style=\"color:#ed4c67;\">!</span>；", (msg, data) -> {
-            if (msg == InputMsg.InputChars_Input_Doing) {
+            if (msg == KeyboardMsg.InputChars_Input_Doing) {
                 Key<?> key = data.getKey();
 
                 if (((InputCharsInputtingMsgData) data).keyInputType != InputCharsInputtingMsgData.KeyInputType.tap //
@@ -706,7 +706,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 } else if (key.getText().equals("!")) {
                     exercise.gotoNextStep();
                 }
-            } else if (msg != InputMsg.InputChars_Input_Done) {
+            } else if (msg != KeyboardMsg.InputChars_Input_Done) {
                 warning("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">!</span>");
             }
         });
@@ -730,7 +730,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + "对于无效的计算式，则将保持原样输出；");
         exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_switch_math) + "\"/>以切换到算术键盘；",
                          (msg, data) -> {
-                             if (msg == InputMsg.Keyboard_Switch_Done) {
+                             if (msg == KeyboardMsg.Keyboard_Switch_Done) {
                                  Keyboard.Subtype type = ((KeyboardSwitchingMsgData) data).target;
 
                                  if (type == Keyboard.Subtype.Math) {
@@ -758,7 +758,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  + "\"/>以输入数字 <span style=\"color:#ed4c67;\">"
                                  + key_number.getText()
                                  + "</span>；", (msg, data) -> {
-                    if (msg == InputMsg.InputChars_Input_Doing) {
+                    if (msg == KeyboardMsg.InputChars_Input_Doing) {
                         Key<?> key = data.getKey();
 
                         if (key.getText().equals(key_number.getText())) {
@@ -777,7 +777,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  + "\"/>以输入运算符 <span style=\"color:#ed4c67;\">"
                                  + key_op.getText()
                                  + "</span>；", (msg, data) -> {
-                    if (msg == InputMsg.InputChars_Input_Doing) {
+                    if (msg == KeyboardMsg.InputChars_Input_Doing) {
                         Key<?> key = data.getKey();
 
                         if (key.getText().equals(key_op.getText())) {
@@ -795,7 +795,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_commit)
                          + "\"/>将当前输入提交至目标编辑器，"
                          + "并观察输入的计算式中是否包含最终的运算结果；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
+            if (msg == KeyboardMsg.InputList_Commit_Doing) {
                 exercise.gotoNextStep();
             } else {
                 warning("请按当前步骤的指导要求提交输入内容");
@@ -863,7 +863,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请点击回车按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_enter) //
                          + "\"/>以开始英文输入演示动画；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
+            if (msg == KeyboardMsg.InputList_Commit_Doing) {
                 if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
                     exercise.gotoNextStep();
                     return;
@@ -902,9 +902,9 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  }
 
                                  @Override
-                                 public void onInputMsg(InputMsg msg, InputMsgData data) {
+                                 public void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {
                                      // 若演示因手指释放而提前终止，则重新开始演示
-                                     if (msg == InputMsg.Keyboard_XPad_Simulation_Terminated) {
+                                     if (msg == KeyboardMsg.Keyboard_XPad_Simulation_Terminated) {
                                          restart.run();
                                      }
                                  }
@@ -954,7 +954,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请<span style=\"color:#ed4c67;\">释放手指</span>，并点击空格按键<img src=\"" //
                          + sandboxView.withKey(key_ctrl_space) //
                          + "\"/>以开始拼音输入的演示动画；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
+            if (msg == KeyboardMsg.InputList_Commit_Doing) {
                 if (key_ctrl_space.getText().contentEquals(((InputListCommitDoingMsgData) data).text)) {
                     exercise.gotoNextStep();
                     return;
@@ -1010,9 +1010,9 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                      }
 
                                      @Override
-                                     public void onInputMsg(InputMsg msg, InputMsgData data) {
+                                     public void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {
                                          // 若演示因手指释放而提前终止，则重新开始演示
-                                         if (msg == InputMsg.Keyboard_XPad_Simulation_Terminated) {
+                                         if (msg == KeyboardMsg.Keyboard_XPad_Simulation_Terminated) {
                                              restart.run();
                                          }
                                      }
@@ -1030,7 +1030,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                           ? "<img src=\"" + sandboxView.withKey(key) + "\"/>" //
                                           : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ") //
                                        + "。完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；";
-                exercise.addStep(stepContent, (InputMsg msg, InputMsgData data) -> {
+                exercise.addStep(stepContent, (KeyboardMsg msg, KeyboardMsgData data) -> {
                     switch (msg) {
                         case InputChars_Input_Doing: {
                             if (key.getText().equals(data.getKey().getText())) {
@@ -1103,7 +1103,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_level_0)
                          + "\"/>上，并让手指贴着屏幕从该按键上滑出；",
                          (msg, data) -> {
-                             if (msg == InputMsg.InputChars_Input_Doing) {
+                             if (msg == KeyboardMsg.InputChars_Input_Doing) {
                                  Key<?> key = data.getKey();
 
                                  if (((InputCharsInputtingMsgData) data).keyInputType
@@ -1118,7 +1118,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                              + " <span style=\"color:#ed4c67;\">%s</span>"
                                              + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
                                  }
-                             } else if (msg != InputMsg.Keyboard_State_Change_Done) {
+                             } else if (msg != KeyboardMsg.Keyboard_State_Change_Done) {
                                  warning("请按当前步骤的指导要求输入拼音");
                              }
                          });
@@ -1160,7 +1160,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                              + sandboxView.withKey(key_level_1)
                              + "\"/>上，再从该按键上滑出；",
                              (msg, data) -> {
-                                 if (msg == InputMsg.InputChars_Input_Doing) {
+                                 if (msg == KeyboardMsg.InputChars_Input_Doing) {
                                      Key<?> key = data.getKey();
 
                                      if (key.getLabel().equals(key_level_1.getLabel())) {
@@ -1215,7 +1215,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + expected_auto_word.getValue()
                          + "</span>；",
                          (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Doing) {
+                             if (msg == KeyboardMsg.InputCandidate_Choose_Doing) {
                                  CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                  InputWord word = input.getWord();
 
@@ -1235,7 +1235,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                            + sandboxView.withKey(key_case_word)
                            + "\"/>。<b>注</b>：可在该区域中上下翻页；",
                          (msg, data) -> {
-                             if (msg == InputMsg.InputCandidate_Choose_Done) {
+                             if (msg == KeyboardMsg.InputCandidate_Choose_Done) {
                                  CharInput input = ((InputCandidateChoosingMsgData) data).target;
                                  InputWord word = input.getWord();
 
@@ -1247,7 +1247,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                              expected_auto_word.getValue());
                                      exercise.gotoStep("select_auto_word");
                                  }
-                             } else if (msg != InputMsg.InputCandidate_Choose_Doing) {
+                             } else if (msg != KeyboardMsg.InputCandidate_Choose_Doing) {
                                  warning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
                                          + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
                                  exercise.gotoStep("select_auto_word");
@@ -1261,7 +1261,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请点击输入提交按键<img src=\""
                          + sandboxView.withKey(key_ctrl_commit)
                          + "\"/>将当前输入提交至目标编辑器；", (msg, data) -> {
-            if (msg == InputMsg.InputList_Commit_Doing) {
+            if (msg == KeyboardMsg.InputList_Commit_Doing) {
                 exercise.gotoNextStep();
             } else {
                 warning("请按当前步骤的指导要求提交输入内容");

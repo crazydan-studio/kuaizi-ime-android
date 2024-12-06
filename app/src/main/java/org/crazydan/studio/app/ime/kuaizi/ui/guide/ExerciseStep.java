@@ -18,8 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
 
 /**
@@ -57,7 +57,7 @@ public class ExerciseStep implements ViewData {
         }
     }
 
-    public void onInputMsg(InputMsg msg, InputMsgData data) {
+    public void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {
         if (this.action != null) {
             this.action.onInputMsg(msg, data);
         }
@@ -77,14 +77,14 @@ public class ExerciseStep implements ViewData {
     }
 
     public interface Action {
-        void onInputMsg(InputMsg msg, InputMsgData data);
+        void onInputMsg(KeyboardMsg msg, KeyboardMsgData data);
     }
 
     public interface AutoAction extends Action {
         void start();
 
         @Override
-        default void onInputMsg(InputMsg msg, InputMsgData data) {}
+        default void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {}
     }
 
     public interface ImageGetter {

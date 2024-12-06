@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.NumberKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 
 /**
  * {@link Keyboard.Subtype#Number 纯数字键盘}
@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
 public class NumberKeyboard extends DirectInputKeyboard {
     private boolean needToShowExit;
 
-    public NumberKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
+    public NumberKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
 
     @Override
     public Keyboard.Subtype getType() {

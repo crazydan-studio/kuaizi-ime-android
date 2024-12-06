@@ -19,11 +19,11 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
 
 /**
- * {@link InputMsg#Keyboard_Switch_Doing}
- * 和 {@link InputMsg#Keyboard_Switch_Done} 的消息数据
+ * {@link KeyboardMsg#Keyboard_Switch_Doing}
+ * 和 {@link KeyboardMsg#Keyboard_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-27

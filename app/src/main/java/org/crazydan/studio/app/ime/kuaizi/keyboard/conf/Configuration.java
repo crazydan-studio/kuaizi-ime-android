@@ -58,8 +58,18 @@ public class Configuration implements SharedPreferences.OnSharedPreferenceChange
      *         若为 null，则删除配置项 conf
      */
     public <T> boolean set(Conf conf, T value) {
+        return set(conf, value, false);
+    }
+
+    /**
+     * @param value
+     *         若为 null，则删除配置项 conf
+     * @param ignoreNull
+     *         是否忽略为 null 的值
+     */
+    public <T> boolean set(Conf conf, T value, boolean ignoreNull) {
         T oldValue = get(conf);
-        if (Objects.equals(oldValue, value)) {
+        if (Objects.equals(oldValue, value) || (ignoreNull && value == null)) {
             return false;
         }
 

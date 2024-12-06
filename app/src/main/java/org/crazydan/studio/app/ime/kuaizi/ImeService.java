@@ -26,21 +26,19 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListPairSymbolCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
  * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
@@ -48,8 +46,9 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
-public class ImeService extends InputMethodService implements InputMsgListener {
-    private ImeInputView inputView;
+public class ImeService extends InputMethodService implements KeyboardMsgListener {
+    private Keyboard keyboard;
+    private ImeView imeView;
 
     private int prevFieldId;
     private EditorSelection editorSelection;
@@ -68,8 +67,11 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
-        // 确保拼音字典库能够被及时关闭
-        PinyinDict.instance().close();
+        this.keyboard.destroy();
+
+        this.keyboard = null;
+        this.imeView = null;
+        this.editorSelection = null;
 
         super.onDestroy();
     }
@@ -77,41 +79,47 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        this.inputView = (ImeInputView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
-        this.inputView.setListener(this);
+        this.keyboard = Keyboard.create(getApplicationContext());
+        this.imeView = (ImeView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
 
-        return this.inputView;
+        // 从视图向键盘转发按键消息
+        this.imeView.setListener(this.keyboard);
+        // 从键盘向视图转发键盘的消息
+        this.keyboard.addListener(this.imeView);
+
+        // 响应键盘消息以实现文本编辑
+        this.keyboard.addListener(this);
+
+        return this.imeView;
     }
 
     /** 每次弹出键盘时调用 */
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
-        // 确保拼音字典库保持就绪状态
-        PinyinDict.instance().open(getApplicationContext());
-
-        boolean singleLineInput = false;
+        boolean singleLineInputting = false;
         boolean passwordInputting = false;
+
         // Note: 默认保持键盘类型不变
-        Keyboard.Subtype keyboardType = Keyboard.Subtype.Keep_Current;
+        Keyboard.Subtype subtype = Keyboard.Subtype.Keep_Current;
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
             case InputType.TYPE_CLASS_DATETIME:
             case InputType.TYPE_CLASS_PHONE:
-                keyboardType = Keyboard.Subtype.Number;
+                subtype = Keyboard.Subtype.Number;
                 break;
             case InputType.TYPE_CLASS_TEXT:
                 // Note: 切换前为数字键盘时，需强制切换到拼音键盘，否则无法输入文本
-                if (this.inputView.getKeyboardType() == Keyboard.Subtype.Number) {
-                    keyboardType = Keyboard.Subtype.Pinyin;
+                if (this.keyboard.getSubtype() == Keyboard.Subtype.Number) {
+                    subtype = Keyboard.Subtype.Pinyin;
                 }
 
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD) {
-                    keyboardType = Keyboard.Subtype.Latin;
-                    singleLineInput = true;
+                    subtype = Keyboard.Subtype.Latin;
+                    singleLineInputting = true;
                     passwordInputting = true;
                 }
 
@@ -119,7 +127,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
                     || variation == InputType.TYPE_TEXT_VARIATION_URI
                     || variation == InputType.TYPE_TEXT_VARIATION_FILTER
                     || (attribute.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) != 0) {
-                    singleLineInput = true;
+                    singleLineInputting = true;
                 }
         }
 
@@ -127,57 +135,55 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
         this.prevFieldId = attribute.fieldId;
 
-        this.inputView.setSingleLineInput(singleLineInput);
-        this.inputView.disableInputKeyPopupTips(passwordInputting);
-
-        startImeInput(keyboardType, prevFieldId != attribute.fieldId);
+        startKeyboard(subtype, singleLineInputting, passwordInputting, prevFieldId != attribute.fieldId);
     }
 
     /** 响应系统对子键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
         // Note: 切换系统子键盘时，视图可能还未创建
-        if (this.inputView == null) {
+        if (this.imeView == null) {
             return;
         }
 
-        ImeSubtype keyboardSubtype = SystemUtils.parseImeSubtype(subtype);
-        this.inputView.setSubtype(keyboardSubtype);
-
-        // 在 imeView 内部通过 subtype 确认键盘类型
-        startImeInput(Keyboard.Subtype.By_ImeSubtype, false);
+        startKeyboard(Keyboard.Subtype.By_ImeSubtype, null, null, false);
     }
 
-    private void startImeInput(Keyboard.Subtype keyboardType, boolean resetInputList) {
+    private void startKeyboard(
+            Keyboard.Subtype subtype, //
+            Boolean useSingleLineInputting, Boolean usePasswordInputting, //
+            boolean resetInputList
+    ) {
         this.editorSelection = null;
 
-        this.inputView.startInput(keyboardType, resetInputList);
+        ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
+        this.keyboard.updateConfig((conf) -> {
+            conf.set(Conf.ime_subtype, imeSubtype);
+            conf.set(Conf.single_line_input, useSingleLineInputting, true);
+            conf.set(Conf.disable_input_key_popup_tips, usePasswordInputting, true);
+        });
+
+        this.keyboard.start(subtype, resetInputList);
     }
 
     /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
     @Override
     public void onFinishInputView(boolean finishingInput) {
-        if (this.inputView != null) {
-            this.inputView.hideInput();
-        }
-
+        this.keyboard.hide();
         super.onFinishInputView(finishingInput);
     }
 
-    /** 输入结束：彻底退出编辑 */
+    /** 输入结束：彻底退出编辑。注意，熄屏也会调用该接口 */
     @Override
     public void onFinishInput() {
-        // Note: 熄屏也会调用该接口
+        this.keyboard.exit();
         this.editorSelection = null;
-        if (this.inputView != null) {
-            this.inputView.finishInput();
-        }
 
         super.onFinishInput();
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msgData;

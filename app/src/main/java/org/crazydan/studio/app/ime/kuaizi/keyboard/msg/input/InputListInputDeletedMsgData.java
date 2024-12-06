@@ -20,11 +20,11 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
 
 /**
- * {@link InputMsg#InputList_Selected_Delete_Done}
- * 和 {@link InputMsg#InputList_Pending_Drop_Done}
+ * {@link KeyboardMsg#InputList_Selected_Delete_Done}
+ * 和 {@link KeyboardMsg#InputList_Pending_Drop_Done}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

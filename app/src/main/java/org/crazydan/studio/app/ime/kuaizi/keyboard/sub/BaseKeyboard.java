@@ -20,34 +20,28 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.sub;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
+import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Input;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Configuration;
-import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.EditorEditKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.EditorEditDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.EmojiChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.SymbolChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
@@ -69,6 +63,12 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardStateChange
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.user.UserSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.EditorEditKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.SymbolEmojiKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.EditorEditDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.EmojiChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.state.SymbolChooseDoingStateData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -76,7 +76,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.user.UserSingleTapMsgData
  */
 public abstract class BaseKeyboard implements SubKeyboard {
     protected final PinyinDict pinyinDict = PinyinDict.instance();
-    private final InputMsgListener listener;
+    private final KeyboardMsgListener listener;
     /** 前序键盘类型：仅发生了键盘切换时才会被赋值 */
     private final Keyboard.Subtype prevType;
 
@@ -85,7 +85,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
 
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
-    protected BaseKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {
+    protected BaseKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {
         this.listener = listener;
         this.prevType = prevType;
     }
@@ -126,8 +126,6 @@ public abstract class BaseKeyboard implements SubKeyboard {
         ) {
             start_Selected_Input_ReChoosing(getInputList());
         }
-
-        fire_Common_InputMsg(InputMsg.Keyboard_Start_Done, null);
     }
 
     @Override
@@ -293,90 +291,90 @@ public abstract class BaseKeyboard implements SubKeyboard {
         return false;
     }
 
-    /** 触发 {@link InputMsg} 消息 */
-    protected void fire_InputMsg(InputMsg msg, InputMsgData msgData) {
+    /** 触发 {@link KeyboardMsg} 消息 */
+    protected void fire_InputMsg(KeyboardMsg msg, KeyboardMsgData msgData) {
         this.listener.onMsg(this, msg, msgData);
     }
 
-    protected void fire_Common_InputMsg(InputMsg msg, Key<?> key) {
-        InputMsgData data = new InputCommonMsgData(getKeyFactory(), key);
+    protected void fire_Common_InputMsg(KeyboardMsg msg, Key<?> key) {
+        KeyboardMsgData data = new InputCommonMsgData(getKeyFactory(), key);
 
         fire_InputMsg(msg, data);
     }
 
-    /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
+    /** 触发 {@link KeyboardMsg#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key) {
         fire_InputChars_Input_Doing(key, InputCharsInputtingMsgData.KeyInputType.tap);
     }
 
-    /** 触发 {@link InputMsg#InputChars_Input_Doing} 消息 */
+    /** 触发 {@link KeyboardMsg#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key, InputCharsInputtingMsgData.KeyInputType keyInputType) {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, keyInputType);
+        KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, keyInputType);
 
-        fire_InputMsg(InputMsg.InputChars_Input_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputChars_Input_Doing, data);
     }
 
-    /** 触发 {@link InputMsg#InputChars_Input_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputChars_Input_Done} 消息 */
     protected void fire_InputChars_Input_Done(Key<?> key) {
-        InputMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
+        KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
-        fire_InputMsg(InputMsg.InputChars_Input_Done, data);
+        fire_InputMsg(KeyboardMsg.InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Update_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Update_Done} 消息 */
     protected void fire_InputList_Update_Done() {
-        fire_Common_InputMsg(InputMsg.InputList_Update_Done, null);
+        fire_Common_InputMsg(KeyboardMsg.InputList_Update_Done, null);
     }
 
-    /** 触发 {@link InputMsg#InputList_Input_Choose_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Input_Choose_Done} 消息 */
     protected void fire_InputList_Input_Choose_Done(Input<?> input) {
-        InputMsgData data = new InputChooseDoneMsgData(input);
+        KeyboardMsgData data = new InputChooseDoneMsgData(input);
 
-        fire_InputMsg(InputMsg.InputList_Input_Choose_Done, data);
+        fire_InputMsg(KeyboardMsg.InputList_Input_Choose_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Input_Completion_Update_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Input_Completion_Update_Done} 消息 */
     protected void fire_InputList_Input_Completion_Update_Done() {
-        InputMsgData data = new InputCommonMsgData();
+        KeyboardMsgData data = new InputCommonMsgData();
 
-        fire_InputMsg(InputMsg.InputList_Input_Completion_Update_Done, data);
+        fire_InputMsg(KeyboardMsg.InputList_Input_Completion_Update_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Input_Completion_Apply_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Input_Completion_Apply_Done} 消息 */
     protected void fire_InputList_Input_Completion_Apply_Done(CompletionInput completion) {
-        InputMsgData data = new InputListInputCompletionApplyDoneMsgData(completion);
+        KeyboardMsgData data = new InputListInputCompletionApplyDoneMsgData(completion);
 
-        fire_InputMsg(InputMsg.InputList_Input_Completion_Apply_Done, data);
+        fire_InputMsg(KeyboardMsg.InputList_Input_Completion_Apply_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Selected_Delete_Done} 消息 */
     protected void fire_InputList_Selected_Delete_Done(Key<?> key, CharInput input) {
-        InputMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
+        KeyboardMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
 
-        fire_InputMsg(InputMsg.InputList_Selected_Delete_Done, data);
+        fire_InputMsg(KeyboardMsg.InputList_Selected_Delete_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Pending_Drop_Done} 消息 */
     protected void fire_InputList_Pending_Drop_Done(Key<?> key, CharInput input) {
-        InputMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
+        KeyboardMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
 
-        fire_InputMsg(InputMsg.InputList_Pending_Drop_Done, data);
+        fire_InputMsg(KeyboardMsg.InputList_Pending_Drop_Done, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_Commit_Doing} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_Commit_Doing} 消息 */
     protected void fire_InputList_Commit_Doing(CharSequence text, List<String> replacements) {
         // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
-        InputMsgData data = new InputListCommitDoingMsgData(getKeyFactory(), text, replacements);
+        KeyboardMsgData data = new InputListCommitDoingMsgData(getKeyFactory(), text, replacements);
 
-        fire_InputMsg(InputMsg.InputList_Commit_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputList_Commit_Doing, data);
     }
 
-    /** 触发 {@link InputMsg#InputList_PairSymbol_Commit_Doing} 消息 */
+    /** 触发 {@link KeyboardMsg#InputList_PairSymbol_Commit_Doing} 消息 */
     protected void fire_InputList_PairSymbol_Commit_Doing(CharSequence left, CharSequence right) {
         // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
-        InputMsgData data = new InputListPairSymbolCommitDoingMsgData(getKeyFactory(), left, right);
+        KeyboardMsgData data = new InputListPairSymbolCommitDoingMsgData(getKeyFactory(), left, right);
 
-        fire_InputMsg(InputMsg.InputList_PairSymbol_Commit_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputList_PairSymbol_Commit_Doing, data);
     }
 
     /** 状态回到{@link State.Type#InputChars_Input_Waiting 待输入} */
@@ -397,8 +395,8 @@ public abstract class BaseKeyboard implements SubKeyboard {
     protected void change_State_To(Key<?> key, State state) {
         this.state = state;
 
-        InputMsgData data = new KeyboardStateChangeDoneMsgData(getKeyFactory(), key, state);
-        fire_InputMsg(InputMsg.Keyboard_State_Change_Done, data);
+        KeyboardMsgData data = new KeyboardStateChangeDoneMsgData(getKeyFactory(), key, state);
+        fire_InputMsg(KeyboardMsg.Keyboard_State_Change_Done, data);
     }
 
     /**
@@ -430,7 +428,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
         change_State_to_Init();
     }
 
-    /** 确认待输入，并触发 {@link InputMsg#InputChars_Input_Done} 消息 */
+    /** 确认待输入，并触发 {@link KeyboardMsg#InputChars_Input_Done} 消息 */
     protected void confirm_InputList_Pending(InputList inputList, Key<?> key) {
         inputList.confirmPendingAndSelectNext();
         fire_InputChars_Input_Done(key);
@@ -490,7 +488,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
         }
     }
 
-    /** 删除已选中的输入，并触发 {@link InputMsg#InputList_Selected_Delete_Done} 消息 */
+    /** 删除已选中的输入，并触发 {@link KeyboardMsg#InputList_Selected_Delete_Done} 消息 */
     protected void delete_InputList_Selected(InputList inputList, Key<?> key) {
         CharInput input = inputList.getPending();
 
@@ -500,7 +498,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
 
-    /** 删除待输入，并触发 {@link InputMsg#InputList_Pending_Drop_Done} 消息 */
+    /** 删除待输入，并触发 {@link KeyboardMsg#InputList_Pending_Drop_Done} 消息 */
     protected void drop_InputList_Pending(InputList inputList, Key<?> key) {
         CharInput input = inputList.getPending();
 
@@ -576,7 +574,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
 
         inputList.revokeCommit();
         after_Revoke_Committed_InputList(inputList);
-        fire_Common_InputMsg(InputMsg.InputList_Committed_Revoke_Doing, key);
+        fire_Common_InputMsg(KeyboardMsg.InputList_Committed_Revoke_Doing, key);
 
         start_Selected_Input_ReChoosing(inputList);
     }
@@ -612,9 +610,9 @@ public abstract class BaseKeyboard implements SubKeyboard {
 
     /** 切换到指定类型的键盘 */
     protected void switch_Keyboard(Keyboard.Subtype target, Key<?> key) {
-        InputMsgData data = new KeyboardSwitchingMsgData(key, target);
+        KeyboardMsgData data = new KeyboardSwitchingMsgData(key, target);
 
-        fire_InputMsg(InputMsg.Keyboard_Switch_Doing, data);
+        fire_InputMsg(KeyboardMsg.Keyboard_Switch_Doing, data);
     }
 
     /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
@@ -636,8 +634,8 @@ public abstract class BaseKeyboard implements SubKeyboard {
                 break;
         }
 
-        InputMsgData data = new KeyboardHandModeSwitchingMsgData(key, mode);
-        fire_InputMsg(InputMsg.Keyboard_HandMode_Switch_Doing, data);
+        KeyboardMsgData data = new KeyboardHandModeSwitchingMsgData(key, mode);
+        fire_InputMsg(KeyboardMsg.Keyboard_HandMode_Switch_Doing, data);
     }
 
     /** 切换系统输入法 */
@@ -645,7 +643,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
         // Note：有可能切换，也有可能不切换，
         // 若发生切换，则再回来时键盘状态会主动被重置，
         // 故不需要提前重置键盘状态
-        fire_Common_InputMsg(InputMsg.IME_Switch_Doing, key);
+        fire_Common_InputMsg(KeyboardMsg.IME_Switch_Doing, key);
     }
 
     /** 退出并返回到原状态或前序键盘 */
@@ -664,9 +662,9 @@ public abstract class BaseKeyboard implements SubKeyboard {
 
     /** 隐藏输入提示气泡 */
     protected void hide_InputChars_Input_Popup() {
-        InputMsgData data = new InputCommonMsgData();
+        KeyboardMsgData data = new InputCommonMsgData();
 
-        fire_InputMsg(InputMsg.InputChars_Input_Popup_Hide_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputChars_Input_Popup_Hide_Doing, data);
     }
 
     /**
@@ -679,11 +677,11 @@ public abstract class BaseKeyboard implements SubKeyboard {
         fire_InputChars_Input_Popup_Show_Doing(key != null ? key.getLabel() : null, hideDelayed);
     }
 
-    /** 触发 {@link InputMsg#InputChars_Input_Popup_Show_Doing} 消息 */
+    /** 触发 {@link KeyboardMsg#InputChars_Input_Popup_Show_Doing} 消息 */
     protected void fire_InputChars_Input_Popup_Show_Doing(String text, boolean hideDelayed) {
-        InputMsgData data = new InputCharsInputPopupShowingMsgData(text, hideDelayed);
+        KeyboardMsgData data = new InputCharsInputPopupShowingMsgData(text, hideDelayed);
 
-        fire_InputMsg(InputMsg.InputChars_Input_Popup_Show_Doing, data);
+        fire_InputMsg(KeyboardMsg.InputChars_Input_Popup_Show_Doing, data);
     }
 
     /** 播放输入单击音效 */
@@ -716,8 +714,8 @@ public abstract class BaseKeyboard implements SubKeyboard {
             return;
         }
 
-        InputMsgData data = new InputAudioPlayDoingMsgData(key, audioType);
-        fire_InputMsg(InputMsg.InputAudio_Play_Doing, data);
+        KeyboardMsgData data = new InputAudioPlayDoingMsgData(key, audioType);
+        fire_InputMsg(KeyboardMsg.InputAudio_Play_Doing, data);
     }
 
     /** 尝试处理控制按键消息 */
@@ -853,7 +851,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
         switch (msg) {
             case KeyPressEnd: {
                 if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
-                    fire_InputMsg(InputMsg.Keyboard_XPad_Simulation_Terminated, new InputCommonMsgData());
+                    fire_InputMsg(KeyboardMsg.Keyboard_XPad_Simulation_Terminated, new InputCommonMsgData());
                     return true;
                 } else {
                     break;
@@ -943,22 +941,22 @@ public abstract class BaseKeyboard implements SubKeyboard {
                 inputList.clearCommitRevokes();
         }
 
-        InputMsgData data = new EditorEditDoingMsgData(getKeyFactory(), action);
-        fire_InputMsg(InputMsg.Editor_Edit_Doing, data);
+        KeyboardMsgData data = new EditorEditDoingMsgData(getKeyFactory(), action);
+        fire_InputMsg(KeyboardMsg.Editor_Edit_Doing, data);
     }
 
     private void do_Editor_Cursor_Moving(CtrlKey key, Motion motion) {
         Motion anchor = EditorEditDoingStateData.createAnchor(motion);
 
-        InputMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
-        fire_InputMsg(InputMsg.Editor_Cursor_Move_Doing, data);
+        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
+        fire_InputMsg(KeyboardMsg.Editor_Cursor_Move_Doing, data);
     }
 
     private void do_Editor_Range_Selecting(CtrlKey key, Motion motion) {
         Motion anchor = EditorEditDoingStateData.createAnchor(motion);
 
-        InputMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
-        fire_InputMsg(InputMsg.Editor_Range_Select_Doing, data);
+        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
+        fire_InputMsg(KeyboardMsg.Editor_Range_Select_Doing, data);
     }
     // >>>>>>>>
 
@@ -1223,7 +1221,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
     }
 
     private void fire_Emoji_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(InputMsg.Emoji_Choose_Doing, key);
+        fire_Common_InputMsg(KeyboardMsg.Emoji_Choose_Doing, key);
     }
 
     protected void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
@@ -1306,7 +1304,7 @@ public abstract class BaseKeyboard implements SubKeyboard {
     }
 
     private void fire_Symbol_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(InputMsg.Symbol_Choose_Doing, key);
+        fire_Common_InputMsg(KeyboardMsg.Symbol_Choose_Doing, key);
     }
 
     protected void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {

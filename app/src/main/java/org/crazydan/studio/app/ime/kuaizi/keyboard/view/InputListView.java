@@ -20,28 +20,27 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 
 /**
  * 输入列表视图
  * <p/>
- * 注：在 {@link org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView ImeInputView}
- * 中统一分发 {@link InputMsg} 消息
+ * 由上层视图向下分发 {@link KeyboardMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListView extends BaseInputListView implements InputMsgListener {
+public class InputListView extends BaseInputListView implements KeyboardMsgListener {
 
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData data) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData data) {
         switch (msg) {
             case Keyboard_Config_Update_Done:
             case Keyboard_Switch_Done:

@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.input;
+package org.crazydan.studio.app.ime.kuaizi;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -24,16 +24,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * 只读的 {@link ImeInputView}
+ * 只读的 {@link ImeView}
  * <p/>
  * 只做布局和样式展示，不响应交互
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-16
  */
-public class ReadonlyImeInputView extends ImeInputView {
+public class ImeViewReadonly extends ImeView {
 
-    public ReadonlyImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ImeViewReadonly(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 

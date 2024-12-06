@@ -24,12 +24,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
-import org.crazydan.studio.app.ime.kuaizi.ui.input.ImeInputView;
+import org.crazydan.studio.app.ime.kuaizi.ImeView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**
@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHol
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputMsgListener {
+public class ExerciseView extends RecyclerViewHolder<Exercise> implements KeyboardMsgListener {
     protected final TextView titleView;
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
@@ -64,7 +64,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
         updateSteps();
     }
 
-    public void withIme(ImeInputView ime) {
+    public void withIme(ImeView ime) {
         Exercise exercise = getData();
 
         this.textView.requestFocus();
@@ -82,7 +82,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         this.textView.onMsg(keyboard, msg, msgData);
 
         getData().onMsg(keyboard, msg, msgData);

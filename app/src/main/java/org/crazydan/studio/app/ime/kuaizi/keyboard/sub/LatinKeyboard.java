@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.sub;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.LatinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 
 /**
  * {@link Keyboard.Subtype#Latin 拉丁文键盘}
@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
  */
 public class LatinKeyboard extends DirectInputKeyboard {
 
-    public LatinKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
+    public LatinKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
 
     @Override
     public Keyboard.Subtype getType() {

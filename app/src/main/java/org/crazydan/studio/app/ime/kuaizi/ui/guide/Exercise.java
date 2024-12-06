@@ -23,19 +23,19 @@ import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
 
 /**
- * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link ExerciseView} 中统一分发 {@link KeyboardMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Exercise implements ViewData, InputMsgListener {
+public class Exercise implements ViewData, KeyboardMsgListener {
     public final Mode mode;
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();
@@ -78,7 +78,7 @@ public class Exercise implements ViewData, InputMsgListener {
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
+    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         ExerciseStep current = this.runningStep;
         if (current == null) {
             return;

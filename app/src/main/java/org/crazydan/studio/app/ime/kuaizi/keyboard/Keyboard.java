@@ -17,8 +17,31 @@
 
 package org.crazydan.studio.app.ime.kuaizi.keyboard;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import android.content.Context;
+import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.LatinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.MathKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.NumberKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+
+import static org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg.Keyboard_Hide_Done;
+import static org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg.Keyboard_Start_Done;
 
 /**
  * 键盘
@@ -26,7 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class Keyboard {
+public class Keyboard implements KeyboardMsgListener, UserKeyMsgListener {
 
     /** 子键盘类型 */
     public enum Subtype {
@@ -80,11 +103,174 @@ public class Keyboard {
         }
     }
 
+    private PinyinDict dict;
+    private Configuration conf;
+
     private SubKeyboard sub;
     private InputList inputList;
 
-    /** 使用指定类型的子键盘 */
-    public void use(Subtype subtype) {
-        //
+    private List<KeyboardMsgListener> listeners;
+
+    Keyboard(PinyinDict dict) {
+        this.dict = dict;
+
+        this.conf = new Configuration();
+        this.listeners = new ArrayList<>();
+    }
+
+    // <<<<<<<<<<<<<<<<<<<<<< 生命周期
+
+    /** 创建键盘 */
+    public static Keyboard create(Context context) {
+        // 确保拼音字典库保持就绪状态
+        PinyinDict dict = PinyinDict.instance();
+        dict.init(context);
+        dict.open(context);
+
+        return new Keyboard(dict);
+    }
+
+    /**
+     * 启动键盘
+     *
+     * @param subtype
+     *         待启用的子键盘类型
+     */
+    public void start(Subtype subtype, boolean resetInputList) {
+        // 先切换子键盘
+        enableSubKeyboard(subtype);
+        // 再重置输入列表
+        if (resetInputList) {
+            this.inputList.reset(false);
+        }
+
+        onMsg(this, Keyboard_Start_Done, new InputCommonMsgData());
+    }
+
+    /** 隐藏键盘 */
+    public void hide() {
+        onMsg(this, Keyboard_Hide_Done, new InputCommonMsgData());
+    }
+
+    /** 退出键盘 */
+    public void exit() {
+        // 清空输入列表
+        this.inputList.clear();
+        // 重置子键盘
+        if (this.sub != null) {
+            this.sub.reset();
+        }
+
+        // TODO 发送键盘退出消息
+    }
+
+    /** 销毁键盘 */
+    public void destroy() {
+        this.dict = null;
+        this.conf = null;
+        this.sub = null;
+        this.inputList = null;
+        this.listeners = null;
+
+        // 确保拼音字典库能够被及时关闭
+        PinyinDict.instance().close();
+    }
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    // <<<<<<<<<<<<<<<<<<< 内部状态
+
+    /** 获取子键盘类型 */
+    public Subtype getSubtype() {
+        return this.sub != null ? this.sub.getType() : null;
+    }
+
+    /**
+     * 更新配置
+     * <p/>
+     * 通过更新函数以支持批量更新，并便于一次性触发配置更新消息
+     */
+    public void updateConfig(Consumer<Configuration> updater) {
+        updater.accept(this.conf);
+    }
+    // >>>>>>>>>>>>>>>>>>>>>>>
+
+    // <<<<<<<<<<<<<<<<< 消息处理
+
+    public void addListener(KeyboardMsgListener listener) {
+        if (!this.listeners.contains(listener)) {
+            this.listeners.add(listener);
+        }
+    }
+
+    public void removeListener(KeyboardMsgListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    /** 响应子键盘的 {@link KeyboardMsg} 消息：从子键盘向上传递给外部监听者 */
+    @Override
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+        this.listeners.forEach(listener -> listener.onMsg(this, msg, msgData));
+    }
+
+    /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给子键盘 */
+    @Override
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        this.sub.onMsg(msg, data);
+    }
+    // >>>>>>>>>>>>>>>>>>>>
+
+    /** 启用指定类型的子键盘 */
+    private void enableSubKeyboard(Subtype subtype) {
+        SubKeyboard oldSub = this.sub;
+        Subtype oldSubtype = getSubtype();
+
+        // 保持子键盘不变，则仅需重置子键盘即可
+        if (oldSubtype != null //
+            && (oldSubtype == subtype //
+                || subtype == Subtype.Keep_Current)) {
+            oldSub.reset();
+            return;
+        }
+
+        switch (subtype) {
+            // 首次切换到本输入法时的情况
+            case Keep_Current:
+                // 切换本输入法到不同的系统子键盘时的情况
+            case By_ImeSubtype: {
+                // Note: ImeService 将在每次 start 本键盘时更新该项配置
+                ImeSubtype imeSubtype = this.conf.get(Conf.ime_subtype);
+
+                if (imeSubtype == ImeSubtype.latin) {
+                    subtype = Keyboard.Subtype.Latin;
+                } else {
+                    subtype = Keyboard.Subtype.Pinyin;
+                }
+                break;
+            }
+        }
+
+        if (oldSub != null) {
+            oldSub.destroy();
+        }
+
+        SubKeyboard newKeyboard = createKeyboard(subtype, oldSubtype);
+//        newKeyboard.setInputList(this::getInputList);
+//        newKeyboard.setConfig(this::getConfig);
+
+        this.sub = newKeyboard;
+        newKeyboard.start();
+    }
+
+    private SubKeyboard createKeyboard(Subtype subtype, Subtype oldSubtype) {
+        switch (subtype) {
+            case Math:
+                return new MathKeyboard(this, oldSubtype);
+            case Latin:
+                return new LatinKeyboard(this, oldSubtype);
+            case Number:
+                return new NumberKeyboard(this, oldSubtype);
+            default:
+                return new PinyinKeyboard(this, oldSubtype);
+        }
     }
 }

@@ -19,13 +19,13 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public class InputCommonMsgData implements InputMsgData {
+public class InputCommonMsgData implements KeyboardMsgData {
     private final KeyFactory keyFactory;
     /** 触发按键 */
     private final Key<?> key;

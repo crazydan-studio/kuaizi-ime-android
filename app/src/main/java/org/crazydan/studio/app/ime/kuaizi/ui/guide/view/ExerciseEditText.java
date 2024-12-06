@@ -27,9 +27,9 @@ import androidx.appcompat.widget.AppCompatEditText;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorEditDoingMsgData;
@@ -39,12 +39,12 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListPairSymbol
 /**
  * 用于筷字输入法使用练习的编辑框
  * <p/>
- * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link ExerciseView} 中统一分发 {@link KeyboardMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-16
  */
-public class ExerciseEditText extends AppCompatEditText implements InputMsgListener {
+public class ExerciseEditText extends AppCompatEditText implements KeyboardMsgListener {
     private EditorSelection editorSelection;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
@@ -56,7 +56,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData data) {
+    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData data) {
         switch (msg) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) data;

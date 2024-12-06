@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.input;
+package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.Objects;
 
@@ -31,45 +31,41 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
-import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
-import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyboardConfig;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Configuration;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.LatinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.MathKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.NumberKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.PinyinKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputAudioPlayDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCharsInputPopupShowingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCommonMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardHandModeSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.view.InputCompletionsView;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.view.InputListView;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.view.KeyboardView;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.view.key.XPadKeyView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.KeyboardConfig;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputAudioPlayDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCharsInputPopupShowingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardHandModeSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.KeyboardSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.view.InputCompletionsView;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.view.KeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.view.key.XPadKeyView;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class ImeInputView extends FrameLayout implements InputMsgListener, UserInputMsgListener {
+public class ImeView extends FrameLayout implements UserKeyMsgListener, KeyboardMsgListener, UserInputMsgListener {
     /** 记录系统的持久化配置 */
     private final Configuration sysConf;
     /** 记录应用临时变更的配置 */
@@ -77,11 +73,8 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
 
     private final AudioPlayer audioPlayer;
 
-    private InputMsgListener listener;
-
-    private SubKeyboard keyboard;
-    private KeyboardView keyboardView;
     private final InputList inputList;
+    private KeyboardView keyboardView;
     private InputListView inputListView;
 
     private PopupWindow inputKeyPopupWindow;
@@ -93,10 +86,10 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
     private View inputListCleanCancelBtnView;
     private boolean disableSettingsBtn;
 
-    public ImeInputView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    private UserKeyMsgListener listener;
 
-        PinyinDict.instance().init(getContext());
+    public ImeView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
 
         this.appConf = new Configuration();
         this.sysConf = new Configuration(this::onConfigurationChanged);
@@ -118,20 +111,12 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         relayoutViews();
     }
 
-    public void setListener(InputMsgListener listener) {
+    public void setListener(UserKeyMsgListener listener) {
         this.listener = listener;
     }
 
     public InputList getInputList() {
         return this.inputList;
-    }
-
-    public SubKeyboard getKeyboard() {
-        return this.keyboard;
-    }
-
-    public Keyboard.Subtype getKeyboardType() {
-        return this.keyboard != null ? this.keyboard.getType() : null;
     }
 
     public Configuration getConfig() {
@@ -158,18 +143,9 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         this.appConf.set(Conf.ime_subtype, subtype);
     }
 
-    public void setSingleLineInput(boolean enabled) {
-        this.appConf.set(Conf.single_line_input, enabled);
-    }
-
     /** 若传参 null，则表示使用系统持久化配置值 */
     public void disableUserInputData(Boolean disabled) {
         this.appConf.set(Conf.disable_user_input_data, disabled);
-    }
-
-    /** 若传参 null，则表示使用系统持久化配置值 */
-    public void disableInputKeyPopupTips(Boolean disabled) {
-        this.appConf.set(Conf.disable_input_key_popup_tips, disabled);
     }
 
     /** 若传参 null，则表示使用系统持久化配置值 */
@@ -210,17 +186,6 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         }
     }
 
-    /** 隐藏输入 */
-    public void hideInput() {
-        showInputCompletionsPopupWindow(false);
-    }
-
-    /** 结束输入 */
-    public void finishInput() {
-        getInputList().clear();
-        getKeyboard().reset();
-    }
-
     private void onConfigurationChanged(Conf conf, Object oldValue, Object newValue) {
         SubKeyboard keyboard = getKeyboard();
         if (keyboard == null) {
@@ -244,7 +209,13 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
             }
         }
 
-        onMsg(keyboard, InputMsg.Keyboard_Config_Update_Done, new InputCommonMsgData());
+        onMsg(keyboard, KeyboardMsg.Keyboard_Config_Update_Done, new InputCommonMsgData());
+    }
+
+    /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
+    @Override
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
+        this.listener.onMsg(msg, data);
     }
 
     /** 响应 {@link UserInputMsg} 消息 */
@@ -258,14 +229,9 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         keyboard.onMsg(inputList, msg, msgData);
     }
 
-    /** 响应 {@link InputMsg} 消息 */
+    /** 响应键盘 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
     @Override
-    public void onMsg(SubKeyboard keyboard, InputMsg msg, InputMsgData msgData) {
-        // Note: 存在在相邻消息中切换键盘的情况，故而，需忽略切换前的键盘消息
-        if (getKeyboard() != keyboard) {
-            return;
-        }
-
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         this.keyboardView.onMsg(keyboard, msg, msgData);
         this.inputListView.onMsg(keyboard, msg, msgData);
 
@@ -277,19 +243,23 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msgData);
                 return;
             }
+            case Keyboard_Hide_Done: {
+                showInputCompletionsPopupWindow(false);
+                return;
+            }
             case Keyboard_Switch_Doing: {
                 Keyboard.Subtype target = ((KeyboardSwitchingMsgData) msgData).target;
                 updateKeyboard(target);
 
                 // Note: 消息发送者需为更新后的 Keyboard
-                onMsg(getKeyboard(), InputMsg.Keyboard_Switch_Done, msgData);
+                onMsg(getKeyboard(), KeyboardMsg.Keyboard_Switch_Done, msgData);
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
                 Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msgData).mode;
                 this.appConf.set(Conf.hand_mode, mode);
 
-                onMsg(keyboard, InputMsg.Keyboard_HandMode_Switch_Done, msgData);
+                onMsg(keyboard, KeyboardMsg.Keyboard_HandMode_Switch_Done, msgData);
                 return;
             }
             case InputChars_Input_Popup_Show_Doing: {
@@ -310,55 +280,10 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
                 toggleShowInputListCleanBtn();
             }
         }
-
-        // 最后处理外部监听，以确保内部已经处理完成
-        if (this.listener != null) {
-            this.listener.onMsg(keyboard, msg, msgData);
-        }
     }
 
     /** 根据配置更新键盘：涉及键盘切换等 */
     private void updateKeyboard(Keyboard.Subtype type) {
-        SubKeyboard oldKeyboard = this.keyboard;
-        Keyboard.Subtype oldType = oldKeyboard != null ? oldKeyboard.getType() : null;
-
-        if (oldType != null && (oldType == type || type == Keyboard.Subtype.Keep_Current)) {
-            oldKeyboard.reset();
-            return;
-        }
-
-        // ====================================================
-        ImeSubtype subtype = null;
-        switch (type) {
-            // 切换系统子键盘时的情况
-            case By_ImeSubtype: {
-                subtype = this.appConf.get(Conf.ime_subtype);
-                break;
-            }
-            // 仅首次切换到本输入法时的情况
-            case Keep_Current: {
-                subtype = SystemUtils.getImeSubtype(getContext());
-                break;
-            }
-        }
-        if (subtype != null) {
-            if (subtype == ImeSubtype.latin) {
-                type = Keyboard.Subtype.Latin;
-            } else {
-                type = Keyboard.Subtype.Pinyin;
-            }
-        }
-
-        if (oldKeyboard != null) {
-            oldKeyboard.destroy();
-        }
-
-        SubKeyboard newKeyboard = createKeyboard(type, oldType);
-        newKeyboard.setInputList(this::getInputList);
-        newKeyboard.setConfig(this::getConfig);
-
-        this.keyboard = newKeyboard;
-        newKeyboard.start();
     }
 
     private void relayoutViews() {
@@ -380,8 +305,8 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         toggleShowInputListCleanBtn();
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
+        this.keyboardView.setListener(this);
         this.keyboardView.setConfig(this::getConfig);
-        this.keyboardView.setKeyboard(this::getKeyboard);
 
         this.inputListView = rootView.findViewById(R.id.input_list);
         this.inputListView.setInputList(this::getInputList);
@@ -425,19 +350,6 @@ public class ImeInputView extends FrameLayout implements InputMsgListener, UserI
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         return ThemeUtils.inflate(this, resId, themeResId, attachToRoot);
-    }
-
-    private SubKeyboard createKeyboard(Keyboard.Subtype type, Keyboard.Subtype oldType) {
-        switch (type) {
-            case Math:
-                return new MathKeyboard(this, oldType);
-            case Latin:
-                return new LatinKeyboard(this, oldType);
-            case Number:
-                return new NumberKeyboard(this, oldType);
-            default:
-                return new PinyinKeyboard(this, oldType);
-        }
     }
 
     private void resetPopupWindows() {

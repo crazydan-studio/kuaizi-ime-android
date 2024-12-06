@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.keytable.MathKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
@@ -53,7 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsgData;
 public class MathKeyboard extends BaseKeyboard {
     private InputList mathInputList;
 
-    public MathKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
+    public MathKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
 
     @Override
     public Keyboard.Subtype getType() {
@@ -130,7 +130,7 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         if (try_OnUserKeyMsg(msg, data)) {
             return;
         }

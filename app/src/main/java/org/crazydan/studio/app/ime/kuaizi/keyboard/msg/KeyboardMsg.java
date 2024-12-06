@@ -19,8 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.keyboard.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
 
-/** 输入消息 */
-public enum InputMsg {
+/** 键盘消息 */
+public enum KeyboardMsg {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
 
@@ -78,6 +78,8 @@ public enum InputMsg {
     Keyboard_Switch_Done,
     /** 键盘已启动 */
     Keyboard_Start_Done,
+    /** 键盘已隐藏 */
+    Keyboard_Hide_Done,
     /** X 型输入键盘的演示已被终止：仅用于发送演示终止消息 */
     Keyboard_XPad_Simulation_Terminated,
 

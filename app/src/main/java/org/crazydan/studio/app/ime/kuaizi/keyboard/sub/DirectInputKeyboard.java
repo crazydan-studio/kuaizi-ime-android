@@ -22,7 +22,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.UserKeyMsg;
@@ -39,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.user.UserSingleTapMsgData
  */
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
-    public DirectInputKeyboard(InputMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
+    public DirectInputKeyboard(KeyboardMsgListener listener, Keyboard.Subtype prevType) {super(listener, prevType);}
 
     @Override
     public void onMsg(InputList inputList, UserInputMsg msg, UserInputMsgData msgData) {
@@ -50,7 +50,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         if (try_OnUserKeyMsg(msg, data)) {
             return;
         }
