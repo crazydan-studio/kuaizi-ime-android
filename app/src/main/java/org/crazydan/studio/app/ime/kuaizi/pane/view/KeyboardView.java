@@ -29,11 +29,11 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
@@ -56,7 +56,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.view.key.KeyViewGestureListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener, KeyboardMsgListener {
+public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener, KeyboardMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
@@ -106,7 +106,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         return config.bool(Conf.disable_gesture_slipping_trail);
     }
 
-    /** 响应按键点击、双击等消息 */
+    /** 响应按键点击、双击等消息，并向上传递 {@link UserKeyMsg} 消息 */
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         switch (msg) {
@@ -133,6 +133,7 @@ public class KeyboardView extends BaseKeyboardView implements UserKeyMsgListener
         this.listener.onMsg(msg, data);
     }
 
+    /** 响应来自上层派发的 {@link KeyboardMsg} 消息 */
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         KeyFactory keyFactory = msgData.getKeyFactory();

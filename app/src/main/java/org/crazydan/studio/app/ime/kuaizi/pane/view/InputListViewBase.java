@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.view;
 
-import java.util.function.Supplier;
-
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -27,16 +25,24 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.input.CharInputView;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputView;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.input.CharInputView;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputView;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewLayoutManager;
+
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg.FingerSingleTap;
 
 /**
  * {@link InputListView} 的基类
@@ -44,14 +50,15 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGes
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class BaseInputListView extends RecyclerView implements ViewGestureDetector.Listener {
+public class InputListViewBase extends RecyclerView implements ViewGestureDetector.Listener, InputListMsgListener {
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
 
     private boolean needToLockScrolling;
-    private Supplier<InputList> inputListGetter;
 
-    public BaseInputListView(Context context, @Nullable AttributeSet attrs) {
+    private UserInputMsgListener listener;
+
+    public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         this.adapter = new InputViewAdapter();
@@ -67,16 +74,15 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
                .addListener(this);
     }
 
-    public void setInputList(Supplier<InputList> inputListGetter) {
-        this.inputListGetter = inputListGetter;
+    public void setListener(UserInputMsgListener listener) {
+        this.listener = listener;
     }
 
     public InputList getInputList() {
         return this.inputListGetter.get();
     }
 
-    public void update(boolean canBeSelected) {
-        InputList inputList = getInputList();
+    public void update(InputList inputList, boolean canBeSelected) {
         this.adapter.updateInputList(inputList, canBeSelected);
 
         if (!this.needToLockScrolling) {
@@ -85,19 +91,29 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         }
     }
 
+    /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         InputView<?> inputView = findVisibleInputViewUnder(data.x, data.y);
 
         if (type == ViewGestureDetector.GestureType.SingleTap) {
-            onSingleTap(inputView, data);
+            // onSingleTap(inputView, data);
+            // TODO 消息附带选中的 Input，或者，是否选择首/尾的 Input
+            this.listener.onMsg(FingerSingleTap, new UserInputMsgData());
         }
     }
 
-    private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
-        Input<?> input = determineInput(inputView, data);
+    /** 响应来自上层派发的 {@link InputListMsg} 消息 */
+    @Override
+    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+        update(inputList, true);
+    }
 
+    private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
         InputList inputList = getInputList();
+        Input<?> input = determineInput(inputList, inputView, data);
+
+        // TODO 由 InputList 根据 UserInputMsg 消息做出响应
         boolean isMathExprSelected = input.isMathExpr() //
                                      && (inputList.isSelected(input) //
                                          || inputList.getPending() == input);
@@ -108,7 +124,7 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
             // 滚动条移动会造成算术表达式视图直接接收 ACTION_CANCEL
             // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
             // 注：事件是从父 InputList 传递到子 InputList 的，
-            // 所以，无法优先处理子 InputList的事件
+            // 所以，无法优先处理子 InputList 的事件
             this.needToLockScrolling = input.isMathExpr();
 
             inputList.trySelect(input);
@@ -116,11 +132,10 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         this.needToLockScrolling = false;
     }
 
-    private Input<?> determineInput(InputView<?> inputView, ViewGestureDetector.GestureData data) {
+    private Input<?> determineInput(InputList inputList, InputView<?> inputView, ViewGestureDetector.GestureData data) {
         Input<?> input = inputView != null ? inputView.getData() : null;
 
         if (input == null) {
-            InputList inputList = getInputList();
             if (data.x < getPaddingStart()) {
                 input = inputList.getFirstInput();
             } else {
@@ -214,8 +229,8 @@ public class BaseInputListView extends RecyclerView implements ViewGestureDetect
         for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
             View child = ((ViewGroup) view).getChildAt(j);
 
-            if (child instanceof ReadonlyInputListView) {
-                ReadonlyInputListView ro = (ReadonlyInputListView) child;
+            if (child instanceof InputListViewReadonly) {
+                InputListViewReadonly ro = (InputListViewReadonly) child;
                 int position = ro.getInputList().getSelectedIndex();
 
                 return ro.getLayoutManager().findViewByPosition(position);

@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
- * 用户对{@link Key 按键}操作的消息
+ * 用户对 {@link Key} 操作的消息
  * <p/>
  * 此类消息与视图做一对一绑定，再通过视图转发消息给与其关联的键盘对象等处理，
  * 故而，不需要做全局消息管理

@@ -23,9 +23,9 @@ import java.util.function.Consumer;
 
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
@@ -35,13 +35,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_Hide_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_Start_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_Switch_Done;
 
 /**
  * 输入面板，由{@link Keyboard 键盘}和{@link InputList 输入列表}组成
@@ -49,7 +54,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_S
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class InputPane implements InputMsgListener, UserKeyMsgListener {
+public class InputPane implements InputMsgListener, UserMsgListener {
     private PinyinDict dict;
     private Configuration conf;
 
@@ -67,7 +72,7 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
 
     // <<<<<<<<<<<<<<<<<<<<<< 生命周期
 
-    /** 创建键盘 */
+    /** 创建 {@link InputPane} */
     public static InputPane create(Context context) {
         // 确保拼音字典库保持就绪状态
         PinyinDict dict = PinyinDict.instance();
@@ -78,14 +83,14 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
     }
 
     /**
-     * 启动键盘
+     * 启动 {@link InputPane}
      *
-     * @param type
+     * @param keyboardType
      *         待启用的键盘类型
      */
-    public void start(Keyboard.Type type, boolean resetInputting) {
+    public void start(Keyboard.Type keyboardType, boolean resetInputting) {
         // 先切换键盘
-        enableKeyboard(type);
+        enableKeyboard(keyboardType);
         // 再重置输入列表
         if (resetInputting) {
             this.inputList.reset(false);
@@ -94,12 +99,12 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
         onMsg(this.keyboard, Keyboard_Start_Done, new InputCommonMsgData());
     }
 
-    /** 隐藏键盘 */
+    /** 隐藏 {@link InputPane}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
         onMsg(this.keyboard, Keyboard_Hide_Done, new InputCommonMsgData());
     }
 
-    /** 退出键盘 */
+    /** 退出 {@link InputPane}，即，重置输入状态 */
     public void exit() {
         // 清空输入列表
         this.inputList.clear();
@@ -108,10 +113,10 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
             this.keyboard.reset();
         }
 
-        // TODO 发送键盘退出消息
+        onMsg(this.keyboard, Keyboard_Exit_Done, new InputCommonMsgData());
     }
 
-    /** 销毁键盘 */
+    /** 销毁 {@link InputPane}，即，关闭并回收资源 */
     public void destroy() {
         this.dict = null;
         this.conf = null;
@@ -129,6 +134,11 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
     /** 获取键盘类型 */
     public Keyboard.Type getKeyboardType() {
         return this.keyboard != null ? this.keyboard.getType() : null;
+    }
+
+    /** 获取输入列表 */
+    public InputList getInputList() {
+        return this.inputList;
     }
 
     /**
@@ -153,15 +163,31 @@ public class InputPane implements InputMsgListener, UserKeyMsgListener {
         this.listeners.remove(listener);
     }
 
-    /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给键盘 */
+    /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给 {@link Keyboard} */
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         this.keyboard.onMsg(msg, data);
     }
 
+    /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
+    @Override
+    public void onMsg(UserInputMsg msg, UserInputMsgData data) {
+        //
+    }
+
     /** 响应键盘的 {@link KeyboardMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+        switch (msg) {
+            case Keyboard_Switch_Doing: {
+                Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
+                enableKeyboard(target);
+
+                onMsg(this.keyboard, Keyboard_Switch_Done, msgData);
+                return;
+            }
+        }
+
         this.listeners.forEach(listener -> listener.onMsg(keyboard, msg, msgData));
     }
 

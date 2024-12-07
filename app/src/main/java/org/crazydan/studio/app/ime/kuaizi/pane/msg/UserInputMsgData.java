@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,12 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane.view;
-
-import android.content.Context;
-import android.util.AttributeSet;
-import androidx.annotation.Nullable;
+package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 /**
- * 只读的 {@link InputListView}
+ * {@link UserInputMsg} 携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-12-04
+ * @date 2024-12-07
  */
-public class ReadonlyInputListView extends BaseInputListView {
-
-    public ReadonlyInputListView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    @Override
-    protected void scrollToSelected(int position) {
-        // 由父 InputList 处理定位
-    }
-}
+public class UserInputMsgData {}

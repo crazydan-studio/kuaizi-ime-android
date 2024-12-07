@@ -20,11 +20,11 @@ package org.crazydan.studio.app.ime.kuaizi.pane.view.input;
 import android.view.View;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharMathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.ReadonlyInputListView;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.InputListViewReadonly;
 
 /**
  * {@link CharMathExprInput} 的视图
@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @date 2023-09-15
  */
 public class CharMathExprInputView extends InputView<Input<?>> {
-    private final ReadonlyInputListView inputListView;
+    private final InputListViewReadonly inputListView;
     private final View markerView;
 
     public CharMathExprInputView(@NonNull View itemView) {
@@ -51,8 +51,7 @@ public class CharMathExprInputView extends InputView<Input<?>> {
         addLeftSpaceMargin(this.itemView, gapSpaceCount);
 
         InputList inputList = input.getInputList();
-        this.inputListView.setInputList(input::getInputList);
-        this.inputListView.update(selected);
+        this.inputListView.update(inputList, selected);
 
         setBackgroundColorByAttrId(this.markerView,
                                    selected

@@ -28,7 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.BaseKeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.KeyboardViewBase;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public class DynamicLayoutSandboxView extends BaseKeyboardView {
+public class DynamicLayoutSandboxView extends KeyboardViewBase {
     private final Map<String, Key<?>> keys = new LinkedHashMap<>();
 
     private final Map<String, Drawable> imageCache = new HashMap<>();

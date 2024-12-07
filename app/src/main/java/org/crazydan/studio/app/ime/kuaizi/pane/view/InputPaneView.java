@@ -31,32 +31,32 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
-import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.key.XPadKeyView;
 
 /**
@@ -67,7 +67,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.view.key.XPadKeyView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class InputPaneView extends FrameLayout implements UserKeyMsgListener, InputMsgListener {
+public class InputPaneView extends FrameLayout implements UserMsgListener, InputMsgListener {
     /** 记录系统的持久化配置 */
     private final Configuration sysConf;
     /** 记录应用临时变更的配置 */
@@ -89,7 +89,7 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
     private View inputListCleanCancelBtnView;
     private boolean disableSettingsBtn;
 
-    private UserKeyMsgListener listener;
+    private UserMsgListener listener;
 
     public InputPaneView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -114,7 +114,7 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
         relayoutViews();
     }
 
-    public void setListener(UserKeyMsgListener listener) {
+    public void setListener(UserMsgListener listener) {
         this.listener = listener;
     }
 
@@ -142,9 +142,6 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
     }
 
     // =================================================
-    public void setSubtype(ImeSubtype subtype) {
-        this.appConf.set(Conf.ime_subtype, subtype);
-    }
 
     /** 若传参 null，则表示使用系统持久化配置值 */
     public void disableUserInputData(Boolean disabled) {
@@ -221,18 +218,21 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
         this.listener.onMsg(msg, data);
     }
 
-    /** 响应 {@link InputListMsg} 消息 */
+    /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        Keyboard keyboard = getKeyboard();
-        if (keyboard == null) {
-            return;
-        }
-
-        keyboard.onMsg(inputList, msg, msgData);
+    public void onMsg(UserInputMsg msg, UserInputMsgData data) {
+        this.listener.onMsg(msg, data);
     }
 
-    /** 响应键盘 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
+    // ===============================================================
+
+    /** 响应输入列表的 {@link InputListMsg} 消息：向下传递消息给内部视图 */
+    @Override
+    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+        this.inputListView.onMsg(inputList, msg, msgData);
+    }
+
+    /** 响应键盘的 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         this.keyboardView.onMsg(keyboard, msg, msgData);
@@ -248,14 +248,6 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
             }
             case Keyboard_Hide_Done: {
                 showInputCompletionsPopupWindow(false);
-                return;
-            }
-            case Keyboard_Switch_Doing: {
-                Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
-                updateKeyboard(target);
-
-                // Note: 消息发送者需为更新后的 Keyboard
-                onMsg(getKeyboard(), KeyboardMsg.Keyboard_Switch_Done, msgData);
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
@@ -312,7 +304,7 @@ public class InputPaneView extends FrameLayout implements UserKeyMsgListener, In
         this.keyboardView.setConfig(this::getConfig);
 
         this.inputListView = rootView.findViewById(R.id.input_list);
-        this.inputListView.setInputList(this::getInputList);
+        this.inputListView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);

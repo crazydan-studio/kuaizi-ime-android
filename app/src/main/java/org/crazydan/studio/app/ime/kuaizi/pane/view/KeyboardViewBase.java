@@ -41,7 +41,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public abstract class BaseKeyboardView extends RecyclerView {
+public abstract class KeyboardViewBase extends RecyclerView {
     private final float gridMaxPaddingRight;
     private final float gridItemMinRadius;
     private final float gridItemSpacing;
@@ -51,7 +51,7 @@ public abstract class BaseKeyboardView extends RecyclerView {
 
     private HexagonOrientation gridItemOrientation = HexagonOrientation.POINTY_TOP;
 
-    public BaseKeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public KeyboardViewBase(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         this.gridMaxPaddingRight = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);

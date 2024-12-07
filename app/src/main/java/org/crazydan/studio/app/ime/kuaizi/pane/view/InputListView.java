@@ -20,7 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
@@ -33,14 +34,14 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListView extends BaseInputListView implements KeyboardMsgListener {
+public class InputListView extends InputListViewBase implements KeyboardMsgListener {
 
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
     @Override
-    public void onMsg(InputPane keyboard, KeyboardMsg msg, KeyboardMsgData data) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData data) {
         switch (msg) {
             case Keyboard_Config_Update_Done:
             case Keyboard_Switch_Done:
@@ -60,7 +61,7 @@ public class InputListView extends BaseInputListView implements KeyboardMsgListe
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:
-                update(true);
+//                update(true);
                 break;
         }
     }
