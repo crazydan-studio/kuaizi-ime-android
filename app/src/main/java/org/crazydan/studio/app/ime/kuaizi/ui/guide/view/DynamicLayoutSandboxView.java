@@ -27,8 +27,8 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.view.BaseKeyboardView;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.BaseKeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**

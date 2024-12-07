@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 
 /**
  * 拼音字母组合树

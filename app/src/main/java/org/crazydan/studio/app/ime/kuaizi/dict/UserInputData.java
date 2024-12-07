@@ -19,8 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

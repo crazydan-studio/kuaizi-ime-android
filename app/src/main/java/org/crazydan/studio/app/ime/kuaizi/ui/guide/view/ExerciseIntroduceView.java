@@ -19,11 +19,11 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
-import org.crazydan.studio.app.ime.kuaizi.ImeView;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
 
 /**
  * {@link Exercise 练习题}视图
@@ -38,11 +38,11 @@ public class ExerciseIntroduceView extends ExerciseView {
     }
 
     @Override
-    public void withIme(ImeView ime) {
+    public void withIme(InputPaneView ime) {
         // keep it empty
     }
 
-    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         // keep it empty
     }
 

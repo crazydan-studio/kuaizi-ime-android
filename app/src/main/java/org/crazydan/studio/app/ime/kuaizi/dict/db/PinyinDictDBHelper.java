@@ -31,9 +31,9 @@ import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.EmojiWord;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;

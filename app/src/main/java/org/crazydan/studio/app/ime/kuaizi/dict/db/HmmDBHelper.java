@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi.calcViterbi;

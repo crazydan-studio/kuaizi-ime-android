@@ -24,13 +24,13 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputList;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.ImeView;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
  * @date 2023-10-15
  */
 public class PreferencesTheme extends FollowSystemThemeActivity {
-    private ImeView imeView;
+    private InputPaneView imeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +81,13 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             inputList.confirmPending();
         }
 
-        this.imeView.startInput(Keyboard.Subtype.Pinyin, false);
+        this.imeView.startInput(Keyboard.Type.Pinyin, false);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private final ImeView imeView;
+        private final InputPaneView imeView;
 
-        public SettingsFragment(ImeView imeView) {this.imeView = imeView;}
+        public SettingsFragment(InputPaneView imeView) {this.imeView = imeView;}
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -111,7 +111,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
 
             // 显示配置后的拉丁文键盘布局
             latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {
-                this.imeView.startInput(Keyboard.Subtype.Latin, false);
+                this.imeView.startInput(Keyboard.Type.Latin, false);
                 return true;
             });
         }

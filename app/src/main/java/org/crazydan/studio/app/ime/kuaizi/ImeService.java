@@ -27,18 +27,20 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorCursorMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.EditorEditDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListPairSymbolCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
 
 /**
  * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
@@ -46,9 +48,9 @@ import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.input.InputListPairSymbol
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
-public class ImeService extends InputMethodService implements KeyboardMsgListener {
-    private Keyboard keyboard;
-    private ImeView imeView;
+public class ImeService extends InputMethodService implements InputMsgListener {
+    private InputPane inputPane;
+    private InputPaneView inputPaneView;
 
     private int prevFieldId;
     private EditorSelection editorSelection;
@@ -67,10 +69,10 @@ public class ImeService extends InputMethodService implements KeyboardMsgListene
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
-        this.keyboard.destroy();
+        this.inputPane.destroy();
 
-        this.keyboard = null;
-        this.imeView = null;
+        this.inputPane = null;
+        this.inputPaneView = null;
         this.editorSelection = null;
 
         super.onDestroy();
@@ -79,18 +81,18 @@ public class ImeService extends InputMethodService implements KeyboardMsgListene
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        this.keyboard = Keyboard.create(getApplicationContext());
-        this.imeView = (ImeView) getLayoutInflater().inflate(R.layout.ime_input_view, null);
+        this.inputPane = InputPane.create(getApplicationContext());
+        this.inputPaneView = (InputPaneView) getLayoutInflater().inflate(R.layout.input_pane_view, null);
 
         // 从视图向键盘转发按键消息
-        this.imeView.setListener(this.keyboard);
+        this.inputPaneView.setListener(this.inputPane);
         // 从键盘向视图转发键盘的消息
-        this.keyboard.addListener(this.imeView);
+        this.inputPane.addListener(this.inputPaneView);
 
         // 响应键盘消息以实现文本编辑
-        this.keyboard.addListener(this);
+        this.inputPane.addListener(this);
 
-        return this.imeView;
+        return this.inputPaneView;
     }
 
     /** 每次弹出键盘时调用 */
@@ -100,25 +102,25 @@ public class ImeService extends InputMethodService implements KeyboardMsgListene
         boolean passwordInputting = false;
 
         // Note: 默认保持键盘类型不变
-        Keyboard.Subtype subtype = Keyboard.Subtype.Keep_Current;
+        Keyboard.Type keyboardType = Keyboard.Type.Keep_Current;
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
             case InputType.TYPE_CLASS_DATETIME:
             case InputType.TYPE_CLASS_PHONE:
-                subtype = Keyboard.Subtype.Number;
+                keyboardType = Keyboard.Type.Number;
                 break;
             case InputType.TYPE_CLASS_TEXT:
                 // Note: 切换前为数字键盘时，需强制切换到拼音键盘，否则无法输入文本
-                if (this.keyboard.getSubtype() == Keyboard.Subtype.Number) {
-                    subtype = Keyboard.Subtype.Pinyin;
+                if (this.inputPane.getKeyboardType() == Keyboard.Type.Number) {
+                    keyboardType = Keyboard.Type.Pinyin;
                 }
 
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD) {
-                    subtype = Keyboard.Subtype.Latin;
+                    keyboardType = Keyboard.Type.Latin;
                     singleLineInputting = true;
                     passwordInputting = true;
                 }
@@ -135,51 +137,51 @@ public class ImeService extends InputMethodService implements KeyboardMsgListene
         // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
         this.prevFieldId = attribute.fieldId;
 
-        startKeyboard(subtype, singleLineInputting, passwordInputting, prevFieldId != attribute.fieldId);
+        doStartInput(keyboardType, singleLineInputting, passwordInputting, prevFieldId != attribute.fieldId);
     }
 
-    /** 响应系统对子键盘类型的修改 */
+    /** 响应系统对键盘类型的修改 */
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
-        // Note: 切换系统子键盘时，视图可能还未创建
-        if (this.imeView == null) {
+        // Note: 切换系统键盘时，视图可能还未创建
+        if (this.inputPaneView == null) {
             return;
         }
 
-        startKeyboard(Keyboard.Subtype.By_ImeSubtype, null, null, false);
-    }
-
-    private void startKeyboard(
-            Keyboard.Subtype subtype, //
-            Boolean useSingleLineInputting, Boolean usePasswordInputting, //
-            boolean resetInputList
-    ) {
-        this.editorSelection = null;
-
-        ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
-        this.keyboard.updateConfig((conf) -> {
-            conf.set(Conf.ime_subtype, imeSubtype);
-            conf.set(Conf.single_line_input, useSingleLineInputting, true);
-            conf.set(Conf.disable_input_key_popup_tips, usePasswordInputting, true);
-        });
-
-        this.keyboard.start(subtype, resetInputList);
+        doStartInput(Keyboard.Type.By_ImeSubtype, null, null, false);
     }
 
     /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
     @Override
     public void onFinishInputView(boolean finishingInput) {
-        this.keyboard.hide();
+        this.inputPane.hide();
         super.onFinishInputView(finishingInput);
     }
 
     /** 输入结束：彻底退出编辑。注意，熄屏也会调用该接口 */
     @Override
     public void onFinishInput() {
-        this.keyboard.exit();
+        this.inputPane.exit();
         this.editorSelection = null;
 
         super.onFinishInput();
+    }
+
+    private void doStartInput(
+            Keyboard.Type keyboardType, //
+            Boolean useSingleLineInputting, Boolean usePasswordInputting, //
+            boolean resetInputting
+    ) {
+        this.editorSelection = null;
+
+        ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
+        this.inputPane.updateConfig((conf) -> {
+            conf.set(Conf.ime_subtype, imeSubtype);
+            conf.set(Conf.single_line_input, useSingleLineInputting, true);
+            conf.set(Conf.disable_input_key_popup_tips, usePasswordInputting, true);
+        });
+
+        this.inputPane.start(keyboardType, resetInputting);
     }
 
     @Override

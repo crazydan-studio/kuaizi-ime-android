@@ -35,11 +35,11 @@ import java.util.stream.Collectors;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;

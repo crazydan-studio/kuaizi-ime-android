@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.keyboard.Key;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.sub.SubKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
 
@@ -78,7 +78,7 @@ public class Exercise implements ViewData, KeyboardMsgListener {
     }
 
     @Override
-    public void onMsg(SubKeyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         ExerciseStep current = this.runningStep;
         if (current == null) {
             return;

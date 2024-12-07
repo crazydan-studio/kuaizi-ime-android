@@ -18,8 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.keyboard.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
 
 /**
