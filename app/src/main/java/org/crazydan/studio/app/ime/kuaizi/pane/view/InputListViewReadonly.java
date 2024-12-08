@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 
 /**
  * 只读的 {@link InputListView}
@@ -34,7 +35,7 @@ public class InputListViewReadonly extends InputListViewBase {
     }
 
     @Override
-    protected void scrollToSelected(int position) {
+    protected void scrollToSelectedInput(InputList inputList) {
         // 由父 InputList 处理定位
     }
 }

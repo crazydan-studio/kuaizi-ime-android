@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharMathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
@@ -411,16 +411,16 @@ public class MathKeyboard extends BaseKeyboard {
 
         if (pending == null || !pending.isMathExpr()) {
             if (selected.isMathExpr()) {
-                pending = ((CharMathExprInput) selected).copy();
+                pending = ((MathExprInput) selected).copy();
             } else {
-                pending = new CharMathExprInput();
+                pending = new MathExprInput();
             }
 
             parentInputList.withPending(pending);
         }
 
         // 在父输入列表中绑定算术输入列表
-        CharMathExprInput input = (CharMathExprInput) parentInputList.getPending();
+        MathExprInput input = (MathExprInput) parentInputList.getPending();
         this.mathInputList = input.getInputList();
         this.mathInputList.setConfig(parentInputList::getConfig);
         this.mathInputList.setListener(this::onMathUserInputMsg);

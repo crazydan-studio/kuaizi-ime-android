@@ -24,11 +24,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Stack;
 
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 
 /**
  * 数学表达式输入
@@ -38,14 +38,14 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-15
  */
-public class CharMathExprInput extends CharInput {
+public class MathExprInput extends CharInput {
     private final InputList inputList;
 
-    public CharMathExprInput() {
+    public MathExprInput() {
         this(new InputList());
     }
 
-    private CharMathExprInput(InputList inputList) {
+    private MathExprInput(InputList inputList) {
         this.inputList = inputList;
     }
 
@@ -228,7 +228,7 @@ public class CharMathExprInput extends CharInput {
         // - 只有新建 pending 时才会做复制操作，
         //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
         //   不需要通过副本规避
-        return new CharMathExprInput(getInputList());
+        return new MathExprInput(getInputList());
     }
 
     @Override
@@ -310,7 +310,7 @@ public class CharMathExprInput extends CharInput {
             return false;
         }
 
-        CharMathExprInput that = (CharMathExprInput) o;
+        MathExprInput that = (MathExprInput) o;
         return this.inputList.equals(that.inputList);
     }
 

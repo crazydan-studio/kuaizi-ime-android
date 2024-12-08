@@ -25,11 +25,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAda
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharMathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
 
 /**
- * {@link Input} 的 {@link RecyclerView} 适配器
+ * {@link InputView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
@@ -39,13 +39,14 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
 
+    /** 仅用于读取 {@link Input}，不涉及数据修改 */
     private InputList inputList;
     private boolean canBeSelected;
 
-    /** 更新输入列表，并对发生变更的输入发送变更消息，以仅对变化的输入做渲染 */
-    public void updateInputList(InputList inputList, boolean canBeSelected) {
-        this.canBeSelected = canBeSelected;
+    /** 更新输入列表 */
+    public void updateDataList(InputList inputList, boolean canBeSelected) {
         this.inputList = inputList;
+        this.canBeSelected = canBeSelected;
 
         // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
         // 其判断逻辑较复杂且容易遗漏更新，故而，直接对列表视图做全量更新
@@ -59,17 +60,19 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public void onBindViewHolder(@NonNull InputView<?> view, int position) {
-        Input.Option option = this.inputList.getOption();
+        InputList inputList = this.inputList;
 
-        Input<?> input = this.inputList.getInput(position);
-        Input<?> preInput = this.inputList.getInput(position - 1);
-        CharInput pending = this.inputList.getPendingOn(input);
-        CharInput prePending = this.inputList.getPendingOn(preInput);
+        Input.Option option = inputList.getOption();
 
-        CharMathExprInput mathExprInput = determineMathExprInput(position);
+        Input<?> input = inputList.getInput(position);
+        Input<?> preInput = inputList.getInput(position - 1);
+        CharInput pending = inputList.getPendingOn(input);
+        CharInput prePending = inputList.getPendingOn(preInput);
 
-        boolean selected = this.canBeSelected && needToBeSelected(input);
-        boolean needGapSpace = this.inputList.needGapSpace(input);
+        MathExprInput mathExprInput = tryGetMathExprInput(inputList, position);
+
+        boolean selected = this.canBeSelected && needToBeSelected(inputList, input);
+        boolean needGapSpace = inputList.needGapSpace(input);
 
         // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
         boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
@@ -91,7 +94,7 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
             // Note：视图始终与待输入的算术输入绑定，
             // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算术表达式中的字符
-            ((CharMathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected, gapSpaceCount);
+            ((MathExprInputView) view).bind(option, mathExprInput, mathExprInput, selected, gapSpaceCount);
         } else if (input.isGap()) {
             if (!Input.isEmpty(pending)) {
                 gapSpaceCount = needGapSpace ? 2 : 1;
@@ -105,8 +108,10 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @Override
     public int getItemViewType(int position) {
-        Input<?> input = this.inputList.getInput(position);
-        CharMathExprInput mathExprInput = determineMathExprInput(position);
+        InputList inputList = this.inputList;
+
+        Input<?> input = inputList.getInput(position);
+        MathExprInput mathExprInput = tryGetMathExprInput(inputList, position);
 
         if (mathExprInput != null) {
             return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
@@ -123,18 +128,18 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         if (viewType == VIEW_TYPE_CHAR_INPUT) {
             return new CharInputView(inflateItemView(parent, R.layout.input_char_view));
         } else if (viewType == VIEW_TYPE_CHAR_MATH_EXPR_INPUT) {
-            return new CharMathExprInputView(inflateItemView(parent, R.layout.input_char_math_expr_view));
+            return new MathExprInputView(inflateItemView(parent, R.layout.input_math_expr_view));
         } else {
             return new GapInputView(inflateItemView(parent, R.layout.input_gap_view));
         }
     }
 
-    private boolean needToBeSelected(Input<?> input) {
-        boolean selected = this.inputList.isSelected(input);
+    private boolean needToBeSelected(InputList inputList, Input<?> input) {
+        boolean selected = inputList.isSelected(input);
 
         // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中
         if (!selected && !input.isGap() && ((CharInput) input).hasPair()) {
-            if (this.inputList.isSelected(((CharInput) input).getPair())) {
+            if (inputList.isSelected(((CharInput) input).getPair())) {
                 selected = true;
             }
         }
@@ -142,22 +147,22 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
         return selected;
     }
 
-    private CharMathExprInput determineMathExprInput(int position) {
-        Input<?> input = this.inputList.getInput(position);
-        CharInput pending = this.inputList.getPendingOn(input);
+    public static MathExprInput tryGetMathExprInput(InputList inputList, int position) {
+        Input<?> input = inputList.getInput(position);
+        CharInput pending = inputList.getPendingOn(input);
 
         return isMathExprInput(pending)
                // 待输入的算术不能为空，否则，原输入需为空，才能将待输入作为算术输入，
                // 从而确保在未修改非算术输入时能够正常显示原始输入
                && (!Input.isEmpty(pending) || Input.isEmpty(input)) //
-               ? (CharMathExprInput) pending //
+               ? (MathExprInput) pending //
                : isMathExprInput(input)
                  // 若算术输入 没有 被替换为非算术输入，则返回其自身
                  && Input.isEmpty(pending) //
-                 ? (CharMathExprInput) input : null;
+                 ? (MathExprInput) input : null;
     }
 
-    private boolean isMathExprInput(Input<?> input) {
+    private static boolean isMathExprInput(Input<?> input) {
         return input != null && input.isMathExpr();
     }
 }

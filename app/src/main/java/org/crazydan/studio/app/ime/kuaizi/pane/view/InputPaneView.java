@@ -111,7 +111,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                               R.raw.tick_clock,
                               R.raw.tick_ping);
 
-        relayoutViews();
+        relayout();
     }
 
     public void setListener(UserMsgListener listener) {
@@ -195,7 +195,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         // Note: 仅当新旧配置值不相等时才会触发配置更新，故而，仅需检查哪些配置项发生了变更即可
         switch (conf) {
             case theme: {
-                relayoutViews();
+                relayout();
                 break;
             }
             case enable_x_input_pad:
@@ -285,7 +285,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     private void updateKeyboard(Keyboard.Type type) {
     }
 
-    private void relayoutViews() {
+    /** 重新布局视图 */
+    private void relayout() {
         resetPopupWindows();
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();

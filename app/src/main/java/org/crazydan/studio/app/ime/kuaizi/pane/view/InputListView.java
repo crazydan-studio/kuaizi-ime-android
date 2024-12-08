@@ -22,14 +22,14 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 
 /**
- * {@link InputList 输入列表}的视图
- * <p/>
- * 由上层视图向下分发 {@link KeyboardMsg} 消息
+ * {@link InputList} 的视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
@@ -38,6 +38,22 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
 
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    @Override
+    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+        switch (msg) {
+            case Input_Selected_Delete_Done:
+            case Input_Pending_Drop_Done:
+            case Input_Completion_Apply_Done:
+            case Inputs_Clean_Done:
+            case Inputs_Cleaned_Cancel_Done: {
+                update(inputList, true);
+                break;
+            }
+        }
+
+        super.onMsg(inputList, msg, msgData);
     }
 
     @Override
@@ -53,8 +69,6 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
             case InputCandidate_Choose_Done:
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing:
-            case InputList_Pending_Drop_Done:
-            case InputList_Selected_Delete_Done:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:

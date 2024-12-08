@@ -53,14 +53,13 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListInputDeletedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardStateChangeDoneMsgData;
@@ -302,20 +301,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputMsg(KeyboardMsg.InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link KeyboardMsg#InputList_Selected_Delete_Done} 消息 */
-    protected void fire_InputList_Selected_Delete_Done(Key<?> key, CharInput input) {
-        KeyboardMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
-
-        fire_InputMsg(KeyboardMsg.InputList_Selected_Delete_Done, data);
-    }
-
-    /** 触发 {@link KeyboardMsg#InputList_Pending_Drop_Done} 消息 */
-    protected void fire_InputList_Pending_Drop_Done(Key<?> key, CharInput input) {
-        KeyboardMsgData data = new InputListInputDeletedMsgData(getKeyFactory(), key, input);
-
-        fire_InputMsg(KeyboardMsg.InputList_Pending_Drop_Done, data);
-    }
-
     /** 触发 {@link KeyboardMsg#InputList_Commit_Doing} 消息 */
     protected void fire_InputList_Commit_Doing(CharSequence text, List<String> replacements) {
         // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
@@ -443,22 +428,22 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    /** 删除已选中的输入，并触发 {@link KeyboardMsg#InputList_Selected_Delete_Done} 消息 */
+    /** 删除已选中的输入 */
     protected void delete_InputList_Selected(InputList inputList, Key<?> key) {
         CharInput input = inputList.getPending();
 
         inputList.deleteSelected();
-        fire_InputList_Selected_Delete_Done(key, input);
+        inputList.fireMsg(InputListMsg.Input_Selected_Delete_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
 
-    /** 删除待输入，并触发 {@link KeyboardMsg#InputList_Pending_Drop_Done} 消息 */
+    /** 删除待输入 */
     protected void drop_InputList_Pending(InputList inputList, Key<?> key) {
         CharInput input = inputList.getPending();
 
         inputList.dropPending();
-        fire_InputList_Pending_Drop_Done(key, input);
+        inputList.fireMsg(InputListMsg.Input_Pending_Drop_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }

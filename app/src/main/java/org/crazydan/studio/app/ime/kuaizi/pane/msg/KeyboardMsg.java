@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 
 /** {@link Keyboard 键盘}消息 */
@@ -39,10 +38,6 @@ public enum KeyboardMsg {
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
 
-    /** 输入列表的{@link InputList#getPending 待输入}已丢弃 */
-    InputList_Pending_Drop_Done,
-    /** 输入列表的{@link InputList#getSelected 当前选中的输入}已删除 */
-    InputList_Selected_Delete_Done,
     /** 输入列表提交中：将输入内容写入到 目标编辑器 中 */
     InputList_Commit_Doing,
     /** 已提交输入列表撤回中 */

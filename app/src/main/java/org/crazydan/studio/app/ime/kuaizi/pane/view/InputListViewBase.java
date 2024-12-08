@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
@@ -105,13 +106,8 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     /** 响应来自上层派发的 {@link InputListMsg} 消息 */
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+        // Note: 作为与算数输入视图的公共逻辑，仅针对 Input_Choose_Done 的处理，其余消息各自单独处理
         switch (msg) {
-            case Input_Completion_Apply_Done:
-            case Inputs_Clean_Done:
-            case Inputs_Cleaned_Cancel_Done: {
-                update(inputList, true);
-                break;
-            }
             case Input_Choose_Done: {
                 // 若首次选中算术表达式，则需保持滚动条不动。
                 // 因为在算术表达式长度超出可见区域时，
@@ -128,45 +124,43 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     }
     // >>>>>>>>>>>>>>>>>>>>>>>
 
+    // <<<<<<<<<<<<<<<< 更新视图
+
     public void update(InputList inputList, boolean canBeSelected) {
         update(inputList, canBeSelected, false);
     }
 
     public void update(InputList inputList, boolean canBeSelected, boolean needToLockScrolling) {
-        this.adapter.updateInputList(inputList, canBeSelected);
+        this.adapter.updateDataList(inputList, canBeSelected);
 
         if (!needToLockScrolling) {
-            scrollToSelected(inputList);
+            scrollToSelectedInput(inputList);
         }
     }
+    // >>>>>>>>>>>>>>>>>>>
 
-    protected void scrollToSelected(InputList inputList) {
+    /** 滚动到选中输入的位置，确保其处于可见区域 */
+    protected void scrollToSelectedInput(InputList inputList) {
         int position = inputList.getSelectedIndex();
-        View item = this.layoutManager.findViewByPosition(position);
-        View itemInChildInputList = getSelectedInChildInputList(inputList, item);
-
-        // 按子 InputList 中的选中输入进行滚动，以确保选中的算术输入在可见位置
-        if (itemInChildInputList != null) {
-            item = itemInChildInputList;
-        }
+        View view = getSelectedInputView(inputList, position);
 
         int offset = 0;
-        if (item != null) {
+        if (view != null) {
             Point parentLocation = ViewUtils.getLocationOnScreen(this);
             int parentWidth = getMeasuredWidth();
             int parentPadding = getPaddingLeft() + getPaddingRight();
             int parentLeft = parentLocation.x;
             int parentRight = parentLeft + parentWidth;
 
-            Point itemLocation = ViewUtils.getLocationOnScreen(item);
-            int itemWidth = item.getMeasuredWidth();
-            int itemLeft = itemLocation.x;
-            int itemRight = itemLeft + itemWidth;
-            int itemMaxRight = itemRight + parentPadding;
+            Point viewLocation = ViewUtils.getLocationOnScreen(view);
+            int viewWidth = view.getMeasuredWidth();
+            int viewLeft = viewLocation.x;
+            int viewRight = viewLeft + viewWidth;
+            int viewMaxRight = viewRight + parentPadding;
 
             // 项目宽度超出可见区域，则滚动位置需移至其尾部
-            if (itemWidth + parentPadding > parentWidth) {
-                offset = itemMaxRight - parentRight;
+            if (viewWidth + parentPadding > parentWidth) {
+                offset = viewMaxRight - parentRight;
 
                 // 已经移动完成，则不做处理。用于处理多次相邻调用的情况
                 if (offset == 0) {
@@ -174,8 +168,8 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                 }
             }
             // 若项目已在可见区域内，且其右侧加上空白后未超出可见区域，则不需要滚动
-            else if (itemLeft >= parentLeft) {
-                offset = itemMaxRight - parentRight;
+            else if (viewLeft >= parentLeft) {
+                offset = viewMaxRight - parentRight;
 
                 if (offset <= 0) {
                     return;
@@ -190,7 +184,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         }
     }
 
-    /** 找到指定坐标下可见的{@link  InputView 输入视图} */
+    /** 找到指定坐标下可见的 {@link  InputView} */
     private InputView<?> findVisibleInputViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
         InputView<?> inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
@@ -217,22 +211,27 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         return inputView;
     }
 
-    private View getSelectedInChildInputList(InputList inputList, View view) {
+    /** 获取选中输入的视图，若选中输入为算数输入，则获取其内部所选中的输入视图 */
+    private View getSelectedInputView(InputList inputList, int selectedIndex) {
+        View view = this.layoutManager.findViewByPosition(selectedIndex);
         if (view == null) {
             return null;
         }
 
-        for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
-            View child = ((ViewGroup) view).getChildAt(j);
+        MathExprInput mathExprInput = InputViewAdapter.tryGetMathExprInput(inputList, selectedIndex);
+        if (mathExprInput != null) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                View child = ((ViewGroup) view).getChildAt(i);
 
-            if (child instanceof InputListViewReadonly) {
-                InputListViewReadonly ro = (InputListViewReadonly) child;
-                // TODO 确定在算数表达式中被选中的输入
-                int position = ro.getInputList().getSelectedIndex();
+                if (child instanceof InputListViewReadonly) {
+                    InputListViewReadonly ro = (InputListViewReadonly) child;
+                    int position = mathExprInput.getInputList().getSelectedIndex();
 
-                return ro.getLayoutManager().findViewByPosition(position);
+                    return ro.getLayoutManager().findViewByPosition(position);
+                }
             }
         }
-        return null;
+
+        return view;
     }
 }
