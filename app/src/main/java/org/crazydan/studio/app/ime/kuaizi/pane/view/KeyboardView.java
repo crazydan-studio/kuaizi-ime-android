@@ -110,7 +110,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
         switch (msg) {
-            case FingerMovingStart: {
+            case FingerMoving_Start: {
                 // 对光标移动和文本选择按键启用轨迹
                 if ((CtrlKey.is(data.target, CtrlKey.Type.Editor_Cursor_Locator) //
                      || CtrlKey.is(data.target, CtrlKey.Type.Editor_Range_Selector)) //
@@ -120,7 +120,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 }
                 break;
             }
-            case FingerMovingEnd: {
+            case FingerMoving_End: {
                 // 确保已绘制的轨迹被重绘，以避免出现轨迹残留
                 if (!this.gestureTrailer.isDisabled()) {
                     invalidate();

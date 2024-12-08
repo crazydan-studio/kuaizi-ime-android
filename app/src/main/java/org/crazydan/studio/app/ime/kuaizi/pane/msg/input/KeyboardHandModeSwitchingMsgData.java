@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-23
  */
-public class KeyboardHandModeSwitchingMsgData extends InputCommonMsgData {
+public class KeyboardHandModeSwitchingMsgData extends CommonKeyboardMsgData {
     public final Keyboard.HandMode mode;
 
     public KeyboardHandModeSwitchingMsgData(Key<?> key, Keyboard.HandMode mode) {

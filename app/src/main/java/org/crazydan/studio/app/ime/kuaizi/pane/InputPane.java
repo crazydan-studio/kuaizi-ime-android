@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg.Keyboard_Exit_Done;
@@ -69,6 +69,8 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.conf = new Configuration();
         this.inputList = new InputList();
         this.listeners = new ArrayList<>();
+
+        this.inputList.setListener(this);
     }
 
     // <<<<<<<<<<<<<<<<<<<<<< 生命周期
@@ -97,12 +99,14 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.inputList.reset(false);
         }
 
-        onMsg(this.keyboard, Keyboard_Start_Done, new InputCommonMsgData());
+        onMsg(this.keyboard, Keyboard_Start_Done, new CommonKeyboardMsgData());
     }
 
     /** 隐藏 {@link InputPane}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
-        onMsg(this.keyboard, Keyboard_Hide_Done, new InputCommonMsgData());
+        this.inputList.clearCompletions();
+
+        onMsg(this.keyboard, Keyboard_Hide_Done, new CommonKeyboardMsgData());
     }
 
     /** 退出 {@link InputPane}，即，重置输入状态 */
@@ -114,7 +118,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.keyboard.reset();
         }
 
-        onMsg(this.keyboard, Keyboard_Exit_Done, new InputCommonMsgData());
+        onMsg(this.keyboard, Keyboard_Exit_Done, new CommonKeyboardMsgData());
     }
 
     /** 销毁 {@link InputPane}，即，关闭并回收资源 */
@@ -195,6 +199,8 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 响应输入列表的 {@link InputListMsg} 消息：从输入列表向上传递给外部监听者 */
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+        this.keyboard.onMsg(inputList, msg, msgData);
+
         this.listeners.forEach(listener -> listener.onMsg(inputList, msg, msgData));
     }
     // >>>>>>>>>>>>>>>>>>>>

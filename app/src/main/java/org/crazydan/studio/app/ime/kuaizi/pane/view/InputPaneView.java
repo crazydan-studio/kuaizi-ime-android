@@ -53,9 +53,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.key.XPadKeyView;
 
@@ -209,7 +209,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
             }
         }
 
-        onMsg(keyboard, KeyboardMsg.Keyboard_Config_Update_Done, new InputCommonMsgData());
+        onMsg(keyboard, KeyboardMsg.Keyboard_Config_Update_Done, new CommonKeyboardMsgData());
     }
 
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
@@ -230,6 +230,17 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
         this.inputListView.onMsg(inputList, msg, msgData);
+
+        switch (msg) {
+            case Input_Completion_Clean_Done:
+            case Input_Completion_Apply_Done:
+            case Input_Completion_Update_Done: {
+                boolean completionsShown = inputList.hasCompletions();
+
+                showInputCompletionsPopupWindow(inputList, completionsShown);
+                break;
+            }
+        }
     }
 
     /** 响应键盘的 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
@@ -238,16 +249,9 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.keyboardView.onMsg(keyboard, msg, msgData);
         this.inputListView.onMsg(keyboard, msg, msgData);
 
-        boolean completionsShown = getInputList().hasCompletions();
-        showInputCompletionsPopupWindow(completionsShown);
-
         switch (msg) {
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msgData);
-                return;
-            }
-            case Keyboard_Hide_Done: {
-                showInputCompletionsPopupWindow(false);
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
@@ -308,7 +312,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
-        this.inputCompletionsView.setInputList(this::getInputList);
+        this.inputCompletionsView.setListener(this);
+
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         updateBottomSpacing();
@@ -368,15 +373,14 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         initPopupWindow(this.inputKeyPopupWindow, keyView);
     }
 
-    private void showInputCompletionsPopupWindow(boolean shown) {
+    private void showInputCompletionsPopupWindow(InputList inputList, boolean shown) {
         PopupWindow window = this.inputCompletionsPopupWindow;
-
         if (!shown) {
             window.dismiss();
             return;
         }
 
-        this.inputCompletionsView.update();
+        this.inputCompletionsView.update(inputList);
         if (window.isShowing()) {
             return;
         }

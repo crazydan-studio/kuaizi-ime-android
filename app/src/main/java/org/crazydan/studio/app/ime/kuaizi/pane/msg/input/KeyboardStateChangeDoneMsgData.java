@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-06
  */
-public class KeyboardStateChangeDoneMsgData extends InputCommonMsgData {
+public class KeyboardStateChangeDoneMsgData extends CommonKeyboardMsgData {
     /** 更新后的状态 */
     public final State state;
 

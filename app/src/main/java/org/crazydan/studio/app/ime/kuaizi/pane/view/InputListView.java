@@ -53,7 +53,6 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
             case InputCandidate_Choose_Done:
             case Emoji_Choose_Doing:
             case Symbol_Choose_Doing:
-            case InputList_Input_Completion_Apply_Done:
             case InputList_Pending_Drop_Done:
             case InputList_Selected_Delete_Done:
             case InputList_Commit_Doing:

@@ -25,7 +25,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharMathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
@@ -95,11 +94,7 @@ public class MathKeyboard extends BaseKeyboard {
     @Override
     public void onMsg(InputList parentInputList, InputListMsg msg, InputListMsgData msgData) {
         switch (msg) {
-            case Input_Completion_Choose_Doing: {
-                CompletionInput completion = (CompletionInput) msgData.target;
-
-                start_InputList_Completion_Applying(parentInputList, completion);
-
+            case Input_Completion_Apply_Done: {
                 withMathExprPending(parentInputList);
                 fire_InputChars_Input_Doing(null);
                 break;
@@ -115,14 +110,12 @@ public class MathKeyboard extends BaseKeyboard {
                     super.switchTo_Previous_Keyboard(null);
                 } else {
                     resetMathInputList();
-                    parentInputList.fireMsg(InputListMsg.Update_Done, null);
                 }
                 break;
             }
             case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
                 resetMathInputList();
-                parentInputList.fireMsg(InputListMsg.Update_Done, null);
                 break;
             }
         }
@@ -145,7 +138,7 @@ public class MathKeyboard extends BaseKeyboard {
         InputList parentInputList = getParentInputList();
         InputList mathInputList = getMathInputList();
 
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             switch (key.getType()) {
                 case Backspace: {
                     play_SingleTick_InputAudio(key);
@@ -206,7 +199,7 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 

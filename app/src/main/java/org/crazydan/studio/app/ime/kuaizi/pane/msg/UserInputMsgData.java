@@ -30,6 +30,10 @@ public class UserInputMsgData {
     public final Input<?> target;
     public final Where where;
 
+    public UserInputMsgData(Input<?> target) {
+        this(target, null);
+    }
+
     public UserInputMsgData(Input<?> target, Where where) {
         this.target = target;
         this.where = where;

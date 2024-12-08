@@ -25,65 +25,64 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 
 /**
- * {@link CompletionInput} 的{@link RecyclerView}适配器
+ * {@link CompletionInput} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionViewAdapter extends RecyclerViewAdapter<CompletionView> {
+public class CompletionInputViewAdapter extends RecyclerViewAdapter<CompletionInputView> {
     private final CompletionViewLayoutManager manager;
 
-    private List<CompletionInput> completions;
+    private List<CompletionInput> dataList;
 
-    public CompletionViewAdapter(CompletionViewLayoutManager manager) {
+    public CompletionInputViewAdapter(CompletionViewLayoutManager manager) {
         this.manager = manager;
     }
 
-    public void updateDataList(List<CompletionInput> newCompletions) {
-        List<CompletionInput> oldCompletions = this.completions;
-        this.completions = newCompletions;
+    public void updateDataList(List<CompletionInput> dataList) {
+        List<CompletionInput> oldDataList = this.dataList;
+        this.dataList = dataList;
 
-        updateItems(oldCompletions, newCompletions);
+        updateItems(oldDataList, dataList);
     }
 
-    public void updateBindViewHolder(CompletionView view) {
-        if (this.completions == null) {
+    public void updateBindViewHolder(CompletionInputView view) {
+        if (this.dataList == null) {
             return;
         }
 
-        CompletionInput completion = view.getData();
-        int index = this.completions.indexOf(completion);
-        CompletionInput newCompletion = this.completions.get(index);
+        CompletionInput data = view.getData();
+        int index = this.dataList.indexOf(data);
+        CompletionInput newData = this.dataList.get(index);
 
         // 更新 变更了补全位置 的数据，以确保在应用补全时能够对应到正确的补全位置
-        if (newCompletion != completion) {
-            ((RecyclerViewHolder<CompletionInput>) view).bind(newCompletion);
+        if (newData != data) {
+            ((RecyclerViewHolder<CompletionInput>) view).bind(newData);
         }
     }
 
     @Override
     public int getItemCount() {
-        return this.completions == null ? 0 : this.completions.size();
+        return this.dataList == null ? 0 : this.dataList.size();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CompletionView view, int position) {
-        CompletionInput completion = this.completions.get(position);
+    public void onBindViewHolder(@NonNull CompletionInputView view, int position) {
+        CompletionInput data = this.dataList.get(position);
 
-        view.bind(completion);
-
+        view.bind(data);
         view.getScrollView().setOnTouchListener(this::handleScrollViewEvent);
     }
 
     @NonNull
     @Override
-    public CompletionView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new CompletionView(inflateItemView(parent, R.layout.input_completion_view));
+    public CompletionInputView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new CompletionInputView(inflateItemView(parent, R.layout.input_completion_view));
     }
 
     private boolean handleScrollViewEvent(View view, MotionEvent event) {

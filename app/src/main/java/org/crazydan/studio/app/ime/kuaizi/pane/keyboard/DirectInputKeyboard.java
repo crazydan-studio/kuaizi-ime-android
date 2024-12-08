@@ -21,9 +21,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
@@ -42,8 +42,8 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        // Note: 在输入列表为空且消息为非输入列表清空消息时，直输键盘无预处理过程，故不对输入列表事件做响应
-        if (!inputList.isEmpty() || msg == InputListMsg.Inputs_Clean_Done) {
+        // Note: 在输入列表为空时，直输键盘无预处理过程，故不对输入列表事件做响应
+        if (!inputList.isEmpty()) {
             super.onMsg(inputList, msg, msgData);
         }
     }
@@ -66,7 +66,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         InputList inputList = getInputList();
 
         // 单字符直接输入
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 

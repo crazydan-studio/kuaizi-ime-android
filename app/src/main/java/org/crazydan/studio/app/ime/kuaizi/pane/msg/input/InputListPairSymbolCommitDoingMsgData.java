@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class InputListPairSymbolCommitDoingMsgData extends InputCommonMsgData {
+public class InputListPairSymbolCommitDoingMsgData extends CommonKeyboardMsgData {
     public final CharSequence left;
     public final CharSequence right;
 

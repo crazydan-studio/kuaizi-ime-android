@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 
 /**
  * 用户对 {@link Input} 操作的消息
@@ -26,6 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
  * @date 2024-12-07
  */
 public enum UserInputMsg {
-    /** 手指单击 */
-    FingerSingleTap,
+    /** 单击 {@link Input} */
+    SingleTap_Input,
+
+    /** 单击 {@link CompletionInput} */
+    SingleTap_CompletionInput,
 }

@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-06
  */
-public class InputListInputDeletedMsgData extends InputCommonMsgData {
+public class InputListInputDeletedMsgData extends CommonKeyboardMsgData {
     public final CharInput target;
 
     public InputListInputDeletedMsgData(KeyFactory keyFactory, Key<?> key, CharInput target) {

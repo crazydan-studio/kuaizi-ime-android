@@ -25,24 +25,24 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public class InputCommonMsgData implements KeyboardMsgData {
+public class CommonKeyboardMsgData implements KeyboardMsgData {
     private final KeyFactory keyFactory;
     /** 触发按键 */
     private final Key<?> key;
 
-    public InputCommonMsgData() {
+    public CommonKeyboardMsgData() {
         this(null, null);
     }
 
-    public InputCommonMsgData(KeyFactory keyFactory) {
+    public CommonKeyboardMsgData(KeyFactory keyFactory) {
         this(keyFactory, null);
     }
 
-    public InputCommonMsgData(Key<?> key) {
+    public CommonKeyboardMsgData(Key<?> key) {
         this(null, key);
     }
 
-    public InputCommonMsgData(KeyFactory keyFactory, Key<?> key) {
+    public CommonKeyboardMsgData(KeyFactory keyFactory, Key<?> key) {
         this.keyFactory = keyFactory;
         this.key = key;
     }

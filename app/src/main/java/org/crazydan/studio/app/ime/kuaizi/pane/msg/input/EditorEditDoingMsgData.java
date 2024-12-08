@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-14
  */
-public class EditorEditDoingMsgData extends InputCommonMsgData {
+public class EditorEditDoingMsgData extends CommonKeyboardMsgData {
     public final EditorEditAction action;
 
     public EditorEditDoingMsgData(KeyFactory keyFactory, EditorEditAction action) {

@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class InputCharsInputtingMsgData extends InputCommonMsgData {
+public class InputCharsInputtingMsgData extends CommonKeyboardMsgData {
     public final KeyInputType keyInputType;
 
     public InputCharsInputtingMsgData(KeyFactory keyFactory, Key<?> key, KeyInputType keyInputType) {

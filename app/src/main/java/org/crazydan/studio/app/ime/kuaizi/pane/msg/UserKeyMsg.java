@@ -26,29 +26,29 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * 故而，不需要做全局消息管理
  */
 public enum UserKeyMsg {
-    /** 按键按压开始 */
-    KeyPressStart,
-    /** 按键按压结束 */
-    KeyPressEnd,
+    /** 按压 {@link Key} 开始 */
+    Press_Key_Start,
+    /** 按压 {@link Key} 结束 */
+    Press_Key_End,
 
-    /** 按键长按开始 */
-    KeyLongPressStart,
-    /** 按键长按 tick */
-    KeyLongPressTick,
-    /** 按键长按结束 */
-    KeyLongPressEnd,
+    /** 长按 {@link Key} 开始 */
+    LongPress_Key_Start,
+    /** 长按 {@link Key} 的 tick */
+    LongPress_Key_Tick,
+    /** 长按 {@link Key} 结束 */
+    LongPress_Key_End,
 
-    /** 单击按键 */
-    KeySingleTap,
-    /** 双击按键 */
-    KeyDoubleTap,
+    /** 单击 {@link Key} */
+    SingleTap_Key,
+    /** 双击 {@link Key} */
+    DoubleTap_Key,
 
     /** 手指移动开始 */
-    FingerMovingStart,
+    FingerMoving_Start,
     /** 手指移动 */
     FingerMoving,
     /** 手指移动结束 */
-    FingerMovingEnd,
+    FingerMoving_End,
     /** 手指翻动 */
     FingerFlipping,
 }

@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 
 /**
- * {@link UserKeyMsg#KeySingleTap} 消息数据
+ * {@link UserKeyMsg#SingleTap_Key} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-13

@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-28
  */
-public class InputCharsInputPopupShowingMsgData extends InputCommonMsgData {
+public class InputCharsInputPopupShowingMsgData extends CommonKeyboardMsgData {
     /** 气泡内容 */
     public final String text;
     /** 是否延迟隐藏 */

@@ -58,9 +58,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListInputCompletionApplyDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListInputDeletedMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
@@ -202,34 +201,17 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
         switch (msg) {
-            case Inputs_Clean_Done:
-            case Inputs_Cleaned_Cancel_Done: {
-                inputList.clearPhraseCompletions();
-                // 继续后续处理
-            }
-            case Option_Update_Done: {
-                // Note: Xxx_Doing 消息不能触发 Xxx_Done 消息，因为选中等操作还未执行
-                inputList.fireMsg(InputListMsg.Update_Done, null);
-                break;
-            }
-            case Input_Completion_Choose_Doing: {
-                CompletionInput completion = (CompletionInput) msgData.target;
-                start_InputList_Completion_Applying(completion);
-                break;
-            }
-        }
-
-        if (msg == InputListMsg.Input_Choose_Doing) {
-            inputList.clearPhraseCompletions();
-
-            switch (this.state.type) {
-                case InputChars_Input_Waiting:
-                case Emoji_Choose_Doing:
-                case Symbol_Choose_Doing: {
-                    // Note：这里涉及键盘切换，必须在前面的事件在当前键盘内都处理完成后再执行
-                    start_Input_Choosing(inputList, msgData.target);
-                    break;
+            case Input_Choose_Doing: {
+                switch (this.state.type) {
+                    case InputChars_Input_Waiting:
+                    case Emoji_Choose_Doing:
+                    case Symbol_Choose_Doing: {
+                        // Note：这里涉及键盘切换，必须在前面的事件在当前键盘内都处理完成后再执行
+                        start_Input_Choosing(inputList, msgData.target);
+                        break;
+                    }
                 }
+                break;
             }
         }
     }
@@ -296,7 +278,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void fire_Common_InputMsg(KeyboardMsg msg, Key<?> key) {
-        KeyboardMsgData data = new InputCommonMsgData(getKeyFactory(), key);
+        KeyboardMsgData data = new CommonKeyboardMsgData(getKeyFactory(), key);
 
         fire_InputMsg(msg, data);
     }
@@ -318,13 +300,6 @@ public abstract class BaseKeyboard implements Keyboard {
         KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
         fire_InputMsg(KeyboardMsg.InputChars_Input_Done, data);
-    }
-
-    /** 触发 {@link KeyboardMsg#InputList_Input_Completion_Apply_Done} 消息 */
-    protected void fire_InputList_Input_Completion_Apply_Done(CompletionInput completion) {
-        KeyboardMsgData data = new InputListInputCompletionApplyDoneMsgData(completion);
-
-        fire_InputMsg(KeyboardMsg.InputList_Input_Completion_Apply_Done, data);
     }
 
     /** 触发 {@link KeyboardMsg#InputList_Selected_Delete_Done} 消息 */
@@ -642,7 +617,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 隐藏输入提示气泡 */
     protected void hide_InputChars_Input_Popup() {
-        KeyboardMsgData data = new InputCommonMsgData();
+        KeyboardMsgData data = new CommonKeyboardMsgData();
 
         fire_InputMsg(KeyboardMsg.InputChars_Input_Popup_Hide_Doing, data);
     }
@@ -703,17 +678,17 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = getInputList();
 
         switch (msg) {
-            case KeyLongPressTick: {
+            case LongPress_Key_Tick: {
                 switch (key.getType()) {
                     case Backspace:
                     case Space:
                     case Enter:
                         // 长按 tick 视为连续单击
-                        return try_Common_OnCtrlKeyMsg(UserKeyMsg.KeySingleTap, key, data);
+                        return try_Common_OnCtrlKeyMsg(UserKeyMsg.SingleTap_Key, key, data);
                 }
                 break;
             }
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 switch (key.getType()) {
                     // Note：在任意子键盘中提交输入，都需直接回到初始键盘
                     case Commit_InputList: {
@@ -793,16 +768,16 @@ public abstract class BaseKeyboard implements Keyboard {
         if (this.state.type != State.Type.Editor_Edit_Doing //
             && CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
             switch (msg) {
-                case KeySingleTap: {
+                case SingleTap_Key: {
                     // 为双击提前播放音效
                     play_SingleTick_InputAudio(key);
                     return true;
                 }
-                case KeyDoubleTap: {
+                case DoubleTap_Key: {
                     start_Editor_Editing(key);
                     return true;
                 }
-                case KeyLongPressStart: {
+                case LongPress_Key_Start: {
                     play_DoubleTick_InputAudio(key);
 
                     start_Editor_Editing(key);
@@ -829,9 +804,9 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         switch (msg) {
-            case KeyPressEnd: {
+            case Press_Key_End: {
                 if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
-                    fire_InputMsg(KeyboardMsg.Keyboard_XPad_Simulation_Terminated, new InputCommonMsgData());
+                    fire_InputMsg(KeyboardMsg.Keyboard_XPad_Simulation_Terminated, new CommonKeyboardMsgData());
                     return true;
                 } else {
                     break;
@@ -886,7 +861,7 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = getInputList();
 
         switch (msg) {
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
                     play_SingleTick_InputAudio(key);
 
@@ -1088,19 +1063,6 @@ public abstract class BaseKeyboard implements Keyboard {
     // >>>>>>
 
     // <<<<<<< 对输入补全的处理
-    protected void start_InputList_Completion_Applying(CompletionInput completion) {
-        InputList inputList = getInputList();
-
-        start_InputList_Completion_Applying(inputList, completion);
-    }
-
-    protected void start_InputList_Completion_Applying(InputList inputList, CompletionInput completion) {
-        inputList.applyCompletion(completion);
-        // Note：待输入的补全数据将在 confirm 时清除
-        inputList.confirmPendingAndSelectNext();
-
-        fire_InputList_Input_Completion_Apply_Done(completion);
-    }
 
     /** 更新待输入的输入补全 */
     protected void do_InputList_Pending_Completion_Updating(InputList inputList) {
@@ -1165,8 +1127,8 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = getInputList();
 
         switch (msg) {
-            case KeyLongPressTick:
-            case KeySingleTap: {
+            case LongPress_Key_Tick:
+            case SingleTap_Key: {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
@@ -1177,7 +1139,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void on_Emoji_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
                 play_SingleTick_InputAudio(key);
 
@@ -1247,9 +1209,9 @@ public abstract class BaseKeyboard implements Keyboard {
         boolean continuous = false;
 
         switch (msg) {
-            case KeyLongPressTick:
+            case LongPress_Key_Tick:
                 continuous = true;
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
@@ -1260,7 +1222,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
                 play_SingleTick_InputAudio(key);
 

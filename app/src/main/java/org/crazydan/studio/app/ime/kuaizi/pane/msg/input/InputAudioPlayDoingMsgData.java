@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-17
  */
-public class InputAudioPlayDoingMsgData extends InputCommonMsgData {
+public class InputAudioPlayDoingMsgData extends CommonKeyboardMsgData {
     public final AudioType audioType;
 
     public InputAudioPlayDoingMsgData(Key<?> key, AudioType audioType) {

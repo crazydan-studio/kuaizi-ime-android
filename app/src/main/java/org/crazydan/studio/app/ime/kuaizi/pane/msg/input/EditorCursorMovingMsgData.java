@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-18
  */
-public class EditorCursorMovingMsgData extends InputCommonMsgData {
+public class EditorCursorMovingMsgData extends CommonKeyboardMsgData {
     /** 锚点信息 */
     public final Motion anchor;
 

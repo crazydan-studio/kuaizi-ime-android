@@ -42,7 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputView;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.input.InputViewLayoutManager;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg.FingerSingleTap;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg.SingleTap_Input;
 
 /**
  * {@link InputListView} 的基类
@@ -96,7 +96,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                     }
                 }
 
-                this.listener.onMsg(FingerSingleTap, new UserInputMsgData(input, where));
+                this.listener.onMsg(SingleTap_Input, new UserInputMsgData(input, where));
                 break;
             }
         }
@@ -106,7 +106,9 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
         switch (msg) {
-            case Update_Done: {
+            case Input_Completion_Apply_Done:
+            case Inputs_Clean_Done:
+            case Inputs_Cleaned_Cancel_Done: {
                 update(inputList, true);
                 break;
             }

@@ -268,7 +268,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputList inputList = getInputList();
 
         if (isXInputPadEnabled()) {
-            if (msg == UserKeyMsg.KeySingleTap) {
+            if (msg == UserKeyMsg.SingleTap_Key) {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
@@ -286,7 +286,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         switch (msg) {
-            case FingerMovingStart: {
+            case FingerMoving_Start: {
                 // 开始滑屏输入
                 if (CharKey.isAlphabet(key)) {
                     play_DoubleTick_InputAudio(key);
@@ -300,7 +300,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 // 单字符输入
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
@@ -313,7 +313,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
-            case KeyLongPressStart: {
+            case LongPress_Key_Start: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
 
@@ -321,7 +321,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 InputList inputList = getInputList();
 
                 if (CtrlKey.is(key, CtrlKey.Type.Pinyin_End)) {
@@ -389,7 +389,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case FingerMovingEnd: {
+            case FingerMoving_End: {
                 CharInput pending = inputList.getPending();
 
                 end_InputChars_Slipping(inputList, pending, key);
@@ -418,7 +418,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void on_InputChars_Flip_Doing_UserKey_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
         InputList inputList = getInputList();
 
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 
@@ -437,10 +437,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 添加拼音后继字母
         CharInput pending = inputList.getPending();
 
-        if (msg == UserKeyMsg.KeyPressEnd) {
+        if (msg == UserKeyMsg.Press_Key_End) {
             end_InputChars_Inputting(inputList, pending, key);
             return;
-        } else if (msg != UserKeyMsg.KeySingleTap) {
+        } else if (msg != UserKeyMsg.SingleTap_Key) {
             return;
         }
 
@@ -462,7 +462,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputList inputList = getInputList();
 
         // 确认候选字
-        if (msg == UserKeyMsg.KeySingleTap) {
+        if (msg == UserKeyMsg.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 
@@ -484,7 +484,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputCandidate_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg != UserKeyMsg.KeySingleTap) {
+        if (msg != UserKeyMsg.SingleTap_Key) {
             return;
         }
 
@@ -791,7 +791,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg != UserKeyMsg.KeySingleTap) {
+        if (msg != UserKeyMsg.SingleTap_Key) {
             return;
         }
 
@@ -1070,7 +1070,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputList inputList = getInputList();
 
         switch (msg) {
-            case KeySingleTap: {
+            case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
                     CtrlKey.InputListCommitOption.Option option
                             = ((CtrlKey.InputListCommitOption) key.getOption()).value();
@@ -1121,7 +1121,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case KeyLongPressStart: {
+            case LongPress_Key_Start: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
 

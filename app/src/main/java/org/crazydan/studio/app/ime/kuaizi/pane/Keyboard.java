@@ -23,8 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
 
 /**
  * 键盘，做不同的输入处理
@@ -32,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public interface Keyboard extends InputListMsgListener {
+public interface Keyboard extends InputListMsgListener, UserKeyMsgListener {
 
     Type getType();
 
@@ -52,9 +51,6 @@ public interface Keyboard extends InputListMsgListener {
 
     /** 销毁 */
     void destroy();
-
-    /** 处理{@link UserKeyMsg 按键消息} */
-    void onMsg(UserKeyMsg msg, UserKeyMsgData data);
 
     /** 键盘类型 */
     enum Type {
