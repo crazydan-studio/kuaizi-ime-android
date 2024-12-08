@@ -67,6 +67,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.dict = dict;
 
         this.conf = new Configuration();
+        this.inputList = new InputList();
         this.listeners = new ArrayList<>();
     }
 
@@ -172,7 +173,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
     @Override
     public void onMsg(UserInputMsg msg, UserInputMsgData data) {
-        //
+        this.inputList.onMsg(msg, data);
     }
 
     /** 响应键盘的 {@link KeyboardMsg} 消息：从键盘向上传递给外部监听者 */

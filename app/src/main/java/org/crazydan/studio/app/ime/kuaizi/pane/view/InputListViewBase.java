@@ -54,8 +54,6 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
 
-    private boolean needToLockScrolling;
-
     private UserInputMsgListener listener;
 
     public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
@@ -78,76 +76,72 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         this.listener = listener;
     }
 
-    public InputList getInputList() {
-        return this.inputListGetter.get();
-    }
-
-    public void update(InputList inputList, boolean canBeSelected) {
-        this.adapter.updateInputList(inputList, canBeSelected);
-
-        if (!this.needToLockScrolling) {
-            int position = inputList.getSelectedIndex();
-            scrollToSelected(position);
-        }
-    }
+    // <<<<<<<<<<<<<<<<< 消息处理
 
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
         InputView<?> inputView = findVisibleInputViewUnder(data.x, data.y);
 
-        if (type == ViewGestureDetector.GestureType.SingleTap) {
-            // onSingleTap(inputView, data);
-            // TODO 消息附带选中的 Input，或者，是否选择首/尾的 Input
-            this.listener.onMsg(FingerSingleTap, new UserInputMsgData());
+        switch (type) {
+            case SingleTap: {
+                Input<?> input = inputView != null ? inputView.getData() : null;
+
+                UserInputMsgData.Where where = UserInputMsgData.Where.inner;
+                if (input == null) {
+                    if (data.x < getPaddingStart()) {
+                        where = UserInputMsgData.Where.head;
+                    } else {
+                        where = UserInputMsgData.Where.tail;
+                    }
+                }
+
+                this.listener.onMsg(FingerSingleTap, new UserInputMsgData(input, where));
+                break;
+            }
         }
     }
 
     /** 响应来自上层派发的 {@link InputListMsg} 消息 */
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        update(inputList, true);
-    }
+        switch (msg) {
+            case Update_Done: {
+                update(inputList, true);
+                break;
+            }
+            case Input_Choose_Done: {
+                // 若首次选中算术表达式，则需保持滚动条不动。
+                // 因为在算术表达式长度超出可见区域时，
+                // 滚动条移动会造成算术表达式视图直接接收 ACTION_CANCEL
+                // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
+                // 注：事件是从父 InputList 传递到子 InputList 的，
+                // 所以，无法优先处理子 InputList 的事件
+                boolean needToLockScrolling = msgData.target.isMathExpr();
 
-    private void onSingleTap(InputView<?> inputView, ViewGestureDetector.GestureData data) {
-        InputList inputList = getInputList();
-        Input<?> input = determineInput(inputList, inputView, data);
-
-        // TODO 由 InputList 根据 UserInputMsg 消息做出响应
-        boolean isMathExprSelected = input.isMathExpr() //
-                                     && (inputList.isSelected(input) //
-                                         || inputList.getPending() == input);
-        // 忽略对已选中算术表达式的处理，由其自身的视图做响应
-        if (!isMathExprSelected) {
-            // 若首次选中算术表达式，则需保持滚动条不动。
-            // 因为在算术表达式长度超出可见区域时，
-            // 滚动条移动会造成算术表达式视图直接接收 ACTION_CANCEL
-            // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
-            // 注：事件是从父 InputList 传递到子 InputList 的，
-            // 所以，无法优先处理子 InputList 的事件
-            this.needToLockScrolling = input.isMathExpr();
-
-            inputList.trySelect(input);
-        }
-        this.needToLockScrolling = false;
-    }
-
-    private Input<?> determineInput(InputList inputList, InputView<?> inputView, ViewGestureDetector.GestureData data) {
-        Input<?> input = inputView != null ? inputView.getData() : null;
-
-        if (input == null) {
-            if (data.x < getPaddingStart()) {
-                input = inputList.getFirstInput();
-            } else {
-                input = inputList.getLastInput();
+                update(inputList, true, needToLockScrolling);
+                break;
             }
         }
-        return input;
+    }
+    // >>>>>>>>>>>>>>>>>>>>>>>
+
+    public void update(InputList inputList, boolean canBeSelected) {
+        update(inputList, canBeSelected, false);
     }
 
-    protected void scrollToSelected(int position) {
+    public void update(InputList inputList, boolean canBeSelected, boolean needToLockScrolling) {
+        this.adapter.updateInputList(inputList, canBeSelected);
+
+        if (!needToLockScrolling) {
+            scrollToSelected(inputList);
+        }
+    }
+
+    protected void scrollToSelected(InputList inputList) {
+        int position = inputList.getSelectedIndex();
         View item = this.layoutManager.findViewByPosition(position);
-        View itemInChildInputList = getSelectedInChildInputList(item);
+        View itemInChildInputList = getSelectedInChildInputList(inputList, item);
 
         // 按子 InputList 中的选中输入进行滚动，以确保选中的算术输入在可见位置
         if (itemInChildInputList != null) {
@@ -221,7 +215,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         return inputView;
     }
 
-    private View getSelectedInChildInputList(View view) {
+    private View getSelectedInChildInputList(InputList inputList, View view) {
         if (view == null) {
             return null;
         }
@@ -231,6 +225,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
 
             if (child instanceof InputListViewReadonly) {
                 InputListViewReadonly ro = (InputListViewReadonly) child;
+                // TODO 确定在算数表达式中被选中的输入
                 int position = ro.getInputList().getSelectedIndex();
 
                 return ro.getLayoutManager().findViewByPosition(position);

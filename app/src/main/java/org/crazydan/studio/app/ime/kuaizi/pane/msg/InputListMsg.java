@@ -26,11 +26,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
  * @date 2023-07-21
  */
 public enum InputListMsg {
+    /** 输入列表已更新 */
+    Update_Done,
     /** 输入列表配置已更新 */
-    InputList_Option_Update_Done,
+    Option_Update_Done,
 
     /** 输入选择中 */
     Input_Choose_Doing,
+    /** 输入已选中 */
+    Input_Choose_Done,
+    /** 输入补全已更新 */
+    Input_Completion_Update_Done,
+
     /** 输入已清空 */
     Inputs_Clean_Done,
     /** 已撤销对输入的清空操作 */

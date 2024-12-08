@@ -115,14 +115,14 @@ public class MathKeyboard extends BaseKeyboard {
                     super.switchTo_Previous_Keyboard(null);
                 } else {
                     resetMathInputList();
-                    fire_InputList_Update_Done();
+                    parentInputList.fireMsg(InputListMsg.Update_Done, null);
                 }
                 break;
             }
             case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
                 resetMathInputList();
-                fire_InputList_Update_Done();
+                parentInputList.fireMsg(InputListMsg.Update_Done, null);
                 break;
             }
         }

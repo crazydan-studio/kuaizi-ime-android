@@ -37,6 +37,13 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
+
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Input_Choose_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Clean_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Cleaned_Cancel_Done;
 
 /**
  * {@link InputPane 键盘}输入列表，含零个或多个{@link Input 输入对象}
@@ -44,7 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class InputList {
+public class InputList implements UserInputMsgListener {
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
@@ -72,16 +79,49 @@ public class InputList {
         this.listener = listener;
     }
 
-    public void fireUserInputMsg(InputListMsg msg, InputListMsgData msgData) {
-        this.listener.onMsg(this, msg, msgData);
+    // <<<<<<<<<<<<<<<< 消息处理
+
+    /** 主动触发 {@link InputListMsg} 消息 */
+    public void fireMsg(InputListMsg msg, Input<?> input) {
+        this.listener.onMsg(this, msg, new InputListMsgData(input));
     }
+
+    /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
+    @Override
+    public void onMsg(UserInputMsg msg, UserInputMsgData data) {
+        switch (msg) {
+            // 用户点击输入项
+            case FingerSingleTap: {
+                Input<?> input = data.target;
+                switch (data.where) {
+                    case head:
+                        input = getFirstInput();
+                        break;
+                    case tail:
+                        input = getLastInput();
+                        break;
+                }
+
+                boolean isMathExprSelected = input.isMathExpr() //
+                                             && (isSelected(input) //
+                                                 || getPending() == input);
+                // 忽略对已选中算术表达式的处理，由其自身的视图做响应
+                if (!isMathExprSelected) {
+                    fireMsg(Input_Choose_Doing, input);
+                }
+                break;
+            }
+        }
+    }
+    // >>>>>>>>>>>>>>>>>>>
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /** 重置输入列表 */
     public void reset(boolean canBeCanceled) {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
-        InputListMsgData msgData = new InputListMsgData();
-        fireUserInputMsg(InputListMsg.Inputs_Clean_Done, msgData);
+        fireMsg(Inputs_Clean_Done, null);
     }
 
     /** 清空输入列表 */
@@ -103,18 +143,6 @@ public class InputList {
         this.staged = doReset(canBeRevoked ? Staged.Type.committed : Staged.Type.none);
 
         return text;
-    }
-
-    /** 尝试选中指定输入：实际仅发送 {@link InputListMsg#Input_Choose_Doing} 消息 */
-    public void trySelect(Input<?> input) {
-        if (input == null) {
-            return;
-        }
-
-        InputListMsg msg = InputListMsg.Input_Choose_Doing;
-        InputListMsgData msgData = new InputListMsgData(input);
-
-        fireUserInputMsg(msg, msgData);
     }
 
     /** 是否可撤回已提交输入 */
@@ -146,8 +174,7 @@ public class InputList {
         if (canCancelDelete()) {
             Staged.restore(this, this.staged);
 
-            InputListMsgData msgData = new InputListMsgData();
-            fireUserInputMsg(InputListMsg.Inputs_Cleaned_Cancel_Done, msgData);
+            fireMsg(Inputs_Cleaned_Cancel_Done, null);
         }
     }
 

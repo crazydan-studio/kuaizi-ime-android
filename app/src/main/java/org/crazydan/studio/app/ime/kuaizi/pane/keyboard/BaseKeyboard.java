@@ -20,6 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
+import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
@@ -30,21 +32,25 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EditorEditDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
@@ -52,7 +58,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputChooseDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCommonMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListInputCompletionApplyDoneMsgData;
@@ -63,12 +68,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardStateChangeDone
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EditorEditDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -208,9 +207,9 @@ public abstract class BaseKeyboard implements Keyboard {
                 inputList.clearPhraseCompletions();
                 // 继续后续处理
             }
-            case InputList_Option_Update_Done: {
+            case Option_Update_Done: {
                 // Note: Xxx_Doing 消息不能触发 Xxx_Done 消息，因为选中等操作还未执行
-                fire_InputList_Update_Done();
+                inputList.fireMsg(InputListMsg.Update_Done, null);
                 break;
             }
             case Input_Completion_Choose_Doing: {
@@ -319,25 +318,6 @@ public abstract class BaseKeyboard implements Keyboard {
         KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
         fire_InputMsg(KeyboardMsg.InputChars_Input_Done, data);
-    }
-
-    /** 触发 {@link KeyboardMsg#InputList_Update_Done} 消息 */
-    protected void fire_InputList_Update_Done() {
-        fire_Common_InputMsg(KeyboardMsg.InputList_Update_Done, null);
-    }
-
-    /** 触发 {@link KeyboardMsg#InputList_Input_Choose_Done} 消息 */
-    protected void fire_InputList_Input_Choose_Done(Input<?> input) {
-        KeyboardMsgData data = new InputChooseDoneMsgData(input);
-
-        fire_InputMsg(KeyboardMsg.InputList_Input_Choose_Done, data);
-    }
-
-    /** 触发 {@link KeyboardMsg#InputList_Input_Completion_Update_Done} 消息 */
-    protected void fire_InputList_Input_Completion_Update_Done() {
-        KeyboardMsgData data = new InputCommonMsgData();
-
-        fire_InputMsg(KeyboardMsg.InputList_Input_Completion_Update_Done, data);
     }
 
     /** 触发 {@link KeyboardMsg#InputList_Input_Completion_Apply_Done} 消息 */
@@ -1145,7 +1125,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         });
 
-        fire_InputList_Input_Completion_Update_Done();
+        inputList.fireMsg(InputListMsg.Input_Completion_Update_Done, pending);
     }
 
     /** 更新当前输入位置的短语输入补全 */
@@ -1155,7 +1135,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> input = inputList.getSelected();
         do_InputList_Phrase_Completion_Updating(inputList, input);
 
-        fire_InputList_Input_Completion_Update_Done();
+        inputList.fireMsg(InputListMsg.Input_Completion_Update_Done, input);
     }
 
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
@@ -1443,7 +1423,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
 
-        fire_InputList_Input_Choose_Done(input);
+        inputList.fireMsg(InputListMsg.Input_Choose_Done, input);
     }
 
     /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */

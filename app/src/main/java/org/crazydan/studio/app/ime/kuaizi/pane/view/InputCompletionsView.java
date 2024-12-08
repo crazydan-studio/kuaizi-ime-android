@@ -26,15 +26,15 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.completion.CompletionView;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.completion.CompletionViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.completion.CompletionViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
+
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Input_Completion_Choose_Doing;
 
 /**
  * 输入补全列表视图
@@ -93,9 +93,7 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
     private void onSingleTap(CompletionView completionView, ViewGestureDetector.GestureData data) {
         CompletionInput completion = completionView.getData();
 
-        InputListMsg msg = InputListMsg.Input_Completion_Choose_Doing;
-        InputListMsgData msgData = new InputListMsgData(completion);
-        getInputList().fireUserInputMsg(msg, msgData);
+        getInputList().fireMsg(Input_Completion_Choose_Doing, completion);
     }
 
     private CompletionView findCompletionViewUnder(float x, float y) {

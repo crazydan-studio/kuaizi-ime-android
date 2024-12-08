@@ -39,12 +39,6 @@ public enum KeyboardMsg {
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
 
-    /** 输入列表已更新 */
-    InputList_Update_Done,
-    /** 输入列表中的输入已选择 */
-    InputList_Input_Choose_Done,
-    /** 输入补全已更新 */
-    InputList_Input_Completion_Update_Done,
     /** 输入补全已应用 */
     InputList_Input_Completion_Apply_Done,
     /** 输入列表的{@link InputList#getPending 待输入}已丢弃 */
