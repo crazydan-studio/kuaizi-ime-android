@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * {@link InputPane 键盘}输入对象，包含零个或多个字符
@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public interface Input<T extends Input<?>> extends ViewData {
+public interface Input<T extends Input<?>> extends RecyclerViewData {
 
     static boolean isEmpty(Input<?> input) {
         return input == null || input.isEmpty();

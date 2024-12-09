@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * {@link InputPane 键盘}按键
@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key<K extends Key<?>> extends ViewData {
+public interface Key<K extends Key<?>> extends RecyclerViewData {
 
     /** 是否为空格 */
     boolean isSpace();

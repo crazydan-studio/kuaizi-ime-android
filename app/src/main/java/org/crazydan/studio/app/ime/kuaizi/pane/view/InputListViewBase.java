@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.view;
 
+import java.util.List;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -31,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
@@ -73,11 +76,11 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                .addListener(this);
     }
 
+    // =============================== Start: 消息处理 ===================================
+
     public void setListener(UserInputMsgListener listener) {
         this.listener = listener;
     }
-
-    // <<<<<<<<<<<<<<<<< 消息处理
 
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
@@ -106,7 +109,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     /** 响应来自上层派发的 {@link InputListMsg} 消息 */
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        // Note: 作为与算数输入视图的公共逻辑，仅针对 Input_Choose_Done 的处理，其余消息各自单独处理
+        // Note: 作为与算术输入视图的公共逻辑，仅针对 Input_Choose_Done 的处理，其余消息各自单独处理
         switch (msg) {
             case Input_Choose_Done: {
                 // 若首次选中算术表达式，则需保持滚动条不动。
@@ -117,32 +120,39 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                 // 所以，无法优先处理子 InputList 的事件
                 boolean needToLockScrolling = msgData.target.isMathExpr();
 
-                update(inputList, true, needToLockScrolling);
+                update(msgData.inputFactory.createViewData(), true, needToLockScrolling);
                 break;
             }
         }
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>
 
-    // <<<<<<<<<<<<<<<< 更新视图
+    // =============================== End: 消息处理 ===================================
 
-    public void update(InputList inputList, boolean canBeSelected) {
-        update(inputList, canBeSelected, false);
+    // =============================== Start: 更新视图 ===================================
+
+    public void update(List<InputViewData> dataList) {
+        update(dataList, true, false);
     }
 
-    public void update(InputList inputList, boolean canBeSelected, boolean needToLockScrolling) {
-        this.adapter.updateDataList(inputList, canBeSelected);
+    public void update(List<InputViewData> dataList, boolean canBeSelected, boolean needToLockScrolling) {
+        this.adapter.updateDataList(dataList, canBeSelected);
 
         if (!needToLockScrolling) {
-            scrollToSelectedInput(inputList);
+            scrollToSelectedInput(dataList);
         }
     }
-    // >>>>>>>>>>>>>>>>>>>
+
+    // =============================== End: 更新视图 ===================================
 
     /** 滚动到选中输入的位置，确保其处于可见区域 */
-    protected void scrollToSelectedInput(InputList inputList) {
-        int position = inputList.getSelectedIndex();
-        View view = getSelectedInputView(inputList, position);
+    protected void scrollToSelectedInput(List<InputViewData> dataList) {
+        InputViewData selectedData = dataList.stream().filter(d -> d.selected).findFirst().orElse(null);
+        if (selectedData == null) {
+            return;
+        }
+
+        int position = selectedData.position;
+        View view = getSelectedInputView(selectedData.input, position);
 
         int offset = 0;
         if (view != null) {
@@ -211,21 +221,20 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         return inputView;
     }
 
-    /** 获取选中输入的视图，若选中输入为算数输入，则获取其内部所选中的输入视图 */
-    private View getSelectedInputView(InputList inputList, int selectedIndex) {
+    /** 获取选中输入的视图，若选中输入为算术输入，则获取其内部所选中的输入视图 */
+    private View getSelectedInputView(Input<?> selectedInput, int selectedIndex) {
         View view = this.layoutManager.findViewByPosition(selectedIndex);
         if (view == null) {
             return null;
         }
 
-        MathExprInput mathExprInput = InputViewAdapter.tryGetMathExprInput(inputList, selectedIndex);
-        if (mathExprInput != null) {
+        if (selectedInput.isMathExpr()) {
             for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
                 View child = ((ViewGroup) view).getChildAt(i);
 
                 if (child instanceof InputListViewReadonly) {
                     InputListViewReadonly ro = (InputListViewReadonly) child;
-                    int position = mathExprInput.getInputList().getSelectedIndex();
+                    int position = ((MathExprInput) selectedInput).getInputList().getSelectedIndex();
 
                     return ro.getLayoutManager().findViewByPosition(position);
                 }

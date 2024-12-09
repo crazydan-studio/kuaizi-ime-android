@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class RecyclerViewHolder<T extends ViewData> extends RecyclerView.ViewHolder {
+public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends RecyclerView.ViewHolder {
     private T data;
 
     public RecyclerViewHolder(@NonNull View itemView) {

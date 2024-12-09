@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
 
 /**
  * {@link InputListMsg} 携带的数据
@@ -26,14 +27,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
  * @date 2023-07-21
  */
 public class InputListMsgData {
+    public final InputFactory inputFactory;
     /** 消息目标输入 */
     public final Input<?> target;
 
-    public InputListMsgData() {
-        this(null);
-    }
-
-    public InputListMsgData(Input<?> target) {
+    public InputListMsgData(InputFactory inputFactory, Input<?> target) {
+        this.inputFactory = inputFactory;
         this.target = target;
     }
 }

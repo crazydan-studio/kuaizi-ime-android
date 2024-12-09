@@ -17,21 +17,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
+
 /**
- * {@link Key} 生成器
+ * {@link Input} 生成器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-06-30
+ * @date 2024-12-09
  */
-public interface KeyFactory {
+public interface InputFactory {
 
-    /**
-     * 创建二维矩阵 {@link Key}
-     * <p/>
-     * 元素可为<code>null</code>，表示该位置不放置任何按键
-     */
-    Key<?>[][] create();
-
-    /** 无动效的生成器 */
-    interface NoAnimation extends KeyFactory {}
+    /** 创建 {@link Input} 的视图数据 {@link InputViewData} */
+    List<InputViewData> createViewData();
 }

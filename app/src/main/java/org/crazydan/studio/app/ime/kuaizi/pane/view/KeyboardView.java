@@ -88,10 +88,6 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    public void setListener(UserKeyMsgListener listener) {
-        this.listener = listener;
-    }
-
     public Configuration getConfig() {
         return this.configGetter.get();
     }
@@ -104,6 +100,12 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         Configuration config = getConfig();
 
         return config.bool(Conf.disable_gesture_slipping_trail);
+    }
+
+    // =============================== Start: 消息处理 ===================================
+
+    public void setListener(UserKeyMsgListener listener) {
+        this.listener = listener;
     }
 
     /** 响应按键点击、双击等消息，并向上传递 {@link UserKeyMsg} 消息 */
@@ -167,6 +169,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
 
         updateKeys(config, keyFactory);
     }
+
+    // =============================== End: 消息处理 ===================================
 
     private void reset() {
         this.gesture.reset();

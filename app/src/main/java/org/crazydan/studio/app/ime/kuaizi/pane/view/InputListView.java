@@ -40,6 +40,8 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
         super(context, attrs);
     }
 
+    // =============================== Start: 消息处理 ===================================
+
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
         switch (msg) {
@@ -48,7 +50,7 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
             case Input_Completion_Apply_Done:
             case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
-                update(inputList, true);
+                update(msgData.inputFactory.createViewData());
                 break;
             }
         }
@@ -76,4 +78,6 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
                 break;
         }
     }
+
+    // =============================== End: 消息处理 ===================================
 }

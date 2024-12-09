@@ -23,6 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.view.InputListViewReadonly;
 
@@ -43,15 +44,13 @@ public class MathExprInputView extends InputView<Input<?>> {
         this.markerView = itemView.findViewById(R.id.marker);
     }
 
-    public void bind(
-            Input.Option option, Input<?> data, MathExprInput input, //
-            boolean selected, int gapSpaceCount
-    ) {
-        super.bind(data);
-        addLeftSpaceMargin(this.itemView, gapSpaceCount);
+    public void bind(InputViewData data, boolean selected) {
+        super.bind(data.input);
 
-        InputList inputList = input.getInputList();
-        this.inputListView.update(inputList, selected);
+        addLeftSpaceMargin(this.itemView, data.gapSpaces);
+
+        InputList inputList = ((MathExprInput) data.input).getInputList();
+        this.inputListView.update(inputList.createViewDataList(), selected, false);
 
         setBackgroundColorByAttrId(this.markerView,
                                    selected

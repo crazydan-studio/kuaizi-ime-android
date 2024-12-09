@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * 注：在 {@link ExerciseView} 中统一分发 {@link KeyboardMsg} 消息
@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Exercise implements ViewData, KeyboardMsgListener {
+public class Exercise implements RecyclerViewData, KeyboardMsgListener {
     public final Mode mode;
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();

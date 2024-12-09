@@ -75,8 +75,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     private final AudioPlayer audioPlayer;
 
-    private final InputList inputList;
-
     private KeyboardView keyboardView;
     private InputListView inputListView;
 
@@ -99,10 +97,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         this.sysConf.bind(preferences);
 
-        this.inputList = new InputList();
-        this.inputList.setConfig(this::getConfig);
-        this.inputList.setListener(this);
-
         this.audioPlayer = new AudioPlayer();
         this.audioPlayer.load(getContext(),
                               R.raw.tick_single,
@@ -112,14 +106,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                               R.raw.tick_ping);
 
         relayout();
-    }
-
-    public void setListener(UserMsgListener listener) {
-        this.listener = listener;
-    }
-
-    public InputList getInputList() {
-        return this.inputList;
     }
 
     public Configuration getConfig() {
@@ -170,22 +156,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
     // ============================================
 
-    /** 启动指定类型的键盘，并清空输入列表 */
-    public void startInput(Keyboard.Type type) {
-        startInput(type, true);
-    }
-
-    /** 启动指定类型的键盘 */
-    public void startInput(Keyboard.Type type, boolean resetInputList) {
-        //Log.i("SwitchKeyboard", String.format("%s - %s", type, resetInputList));
-        updateKeyboard(type);
-
-        // 先更新键盘，再重置输入列表
-        if (resetInputList) {
-            getInputList().reset(false);
-        }
-    }
-
     private void onConfigurationChanged(Conf conf, Object oldValue, Object newValue) {
         Keyboard keyboard = getKeyboard();
         if (keyboard == null) {
@@ -212,6 +182,12 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         onMsg(keyboard, KeyboardMsg.Keyboard_Config_Update_Done, new CommonKeyboardMsgData());
     }
 
+    // =============================== Start: 消息处理 ===================================
+
+    public void setListener(UserMsgListener listener) {
+        this.listener = listener;
+    }
+
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
@@ -224,7 +200,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.listener.onMsg(msg, data);
     }
 
-    // ===============================================================
+    // -------------------------------------------
 
     /** 响应输入列表的 {@link InputListMsg} 消息：向下传递消息给内部视图 */
     @Override
@@ -281,9 +257,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
     }
 
-    /** 根据配置更新键盘：涉及键盘切换等 */
-    private void updateKeyboard(Keyboard.Type type) {
-    }
+    // =============================== End: 消息处理 ===================================
 
     /** 重新布局视图 */
     private void relayout() {

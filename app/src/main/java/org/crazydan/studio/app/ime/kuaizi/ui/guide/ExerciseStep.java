@@ -20,13 +20,13 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 import android.graphics.drawable.Drawable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.ViewData;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep implements ViewData {
+public class ExerciseStep implements RecyclerViewData {
     public final String name;
     public final String content;
     public final Action action;

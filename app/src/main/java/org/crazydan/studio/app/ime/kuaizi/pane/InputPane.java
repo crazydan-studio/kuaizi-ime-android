@@ -73,7 +73,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.inputList.setListener(this);
     }
 
-    // <<<<<<<<<<<<<<<<<<<<<< 生命周期
+    // =============================== Start: 生命周期 ===================================
 
     /** 创建 {@link InputPane} */
     public static InputPane create(Context context) {
@@ -89,11 +89,11 @@ public class InputPane implements InputMsgListener, UserMsgListener {
      * 启动 {@link InputPane}
      *
      * @param keyboardType
-     *         待启用的键盘类型
+     *         待使用的键盘类型
      */
     public void start(Keyboard.Type keyboardType, boolean resetInputting) {
         // 先切换键盘
-        enableKeyboard(keyboardType);
+        switchKeyboardTo(keyboardType);
         // 再重置输入列表
         if (resetInputting) {
             this.inputList.reset(false);
@@ -132,9 +132,10 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         // 确保拼音字典库能够被及时关闭
         PinyinDict.instance().close();
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    // <<<<<<<<<<<<<<<<<<< 内部状态
+    // =============================== End: 生命周期 ===================================
+
+    // =============================== Start: 内部状态 ===================================
 
     /** 获取键盘类型 */
     public Keyboard.Type getKeyboardType() {
@@ -154,9 +155,10 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     public void updateConfig(Consumer<Configuration> updater) {
         updater.accept(this.conf);
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>
 
-    // <<<<<<<<<<<<<<<<< 消息处理
+    // =============================== End: 内部状态 ===================================
+
+    // =============================== Start: 消息处理 ===================================
 
     public void addListener(InputMsgListener listener) {
         if (!this.listeners.contains(listener)) {
@@ -180,13 +182,16 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.inputList.onMsg(msg, data);
     }
 
+    // --------------------------------------
+
     /** 响应键盘的 {@link KeyboardMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+        // TODO 在键盘状态中记录 Pending Input，再在按键输入过程中，向上发送 Pending Input，再调用 InputList 更新 pending
         switch (msg) {
             case Keyboard_Switch_Doing: {
                 Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
-                enableKeyboard(target);
+                switchKeyboardTo(target);
 
                 onMsg(this.keyboard, Keyboard_Switch_Done, msgData);
                 return;
@@ -203,10 +208,11 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
         this.listeners.forEach(listener -> listener.onMsg(inputList, msg, msgData));
     }
-    // >>>>>>>>>>>>>>>>>>>>
 
-    /** 启用指定类型的键盘 */
-    private void enableKeyboard(Keyboard.Type type) {
+    // =============================== End: 消息处理 ===================================
+
+    /** 切换到指定类型的键盘 */
+    private void switchKeyboardTo(Keyboard.Type type) {
         Keyboard old = this.keyboard;
         Keyboard.Type oldType = getKeyboardType();
 

@@ -23,13 +23,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
-import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
@@ -42,18 +43,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWor
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsFlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsSlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 
 /**
  * {@link Type#Pinyin 汉语拼音键盘}
@@ -615,7 +615,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         // 并确定候选字
-        determine_NotConfirmed_InputWord(inputList, pending);
+        determine_NotConfirmed_InputWord(pending);
 
         fire_InputChars_Input_Doing(currentKey, InputCharsInputtingMsgData.KeyInputType.slip);
     }
@@ -671,7 +671,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             input.setWord(null);
         } else {
             input.appendKey(key);
-            determine_NotConfirmed_InputWord(inputList, input);
+            determine_NotConfirmed_InputWord(input);
         }
 
         // 再结束输入
@@ -755,7 +755,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         // 并确定候选字
-        determine_NotConfirmed_InputWord(inputList, pending);
+        determine_NotConfirmed_InputWord(pending);
 
         if (needToEndInputting) {
             end_InputChars_Inputting(inputList, pending, currentKey, !needToContinueInputting);
@@ -868,7 +868,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        Map<Integer, InputWord> candidateMap = getInputCandidateWords(inputList, input);
+        Map<Integer, InputWord> candidateMap = getInputCandidateWords(input);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
 
         List<Integer> topBestCandidateIds = this.pinyinDict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
@@ -878,7 +878,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // 拼音修正后，需更新其自动确定的候选字
         if (inputPinyinChanged) {
-            determine_NotConfirmed_InputWord(inputList, input);
+            determine_NotConfirmed_InputWord(input);
         }
 
         // 当前输入确定的拼音字放在最前面
@@ -995,7 +995,7 @@ public class PinyinKeyboard extends BaseKeyboard {
      * <p/>
      * 在滑屏输入中实时调用
      */
-    private void determine_NotConfirmed_InputWord(InputList inputList, CharInput input) {
+    private void determine_NotConfirmed_InputWord(CharInput input) {
         Integer pinyinCharsId = this.pinyinDict.getPinyinCharsTree().getCharsId(input);
 
         InputWord word = null;
@@ -1014,12 +1014,13 @@ public class PinyinKeyboard extends BaseKeyboard {
      *
      * @return 不为 <code>null</code>
      */
-    private Map<Integer, InputWord> getInputCandidateWords(InputList inputList, CharInput input) {
+    private Map<Integer, InputWord> getInputCandidateWords(CharInput input) {
         String inputChars = input.getJoinedChars();
         return this.pinyinDict.getCandidatePinyinWords(inputChars);
     }
 
     private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {
+        // TODO 在 InputList 发送 Input 选中消息时附带短语
         List<PinyinWord> phraseWords = inputList.getPinyinPhraseWordsFrom(input);
 
         return this.pinyinDict.findTopBestEmojisMatchedPhrase(phraseWords, top);

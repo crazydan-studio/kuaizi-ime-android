@@ -27,10 +27,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
@@ -184,6 +184,8 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         this.inputPane.start(keyboardType, resetInputting);
     }
 
+    // =============================== Start: 消息处理 ===================================
+
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         switch (msg) {
@@ -220,6 +222,8 @@ public class ImeService extends InputMethodService implements InputMsgListener {
             }
         }
     }
+
+    // =============================== End: 消息处理 ===================================
 
     private void backspace() {
         // Note: 发送按键事件的兼容性更好，可由组件处理删除操作

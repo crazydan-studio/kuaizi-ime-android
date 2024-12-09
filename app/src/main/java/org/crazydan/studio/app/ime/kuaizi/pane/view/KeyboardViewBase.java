@@ -103,7 +103,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
         this.adapter.updateKeys(keys, themeResId, orientation);
     }
 
-    public double getBottomSpacing() {
+    public float getBottomSpacing() {
         return this.layoutManager.getGridPaddingBottom();
     }
 

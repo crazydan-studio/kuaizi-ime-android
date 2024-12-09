@@ -24,10 +24,11 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
  * {@link GapInput} 的视图
@@ -48,20 +49,21 @@ public class GapInputView extends InputView<GapInput> {
         this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
-    public void bind(Input.Option option, GapInput data, CharInput pending, boolean selected, int gapSpaceCount) {
-        super.bind(data);
+    public void bind(InputViewData data, boolean selected) {
+        super.bind((GapInput) data.input);
 
+        CharInput pending = data.pending;
         boolean hasPending = !Input.isEmpty(pending);
         if (hasPending) {
-            addLeftSpaceMargin(this.pendingView, gapSpaceCount);
+            addLeftSpaceMargin(this.pendingView, data.gapSpaces);
 
             ViewUtils.hide(this.cursorView);
             ViewUtils.show(this.pendingView);
 
-            showWord(option, pending, selected);
+            showWord(data.option, pending, selected);
             setSelectedBgColor(this.pendingView, selected);
         } else {
-            addLeftSpaceMargin(this.cursorView, gapSpaceCount);
+            addLeftSpaceMargin(this.cursorView, data.gapSpaces);
 
             ViewUtils.show(this.cursorView);
             ViewUtils.hide(this.pendingView);

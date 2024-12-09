@@ -65,11 +65,11 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
                .addListener(this);
     }
 
+    // =============================== Start: 消息处理 ===================================
+
     public void setListener(UserInputMsgListener listener) {
         this.listener = listener;
     }
-
-    // <<<<<<<<<<<<<<<<< 消息处理
 
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
@@ -88,7 +88,8 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
             }
         }
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>
+
+    // =============================== End: 消息处理 ===================================
 
     public void update(InputList inputList) {
         List<CompletionInput> completions = inputList.getCompletions();

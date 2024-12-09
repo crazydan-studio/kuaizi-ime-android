@@ -246,7 +246,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
         return rectHexagonList;
     }
 
-    public double getGridPaddingBottom() {
+    public float getGridPaddingBottom() {
         return this.gridPaddingBottom;
     }
 

@@ -21,6 +21,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
  * {@link CharInput} 的视图
@@ -34,20 +35,24 @@ public class CharInputView extends InputView<CharInput> {
         super(itemView);
     }
 
-    public void bind(
-            Input.Option option, CharInput data, CharInput pending, boolean selected, int gapSpaceCount
-    ) {
-        bind(option, data, pending, selected, false, gapSpaceCount);
+    public void bind(InputViewData data, boolean selected) {
+        CharInput input = (CharInput) data.input;
+        CharInput pending = data.pending;
+
+        super.bind(input);
+
+        addLeftSpaceMargin(this.itemView, data.gapSpaces);
+        setSelectedBgColor(this.itemView, selected);
+
+        showWord(data.option, Input.isEmpty(pending) ? input : pending, selected, false);
     }
 
-    public void bind(
-            Input.Option option, CharInput data, CharInput pending, boolean selected, boolean hideWordSpell,
-            int gapSpaceCount
-    ) {
-        super.bind(data);
-        addLeftSpaceMargin(this.itemView, gapSpaceCount);
+    public void bind(CharInput input) {
+        super.bind(input);
 
-        showWord(option, Input.isEmpty(pending) ? data : pending, selected, hideWordSpell);
-        setSelectedBgColor(this.itemView, selected);
+        addLeftSpaceMargin(this.itemView, 0);
+        setSelectedBgColor(this.itemView, false);
+
+        showWord(null, input, false, true);
     }
 }

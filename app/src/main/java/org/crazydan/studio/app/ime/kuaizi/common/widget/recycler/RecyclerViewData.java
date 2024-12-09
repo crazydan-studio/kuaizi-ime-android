@@ -23,7 +23,7 @@ package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-28
  */
-public interface ViewData {
+public interface RecyclerViewData {
 
     /** 判定排除视图展示相关的配置信息后的数据是否依然相同 */
     boolean isSameWith(Object o);

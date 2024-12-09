@@ -433,7 +433,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.deleteSelected();
-        inputList.fireMsg(InputListMsg.Input_Selected_Delete_Done, input);
+        inputList.sendMsg(InputListMsg.Input_Selected_Delete_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
@@ -443,7 +443,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.dropPending();
-        inputList.fireMsg(InputListMsg.Input_Pending_Drop_Done, input);
+        inputList.sendMsg(InputListMsg.Input_Pending_Drop_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
@@ -1072,7 +1072,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         });
 
-        inputList.fireMsg(InputListMsg.Input_Completion_Update_Done, pending);
+        inputList.sendMsg(InputListMsg.Input_Completion_Update_Done, pending);
     }
 
     /** 更新当前输入位置的短语输入补全 */
@@ -1082,7 +1082,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> input = inputList.getSelected();
         do_InputList_Phrase_Completion_Updating(inputList, input);
 
-        inputList.fireMsg(InputListMsg.Input_Completion_Update_Done, input);
+        inputList.sendMsg(InputListMsg.Input_Completion_Update_Done, input);
     }
 
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
@@ -1370,7 +1370,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
 
-        inputList.fireMsg(InputListMsg.Input_Choose_Done, input);
+        inputList.sendMsg(InputListMsg.Input_Choose_Done, input);
     }
 
     /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */
