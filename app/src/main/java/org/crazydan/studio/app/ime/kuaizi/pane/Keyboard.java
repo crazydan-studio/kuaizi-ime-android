@@ -22,8 +22,10 @@ import java.util.function.Supplier;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
 /**
  * 键盘，做不同的输入处理
@@ -31,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public interface Keyboard extends InputListMsgListener, UserKeyMsgListener {
+public interface Keyboard {
 
     Type getType();
 
@@ -41,16 +43,20 @@ public interface Keyboard extends InputListMsgListener, UserKeyMsgListener {
 
     KeyFactory getKeyFactory();
 
-    void setInputList(Supplier<InputList> getter);
-
     /** 启动 */
     void start();
 
-    /** 重置状态 */
+    /** 重置 */
     void reset();
 
     /** 销毁 */
     void destroy();
+
+    /** 响应 {@link UserKeyMsg} 消息 */
+    void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data);
+
+    /** 响应 {@link InputListMsg} 消息 */
+    void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData);
 
     /** 键盘类型 */
     enum Type {

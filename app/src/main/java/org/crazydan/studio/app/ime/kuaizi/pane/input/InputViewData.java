@@ -82,7 +82,7 @@ public class InputViewData {
 
             // Note：视图始终与待输入的算术输入绑定，
             // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算术表达式中的字符
-            return new InputViewData(mathExprInput, null, position, option, selected, gapSpaces);
+            return new InputViewData(mathExprInput, pending, position, option, selected, gapSpaces);
         } else if (input.isGap()) {
             if (!Input.isEmpty(pending)) {
                 gapSpaces = needGapSpace ? 2 : 1;

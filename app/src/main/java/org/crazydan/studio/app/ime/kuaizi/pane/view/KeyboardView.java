@@ -122,7 +122,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 }
                 break;
             }
-            case FingerMoving_End: {
+            case FingerMoving_Stop: {
                 // 确保已绘制的轨迹被重绘，以避免出现轨迹残留
                 if (!this.gestureTrailer.isDisabled()) {
                     invalidate();

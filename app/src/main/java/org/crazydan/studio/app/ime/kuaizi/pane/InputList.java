@@ -49,7 +49,9 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Cl
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Cleaned_Cancel_Done;
 
 /**
- * {@link InputPane 键盘}输入列表，含零个或多个{@link Input 输入对象}
+ * 输入列表
+ * <p/>
+ * 输入列表由零个或多个 {@link Input} 组成，代表用户当前已输入和正在输入的内容
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28

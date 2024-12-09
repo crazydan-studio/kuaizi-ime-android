@@ -29,14 +29,14 @@ public enum UserKeyMsg {
     /** 按压 {@link Key} 开始 */
     Press_Key_Start,
     /** 按压 {@link Key} 结束 */
-    Press_Key_End,
+    Press_Key_Stop,
 
     /** 长按 {@link Key} 开始 */
     LongPress_Key_Start,
     /** 长按 {@link Key} 的 tick */
     LongPress_Key_Tick,
     /** 长按 {@link Key} 结束 */
-    LongPress_Key_End,
+    LongPress_Key_Stop,
 
     /** 单击 {@link Key} */
     SingleTap_Key,
@@ -48,7 +48,7 @@ public enum UserKeyMsg {
     /** 手指移动 */
     FingerMoving,
     /** 手指移动结束 */
-    FingerMoving_End,
+    FingerMoving_Stop,
     /** 手指翻动 */
     FingerFlipping,
 }

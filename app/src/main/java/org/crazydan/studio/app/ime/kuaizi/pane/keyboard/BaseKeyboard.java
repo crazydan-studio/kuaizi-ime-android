@@ -78,7 +78,6 @@ public abstract class BaseKeyboard implements Keyboard {
     private final Type prevType;
 
     private Supplier<Configuration> configGetter;
-    private Supplier<InputList> inputListGetter;
 
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
@@ -142,15 +141,6 @@ public abstract class BaseKeyboard implements Keyboard {
     @Override
     public void setConfig(Supplier<Configuration> getter) {
         this.configGetter = getter;
-    }
-
-    public InputList getInputList() {
-        return this.inputListGetter.get();
-    }
-
-    @Override
-    public void setInputList(Supplier<InputList> getter) {
-        this.inputListGetter = getter;
     }
 
     @Override
@@ -222,7 +212,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * <p/>
      * {@link CtrlKey#isDisabled() 被禁用}的 {@link CtrlKey} 将始终返回 <code>true</code>
      */
-    protected boolean try_OnUserKeyMsg(UserKeyMsg msg, UserKeyMsgData data) {
+    protected boolean try_OnUserKeyMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
         Key<?> key = data.target;
 
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
@@ -789,7 +779,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         switch (msg) {
-            case Press_Key_End: {
+            case Press_Key_Stop: {
                 if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
                     fire_InputMsg(KeyboardMsg.Keyboard_XPad_Simulation_Terminated, new CommonKeyboardMsgData());
                     return true;

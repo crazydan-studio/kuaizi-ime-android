@@ -49,8 +49,8 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
+        if (try_OnUserKeyMsg(inputList, msg, data)) {
             return;
         }
 

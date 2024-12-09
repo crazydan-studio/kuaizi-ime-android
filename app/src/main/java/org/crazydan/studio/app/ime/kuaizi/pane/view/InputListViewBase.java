@@ -146,7 +146,8 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
 
     /** 滚动到选中输入的位置，确保其处于可见区域 */
     protected void scrollToSelectedInput(List<InputViewData> dataList) {
-        InputViewData selectedData = dataList.stream().filter(d -> d.selected).findFirst().orElse(null);
+        // Note: 因为配对符号均会被选中，故而，只有含有 pending input 的才是正在输入的 input
+        InputViewData selectedData = dataList.stream().filter(d -> d.pending != null).findFirst().orElse(null);
         if (selectedData == null) {
             return;
         }

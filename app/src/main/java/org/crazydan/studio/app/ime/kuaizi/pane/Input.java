@@ -22,7 +22,10 @@ import java.util.List;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
- * {@link InputPane 键盘}输入对象，包含零个或多个字符
+ * 输入对象
+ * <p/>
+ * 单次有用户输入的所有有效字符均记录在该对象中，
+ * 用于识别拼音、表情、符号等用户输入
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28

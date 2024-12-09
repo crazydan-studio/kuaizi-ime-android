@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
@@ -122,8 +122,8 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
+        if (try_OnUserKeyMsg(inputList, msg, data)) {
             return;
         }
 

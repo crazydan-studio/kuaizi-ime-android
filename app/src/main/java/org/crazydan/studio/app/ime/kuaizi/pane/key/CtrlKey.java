@@ -20,8 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 
@@ -54,6 +54,15 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
     public static boolean is(Key<?> key, Type type) {
         return type != null && key instanceof CtrlKey && ((CtrlKey) key).getType() == type;
+    }
+
+    public static boolean isAny(Key<?> key, Type... types) {
+        for (Type type : types) {
+            if (is(key, type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 按钮{@link Type 类型} */

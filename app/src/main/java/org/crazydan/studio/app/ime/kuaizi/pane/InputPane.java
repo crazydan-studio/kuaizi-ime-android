@@ -150,7 +150,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /**
      * 更新配置
      * <p/>
-     * 通过更新函数以支持批量更新，并便于一次性触发配置更新消息
+     * 通过更新函数以支持批量更新，并便于一次性触发多个配置的更新消息
      */
     public void updateConfig(Consumer<Configuration> updater) {
         updater.accept(this.conf);
@@ -173,7 +173,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给 {@link Keyboard} */
     @Override
     public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        this.keyboard.onMsg(msg, data);
+        this.keyboard.onMsg(this.inputList, msg, data);
     }
 
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
@@ -187,7 +187,6 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 响应键盘的 {@link KeyboardMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
-        // TODO 在键盘状态中记录 Pending Input，再在按键输入过程中，向上发送 Pending Input，再调用 InputList 更新 pending
         switch (msg) {
             case Keyboard_Switch_Doing: {
                 Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
@@ -246,7 +245,6 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         }
 
         Keyboard newKeyboard = createKeyboard(type, oldType);
-//        newKeyboard.setInputList(this::getInputList);
 //        newKeyboard.setConfig(this::getConfig);
 
         this.keyboard = newKeyboard;
