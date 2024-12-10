@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
@@ -28,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
@@ -48,6 +50,11 @@ public class EmojiKeyboard extends BaseKeyboard {
     @Override
     public Type getType() {
         return Type.Emoji;
+    }
+
+    @Override
+    public void start(InputList inputList) {
+        start_Emoji_Choosing();
     }
 
     @Override
@@ -121,22 +128,51 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
-        if (try_Single_Key_Inputting(inputList, key)) {
+        boolean isDirectInputting = inputList.isEmpty();
+        if (!isDirectInputting) {
+            confirm_or_New_InputList_Pending(inputList);
+
+            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
             return;
         }
 
-        boolean isDirectInputting = inputList.isEmpty();
+        InputWord word = key.getWord();
         CharInput pending = inputList.newPending();
 
-        InputWord word = key.getWord();
         pending.appendKey(key);
         pending.setWord(word);
 
         // 直接提交输入
-        if (isDirectInputting) {
-            commit_InputList(inputList, false, false);
-        } else {
-            confirm_InputList_Pending(inputList, key);
+        commit_InputList(inputList, false, false);
+    }
+
+    private void start_Emoji_Choosing() {
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
+        int pageSize = keyTable.getEmojiKeysPageSize();
+
+        Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
+
+        EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
+        State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());
+        change_State_To(null, state);
+
+        String group = null;
+        // 若默认分组（常用）的数据为空，则切换到第二个分组
+        if (stateData.getPagingData().isEmpty()) {
+            group = stateData.getGroups().get(1);
         }
+
+        do_Emoji_Choosing(null, group);
+    }
+
+    private void do_Emoji_Choosing(Key<?> key, String group) {
+        EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
+        stateData.setGroup(group);
+
+        fire_Emoji_Choose_Doing(key);
+    }
+
+    private void fire_Emoji_Choose_Doing(Key<?> key) {
+        fire_Common_InputMsg(KeyboardMsg.Emoji_Choose_Doing, key);
     }
 }

@@ -18,13 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
-import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
-import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -34,11 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
@@ -124,18 +116,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public KeyFactory getKeyFactory() {
-        switch (this.state.type) {
-            case Symbol_Choose_Doing: {
-                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
-
-                SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
-
-                return () -> keyTable.createSymbolKeys(stateData.getGroup(),
-                                                       stateData.isOnlyPair(),
-                                                       stateData.getPageStart());
-            }
-        }
-
         return doGetKeyFactory();
     }
 
@@ -184,27 +164,7 @@ public abstract class BaseKeyboard implements Keyboard {
             return true;
         }
 
-        if (try_OnUserKeyMsg_Over_XPad(msg, key, data)) {
-            return true;
-        }
-
-        switch (this.state.type) {
-            case InputChars_Input_Waiting: {
-                break;
-            }
-            case Symbol_Choose_Doing: {
-                if (msg == UserKeyMsg.FingerFlipping) {
-                    on_Symbol_Choose_Doing_PageFlipping_Msg(key, data);
-                } else if (key instanceof SymbolKey) {
-                    on_Symbol_Choose_Doing_SymbolKey_Msg(inputList, msg, (SymbolKey) key);
-                } else if (key instanceof CtrlKey) {
-                    on_Symbol_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
-                }
-                return true;
-            }
-        }
-
-        return false;
+        return try_OnUserKeyMsg_Over_XPad(msg, key, data);
     }
 
     /** 触发 {@link KeyboardMsg} 消息 */
@@ -667,13 +627,6 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(option.value(), key);
                         return true;
                     }
-                    case Toggle_Symbol_Keyboard: {
-                        play_SingleTick_InputAudio(key);
-
-                        switch_Keyboard(Type.Symbol, key);
-                        start_Symbol_Choosing(key, false);
-                        return true;
-                    }
                 }
                 break;
             }
@@ -811,8 +764,9 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
         inputList.clearPairOnSelected();
 
-        if (try_Single_Key_Inputting(inputList, key)) {
-            return;
+        if (key.isEmoji() || key.isSymbol()) {
+            confirm_or_New_InputList_Pending(inputList);
+            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
         }
 
         if (key instanceof CharKey) {
@@ -898,30 +852,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputChars_Input_Doing(newKey);
     }
 
-    protected boolean try_Single_Key_Inputting(InputList inputList, Key<?> key) {
-        if (!key.isEmoji() && !key.isSymbol()) {
-            return false;
-        }
-
-        boolean isDirectInputting = inputList.isEmpty();
-        if (isDirectInputting) {
-            return false;
-        }
-
-        if (key instanceof SymbolKey && ((SymbolKey) key).isPair()) {
-            prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) ((SymbolKey) key).getSymbol());
-
-            // Note：配对符号输入后不再做连续输入，键盘状态重置为初始状态
-            confirm_InputList_Pending_and_Goto_Init_State(inputList, key);
-        } else {
-            confirm_or_New_InputList_Pending(inputList);
-
-            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
-        }
-
-        return true;
-    }
-
     protected void do_Single_CharKey_Replacement_Committing(InputList inputList, CharKey key, int replacementIndex) {
         CharKey newKey = key.createReplacementKey(replacementIndex);
         show_InputChars_Input_Popup(newKey);
@@ -971,193 +901,6 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
     // >>>>>>
 
-    // <<<<<<<< 表情符号选择逻辑
-    protected void start_Emoji_Choosing(Key<?> key) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
-        int pageSize = keyTable.getEmojiKeysPageSize();
-
-        Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
-
-        EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
-        State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());
-        change_State_To(key, state);
-
-        String group = null;
-        // 若默认分组（常用）的数据为空，则切换到第二个分组
-        if (stateData.getPagingData().isEmpty()) {
-            group = stateData.getGroups().get(1);
-        }
-
-        do_Emoji_Choosing(key, group);
-    }
-
-    protected void do_Emoji_Choosing(Key<?> key, String group) {
-        EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
-        stateData.setGroup(group);
-
-        fire_Emoji_Choose_Doing(key);
-    }
-
-    protected void fire_Emoji_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsg.Emoji_Choose_Doing, key);
-    }
-    // >>>>>>>>
-
-    // <<<<<<<<<<< 对标点符号的操作
-    protected void start_Symbol_Choosing(Key<?> key, boolean onlyPair) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
-        int pageSize = keyTable.getSymbolKeysPageSize();
-
-        SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pageSize, onlyPair);
-        State state = new State(State.Type.Symbol_Choose_Doing, stateData, createInitState());
-        change_State_To(key, state);
-
-        SymbolGroup group = SymbolGroup.latin;
-        if (getType() == Type.Pinyin) {
-            group = SymbolGroup.han;
-        }
-
-        do_Symbol_Choosing(key, group);
-    }
-
-    private void on_Symbol_Choose_Doing_SymbolKey_Msg(InputList inputList, UserKeyMsg msg, SymbolKey key) {
-        boolean continuous = false;
-
-        switch (msg) {
-            case LongPress_Key_Tick:
-                continuous = true;
-            case SingleTap_Key: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
-
-                do_Single_Symbol_Inputting(inputList, key, continuous);
-                break;
-            }
-        }
-    }
-
-    private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
-        if (msg == UserKeyMsg.SingleTap_Key) {
-            if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
-                play_SingleTick_InputAudio(key);
-
-                CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();
-                do_Symbol_Choosing(key, option.value());
-            }
-        }
-    }
-
-    private void on_Symbol_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsgData data) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
-
-        fire_Symbol_Choose_Doing(key);
-    }
-
-    private void do_Symbol_Choosing(Key<?> key, SymbolGroup group) {
-        SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
-        stateData.setGroup(group);
-
-        fire_Symbol_Choose_Doing(key);
-    }
-
-    private void fire_Symbol_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsg.Symbol_Choose_Doing, key);
-    }
-
-    protected void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {
-        if (try_Single_Key_Inputting(inputList, key)) {
-            return;
-        }
-
-        boolean isDirectInputting = inputList.isEmpty();
-        boolean isPairSymbolKey = key.isPair();
-        CharInput pending = inputList.newPending();
-
-        if (isPairSymbolKey) {
-            Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
-
-            prepare_for_PairSymbol_Inputting(inputList, symbol);
-        } else {
-            pending.appendKey(key);
-            pending.clearPair();
-        }
-
-        if (isDirectInputting) {
-            // 直接提交输入
-            commit_InputList(inputList, false, false, isPairSymbolKey);
-        } else {
-            confirm_InputList_Pending(inputList, key);
-        }
-
-        // Note：非连续输入的情况下，配对符号输入后不再做连续输入，键盘状态重置为初始状态
-        if (isPairSymbolKey && !continuousInput) {
-            change_State_to_Init();
-        }
-    }
-
-    private void prepare_for_PairSymbol_Inputting(InputList inputList, Symbol.Pair symbol) {
-        String left = symbol.left;
-        String right = symbol.right;
-
-        prepare_for_PairKey_Inputting(inputList,
-                                      () -> SymbolKey.create(Symbol.single(left)),
-                                      () -> SymbolKey.create(Symbol.single(right)));
-    }
-
-    protected void prepare_for_PairKey_Inputting(InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right) {
-        Input<?> selected = inputList.getSelected();
-
-        Key<?> leftKey = left.get();
-        Key<?> rightKey = right.get();
-
-        // 用新的配对符号替换原配对符号
-        if (!selected.isGap() && ((CharInput) selected).hasPair()) {
-            CharInput pending = inputList.newPending();
-
-            CharInput leftInput = pending;
-            CharInput rightInput = ((CharInput) selected).getPair();
-
-            int rightInputIndex = inputList.indexOf(rightInput);
-            // 交换左右顺序
-            if (inputList.getSelectedIndex() > rightInputIndex) {
-                leftInput = rightInput;
-                rightInput = pending;
-            }
-
-            leftInput.replaceLastKey(leftKey);
-            rightInput.replaceLastKey(rightKey);
-        } else {
-            // 对于输入修改，若为非空的待输入，则对其做配对符号包裹
-            boolean wrapSelected = !selected.isGap() && !inputList.hasEmptyPending() && !selected.isSymbol();
-            if (wrapSelected) {
-                // 选中被包裹输入的左侧 Gap
-                inputList.confirmPendingAndSelectPrevious();
-            } else {
-                inputList.confirmPendingAndSelectNext();
-            }
-
-            CharInput leftInput = inputList.getPending();
-            leftInput.appendKey(leftKey);
-
-            if (wrapSelected) {
-                // 选中被包裹输入的右侧 Gap：左符号+Gap+被包裹输入+右符号
-                inputList.confirmPendingAndSelectByOffset(3);
-            } else {
-                inputList.confirmPendingAndSelectNext();
-            }
-
-            CharInput rightInput = inputList.getPending();
-            rightInput.appendKey(rightKey);
-
-            // 绑定配对符号的关联：由任意一方发起绑定即可
-            rightInput.setPair(leftInput);
-
-            // 确认右侧的配对输入，并将光标移动到 右配对输入 的左侧 Gap 位置以确保光标在配对符号的中间位置
-            inputList.confirmPendingAndSelectPrevious();
-        }
-    }
-    // >>>>>>>>>>>
-
     // <<<<<<<<< 对输入列表的操作
     protected void start_Selected_Input_ReChoosing(InputList inputList) {
         Input<?> selected = inputList.getSelected();
@@ -1167,6 +910,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected void start_Input_Choosing(InputList inputList, Input<?> input) {
         inputList.select(input);
+
         start_InputList_Current_Phrase_Completion_Updating(inputList);
 
         // Note：输入过程中操作和处理的都是 pending
@@ -1186,12 +930,15 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         if (pending.isEmoji()) {
-            start_Emoji_Choosing(null);
+            switch_Keyboard(Type.Emoji, null);
+            return;
         } else if (pending.isSymbol()) {
-            boolean hasPair = !input.isGap() && ((CharInput) input).hasPair();
-
-            start_Symbol_Choosing(null, hasPair);
-        } else if (!do_Input_Choosing(inputList, pending)) {
+            switch_Keyboard(Type.Emoji, null);
+            return;
+        } else if (pending.isPinyin()) {
+            switch_Keyboard(Type.Pinyin_Candidates, null);
+            return;
+        } else {
             // 在选择输入时，对于新输入，需先确认其 pending
             if (input.isGap() && !pending.isEmpty()) {
                 confirm_InputList_Pending_and_Goto_Init_State(inputList, null);
@@ -1202,8 +949,5 @@ public abstract class BaseKeyboard implements Keyboard {
 
         inputList.sendMsg(InputListMsg.Input_Choose_Done, input);
     }
-
-    /** 已处理时返回 <code>true</code>，否则返回 <code>false</code> 以按默认方式处理 */
-    protected boolean do_Input_Choosing(InputList inputList, CharInput input) {return false;}
     // >>>>>>>>>
 }

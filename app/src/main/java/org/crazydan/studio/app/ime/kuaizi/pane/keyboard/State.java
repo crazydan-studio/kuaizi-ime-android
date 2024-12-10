@@ -69,7 +69,6 @@ public class State {
 
         /** 表情符号选择中 */
         Emoji_Choose_Doing,
-
         /** 符号（标点、表情）选择中 */
         Symbol_Choose_Doing,
     }

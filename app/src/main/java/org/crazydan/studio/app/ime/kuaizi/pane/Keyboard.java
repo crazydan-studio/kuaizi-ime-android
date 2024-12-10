@@ -59,8 +59,11 @@ public interface Keyboard {
 
     /** 键盘类型 */
     enum Type {
-        /** 汉语拼音键盘 */
+        /** 拼音键盘 */
         Pinyin,
+        /** 拼音候选字键盘 */
+        Pinyin_Candidates,
+
         /** 算术键盘：支持数学计算 */
         Math,
         /** 拉丁文键盘：含字母、数字，逐字直接录入目标输入组件 */
