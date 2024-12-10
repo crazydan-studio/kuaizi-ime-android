@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**

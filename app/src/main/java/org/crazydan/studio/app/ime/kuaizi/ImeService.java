@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgDa
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
  * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856

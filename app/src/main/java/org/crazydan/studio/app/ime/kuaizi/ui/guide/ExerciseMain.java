@@ -63,12 +63,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCandidateChoosingM
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.xpad.XPadView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;

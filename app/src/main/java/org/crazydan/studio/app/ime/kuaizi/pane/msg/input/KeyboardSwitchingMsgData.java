@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
  * @date 2023-07-27
  */
 public class KeyboardSwitchingMsgData extends CommonKeyboardMsgData {
+    /** 切换到的目标类型，若为 null 则由上层处理键盘切换 */
     public final Keyboard.Type target;
 
     public KeyboardSwitchingMsgData(Key<?> key, Keyboard.Type target) {

@@ -28,7 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.KeyboardViewBase;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
@@ -58,7 +58,7 @@ public class DynamicLayoutSandboxView extends KeyboardViewBase {
     /** 根据新的主题重新布局视图，以确保所有视图应用新的主题 */
     public void updateWithNewTheme(int themeResId) {
         // 清空
-        updateKeys(new Key[0][0], false);
+        update(new Key[0][0], false);
 
         updateWithTheme(themeResId);
     }
@@ -88,6 +88,6 @@ public class DynamicLayoutSandboxView extends KeyboardViewBase {
     public void updateWithTheme(int themeResId) {
         this.imageCache.clear();
 
-        updateKeys(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
+        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
     }
 }

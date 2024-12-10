@@ -19,19 +19,16 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.LatinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 
 /**
  * {@link Type#Latin 拉丁文键盘}
  * <p/>
- * 含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件
+ * 含字母、数字，逐字直接录入目标输入组件
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-29
  */
 public class LatinKeyboard extends DirectInputKeyboard {
-
-    public LatinKeyboard(KeyboardMsgListener listener, Type prevType) {super(listener, prevType);}
 
     @Override
     public Type getType() {

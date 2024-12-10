@@ -23,7 +23,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
@@ -37,8 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
  * @date 2023-07-30
  */
 public abstract class DirectInputKeyboard extends BaseKeyboard {
-
-    public DirectInputKeyboard(KeyboardMsgListener listener, Type prevType) {super(listener, prevType);}
 
     @Override
     public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {

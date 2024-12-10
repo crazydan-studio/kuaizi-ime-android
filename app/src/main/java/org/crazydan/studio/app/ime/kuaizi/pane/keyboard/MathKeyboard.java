@@ -33,7 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
@@ -50,8 +49,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
  */
 public class MathKeyboard extends BaseKeyboard {
     private InputList mathInputList;
-
-    public MathKeyboard(KeyboardMsgListener listener, Type prevType) {super(listener, prevType);}
 
     @Override
     public Type getType() {
@@ -173,7 +170,7 @@ public class MathKeyboard extends BaseKeyboard {
                     else {
                         parentInputList.confirmPendingAndSelectNext();
                     }
-                    exit(key);
+                    exit_Keyboard(key);
 
                     return true;
                 }
@@ -195,7 +192,7 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        return super.try_Common_OnCtrlKeyMsg(msg, key, data);
+        return super.try_Common_OnCtrlKeyMsg(mathInputList, msg, key, data);
     }
 
     private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {

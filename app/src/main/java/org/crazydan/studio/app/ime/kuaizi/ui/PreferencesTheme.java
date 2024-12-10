@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**

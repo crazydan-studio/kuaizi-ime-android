@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
@@ -72,18 +71,15 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    protected final PinyinDict pinyinDict = PinyinDict.instance();
-    private final KeyboardMsgListener listener;
-    /** 前序键盘类型：仅发生了键盘切换时才会被赋值 */
-    private final Type prevType;
+    private KeyboardMsgListener listener;
 
     private Supplier<Configuration> configGetter;
 
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
-    protected BaseKeyboard(KeyboardMsgListener listener, Type prevType) {
+    @Override
+    public void setListener(KeyboardMsgListener listener) {
         this.listener = listener;
-        this.prevType = prevType;
     }
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Waiting 待输入}状态 */
@@ -218,7 +214,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
             && (key.isDisabled() //
-                || try_Common_OnCtrlKeyMsg(msg, (CtrlKey) key, data))) {
+                || try_Common_OnCtrlKeyMsg(inputList, msg, (CtrlKey) key, data))) {
             return true;
         }
 
@@ -547,7 +543,16 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
     protected void switchTo_Previous_Keyboard(Key<?> key) {
-        switch_Keyboard(this.prevType, key);
+        switch_Keyboard(null, key);
+    }
+
+    /** 退出并返回到原状态或前序键盘 */
+    protected void exit_Keyboard(Key<?> key) {
+        if (this.state.previous == null) {
+            switchTo_Previous_Keyboard(key);
+        } else {
+            change_State_to_Previous(key);
+        }
     }
 
     /** 切换键盘的左右手模式 */
@@ -574,15 +579,6 @@ public abstract class BaseKeyboard implements Keyboard {
         // 若发生切换，则再回来时键盘状态会主动被重置，
         // 故不需要提前重置键盘状态
         fire_Common_InputMsg(KeyboardMsg.IME_Switch_Doing, key);
-    }
-
-    /** 退出并返回到原状态或前序键盘 */
-    protected void exit(Key<?> key) {
-        if (this.state.previous == null) {
-            switchTo_Previous_Keyboard(key);
-        } else {
-            change_State_to_Previous(key);
-        }
     }
 
     /** 显示输入提示气泡 */
@@ -649,9 +645,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 尝试处理控制按键消息 */
-    protected boolean try_Common_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        InputList inputList = getInputList();
-
+    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
         switch (msg) {
             case LongPress_Key_Tick: {
                 switch (key.getType()) {
@@ -659,7 +653,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Space:
                     case Enter:
                         // 长按 tick 视为连续单击
-                        return try_Common_OnCtrlKeyMsg(UserKeyMsg.SingleTap_Key, key, data);
+                        return try_Common_OnCtrlKeyMsg(inputList, UserKeyMsg.SingleTap_Key, key, data);
                 }
                 break;
             }
@@ -701,10 +695,9 @@ public abstract class BaseKeyboard implements Keyboard {
                         confirm_InputList_Input_Enter_or_Space(inputList, key);
                         return true;
                     }
-                    // 点击 退出 按钮，则退回到前序状态或原键盘
                     case Exit: {
                         play_SingleTick_InputAudio(key);
-                        exit(key);
+                        exit_Keyboard(key);
                         return true;
                     }
                     case Switch_IME: {
@@ -1047,7 +1040,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         String text = pending.getText().toString();
-        List<String> bestLatins = this.pinyinDict.findTopBestMatchedLatin(text, 5);
+        List<String> bestLatins = this.dict.findTopBestMatchedLatin(text, 5);
 
         pending.clearCompletions();
         bestLatins.forEach((latin) -> {
@@ -1083,7 +1076,7 @@ public abstract class BaseKeyboard implements Keyboard {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getEmojiKeysPageSize();
 
-        Emojis emojis = this.pinyinDict.getAllEmojis(pageSize / 2);
+        Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
 
         EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
         State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());

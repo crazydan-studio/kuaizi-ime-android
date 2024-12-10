@@ -17,13 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
-import java.util.function.Supplier;
-
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
@@ -35,11 +35,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
  */
 public interface Keyboard {
 
+    /** 获取当前键盘类型 */
     Type getType();
 
     Configuration getConfig();
-
-    void setConfig(Supplier<Configuration> getter);
 
     KeyFactory getKeyFactory();
 
@@ -51,6 +50,9 @@ public interface Keyboard {
 
     /** 销毁 */
     void destroy();
+
+    /** 注册 {@link KeyboardMsg} 消息监听 */
+    void setListener(KeyboardMsgListener listener);
 
     /** 响应 {@link UserKeyMsg} 消息 */
     void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data);
@@ -64,10 +66,16 @@ public interface Keyboard {
         Pinyin,
         /** 算术键盘：支持数学计算 */
         Math,
-        /** 拉丁文键盘：含字母、数字和英文标点（在内部切换按键），逐字直接录入目标输入组件 */
+        /** 拉丁文键盘：含字母、数字，逐字直接录入目标输入组件 */
         Latin,
         /** 数字键盘：纯数字和 +、-、#、* 等符号 */
         Number,
+        /** 符号键盘：标点符号等 */
+        Symbol,
+        /** 表情键盘 */
+        Emoji,
+        /** 文本编辑键盘：提供复制、粘贴等文本操作 */
+        Editor,
 
         // 临时控制键盘切换
         /** 由 {@link ImeSubtype} 确定 */

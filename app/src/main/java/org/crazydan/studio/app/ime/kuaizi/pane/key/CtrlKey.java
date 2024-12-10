@@ -178,7 +178,7 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
         /** 回车 */
         Enter,
-        /** 退出当前键盘 */
+        /** 退回到前序状态或原键盘 */
         Exit,
 
         /** 切换输入法 */

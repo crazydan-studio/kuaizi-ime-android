@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 
 import android.content.Context;
@@ -26,10 +27,13 @@ import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
@@ -60,6 +64,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
     private Keyboard keyboard;
     private InputList inputList;
+    private Stack<Keyboard.Type> switchedKeyboards;
 
     private List<InputMsgListener> listeners;
 
@@ -68,6 +73,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
         this.conf = new Configuration();
         this.inputList = new InputList();
+        this.switchedKeyboards = new Stack<>();
         this.listeners = new ArrayList<>();
 
         this.inputList.setListener(this);
@@ -92,6 +98,9 @@ public class InputPane implements InputMsgListener, UserMsgListener {
      *         待使用的键盘类型
      */
     public void start(Keyboard.Type keyboardType, boolean resetInputting) {
+        // 全新的切换，故而需清空键盘切换记录
+        this.switchedKeyboards.clear();
+
         // 先切换键盘
         switchKeyboardTo(keyboardType);
         // 再重置输入列表
@@ -127,6 +136,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.conf = null;
         this.keyboard = null;
         this.inputList = null;
+        this.switchedKeyboards = null;
         this.listeners = null;
 
         // 确保拼音字典库能够被及时关闭
@@ -189,10 +199,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
         switch (msg) {
             case Keyboard_Switch_Doing: {
-                Keyboard.Type target = ((KeyboardSwitchingMsgData) msgData).target;
-                switchKeyboardTo(target);
-
-                onMsg(this.keyboard, Keyboard_Switch_Done, msgData);
+                on_Keyboard_Switch_Doing((KeyboardSwitchingMsgData) msgData);
                 return;
             }
         }
@@ -208,19 +215,38 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.listeners.forEach(listener -> listener.onMsg(inputList, msg, msgData));
     }
 
+    /** 处理 {@link KeyboardMsg#Keyboard_Switch_Doing} 消息 */
+    private void on_Keyboard_Switch_Doing(KeyboardSwitchingMsgData data) {
+        Keyboard.Type type = data.target;
+        if (type == null && !this.switchedKeyboards.isEmpty()) {
+            type = this.switchedKeyboards.pop();
+        }
+
+        Keyboard.Type oldType = switchKeyboardTo(type);
+        if (oldType != null) {
+            this.switchedKeyboards.push(oldType);
+        }
+
+        onMsg(this.keyboard, Keyboard_Switch_Done, new KeyboardSwitchingMsgData(data.getKey(), type));
+    }
+
     // =============================== End: 消息处理 ===================================
 
-    /** 切换到指定类型的键盘 */
-    private void switchKeyboardTo(Keyboard.Type type) {
+    /**
+     * 切换到指定类型的键盘
+     *
+     * @return 切换前的键盘类型，若为 null，则表示为首次创建键盘，或者，未发生键盘切换
+     */
+    private Keyboard.Type switchKeyboardTo(Keyboard.Type type) {
         Keyboard old = this.keyboard;
         Keyboard.Type oldType = getKeyboardType();
 
-        // 保持键盘不变，则仅需重置键盘即可
+        // 保持键盘不变，仅需重置键盘即可
         if (oldType != null //
             && (oldType == type //
                 || type == Keyboard.Type.Keep_Current)) {
             old.reset();
-            return;
+            return null;
         }
 
         switch (type) {
@@ -244,23 +270,29 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             old.destroy();
         }
 
-        Keyboard newKeyboard = createKeyboard(type, oldType);
-//        newKeyboard.setConfig(this::getConfig);
+        this.keyboard = createKeyboard(type);
+        this.keyboard.setListener(this);
+        this.keyboard.start();
 
-        this.keyboard = newKeyboard;
-        newKeyboard.start();
+        return oldType;
     }
 
-    private Keyboard createKeyboard(Keyboard.Type type, Keyboard.Type oldType) {
+    private Keyboard createKeyboard(Keyboard.Type type) {
         switch (type) {
             case Math:
-                return new MathKeyboard(this, oldType);
+                return new MathKeyboard();
             case Latin:
-                return new LatinKeyboard(this, oldType);
+                return new LatinKeyboard();
             case Number:
-                return new NumberKeyboard(this, oldType);
+                return new NumberKeyboard();
+            case Symbol:
+                return new SymbolKeyboard();
+            case Emoji:
+                return new EmojiKeyboard();
+            case Editor:
+                return new EditorKeyboard();
             default:
-                return new PinyinKeyboard(this, oldType);
+                return new PinyinKeyboard(this.dict);
         }
     }
 }

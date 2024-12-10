@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
-import org.crazydan.studio.app.ime.kuaizi.pane.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
  * {@link Exercise 练习题}视图
