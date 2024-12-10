@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
@@ -78,7 +78,7 @@ public class PinyinKeyTable extends KeyTable {
                         level0CharKey("j").withReplacements("J"),
                         } //
                 , new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Math),
+                switcherCtrlKey(Keyboard.Type.Math),
                 symbolKey("？").withReplacements("?"),
                 level0CharKey("d").withReplacements("D"),
                 level0CharKey("m").withReplacements("M"),
@@ -88,7 +88,7 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Latin),
+                switcherCtrlKey(Keyboard.Type.Latin),
                 // 😄
                 emojiKey("\uD83D\uDE04"),
                 symbolKey("；").withReplacements(";"),
@@ -99,7 +99,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("e").withReplacements("E"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Emoji),
                 symbolKey("：").withReplacements(":"),
                 level0CharKey("s").withReplacements("S"),
                 level0CharKey("t").withReplacements("T"),
@@ -109,7 +109,7 @@ public class PinyinKeyTable extends KeyTable {
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Symbol),
                 // 😉
                 emojiKey("\uD83D\uDE09"),
                 symbolKey("。").withReplacements("."),

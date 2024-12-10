@@ -213,7 +213,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
             }
             case Editor_Edit_Doing: {
                 EditorEditDoingMsgData d = (EditorEditDoingMsgData) msgData;
-                editEditor(d.action);
+                editText(d.action);
                 break;
             }
             case IME_Switch_Doing: {
@@ -271,7 +271,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editEditor(EditorEditAction action) {
+    private void editText(EditorEditAction action) {
         switch (action) {
             case backspace:
                 backspace();

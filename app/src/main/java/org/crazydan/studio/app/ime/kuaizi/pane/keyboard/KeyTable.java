@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
@@ -114,10 +114,6 @@ public abstract class KeyTable {
                                               R.drawable.ic_switch_to_right_hand,
                                               R.attr.key_ctrl_switcher_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Keyboard,
-                            KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Keyboard,
-                            KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
@@ -284,7 +280,8 @@ public abstract class KeyTable {
                : ctrlKey(CtrlKey.Type.Enter);
     }
 
-    public CtrlKey keyboardSwitchKey(Keyboard.Type type) {
+    /** 创建 键盘切换 控制按键 */
+    public CtrlKey switcherCtrlKey(Keyboard.Type type) {
         CtrlKey.Option<?> option = new CtrlKey.KeyboardSwitchOption(type);
 
         KeyStyle style = null;
@@ -297,6 +294,12 @@ public abstract class KeyTable {
                 break;
             case Pinyin:
                 style = KeyStyle.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_ctrl_switcher_bg_color);
+                break;
+            case Emoji:
+                style = KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color);
+                break;
+            case Symbol:
+                style = KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color);
                 break;
         }
 
@@ -388,14 +391,14 @@ public abstract class KeyTable {
                 null,
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Emoji),
                 //
                 null, null, null, null, null, null,
                 //
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Symbol),
                 //
                 null, null, null, xPadKey, null, null,
                 //
@@ -426,12 +429,12 @@ public abstract class KeyTable {
      */
     protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key<?>[][][] zone_2_keys) {
         Key<?>[] zone_1_keys = new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
-                keyboardSwitchKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin),
-                keyboardSwitchKey(Keyboard.Type.Number).setIconResId(R.drawable.ic_number),
+                switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
+                switcherCtrlKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin),
+                switcherCtrlKey(Keyboard.Type.Number).setIconResId(R.drawable.ic_number),
                 null,
                 null,
-                keyboardSwitchKey(Keyboard.Type.Math).setIconResId(R.drawable.ic_math),
+                switcherCtrlKey(Keyboard.Type.Math).setIconResId(R.drawable.ic_math),
                 };
         for (Key<?> key : zone_1_keys) {
             if (key != null //

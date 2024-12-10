@@ -82,7 +82,7 @@ public class ExerciseEditText extends AppCompatEditText implements KeyboardMsgLi
             }
             case Editor_Edit_Doing: {
                 EditorEditDoingMsgData d = (EditorEditDoingMsgData) data;
-                editEditor(d.action);
+                editText(d.action);
                 break;
             }
         }
@@ -178,7 +178,7 @@ public class ExerciseEditText extends AppCompatEditText implements KeyboardMsgLi
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editEditor(EditorEditAction action) {
+    private void editText(EditorEditAction action) {
         switch (action) {
             case backspace:
                 backspace();

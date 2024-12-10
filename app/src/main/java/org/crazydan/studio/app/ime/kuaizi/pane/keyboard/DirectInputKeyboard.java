@@ -53,15 +53,13 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
         Key<?> key = data.target;
         if (key instanceof CharKey) {
-            onCharKeyMsg(msg, (CharKey) key, data);
+            onCharKeyMsg(inputList, msg, (CharKey) key, data);
         } else if (key instanceof CtrlKey) {
-            onCtrlKeyMsg(msg, (CtrlKey) key, data);
+            onCtrlKeyMsg(inputList, msg, (CtrlKey) key, data);
         }
     }
 
-    protected void onCharKeyMsg(UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
-        InputList inputList = getInputList();
-
+    protected void onCharKeyMsg(InputList inputList, UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
         // 单字符直接输入
         if (msg == UserKeyMsg.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
@@ -72,6 +70,6 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         }
     }
 
-    protected void onCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
     }
 }

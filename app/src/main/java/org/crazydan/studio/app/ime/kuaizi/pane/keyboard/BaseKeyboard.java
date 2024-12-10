@@ -27,7 +27,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -35,11 +34,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EditorEditDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
@@ -73,8 +69,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 public abstract class BaseKeyboard implements Keyboard {
     private KeyboardMsgListener listener;
 
-    private Supplier<Configuration> configGetter;
-
     protected State state = new State(State.Type.InputChars_Input_Waiting);
 
     @Override
@@ -99,8 +93,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
-    public void start() {
-        InputList inputList = getInputList();
+    public void start(InputList inputList) {
         Input<?> pending = inputList.getPending();
         boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
                                        && this.prevType != null //
@@ -116,7 +109,7 @@ public abstract class BaseKeyboard implements Keyboard {
              && !pending.isMathExpr()) //
             || (isXPadSwitchToPinyin && pending.isPinyin()) //
         ) {
-            start_Selected_Input_ReChoosing(getInputList());
+            start_Selected_Input_ReChoosing(inputList);
         }
     }
 
@@ -130,33 +123,8 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
-    public Configuration getConfig() {
-        return this.configGetter.get();
-    }
-
-    @Override
-    public void setConfig(Supplier<Configuration> getter) {
-        this.configGetter = getter;
-    }
-
-    @Override
     public KeyFactory getKeyFactory() {
         switch (this.state.type) {
-            case Editor_Edit_Doing: {
-                EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig());
-
-                return keyTable::createKeys;
-            }
-            case Emoji_Choose_Doing: {
-                SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
-
-                EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
-
-                return () -> keyTable.createEmojiKeys(stateData.getGroups(),
-                                                      stateData.getPagingData(),
-                                                      stateData.getGroup(),
-                                                      stateData.getPageStart());
-            }
             case Symbol_Choose_Doing: {
                 SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
 
@@ -167,6 +135,7 @@ public abstract class BaseKeyboard implements Keyboard {
                                                        stateData.getPageStart());
             }
         }
+
         return doGetKeyFactory();
     }
 
@@ -188,10 +157,7 @@ public abstract class BaseKeyboard implements Keyboard {
         switch (msg) {
             case Input_Choose_Doing: {
                 switch (this.state.type) {
-                    case InputChars_Input_Waiting:
-                    case Emoji_Choose_Doing:
-                    case Symbol_Choose_Doing: {
-                        // Note：这里涉及键盘切换，必须在前面的事件在当前键盘内都处理完成后再执行
+                    case InputChars_Input_Waiting: {
                         start_Input_Choosing(inputList, msgData.target);
                         break;
                     }
@@ -226,29 +192,13 @@ public abstract class BaseKeyboard implements Keyboard {
             case InputChars_Input_Waiting: {
                 break;
             }
-            case Editor_Edit_Doing: {
-                if (key instanceof CtrlKey) {
-                    on_Editor_Edit_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
-                }
-                return true;
-            }
-            case Emoji_Choose_Doing: {
-                if (msg == UserKeyMsg.FingerFlipping) {
-                    on_Emoji_Choose_Doing_PageFlipping_Msg(msg, key, data);
-                } else if (key instanceof InputWordKey) {
-                    on_Emoji_Choose_Doing_InputWordKey_Msg(msg, (InputWordKey) key, data);
-                } else if (key instanceof CtrlKey) {
-                    on_Emoji_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
-                }
-                return true;
-            }
             case Symbol_Choose_Doing: {
                 if (msg == UserKeyMsg.FingerFlipping) {
-                    on_Symbol_Choose_Doing_PageFlipping_Msg(msg, key, data);
+                    on_Symbol_Choose_Doing_PageFlipping_Msg(key, data);
                 } else if (key instanceof SymbolKey) {
-                    on_Symbol_Choose_Doing_SymbolKey_Msg(msg, (SymbolKey) key, data);
+                    on_Symbol_Choose_Doing_SymbolKey_Msg(inputList, msg, (SymbolKey) key);
                 } else if (key instanceof CtrlKey) {
-                    on_Symbol_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key, data);
+                    on_Symbol_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
                 }
                 return true;
             }
@@ -519,7 +469,7 @@ public abstract class BaseKeyboard implements Keyboard {
         if (!inputList.isEmpty()) {
             do_InputList_Backspacing(inputList, key);
         } else {
-            do_Editor_Backspacing(inputList, key);
+            do_Editor_Backspacing(inputList);
         }
     }
 
@@ -717,13 +667,10 @@ public abstract class BaseKeyboard implements Keyboard {
                         switch_Keyboard(option.value(), key);
                         return true;
                     }
-                    case Toggle_Emoji_Keyboard: {
-                        play_SingleTick_InputAudio(key);
-                        start_Emoji_Choosing(key);
-                        return true;
-                    }
                     case Toggle_Symbol_Keyboard: {
                         play_SingleTick_InputAudio(key);
+
+                        switch_Keyboard(Type.Symbol, key);
                         start_Symbol_Choosing(key, false);
                         return true;
                     }
@@ -733,22 +680,19 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         // 处理定位按钮
-        if (this.state.type != State.Type.Editor_Edit_Doing //
-            && CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
+        if (CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
             switch (msg) {
                 case SingleTap_Key: {
                     // 为双击提前播放音效
                     play_SingleTick_InputAudio(key);
                     return true;
                 }
-                case DoubleTap_Key: {
-                    start_Editor_Editing(key);
-                    return true;
-                }
                 case LongPress_Key_Start: {
                     play_DoubleTick_InputAudio(key);
-
-                    start_Editor_Editing(key);
+                    // 继续 DoubleTap_Key 的逻辑
+                }
+                case DoubleTap_Key: {
+                    switch_Keyboard(Type.Editor, key);
                     return true;
                 }
                 case FingerFlipping: {
@@ -799,7 +743,7 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
-    // <<<<<<< 回删逻辑
+    // ======================== Start: 文本编辑逻辑 ========================
 
     /** 回删输入列表中的输入内容 */
     protected void do_InputList_Backspacing(InputList inputList, Key<?> key) {
@@ -812,76 +756,32 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 回删 目标编辑器 的内容 */
-    protected void do_Editor_Backspacing(InputList inputList, Key<?> key) {
+    protected void do_Editor_Backspacing(InputList inputList) {
         do_Editor_Editing(inputList, EditorEditAction.backspace);
     }
-    // >>>>>>>>
 
-    // <<<<<< 输入定位逻辑
-    private void start_Editor_Editing(CtrlKey key) {
-        EditorEditDoingStateData stateData = new EditorEditDoingStateData();
-
-        State state = new State(State.Type.Editor_Edit_Doing, stateData, this.state);
-        change_State_To(key, state);
-    }
-
-    private void on_Editor_Edit_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        InputList inputList = getInputList();
-
-        switch (msg) {
-            case SingleTap_Key: {
-                if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
-                    play_SingleTick_InputAudio(key);
-
-                    CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.getOption();
-                    do_Editor_Editing(inputList, option.value());
-                }
-                break;
-            }
-            case FingerFlipping:
-                Motion motion = ((UserFingerFlippingMsgData) data).motion;
-                switch (key.getType()) {
-                    case Editor_Cursor_Locator:
-                        play_SingleTick_InputAudio(key);
-                        do_Editor_Cursor_Moving(key, motion);
-                        break;
-                    case Editor_Range_Selector:
-                        play_SingleTick_InputAudio(key);
-                        do_Editor_Range_Selecting(key, motion);
-                        break;
-                }
-                break;
-        }
-    }
-
-    private void do_Editor_Editing(InputList inputList, EditorEditAction action) {
+    protected void do_Editor_Editing(InputList inputList, EditorEditAction action) {
         switch (action) {
             case noop:
             case copy:
-                // 无需清空待撤回输入数据
+                // 不影响输入撤回的操作，则无需清空待撤回输入数据
                 break;
             default:
                 inputList.clearCommitRevokes();
         }
 
         KeyboardMsgData data = new EditorEditDoingMsgData(getKeyFactory(), action);
+
         fire_InputMsg(KeyboardMsg.Editor_Edit_Doing, data);
     }
 
-    private void do_Editor_Cursor_Moving(CtrlKey key, Motion motion) {
-        Motion anchor = EditorEditDoingStateData.createAnchor(motion);
+    protected void do_Editor_Cursor_Moving(CtrlKey key, Motion motion) {
+        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, motion);
 
-        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
         fire_InputMsg(KeyboardMsg.Editor_Cursor_Move_Doing, data);
     }
 
-    private void do_Editor_Range_Selecting(CtrlKey key, Motion motion) {
-        Motion anchor = EditorEditDoingStateData.createAnchor(motion);
-
-        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, anchor);
-        fire_InputMsg(KeyboardMsg.Editor_Range_Select_Doing, data);
-    }
-    // >>>>>>>>
+    // ======================== End: 文本编辑逻辑 ========================
 
     // <<<<<< 单字符输入处理逻辑
 
@@ -1091,67 +991,15 @@ public abstract class BaseKeyboard implements Keyboard {
         do_Emoji_Choosing(key, group);
     }
 
-    private void on_Emoji_Choose_Doing_InputWordKey_Msg(UserKeyMsg msg, InputWordKey key, UserKeyMsgData data) {
-        InputList inputList = getInputList();
-
-        switch (msg) {
-            case LongPress_Key_Tick:
-            case SingleTap_Key: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
-
-                do_Single_Emoji_Inputting(inputList, key);
-                break;
-            }
-        }
-    }
-
-    private void on_Emoji_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.SingleTap_Key) {
-            if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
-                play_SingleTick_InputAudio(key);
-
-                CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
-                do_Emoji_Choosing(key, option.value());
-            }
-        }
-    }
-
-    private void on_Emoji_Choose_Doing_PageFlipping_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
-
-        fire_Emoji_Choose_Doing(key);
-    }
-
-    private void do_Emoji_Choosing(Key<?> key, String group) {
+    protected void do_Emoji_Choosing(Key<?> key, String group) {
         EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
         stateData.setGroup(group);
 
         fire_Emoji_Choose_Doing(key);
     }
 
-    private void fire_Emoji_Choose_Doing(Key<?> key) {
+    protected void fire_Emoji_Choose_Doing(Key<?> key) {
         fire_Common_InputMsg(KeyboardMsg.Emoji_Choose_Doing, key);
-    }
-
-    protected void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
-        if (try_Single_Key_Inputting(inputList, key)) {
-            return;
-        }
-
-        boolean isDirectInputting = inputList.isEmpty();
-        CharInput pending = inputList.newPending();
-
-        InputWord word = key.getWord();
-        pending.appendKey(key);
-        pending.setWord(word);
-
-        if (isDirectInputting) {
-            // 直接提交输入
-            commit_InputList(inputList, false, false);
-        } else {
-            confirm_InputList_Pending(inputList, key);
-        }
     }
     // >>>>>>>>
 
@@ -1172,8 +1020,7 @@ public abstract class BaseKeyboard implements Keyboard {
         do_Symbol_Choosing(key, group);
     }
 
-    private void on_Symbol_Choose_Doing_SymbolKey_Msg(UserKeyMsg msg, SymbolKey key, UserKeyMsgData data) {
-        InputList inputList = getInputList();
+    private void on_Symbol_Choose_Doing_SymbolKey_Msg(InputList inputList, UserKeyMsg msg, SymbolKey key) {
         boolean continuous = false;
 
         switch (msg) {
@@ -1189,7 +1036,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
         if (msg == UserKeyMsg.SingleTap_Key) {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
                 play_SingleTick_InputAudio(key);
@@ -1200,7 +1047,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    private void on_Symbol_Choose_Doing_PageFlipping_Msg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+    private void on_Symbol_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsgData data) {
         update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
 
         fire_Symbol_Choose_Doing(key);

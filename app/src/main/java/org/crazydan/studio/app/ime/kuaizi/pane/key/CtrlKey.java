@@ -190,8 +190,6 @@ public class CtrlKey extends BaseKey<CtrlKey> {
 
         /** 切换至标点符号键盘 */
         Toggle_Symbol_Keyboard,
-        /** 切换至表情键盘 */
-        Toggle_Emoji_Keyboard,
 
         /** 切换表情符号分组 */
         Toggle_Emoji_Group,

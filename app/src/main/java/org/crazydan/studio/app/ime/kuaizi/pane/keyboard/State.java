@@ -62,9 +62,6 @@ public class State {
         /** 输入列表 提交选项 选择中 */
         InputList_Committing_Option_Choose_Doing,
 
-        /** 对 目标编辑器 的编辑操作：含移动光标和文本选择等操作 */
-        Editor_Edit_Doing,
-
         /** 输入候选字选择中 */
         InputCandidate_Choose_Doing,
         /** 输入候选字高级过滤中 */

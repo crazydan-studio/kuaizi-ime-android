@@ -272,7 +272,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
         this.keyboard = createKeyboard(type);
         this.keyboard.setListener(this);
-        this.keyboard.start();
+        this.keyboard.start(this.inputList);
 
         return oldType;
     }
@@ -288,7 +288,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             case Symbol:
                 return new SymbolKeyboard();
             case Emoji:
-                return new EmojiKeyboard();
+                return new EmojiKeyboard(this.dict);
             case Editor:
                 return new EditorKeyboard();
             default:

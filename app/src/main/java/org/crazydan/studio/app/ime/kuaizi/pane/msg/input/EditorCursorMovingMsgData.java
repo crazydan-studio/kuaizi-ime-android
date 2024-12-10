@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
@@ -34,9 +35,16 @@ public class EditorCursorMovingMsgData extends CommonKeyboardMsgData {
     /** 锚点信息 */
     public final Motion anchor;
 
-    public EditorCursorMovingMsgData(KeyFactory keyFactory, Key<?> key, Motion anchor) {
+    public EditorCursorMovingMsgData(KeyFactory keyFactory, Key<?> key, Motion motion) {
         super(keyFactory, key);
 
-        this.anchor = anchor;
+        this.anchor = createAnchor(motion);
+    }
+
+    private static Motion createAnchor(Motion motion) {
+        // 根据屏幕移动距离得出光标移动字符数
+        float distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16f)) : 0;
+
+        return new Motion(motion.direction, distance, motion.timestamp);
     }
 }

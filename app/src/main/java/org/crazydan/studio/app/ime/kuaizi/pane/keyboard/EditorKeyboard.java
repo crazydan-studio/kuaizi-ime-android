@@ -17,7 +17,17 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
  * {@link Type#Editor 文本编辑键盘}
@@ -34,6 +44,44 @@ public class EditorKeyboard extends DirectInputKeyboard {
 
     @Override
     protected KeyFactory doGetKeyFactory() {
-        return null;
+        EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig());
+
+        return keyTable::createKeys;
+    }
+
+    @Override
+    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+        switch (msg) {
+            case SingleTap_Key: {
+                if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
+                    play_SingleTick_InputAudio(key);
+
+                    CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.getOption();
+                    do_Editor_Editing(inputList, option.value());
+                }
+                break;
+            }
+            case FingerFlipping:
+                Motion motion = ((UserFingerFlippingMsgData) data).motion;
+                switch (key.getType()) {
+                    case Editor_Cursor_Locator:
+                        play_SingleTick_InputAudio(key);
+
+                        do_Editor_Cursor_Moving(key, motion);
+                        break;
+                    case Editor_Range_Selector:
+                        play_SingleTick_InputAudio(key);
+
+                        do_Editor_Range_Selecting(key, motion);
+                        break;
+                }
+                break;
+        }
+    }
+
+    private void do_Editor_Range_Selecting(CtrlKey key, Motion motion) {
+        KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, motion);
+
+        fire_InputMsg(KeyboardMsg.Editor_Range_Select_Doing, data);
     }
 }

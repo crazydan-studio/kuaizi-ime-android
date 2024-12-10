@@ -39,13 +39,13 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
@@ -63,12 +63,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCandidateChoosingM
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
@@ -297,11 +297,11 @@ public class ExerciseMain extends FollowSystemThemeActivity implements KeyboardM
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
         Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.Switch_HandMode);
-        Key<?> key_ctrl_switch_math = keyTable.keyboardSwitchKey(Keyboard.Type.Math);
-        Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin);
-        Key<?> key_ctrl_switch_pinyin = keyTable.keyboardSwitchKey(Keyboard.Type.Pinyin);
-        Key<?> key_ctrl_switch_emoji = keyTable.ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard);
-        Key<?> key_ctrl_switch_symbol = keyTable.ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard);
+        Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
+        Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin);
+        Key<?> key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin);
+        Key<?> key_ctrl_switch_emoji = keyTable.switcherCtrlKey(Keyboard.Type.Emoji);
+        Key<?> key_ctrl_switch_symbol = keyTable.switcherCtrlKey(Keyboard.Type.Symbol);
         Key<?> key_ctrl_input_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
         Key<?> key_ctrl_input_drop = keyTable.ctrlKey(CtrlKey.Type.DropInput);
         Key<?> key_ctrl_input_confirm = keyTable.ctrlKey(CtrlKey.Type.ConfirmInput);
@@ -718,7 +718,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements KeyboardM
     private Exercise exercise_Math_Inputting(DynamicLayoutSandboxView sandboxView) {
         MathKeyTable keyTable = MathKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
-        Key<?> key_ctrl_switch_math = keyTable.keyboardSwitchKey(Keyboard.Type.Math);
+        Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         Exercise exercise = Exercise.normal("算术输入", sandboxView::getImage);
@@ -808,9 +808,9 @@ public class ExerciseMain extends FollowSystemThemeActivity implements KeyboardM
         PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_ctrl_switch_latin = keyTable.keyboardSwitchKey(Keyboard.Type.Latin)
+        Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin)
                                                .setIconResId(R.drawable.ic_latin);
-        Key<?> key_ctrl_switch_pinyin = keyTable.keyboardSwitchKey(Keyboard.Type.Pinyin)
+        Key<?> key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin)
                                                 .setIconResId(R.drawable.ic_pinyin);
         Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);

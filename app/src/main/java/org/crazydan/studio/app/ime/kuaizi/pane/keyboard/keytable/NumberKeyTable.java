@@ -81,7 +81,7 @@ public class NumberKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.Switch_HandMode);
-        gridKeys[4][index_begin] = ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard);
+        gridKeys[4][index_begin] = switcherCtrlKey(Keyboard.Type.Symbol);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);

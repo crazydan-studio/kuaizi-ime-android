@@ -258,7 +258,7 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void start() {
+    public void start(InputList inputList) {
         InputList parentInputList = getParentInputList();
 
         // 先提交从其他键盘切过来之前的待输入
@@ -272,7 +272,7 @@ public class MathKeyboard extends BaseKeyboard {
 
         resetMathInputList();
 
-        super.start();
+        super.start(inputList);
     }
 
     @Override

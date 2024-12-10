@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
@@ -38,12 +37,10 @@ public interface Keyboard {
     /** 获取当前键盘类型 */
     Type getType();
 
-    Configuration getConfig();
-
     KeyFactory getKeyFactory();
 
     /** 启动 */
-    void start();
+    void start(InputList inputList);
 
     /** 重置 */
     void reset();

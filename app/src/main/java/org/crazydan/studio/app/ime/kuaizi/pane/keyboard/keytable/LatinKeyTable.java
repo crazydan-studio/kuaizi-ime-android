@@ -75,7 +75,7 @@ public class LatinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
-                keyboardSwitchKey(Keyboard.Type.Pinyin),
+                switcherCtrlKey(Keyboard.Type.Pinyin),
                 numberKey("7"),
                 numberKey("2"),
                 alphabetKey("o").withReplacements("O"),
@@ -85,7 +85,7 @@ public class LatinKeyTable extends KeyTable {
                 alphabetKey("i").withReplacements("I"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Emoji_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Emoji),
                 numberKey("8"),
                 numberKey("3"),
                 alphabetKey("c").withReplacements("C"),
@@ -95,7 +95,7 @@ public class LatinKeyTable extends KeyTable {
                 this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.Toggle_Symbol_Keyboard),
+                switcherCtrlKey(Keyboard.Type.Symbol),
                 numberKey("9"),
                 numberKey("4"),
                 alphabetKey("v").withReplacements("V"),
