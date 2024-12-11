@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 
 /**
- * {@link UserInputMsg} 携带的数据
+ * {@link UserInputMsg} 所携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-07

@@ -23,14 +23,13 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**
  * {@link Exercise 练习题}视图
@@ -82,10 +81,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements Keyboa
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
-        this.textView.onMsg(keyboard, msg, msgData);
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+        this.textView.onMsg(keyboard, msg);
 
-        getData().onMsg(keyboard, msg, msgData);
+        getData().onMsg(keyboard, msg);
     }
 
     protected void scrollTo(int position) {

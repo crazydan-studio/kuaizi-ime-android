@@ -20,12 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 
 /**
- * {@link KeyboardMsg#Editor_Range_Select_Doing}
- * 和 {@link KeyboardMsg#Editor_Cursor_Move_Doing}
+ * {@link KeyboardMsgType#Editor_Range_Select_Doing}
+ * 和 {@link KeyboardMsgType#Editor_Cursor_Move_Doing}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

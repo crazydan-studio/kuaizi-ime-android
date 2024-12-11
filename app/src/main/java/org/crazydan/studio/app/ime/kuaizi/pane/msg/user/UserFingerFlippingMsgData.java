@@ -19,11 +19,11 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.user;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
 /**
- * {@link UserKeyMsg#FingerFlipping} 消息数据
+ * {@link UserKeyMsgType#FingerFlipping} 消息数据
  * <p/>
  * 注：<ul>
  * <li>{@link #target} 为滑动开始所按下的按键；</li>

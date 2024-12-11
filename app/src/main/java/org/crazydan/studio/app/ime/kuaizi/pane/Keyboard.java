@@ -20,11 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
 /**
  * 键盘，做不同的输入处理
@@ -52,10 +50,10 @@ public interface Keyboard {
     void setListener(KeyboardMsgListener listener);
 
     /** 响应 {@link UserKeyMsg} 消息 */
-    void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data);
+    void onMsg(InputList inputList, UserKeyMsg msg);
 
     /** 响应 {@link InputListMsg} 消息 */
-    void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData);
+    void onMsg(InputList inputList, InputListMsg msg);
 
     /** 键盘类型 */
     enum Type {

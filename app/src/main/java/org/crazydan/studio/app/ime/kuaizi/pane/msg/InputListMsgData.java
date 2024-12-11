@@ -21,7 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
 
 /**
- * {@link InputListMsg} 携带的数据
+ * {@link InputListMsg} 所携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21

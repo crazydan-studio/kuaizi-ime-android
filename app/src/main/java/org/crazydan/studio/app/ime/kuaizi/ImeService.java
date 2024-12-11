@@ -34,7 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
@@ -187,10 +186,10 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     // =============================== Start: 消息处理 ===================================
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
-        switch (msg) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+        switch (msg.type) {
             case InputList_Commit_Doing: {
-                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msgData;
+                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msg.data;
                 commitText(d.text, d.replacements);
                 break;
             }
@@ -199,20 +198,20 @@ public class ImeService extends InputMethodService implements InputMsgListener {
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) msgData;
+                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) msg.data;
                 commitText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                moveCursor((EditorCursorMovingMsgData) msgData);
+                moveCursor((EditorCursorMovingMsgData) msg.data);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectText((EditorCursorMovingMsgData) msgData);
+                selectText((EditorCursorMovingMsgData) msg.data);
                 break;
             }
             case Editor_Edit_Doing: {
-                EditorEditDoingMsgData d = (EditorEditDoingMsgData) msgData;
+                EditorEditDoingMsgData d = (EditorEditDoingMsgData) msg.data;
                 editText(d.action);
                 break;
             }

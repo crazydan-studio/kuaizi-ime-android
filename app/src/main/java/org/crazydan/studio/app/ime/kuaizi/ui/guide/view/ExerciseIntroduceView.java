@@ -21,7 +21,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
@@ -42,7 +41,8 @@ public class ExerciseIntroduceView extends ExerciseView {
         // keep it empty
     }
 
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
+    @Override
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
         // keep it empty
     }
 

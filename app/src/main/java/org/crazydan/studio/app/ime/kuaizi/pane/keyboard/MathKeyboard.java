@@ -32,9 +32,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
 /**
  * {@link Type#Math 算术键盘}
@@ -71,10 +71,10 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     /** 处理来自本层的算术 InputList 的消息 */
-    protected void onMathUserInputMsg(InputList matchInputList, InputListMsg msg, InputListMsgData msgData) {
+    protected void onMathUserInputMsg(InputList matchInputList, InputListMsg msg) {
         // 数字、数学符号不做候选切换：需支持更多符号时，可增加数学计算符的候选键盘
-        if (msg == InputListMsg.Input_Choose_Doing) {
-            Input<?> input = msgData.target;
+        if (msg.type == InputListMsgType.Input_Choose_Doing) {
+            Input<?> input = msg.data.target;
 
             matchInputList.confirmPendingAndSelect(input);
             // 对输入的修改均做替换输入
@@ -84,20 +84,20 @@ public class MathKeyboard extends BaseKeyboard {
             return;
         }
 
-        super.onMsg(matchInputList, msg, msgData);
+        super.onMsg(matchInputList, msg);
     }
 
     /** 处理来自父 InputList 的消息 */
     @Override
-    public void onMsg(InputList parentInputList, InputListMsg msg, InputListMsgData msgData) {
-        switch (msg) {
+    public void onMsg(InputList parentInputList, InputListMsg msg) {
+        switch (msg.type) {
             case Input_Completion_Apply_Done: {
                 withMathExprPending(parentInputList);
                 fire_InputChars_Input_Doing(null);
                 break;
             }
             case Input_Choose_Doing: {
-                Input<?> input = msgData.target;
+                Input<?> input = msg.data.target;
 
                 // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
                 parentInputList.confirmPendingAndSelect(input);
@@ -119,23 +119,23 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(inputList, msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
-        Key<?> key = data.target;
+        Key<?> key = msg.data.target;
         if (key instanceof CharKey || key instanceof MathOpKey) {
-            onMathKeyMsg(msg, key, data);
+            onMathKeyMsg(msg, key);
         }
     }
 
     @Override
-    protected boolean try_Common_OnCtrlKeyMsg(UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         InputList parentInputList = getParentInputList();
         InputList mathInputList = getMathInputList();
 
-        if (msg == UserKeyMsg.SingleTap_Key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             switch (key.getType()) {
                 case Backspace: {
                     play_SingleTick_InputAudio(key);
@@ -192,11 +192,11 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        return super.try_Common_OnCtrlKeyMsg(mathInputList, msg, key, data);
+        return super.try_Common_OnCtrlKeyMsg(mathInputList, msg, key);
     }
 
-    private void onMathKeyMsg(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
-        if (msg == UserKeyMsg.SingleTap_Key) {
+    private void onMathKeyMsg(UserKeyMsg msg, Key<?> key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 

@@ -17,18 +17,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
- * {@link UserKeyMsg} 消息监听
+ * {@link UserKeyMsg} 消息监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04
  */
 public interface UserKeyMsgListener {
 
-    void onMsg(UserKeyMsg msg, UserKeyMsgData data);
+    void onMsg(UserKeyMsg msg);
 
     interface Trigger {
         void onGesture(Key<?> key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);

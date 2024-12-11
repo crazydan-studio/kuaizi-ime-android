@@ -15,19 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane.msg;
+package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 
 /**
- * 用户操作 {@link Input} 所触发的消息
+ * 支持按键分页的键盘，
+ * 负责统一处理按键的分页和翻页逻辑
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-11
  */
-public class UserInputMsg extends BaseMsg<UserInputMsgType, UserInputMsgData> {
+public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
-    public UserInputMsg(UserInputMsgType type, UserInputMsgData data) {
-        super(type, data);
+    @Override
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+
     }
 }

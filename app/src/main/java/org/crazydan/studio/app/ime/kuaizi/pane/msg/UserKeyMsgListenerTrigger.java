@@ -17,12 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 
 /**
  * {@link UserKeyMsgListener} 的{@link UserKeyMsgListener.Trigger 触发器}
@@ -88,64 +88,64 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
     }
 
     private void onPressStart(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.Press_Key_Start, key, data);
+        onUserKeyMsg(UserKeyMsgType.Press_Key_Start, key, data);
     }
 
     private void onPressEnd(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.Press_Key_Stop, key, data);
+        onUserKeyMsg(UserKeyMsgType.Press_Key_Stop, key, data);
     }
 
     private void onLongPressStart(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.LongPress_Key_Start, key, data);
+        onUserKeyMsg(UserKeyMsgType.LongPress_Key_Start, key, data);
     }
 
     private void onLongPressTick(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.LongPress_Key_Tick, key, data);
+        onUserKeyMsg(UserKeyMsgType.LongPress_Key_Tick, key, data);
     }
 
     private void onLongPressEnd(Key<?> key, ViewGestureDetector.GestureData data) {
-        UserKeyMsgData msgData = new UserKeyMsgData(null);
-        this.listener.onMsg(UserKeyMsg.LongPress_Key_Stop, msgData);
+        UserKeyMsg msg = new UserKeyMsg(UserKeyMsgType.LongPress_Key_Stop, new UserKeyMsgData(null));
+        this.listener.onMsg(msg);
     }
 
     private void onSingleTap(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.SingleTap_Key, key, data);
+        onUserKeyMsg(UserKeyMsgType.SingleTap_Key, key, data);
     }
 
     private void onDoubleTap(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.DoubleTap_Key, key, data);
+        onUserKeyMsg(UserKeyMsgType.DoubleTap_Key, key, data);
     }
 
     private void onMoving(Key<?> key, ViewGestureDetector.GestureData data) {
         Motion motion = ((ViewGestureDetector.MovingGestureData) data).motion;
-        UserFingerMovingMsgData msgData = new UserFingerMovingMsgData(key, motion);
 
-        this.listener.onMsg(UserKeyMsg.FingerMoving, msgData);
+        UserKeyMsg msg = new UserKeyMsg(UserKeyMsgType.FingerMoving, new UserFingerMovingMsgData(key, motion));
+        this.listener.onMsg(msg);
     }
 
     private void onMovingStart(Key<?> key, ViewGestureDetector.GestureData data) {
-        onUserKeyMsg(UserKeyMsg.FingerMoving_Start, key, data);
+        onUserKeyMsg(UserKeyMsgType.FingerMoving_Start, key, data);
     }
 
     private void onMovingEnd(Key<?> key, ViewGestureDetector.GestureData data) {
-        UserKeyMsgData msgData = new UserKeyMsgData(key);
-        this.listener.onMsg(UserKeyMsg.FingerMoving_Stop, msgData);
+        UserKeyMsg msg = new UserKeyMsg(UserKeyMsgType.FingerMoving_Stop, new UserKeyMsgData(key));
+        this.listener.onMsg(msg);
     }
 
     private void onFlipping(Key<?> key, ViewGestureDetector.GestureData data) {
         Motion motion = ((ViewGestureDetector.FlippingGestureData) data).motion;
-        UserFingerFlippingMsgData msgData = new UserFingerFlippingMsgData(key, motion);
 
-        this.listener.onMsg(UserKeyMsg.FingerFlipping, msgData);
+        UserKeyMsg msg = new UserKeyMsg(UserKeyMsgType.FingerFlipping, new UserFingerFlippingMsgData(key, motion));
+        this.listener.onMsg(msg);
     }
 
-    private void onUserKeyMsg(UserKeyMsg msg, Key<?> key, ViewGestureDetector.GestureData data) {
+    private void onUserKeyMsg(UserKeyMsgType msgType, Key<?> key, ViewGestureDetector.GestureData data) {
         if (key == null) {
             return;
         }
 
         UserKeyMsgData msgData = new UserKeyMsgData(key);
-        switch (msg) {
+        switch (msgType) {
             case SingleTap_Key:
                 ViewGestureDetector.SingleTapGestureData tapData = (ViewGestureDetector.SingleTapGestureData) data;
                 msgData = new UserSingleTapMsgData(key, tapData.tick);
@@ -157,6 +157,6 @@ public class UserKeyMsgListenerTrigger implements UserKeyMsgListener.Trigger {
                 break;
         }
 
-        this.listener.onMsg(msg, msgData);
+        this.listener.onMsg(new UserKeyMsg(msgType, msgData));
     }
 }

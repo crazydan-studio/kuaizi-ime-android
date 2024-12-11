@@ -26,8 +26,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 public interface UserMsgListener extends UserKeyMsgListener, UserInputMsgListener {
 
     @Override
-    default void onMsg(UserInputMsg msg, UserInputMsgData data) {}
+    default void onMsg(UserInputMsg msg) {}
 
     @Override
-    default void onMsg(UserKeyMsg msg, UserKeyMsgData data) {}
+    default void onMsg(UserKeyMsg msg) {}
 }

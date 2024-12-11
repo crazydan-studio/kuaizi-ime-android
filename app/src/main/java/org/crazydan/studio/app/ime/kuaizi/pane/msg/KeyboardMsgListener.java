@@ -20,12 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 
 /**
- * {@link KeyboardMsg} 监听器
+ * {@link KeyboardMsg} 消息监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
 public interface KeyboardMsgListener {
 
-    void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData);
+    void onMsg(Keyboard keyboard, KeyboardMsg msg);
 }

@@ -37,9 +37,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CommittingOptionCh
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsFlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsSlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 
@@ -136,17 +136,17 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+    public void onMsg(InputList inputList, InputListMsg msg) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
                 // Note：其余消息，继续向后处理
-                if (msg == InputListMsg.Input_Choose_Doing) {
-                    start_Input_Choosing(inputList, msgData.target);
+                if (msg.type == InputListMsgType.Input_Choose_Doing) {
+                    start_Input_Choosing(inputList, msg.data.target);
                     return;
                 }
             case InputCandidate_AdvanceFilter_Doing:
             case InputChars_Flip_Doing: {
-                if (msg == InputListMsg.Inputs_Clean_Done) {
+                if (msg.type == InputListMsgType.Inputs_Clean_Done) {
                     change_State_to_Init();
                     return;
                 }
@@ -154,13 +154,13 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        super.onMsg(inputList, msg, msgData);
+        super.onMsg(inputList, msg);
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        Key<?> key = data.target;
-        if (try_OnUserKeyMsg(inputList, msg, data) //
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        Key<?> key = msg.data.target;
+        if (try_OnUserKeyMsg(inputList, msg) //
             // Note：被禁用的部分按键也需要接受处理
             && !CtrlKey.isAny(key,
                               CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell,
@@ -191,7 +191,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             default: {
                 if (key instanceof CharKey && !key.isDisabled()) {
-                    on_CharKey_Msg(inputList, msg, (CharKey) key, data);
+                    on_CharKey_Msg(inputList, msg, (CharKey) key);
                 } else if (key instanceof CtrlKey) {
                     on_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
                 }
@@ -199,9 +199,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_CharKey_Msg(InputList inputList, UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
+    private void on_CharKey_Msg(InputList inputList, UserKeyMsg msg, CharKey key) {
         if (isXInputPadEnabled()) {
-            if (msg == UserKeyMsg.SingleTap_Key) {
+            if (msg.type == UserKeyMsgType.SingleTap_Key) {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
@@ -212,13 +212,13 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                     start_InputChars_XPad_Inputting(inputList, pending, key);
                 } else {
-                    start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, false);
+                    start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, false);
                 }
             }
             return;
         }
 
-        switch (msg) {
+        switch (msg.type) {
             case FingerMoving_Start: {
                 // 开始滑屏输入
                 if (CharKey.isAlphabet(key)) {
@@ -238,14 +238,14 @@ public class PinyinKeyboard extends BaseKeyboard {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
-                start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, false);
+                start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, false);
                 break;
             }
         }
     }
 
     private void on_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
-        switch (msg) {
+        switch (msg.type) {
             case LongPress_Key_Start: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
@@ -300,7 +300,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputChars_Slip_Doing_UserKey_Msg(InputList inputList, UserKeyMsg msg, Key<?> key) {
-        switch (msg) {
+        switch (msg.type) {
             case FingerMoving: {
                 // 添加拼音后继字母
                 CharInput pending = inputList.getPending();
@@ -345,7 +345,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputChars_Flip_Doing_UserKey_Msg(InputList inputList, UserKeyMsg msg, Key<?> key) {
-        if (msg == UserKeyMsg.SingleTap_Key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 
@@ -363,10 +363,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 添加拼音后继字母
         CharInput pending = inputList.getPending();
 
-        if (msg == UserKeyMsg.Press_Key_Stop) {
+        if (msg.type == UserKeyMsgType.Press_Key_Stop) {
             stop_InputChars_Inputting(inputList, pending, key);
             return;
-        } else if (msg != UserKeyMsg.SingleTap_Key) {
+        } else if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
@@ -604,7 +604,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(
             InputList inputList, UserKeyMsg msg, CtrlKey key
     ) {
-        switch (msg) {
+        switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
                     CtrlKey.InputListCommitOption.Option option

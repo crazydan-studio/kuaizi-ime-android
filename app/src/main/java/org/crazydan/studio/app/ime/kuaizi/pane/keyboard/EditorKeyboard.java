@@ -21,11 +21,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
@@ -50,8 +49,8 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
+    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+        switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
                     play_SingleTick_InputAudio(key);
@@ -62,7 +61,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
                 break;
             }
             case FingerFlipping:
-                Motion motion = ((UserFingerFlippingMsgData) data).motion;
+                Motion motion = ((UserFingerFlippingMsgData) msg.data).motion;
                 switch (key.getType()) {
                     case Editor_Cursor_Locator:
                         play_SingleTick_InputAudio(key);
@@ -82,6 +81,6 @@ public class EditorKeyboard extends DirectInputKeyboard {
     private void do_Editor_Range_Selecting(CtrlKey key, Motion motion) {
         KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, motion);
 
-        fire_InputMsg(KeyboardMsg.Editor_Range_Select_Doing, data);
+        fire_InputMsg(KeyboardMsgType.Editor_Range_Select_Doing, data);
     }
 }

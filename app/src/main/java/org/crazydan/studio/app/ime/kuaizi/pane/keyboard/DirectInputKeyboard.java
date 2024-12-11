@@ -22,9 +22,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 
 /**
@@ -38,38 +37,38 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
+    public void onMsg(InputList inputList, InputListMsg msg) {
         // Note: 在输入列表为空时，直输键盘无预处理过程，故不对输入列表事件做响应
         if (!inputList.isEmpty()) {
-            super.onMsg(inputList, msg, msgData);
+            super.onMsg(inputList, msg);
         }
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(inputList, msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
-        Key<?> key = data.target;
+        Key<?> key = msg.data.target;
         if (key instanceof CharKey) {
-            onCharKeyMsg(inputList, msg, (CharKey) key, data);
+            onCharKeyMsg(inputList, msg, (CharKey) key);
         } else if (key instanceof CtrlKey) {
-            onCtrlKeyMsg(inputList, msg, (CtrlKey) key, data);
+            onCtrlKeyMsg(inputList, msg, (CtrlKey) key);
         }
     }
 
-    protected void onCharKeyMsg(InputList inputList, UserKeyMsg msg, CharKey key, UserKeyMsgData data) {
+    protected void onCharKeyMsg(InputList inputList, UserKeyMsg msg, CharKey key) {
         // 单字符直接输入
-        if (msg == UserKeyMsg.SingleTap_Key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 
             boolean isDirectInputting = inputList.isEmpty();
-            start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) data, isDirectInputting);
+            start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, isDirectInputting);
         }
     }
 
-    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
+    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
     }
 }

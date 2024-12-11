@@ -18,16 +18,18 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 
 /**
- * 用户操作 {@link Input} 所触发的消息
+ * 用户对 {@link Input} 操作的消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-11
+ * @date 2024-12-07
  */
-public class UserInputMsg extends BaseMsg<UserInputMsgType, UserInputMsgData> {
+public enum UserInputMsgType {
+    /** 单击 {@link Input} */
+    SingleTap_Input,
 
-    public UserInputMsg(UserInputMsgType type, UserInputMsgData data) {
-        super(type, data);
-    }
+    /** 单击 {@link CompletionInput} */
+    SingleTap_CompletionInput,
 }

@@ -18,9 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -57,9 +56,9 @@ public class ExerciseStep implements RecyclerViewData {
         }
     }
 
-    public void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {
+    public void onInputMsg(KeyboardMsg msg) {
         if (this.action != null) {
-            this.action.onInputMsg(msg, data);
+            this.action.onInputMsg(msg);
         }
     }
 
@@ -77,14 +76,14 @@ public class ExerciseStep implements RecyclerViewData {
     }
 
     public interface Action {
-        void onInputMsg(KeyboardMsg msg, KeyboardMsgData data);
+        void onInputMsg(KeyboardMsg msg);
     }
 
     public interface AutoAction extends Action {
         void start();
 
         @Override
-        default void onInputMsg(KeyboardMsg msg, KeyboardMsgData data) {}
+        default void onInputMsg(KeyboardMsg msg) {}
     }
 
     public interface ImageGetter {

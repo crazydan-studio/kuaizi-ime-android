@@ -17,17 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-
 /**
- * 用户操作 {@link Input} 所触发的消息
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-11
  */
-public class UserInputMsg extends BaseMsg<UserInputMsgType, UserInputMsgData> {
+public abstract class BaseMsg<T, D> {
+    public final T type;
+    public final D data;
 
-    public UserInputMsg(UserInputMsgType type, UserInputMsgData data) {
-        super(type, data);
+    public BaseMsg(T type, D data) {
+        this.type = type;
+        this.data = data;
     }
 }

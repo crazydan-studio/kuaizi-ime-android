@@ -44,14 +44,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
@@ -179,7 +176,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
             }
         }
 
-        onMsg(keyboard, KeyboardMsg.Keyboard_Config_Update_Done, new CommonKeyboardMsgData());
+        KeyboardMsg msg = new KeyboardMsg(KeyboardMsgType.Keyboard_Config_Update_Done, new CommonKeyboardMsgData());
+        onMsg(keyboard, msg);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -190,24 +188,24 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
     @Override
-    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        this.listener.onMsg(msg, data);
+    public void onMsg(UserKeyMsg msg) {
+        this.listener.onMsg(msg);
     }
 
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
-    public void onMsg(UserInputMsg msg, UserInputMsgData data) {
-        this.listener.onMsg(msg, data);
+    public void onMsg(UserInputMsg msg) {
+        this.listener.onMsg(msg);
     }
 
     // -------------------------------------------
 
     /** 响应输入列表的 {@link InputListMsg} 消息：向下传递消息给内部视图 */
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        this.inputListView.onMsg(inputList, msg, msgData);
+    public void onMsg(InputList inputList, InputListMsg msg) {
+        this.inputListView.onMsg(inputList, msg);
 
-        switch (msg) {
+        switch (msg.type) {
             case Input_Completion_Clean_Done:
             case Input_Completion_Apply_Done:
             case Input_Completion_Update_Done: {
@@ -221,25 +219,25 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     /** 响应键盘的 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
-        this.keyboardView.onMsg(keyboard, msg, msgData);
-        this.inputListView.onMsg(keyboard, msg, msgData);
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+        this.keyboardView.onMsg(keyboard, msg);
+        this.inputListView.onMsg(keyboard, msg);
 
-        switch (msg) {
+        switch (msg.type) {
             case InputAudio_Play_Doing: {
-                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msgData);
+                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msg.data);
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
-                Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msgData).mode;
+                Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msg.data).mode;
                 this.appConf.set(Conf.hand_mode, mode);
 
-                onMsg(keyboard, KeyboardMsg.Keyboard_HandMode_Switch_Done, msgData);
+                onMsg(keyboard, new KeyboardMsg(KeyboardMsgType.Keyboard_HandMode_Switch_Done, msg.data));
                 return;
             }
             case InputChars_Input_Popup_Show_Doing: {
-                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) msgData).text,
-                                        ((InputCharsInputPopupShowingMsgData) msgData).hideDelayed);
+                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) msg.data).text,
+                                        ((InputCharsInputPopupShowingMsgData) msg.data).hideDelayed);
                 return;
             }
             case InputChars_Input_Popup_Hide_Doing: {

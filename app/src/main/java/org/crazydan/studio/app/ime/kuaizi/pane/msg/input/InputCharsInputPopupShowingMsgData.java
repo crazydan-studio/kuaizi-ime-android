@@ -17,10 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 
 /**
- * {@link KeyboardMsg#InputChars_Input_Popup_Show_Doing} 的消息数据
+ * {@link KeyboardMsgType#InputChars_Input_Popup_Show_Doing} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-28

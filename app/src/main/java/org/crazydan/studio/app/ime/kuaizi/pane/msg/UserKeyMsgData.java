@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
- * {@link UserKeyMsg} 携带的数据
+ * {@link UserKeyMsg} 所携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06

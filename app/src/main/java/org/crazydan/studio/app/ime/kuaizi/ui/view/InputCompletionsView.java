@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputView
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionViewLayoutManager;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg.SingleTap_CompletionInput;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_CompletionInput;
 
 /**
  * 输入补全列表视图
@@ -83,7 +83,8 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
             case SingleTap: {
                 CompletionInput completion = completionView.getData();
 
-                this.listener.onMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
+                UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
+                this.listener.onMsg(msg);
                 break;
             }
         }

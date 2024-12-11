@@ -33,13 +33,14 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
@@ -133,12 +134,12 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        switch (msg) {
+    public void onMsg(InputList inputList, InputListMsg msg) {
+        switch (msg.type) {
             case Input_Choose_Doing: {
                 switch (this.state.type) {
                     case InputChars_Input_Waiting: {
-                        start_Input_Choosing(inputList, msgData.target);
+                        start_Input_Choosing(inputList, msg.data.target);
                         break;
                     }
                 }
@@ -154,63 +155,64 @@ public abstract class BaseKeyboard implements Keyboard {
      * <p/>
      * {@link CtrlKey#isDisabled() 被禁用}的 {@link CtrlKey} 将始终返回 <code>true</code>
      */
-    protected boolean try_OnUserKeyMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        Key<?> key = data.target;
+    protected boolean try_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
+        Key<?> key = msg.data.target;
 
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
             && (key.isDisabled() //
-                || try_Common_OnCtrlKeyMsg(inputList, msg, (CtrlKey) key, data))) {
+                || try_Common_OnCtrlKeyMsg(inputList, msg, (CtrlKey) key))) {
             return true;
         }
 
-        return try_OnUserKeyMsg_Over_XPad(msg, key, data);
+        return try_OnUserKeyMsg_Over_XPad(msg, key);
     }
 
     /** 触发 {@link KeyboardMsg} 消息 */
-    protected void fire_InputMsg(KeyboardMsg msg, KeyboardMsgData msgData) {
-        this.listener.onMsg(this, msg, msgData);
+    protected void fire_InputMsg(KeyboardMsgType msgType, KeyboardMsgData msgData) {
+        KeyboardMsg msg = new KeyboardMsg(msgType, msgData);
+        this.listener.onMsg(this, msg);
     }
 
-    protected void fire_Common_InputMsg(KeyboardMsg msg, Key<?> key) {
+    protected void fire_Common_InputMsg(KeyboardMsgType msgType, Key<?> key) {
         KeyboardMsgData data = new CommonKeyboardMsgData(getKeyFactory(), key);
 
-        fire_InputMsg(msg, data);
+        fire_InputMsg(msgType, data);
     }
 
-    /** 触发 {@link KeyboardMsg#InputChars_Input_Doing} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key) {
         fire_InputChars_Input_Doing(key, InputCharsInputtingMsgData.KeyInputType.tap);
     }
 
-    /** 触发 {@link KeyboardMsg#InputChars_Input_Doing} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputChars_Input_Doing} 消息 */
     protected void fire_InputChars_Input_Doing(Key<?> key, InputCharsInputtingMsgData.KeyInputType keyInputType) {
         KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, keyInputType);
 
-        fire_InputMsg(KeyboardMsg.InputChars_Input_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputChars_Input_Doing, data);
     }
 
-    /** 触发 {@link KeyboardMsg#InputChars_Input_Done} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputChars_Input_Done} 消息 */
     protected void fire_InputChars_Input_Done(Key<?> key) {
         KeyboardMsgData data = new InputCharsInputtingMsgData(getKeyFactory(), key, null);
 
-        fire_InputMsg(KeyboardMsg.InputChars_Input_Done, data);
+        fire_InputMsg(KeyboardMsgType.InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link KeyboardMsg#InputList_Commit_Doing} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputList_Commit_Doing} 消息 */
     protected void fire_InputList_Commit_Doing(CharSequence text, List<String> replacements) {
         // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
         KeyboardMsgData data = new InputListCommitDoingMsgData(getKeyFactory(), text, replacements);
 
-        fire_InputMsg(KeyboardMsg.InputList_Commit_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputList_Commit_Doing, data);
     }
 
-    /** 触发 {@link KeyboardMsg#InputList_PairSymbol_Commit_Doing} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputList_PairSymbol_Commit_Doing} 消息 */
     protected void fire_InputList_PairSymbol_Commit_Doing(CharSequence left, CharSequence right) {
         // Note：输入提交按钮会根据输入内容确定按钮状态，故，需要回传 KeyFactory 以重新渲染按键
         KeyboardMsgData data = new InputListPairSymbolCommitDoingMsgData(getKeyFactory(), left, right);
 
-        fire_InputMsg(KeyboardMsg.InputList_PairSymbol_Commit_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputList_PairSymbol_Commit_Doing, data);
     }
 
     /** 状态回到{@link State.Type#InputChars_Input_Waiting 待输入} */
@@ -232,7 +234,7 @@ public abstract class BaseKeyboard implements Keyboard {
         this.state = state;
 
         KeyboardMsgData data = new KeyboardStateChangeDoneMsgData(getKeyFactory(), key, state);
-        fire_InputMsg(KeyboardMsg.Keyboard_State_Change_Done, data);
+        fire_InputMsg(KeyboardMsgType.Keyboard_State_Change_Done, data);
     }
 
     /**
@@ -264,7 +266,7 @@ public abstract class BaseKeyboard implements Keyboard {
         change_State_to_Init();
     }
 
-    /** 确认待输入，并触发 {@link KeyboardMsg#InputChars_Input_Done} 消息 */
+    /** 确认待输入，并触发 {@link KeyboardMsgType#InputChars_Input_Done} 消息 */
     protected void confirm_InputList_Pending(InputList inputList, Key<?> key) {
         inputList.confirmPendingAndSelectNext();
         fire_InputChars_Input_Done(key);
@@ -329,7 +331,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.deleteSelected();
-        inputList.sendMsg(InputListMsg.Input_Selected_Delete_Done, input);
+        inputList.sendMsg(InputListMsgType.Input_Selected_Delete_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
@@ -339,7 +341,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput input = inputList.getPending();
 
         inputList.dropPending();
-        inputList.sendMsg(InputListMsg.Input_Pending_Drop_Done, input);
+        inputList.sendMsg(InputListMsgType.Input_Pending_Drop_Done, input);
 
         start_InputList_Current_Phrase_Completion_Updating(inputList);
     }
@@ -410,7 +412,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         inputList.revokeCommit();
         after_Revoke_Committed_InputList(inputList);
-        fire_Common_InputMsg(KeyboardMsg.InputList_Committed_Revoke_Doing, key);
+        fire_Common_InputMsg(KeyboardMsgType.InputList_Committed_Revoke_Doing, key);
 
         start_Selected_Input_ReChoosing(inputList);
     }
@@ -433,7 +435,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    /** 根据{@link UserKeyMsg 按键消息}更新{@link PagingStateData 分页状态数据} */
+    /** 根据 {@link UserKeyMsg} 更新 {@link PagingStateData} */
     protected void update_PagingStateData_by_UserKeyMsg(PagingStateData<?> stateData, UserFingerFlippingMsgData data) {
         Motion motion = data.motion;
         boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
@@ -448,7 +450,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void switch_Keyboard(Type target, Key<?> key) {
         KeyboardMsgData data = new KeyboardSwitchingMsgData(key, target);
 
-        fire_InputMsg(KeyboardMsg.Keyboard_Switch_Doing, data);
+        fire_InputMsg(KeyboardMsgType.Keyboard_Switch_Doing, data);
     }
 
     /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
@@ -480,7 +482,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         KeyboardMsgData data = new KeyboardHandModeSwitchingMsgData(key, mode);
-        fire_InputMsg(KeyboardMsg.Keyboard_HandMode_Switch_Doing, data);
+        fire_InputMsg(KeyboardMsgType.Keyboard_HandMode_Switch_Doing, data);
     }
 
     /** 切换系统输入法 */
@@ -488,7 +490,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note：有可能切换，也有可能不切换，
         // 若发生切换，则再回来时键盘状态会主动被重置，
         // 故不需要提前重置键盘状态
-        fire_Common_InputMsg(KeyboardMsg.IME_Switch_Doing, key);
+        fire_Common_InputMsg(KeyboardMsgType.IME_Switch_Doing, key);
     }
 
     /** 显示输入提示气泡 */
@@ -500,7 +502,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void hide_InputChars_Input_Popup() {
         KeyboardMsgData data = new CommonKeyboardMsgData();
 
-        fire_InputMsg(KeyboardMsg.InputChars_Input_Popup_Hide_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputChars_Input_Popup_Hide_Doing, data);
     }
 
     /**
@@ -513,11 +515,11 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputChars_Input_Popup_Show_Doing(key != null ? key.getLabel() : null, hideDelayed);
     }
 
-    /** 触发 {@link KeyboardMsg#InputChars_Input_Popup_Show_Doing} 消息 */
+    /** 触发 {@link KeyboardMsgType#InputChars_Input_Popup_Show_Doing} 消息 */
     protected void fire_InputChars_Input_Popup_Show_Doing(String text, boolean hideDelayed) {
         KeyboardMsgData data = new InputCharsInputPopupShowingMsgData(text, hideDelayed);
 
-        fire_InputMsg(KeyboardMsg.InputChars_Input_Popup_Show_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputChars_Input_Popup_Show_Doing, data);
     }
 
     /** 播放输入单击音效 */
@@ -551,19 +553,21 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         KeyboardMsgData data = new InputAudioPlayDoingMsgData(key, audioType);
-        fire_InputMsg(KeyboardMsg.InputAudio_Play_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputAudio_Play_Doing, data);
     }
 
     /** 尝试处理控制按键消息 */
-    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key, UserKeyMsgData data) {
-        switch (msg) {
+    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+        switch (msg.type) {
             case LongPress_Key_Tick: {
                 switch (key.getType()) {
                     case Backspace:
                     case Space:
                     case Enter:
                         // 长按 tick 视为连续单击
-                        return try_Common_OnCtrlKeyMsg(inputList, UserKeyMsg.SingleTap_Key, key, data);
+                        return try_Common_OnCtrlKeyMsg(inputList,
+                                                       new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data),
+                                                       key);
                 }
                 break;
             }
@@ -634,7 +638,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         // 处理定位按钮
         if (CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
-            switch (msg) {
+            switch (msg.type) {
                 case SingleTap_Key: {
                     // 为双击提前播放音效
                     play_SingleTick_InputAudio(key);
@@ -652,7 +656,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     play_SingleTick_InputAudio(key);
 
                     // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
-                    Motion motion = ((UserFingerFlippingMsgData) data).motion;
+                    Motion motion = ((UserFingerFlippingMsgData) msg.data).motion;
 
                     do_Editor_Cursor_Moving(key, motion);
                     return true;
@@ -663,15 +667,15 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
-    private boolean try_OnUserKeyMsg_Over_XPad(UserKeyMsg msg, Key<?> key, UserKeyMsgData data) {
+    private boolean try_OnUserKeyMsg_Over_XPad(UserKeyMsg msg, Key<?> key) {
         if (!isXInputPadEnabled() || !(key instanceof CtrlKey)) {
             return false;
         }
 
-        switch (msg) {
+        switch (msg.type) {
             case Press_Key_Stop: {
                 if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
-                    fire_InputMsg(KeyboardMsg.Keyboard_XPad_Simulation_Terminated, new CommonKeyboardMsgData());
+                    fire_InputMsg(KeyboardMsgType.Keyboard_XPad_Simulation_Terminated, new CommonKeyboardMsgData());
                     return true;
                 } else {
                     break;
@@ -725,13 +729,13 @@ public abstract class BaseKeyboard implements Keyboard {
 
         KeyboardMsgData data = new EditorEditDoingMsgData(getKeyFactory(), action);
 
-        fire_InputMsg(KeyboardMsg.Editor_Edit_Doing, data);
+        fire_InputMsg(KeyboardMsgType.Editor_Edit_Doing, data);
     }
 
     protected void do_Editor_Cursor_Moving(CtrlKey key, Motion motion) {
         KeyboardMsgData data = new EditorCursorMovingMsgData(getKeyFactory(), key, motion);
 
-        fire_InputMsg(KeyboardMsg.Editor_Cursor_Move_Doing, data);
+        fire_InputMsg(KeyboardMsgType.Editor_Cursor_Move_Doing, data);
     }
 
     // ======================== End: 文本编辑逻辑 ========================
@@ -885,7 +889,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         });
 
-        inputList.sendMsg(InputListMsg.Input_Completion_Update_Done, pending);
+        inputList.sendMsg(InputListMsgType.Input_Completion_Update_Done, pending);
     }
 
     /** 更新当前输入位置的短语输入补全 */
@@ -895,7 +899,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> input = inputList.getSelected();
         do_InputList_Phrase_Completion_Updating(inputList, input);
 
-        inputList.sendMsg(InputListMsg.Input_Completion_Update_Done, input);
+        inputList.sendMsg(InputListMsgType.Input_Completion_Update_Done, input);
     }
 
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
@@ -947,7 +951,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
 
-        inputList.sendMsg(InputListMsg.Input_Choose_Done, input);
+        inputList.sendMsg(InputListMsgType.Input_Choose_Done, input);
     }
     // >>>>>>>>>
 }

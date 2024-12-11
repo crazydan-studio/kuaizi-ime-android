@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
@@ -67,15 +67,15 @@ public class SymbolKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(inputList, msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
-        Key<?> key = data.target;
-        switch (msg) {
+        Key<?> key = msg.data.target;
+        switch (msg.type) {
             case FingerFlipping: {
-                on_Symbol_Choose_Doing_PageFlipping_Msg(key, data);
+                on_Symbol_Choose_Doing_PageFlipping_Msg(key, msg);
                 break;
             }
             default: {
@@ -93,8 +93,7 @@ public class SymbolKeyboard extends BaseKeyboard {
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pageSize, onlyPair);
-        State state = new State(State.Type.Symbol_Choose_Doing, stateData, createInitState());
-        change_State_To(null, state);
+        this.state = new State(State.Type.Symbol_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
         // TODO 在 start 中获取原键盘类型
@@ -105,8 +104,9 @@ public class SymbolKeyboard extends BaseKeyboard {
         do_Symbol_Choosing(null, group);
     }
 
-    private void on_Symbol_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsgData data) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
+    private void on_Symbol_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsg msg) {
+        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data,
+                                             (UserFingerFlippingMsgData) msg.data);
 
         fire_Symbol_Choose_Doing(key);
     }
@@ -121,7 +121,7 @@ public class SymbolKeyboard extends BaseKeyboard {
     private void on_Symbol_Choose_Doing_SymbolKey_Msg(InputList inputList, UserKeyMsg msg, SymbolKey key) {
         boolean continuous = false;
 
-        switch (msg) {
+        switch (msg.type) {
             case LongPress_Key_Tick:
                 continuous = true;
             case SingleTap_Key: {
@@ -136,7 +136,7 @@ public class SymbolKeyboard extends BaseKeyboard {
     }
 
     private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
-        if (msg == UserKeyMsg.SingleTap_Key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
                 play_SingleTick_InputAudio(key);
 
@@ -147,7 +147,7 @@ public class SymbolKeyboard extends BaseKeyboard {
     }
 
     private void fire_Symbol_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsg.Symbol_Choose_Doing, key);
+        fire_Common_InputMsg(KeyboardMsgType.Symbol_Choose_Doing, key);
     }
 
     private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {

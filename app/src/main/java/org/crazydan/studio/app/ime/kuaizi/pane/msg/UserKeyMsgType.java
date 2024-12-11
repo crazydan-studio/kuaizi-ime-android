@@ -18,19 +18,34 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 
 /**
- * {@link KeyboardMsg} 所携带的数据
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * {@link UserKeyMsg} 消息的类型
  */
-public interface KeyboardMsgData {
+public enum UserKeyMsgType {
+    /** 按压 {@link Key} 开始 */
+    Press_Key_Start,
+    /** 按压 {@link Key} 结束 */
+    Press_Key_Stop,
 
-    /** 获取按键生成器，以便于重新布局按键 */
-    KeyFactory getKeyFactory();
+    /** 长按 {@link Key} 开始 */
+    LongPress_Key_Start,
+    /** 长按 {@link Key} 的 tick */
+    LongPress_Key_Tick,
+    /** 长按 {@link Key} 结束 */
+    LongPress_Key_Stop,
 
-    /** 触发按键 */
-    Key<?> getKey();
+    /** 单击 {@link Key} */
+    SingleTap_Key,
+    /** 双击 {@link Key} */
+    DoubleTap_Key,
+
+    /** 手指移动开始 */
+    FingerMoving_Start,
+    /** 手指移动 */
+    FingerMoving,
+    /** 手指移动结束 */
+    FingerMoving_Stop,
+    /** 手指翻动 */
+    FingerFlipping,
 }

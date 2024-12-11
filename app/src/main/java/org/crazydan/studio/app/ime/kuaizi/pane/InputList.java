@@ -38,15 +38,15 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Input_Choose_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Input_Completion_Apply_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Input_Completion_Clean_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Clean_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg.Inputs_Cleaned_Cancel_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Choose_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Completion_Apply_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Completion_Clean_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Inputs_Clean_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Inputs_Cleaned_Cancel_Done;
 
 /**
  * 输入列表
@@ -87,24 +87,26 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 发送 {@link InputListMsg} 消息：不附带 {@link Input} */
-    public void sendMsg(InputListMsg msg) {
-        this.listener.onMsg(this, msg, null);
+    public void sendMsg(InputListMsgType type) {
+        InputListMsg msg = new InputListMsg(type, null);
+        this.listener.onMsg(this, msg);
     }
 
     /** 发送 {@link InputListMsg} 消息 */
-    public void sendMsg(InputListMsg msg, Input<?> input) {
-        this.listener.onMsg(this, msg, new InputListMsgData(this::createViewDataList, input));
+    public void sendMsg(InputListMsgType type, Input<?> input) {
+        InputListMsg msg = new InputListMsg(type, new InputListMsgData(this::createViewDataList, input));
+        this.listener.onMsg(this, msg);
     }
 
     // -----------------------------
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
     @Override
-    public void onMsg(UserInputMsg msg, UserInputMsgData msgData) {
-        switch (msg) {
+    public void onMsg(UserInputMsg msg) {
+        switch (msg.type) {
             case SingleTap_Input: {
-                Input<?> input = msgData.target;
-                switch (msgData.where) {
+                Input<?> input = msg.data.target;
+                switch (msg.data.where) {
                     case head:
                         input = getFirstInput();
                         break;
@@ -124,7 +126,7 @@ public class InputList implements UserInputMsgListener {
                 break;
             }
             case SingleTap_CompletionInput: {
-                CompletionInput completion = (CompletionInput) msgData.target;
+                CompletionInput completion = (CompletionInput) msg.data.target;
 
                 applyCompletion(completion);
                 // Note：待输入的补全数据将在 confirm 时清除

@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -29,9 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
@@ -54,6 +54,8 @@ public class EmojiKeyboard extends BaseKeyboard {
 
     @Override
     public void start(InputList inputList) {
+        Input<?> pending = inputList.getPending();
+
         start_Emoji_Choosing();
     }
 
@@ -70,15 +72,15 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(inputList, msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
-        Key<?> key = data.target;
-        switch (msg) {
+        Key<?> key = msg.data.target;
+        switch (msg.type) {
             case FingerFlipping: {
-                on_Emoji_Choose_Doing_PageFlipping_Msg(key, data);
+                on_Emoji_Choose_Doing_PageFlipping_Msg(key, msg);
                 break;
             }
             default: {
@@ -93,14 +95,15 @@ public class EmojiKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_Emoji_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsgData data) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data, (UserFingerFlippingMsgData) data);
+    private void on_Emoji_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsg msg) {
+        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data,
+                                             (UserFingerFlippingMsgData) msg.data);
 
         fire_Emoji_Choose_Doing(key);
     }
 
     private void on_Emoji_Choose_Doing_InputWordKey_Msg(InputList inputList, UserKeyMsg msg, InputWordKey key) {
-        switch (msg) {
+        switch (msg.type) {
             case LongPress_Key_Tick:
             case SingleTap_Key: {
                 play_SingleTick_InputAudio(key);
@@ -114,7 +117,7 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     private void on_Emoji_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
-        switch (msg) {
+        switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
                     play_SingleTick_InputAudio(key);
@@ -153,8 +156,7 @@ public class EmojiKeyboard extends BaseKeyboard {
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
 
         EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
-        State state = new State(State.Type.Emoji_Choose_Doing, stateData, createInitState());
-        change_State_To(null, state);
+        this.state = new State(State.Type.Emoji_Choose_Doing, stateData);
 
         String group = null;
         // 若默认分组（常用）的数据为空，则切换到第二个分组
@@ -173,6 +175,6 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     private void fire_Emoji_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsg.Emoji_Choose_Doing, key);
+        fire_Common_InputMsg(KeyboardMsgType.Emoji_Choose_Doing, key);
     }
 }

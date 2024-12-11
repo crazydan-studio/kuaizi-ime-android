@@ -20,10 +20,10 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 
 /**
- * {@link KeyboardMsg#Keyboard_State_Change_Done} 消息数据
+ * {@link KeyboardMsgType#Keyboard_State_Change_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-06

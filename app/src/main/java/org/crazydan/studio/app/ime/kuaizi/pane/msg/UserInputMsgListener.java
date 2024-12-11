@@ -18,12 +18,12 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 /**
- * {@link UserInputMsg} 消息监听
+ * {@link UserInputMsg} 消息监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-07
  */
 public interface UserInputMsgListener {
 
-    void onMsg(UserInputMsg msg, UserInputMsgData data);
+    void onMsg(UserInputMsg msg);
 }

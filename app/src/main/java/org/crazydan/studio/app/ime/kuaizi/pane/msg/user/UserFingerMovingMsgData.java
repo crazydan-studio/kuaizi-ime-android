@@ -19,11 +19,11 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.user;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 
 /**
- * {@link UserKeyMsg#FingerMoving} 消息数据
+ * {@link UserKeyMsgType#FingerMoving} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06

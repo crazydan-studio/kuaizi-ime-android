@@ -40,10 +40,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordAdvanceFilterDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
@@ -102,16 +103,16 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg, UserKeyMsgData data) {
-        if (try_OnUserKeyMsg(inputList, msg, data)) {
+    public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
-        Key<?> key = data.target;
+        Key<?> key = msg.data.target;
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
-                if (msg == UserKeyMsg.FingerFlipping) {
-                    on_InputCandidate_Choose_Doing_PageFlipping_Msg(data);
+                if (msg.type == UserKeyMsgType.FingerFlipping) {
+                    on_InputCandidate_Choose_Doing_PageFlipping_Msg(msg.data);
                 } else if (key instanceof InputWordKey) {
                     on_InputCandidate_Choose_Doing_InputWordKey_Msg(inputList, msg, (InputWordKey) key);
                 } else if (key instanceof CtrlKey) {
@@ -120,8 +121,8 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
                 break;
             }
             case InputCandidate_AdvanceFilter_Doing: {
-                if (msg == UserKeyMsg.FingerFlipping) {
-                    on_InputCandidate_AdvanceFilter_Doing_PageFlipping_Msg(data);
+                if (msg.type == UserKeyMsgType.FingerFlipping) {
+                    on_InputCandidate_AdvanceFilter_Doing_PageFlipping_Msg(msg.data);
                 } else if (key instanceof CtrlKey) {
                     on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
                 }
@@ -138,7 +139,7 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
         }
 
         // 确认候选字
-        if (msg == UserKeyMsg.SingleTap_Key) {
+        if (msg.type == UserKeyMsgType.SingleTap_Key) {
             play_SingleTick_InputAudio(key);
             show_InputChars_Input_Popup(key);
 
@@ -160,7 +161,7 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
     }
 
     private void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
-        if (msg != UserKeyMsg.SingleTap_Key) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
@@ -258,7 +259,7 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
     }
 
     private void on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
-        if (msg != UserKeyMsg.SingleTap_Key) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
@@ -327,13 +328,13 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
     private void fire_InputCandidate_Choose_Doing(CharInput input) {
         KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fire_InputMsg(KeyboardMsg.InputCandidate_Choose_Doing, data);
+        fire_InputMsg(KeyboardMsgType.InputCandidate_Choose_Doing, data);
     }
 
     private void fire_InputCandidate_Choose_Done(CharInput input) {
         KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
 
-        fire_InputMsg(KeyboardMsg.InputCandidate_Choose_Done, data);
+        fire_InputMsg(KeyboardMsgType.InputCandidate_Choose_Done, data);
     }
 
     private void confirm_Selected_InputCandidate(InputList inputList) {
@@ -414,8 +415,7 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
         CandidatePinyinWordChooseDoingStateData stateData = new CandidatePinyinWordChooseDoingStateData(input,
                                                                                                         allCandidates,
                                                                                                         pageSize);
-        State state = new State(State.Type.InputCandidate_Choose_Doing, stateData, createInitState());
-        change_State_To(null, state);
+        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         fire_InputCandidate_Choose_Doing(input);
     }

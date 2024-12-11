@@ -23,9 +23,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 
 /**
@@ -43,24 +41,24 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
     // =============================== Start: 消息处理 ===================================
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData) {
-        switch (msg) {
+    public void onMsg(InputList inputList, InputListMsg msg) {
+        switch (msg.type) {
             case Input_Selected_Delete_Done:
             case Input_Pending_Drop_Done:
             case Input_Completion_Apply_Done:
             case Inputs_Clean_Done:
             case Inputs_Cleaned_Cancel_Done: {
-                update(msgData.inputFactory.createViewData());
+                update(msg.data.inputFactory.createViewData());
                 break;
             }
         }
 
-        super.onMsg(inputList, msg, msgData);
+        super.onMsg(inputList, msg);
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData data) {
-        switch (msg) {
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+        switch (msg.type) {
             case Keyboard_Config_Update_Done:
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:

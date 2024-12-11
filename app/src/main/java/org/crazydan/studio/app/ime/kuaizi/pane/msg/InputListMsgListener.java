@@ -20,12 +20,12 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 
 /**
- * {@link InputListMsg} 消息监听
+ * {@link InputListMsg} 消息监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-21
  */
 public interface InputListMsgListener {
 
-    void onMsg(InputList inputList, InputListMsg msg, InputListMsgData msgData);
+    void onMsg(InputList inputList, InputListMsg msg);
 }

@@ -36,10 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAnimator;
@@ -110,12 +108,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
 
     /** 响应按键点击、双击等消息，并向上传递 {@link UserKeyMsg} 消息 */
     @Override
-    public void onMsg(UserKeyMsg msg, UserKeyMsgData data) {
-        switch (msg) {
+    public void onMsg(UserKeyMsg msg) {
+        switch (msg.type) {
             case FingerMoving_Start: {
                 // 对光标移动和文本选择按键启用轨迹
-                if ((CtrlKey.is(data.target, CtrlKey.Type.Editor_Cursor_Locator) //
-                     || CtrlKey.is(data.target, CtrlKey.Type.Editor_Range_Selector)) //
+                if (CtrlKey.isAny(msg.data.target,
+                                  CtrlKey.Type.Editor_Cursor_Locator,
+                                  CtrlKey.Type.Editor_Range_Selector) //
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);
@@ -132,16 +131,16 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
         }
 
-        this.listener.onMsg(msg, data);
+        this.listener.onMsg(msg);
     }
 
     /** 响应来自上层派发的 {@link KeyboardMsg} 消息 */
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg, KeyboardMsgData msgData) {
-        KeyFactory keyFactory = msgData.getKeyFactory();
+    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+        KeyFactory keyFactory = msg.data.getKeyFactory();
         Configuration config = getConfig();
 
-        switch (msg) {
+        switch (msg.type) {
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
             case Keyboard_HandMode_Switch_Done:
@@ -158,7 +157,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
             case InputChars_Input_Doing: {
                 // 滑屏输入显示轨迹
-                if (((InputCharsInputtingMsgData) msgData).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
+                if (((InputCharsInputtingMsgData) msg.data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);

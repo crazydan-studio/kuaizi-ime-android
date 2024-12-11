@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
 
 /**
- * {@link KeyboardMsg#InputList_Commit_Doing} 消息数据
+ * {@link KeyboardMsgType#InputList_Commit_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-15
