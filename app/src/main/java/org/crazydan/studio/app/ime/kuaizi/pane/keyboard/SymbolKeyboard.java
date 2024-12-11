@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
@@ -147,7 +147,7 @@ public class SymbolKeyboard extends BaseKeyboard {
     }
 
     private void fire_Symbol_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsgType.Symbol_Choose_Doing, key);
+        fire_Common_InputMsg(InputMsgType.InputSymbol_Choose_Doing, key);
     }
 
     private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {

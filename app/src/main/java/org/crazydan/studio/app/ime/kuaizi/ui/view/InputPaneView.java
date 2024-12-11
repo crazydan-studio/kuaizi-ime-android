@@ -43,14 +43,13 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
@@ -176,8 +175,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
             }
         }
 
-        KeyboardMsg msg = new KeyboardMsg(KeyboardMsgType.Keyboard_Config_Update_Done, new CommonKeyboardMsgData());
-        onMsg(keyboard, msg);
+        InputMsg msg = new InputMsg(InputMsgType.Keyboard_Config_Update_Done, new InputMsgData());
+        onMsg(msg);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -200,10 +199,11 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     // -------------------------------------------
 
-    /** 响应输入列表的 {@link InputListMsg} 消息：向下传递消息给内部视图 */
+    /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg) {
-        this.inputListView.onMsg(inputList, msg);
+    public void onMsg(InputMsg msg) {
+        this.keyboardView.onMsg(msg);
+        this.inputListView.onMsg(msg);
 
         switch (msg.type) {
             case Input_Completion_Clean_Done:
@@ -214,16 +214,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 showInputCompletionsPopupWindow(inputList, completionsShown);
                 break;
             }
-        }
-    }
-
-    /** 响应键盘的 {@link KeyboardMsg} 消息：向下传递消息给内部视图 */
-    @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
-        this.keyboardView.onMsg(keyboard, msg);
-        this.inputListView.onMsg(keyboard, msg);
-
-        switch (msg.type) {
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msg.data);
                 return;
@@ -232,7 +222,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msg.data).mode;
                 this.appConf.set(Conf.hand_mode, mode);
 
-                onMsg(keyboard, new KeyboardMsg(KeyboardMsgType.Keyboard_HandMode_Switch_Done, msg.data));
+                onMsg(new InputMsg(InputMsgType.Keyboard_HandMode_Switch_Done,
+                                   msg.data,
+                                   msg.keyFactory,
+                                   msg.inputFactory));
                 return;
             }
             case InputChars_Input_Popup_Show_Doing: {

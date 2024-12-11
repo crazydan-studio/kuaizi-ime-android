@@ -17,24 +17,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#InputCandidate_Choose_Doing}
- * 和 {@link KeyboardMsgType#InputCandidate_Choose_Done}
+ * {@link InputMsgType#InputCandidate_Choose_Doing}
+ * 和 {@link InputMsgType#InputCandidate_Choose_Done}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-23
  */
-public class InputCandidateChoosingMsgData extends CommonKeyboardMsgData {
+public class InputCandidateChoosingMsgData extends InputMsgData {
     public final CharInput target;
 
-    public InputCandidateChoosingMsgData(KeyFactory keyFactory, CharInput target) {
-        super(keyFactory);
-
+    public InputCandidateChoosingMsgData(CharInput target) {
         this.target = target;
     }
 }

@@ -24,9 +24,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
@@ -37,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseView extends RecyclerViewHolder<Exercise> implements KeyboardMsgListener {
+public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputMsgListener {
     protected final TextView titleView;
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
@@ -81,10 +80,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements Keyboa
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
-        this.textView.onMsg(keyboard, msg);
+    public void onMsg(InputMsg msg) {
+        this.textView.onMsg(msg);
 
-        getData().onMsg(keyboard, msg);
+        getData().onMsg(msg);
     }
 
     protected void scrollTo(int position) {

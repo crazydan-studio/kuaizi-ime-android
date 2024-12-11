@@ -35,8 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
@@ -49,12 +49,12 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
  * 负责显示各类键盘的按键布局，并提供事件监听等处理
  * <p/>
  * 注：在 {@link InputPaneView ImeInputView}
- * 中统一分发 {@link KeyboardMsg} 消息
+ * 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener, KeyboardMsgListener {
+public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener, InputMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
@@ -134,10 +134,10 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         this.listener.onMsg(msg);
     }
 
-    /** 响应来自上层派发的 {@link KeyboardMsg} 消息 */
+    /** 响应来自上层派发的 {@link InputMsg} 消息 */
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
-        KeyFactory keyFactory = msg.data.getKeyFactory();
+    public void onMsg(InputMsg msg) {
+        KeyFactory keyFactory = msg.keyFactory;
         Configuration config = getConfig();
 
         switch (msg.type) {
@@ -145,8 +145,6 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             case Keyboard_Start_Done:
             case Keyboard_HandMode_Switch_Done:
             case Keyboard_Config_Update_Done: {
-                keyFactory = keyboard.getKeyFactory();
-
                 if (config.bool(Conf.disable_key_animation)) {
                     setItemAnimator(null);
                 } else {
@@ -184,7 +182,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             return;
         }
 
-        Key<?>[][] keys = keyFactory.create();
+        Key<?>[][] keys = keyFactory.getKeys();
 
         boolean animationDisabled = keyFactory instanceof KeyFactory.NoAnimation;
         if (animationDisabled) {

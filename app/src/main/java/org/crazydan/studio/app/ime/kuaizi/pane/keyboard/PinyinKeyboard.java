@@ -36,8 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CommittingOptionChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsFlipDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsSlipDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
@@ -136,17 +136,17 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg) {
+    public void onMsg(InputList inputList, InputMsg msg) {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing:
                 // Note：其余消息，继续向后处理
-                if (msg.type == InputListMsgType.Input_Choose_Doing) {
-                    start_Input_Choosing(inputList, msg.data.target);
+                if (msg.type == InputMsgType.Input_Choose_Doing) {
+                    start_Input_Choosing(inputList, msg.data.input);
                     return;
                 }
             case InputCandidate_AdvanceFilter_Doing:
             case InputChars_Flip_Doing: {
-                if (msg.type == InputListMsgType.Inputs_Clean_Done) {
+                if (msg.type == InputMsgType.InputList_Clean_Done) {
                     change_State_to_Init();
                     return;
                 }

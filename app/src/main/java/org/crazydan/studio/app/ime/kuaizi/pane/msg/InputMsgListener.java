@@ -17,20 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-
 /**
- * 对 {@link KeyboardMsg} 和 {@link InputListMsg} 的监听器
+ * {@link InputMsg} 的监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-07
  */
-public interface InputMsgListener extends KeyboardMsgListener, InputListMsgListener {
+public interface InputMsgListener {
 
-    @Override
-    default void onMsg(Keyboard keyboard, KeyboardMsg msg) {}
-
-    @Override
-    default void onMsg(InputList inputList, InputListMsg msg) {}
+    void onMsg(InputMsg msg);
 }

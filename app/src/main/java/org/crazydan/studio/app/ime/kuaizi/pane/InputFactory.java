@@ -22,13 +22,11 @@ import java.util.List;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
- * {@link Input} 生成器
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-09
  */
 public interface InputFactory {
 
-    /** 创建 {@link Input} 的视图数据 {@link InputViewData} */
-    List<InputViewData> createViewData();
+    /** 获取当前状态下的 {@link Input} 视图数据 {@link InputViewData} */
+    List<InputViewData> getInputs();
 }

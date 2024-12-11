@@ -19,21 +19,21 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#Keyboard_HandMode_Switch_Doing}
- * 和 {@link KeyboardMsgType#Keyboard_HandMode_Switch_Done} 的消息数据
+ * {@link InputMsgType#Keyboard_HandMode_Switch_Doing}
+ * 和 {@link InputMsgType#Keyboard_HandMode_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-23
  */
-public class KeyboardHandModeSwitchingMsgData extends CommonKeyboardMsgData {
+public class KeyboardHandModeSwitchingMsgData extends InputMsgData {
     public final Keyboard.HandMode mode;
 
     public KeyboardHandModeSwitchingMsgData(Key<?> key, Keyboard.HandMode mode) {
         super(key);
-
         this.mode = mode;
     }
 }

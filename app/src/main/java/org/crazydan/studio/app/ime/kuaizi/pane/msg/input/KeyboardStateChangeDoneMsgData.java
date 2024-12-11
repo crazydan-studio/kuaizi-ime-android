@@ -18,23 +18,22 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#Keyboard_State_Change_Done} 消息数据
+ * {@link InputMsgType#Keyboard_State_Change_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-06
  */
-public class KeyboardStateChangeDoneMsgData extends CommonKeyboardMsgData {
+public class KeyboardStateChangeDoneMsgData extends InputMsgData {
     /** 更新后的状态 */
     public final State state;
 
-    public KeyboardStateChangeDoneMsgData(KeyFactory keyFactory, Key<?> key, State state) {
-        super(keyFactory, key);
-
+    public KeyboardStateChangeDoneMsgData(Key<?> key, State state) {
+        super(key);
         this.state = state;
     }
 }

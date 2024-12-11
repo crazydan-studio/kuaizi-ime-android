@@ -17,15 +17,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#InputChars_Input_Popup_Show_Doing} 的消息数据
+ * {@link InputMsgType#InputChars_Input_Popup_Show_Doing} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-28
  */
-public class InputCharsInputPopupShowingMsgData extends CommonKeyboardMsgData {
+public class InputCharsInputPopupShowingMsgData extends InputMsgData {
     /** 气泡内容 */
     public final String text;
     /** 是否延迟隐藏 */

@@ -31,8 +31,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
@@ -71,10 +71,10 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     /** 处理来自本层的算术 InputList 的消息 */
-    protected void onMathUserInputMsg(InputList matchInputList, InputListMsg msg) {
+    protected void onMathUserInputMsg(InputList matchInputList, InputMsg msg) {
         // 数字、数学符号不做候选切换：需支持更多符号时，可增加数学计算符的候选键盘
-        if (msg.type == InputListMsgType.Input_Choose_Doing) {
-            Input<?> input = msg.data.target;
+        if (msg.type == InputMsgType.Input_Choose_Doing) {
+            Input<?> input = msg.data.input;
 
             matchInputList.confirmPendingAndSelect(input);
             // 对输入的修改均做替换输入
@@ -89,7 +89,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     /** 处理来自父 InputList 的消息 */
     @Override
-    public void onMsg(InputList parentInputList, InputListMsg msg) {
+    public void onMsg(InputList parentInputList, InputMsg msg) {
         switch (msg.type) {
             case Input_Completion_Apply_Done: {
                 withMathExprPending(parentInputList);
@@ -97,7 +97,7 @@ public class MathKeyboard extends BaseKeyboard {
                 break;
             }
             case Input_Choose_Doing: {
-                Input<?> input = msg.data.target;
+                Input<?> input = msg.data.input;
 
                 // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
                 parentInputList.confirmPendingAndSelect(input);
@@ -110,8 +110,8 @@ public class MathKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case Inputs_Clean_Done:
-            case Inputs_Cleaned_Cancel_Done: {
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done: {
                 resetMathInputList();
                 break;
             }

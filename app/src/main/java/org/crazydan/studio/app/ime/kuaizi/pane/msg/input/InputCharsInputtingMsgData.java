@@ -18,23 +18,22 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#InputChars_Input_Doing}
- * 和 {@link KeyboardMsgType#InputChars_Input_Done}
+ * {@link InputMsgType#InputChars_Input_Doing}
+ * 和 {@link InputMsgType#InputChars_Input_Done}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class InputCharsInputtingMsgData extends CommonKeyboardMsgData {
+public class InputCharsInputtingMsgData extends InputMsgData {
     public final KeyInputType keyInputType;
 
-    public InputCharsInputtingMsgData(KeyFactory keyFactory, Key<?> key, KeyInputType keyInputType) {
-        super(keyFactory, key);
-
+    public InputCharsInputtingMsgData(Key<?> key, KeyInputType keyInputType) {
+        super(key);
         this.keyInputType = keyInputType;
     }
 

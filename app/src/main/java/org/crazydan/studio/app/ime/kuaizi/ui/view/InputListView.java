@@ -21,10 +21,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 
 /**
  * {@link InputList} 的视图
@@ -32,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListView extends InputListViewBase implements KeyboardMsgListener {
+public class InputListView extends InputListViewBase implements InputMsgListener {
 
     public InputListView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -41,24 +39,13 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
     // =============================== Start: 消息处理 ===================================
 
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg) {
+    public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case Input_Selected_Delete_Done:
             case Input_Pending_Drop_Done:
             case Input_Completion_Apply_Done:
-            case Inputs_Clean_Done:
-            case Inputs_Cleaned_Cancel_Done: {
-                update(msg.data.inputFactory.createViewData());
-                break;
-            }
-        }
-
-        super.onMsg(inputList, msg);
-    }
-
-    @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
-        switch (msg.type) {
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done:
             case Keyboard_Config_Update_Done:
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
@@ -67,14 +54,15 @@ public class InputListView extends InputListViewBase implements KeyboardMsgListe
             case InputChars_Input_Done:
             case InputCandidate_Choose_Doing:
             case InputCandidate_Choose_Done:
-            case Emoji_Choose_Doing:
-            case Symbol_Choose_Doing:
+            case InputEmoji_Choose_Doing:
+            case InputSymbol_Choose_Doing:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:
-//                update(inputList, true);
+                update(msg.inputFactory);
                 break;
         }
+        super.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================

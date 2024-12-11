@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
@@ -175,6 +175,6 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     private void fire_Emoji_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(KeyboardMsgType.Emoji_Choose_Doing, key);
+        fire_Common_InputMsg(InputMsgType.InputEmoji_Choose_Doing, key);
     }
 }

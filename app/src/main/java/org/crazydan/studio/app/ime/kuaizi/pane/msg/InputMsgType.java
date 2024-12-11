@@ -17,8 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-/** {@link KeyboardMsg} 消息的类型 */
-public enum KeyboardMsgType {
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+
+/** {@link InputMsg} 消息的类型 */
+public enum InputMsgType {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
 
@@ -35,7 +37,31 @@ public enum KeyboardMsgType {
     InputCandidate_Choose_Doing,
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
+    /** 表情符号选择中 */
+    InputEmoji_Choose_Doing,
+    /** 标点符号选择中 */
+    InputSymbol_Choose_Doing,
 
+    /** 输入选择中 */
+    Input_Choose_Doing,
+    /** 输入已选中 */
+    Input_Choose_Done,
+    /** {@link InputList#getPending 待输入}已丢弃 */
+    Input_Pending_Drop_Done,
+    /** {@link InputList#getSelected 当前选中的输入}已删除 */
+    Input_Selected_Delete_Done,
+
+    /** 输入补全已更新 */
+    Input_Completion_Update_Done,
+    /** 输入补全已清除 */
+    Input_Completion_Clean_Done,
+    /** 输入补全已应用 */
+    Input_Completion_Apply_Done,
+
+    /** 输入已清空 */
+    InputList_Clean_Done,
+    /** 已撤销对输入的清空操作 */
+    InputList_Cleaned_Cancel_Done,
     /** 输入列表提交中：将输入内容写入到 目标编辑器 中 */
     InputList_Commit_Doing,
     /** 已提交输入列表撤回中 */
@@ -73,9 +99,4 @@ public enum KeyboardMsgType {
 
     /** 输入法切换中 */
     IME_Switch_Doing,
-
-    /** 表情符号选择中 */
-    Emoji_Choose_Doing,
-    /** 标点符号选择中 */
-    Symbol_Choose_Doing,
 }

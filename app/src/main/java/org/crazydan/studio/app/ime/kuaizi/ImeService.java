@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
@@ -186,7 +186,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     // =============================== Start: 消息处理 ===================================
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+    public void onMsg(Keyboard keyboard, InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msg.data;

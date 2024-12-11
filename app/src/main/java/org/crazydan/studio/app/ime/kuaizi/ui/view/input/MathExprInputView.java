@@ -50,7 +50,7 @@ public class MathExprInputView extends InputView<Input<?>> {
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
 
         InputList inputList = ((MathExprInput) data.input).getInputList();
-        this.inputListView.update(inputList.createViewDataList(), selected, false);
+        this.inputListView.update(inputList.getInputFactory(), selected, false);
 
         setBackgroundColorByAttrId(this.markerView,
                                    selected

@@ -40,8 +40,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordAdvanceFilterDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordChooseDoingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
@@ -326,15 +326,15 @@ public class PinyinCandidatesKeyboard extends BaseKeyboard {
     // >>>>>>>>>>>>
 
     private void fire_InputCandidate_Choose_Doing(CharInput input) {
-        KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+        InputMsgData data = new InputCandidateChoosingMsgData(input);
 
-        fire_InputMsg(KeyboardMsgType.InputCandidate_Choose_Doing, data);
+        fire_InputMsg(InputMsgType.InputCandidate_Choose_Doing, data);
     }
 
     private void fire_InputCandidate_Choose_Done(CharInput input) {
-        KeyboardMsgData data = new InputCandidateChoosingMsgData(getKeyFactory(), input);
+        InputMsgData data = new InputCandidateChoosingMsgData(input);
 
-        fire_InputMsg(KeyboardMsgType.InputCandidate_Choose_Done, data);
+        fire_InputMsg(InputMsgType.InputCandidate_Choose_Done, data);
     }
 
     private void confirm_Selected_InputCandidate(InputList inputList) {

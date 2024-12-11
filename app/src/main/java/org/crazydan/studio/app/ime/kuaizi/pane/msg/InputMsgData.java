@@ -17,34 +17,35 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
- * {@link InputListMsg} 消息的类型
+ * {@link InputMsg} 所携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-21
+ * @date 2023-07-06
  */
-public enum InputListMsgType {
-    /** 输入选择中 */
-    Input_Choose_Doing,
-    /** 输入已选中 */
-    Input_Choose_Done,
+public class InputMsgData {
+    /** 触发消息的 {@link Key} */
+    public final Key<?> key;
+    /** 触发消息的 {@link Input} */
+    public final Input<?> input;
 
-    /** {@link InputList#getPending 待输入}已丢弃 */
-    Input_Pending_Drop_Done,
-    /** {@link InputList#getSelected 当前选中的输入}已删除 */
-    Input_Selected_Delete_Done,
+    public InputMsgData() {
+        this(null, null);
+    }
 
-    /** 输入已清空 */
-    Inputs_Clean_Done,
-    /** 已撤销对输入的清空操作 */
-    Inputs_Cleaned_Cancel_Done,
+    public InputMsgData(Key<?> key) {
+        this(key, null);
+    }
 
-    /** 输入补全已更新 */
-    Input_Completion_Update_Done,
-    /** 输入补全已清除 */
-    Input_Completion_Clean_Done,
-    /** 输入补全已应用 */
-    Input_Completion_Apply_Done,
+    public InputMsgData(Input<?> input) {
+        this(null, input);
+    }
+
+    public InputMsgData(Key<?> key, Input<?> input) {
+        this.key = key;
+        this.input = input;
+    }
 }

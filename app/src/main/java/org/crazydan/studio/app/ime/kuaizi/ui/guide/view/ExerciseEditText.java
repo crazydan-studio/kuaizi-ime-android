@@ -25,10 +25,9 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import androidx.appcompat.widget.AppCompatEditText;
 import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
@@ -38,12 +37,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolComm
 /**
  * 用于筷字输入法使用练习的编辑框
  * <p/>
- * 注：在 {@link ExerciseView} 中统一分发 {@link KeyboardMsg} 消息
+ * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-16
  */
-public class ExerciseEditText extends AppCompatEditText implements KeyboardMsgListener {
+public class ExerciseEditText extends AppCompatEditText implements InputMsgListener {
     private EditorSelection editorSelection;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
@@ -55,7 +54,7 @@ public class ExerciseEditText extends AppCompatEditText implements KeyboardMsgLi
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+    public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msg.data;

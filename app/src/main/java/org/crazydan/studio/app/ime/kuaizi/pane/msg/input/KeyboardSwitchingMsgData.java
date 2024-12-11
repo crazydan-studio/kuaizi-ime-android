@@ -19,22 +19,22 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#Keyboard_Switch_Doing}
- * 和 {@link KeyboardMsgType#Keyboard_Switch_Done} 的消息数据
+ * {@link InputMsgType#Keyboard_Switch_Doing}
+ * 和 {@link InputMsgType#Keyboard_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-27
  */
-public class KeyboardSwitchingMsgData extends CommonKeyboardMsgData {
+public class KeyboardSwitchingMsgData extends InputMsgData {
     /** 切换到的目标类型，若为 null 则由上层处理键盘切换 */
     public final Keyboard.Type target;
 
     public KeyboardSwitchingMsgData(Key<?> key, Keyboard.Type target) {
         super(key);
-
         this.target = target;
     }
 }

@@ -18,19 +18,17 @@
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
 /**
- * {@link Key} 生成器
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
 public interface KeyFactory {
 
     /**
-     * 创建二维矩阵 {@link Key}
+     * 获取当前状态下的二维矩阵 {@link Key}
      * <p/>
      * 元素可为<code>null</code>，表示该位置不放置任何按键
      */
-    Key<?>[][] create();
+    Key<?>[][] getKeys();
 
     /** 无动效的生成器 */
     interface NoAnimation extends KeyFactory {}

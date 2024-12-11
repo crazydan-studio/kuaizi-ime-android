@@ -19,9 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 
 /**
@@ -46,14 +45,14 @@ public interface Keyboard {
     /** 销毁 */
     void destroy();
 
-    /** 注册 {@link KeyboardMsg} 消息监听 */
-    void setListener(KeyboardMsgListener listener);
+    /** 注册 {@link InputMsg} 消息监听 */
+    void setListener(InputMsgListener listener);
+
+    /** 响应来自 {@link InputList} 的 {@link InputMsg} 消息 */
+    void onMsg(InputList inputList, InputMsg msg);
 
     /** 响应 {@link UserKeyMsg} 消息 */
     void onMsg(InputList inputList, UserKeyMsg msg);
-
-    /** 响应 {@link InputListMsg} 消息 */
-    void onMsg(InputList inputList, InputListMsg msg);
 
     /** 键盘类型 */
     enum Type {

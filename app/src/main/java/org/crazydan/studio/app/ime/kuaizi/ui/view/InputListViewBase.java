@@ -32,11 +32,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
@@ -53,7 +53,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListViewBase extends RecyclerView implements ViewGestureDetector.Listener, InputListMsgListener {
+public class InputListViewBase extends RecyclerView implements ViewGestureDetector.Listener, InputMsgListener {
     private final InputViewAdapter adapter;
     private final InputViewLayoutManager layoutManager;
 
@@ -106,9 +106,9 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         }
     }
 
-    /** 响应来自上层派发的 {@link InputListMsg} 消息 */
+    /** 响应来自上层派发的 {@link InputMsg} 消息 */
     @Override
-    public void onMsg(InputList inputList, InputListMsg msg) {
+    public void onMsg(InputMsg msg) {
         // Note: 作为与算术输入视图的公共逻辑，仅针对 Input_Choose_Done 的处理，其余消息各自单独处理
         switch (msg.type) {
             case Input_Choose_Done: {
@@ -118,9 +118,9 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                 // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
                 // 注：事件是从父 InputList 传递到子 InputList 的，
                 // 所以，无法优先处理子 InputList 的事件
-                boolean needToLockScrolling = msg.data.target.isMathExpr();
+                boolean needToLockScrolling = msg.data.input.isMathExpr();
 
-                update(msg.data.inputFactory.createViewData(), true, needToLockScrolling);
+                update(msg.inputFactory, true, needToLockScrolling);
                 break;
             }
         }
@@ -130,11 +130,12 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
 
     // =============================== Start: 更新视图 ===================================
 
-    public void update(List<InputViewData> dataList) {
-        update(dataList, true, false);
+    public void update(InputFactory inputFactory) {
+        update(inputFactory, true, false);
     }
 
-    public void update(List<InputViewData> dataList, boolean canBeSelected, boolean needToLockScrolling) {
+    public void update(InputFactory inputFactory, boolean canBeSelected, boolean needToLockScrolling) {
+        List<InputViewData> dataList = inputFactory.getInputs();
         this.adapter.updateDataList(dataList, canBeSelected);
 
         if (!needToLockScrolling) {

@@ -23,18 +23,17 @@ import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 
 /**
- * 注：在 {@link ExerciseView} 中统一分发 {@link KeyboardMsg} 消息
+ * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Exercise implements RecyclerViewData, KeyboardMsgListener {
+public class Exercise implements RecyclerViewData, InputMsgListener {
     public final Mode mode;
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();
@@ -77,13 +76,13 @@ public class Exercise implements RecyclerViewData, KeyboardMsgListener {
     }
 
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+    public void onMsg(InputMsg msg) {
         ExerciseStep current = this.runningStep;
         if (current == null) {
             return;
         }
 
-        Key<?> key = msg.data.getKey();
+        Key<?> key = msg.data.key;
         switch (msg.type) {
             case InputChars_Input_Doing:
                 if (key == null || key.getText() == null) {

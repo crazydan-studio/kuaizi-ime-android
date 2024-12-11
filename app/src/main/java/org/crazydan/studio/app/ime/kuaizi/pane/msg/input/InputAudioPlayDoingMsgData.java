@@ -18,20 +18,20 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link KeyboardMsgType#InputAudio_Play_Doing} 消息数据
+ * {@link InputMsgType#InputAudio_Play_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-17
  */
-public class InputAudioPlayDoingMsgData extends CommonKeyboardMsgData {
+public class InputAudioPlayDoingMsgData extends InputMsgData {
     public final AudioType audioType;
 
     public InputAudioPlayDoingMsgData(Key<?> key, AudioType audioType) {
         super(key);
-
         this.audioType = audioType;
     }
 

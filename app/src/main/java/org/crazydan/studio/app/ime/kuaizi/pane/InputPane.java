@@ -35,20 +35,19 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidatesKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.SymbolKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.CommonKeyboardMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType.Keyboard_Exit_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType.Keyboard_Hide_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType.Keyboard_Start_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType.Keyboard_Switch_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Start_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Switch_Done;
 
 /**
  * 输入面板，由{@link Keyboard 键盘}和{@link InputList 输入列表}组成
@@ -74,7 +73,9 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.switchedKeyboards = new Stack<>();
         this.listeners = new ArrayList<>();
 
-        this.inputList.setListener(this);
+        this.inputList.setListener((msg) -> {
+            this.keyboard.onMsg(this.inputList, msg);
+        });
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -106,16 +107,16 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.inputList.reset(false);
         }
 
-        KeyboardMsg msg = new KeyboardMsg(Keyboard_Start_Done, new CommonKeyboardMsgData());
-        onMsg(this.keyboard, msg);
+        InputMsg msg = new InputMsg(Keyboard_Start_Done, new InputMsgData());
+        onMsg(msg);
     }
 
     /** 隐藏 {@link InputPane}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
         this.inputList.clearCompletions();
 
-        KeyboardMsg msg = new KeyboardMsg(Keyboard_Hide_Done, new CommonKeyboardMsgData());
-        onMsg(this.keyboard, msg);
+        InputMsg msg = new InputMsg(Keyboard_Hide_Done, new InputMsgData());
+        onMsg(msg);
     }
 
     /** 退出 {@link InputPane}，即，重置输入状态 */
@@ -127,8 +128,8 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.keyboard.reset();
         }
 
-        KeyboardMsg msg = new KeyboardMsg(Keyboard_Exit_Done, new CommonKeyboardMsgData());
-        onMsg(this.keyboard, msg);
+        InputMsg msg = new InputMsg(Keyboard_Exit_Done, new InputMsgData());
+        onMsg(msg);
     }
 
     /** 销毁 {@link InputPane}，即，关闭并回收资源 */
@@ -195,9 +196,9 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
     // --------------------------------------
 
-    /** 响应键盘的 {@link KeyboardMsg} 消息：从键盘向上传递给外部监听者 */
+    /** 响应键盘的 {@link InputMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
-    public void onMsg(Keyboard keyboard, KeyboardMsg msg) {
+    public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
                 on_Keyboard_Switch_Doing((KeyboardSwitchingMsgData) msg.data);
@@ -205,18 +206,14 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             }
         }
 
-        this.listeners.forEach(listener -> listener.onMsg(keyboard, msg));
+        InputMsg newMsg = new InputMsg(msg.type,
+                                       msg.data,
+                                       this.keyboard.getKeyFactory(),
+                                       this.inputList.getInputFactory());
+        this.listeners.forEach(listener -> listener.onMsg(newMsg));
     }
 
-    /** 响应输入列表的 {@link InputListMsg} 消息：从输入列表向上传递给外部监听者 */
-    @Override
-    public void onMsg(InputList inputList, InputListMsg msg) {
-        this.keyboard.onMsg(inputList, msg);
-
-        this.listeners.forEach(listener -> listener.onMsg(inputList, msg));
-    }
-
-    /** 处理 {@link KeyboardMsgType#Keyboard_Switch_Doing} 消息 */
+    /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
     private void on_Keyboard_Switch_Doing(KeyboardSwitchingMsgData data) {
         Keyboard.Type type = data.target;
         if (type == null && !this.switchedKeyboards.isEmpty()) {
@@ -228,8 +225,8 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.switchedKeyboards.push(oldType);
         }
 
-        KeyboardMsg msg = new KeyboardMsg(Keyboard_Switch_Done, new KeyboardSwitchingMsgData(data.getKey(), type));
-        onMsg(this.keyboard, msg);
+        InputMsg msg = new InputMsg(Keyboard_Switch_Done, new KeyboardSwitchingMsgData(data.key, type));
+        onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================

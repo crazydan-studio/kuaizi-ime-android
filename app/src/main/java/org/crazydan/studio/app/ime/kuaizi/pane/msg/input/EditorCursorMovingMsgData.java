@@ -19,25 +19,24 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.KeyboardMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 
 /**
- * {@link KeyboardMsgType#Editor_Range_Select_Doing}
- * 和 {@link KeyboardMsgType#Editor_Cursor_Move_Doing}
+ * {@link InputMsgType#Editor_Range_Select_Doing}
+ * 和 {@link InputMsgType#Editor_Cursor_Move_Doing}
  * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-18
  */
-public class EditorCursorMovingMsgData extends CommonKeyboardMsgData {
+public class EditorCursorMovingMsgData extends InputMsgData {
     /** 锚点信息 */
     public final Motion anchor;
 
-    public EditorCursorMovingMsgData(KeyFactory keyFactory, Key<?> key, Motion motion) {
-        super(keyFactory, key);
-
+    public EditorCursorMovingMsgData(Key<?> key, Motion motion) {
+        super(key);
         this.anchor = createAnchor(motion);
     }
 

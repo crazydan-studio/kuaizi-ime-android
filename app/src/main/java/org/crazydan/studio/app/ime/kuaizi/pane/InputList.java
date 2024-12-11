@@ -35,18 +35,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
-
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Choose_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Completion_Apply_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Input_Completion_Clean_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Inputs_Clean_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputListMsgType.Inputs_Cleaned_Cancel_Done;
 
 /**
  * 输入列表
@@ -61,7 +55,7 @@ public class InputList implements UserInputMsgListener {
     private final Cursor cursor = new Cursor();
 
     private Supplier<Configuration> configGetter;
-    private InputListMsgListener listener;
+    private InputMsgListener listener;
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
     private Staged staged;
 
@@ -82,20 +76,20 @@ public class InputList implements UserInputMsgListener {
 
     // =============================== Start: 消息处理 ===================================
 
-    public void setListener(InputListMsgListener listener) {
+    public void setListener(InputMsgListener listener) {
         this.listener = listener;
     }
 
-    /** 发送 {@link InputListMsg} 消息：不附带 {@link Input} */
-    public void sendMsg(InputListMsgType type) {
-        InputListMsg msg = new InputListMsg(type, null);
-        this.listener.onMsg(this, msg);
+    /** 发送 {@link InputMsg} 消息：不附带 {@link Input} */
+    public void sendMsg(InputMsgType type) {
+        InputMsg msg = new InputMsg(type, new InputMsgData());
+        this.listener.onMsg(msg);
     }
 
-    /** 发送 {@link InputListMsg} 消息 */
-    public void sendMsg(InputListMsgType type, Input<?> input) {
-        InputListMsg msg = new InputListMsg(type, new InputListMsgData(this::createViewDataList, input));
-        this.listener.onMsg(this, msg);
+    /** 发送 {@link InputMsg} 消息 */
+    public void sendMsg(InputMsgType type, Input<?> input) {
+        InputMsg msg = new InputMsg(type, new InputMsgData(input));
+        this.listener.onMsg(msg);
     }
 
     // -----------------------------
@@ -121,7 +115,7 @@ public class InputList implements UserInputMsgListener {
                 // 忽略对已选中算术表达式的处理，由其自身的视图做响应
                 if (!isMathExprSelected) {
                     clearPhraseCompletions();
-                    sendMsg(Input_Choose_Doing, input);
+                    sendMsg(InputMsgType.Input_Choose_Doing, input);
                 }
                 break;
             }
@@ -132,7 +126,7 @@ public class InputList implements UserInputMsgListener {
                 // Note：待输入的补全数据将在 confirm 时清除
                 confirmPendingAndSelectNext();
 
-                sendMsg(Input_Completion_Apply_Done);
+                sendMsg(InputMsgType.Input_Completion_Apply_Done);
                 break;
             }
         }
@@ -147,7 +141,7 @@ public class InputList implements UserInputMsgListener {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         clearPhraseCompletions();
-        sendMsg(Inputs_Clean_Done);
+        sendMsg(InputMsgType.InputList_Clean_Done);
     }
 
     /** 清空输入列表 */
@@ -201,7 +195,7 @@ public class InputList implements UserInputMsgListener {
             Staged.restore(this, this.staged);
 
             clearPhraseCompletions();
-            sendMsg(Inputs_Cleaned_Cancel_Done);
+            sendMsg(InputMsgType.InputList_Cleaned_Cancel_Done);
         }
     }
 
@@ -233,15 +227,17 @@ public class InputList implements UserInputMsgListener {
 
     // =============================== End: 生命周期 ===================================
 
-    public List<InputViewData> createViewDataList() {
-        List<InputViewData> dataList = new ArrayList<>();
+    public InputFactory getInputFactory() {
+        return () -> {
+            List<InputViewData> dataList = new ArrayList<>();
 
-        for (int i = 0; i < getInputs().size(); i++) {
-            InputViewData data = InputViewData.create(this, getOption(), i);
+            for (int i = 0; i < getInputs().size(); i++) {
+                InputViewData data = InputViewData.create(this, getOption(), i);
 
-            dataList.add(data);
-        }
-        return dataList;
+                dataList.add(data);
+            }
+            return dataList;
+        };
     }
 
     /** 当前的待输入是否为空 */
@@ -275,7 +271,7 @@ public class InputList implements UserInputMsgListener {
             getPending().clearCompletions();
         }
 
-        sendMsg(Input_Completion_Clean_Done);
+        sendMsg(InputMsgType.Input_Completion_Clean_Done);
     }
 
     /** 清空短语输入补全 */

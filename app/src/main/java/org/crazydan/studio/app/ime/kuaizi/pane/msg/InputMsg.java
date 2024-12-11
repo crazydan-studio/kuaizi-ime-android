@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,33 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 
 /**
- * {@link InputListMsg} 所携带的数据
+ * {@link Keyboard} 和 {@link InputList} 所发送的消息
+ * <p/>
+ * 输入状态变更相关的消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-21
+ * @date 2024-12-11
  */
-public class InputListMsgData {
+public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
+    /** 用于重新布局 {@link Key} */
+    public final KeyFactory keyFactory;
+    /** 用于重新布局 {@link Input} */
     public final InputFactory inputFactory;
-    /** 消息目标输入 */
-    public final Input<?> target;
 
-    public InputListMsgData(InputFactory inputFactory, Input<?> target) {
+    public InputMsg(InputMsgType type, InputMsgData data) {
+        this(type, data, null, null);
+    }
+
+    public InputMsg(InputMsgType type, InputMsgData data, KeyFactory keyFactory, InputFactory inputFactory) {
+        super(type, data);
+
+        this.keyFactory = keyFactory;
         this.inputFactory = inputFactory;
-        this.target = target;
     }
 }
