@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
  * {@link UserKeyMsgType#FingerFlipping} 消息数据
  * <p/>
  * 注：<ul>
- * <li>{@link #target} 为滑动开始所按下的按键；</li>
+ * <li>{@link #key} 为滑动开始所按下的按键；</li>
  * </ul>
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

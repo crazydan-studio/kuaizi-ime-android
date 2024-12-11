@@ -37,10 +37,6 @@ public enum InputMsgType {
     InputCandidate_Choose_Doing,
     /** 输入候选字已选择 */
     InputCandidate_Choose_Done,
-    /** 表情符号选择中 */
-    InputEmoji_Choose_Doing,
-    /** 标点符号选择中 */
-    InputSymbol_Choose_Doing,
 
     /** 输入选择中 */
     Input_Choose_Doing,

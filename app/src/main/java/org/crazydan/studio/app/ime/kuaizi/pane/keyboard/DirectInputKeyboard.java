@@ -50,7 +50,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
             return;
         }
 
-        Key<?> key = msg.data.target;
+        Key<?> key = msg.data.key;
         if (key instanceof CharKey) {
             onCharKeyMsg(inputList, msg, (CharKey) key);
         } else if (key instanceof CtrlKey) {

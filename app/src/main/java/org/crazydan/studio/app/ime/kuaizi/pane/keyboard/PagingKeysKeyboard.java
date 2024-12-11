@@ -18,7 +18,15 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
  * 支持按键分页的键盘，
@@ -31,6 +39,51 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
+        if (try_OnUserKeyMsg(inputList, msg)) {
+            return;
+        }
+        if (this.state.type != State.Type.InputCandidate_Choose_Doing) {
+            return;
+        }
 
+        Key<?> key = msg.data.key;
+        if (msg.type == UserKeyMsgType.FingerFlipping) {
+            on_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
+        } else {
+            if (key instanceof CtrlKey) {
+                on_Choose_Doing_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
+            } else {
+                on_Choose_Doing_PagingKey_Msg(inputList, msg);
+            }
+        }
+    }
+
+    /** 响应翻页消息，以根据 {@link UserKeyMsg} 更新 {@link PagingStateData 分页数据} */
+    protected void on_Choose_Doing_PageFlipping_Msg(InputList inputList, UserKeyMsg msg, Key<?> key) {
+        PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
+        UserFingerFlippingMsgData msgData = (UserFingerFlippingMsgData) msg.data;
+
+        Motion motion = msgData.motion;
+        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
+        boolean needPaging = pageUp ? stateData.nextPage() : stateData.prevPage();
+        if (needPaging) {
+            play_PageFlip_InputAudio();
+        }
+
+        fire_InputCandidate_Choose_Doing(stateData.input, key);
+    }
+
+    /** 响应在翻页数据按键上的消息 */
+    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {}
+
+    /** 响应在控制按键上的消息 */
+    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {}
+
+    protected void fire_InputCandidate_Choose_Doing(CharInput input, Key<?> key) {
+        fire_Common_InputMsg(InputMsgType.InputCandidate_Choose_Doing, key, input);
+    }
+
+    protected void fire_InputCandidate_Choose_Done(CharInput input, Key<?> key) {
+        fire_Common_InputMsg(InputMsgType.InputCandidate_Choose_Done, key, input);
     }
 }

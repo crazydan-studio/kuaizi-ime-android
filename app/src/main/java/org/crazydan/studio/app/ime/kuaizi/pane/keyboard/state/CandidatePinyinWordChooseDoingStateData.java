@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 
 /**
  * {@link State.Type#InputCandidate_Choose_Doing} 的状态数据
@@ -39,17 +39,15 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
  * @date 2023-07-10
  */
 public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<InputWord> {
-    private final CharInput target;
     private final List<InputWord> candidates;
     private final List<PinyinWord.Spell> spells;
 
     private PinyinWord.Filter filter;
     private List<InputWord> cachedFilterCandidates;
 
-    public CandidatePinyinWordChooseDoingStateData(CharInput target, List<InputWord> candidates, int pageSize) {
-        super(pageSize);
+    public CandidatePinyinWordChooseDoingStateData(CharInput input, List<InputWord> candidates, int pageSize) {
+        super(input, pageSize);
 
-        this.target = target;
         this.candidates = candidates;
 
         this.cachedFilterCandidates = candidates;
@@ -62,10 +60,6 @@ public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<Inp
                                 .sorted(Comparator.comparingInt(a -> a.id))
                                 .distinct()
                                 .collect(Collectors.toList());
-    }
-
-    public CharInput getTarget() {
-        return this.target;
     }
 
     @Override

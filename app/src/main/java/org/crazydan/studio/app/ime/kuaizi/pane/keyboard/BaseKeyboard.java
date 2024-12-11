@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
@@ -148,12 +147,12 @@ public abstract class BaseKeyboard implements Keyboard {
     /**
      * 尝试对 {@link UserKeyMsg} 做处理
      * <p/>
-     * 若返回 <code>true</code>，则表示已处理，否则，返回 <code>false</code>
-     * <p/>
      * {@link CtrlKey#isDisabled() 被禁用}的 {@link CtrlKey} 将始终返回 <code>true</code>
+     *
+     * @return 若返回 true，则表示消息已处理，否则，返回 false
      */
     protected boolean try_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
-        Key<?> key = msg.data.target;
+        Key<?> key = msg.data.key;
 
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
@@ -168,12 +167,16 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 触发 {@link InputMsg} 消息 */
     protected void fire_InputMsg(InputMsgType msgType, InputMsgData msgData) {
         InputMsg msg = new InputMsg(msgType, msgData);
-        this.listener.onMsg(this, msg);
+        this.listener.onMsg(msg);
     }
 
     protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key) {
         InputMsgData data = new InputMsgData(key);
+        fire_InputMsg(msgType, data);
+    }
 
+    protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key, Input<?> input) {
+        InputMsgData data = new InputMsgData(key, input);
         fire_InputMsg(msgType, data);
     }
 
@@ -429,17 +432,6 @@ public abstract class BaseKeyboard implements Keyboard {
             do_InputList_Backspacing(inputList, key);
         } else {
             do_Editor_Backspacing(inputList);
-        }
-    }
-
-    /** 根据 {@link UserKeyMsg} 更新 {@link PagingStateData} */
-    protected void update_PagingStateData_by_UserKeyMsg(PagingStateData<?> stateData, UserFingerFlippingMsgData data) {
-        Motion motion = data.motion;
-        boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
-
-        boolean needPaging = pageUp ? stateData.nextPage() : stateData.prevPage();
-        if (needPaging) {
-            play_PageFlip_InputAudio();
         }
     }
 

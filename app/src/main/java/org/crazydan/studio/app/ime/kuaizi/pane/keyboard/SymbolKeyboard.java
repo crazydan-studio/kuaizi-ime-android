@@ -29,12 +29,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
  * {@link Type#Symbol 符号键盘}
@@ -42,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgDat
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class SymbolKeyboard extends BaseKeyboard {
+public class SymbolKeyboard extends PagingKeysKeyboard {
 
     @Override
     public Type getType() {
@@ -54,7 +51,7 @@ public class SymbolKeyboard extends BaseKeyboard {
         Input<?> input = inputList.getSelected();
         boolean hasPair = input != null && !input.isGap() && ((CharInput) input).hasPair();
 
-        start_Symbol_Choosing(hasPair);
+        start_Symbol_Choosing(inputList, hasPair);
     }
 
     @Override
@@ -66,33 +63,13 @@ public class SymbolKeyboard extends BaseKeyboard {
         return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.isOnlyPair(), stateData.getPageStart());
     }
 
-    @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_OnUserKeyMsg(inputList, msg)) {
-            return;
-        }
+    private void start_Symbol_Choosing(InputList inputList, boolean onlyPair) {
+        CharInput pending = inputList.getPending();
 
-        Key<?> key = msg.data.target;
-        switch (msg.type) {
-            case FingerFlipping: {
-                on_Symbol_Choose_Doing_PageFlipping_Msg(key, msg);
-                break;
-            }
-            default: {
-                if (key instanceof SymbolKey) {
-                    on_Symbol_Choose_Doing_SymbolKey_Msg(inputList, msg, (SymbolKey) key);
-                } else if (key instanceof CtrlKey) {
-                    on_Symbol_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
-                }
-            }
-        }
-    }
-
-    private void start_Symbol_Choosing(boolean onlyPair) {
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getSymbolKeysPageSize();
 
-        SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pageSize, onlyPair);
+        SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pending, pageSize, onlyPair);
         this.state = new State(State.Type.Symbol_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
@@ -104,23 +81,18 @@ public class SymbolKeyboard extends BaseKeyboard {
         do_Symbol_Choosing(null, group);
     }
 
-    private void on_Symbol_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsg msg) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data,
-                                             (UserFingerFlippingMsgData) msg.data);
-
-        fire_Symbol_Choose_Doing(key);
-    }
-
     private void do_Symbol_Choosing(Key<?> key, SymbolGroup group) {
         SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
         stateData.setGroup(group);
 
-        fire_Symbol_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(stateData.input, key);
     }
 
-    private void on_Symbol_Choose_Doing_SymbolKey_Msg(InputList inputList, UserKeyMsg msg, SymbolKey key) {
+    @Override
+    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
         boolean continuous = false;
 
+        SymbolKey key = (SymbolKey) msg.data.key;
         switch (msg.type) {
             case LongPress_Key_Tick:
                 continuous = true;
@@ -135,7 +107,8 @@ public class SymbolKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_Symbol_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
+    @Override
+    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         if (msg.type == UserKeyMsgType.SingleTap_Key) {
             if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
                 play_SingleTick_InputAudio(key);
@@ -144,10 +117,6 @@ public class SymbolKeyboard extends BaseKeyboard {
                 do_Symbol_Choosing(key, option.value());
             }
         }
-    }
-
-    private void fire_Symbol_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(InputMsgType.InputSymbol_Choose_Doing, key);
     }
 
     private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {

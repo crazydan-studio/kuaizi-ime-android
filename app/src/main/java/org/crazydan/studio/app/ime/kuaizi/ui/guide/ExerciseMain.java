@@ -59,7 +59,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCandidateChoosingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
@@ -1215,7 +1214,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + "</span>；",
                          (msg) -> {
                              if (msg.type == InputMsgType.InputCandidate_Choose_Doing) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) msg.data).target;
+                                 CharInput input = (CharInput) msg.data.input;
                                  InputWord word = input.getWord();
 
                                  if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
@@ -1235,7 +1234,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                            + "\"/>。<b>注</b>：可在该区域中上下翻页；",
                          (msg) -> {
                              if (msg.type == InputMsgType.InputCandidate_Choose_Done) {
-                                 CharInput input = ((InputCandidateChoosingMsgData) msg.data).target;
+                                 CharInput input = (CharInput) msg.data.input;
                                  InputWord word = input.getWord();
 
                                  if (word != null && case_word.getValue().equals(word.getValue())) {

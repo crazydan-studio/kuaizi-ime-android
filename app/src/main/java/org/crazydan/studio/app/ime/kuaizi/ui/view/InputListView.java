@@ -54,8 +54,6 @@ public class InputListView extends InputListViewBase implements InputMsgListener
             case InputChars_Input_Done:
             case InputCandidate_Choose_Doing:
             case InputCandidate_Choose_Done:
-            case InputEmoji_Choose_Doing:
-            case InputSymbol_Choose_Doing:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:

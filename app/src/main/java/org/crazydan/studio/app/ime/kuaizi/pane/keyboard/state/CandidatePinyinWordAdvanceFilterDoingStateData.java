@@ -36,17 +36,14 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @date 2023-11-27
  */
 public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateData<PinyinWord.Radical> {
-    private final CharInput target;
     private final Map<PinyinWord.Spell, List<WordRadical>> spellAndRadicalsMap;
 
     private PinyinWord.Filter filter;
 
     public CandidatePinyinWordAdvanceFilterDoingStateData(
-            CharInput target, List<InputWord> candidates, int pageSize
+            CharInput input, List<InputWord> candidates, int pageSize
     ) {
-        super(pageSize);
-
-        this.target = target;
+        super(input, pageSize);
 
         this.spellAndRadicalsMap = initSpellAndRadicalsMap(candidates);
     }
@@ -55,10 +52,6 @@ public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateD
     @Override
     public List<PinyinWord.Radical> getPagingData() {
         return getRadicals();
-    }
-
-    public CharInput getTarget() {
-        return this.target;
     }
 
     public PinyinWord.Filter getFilter() {

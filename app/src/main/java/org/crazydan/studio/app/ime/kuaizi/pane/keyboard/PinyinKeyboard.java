@@ -159,7 +159,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        Key<?> key = msg.data.target;
+        Key<?> key = msg.data.key;
         if (try_OnUserKeyMsg(inputList, msg) //
             // Note：被禁用的部分按键也需要接受处理
             && !CtrlKey.isAny(key,

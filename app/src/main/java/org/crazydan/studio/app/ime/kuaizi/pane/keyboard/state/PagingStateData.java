@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state;
 
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
@@ -28,13 +29,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @date 2023-08-28
  */
 public abstract class PagingStateData<T> implements State.Data {
+    /** 分页数据所针对的输入 */
+    public final CharInput input;
+
     /** 分页大小 */
     private final int pageSize;
-
     /** 分页开始序号 */
     private int pageStart;
 
-    protected PagingStateData(int pageSize) {
+    protected PagingStateData(CharInput input, int pageSize) {
+        this.input = input;
         this.pageSize = pageSize;
     }
 

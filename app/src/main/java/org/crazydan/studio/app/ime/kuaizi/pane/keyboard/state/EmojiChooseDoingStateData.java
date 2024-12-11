@@ -20,8 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
@@ -35,10 +36,10 @@ public class EmojiChooseDoingStateData extends PagingStateData<InputWord> {
 
     private String group;
 
-    public EmojiChooseDoingStateData(Emojis emojis, int pageSize) {
-        super(pageSize);
-        this.emojis = emojis;
+    public EmojiChooseDoingStateData(CharInput input, Emojis emojis, int pageSize) {
+        super(input, pageSize);
 
+        this.emojis = emojis;
         this.group = getGroups().get(0);
     }
 

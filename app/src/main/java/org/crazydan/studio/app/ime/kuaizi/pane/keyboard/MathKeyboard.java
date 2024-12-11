@@ -124,7 +124,7 @@ public class MathKeyboard extends BaseKeyboard {
             return;
         }
 
-        Key<?> key = msg.data.target;
+        Key<?> key = msg.data.key;
         if (key instanceof CharKey || key instanceof MathOpKey) {
             onMathKeyMsg(msg, key);
         }

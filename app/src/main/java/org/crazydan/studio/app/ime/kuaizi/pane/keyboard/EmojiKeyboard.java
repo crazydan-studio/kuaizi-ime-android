@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -29,10 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
  * {@link Type#Emoji 表情键盘}
@@ -40,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgDat
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class EmojiKeyboard extends BaseKeyboard {
+public class EmojiKeyboard extends PagingKeysKeyboard {
     private final PinyinDict dict;
 
     public EmojiKeyboard(PinyinDict dict) {
@@ -54,9 +50,7 @@ public class EmojiKeyboard extends BaseKeyboard {
 
     @Override
     public void start(InputList inputList) {
-        Input<?> pending = inputList.getPending();
-
-        start_Emoji_Choosing();
+        start_Emoji_Choosing(inputList);
     }
 
     @Override
@@ -72,37 +66,9 @@ public class EmojiKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_OnUserKeyMsg(inputList, msg)) {
-            return;
-        }
+    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+        InputWordKey key = (InputWordKey) msg.data.key;
 
-        Key<?> key = msg.data.target;
-        switch (msg.type) {
-            case FingerFlipping: {
-                on_Emoji_Choose_Doing_PageFlipping_Msg(key, msg);
-                break;
-            }
-            default: {
-                if (key instanceof InputWordKey) {
-                    on_Emoji_Choose_Doing_InputWordKey_Msg(inputList, msg, (InputWordKey) key);
-                }
-                //
-                else if (key instanceof CtrlKey) {
-                    on_Emoji_Choose_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
-                }
-            }
-        }
-    }
-
-    private void on_Emoji_Choose_Doing_PageFlipping_Msg(Key<?> key, UserKeyMsg msg) {
-        update_PagingStateData_by_UserKeyMsg((PagingStateData<?>) this.state.data,
-                                             (UserFingerFlippingMsgData) msg.data);
-
-        fire_Emoji_Choose_Doing(key);
-    }
-
-    private void on_Emoji_Choose_Doing_InputWordKey_Msg(InputList inputList, UserKeyMsg msg, InputWordKey key) {
         switch (msg.type) {
             case LongPress_Key_Tick:
             case SingleTap_Key: {
@@ -116,7 +82,8 @@ public class EmojiKeyboard extends BaseKeyboard {
         }
     }
 
-    private void on_Emoji_Choose_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
+    @Override
+    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
@@ -149,13 +116,15 @@ public class EmojiKeyboard extends BaseKeyboard {
         commit_InputList(inputList, false, false);
     }
 
-    private void start_Emoji_Choosing() {
+    private void start_Emoji_Choosing(InputList inputList) {
+        CharInput pending = inputList.getPending();
+
         SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
         int pageSize = keyTable.getEmojiKeysPageSize();
 
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
 
-        EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(emojis, pageSize);
+        EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(pending, emojis, pageSize);
         this.state = new State(State.Type.Emoji_Choose_Doing, stateData);
 
         String group = null;
@@ -171,10 +140,6 @@ public class EmojiKeyboard extends BaseKeyboard {
         EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
         stateData.setGroup(group);
 
-        fire_Emoji_Choose_Doing(key);
-    }
-
-    private void fire_Emoji_Choose_Doing(Key<?> key) {
-        fire_Common_InputMsg(InputMsgType.InputEmoji_Choose_Doing, key);
+        fire_InputCandidate_Choose_Doing(stateData.input, key);
     }
 }

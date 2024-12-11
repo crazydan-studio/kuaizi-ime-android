@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
@@ -34,8 +35,8 @@ public class SymbolChooseDoingStateData extends PagingStateData<Symbol> {
     private final boolean onlyPair;
     private SymbolGroup group = SymbolGroup.han;
 
-    public SymbolChooseDoingStateData(int pageSize, boolean onlyPair) {
-        super(pageSize);
+    public SymbolChooseDoingStateData(CharInput input, int pageSize, boolean onlyPair) {
+        super(input, pageSize);
         this.onlyPair = onlyPair;
     }
 
