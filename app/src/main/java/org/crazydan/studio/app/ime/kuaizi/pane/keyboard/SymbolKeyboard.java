@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.SymbolChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
@@ -55,10 +55,10 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
 
-        SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
+        SymbolChooseStateData stateData = (SymbolChooseStateData) this.state.data;
 
         return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.isOnlyPair(), stateData.getPageStart());
     }
@@ -66,10 +66,10 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     private void start_Symbol_Choosing(InputList inputList, boolean onlyPair) {
         CharInput pending = inputList.getPending();
 
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getSymbolKeysPageSize();
 
-        SymbolChooseDoingStateData stateData = new SymbolChooseDoingStateData(pending, pageSize, onlyPair);
+        SymbolChooseStateData stateData = new SymbolChooseStateData(pending, pageSize, onlyPair);
         this.state = new State(State.Type.Symbol_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
@@ -82,7 +82,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     }
 
     private void do_Symbol_Choosing(Key<?> key, SymbolGroup group) {
-        SymbolChooseDoingStateData stateData = (SymbolChooseDoingStateData) this.state.data;
+        SymbolChooseStateData stateData = (SymbolChooseStateData) this.state.data;
         stateData.setGroup(group);
 
         fire_InputCandidate_Choose_Doing(stateData.input, key);
@@ -129,7 +129,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
 
                 // Note：配对符号输入后不再做连续输入，切换回原键盘
                 confirm_InputList_Pending(inputList, key);
-                switchTo_Previous_Keyboard(key);
+                switch_Keyboard_to_Previous(key);
             } else {
                 confirm_or_New_InputList_Pending(inputList);
 
@@ -153,7 +153,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
 
         // Note：非连续输入的情况下，配对符号输入后不再做连续输入，切换回原键盘
         if (isPair && !continuousInput) {
-            switchTo_Previous_Keyboard(key);
+            switch_Keyboard_to_Previous(key);
         }
     }
 

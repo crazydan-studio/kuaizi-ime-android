@@ -463,7 +463,7 @@ public class PinyinKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
         if (totalPage > 2 || !wordFilter.isEmpty()) {
-            CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinInputCandidate_advance);
+            CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinCandidate_advance);
             gridKeys[2][0] = key;
 
             if (!wordFilter.isEmpty()) {
@@ -486,7 +486,7 @@ public class PinyinKeyTable extends KeyTable {
             int column = keyCoord.column;
 
             boolean disabled = wordFilter.spells.contains(spell);
-            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
             gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
         }
@@ -497,7 +497,7 @@ public class PinyinKeyTable extends KeyTable {
             String s = input.getChars().get(0).substring(0, 1);
 
             String label = s + "," + s + "h";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option
                     = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
 
@@ -507,7 +507,7 @@ public class PinyinKeyTable extends KeyTable {
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             String label = "n,l  ";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
 
             gridKeys[0][index_end] = ctrlKey(type).setOption(option).setLabel(label);
@@ -526,7 +526,7 @@ public class PinyinKeyTable extends KeyTable {
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
             String label = tail + "," + tail + "g";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_PinyinInput_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
 
             gridKeys[1][index_end] = ctrlKey(type).setOption(option).setLabel(label);
@@ -591,7 +591,7 @@ public class PinyinKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Confirm_PinyinInputCandidate_Filters);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Confirm_PinyinCandidate_Filters);
 
         // 声调过滤按键
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();
@@ -603,7 +603,7 @@ public class PinyinKeyTable extends KeyTable {
             int column = keyCoord.column;
 
             boolean disabled = wordFilter.spells.contains(spell);
-            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell;
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
             gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
         }
@@ -626,7 +626,7 @@ public class PinyinKeyTable extends KeyTable {
                 PinyinWord.Radical radical = radicals.get(dataIndex++);
                 boolean disabled = wordFilter.radicals.contains(radical);
                 Key.Color color = key_input_word_level_colors[level];
-                CtrlKey.Type type = CtrlKey.Type.Filter_PinyinInputCandidate_by_Radical;
+                CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Radical;
 
                 gridKeys[row][column] = advanceFilterKey(type, radical.value, radical).setColor(color)
                                                                                       .setDisabled(disabled);

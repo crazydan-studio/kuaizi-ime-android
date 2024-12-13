@@ -35,10 +35,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitDoingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
@@ -189,7 +189,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     public void onMsg(Keyboard keyboard, InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
-                InputListCommitDoingMsgData d = (InputListCommitDoingMsgData) msg.data;
+                InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
                 commitText(d.text, d.replacements);
                 break;
             }
@@ -198,20 +198,20 @@ public class ImeService extends InputMethodService implements InputMsgListener {
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                InputListPairSymbolCommitDoingMsgData d = (InputListPairSymbolCommitDoingMsgData) msg.data;
+                InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
                 commitText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                moveCursor((EditorCursorMovingMsgData) msg.data);
+                moveCursor((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectText((EditorCursorMovingMsgData) msg.data);
+                selectText((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Edit_Doing: {
-                EditorEditDoingMsgData d = (EditorEditDoingMsgData) msg.data;
+                EditorEditMsgData d = (EditorEditMsgData) msg.data;
                 editText(d.action);
                 break;
             }
@@ -233,7 +233,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         SystemUtils.switchIme(getApplicationContext());
     }
 
-    private void moveCursor(EditorCursorMovingMsgData data) {
+    private void moveCursor(EditorCursorMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;
@@ -258,7 +258,7 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         }
     }
 
-    private void selectText(EditorCursorMovingMsgData data) {
+    private void selectText(EditorCursorMsgData data) {
         Motion anchor = data.anchor;
         if (anchor == null || anchor.distance <= 0) {
             return;

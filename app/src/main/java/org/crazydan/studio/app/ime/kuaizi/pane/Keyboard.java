@@ -34,7 +34,7 @@ public interface Keyboard {
     /** 获取当前键盘类型 */
     Type getType();
 
-    KeyFactory getKeyFactory();
+    KeyFactory getKeyFactory(InputList inputList);
 
     /** 启动 */
     void start(InputList inputList);

@@ -46,7 +46,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_OnUserKeyMsg(inputList, msg)) {
+        if (try_Common_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
@@ -60,13 +60,12 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     protected void onCharKeyMsg(InputList inputList, UserKeyMsg msg, CharKey key) {
         // 单字符直接输入
-        if (msg.type == UserKeyMsgType.SingleTap_Key) {
-            play_SingleTick_InputAudio(key);
-            show_InputChars_Input_Popup(key);
-
-            boolean isDirectInputting = inputList.isEmpty();
-            start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, isDirectInputting);
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
         }
+
+        boolean isDirectInputting = inputList.isEmpty();
+        start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, isDirectInputting);
     }
 
     protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {

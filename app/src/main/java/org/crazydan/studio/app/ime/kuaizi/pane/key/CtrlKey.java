@@ -159,15 +159,15 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         /** 拼音结束 */
         Pinyin_End,
         /** 在候选字状态下切换当前输入的拼音拼写 */
-        Toggle_PinyinInput_spell,
+        Toggle_Pinyin_spell,
         /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
-        Filter_PinyinInputCandidate_advance,
+        Filter_PinyinCandidate_advance,
         /** 在候选字状态下根据读音过滤候选字 */
-        Filter_PinyinInputCandidate_by_Spell,
+        Filter_PinyinCandidate_by_Spell,
         /** 在候选字状态下根据部首过滤候选字 */
-        Filter_PinyinInputCandidate_by_Radical,
+        Filter_PinyinCandidate_by_Radical,
         /** 确认候选字过滤 */
-        Confirm_PinyinInputCandidate_Filters,
+        Confirm_PinyinCandidate_Filters,
 
         /** 定位 目标编辑器 光标 */
         Editor_Cursor_Locator,

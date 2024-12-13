@@ -17,6 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.LatinKeyTable;
 
@@ -29,6 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.LatinKeyTable;
  * @date 2023-07-29
  */
 public class LatinKeyboard extends DirectInputKeyboard {
+    private final PinyinDict dict;
+
+    public LatinKeyboard(PinyinDict dict) {
+        this.dict = dict;
+    }
 
     @Override
     public Type getType() {
@@ -36,9 +45,14 @@ public class LatinKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        LatinKeyTable keyTable = LatinKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        LatinKeyTable keyTable = LatinKeyTable.create(createKeyTableConfig(inputList));
 
         return keyTable::createKeys;
+    }
+
+    @Override
+    protected List<String> getTopBestMatchedLatins(String text) {
+        return this.dict.findTopBestMatchedLatins(text, 5);
     }
 }

@@ -56,14 +56,14 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig(inputList));
 
         return keyTable::createKeys;
     }
 
     @Override
-    protected KeyTable.Config createKeyTableConfig() {
+    protected KeyTable.Config createKeyTableConfig(InputList inputList) {
         return new KeyTable.Config(getConfig(),
                                    !getParentInputList().isEmpty(),
                                    getParentInputList().canRevokeCommit(),
@@ -93,7 +93,7 @@ public class MathKeyboard extends BaseKeyboard {
         switch (msg.type) {
             case Input_Completion_Apply_Done: {
                 withMathExprPending(parentInputList);
-                fire_InputChars_Input_Doing(null);
+                fire_InputChars_Input_Doing_in_TapMode(null, null);
                 break;
             }
             case Input_Choose_Doing: {
@@ -104,7 +104,7 @@ public class MathKeyboard extends BaseKeyboard {
 
                 // 仅处理算术表达式输入
                 if (!input.isMathExpr()) {
-                    super.switchTo_Previous_Keyboard(null);
+                    super.switch_Keyboard_to_Previous(null);
                 } else {
                     resetMathInputList();
                 }
@@ -120,7 +120,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_OnUserKeyMsg(inputList, msg)) {
+        if (try_Common_OnUserKeyMsg(inputList, msg)) {
             return;
         }
 
@@ -243,7 +243,7 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        fire_InputChars_Input_Doing(key);
+        fire_InputChars_Input_Doing_in_TapMode(key, pending);
     }
 
     @Override
@@ -300,7 +300,7 @@ public class MathKeyboard extends BaseKeyboard {
         if (parentInputList == inputList) {
             if (!inputList.isGapSelected()) {
                 inputList.deleteSelected();
-                fire_InputChars_Input_Doing(key);
+                fire_InputChars_Input_Doing_in_TapMode(key, null);
             } else {
                 super.do_InputList_Backspacing(inputList, key);
             }
@@ -312,7 +312,7 @@ public class MathKeyboard extends BaseKeyboard {
             // 当前算术输入已清空，且该输入在上层中不是 Gap 的待输入，则从父输入中移除该输入
             if (!parentInputList.isGapSelected() && inputList.isEmpty()) {
                 parentInputList.deleteBackward();
-                fire_InputChars_Input_Doing(key);
+                fire_InputChars_Input_Doing_in_TapMode(key, null);
             }
         }
 
@@ -321,11 +321,11 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected void switchTo_Previous_Keyboard(Key<?> key) {
+    protected void switch_Keyboard_to_Previous(Key<?> key) {
         InputList parentInputList = getParentInputList();
         before_ChangeState_Or_SwitchKeyboard(parentInputList);
 
-        super.switchTo_Previous_Keyboard(key);
+        super.switch_Keyboard_to_Previous(key);
     }
 
     // <<<<<<<<<<<<<<<< Start - 支持切换表情和标点键盘

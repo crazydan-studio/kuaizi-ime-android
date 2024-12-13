@@ -27,10 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-17
  */
-public class InputAudioPlayDoingMsgData extends InputMsgData {
+public class InputAudioPlayMsgData extends InputMsgData {
     public final AudioType audioType;
 
-    public InputAudioPlayDoingMsgData(Key<?> key, AudioType audioType) {
+    public InputAudioPlayMsgData(Key<?> key, AudioType audioType) {
         super(key);
         this.audioType = audioType;
     }

@@ -50,9 +50,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
 
 /**
@@ -215,11 +215,11 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 break;
             }
             case InputAudio_Play_Doing: {
-                on_InputAudio_Play_Doing_Msg((InputAudioPlayDoingMsgData) msg.data);
+                on_InputAudio_Play_Doing_Msg((InputAudioPlayMsgData) msg.data);
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
-                Keyboard.HandMode mode = ((KeyboardHandModeSwitchingMsgData) msg.data).mode;
+                Keyboard.HandMode mode = ((KeyboardHandModeSwitchMsgData) msg.data).mode;
                 this.appConf.set(Conf.hand_mode, mode);
 
                 onMsg(new InputMsg(InputMsgType.Keyboard_HandMode_Switch_Done,
@@ -229,8 +229,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 return;
             }
             case InputChars_Input_Popup_Show_Doing: {
-                showInputKeyPopupWindow(((InputCharsInputPopupShowingMsgData) msg.data).text,
-                                        ((InputCharsInputPopupShowingMsgData) msg.data).hideDelayed);
+                showInputKeyPopupWindow(((InputCharsInputPopupShowMsgData) msg.data).text,
+                                        ((InputCharsInputPopupShowMsgData) msg.data).hideDelayed);
                 return;
             }
             case InputChars_Input_Popup_Hide_Doing: {
@@ -395,15 +395,15 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void onCleanInputList(View v) {
-        on_InputAudio_Play_Doing_Msg(new InputAudioPlayDoingMsgData(null,
-                                                                    InputAudioPlayDoingMsgData.AudioType.SingleTick));
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null,
+                                                               InputAudioPlayMsgData.AudioType.SingleTick));
 
         getInputList().reset(true);
     }
 
     private void onCancelCleanInputList(View v) {
-        on_InputAudio_Play_Doing_Msg(new InputAudioPlayDoingMsgData(null,
-                                                                    InputAudioPlayDoingMsgData.AudioType.SingleTick));
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null,
+                                                               InputAudioPlayMsgData.AudioType.SingleTick));
 
         getInputList().cancelDelete();
     }
@@ -464,9 +464,9 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         post(() -> window.showAtLocation(parent, gravity, x, y));
     }
 
-    private void on_InputAudio_Play_Doing_Msg(InputAudioPlayDoingMsgData data) {
+    private void on_InputAudio_Play_Doing_Msg(InputAudioPlayMsgData data) {
         Configuration config = getConfig();
-        if (data.audioType == InputAudioPlayDoingMsgData.AudioType.PageFlip) {
+        if (data.audioType == InputAudioPlayMsgData.AudioType.PageFlip) {
             if (config.bool(Conf.disable_input_candidates_paging_audio)) {
                 return;
             }

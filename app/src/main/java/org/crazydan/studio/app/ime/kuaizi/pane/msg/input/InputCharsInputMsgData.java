@@ -17,24 +17,40 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#Keyboard_Switch_Doing}
- * 和 {@link InputMsgType#Keyboard_Switch_Done} 的消息数据
+ * {@link InputMsgType#InputChars_Input_Doing}
+ * 和 {@link InputMsgType#InputChars_Input_Done}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-27
+ * @date 2023-07-06
  */
-public class KeyboardSwitchingMsgData extends InputMsgData {
-    /** 切换到的目标类型，若为 null 则由上层处理键盘切换 */
-    public final Keyboard.Type target;
+public class InputCharsInputMsgData extends InputMsgData {
+    public final InputMode inputMode;
 
-    public KeyboardSwitchingMsgData(Key<?> key, Keyboard.Type target) {
-        super(key);
-        this.target = target;
+    public InputCharsInputMsgData(Key<?> key, Input<?> input) {
+        this(key, input, null);
+    }
+
+    public InputCharsInputMsgData(Key<?> key, Input<?> input, InputMode inputMode) {
+        super(key, input);
+        this.inputMode = inputMode;
+    }
+
+    /** 输入方式 */
+    public enum InputMode {
+        /** 点击输入 */
+        tap,
+        /** 滑动输入 */
+        slip,
+        /** 翻动输入 */
+        flip,
+        /** X 型输入中的画圈输入 */
+        circle,
     }
 }

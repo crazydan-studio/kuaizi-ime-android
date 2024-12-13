@@ -17,35 +17,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputChars_Input_Doing}
- * 和 {@link InputMsgType#InputChars_Input_Done}
- * 消息数据
+ * {@link InputMsgType#InputChars_Input_Popup_Show_Doing} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-06
+ * @date 2023-11-28
  */
-public class InputCharsInputtingMsgData extends InputMsgData {
-    public final KeyInputType keyInputType;
+public class InputCharsInputPopupShowMsgData extends InputMsgData {
+    /** 气泡内容 */
+    public final String text;
+    /** 是否延迟隐藏 */
+    public final boolean hideDelayed;
 
-    public InputCharsInputtingMsgData(Key<?> key, KeyInputType keyInputType) {
-        super(key);
-        this.keyInputType = keyInputType;
-    }
-
-    /** 按键输入方式 */
-    public enum KeyInputType {
-        /** 点击 */
-        tap,
-        /** 滑动 */
-        slip,
-        /** 翻动 */
-        flip,
-        /** X 型输入的画圈 */
-        circle,
+    public InputCharsInputPopupShowMsgData(String text, boolean hideDelayed) {
+        this.text = text;
+        this.hideDelayed = hideDelayed;
     }
 }

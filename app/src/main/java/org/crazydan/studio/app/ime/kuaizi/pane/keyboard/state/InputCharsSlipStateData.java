@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-15
  */
-public class InputCharsSlipDoingStateData implements State.Data {
+public class InputCharsSlipStateData implements State.Data {
     private Key<?> level0Key;
     private Key<?> level1Key;
     private Key<?> level2Key;

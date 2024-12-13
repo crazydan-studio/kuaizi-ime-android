@@ -50,7 +50,7 @@ public class State {
 
     public enum Type {
         /** 待输入：初始状态 */
-        InputChars_Input_Waiting,
+        InputChars_Input_Wait_Doing,
 
         /** 滑屏输入中 */
         InputChars_Slip_Doing,

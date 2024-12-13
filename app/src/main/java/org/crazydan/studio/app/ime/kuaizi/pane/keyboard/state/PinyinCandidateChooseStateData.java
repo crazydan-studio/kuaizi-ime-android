@@ -38,14 +38,14 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class CandidatePinyinWordChooseDoingStateData extends PagingStateData<InputWord> {
+public class PinyinCandidateChooseStateData extends PagingStateData<InputWord> {
     private final List<InputWord> candidates;
     private final List<PinyinWord.Spell> spells;
 
     private PinyinWord.Filter filter;
     private List<InputWord> cachedFilterCandidates;
 
-    public CandidatePinyinWordChooseDoingStateData(CharInput input, List<InputWord> candidates, int pageSize) {
+    public PinyinCandidateChooseStateData(CharInput input, List<InputWord> candidates, int pageSize) {
         super(input, pageSize);
 
         this.candidates = candidates;

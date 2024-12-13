@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state;
+package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link State.Type#InputChars_Flip_Doing} 的状态数据
+ * {@link InputMsgType#Keyboard_State_Change_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-08
+ * @date 2023-10-06
  */
-public class InputCharsFlipDoingStateData implements State.Data {
-    public final String startChar;
+public class KeyboardStateChangeMsgData extends InputMsgData {
+    /** 更新后的状态 */
+    public final State state;
 
-    public InputCharsFlipDoingStateData(String startChar) {
-        this.startChar = startChar;
+    public KeyboardStateChangeMsgData(Key<?> key, State state) {
+        super(key);
+        this.state = state;
     }
 }

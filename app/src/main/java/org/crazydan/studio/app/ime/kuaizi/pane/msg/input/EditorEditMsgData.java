@@ -27,10 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-14
  */
-public class EditorEditDoingMsgData extends InputMsgData {
+public class EditorEditMsgData extends InputMsgData {
     public final EditorEditAction action;
 
-    public EditorEditDoingMsgData(EditorEditAction action) {
+    public EditorEditMsgData(EditorEditAction action) {
         this.action = action;
     }
 }

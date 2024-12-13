@@ -31,12 +31,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
-public class EmojiChooseDoingStateData extends PagingStateData<InputWord> {
+public class EmojiChooseStateData extends PagingStateData<InputWord> {
     private final Emojis emojis;
 
     private String group;
 
-    public EmojiChooseDoingStateData(CharInput input, Emojis emojis, int pageSize) {
+    public EmojiChooseStateData(CharInput input, Emojis emojis, int pageSize) {
         super(input, pageSize);
 
         this.emojis = emojis;

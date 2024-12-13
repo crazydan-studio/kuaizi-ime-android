@@ -29,12 +29,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class CommittingOptionChooseDoingStateData implements State.Data {
+public class CommittingOptionChooseStateData implements State.Data {
     private Input.Option option;
     private boolean hasSpell;
     private boolean hasVariant;
 
-    public CommittingOptionChooseDoingStateData(InputList inputList) {
+    public CommittingOptionChooseStateData(InputList inputList) {
         update(inputList);
     }
 

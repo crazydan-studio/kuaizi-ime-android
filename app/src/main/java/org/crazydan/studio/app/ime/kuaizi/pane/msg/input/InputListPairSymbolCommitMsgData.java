@@ -26,11 +26,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class InputListPairSymbolCommitDoingMsgData extends InputMsgData {
+public class InputListPairSymbolCommitMsgData extends InputMsgData {
     public final CharSequence left;
     public final CharSequence right;
 
-    public InputListPairSymbolCommitDoingMsgData(CharSequence left, CharSequence right) {
+    public InputListPairSymbolCommitMsgData(CharSequence left, CharSequence right) {
         this.left = left;
         this.right = right;
     }

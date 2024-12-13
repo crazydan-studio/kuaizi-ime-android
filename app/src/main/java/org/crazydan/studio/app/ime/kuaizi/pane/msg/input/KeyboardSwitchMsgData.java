@@ -23,17 +23,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#Keyboard_HandMode_Switch_Doing}
- * 和 {@link InputMsgType#Keyboard_HandMode_Switch_Done} 的消息数据
+ * {@link InputMsgType#Keyboard_Switch_Doing}
+ * 和 {@link InputMsgType#Keyboard_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-08-23
+ * @date 2023-07-27
  */
-public class KeyboardHandModeSwitchingMsgData extends InputMsgData {
-    public final Keyboard.HandMode mode;
+public class KeyboardSwitchMsgData extends InputMsgData {
+    /** 切换到的类型，若为 null 则由上层处理键盘切换 */
+    public final Keyboard.Type type;
 
-    public KeyboardHandModeSwitchingMsgData(Key<?> key, Keyboard.HandMode mode) {
+    public KeyboardSwitchMsgData(Key<?> key, Keyboard.Type type) {
         super(key);
-        this.mode = mode;
+        this.type = type;
     }
 }

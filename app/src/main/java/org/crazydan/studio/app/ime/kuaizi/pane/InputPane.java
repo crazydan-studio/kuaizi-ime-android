@@ -42,8 +42,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Start_Done;
@@ -114,6 +115,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 隐藏 {@link InputPane}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
         this.inputList.clearCompletions();
+        onMsg(new InputMsg(Input_Completion_Clean_Done, new InputMsgData()));
 
         InputMsg msg = new InputMsg(Keyboard_Hide_Done, new InputMsgData());
         onMsg(msg);
@@ -201,21 +203,21 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
-                on_Keyboard_Switch_Doing((KeyboardSwitchingMsgData) msg.data);
+                on_Keyboard_Switch_Doing((KeyboardSwitchMsgData) msg.data);
                 return;
             }
         }
 
         InputMsg newMsg = new InputMsg(msg.type,
                                        msg.data,
-                                       this.keyboard.getKeyFactory(),
+                                       this.keyboard.getKeyFactory(this.inputList),
                                        this.inputList.getInputFactory());
         this.listeners.forEach(listener -> listener.onMsg(newMsg));
     }
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
-    private void on_Keyboard_Switch_Doing(KeyboardSwitchingMsgData data) {
-        Keyboard.Type type = data.target;
+    private void on_Keyboard_Switch_Doing(KeyboardSwitchMsgData data) {
+        Keyboard.Type type = data.type;
         if (type == null && !this.switchedKeyboards.isEmpty()) {
             type = this.switchedKeyboards.pop();
         }
@@ -225,7 +227,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.switchedKeyboards.push(oldType);
         }
 
-        InputMsg msg = new InputMsg(Keyboard_Switch_Done, new KeyboardSwitchingMsgData(data.key, type));
+        InputMsg msg = new InputMsg(Keyboard_Switch_Done, new KeyboardSwitchMsgData(data.key, type));
         onMsg(msg);
     }
 
@@ -280,16 +282,16 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         switch (type) {
             case Math:
                 return new MathKeyboard();
-            case Latin:
-                return new LatinKeyboard();
             case Number:
                 return new NumberKeyboard();
             case Symbol:
                 return new SymbolKeyboard();
-            case Emoji:
-                return new EmojiKeyboard(this.dict);
             case Editor:
                 return new EditorKeyboard();
+            case Latin:
+                return new LatinKeyboard(this.dict);
+            case Emoji:
+                return new EmojiKeyboard(this.dict);
             case Pinyin_Candidates:
                 return new PinyinCandidatesKeyboard(this.dict);
             default:

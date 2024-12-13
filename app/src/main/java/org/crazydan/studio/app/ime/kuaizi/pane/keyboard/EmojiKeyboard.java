@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 
 /**
@@ -54,10 +54,10 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
 
-        EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
+        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
 
         return () -> keyTable.createEmojiKeys(stateData.getGroups(),
                                               stateData.getPagingData(),
@@ -124,7 +124,7 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
 
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
 
-        EmojiChooseDoingStateData stateData = new EmojiChooseDoingStateData(pending, emojis, pageSize);
+        EmojiChooseStateData stateData = new EmojiChooseStateData(pending, emojis, pageSize);
         this.state = new State(State.Type.Emoji_Choose_Doing, stateData);
 
         String group = null;
@@ -137,7 +137,7 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     private void do_Emoji_Choosing(Key<?> key, String group) {
-        EmojiChooseDoingStateData stateData = (EmojiChooseDoingStateData) this.state.data;
+        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
         stateData.setGroup(group);
 
         fire_InputCandidate_Choose_Doing(stateData.input, key);

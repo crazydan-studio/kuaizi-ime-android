@@ -31,11 +31,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-24
  */
-public class SymbolChooseDoingStateData extends PagingStateData<Symbol> {
+public class SymbolChooseStateData extends PagingStateData<Symbol> {
     private final boolean onlyPair;
     private SymbolGroup group = SymbolGroup.han;
 
-    public SymbolChooseDoingStateData(CharInput input, int pageSize, boolean onlyPair) {
+    public SymbolChooseStateData(CharInput input, int pageSize, boolean onlyPair) {
         super(input, pageSize);
         this.onlyPair = onlyPair;
     }

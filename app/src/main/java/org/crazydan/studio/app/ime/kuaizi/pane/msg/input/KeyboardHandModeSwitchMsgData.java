@@ -17,23 +17,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputChars_Input_Popup_Show_Doing} 的消息数据
+ * {@link InputMsgType#Keyboard_HandMode_Switch_Doing}
+ * 和 {@link InputMsgType#Keyboard_HandMode_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-11-28
+ * @date 2023-08-23
  */
-public class InputCharsInputPopupShowingMsgData extends InputMsgData {
-    /** 气泡内容 */
-    public final String text;
-    /** 是否延迟隐藏 */
-    public final boolean hideDelayed;
+public class KeyboardHandModeSwitchMsgData extends InputMsgData {
+    public final Keyboard.HandMode mode;
 
-    public InputCharsInputPopupShowingMsgData(String text, boolean hideDelayed) {
-        this.text = text;
-        this.hideDelayed = hideDelayed;
+    public KeyboardHandModeSwitchMsgData(Key<?> key, Keyboard.HandMode mode) {
+        super(key);
+        this.mode = mode;
     }
 }

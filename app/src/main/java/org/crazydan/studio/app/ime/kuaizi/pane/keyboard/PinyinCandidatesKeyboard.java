@@ -37,8 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordAdvanceFilterDoingStateData;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CandidatePinyinWordChooseDoingStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PinyinCandidateAdvanceFilterStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PinyinCandidateChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
@@ -62,17 +62,19 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     @Override
     public void start(InputList inputList) {
-        start_InputCandidate_Choosing(inputList, inputList.getPending(), null, false);
+        CharInput pending = inputList.getPending();
+
+        start_InputCandidate_Choosing(inputList, pending, null, false);
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
 
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
-                CandidatePinyinWordChooseDoingStateData stateData
-                        = (CandidatePinyinWordChooseDoingStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData
+                        = (PinyinCandidateChooseStateData) this.state.data;
                 PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
                 return () -> keyTable.createInputCandidateKeys(charsTree,
@@ -83,8 +85,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                                                                stateData.getFilter());
             }
             case InputCandidate_AdvanceFilter_Doing: {
-                CandidatePinyinWordAdvanceFilterDoingStateData stateData
-                        = (CandidatePinyinWordAdvanceFilterDoingStateData) this.state.data;
+                PinyinCandidateAdvanceFilterStateData stateData
+                        = (PinyinCandidateAdvanceFilterStateData) this.state.data;
 
                 return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
                                                                             stateData.getPagingData(),
@@ -96,8 +98,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected boolean try_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
-        if (super.try_OnUserKeyMsg(inputList, msg)) {
+    protected boolean try_Common_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
+        if (super.try_Common_OnUserKeyMsg(inputList, msg)) {
             return true;
         }
         if (this.state.type != State.Type.InputCandidate_AdvanceFilter_Doing) {
@@ -160,7 +162,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                 confirm_Selected_InputCandidate(inputList, key);
                 break;
             }
-            case Toggle_PinyinInput_spell: {
+            case Toggle_Pinyin_spell: {
                 play_SingleTick_InputAudio(key);
 
                 CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
@@ -179,12 +181,12 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                 start_InputCandidate_Choosing(inputList, pending, key, true);
                 break;
             }
-            case Filter_PinyinInputCandidate_by_Spell: {
+            case Filter_PinyinCandidate_by_Spell: {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
-                CandidatePinyinWordChooseDoingStateData stateData
-                        = (CandidatePinyinWordChooseDoingStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData
+                        = (PinyinCandidateChooseStateData) this.state.data;
 
                 CtrlKey.Option<?> option = key.getOption();
                 PinyinWord.Spell value = (PinyinWord.Spell) option.value();
@@ -200,7 +202,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                 fire_InputCandidate_Choose_Doing(stateData.input, key);
                 break;
             }
-            case Filter_PinyinInputCandidate_advance: {
+            case Filter_PinyinCandidate_advance: {
                 play_SingleTick_InputAudio(key);
 
                 start_InputCandidate_Advance_Filtering(inputList, pending, key);
@@ -211,14 +213,14 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     // <<<<<<<<< 对输入候选字的高级过滤
     private void start_InputCandidate_Advance_Filtering(InputList inputList, CharInput input, Key<?> key) {
-        CandidatePinyinWordChooseDoingStateData prevStateData
-                = (CandidatePinyinWordChooseDoingStateData) this.state.data;
+        PinyinCandidateChooseStateData prevStateData
+                = (PinyinCandidateChooseStateData) this.state.data;
         PinyinWord.Filter filter = prevStateData.getFilter();
 
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
 
-        CandidatePinyinWordAdvanceFilterDoingStateData stateData = new CandidatePinyinWordAdvanceFilterDoingStateData(
+        PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(
                 input,
                 prevStateData.getCandidates(),
                 pageSize);
@@ -235,11 +237,11 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             return;
         }
 
-        CandidatePinyinWordAdvanceFilterDoingStateData stateData
-                = (CandidatePinyinWordAdvanceFilterDoingStateData) this.state.data;
+        PinyinCandidateAdvanceFilterStateData stateData
+                = (PinyinCandidateAdvanceFilterStateData) this.state.data;
         switch (key.getType()) {
-            case Filter_PinyinInputCandidate_by_Spell:
-            case Filter_PinyinInputCandidate_by_Radical: {
+            case Filter_PinyinCandidate_by_Spell:
+            case Filter_PinyinCandidate_by_Radical: {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
@@ -247,7 +249,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                 PinyinWord.Filter filter = stateData.getFilter();
 
                 switch (key.getType()) {
-                    case Filter_PinyinInputCandidate_by_Spell: {
+                    case Filter_PinyinCandidate_by_Spell: {
                         PinyinWord.Spell value = (PinyinWord.Spell) option.value();
 
                         filter.clear();
@@ -256,7 +258,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                         }
                         break;
                     }
-                    case Filter_PinyinInputCandidate_by_Radical: {
+                    case Filter_PinyinCandidate_by_Radical: {
                         PinyinWord.Radical value = (PinyinWord.Radical) option.value();
                         if (key.isDisabled()) {
                             filter.radicals.remove(value);
@@ -272,11 +274,11 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                 fire_InputCandidate_Choose_Doing(stateData.input, key);
                 break;
             }
-            case Confirm_PinyinInputCandidate_Filters: {
+            case Confirm_PinyinCandidate_Filters: {
                 play_SingleTick_InputAudio(key);
 
-                CandidatePinyinWordChooseDoingStateData prevStateData
-                        = (CandidatePinyinWordChooseDoingStateData) this.state.previous.data;
+                PinyinCandidateChooseStateData prevStateData
+                        = (PinyinCandidateChooseStateData) this.state.previous.data;
                 prevStateData.setFilter(stateData.getFilter());
 
                 exit_Keyboard(key);
@@ -304,7 +306,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             selected = inputList.getSelected();
         }
 
-        start_Input_Choosing(inputList, selected);
+        choose_InputList_Input(inputList, selected);
     }
 
     /** 进入候选字选择状态，并处理候选字翻页 */
@@ -363,9 +365,9 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             }
         }
 
-        CandidatePinyinWordChooseDoingStateData stateData = new CandidatePinyinWordChooseDoingStateData(input,
-                                                                                                        allCandidates,
-                                                                                                        pageSize);
+        PinyinCandidateChooseStateData stateData = new PinyinCandidateChooseStateData(input,
+                                                                                      allCandidates,
+                                                                                      pageSize);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         fire_InputCandidate_Choose_Doing(input, key);
@@ -460,7 +462,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
         InputWord word = null;
         if (pinyinCharsId != null //
-            && (!input.isWordConfirmed() || !input.hasWord() //
+            && (!input.isWordConfirmed() //
+                || !input.hasWord() //
                 || !Objects.equals(input.getWord().getSpell().charsId, pinyinCharsId) //
             ) //
         ) {

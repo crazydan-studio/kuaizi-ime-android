@@ -59,9 +59,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitDoingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
@@ -428,7 +428,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         Key<?> key_level_0 = keyTable.level0CharKey("sh");
         Key<?> key_level_1 = keyTable.level1CharKey("u");
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinInputCandidate_by_Spell,
+        Key<?> key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell,
                                                              "shū",
                                                              null);
 
@@ -654,8 +654,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (((InputCharsInputtingMsgData) msg.data).keyInputType
-                            != InputCharsInputtingMsgData.KeyInputType.tap //
+                        if (((InputCharsInputMsgData) msg.data).inputMode
+                            != InputCharsInputMsgData.InputMode.tap //
                             || !key.getText().equalsIgnoreCase(key_char.getText())) {
                             warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
                                     + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_char.getText());
@@ -675,8 +675,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (((InputCharsInputtingMsgData) msg.data).keyInputType
-                            != InputCharsInputtingMsgData.KeyInputType.tap //
+                        if (((InputCharsInputMsgData) msg.data).inputMode
+                            != InputCharsInputMsgData.InputMode.tap //
                             || !key.getText().equals(key_char.getText())) {
                             warning("请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
                                     key_char.getText());
@@ -697,7 +697,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
             if (msg.type == InputMsgType.InputChars_Input_Doing) {
                 Key<?> key = msg.data.key;
 
-                if (((InputCharsInputtingMsgData) msg.data).keyInputType != InputCharsInputtingMsgData.KeyInputType.tap
+                if (((InputCharsInputMsgData) msg.data).inputMode != InputCharsInputMsgData.InputMode.tap
                     //
                     || (!key.getText().equals("!") && !key.getText().equals(key_symbol_tanhao.getText()))) {
                     warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
@@ -730,7 +730,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         exercise.addStep("请点击按键<img src=\"" + sandboxView.withKey(key_ctrl_switch_math) + "\"/>以切换到算术键盘；",
                          (msg) -> {
                              if (msg.type == InputMsgType.Keyboard_Switch_Done) {
-                                 Keyboard.Type type = ((KeyboardSwitchingMsgData) msg.data).target;
+                                 Keyboard.Type type = ((KeyboardSwitchMsgData) msg.data).type;
 
                                  if (type == Keyboard.Type.Math) {
                                      exercise.gotoNextStep();
@@ -862,7 +862,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_enter) //
                          + "\"/>以开始英文输入演示动画；", (msg) -> {
             if (msg.type == InputMsgType.InputList_Commit_Doing) {
-                if (key_ctrl_enter.getText().contentEquals(((InputListCommitDoingMsgData) msg.data).text)) {
+                if (key_ctrl_enter.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
                     exercise.gotoNextStep();
                     return;
                 }
@@ -922,7 +922,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 switch (msg.type) {
                     // Note：拉丁文输入为直输
                     case InputList_Commit_Doing: {
-                        if (key.getText().contentEquals(((InputListCommitDoingMsgData) msg.data).text)) {
+                        if (key.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
                             exercise.gotoNextStep();
                         } else {
                             restart.run();
@@ -953,7 +953,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                          + sandboxView.withKey(key_ctrl_space) //
                          + "\"/>以开始拼音输入的演示动画；", (msg) -> {
             if (msg.type == InputMsgType.InputList_Commit_Doing) {
-                if (key_ctrl_space.getText().contentEquals(((InputListCommitDoingMsgData) msg.data).text)) {
+                if (key_ctrl_space.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
                     exercise.gotoNextStep();
                     return;
                 }
@@ -1104,8 +1104,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                              if (msg.type == InputMsgType.InputChars_Input_Doing) {
                                  Key<?> key = msg.data.key;
 
-                                 if (((InputCharsInputtingMsgData) msg.data).keyInputType
-                                     != InputCharsInputtingMsgData.KeyInputType.slip) {
+                                 if (((InputCharsInputMsgData) msg.data).inputMode
+                                     != InputCharsInputMsgData.InputMode.slip) {
                                      warning("请按当前步骤的指导要求从按键"
                                              + " <span style=\"color:#ed4c67;\">%s</span>"
                                              + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());

@@ -45,16 +45,16 @@ public class NumberKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfig(inputList));
 
         return () -> keyTable.createKeys(this.needToShowExit);
     }
 
     @Override
-    protected void switchTo_Previous_Keyboard(Key<?> key) {
+    protected void switch_Keyboard_to_Previous(Key<?> key) {
         this.needToShowExit = false;
 
-        super.switchTo_Previous_Keyboard(key);
+        super.switch_Keyboard_to_Previous(key);
     }
 }

@@ -39,7 +39,7 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_OnUserKeyMsg(inputList, msg)) {
+        if (try_Common_OnUserKeyMsg(inputList, msg)) {
             return;
         }
         if (this.state.type != State.Type.InputCandidate_Choose_Doing) {

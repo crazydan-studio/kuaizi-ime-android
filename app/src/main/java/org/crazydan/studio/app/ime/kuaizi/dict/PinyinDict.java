@@ -300,7 +300,7 @@ public class PinyinDict {
     }
 
     /** 查找以指定参数开头的最靠前的 <code>top</code> 个拉丁文 */
-    public List<String> findTopBestMatchedLatin(String text, int top) {
+    public List<String> findTopBestMatchedLatins(String text, int top) {
         if (text == null || text.length() < 2) {
             return List.of();
         }

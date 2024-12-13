@@ -270,8 +270,6 @@ public class InputList implements UserInputMsgListener {
         if (getPending() != null) {
             getPending().clearCompletions();
         }
-
-        sendMsg(InputMsgType.Input_Completion_Clean_Done);
     }
 
     /** 清空短语输入补全 */

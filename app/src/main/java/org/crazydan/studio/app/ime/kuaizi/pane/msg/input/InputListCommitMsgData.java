@@ -29,11 +29,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-15
  */
-public class InputListCommitDoingMsgData extends InputMsgData {
+public class InputListCommitMsgData extends InputMsgData {
     public final CharSequence text;
     public final List<String> replacements;
 
-    public InputListCommitDoingMsgData(CharSequence text, List<String> replacements) {
+    public InputListCommitMsgData(CharSequence text, List<String> replacements) {
         this.text = text;
         this.replacements = replacements != null ? replacements : new ArrayList<>();
     }

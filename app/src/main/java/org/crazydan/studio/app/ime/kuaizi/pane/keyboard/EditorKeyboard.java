@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
 
 /**
@@ -42,8 +42,8 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected KeyFactory doGetKeyFactory() {
-        EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig());
+    public KeyFactory getKeyFactory(InputList inputList) {
+        EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig(inputList));
 
         return keyTable::createKeys;
     }
@@ -79,7 +79,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     private void do_Editor_Range_Selecting(CtrlKey key, Motion motion) {
-        InputMsgData data = new EditorCursorMovingMsgData(key, motion);
+        InputMsgData data = new EditorCursorMsgData(key, motion);
 
         fire_InputMsg(InputMsgType.Editor_Range_Select_Doing, data);
     }

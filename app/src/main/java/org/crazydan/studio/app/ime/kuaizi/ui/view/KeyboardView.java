@@ -39,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputtingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
 
@@ -155,7 +155,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
             case InputChars_Input_Doing: {
                 // 滑屏输入显示轨迹
-                if (((InputCharsInputtingMsgData) msg.data).keyInputType == InputCharsInputtingMsgData.KeyInputType.slip
+                if (((InputCharsInputMsgData) msg.data).inputMode == InputCharsInputMsgData.InputMode.slip
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);

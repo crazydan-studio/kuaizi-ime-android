@@ -35,12 +35,12 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-27
  */
-public class CandidatePinyinWordAdvanceFilterDoingStateData extends PagingStateData<PinyinWord.Radical> {
+public class PinyinCandidateAdvanceFilterStateData extends PagingStateData<PinyinWord.Radical> {
     private final Map<PinyinWord.Spell, List<WordRadical>> spellAndRadicalsMap;
 
     private PinyinWord.Filter filter;
 
-    public CandidatePinyinWordAdvanceFilterDoingStateData(
+    public PinyinCandidateAdvanceFilterStateData(
             CharInput input, List<InputWord> candidates, int pageSize
     ) {
         super(input, pageSize);
