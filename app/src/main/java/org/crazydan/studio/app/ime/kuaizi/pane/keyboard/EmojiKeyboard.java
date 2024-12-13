@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.SymbolEmojiKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.EmojiChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
 /**
  * {@link Type#Emoji 表情键盘}
@@ -66,14 +67,13 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
         InputWordKey key = (InputWordKey) msg.data.key;
 
         switch (msg.type) {
             case LongPress_Key_Tick:
             case SingleTap_Key: {
                 play_SingleTick_InputAudio(key);
-                // TODO 显示表情的名字（或者最短关键字）
                 show_InputChars_Input_Popup(key);
 
                 do_Single_Emoji_Inputting(inputList, key);
@@ -83,37 +83,17 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
-        switch (msg.type) {
-            case SingleTap_Key: {
-                if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
-                    play_SingleTick_InputAudio(key);
-
-                    CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
-                    do_Emoji_Choosing(key, option.value());
-                }
-                break;
-            }
-        }
-    }
-
-    private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
-        boolean isDirectInputting = inputList.isEmpty();
-        if (!isDirectInputting) {
-            confirm_or_New_InputList_Pending(inputList);
-
-            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
-        InputWord word = key.getWord();
-        CharInput pending = inputList.newPending();
+        if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
+            play_SingleTick_InputAudio(key);
 
-        pending.appendKey(key);
-        pending.setWord(word);
-
-        // 直接提交输入
-        commit_InputList(inputList, false, false);
+            CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
+            do_Emoji_Choosing(key, option.value());
+        }
     }
 
     private void start_Emoji_Choosing(InputList inputList) {
@@ -134,6 +114,25 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         }
 
         do_Emoji_Choosing(null, group);
+    }
+
+    private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
+        boolean directInputting = inputList.isEmpty();
+        if (!directInputting) {
+            confirm_or_New_InputList_Pending(inputList);
+
+            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+            return;
+        }
+
+        InputWord word = key.getWord();
+        CharInput pending = inputList.newPending();
+
+        pending.appendKey(key);
+        pending.setWord(word);
+
+        // 直接提交输入
+        commit_InputList(inputList, false, false);
     }
 
     private void do_Emoji_Choosing(Key<?> key, String group) {

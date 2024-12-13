@@ -120,7 +120,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_Common_OnUserKeyMsg(inputList, msg)) {
+        if (try_On_Common_UserKey_Msg(inputList, msg)) {
             return;
         }
 
@@ -131,7 +131,7 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected boolean try_On_Common_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         InputList parentInputList = getParentInputList();
         InputList mathInputList = getMathInputList();
 
@@ -192,7 +192,7 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        return super.try_Common_OnCtrlKeyMsg(mathInputList, msg, key);
+        return super.try_On_Common_CtrlKey_Msg(mathInputList, msg, key);
     }
 
     private void onMathKeyMsg(UserKeyMsg msg, Key<?> key) {

@@ -161,21 +161,21 @@ public abstract class BaseKeyboard implements Keyboard {
      *
      * @return 若返回 true，则表示消息已处理，否则，返回 false
      */
-    protected boolean try_Common_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
+    protected boolean try_On_Common_UserKey_Msg(InputList inputList, UserKeyMsg msg) {
         Key<?> key = msg.data.key;
 
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
             && (key.isDisabled() //
-                || try_Common_OnCtrlKeyMsg(inputList, msg, (CtrlKey) key))) {
+                || try_On_Common_CtrlKey_Msg(inputList, msg, (CtrlKey) key))) {
             return true;
         }
 
-        return try_OnUserKeyMsg_Over_XPad(msg, key);
+        return try_On_UserKey_Msg_Over_XPad(msg, key);
     }
 
     /** 尝试处理控制按键消息 */
-    protected boolean try_Common_OnCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected boolean try_On_Common_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         switch (msg.type) {
             case LongPress_Key_Tick: {
                 switch (key.getType()) {
@@ -183,9 +183,9 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Space:
                     case Enter:
                         // 长按 tick 视为连续单击
-                        return try_Common_OnCtrlKeyMsg(inputList,
-                                                       new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data),
-                                                       key);
+                        return try_On_Common_CtrlKey_Msg(inputList,
+                                                         new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data),
+                                                         key);
                 }
                 break;
             }
@@ -285,7 +285,7 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
-    private boolean try_OnUserKeyMsg_Over_XPad(UserKeyMsg msg, Key<?> key) {
+    private boolean try_On_UserKey_Msg_Over_XPad(UserKeyMsg msg, Key<?> key) {
         if (!isXInputPadEnabled() || !(key instanceof CtrlKey)) {
             return false;
         }
@@ -398,10 +398,10 @@ public abstract class BaseKeyboard implements Keyboard {
      *         触发状态变化的按键
      */
     protected void change_State_to_Init(Key<?> key) {
-        change_State_To(key, getInitState());
+        change_State_To(getInitState(), key);
     }
 
-    protected void change_State_To(Key<?> key, State state) {
+    protected void change_State_To(State state, Key<?> key) {
         this.state = state;
 
         InputMsgData data = new KeyboardStateChangeMsgData(key, state);

@@ -62,19 +62,22 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     @Override
     public void start(InputList inputList) {
-        CharInput pending = inputList.getPending();
+        start_InputCandidate_Choosing(inputList, null, false);
+    }
 
-        start_InputCandidate_Choosing(inputList, pending, null, false);
+    private PinyinKeyTable createKeyTable(InputList inputList) {
+        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+
+        return PinyinKeyTable.create(keyTableConf);
     }
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
+        PinyinKeyTable keyTable = createKeyTable(inputList);
 
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
-                PinyinCandidateChooseStateData stateData
-                        = (PinyinCandidateChooseStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
                 PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
                 return () -> keyTable.createInputCandidateKeys(charsTree,
@@ -84,7 +87,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                                                                stateData.getPageStart(),
                                                                stateData.getFilter());
             }
-            case InputCandidate_AdvanceFilter_Doing: {
+            case InputCandidate_Advance_Filter_Doing: {
                 PinyinCandidateAdvanceFilterStateData stateData
                         = (PinyinCandidateAdvanceFilterStateData) this.state.data;
 
@@ -98,36 +101,37 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected boolean try_Common_OnUserKeyMsg(InputList inputList, UserKeyMsg msg) {
-        if (super.try_Common_OnUserKeyMsg(inputList, msg)) {
+    protected boolean try_On_Common_UserKey_Msg(InputList inputList, UserKeyMsg msg) {
+        if (super.try_On_Common_UserKey_Msg(inputList, msg)) {
             return true;
         }
-        if (this.state.type != State.Type.InputCandidate_AdvanceFilter_Doing) {
+
+        // 仅需处理高级过滤状态的操作
+        if (this.state.type != State.Type.InputCandidate_Advance_Filter_Doing) {
             return false;
         }
 
         Key<?> key = msg.data.key;
         if (msg.type == UserKeyMsgType.FingerFlipping) {
-            on_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
+            // Note: 高级过滤的翻页与普通翻页共享逻辑代码
+            on_InputCandidate_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
         } else if (key instanceof CtrlKey) {
-            on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
+            on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
         }
         return true;
     }
 
     @Override
-    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
         InputWordKey key = (InputWordKey) msg.data.key;
         if (key.isDisabled() || msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
-        // 确认候选字
         play_SingleTick_InputAudio(key);
         show_InputChars_Input_Popup(key);
 
         InputWord word = key.getWord();
-
         // 候选字列表中的表情作为新增插入，不对当前候选字做替换
         if (word instanceof EmojiWord) {
             inputList.confirmPendingAndSelectNext();
@@ -137,34 +141,38 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             inputList.getPending().appendKey(wordKey);
         }
 
-        inputList.getPending().setWord(word);
+        CharInput pending = inputList.getPending();
+        pending.setWord(word);
 
-        confirm_Selected_InputCandidate(inputList, key);
+        // 确认候选字
+        confirm_InputList_Pending_InputCandidate(inputList, key);
     }
 
     @Override
-    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
-        CharInput pending = inputList.getPending();
         switch (key.getType()) {
             case DropInput: {
                 play_SingleTick_InputAudio(key);
 
                 delete_InputList_Selected(inputList, key);
-                change_State_to_Init();
+
+                exit_Keyboard(key);
                 break;
             }
             case ConfirmInput: {
                 play_SingleTick_InputAudio(key);
-                confirm_Selected_InputCandidate(inputList, key);
+
+                confirm_InputList_Pending_InputCandidate(inputList, key);
                 break;
             }
             case Toggle_Pinyin_spell: {
                 play_SingleTick_InputAudio(key);
 
+                CharInput pending = inputList.getPending();
                 CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
                 switch (option.value()) {
                     case ng:
@@ -178,15 +186,14 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                         break;
                 }
 
-                start_InputCandidate_Choosing(inputList, pending, key, true);
+                start_InputCandidate_Choosing(inputList, key, true);
                 break;
             }
             case Filter_PinyinCandidate_by_Spell: {
                 play_SingleTick_InputAudio(key);
                 show_InputChars_Input_Popup(key);
 
-                PinyinCandidateChooseStateData stateData
-                        = (PinyinCandidateChooseStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
 
                 CtrlKey.Option<?> option = key.getOption();
                 PinyinWord.Spell value = (PinyinWord.Spell) option.value();
@@ -205,90 +212,75 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             case Filter_PinyinCandidate_advance: {
                 play_SingleTick_InputAudio(key);
 
-                start_InputCandidate_Advance_Filtering(inputList, pending, key);
+                start_InputCandidate_Advance_Filtering(inputList, key);
                 break;
             }
         }
     }
 
-    // <<<<<<<<< 对输入候选字的高级过滤
-    private void start_InputCandidate_Advance_Filtering(InputList inputList, CharInput input, Key<?> key) {
-        PinyinCandidateChooseStateData prevStateData
-                = (PinyinCandidateChooseStateData) this.state.data;
-        PinyinWord.Filter filter = prevStateData.getFilter();
+    // ===================== Start: 候选字选择 =====================
 
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
-        int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
+    /** 进入候选字选择状态，并处理候选字翻页 */
+    private void start_InputCandidate_Choosing(InputList inputList, Key<?> key, boolean pinyinChanged) {
+        CharInput pending = inputList.getPending();
 
-        PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(
-                input,
-                prevStateData.getCandidates(),
-                pageSize);
-        stateData.setFilter(filter);
+        PinyinKeyTable keyTable = createKeyTable(inputList);
+        int pageSize = keyTable.getInputCandidateKeysPageSize();
+        int bestCandidatesTop = keyTable.getBestCandidatesCount();
+        int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        State state = new State(State.Type.InputCandidate_AdvanceFilter_Doing, stateData, this.state);
-        change_State_To(key, state);
+        Map<Integer, InputWord> candidateMap = this.dict.getCandidatePinyinWords(pending);
+        List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
 
-        fire_InputCandidate_Choose_Doing(input, key);
-    }
+        List<Integer> topBestCandidateIds = this.dict.getTopBestCandidatePinyinWordIds(pending, bestCandidatesTop);
+        List<InputWord> topBestCandidates = topBestCandidateIds.stream()
+                                                               .map(candidateMap::get)
+                                                               .collect(Collectors.toList());
 
-    private void on_InputCandidate_AdvanceFilter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
-        if (msg.type != UserKeyMsgType.SingleTap_Key) {
-            return;
+        // 拼音修正后，需更新其自动确定的候选字
+        if (pinyinChanged) {
+            determine_NotConfirmed_InputWord(this.dict, pending);
         }
 
-        PinyinCandidateAdvanceFilterStateData stateData
-                = (PinyinCandidateAdvanceFilterStateData) this.state.data;
-        switch (key.getType()) {
-            case Filter_PinyinCandidate_by_Spell:
-            case Filter_PinyinCandidate_by_Radical: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
+        // 当前输入确定的拼音字放在最前面
+        if (!topBestCandidates.contains(pending.getWord())) {
+            topBestCandidates.add(0, pending.getWord());
 
-                CtrlKey.Option<?> option = key.getOption();
-                PinyinWord.Filter filter = stateData.getFilter();
+            topBestCandidates = CollectionUtils.subList(topBestCandidates, 0, bestCandidatesTop);
+        }
 
-                switch (key.getType()) {
-                    case Filter_PinyinCandidate_by_Spell: {
-                        PinyinWord.Spell value = (PinyinWord.Spell) option.value();
+        // Note：以最新确定的输入候选字做为表情的关键字查询条件
+        List<PinyinWord> emojiKeywords = inputList.getPinyinPhraseWordsFrom(pending);
+        List<InputWord> topBestEmojis = this.dict.findTopBestEmojisMatchedPhrase(emojiKeywords, bestEmojisTop);
+        topBestCandidates.addAll(topBestEmojis);
 
-                        filter.clear();
-                        if (!key.isDisabled()) {
-                            filter.spells.add(value);
-                        }
-                        break;
-                    }
-                    case Filter_PinyinCandidate_by_Radical: {
-                        PinyinWord.Radical value = (PinyinWord.Radical) option.value();
-                        if (key.isDisabled()) {
-                            filter.radicals.remove(value);
-                        } else {
-                            filter.radicals.add(value);
-                        }
-                        break;
-                    }
-                }
+        if (!topBestCandidates.isEmpty()) {
+            int allCandidatesCount = allCandidates.size();
 
-                stateData.setFilter(filter);
+            // 最佳候选字不再重复出现在普通候选字列表
+            allCandidates.removeAll(topBestCandidates);
 
-                fire_InputCandidate_Choose_Doing(stateData.input, key);
-                break;
-            }
-            case Confirm_PinyinCandidate_Filters: {
-                play_SingleTick_InputAudio(key);
+            // 若候选字列表总共只有一页，则合并最佳候选字，并确保最佳候选字在最前面位置
+            if (allCandidatesCount <= pageSize) {
+                allCandidates.addAll(0, topBestCandidates);
 
-                PinyinCandidateChooseStateData prevStateData
-                        = (PinyinCandidateChooseStateData) this.state.previous.data;
-                prevStateData.setFilter(stateData.getFilter());
-
-                exit_Keyboard(key);
-                break;
+                allCandidates = reorder_TopBestCandidates_in_One_Page(allCandidates, bestCandidatesTop, pageSize);
+            } else {
+                topBestCandidates = reorder_TopBestCandidates_in_One_Page(topBestCandidates,
+                                                                          bestCandidatesTop,
+                                                                          pageSize);
+                allCandidates.addAll(0, topBestCandidates);
             }
         }
-    }
-    // >>>>>>>>>>>>
 
-    private void confirm_Selected_InputCandidate(InputList inputList, Key<?> key) {
+        PinyinCandidateChooseStateData stateData = new PinyinCandidateChooseStateData(pending, allCandidates, pageSize);
+        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
+
+        fire_InputCandidate_Choose_Doing(pending, key);
+    }
+
+    /** 确认待输入的候选字。若存在下一个拼音输入，则自动切换到对该输入的候选字选择，否则，选中相邻的输入 */
+    private void confirm_InputList_Pending_InputCandidate(InputList inputList, Key<?> key) {
         CharInput pending = inputList.getPending();
         pending.markWordConfirmed();
 
@@ -309,92 +301,12 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         choose_InputList_Input(inputList, selected);
     }
 
-    /** 进入候选字选择状态，并处理候选字翻页 */
-    private void start_InputCandidate_Choosing(
-            InputList inputList, CharInput input, Key<?> key, boolean inputPinyinChanged
-    ) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
-        int pageSize = keyTable.getInputCandidateKeysPageSize();
-        int bestCandidatesTop = keyTable.getBestCandidatesCount();
-        int bestEmojisTop = pageSize - bestCandidatesTop;
-
-        Map<Integer, InputWord> candidateMap = getInputCandidateWords(input);
-        List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
-
-        List<Integer> topBestCandidateIds = this.dict.getTopBestCandidatePinyinWordIds(input, bestCandidatesTop);
-        List<InputWord> topBestCandidates = topBestCandidateIds.stream()
-                                                               .map(candidateMap::get)
-                                                               .collect(Collectors.toList());
-
-        // 拼音修正后，需更新其自动确定的候选字
-        if (inputPinyinChanged) {
-            determine_NotConfirmed_InputWord(this.dict, input);
-        }
-
-        // 当前输入确定的拼音字放在最前面
-        if (input.isPinyin() //
-            && !topBestCandidates.contains(input.getWord()) //
-        ) {
-            topBestCandidates.add(0, input.getWord());
-
-            topBestCandidates = CollectionUtils.subList(topBestCandidates, 0, bestCandidatesTop);
-        }
-
-        // Note：以最新确定的输入候选字做为表情的关键字查询条件
-        List<InputWord> topBestEmojis = getTopBestEmojis(inputList, input, bestEmojisTop);
-        topBestCandidates.addAll(topBestEmojis);
-
-        if (!topBestCandidates.isEmpty()) {
-            int allCandidatesCount = allCandidates.size();
-
-            // 最佳候选字不再重复出现在普通候选字列表
-            allCandidates.removeAll(topBestCandidates);
-
-            // 若候选字列表总共只有一页，则合并最佳候选字，并确保最佳候选字在最前面位置
-            if (allCandidatesCount <= pageSize) {
-                allCandidates.addAll(0, topBestCandidates);
-
-                allCandidates = reorder_TopBest_CandidateWords_and_Emojis_In_Page(allCandidates,
-                                                                                  bestCandidatesTop,
-                                                                                  pageSize);
-            } else {
-                topBestCandidates = reorder_TopBest_CandidateWords_and_Emojis_In_Page(topBestCandidates,
-                                                                                      bestCandidatesTop,
-                                                                                      pageSize);
-                allCandidates.addAll(0, topBestCandidates);
-            }
-        }
-
-        PinyinCandidateChooseStateData stateData = new PinyinCandidateChooseStateData(input,
-                                                                                      allCandidates,
-                                                                                      pageSize);
-        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
-
-        fire_InputCandidate_Choose_Doing(input, key);
-    }
-
-    /**
-     * 获取输入的候选字列表
-     *
-     * @return 不为 <code>null</code>
-     */
-    private Map<Integer, InputWord> getInputCandidateWords(CharInput input) {
-        String inputChars = input.getJoinedChars();
-        return this.dict.getCandidatePinyinWords(inputChars);
-    }
-
-    private List<InputWord> getTopBestEmojis(InputList inputList, CharInput input, int top) {
-        List<PinyinWord> phraseWords = inputList.getPinyinPhraseWordsFrom(input);
-
-        return this.dict.findTopBestEmojisMatchedPhrase(phraseWords, top);
-    }
-
     /**
      * 在一页内重新排序最佳候选字和表情符号列表，
      * 确保表情符号和候选字各自独占特定区域，
      * 并填充 <code>null</code> 以占满一页
      */
-    private List<InputWord> reorder_TopBest_CandidateWords_and_Emojis_In_Page(
+    private List<InputWord> reorder_TopBestCandidates_in_One_Page(
             List<InputWord> candidates, int wordCount, int pageSize
     ) {
         List<InputWord> results = new ArrayList<>(pageSize);
@@ -420,6 +332,94 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
         return results;
     }
+
+    // ===================== End: 候选字选择 =====================
+
+    // ====================== Start: 候选字的高级过滤 =========================
+
+    private void start_InputCandidate_Advance_Filtering(InputList inputList, Key<?> key) {
+        CharInput pending = inputList.getPending();
+
+        PinyinCandidateChooseStateData prevStateData = (PinyinCandidateChooseStateData) this.state.data;
+        PinyinWord.Filter filter = prevStateData.getFilter();
+
+        PinyinKeyTable keyTable = createKeyTable(inputList);
+        int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
+
+        PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(pending,
+                                                                                                    prevStateData.getCandidates(),
+                                                                                                    pageSize);
+        stateData.setFilter(filter);
+
+        State state = new State(State.Type.InputCandidate_Advance_Filter_Doing, stateData, this.state);
+        change_State_To(state, key);
+
+        fire_InputCandidate_Choose_Doing(pending, key);
+    }
+
+    /** 高级过滤状态对 {@link CtrlKey} 的处理 */
+    private void on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
+        }
+
+        PinyinCandidateAdvanceFilterStateData stateData = (PinyinCandidateAdvanceFilterStateData) this.state.data;
+        switch (key.getType()) {
+            case Filter_PinyinCandidate_by_Spell:
+            case Filter_PinyinCandidate_by_Radical: {
+                play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
+
+                update_InputCandidate_Advance_Filter(stateData, key);
+
+                fire_InputCandidate_Choose_Doing(stateData.input, key);
+                break;
+            }
+            case Confirm_PinyinCandidate_Filter: {
+                play_SingleTick_InputAudio(key);
+
+                PinyinCandidateChooseStateData prevStateData
+                        = (PinyinCandidateChooseStateData) this.state.previous.data;
+                prevStateData.setFilter(stateData.getFilter());
+
+                exit_Keyboard(key);
+                break;
+            }
+        }
+    }
+
+    /** 更新高级过滤的过滤条件 */
+    private void update_InputCandidate_Advance_Filter(PinyinCandidateAdvanceFilterStateData stateData, CtrlKey key) {
+        CtrlKey.Option<?> option = key.getOption();
+        PinyinWord.Filter filter = stateData.getFilter();
+
+        switch (key.getType()) {
+            case Filter_PinyinCandidate_by_Spell: {
+                PinyinWord.Spell value = (PinyinWord.Spell) option.value();
+
+                filter.clear();
+                if (!key.isDisabled()) {
+                    filter.spells.add(value);
+                }
+                break;
+            }
+            case Filter_PinyinCandidate_by_Radical: {
+                PinyinWord.Radical value = (PinyinWord.Radical) option.value();
+                if (key.isDisabled()) {
+                    filter.radicals.remove(value);
+                } else {
+                    filter.radicals.add(value);
+                }
+                break;
+            }
+        }
+
+        stateData.setFilter(filter);
+    }
+
+    // ====================== End: 候选字的高级过滤 =========================
+
+    // ==========================================================================
 
     /**
      * 预测 <code>input</code> 所在拼音短语中 未确认输入 的字

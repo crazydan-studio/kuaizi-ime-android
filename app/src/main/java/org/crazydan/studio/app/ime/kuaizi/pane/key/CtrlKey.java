@@ -166,8 +166,8 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         Filter_PinyinCandidate_by_Spell,
         /** 在候选字状态下根据部首过滤候选字 */
         Filter_PinyinCandidate_by_Radical,
-        /** 确认候选字过滤 */
-        Confirm_PinyinCandidate_Filters,
+        /** 确认候选字过滤条件 */
+        Confirm_PinyinCandidate_Filter,
 
         /** 定位 目标编辑器 光标 */
         Editor_Cursor_Locator,

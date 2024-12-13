@@ -591,7 +591,7 @@ public class PinyinKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Confirm_PinyinCandidate_Filters);
+        gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Confirm_PinyinCandidate_Filter);
 
         // 声调过滤按键
         GridCoord[] spellKeyCorrds = getInputCandidateStrokeFilterKeyCoords();

@@ -60,12 +60,12 @@ public class State {
         InputChars_XPad_Input_Doing,
 
         /** 输入列表 提交选项 选择中 */
-        InputList_Committing_Option_Choose_Doing,
+        InputList_Commit_Option_Choose_Doing,
 
         /** 输入候选字选择中 */
         InputCandidate_Choose_Doing,
         /** 输入候选字高级过滤中 */
-        InputCandidate_AdvanceFilter_Doing,
+        InputCandidate_Advance_Filter_Doing,
 
         /** 表情符号选择中 */
         Emoji_Choose_Doing,

@@ -63,6 +63,38 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.isOnlyPair(), stateData.getPageStart());
     }
 
+    @Override
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+        boolean continuous = false;
+
+        SymbolKey key = (SymbolKey) msg.data.key;
+        switch (msg.type) {
+            case LongPress_Key_Tick:
+                continuous = true;
+            case SingleTap_Key: {
+                play_SingleTick_InputAudio(key);
+                show_InputChars_Input_Popup(key);
+
+                do_Single_Symbol_Inputting(inputList, key, continuous);
+                break;
+            }
+        }
+    }
+
+    @Override
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
+        }
+
+        if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
+            play_SingleTick_InputAudio(key);
+
+            CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();
+            do_Symbol_Choosing(key, option.value());
+        }
+    }
+
     private void start_Symbol_Choosing(InputList inputList, boolean onlyPair) {
         CharInput pending = inputList.getPending();
 
@@ -86,37 +118,6 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         stateData.setGroup(group);
 
         fire_InputCandidate_Choose_Doing(stateData.input, key);
-    }
-
-    @Override
-    protected void on_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
-        boolean continuous = false;
-
-        SymbolKey key = (SymbolKey) msg.data.key;
-        switch (msg.type) {
-            case LongPress_Key_Tick:
-                continuous = true;
-            case SingleTap_Key: {
-                play_SingleTick_InputAudio(key);
-                // TODO 符号放大、加粗显示，以便于识别
-                show_InputChars_Input_Popup(key);
-
-                do_Single_Symbol_Inputting(inputList, key, continuous);
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected void on_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
-        if (msg.type == UserKeyMsgType.SingleTap_Key) {
-            if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
-                play_SingleTick_InputAudio(key);
-
-                CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();
-                do_Symbol_Choosing(key, option.value());
-            }
-        }
     }
 
     private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {

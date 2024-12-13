@@ -35,16 +35,20 @@ import java.util.stream.Collectors;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
-import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
+import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
+import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.enableAllPrintableEmojis;
@@ -57,10 +61,6 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getP
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getTopBestPinyinWordIds;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedLatins;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 
 /**
  * 拼音字典（数据库版）
@@ -160,8 +160,8 @@ public class PinyinDict {
     }
 
     /** 获取指定拼音的候选拼音字列表：已按权重等排序 */
-    public Map<Integer, InputWord> getCandidatePinyinWords(String pinyinChars) {
-        Integer pinyinCharsId = getPinyinCharsTree().getCharsId(pinyinChars);
+    public Map<Integer, InputWord> getCandidatePinyinWords(CharInput input) {
+        Integer pinyinCharsId = getPinyinCharsTree().getCharsId(input);
 
         SQLiteDatabase db = getDB();
 

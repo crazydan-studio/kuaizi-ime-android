@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
@@ -33,9 +34,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.CommittingOptionChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsFlipStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputCharsSlipStateData;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputListCommitOptionChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
@@ -67,6 +68,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
         PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
+        PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
@@ -77,7 +79,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     return null;
                 }
 
-                PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
                 String level1Char = stateData.getLevel1Key() != null ? stateData.getLevel1Key().getText() : null;
                 String level2Char = stateData.getLevel2Key() != null ? stateData.getLevel2Key().getText() : null;
 
@@ -89,7 +90,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case InputChars_Flip_Doing: {
                 InputCharsFlipStateData stateData = ((InputCharsFlipStateData) this.state.data);
-                PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
                 return (KeyFactory.NoAnimation) () -> keyTable.createFullCharKeys(charsTree, stateData.startChar);
             }
@@ -101,7 +101,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                     return null;
                 }
 
-                PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
                 String level1Char = stateData.getLevel1Key() != null ? stateData.getLevel1Key().getText() : null;
 
                 return () -> keyTable.createXPadNextCharKeys(charsTree,
@@ -109,8 +108,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                              level1Char,
                                                              stateData.getLevel2NextChars());
             }
-            case InputList_Committing_Option_Choose_Doing: {
-                CommittingOptionChooseStateData stateData = (CommittingOptionChooseStateData) this.state.data;
+            case InputList_Commit_Option_Choose_Doing: {
+                InputListCommitOptionChooseStateData stateData = (InputListCommitOptionChooseStateData) this.state.data;
 
                 return () -> keyTable.createInputListCommittingOptionKeys(stateData.getOption(),
                                                                           stateData.hasSpell(),
@@ -146,7 +145,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     choose_InputList_Input(inputList, msg.data.input);
                     return;
                 }
-            case InputCandidate_AdvanceFilter_Doing:
+            case InputCandidate_Advance_Filter_Doing:
             case InputChars_Flip_Doing: {
                 if (msg.type == InputMsgType.InputList_Clean_Done) {
                     change_State_to_Init();
@@ -163,7 +162,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     public void onMsg(InputList inputList, UserKeyMsg msg) {
         Key<?> key = msg.data.key;
 
-        if (try_Common_OnUserKeyMsg(inputList, msg)) {
+        if (try_On_Common_UserKey_Msg(inputList, msg)) {
             // Note：被禁用的部分按键也需要接受处理
             if (!CtrlKey.isAny(key,
                                CtrlKey.Type.Filter_PinyinCandidate_by_Spell,
@@ -186,9 +185,9 @@ public class PinyinKeyboard extends BaseKeyboard {
                 on_InputChars_XPad_Input_Doing_UserKey_Msg(inputList, msg, key);
                 break;
             }
-            case InputList_Committing_Option_Choose_Doing: {
+            case InputList_Commit_Option_Choose_Doing: {
                 if (key instanceof CtrlKey) {
-                    on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
+                    on_InputList_Commit_Option_Choose_Doing_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
                 }
                 break;
             }
@@ -246,7 +245,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
 
-                    start_InputList_Committing_Option_Choosing(inputList, key);
+                    start_InputList_Commit_Option_Choosing(inputList, key);
                 }
                 break;
             }
@@ -268,10 +267,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 开始滑屏输入 */
     private void start_InputChars_Slipping(InputList inputList, Key<?> key) {
-        State state = new State(State.Type.InputChars_Slip_Doing,
-                                new InputCharsSlipStateData(),
-                                createInitState());
-        change_State_To(key, state);
+        State state = new State(State.Type.InputChars_Slip_Doing, new InputCharsSlipStateData(), createInitState());
+        change_State_To(state, key);
 
         CharInput pending = inputList.getPending();
         do_InputChars_Slipping_Input_Key(pending, key);
@@ -310,6 +307,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                     CharKey firstKey = (CharKey) pending.getFirstKey();
 
                     show_InputChars_Input_Popup(firstKey);
+
                     start_InputChars_Flipping(inputList, firstKey);
                 }
                 break;
@@ -391,9 +389,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         InputCharsFlipStateData stateData = new InputCharsFlipStateData(startChar);
         State state = new State(State.Type.InputChars_Flip_Doing, stateData, createInitState());
-        change_State_To(key, state);
+        change_State_To(state, key);
 
-        // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，以此对先触发的滑屏输入做替换
+        // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，因此，对先触发的滑屏输入做替换
         CharInput pending = inputList.newPending();
         pending.appendKey(key);
 
@@ -435,7 +433,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         State state = new State(State.Type.InputChars_XPad_Input_Doing,
                                 new InputCharsSlipStateData(),
                                 createInitState());
-        change_State_To(key, state);
+        change_State_To(state, key);
 
         CharInput pending = inputList.getPending();
         do_InputChars_XPad_Inputting(inputList, pending, key);
@@ -452,10 +450,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         boolean needToEndInputting = false;
         boolean needToContinueInputting = false;
 
-        // 添加后继字母，
+        // 添加输入拼音的后继字母
         switch (currentKeyLevel) {
             case level_0: {
-                // 当前 pending 为有效拼音，则结束当前输入，并创建新输入
+                // 若当前 pending 为有效拼音，则结束当前输入，并创建新输入
                 if (this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
                     needToEndInputting = true;
                     needToContinueInputting = true;
@@ -509,7 +507,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
 
-        // 并确定候选字
+        // 确定候选字
         determine_NotConfirmed_InputWord(this.dict, pending);
 
         if (needToEndInputting) {
@@ -532,17 +530,19 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         // 添加拼音后继字母
-        CharInput pending = inputList.getPending();
+        switch (msg.type) {
+            case SingleTap_Key: {
+                if (key instanceof CharKey && !key.isDisabled()) {
+                    CharInput pending = inputList.getPending();
 
-        if (msg.type == UserKeyMsgType.Press_Key_Stop) {
-            stop_InputChars_Inputting(inputList, key);
-            return;
-        } else if (msg.type != UserKeyMsgType.SingleTap_Key) {
-            return;
-        }
-
-        if (key instanceof CharKey && !key.isDisabled()) {
-            do_InputChars_XPad_Inputting(inputList, pending, key);
+                    do_InputChars_XPad_Inputting(inputList, pending, key);
+                }
+                break;
+            }
+            case Press_Key_Stop: {
+                stop_InputChars_Inputting(inputList, key);
+                break;
+            }
         }
     }
 
@@ -559,66 +559,24 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // ================== Start: 对输入列表 提交选项 的操作 =====================
 
-    private void start_InputList_Committing_Option_Choosing(InputList inputList, Key<?> key) {
-        CommittingOptionChooseStateData stateData = new CommittingOptionChooseStateData(inputList);
-        State state = new State(State.Type.InputList_Committing_Option_Choose_Doing, stateData, createInitState());
+    private void start_InputList_Commit_Option_Choosing(InputList inputList, Key<?> key) {
+        InputListCommitOptionChooseStateData stateData = new InputListCommitOptionChooseStateData();
+        stateData.update(inputList);
 
-        change_State_To(key, state);
+        State state = new State(State.Type.InputList_Commit_Option_Choose_Doing, stateData, createInitState());
+        change_State_To(state, key);
     }
 
-    private void on_InputList_Committing_Option_Choose_Doing_CtrlKey_Msg(
+    private void on_InputList_Commit_Option_Choose_Doing_CtrlKey_Msg(
             InputList inputList, UserKeyMsg msg, CtrlKey key
     ) {
         switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
-                    CtrlKey.InputListCommitOption.Option option
-                            = ((CtrlKey.InputListCommitOption) key.getOption()).value();
-
-                    Input.Option oldInputOption = inputList.getOption();
-                    Input.Option newInputOption = null;
-                    switch (option) {
-                        case only_pinyin: {
-                            InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
-                            if (spellUsedType == InputWord.SpellUsedType.replacing) {
-                                spellUsedType = null;
-                            } else {
-                                spellUsedType = InputWord.SpellUsedType.replacing;
-                            }
-
-                            newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
-                            break;
-                        }
-                        case with_pinyin: {
-                            InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
-                            if (spellUsedType == InputWord.SpellUsedType.following) {
-                                spellUsedType = null;
-                            } else {
-                                spellUsedType = InputWord.SpellUsedType.following;
-                            }
-
-                            newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
-                            break;
-                        }
-                        case switch_trad_to_simple:
-                        case switch_simple_to_trad: {
-                            // 被禁用的繁简转换按钮不做响应
-                            if (!key.isDisabled()) {
-                                newInputOption = new Input.Option(oldInputOption.wordSpellUsedType,
-                                                                  !oldInputOption.wordVariantUsed);
-                            }
-                            break;
-                        }
-                    }
-
-                    if (newInputOption == null) {
-                        return;
-                    }
-
-                    inputList.setOption(newInputOption);
-                    ((CommittingOptionChooseStateData) this.state.data).update(inputList);
-
                     play_SingleTick_InputAudio(key);
+
+                    update_InputList_Commit_Option(inputList, key);
+
                     fire_InputChars_Input_Done(key, null);
                 }
                 break;
@@ -636,27 +594,82 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    /** 更新输入列表提交选项 */
+    private void update_InputList_Commit_Option(InputList inputList, CtrlKey key) {
+        CtrlKey.InputListCommitOption.Option option = ((CtrlKey.InputListCommitOption) key.getOption()).value();
+
+        Input.Option oldInputOption = inputList.getOption();
+        Input.Option newInputOption = null;
+        switch (option) {
+            case only_pinyin: {
+                InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
+                if (spellUsedType == InputWord.SpellUsedType.replacing) {
+                    spellUsedType = null;
+                } else {
+                    spellUsedType = InputWord.SpellUsedType.replacing;
+                }
+
+                newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
+                break;
+            }
+            case with_pinyin: {
+                InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
+                if (spellUsedType == InputWord.SpellUsedType.following) {
+                    spellUsedType = null;
+                } else {
+                    spellUsedType = InputWord.SpellUsedType.following;
+                }
+
+                newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
+                break;
+            }
+            case switch_trad_to_simple:
+            case switch_simple_to_trad: {
+                // 被禁用的繁简转换按钮不做响应
+                if (!key.isDisabled()) {
+                    newInputOption = new Input.Option(oldInputOption.wordSpellUsedType,
+                                                      !oldInputOption.wordVariantUsed);
+                }
+                break;
+            }
+        }
+
+        if (newInputOption != null) {
+            inputList.setOption(newInputOption);
+
+            ((InputListCommitOptionChooseStateData) this.state.data).update(inputList);
+        }
+    }
+
     // ================== End: 对输入列表 提交选项 的操作 =====================
 
-    // <<<<<<<<<< 对用户输入数据的处理
-    private void doWithUserInputData(InputList inputList, UserInputDataHandler handler) {
-        if (getConfig().isUserInputDataDisabled()) {
-            return;
-        }
+    // ================== Start: 处理用户输入数据 =====================
+
+    @Override
+    protected void before_Commit_InputList(InputList inputList) {
+        handle_UserInput_Data(inputList, this.dict::saveUserInputData);
+    }
+
+    @Override
+    protected void after_Revoke_Committed_InputList(InputList inputList) {
+        handle_UserInput_Data(inputList, this.dict::revokeSavedUserInputData);
+    }
+
+    private void handle_UserInput_Data(InputList inputList, Consumer<UserInputData> consumer) {
+        // TODO 根据配置确定是否禁用对输入数据的存储
+//        if (getConfig().isUserInputDataDisabled()) {
+//            return;
+//        }
 
         List<List<PinyinWord>> phrases = inputList.getPinyinPhraseWords();
         List<InputWord> emojis = inputList.getEmojis();
         List<String> latins = inputList.getLatins();
 
         UserInputData data = new UserInputData(phrases, emojis, latins);
-
-        handler.handle(data);
+        consumer.accept(data);
     }
 
-    private interface UserInputDataHandler {
-        void handle(UserInputData data);
-    }
-    // >>>>>>>>>>
+    // ================== End: 处理用户输入数据 =====================
 
     /** 结束输入：始终针对 {@link InputList#getPending() 待输入}，并做状态复位 */
     private void stop_InputChars_Inputting(InputList inputList, Key<?> key) {
@@ -701,15 +714,5 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         super.confirm_InputList_Input_Enter_or_Space(inputList, key);
-    }
-
-    @Override
-    protected void before_Commit_InputList(InputList inputList) {
-        doWithUserInputData(inputList, this.dict::saveUserInputData);
-    }
-
-    @Override
-    protected void after_Revoke_Committed_InputList(InputList inputList) {
-        doWithUserInputData(inputList, this.dict::revokeSavedUserInputData);
     }
 }

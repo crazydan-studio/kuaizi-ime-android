@@ -24,19 +24,15 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
- * {@link State.Type#InputList_Committing_Option_Choose_Doing} 的状态数据
+ * {@link State.Type#InputList_Commit_Option_Choose_Doing} 的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class CommittingOptionChooseStateData implements State.Data {
+public class InputListCommitOptionChooseStateData implements State.Data {
     private Input.Option option;
     private boolean hasSpell;
     private boolean hasVariant;
-
-    public CommittingOptionChooseStateData(InputList inputList) {
-        update(inputList);
-    }
 
     public void update(InputList inputList) {
         this.option = inputList.getOption();
