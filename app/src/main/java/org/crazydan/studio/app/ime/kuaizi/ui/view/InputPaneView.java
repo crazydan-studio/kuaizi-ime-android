@@ -48,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
@@ -153,12 +154,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     // ============================================
 
     private void onConfigurationChanged(Conf conf, Object oldValue, Object newValue) {
-        Keyboard keyboard = getKeyboard();
-        if (keyboard == null) {
-            return;
-        }
-
-        // Note: 仅当新旧配置值不相等时才会触发配置更新，故而，仅需检查哪些配置项发生了变更即可
+        // Note: 系统只会在新旧配置值不相等时，才会触发配置更新事件，故而，在这里仅需检查哪些配置项发生了变更即可
         switch (conf) {
             case theme: {
                 relayout();
@@ -238,11 +234,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 return;
             }
             default: {
-                // 有新输入，则清空 删除撤销数据
-                if (!getInputList().isEmpty()) {
-                    getInputList().clearDeleteCancels();
-                }
-
+                // TODO 从消息中获取输入状态数据
                 toggleShowInputListCleanBtn();
             }
         }
@@ -395,17 +387,17 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void onCleanInputList(View v) {
-        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null,
-                                                               InputAudioPlayMsgData.AudioType.SingleTick));
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null, InputAudioPlayMsgData.AudioType.SingleTick));
 
-        getInputList().reset(true);
+        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Clean_InputList);
+        onMsg(msg);
     }
 
     private void onCancelCleanInputList(View v) {
-        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null,
-                                                               InputAudioPlayMsgData.AudioType.SingleTick));
+        on_InputAudio_Play_Doing_Msg(new InputAudioPlayMsgData(null, InputAudioPlayMsgData.AudioType.SingleTick));
 
-        getInputList().cancelDelete();
+        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList);
+        onMsg(msg);
     }
 
     private void toggleEnableSettingsBtn() {

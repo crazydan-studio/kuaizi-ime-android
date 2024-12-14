@@ -73,9 +73,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         this.switchedKeyboards = new Stack<>();
         this.listeners = new ArrayList<>();
 
-        this.inputList.setListener((msg) -> {
-            this.keyboard.onMsg(this.inputList, msg);
-        });
+        this.inputList.setListener(this);
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -200,17 +198,35 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     /** 响应键盘的 {@link InputMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(InputMsg msg) {
+        InputList inputList = this.inputList;
+        Keyboard keyboard = this.keyboard;
+
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
                 on_Keyboard_Switch_Doing((KeyboardSwitchMsgData) msg.data);
+                // Note: 在键盘切换过程中，不向上转发消息
                 return;
+            }
+            // 向键盘派发 InputList 的消息
+            case Input_Choose_Doing:
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done: {
+                keyboard.onMsg(inputList, msg);
+                break;
+            }
+            default: {
+                // TODO 若有新输入，则清空 删除撤销数据
+                if (!inputList.isEmpty()) {
+                    inputList.clearDeleteCancels();
+                }
             }
         }
 
+        // TODO 附件输入状态数据，如，InputList 是否为空、是否可撤销删除、CompletionInputFactory 等
         InputMsg newMsg = new InputMsg(msg.type,
                                        msg.data,
-                                       this.keyboard.getKeyFactory(this.inputList),
-                                       this.inputList.getInputFactory());
+                                       keyboard.getKeyFactory(inputList),
+                                       inputList.getInputFactory());
         this.listeners.forEach(listener -> listener.onMsg(newMsg));
     }
 

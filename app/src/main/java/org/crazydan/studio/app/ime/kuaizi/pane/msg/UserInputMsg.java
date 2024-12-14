@@ -27,6 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
  */
 public class UserInputMsg extends BaseMsg<UserInputMsgType, UserInputMsgData> {
 
+    public UserInputMsg(UserInputMsgType type) {
+        this(type, new UserInputMsgData());
+    }
+
     public UserInputMsg(UserInputMsgType type, UserInputMsgData data) {
         super(type, data);
     }

@@ -137,20 +137,23 @@ public abstract class BaseKeyboard implements Keyboard {
                                    !inputList.isGapSelected());
     }
 
+    // ====================== Start: 对 InputMsg 的处理 ======================
+
     @Override
     public void onMsg(InputList inputList, InputMsg msg) {
         switch (msg.type) {
             case Input_Choose_Doing: {
-                switch (this.state.type) {
-                    case InputChars_Input_Wait_Doing: {
-                        choose_InputList_Input(inputList, msg.data.input);
-                        break;
-                    }
-                }
+                choose_InputList_Input(inputList, msg.data.input);
+                break;
+            }
+            case InputList_Clean_Done: {
+                change_State_to_Init();
                 break;
             }
         }
     }
+
+    // ====================== End: 对 InputMsg 的处理 ======================
 
     // ======================== Start: 对 UserKeyMsg 的通用处理 ========================
 

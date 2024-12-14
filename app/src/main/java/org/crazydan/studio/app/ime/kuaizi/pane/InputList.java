@@ -42,6 +42,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
 
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Clean_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Choose_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Apply_Done;
+
 /**
  * 输入列表
  * <p/>
@@ -80,18 +85,6 @@ public class InputList implements UserInputMsgListener {
         this.listener = listener;
     }
 
-    /** 发送 {@link InputMsg} 消息：不附带 {@link Input} */
-    public void sendMsg(InputMsgType type) {
-        InputMsg msg = new InputMsg(type, new InputMsgData());
-        this.listener.onMsg(msg);
-    }
-
-    /** 发送 {@link InputMsg} 消息 */
-    public void sendMsg(InputMsgType type, Input<?> input) {
-        InputMsg msg = new InputMsg(type, new InputMsgData(input));
-        this.listener.onMsg(msg);
-    }
-
     // -----------------------------
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
@@ -115,7 +108,8 @@ public class InputList implements UserInputMsgListener {
                 // 忽略对已选中算术表达式的处理，由其自身的视图做响应
                 if (!isMathExprSelected) {
                     clearPhraseCompletions();
-                    sendMsg(InputMsgType.Input_Choose_Doing, input);
+
+                    fire_InputMsg(Input_Choose_Doing, input);
                 }
                 break;
             }
@@ -126,10 +120,28 @@ public class InputList implements UserInputMsgListener {
                 // Note：待输入的补全数据将在 confirm 时清除
                 confirmPendingAndSelectNext();
 
-                sendMsg(InputMsgType.Input_Completion_Apply_Done);
+                fire_InputMsg(Input_Completion_Apply_Done, null);
+                break;
+            }
+            case SingleTap_Btn_Clean_InputList: {
+                reset(true);
+
+                fire_InputMsg(InputList_Clean_Done, null);
+                break;
+            }
+            case SingleTap_Btn_Cancel_Clean_InputList: {
+                cancelDelete();
+
+                fire_InputMsg(InputList_Cleaned_Cancel_Done, null);
                 break;
             }
         }
+    }
+
+    /** 发送 {@link InputMsg} 消息 */
+    private void fire_InputMsg(InputMsgType type, Input<?> input) {
+        InputMsg msg = new InputMsg(type, new InputMsgData(input));
+        this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -141,7 +153,6 @@ public class InputList implements UserInputMsgListener {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
 
         clearPhraseCompletions();
-        sendMsg(InputMsgType.InputList_Clean_Done);
     }
 
     /** 清空输入列表 */
@@ -195,7 +206,6 @@ public class InputList implements UserInputMsgListener {
             Staged.restore(this, this.staged);
 
             clearPhraseCompletions();
-            sendMsg(InputMsgType.InputList_Cleaned_Cancel_Done);
         }
     }
 
