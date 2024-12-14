@@ -23,19 +23,19 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 
 /**
- * 目标编辑器 编辑按键布局
+ * 编辑按键布局
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31
  */
-public class EditorEditKeyTable extends KeyTable {
+public class EditorKeyTable extends KeyTable {
 
-    protected EditorEditKeyTable(Config config) {
+    protected EditorKeyTable(Config config) {
         super(config);
     }
 
-    public static EditorEditKeyTable create(Config config) {
-        return new EditorEditKeyTable(config);
+    public static EditorKeyTable create(Config config) {
+        return new EditorKeyTable(config);
     }
 
     @Override

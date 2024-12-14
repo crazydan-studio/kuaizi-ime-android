@@ -52,7 +52,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
@@ -538,7 +538,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Editor_Editing(DynamicLayoutSandboxView sandboxView) {
-        EditorEditKeyTable keyTable = EditorEditKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        EditorKeyTable keyTable = EditorKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
 
         Key<?> key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         Key<?> key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);

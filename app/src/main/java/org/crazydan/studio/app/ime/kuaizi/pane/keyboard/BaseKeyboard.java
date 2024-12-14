@@ -102,23 +102,23 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start(InputList inputList) {
-        Input<?> pending = inputList.getPending();
-        boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
-                                       && this.prevType != null //
-                                       && getType() == Type.Pinyin;
-        // 在 X 型输入中，切换到拼音键盘时，先确认新输入（非新输入将做输入替换）
-        if (isXPadSwitchToPinyin && inputList.isGapSelected()) {
-            inputList.confirmPendingAndSelectNext();
-        }
-
-        // 将算术键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
-        // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
-        if ((this.prevType == Type.Math //
-             && !pending.isMathExpr()) //
-            || (isXPadSwitchToPinyin && pending.isPinyin()) //
-        ) {
-            choose_InputList_Selected_Input(inputList);
-        }
+//        Input<?> pending = inputList.getPending();
+//        boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
+//                                       && this.prevType != null //
+//                                       && getType() == Type.Pinyin;
+//        // 在 X 型输入中，切换到拼音键盘时，先确认新输入（非新输入将做输入替换）
+//        if (isXPadSwitchToPinyin && inputList.isGapSelected()) {
+//            inputList.confirmPendingAndSelectNext();
+//        }
+//
+//        // 将算术键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
+//        // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
+//        if ((this.prevType == Type.Math //
+//             && !pending.isMathExpr()) //
+//            || (isXPadSwitchToPinyin && pending.isPinyin()) //
+//        ) {
+//            choose_InputList_Selected_Input(inputList);
+//        }
     }
 
     @Override
@@ -319,218 +319,6 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     // ======================== End: 对 UserKeyMsg 的通用处理 ========================
-
-    // ====================== Start: 触发 InputMsg 消息 ======================
-
-    /** 触发 {@link InputMsg} 消息 */
-    protected void fire_InputMsg(InputMsgType msgType, InputMsgData msgData) {
-        InputMsg msg = new InputMsg(msgType, msgData);
-        this.listener.onMsg(msg);
-    }
-
-    protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key) {
-        fire_Common_InputMsg(msgType, key, null);
-    }
-
-    protected void fire_Common_InputMsg(InputMsgType msgType, Input<?> input) {
-        fire_Common_InputMsg(msgType, null, input);
-    }
-
-    protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key, Input<?> input) {
-        InputMsgData data = new InputMsgData(key, input);
-        fire_InputMsg(msgType, data);
-    }
-
-    /** 触发 {@link InputMsgType#InputChars_Input_Doing} 消息 */
-    protected void fire_InputChars_Input_Doing_in_TapMode(Key<?> key, Input<?> input) {
-        fire_InputChars_Input_Doing(key, input, InputCharsInputMsgData.InputMode.tap);
-    }
-
-    /** 触发 {@link InputMsgType#InputChars_Input_Doing} 消息 */
-    protected void fire_InputChars_Input_Doing(Key<?> key, Input<?> input, InputCharsInputMsgData.InputMode inputMode) {
-        InputMsgData data = new InputCharsInputMsgData(key, input, inputMode);
-
-        fire_InputMsg(InputChars_Input_Doing, data);
-    }
-
-    /** 触发 {@link InputMsgType#InputChars_Input_Done} 消息 */
-    protected void fire_InputChars_Input_Done(Key<?> key, Input<?> input) {
-        InputMsgData data = new InputCharsInputMsgData(key, input);
-
-        fire_InputMsg(InputChars_Input_Done, data);
-    }
-
-    /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */
-    protected void fire_InputList_Commit_Doing(CharSequence text, List<String> replacements) {
-        InputMsgData data = new InputListCommitMsgData(text, replacements);
-
-        fire_InputMsg(InputList_Commit_Doing, data);
-    }
-
-    /** 触发 {@link InputMsgType#InputList_PairSymbol_Commit_Doing} 消息 */
-    protected void fire_InputList_PairSymbol_Commit_Doing(CharSequence left, CharSequence right) {
-        InputMsgData data = new InputListPairSymbolCommitMsgData(left, right);
-
-        fire_InputMsg(InputList_PairSymbol_Commit_Doing, data);
-    }
-
-    /** 触发 {@link InputMsgType#InputAudio_Play_Doing} 消息 */
-    private void fire_InputAudio_Play_Doing(Key<?> key, InputAudioPlayMsgData.AudioType audioType) {
-        if (CtrlKey.isNoOp(key)) {
-            return;
-        }
-
-        InputMsgData data = new InputAudioPlayMsgData(key, audioType);
-        fire_InputMsg(InputAudio_Play_Doing, data);
-    }
-
-    // ====================== End: 触发 InputMsg 消息 ======================
-
-    /** 状态回到{@link State.Type#InputChars_Input_Wait_Doing 待输入} */
-    protected void change_State_to_Init() {
-        change_State_to_Init(null);
-    }
-
-    /**
-     * 状态回到{@link State.Type#InputChars_Input_Wait_Doing 待输入}
-     *
-     * @param key
-     *         触发状态变化的按键
-     */
-    protected void change_State_to_Init(Key<?> key) {
-        change_State_To(getInitState(), key);
-    }
-
-    protected void change_State_To(State state, Key<?> key) {
-        this.state = state;
-
-        InputMsgData data = new KeyboardStateChangeMsgData(key, state);
-        fire_InputMsg(Keyboard_State_Change_Done, data);
-    }
-
-    /**
-     * 回到前序状态
-     * <p/>
-     * 若无前序状态，则回到初始状态
-     */
-    protected void change_State_to_Previous(Key<?> key) {
-        State state = this.state;
-        State previous = state.previous;
-
-        // 跳过与当前状态的类型相同的前序状态
-        while (previous != null && previous.type == state.type) {
-            state = previous;
-            previous = state.previous;
-        }
-
-        if (previous == null) {
-            change_State_to_Init(key);
-        } else {
-            change_State_To(key, previous);
-        }
-    }
-
-    /** 切换到指定类型的键盘 */
-    protected void switch_Keyboard_To(Type type) {
-        switch_Keyboard_To(type, null);
-    }
-
-    /** 切换到指定类型的键盘 */
-    protected void switch_Keyboard_To(Type type, Key<?> key) {
-        InputMsgData data = new KeyboardSwitchMsgData(key, type);
-
-        fire_InputMsg(Keyboard_Switch_Doing, data);
-    }
-
-    /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
-    protected void switch_Keyboard_to_Previous(Key<?> key) {
-        switch_Keyboard_To(null, key);
-    }
-
-    /** 退出并返回到原状态或前序键盘 */
-    protected void exit_Keyboard(Key<?> key) {
-        if (this.state.previous == null) {
-            switch_Keyboard_to_Previous(key);
-        } else {
-            change_State_to_Previous(key);
-        }
-    }
-
-    /** 切换键盘的左右手模式 */
-    protected void switch_HandMode(Key<?> key) {
-        Configuration config = getConfig();
-        HandMode mode = config.get(Conf.hand_mode);
-
-        switch (mode) {
-            case left:
-                mode = Keyboard.HandMode.right;
-                break;
-            case right:
-                mode = Keyboard.HandMode.left;
-                break;
-        }
-
-        InputMsgData data = new KeyboardHandModeSwitchMsgData(key, mode);
-        fire_InputMsg(Keyboard_HandMode_Switch_Doing, data);
-    }
-
-    /** 切换系统输入法 */
-    protected void switch_IME(Key<?> key) {
-        // Note：有可能切换，也有可能不切换，
-        // 若发生切换，则再回来时键盘状态会主动被重置，
-        // 故不需要提前重置键盘状态
-        fire_Common_InputMsg(IME_Switch_Doing, key);
-    }
-
-    /** 显示输入提示气泡 */
-    protected void show_InputChars_Input_Popup(Key<?> key) {
-        show_InputChars_Input_Popup(key, true);
-    }
-
-    /**
-     * 显示输入提示气泡
-     *
-     * @param hideDelayed
-     *         是否延迟隐藏
-     */
-    protected void show_InputChars_Input_Popup(Key<?> key, boolean hideDelayed) {
-        String text = key != null ? key.getLabel() : null;
-        InputMsgData data = new InputCharsInputPopupShowMsgData(text, hideDelayed);
-
-        fire_InputMsg(InputChars_Input_Popup_Show_Doing, data);
-    }
-
-    /** 隐藏输入提示气泡 */
-    protected void hide_InputChars_Input_Popup() {
-        InputMsgData data = new InputMsgData();
-
-        fire_InputMsg(InputChars_Input_Popup_Hide_Doing, data);
-    }
-
-    /** 播放输入单击音效 */
-    protected void play_SingleTick_InputAudio(Key<?> key) {
-        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.SingleTick);
-    }
-
-    /** 播放输入双击音效 */
-    protected void play_DoubleTick_InputAudio(Key<?> key) {
-        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.DoubleTick);
-    }
-
-    /** 播放时钟走时音效 */
-    protected void play_ClockTick_InputAudio(Key<?> key) {
-        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.ClockTick);
-    }
-
-    /** 播放敲击音效 */
-    protected void play_PingTick_InputAudio(Key<?> key) {
-        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.PingTick);
-    }
-
-    /** 播放输入翻页音效 */
-    protected void play_PageFlip_InputAudio() {
-        fire_InputAudio_Play_Doing(null, InputAudioPlayMsgData.AudioType.PageFlip);
-    }
 
     // ======================== Start: 文本编辑 ========================
 
@@ -783,7 +571,7 @@ public abstract class BaseKeyboard implements Keyboard {
         if (pending.isEmoji()) {
             switch_Keyboard_To(Type.Emoji);
         } else if (pending.isSymbol()) {
-            switch_Keyboard_To(Type.Emoji);
+            switch_Keyboard_To(Type.Symbol);
         } else if (pending.isPinyin()) {
             switch_Keyboard_To(Type.Pinyin_Candidates);
         } else {
@@ -971,4 +759,216 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     // ======================== End: 操作输入列表 ========================
+
+    // ====================== Start: 触发 InputMsg 消息 ======================
+
+    /** 触发 {@link InputMsg} 消息 */
+    protected void fire_InputMsg(InputMsgType msgType, InputMsgData msgData) {
+        InputMsg msg = new InputMsg(msgType, msgData);
+        this.listener.onMsg(msg);
+    }
+
+    protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key) {
+        fire_Common_InputMsg(msgType, key, null);
+    }
+
+    protected void fire_Common_InputMsg(InputMsgType msgType, Input<?> input) {
+        fire_Common_InputMsg(msgType, null, input);
+    }
+
+    protected void fire_Common_InputMsg(InputMsgType msgType, Key<?> key, Input<?> input) {
+        InputMsgData data = new InputMsgData(key, input);
+        fire_InputMsg(msgType, data);
+    }
+
+    /** 触发 {@link InputMsgType#InputChars_Input_Doing} 消息 */
+    protected void fire_InputChars_Input_Doing_in_TapMode(Key<?> key, Input<?> input) {
+        fire_InputChars_Input_Doing(key, input, InputCharsInputMsgData.InputMode.tap);
+    }
+
+    /** 触发 {@link InputMsgType#InputChars_Input_Doing} 消息 */
+    protected void fire_InputChars_Input_Doing(Key<?> key, Input<?> input, InputCharsInputMsgData.InputMode inputMode) {
+        InputMsgData data = new InputCharsInputMsgData(key, input, inputMode);
+
+        fire_InputMsg(InputChars_Input_Doing, data);
+    }
+
+    /** 触发 {@link InputMsgType#InputChars_Input_Done} 消息 */
+    protected void fire_InputChars_Input_Done(Key<?> key, Input<?> input) {
+        InputMsgData data = new InputCharsInputMsgData(key, input);
+
+        fire_InputMsg(InputChars_Input_Done, data);
+    }
+
+    /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */
+    protected void fire_InputList_Commit_Doing(CharSequence text, List<String> replacements) {
+        InputMsgData data = new InputListCommitMsgData(text, replacements);
+
+        fire_InputMsg(InputList_Commit_Doing, data);
+    }
+
+    /** 触发 {@link InputMsgType#InputList_PairSymbol_Commit_Doing} 消息 */
+    protected void fire_InputList_PairSymbol_Commit_Doing(CharSequence left, CharSequence right) {
+        InputMsgData data = new InputListPairSymbolCommitMsgData(left, right);
+
+        fire_InputMsg(InputList_PairSymbol_Commit_Doing, data);
+    }
+
+    /** 触发 {@link InputMsgType#InputAudio_Play_Doing} 消息 */
+    private void fire_InputAudio_Play_Doing(Key<?> key, InputAudioPlayMsgData.AudioType audioType) {
+        if (CtrlKey.isNoOp(key)) {
+            return;
+        }
+
+        InputMsgData data = new InputAudioPlayMsgData(key, audioType);
+        fire_InputMsg(InputAudio_Play_Doing, data);
+    }
+
+    // ====================== End: 触发 InputMsg 消息 ======================
+
+    /** 状态回到{@link State.Type#InputChars_Input_Wait_Doing 待输入} */
+    protected void change_State_to_Init() {
+        change_State_to_Init(null);
+    }
+
+    /**
+     * 状态回到{@link State.Type#InputChars_Input_Wait_Doing 待输入}
+     *
+     * @param key
+     *         触发状态变化的按键
+     */
+    protected void change_State_to_Init(Key<?> key) {
+        change_State_To(getInitState(), key);
+    }
+
+    protected void change_State_To(State state, Key<?> key) {
+        this.state = state;
+
+        InputMsgData data = new KeyboardStateChangeMsgData(key, state);
+        fire_InputMsg(Keyboard_State_Change_Done, data);
+    }
+
+    /**
+     * 回到前序状态
+     * <p/>
+     * 若无前序状态，则回到初始状态
+     */
+    protected void change_State_to_Previous(Key<?> key) {
+        State state = this.state;
+        State previous = state.previous;
+
+        // 跳过与当前状态的类型相同的前序状态
+        while (previous != null && previous.type == state.type) {
+            state = previous;
+            previous = state.previous;
+        }
+
+        if (previous == null) {
+            change_State_to_Init(key);
+        } else {
+            change_State_To(previous, key);
+        }
+    }
+
+    /** 切换到指定类型的键盘 */
+    protected void switch_Keyboard_To(Type type) {
+        switch_Keyboard_To(type, null);
+    }
+
+    /** 切换到指定类型的键盘 */
+    protected void switch_Keyboard_To(Type type, Key<?> key) {
+        InputMsgData data = new KeyboardSwitchMsgData(key, type);
+
+        fire_InputMsg(Keyboard_Switch_Doing, data);
+    }
+
+    /** 切换到先前的键盘，也就是从哪个键盘切过来的，就切回到哪个键盘 */
+    protected void switch_Keyboard_to_Previous(Key<?> key) {
+        switch_Keyboard_To(null, key);
+    }
+
+    /** 退出并返回到原状态或前序键盘 */
+    protected void exit_Keyboard(Key<?> key) {
+        if (this.state.previous == null) {
+            switch_Keyboard_to_Previous(key);
+        } else {
+            change_State_to_Previous(key);
+        }
+    }
+
+    /** 切换键盘的左右手模式 */
+    protected void switch_HandMode(Key<?> key) {
+        Configuration config = getConfig();
+        HandMode mode = config.get(Conf.hand_mode);
+
+        switch (mode) {
+            case left:
+                mode = Keyboard.HandMode.right;
+                break;
+            case right:
+                mode = Keyboard.HandMode.left;
+                break;
+        }
+
+        InputMsgData data = new KeyboardHandModeSwitchMsgData(key, mode);
+        fire_InputMsg(Keyboard_HandMode_Switch_Doing, data);
+    }
+
+    /** 切换系统输入法 */
+    protected void switch_IME(Key<?> key) {
+        // Note：有可能切换，也有可能不切换，
+        // 若发生切换，则再回来时键盘状态会主动被重置，
+        // 故不需要提前重置键盘状态
+        fire_Common_InputMsg(IME_Switch_Doing, key);
+    }
+
+    /** 显示输入提示气泡 */
+    protected void show_InputChars_Input_Popup(Key<?> key) {
+        show_InputChars_Input_Popup(key, true);
+    }
+
+    /**
+     * 显示输入提示气泡
+     *
+     * @param hideDelayed
+     *         是否延迟隐藏
+     */
+    protected void show_InputChars_Input_Popup(Key<?> key, boolean hideDelayed) {
+        String text = key != null ? key.getLabel() : null;
+        InputMsgData data = new InputCharsInputPopupShowMsgData(text, hideDelayed);
+
+        fire_InputMsg(InputChars_Input_Popup_Show_Doing, data);
+    }
+
+    /** 隐藏输入提示气泡 */
+    protected void hide_InputChars_Input_Popup() {
+        InputMsgData data = new InputMsgData();
+
+        fire_InputMsg(InputChars_Input_Popup_Hide_Doing, data);
+    }
+
+    /** 播放输入单击音效 */
+    protected void play_SingleTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.SingleTick);
+    }
+
+    /** 播放输入双击音效 */
+    protected void play_DoubleTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.DoubleTick);
+    }
+
+    /** 播放时钟走时音效 */
+    protected void play_ClockTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.ClockTick);
+    }
+
+    /** 播放敲击音效 */
+    protected void play_PingTick_InputAudio(Key<?> key) {
+        fire_InputAudio_Play_Doing(key, InputAudioPlayMsgData.AudioType.PingTick);
+    }
+
+    /** 播放输入翻页音效 */
+    protected void play_PageFlip_InputAudio() {
+        fire_InputAudio_Play_Doing(null, InputAudioPlayMsgData.AudioType.PageFlip);
+    }
 }

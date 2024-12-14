@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorEditKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
@@ -43,13 +43,13 @@ public class EditorKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        EditorEditKeyTable keyTable = EditorEditKeyTable.create(createKeyTableConfig(inputList));
+        EditorKeyTable keyTable = EditorKeyTable.create(createKeyTableConfig(inputList));
 
         return keyTable::createKeys;
     }
 
     @Override
-    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
         switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {

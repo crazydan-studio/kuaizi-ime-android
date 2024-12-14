@@ -54,9 +54,15 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         start_Emoji_Choosing(inputList);
     }
 
+    private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
+        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+
+        return SymbolEmojiKeyTable.create(keyTableConf);
+    }
+
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
+        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
 
         EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
 
@@ -96,10 +102,11 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         }
     }
 
+    /** 进入表情选择状态，并处理表情翻页 */
     private void start_Emoji_Choosing(InputList inputList) {
         CharInput pending = inputList.getPending();
 
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig());
+        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
         int pageSize = keyTable.getEmojiKeysPageSize();
 
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
@@ -114,6 +121,13 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         }
 
         do_Emoji_Choosing(null, group);
+    }
+
+    private void do_Emoji_Choosing(Key<?> key, String group) {
+        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
+        stateData.setGroup(group);
+
+        fire_InputCandidate_Choose_Doing(key);
     }
 
     private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
@@ -133,12 +147,5 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
 
         // 直接提交输入
         commit_InputList(inputList, false, false);
-    }
-
-    private void do_Emoji_Choosing(Key<?> key, String group) {
-        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
-        stateData.setGroup(group);
-
-        fire_InputCandidate_Choose_Doing(stateData.input, key);
     }
 }

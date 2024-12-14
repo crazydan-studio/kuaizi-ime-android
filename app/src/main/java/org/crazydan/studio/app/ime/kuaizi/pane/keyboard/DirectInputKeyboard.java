@@ -52,22 +52,22 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
 
         Key<?> key = msg.data.key;
         if (key instanceof CharKey) {
-            onCharKeyMsg(inputList, msg, (CharKey) key);
+            on_CharKey_Msg(inputList, msg, (CharKey) key);
         } else if (key instanceof CtrlKey) {
-            onCtrlKeyMsg(inputList, msg, (CtrlKey) key);
+            on_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
         }
     }
 
-    protected void onCharKeyMsg(InputList inputList, UserKeyMsg msg, CharKey key) {
+    protected void on_CharKey_Msg(InputList inputList, UserKeyMsg msg, CharKey key) {
         // 单字符直接输入
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
-        boolean isDirectInputting = inputList.isEmpty();
-        start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, isDirectInputting);
+        boolean directInputting = inputList.isEmpty();
+        start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, directInputting);
     }
 
-    protected void onCtrlKeyMsg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
     }
 }

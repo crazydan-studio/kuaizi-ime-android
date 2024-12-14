@@ -73,7 +73,7 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
             play_PageFlip_InputAudio();
         }
 
-        fire_InputCandidate_Choose_Doing(stateData.input, key);
+        fire_InputCandidate_Choose_Doing(key);
     }
 
     /** 响应在翻页数据按键上的消息 */
@@ -83,8 +83,10 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
     protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {}
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Doing} 消息 */
-    protected void fire_InputCandidate_Choose_Doing(CharInput input, Key<?> key) {
-        fire_Common_InputMsg(InputCandidate_Choose_Doing, key, input);
+    protected void fire_InputCandidate_Choose_Doing(Key<?> key) {
+        PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
+
+        fire_Common_InputMsg(InputCandidate_Choose_Doing, key, stateData.input);
     }
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Done} 消息 */

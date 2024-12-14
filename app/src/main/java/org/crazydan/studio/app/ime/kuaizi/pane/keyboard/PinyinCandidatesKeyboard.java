@@ -206,7 +206,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
                 stateData.setFilter(filter);
 
-                fire_InputCandidate_Choose_Doing(stateData.input, key);
+                fire_InputCandidate_Choose_Doing(key);
                 break;
             }
             case Filter_PinyinCandidate_advance: {
@@ -276,7 +276,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         PinyinCandidateChooseStateData stateData = new PinyinCandidateChooseStateData(pending, allCandidates, pageSize);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
-        fire_InputCandidate_Choose_Doing(pending, key);
+        fire_InputCandidate_Choose_Doing(key);
     }
 
     /** 确认待输入的候选字。若存在下一个拼音输入，则自动切换到对该输入的候选字选择，否则，选中相邻的输入 */
@@ -354,7 +354,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         State state = new State(State.Type.InputCandidate_Advance_Filter_Doing, stateData, this.state);
         change_State_To(state, key);
 
-        fire_InputCandidate_Choose_Doing(pending, key);
+        fire_InputCandidate_Choose_Doing(key);
     }
 
     /** 高级过滤状态对 {@link CtrlKey} 的处理 */
@@ -372,7 +372,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
                 update_InputCandidate_Advance_Filter(stateData, key);
 
-                fire_InputCandidate_Choose_Doing(stateData.input, key);
+                fire_InputCandidate_Choose_Doing(key);
                 break;
             }
             case Confirm_PinyinCandidate_Filter: {

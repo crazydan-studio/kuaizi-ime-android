@@ -511,7 +511,7 @@ public abstract class KeyTable {
     }
 
     public static class Config {
-        private final Configuration keyboardConfig;
+        private final Configuration keyboardConf;
 
         private final boolean hasInputs;
         /** 是否有待撤回输入 */
@@ -519,14 +519,14 @@ public abstract class KeyTable {
         /** 是否已选中字符输入 */
         private final boolean charInputSelected;
 
-        public Config(Configuration keyboardConfig) {
-            this(keyboardConfig, false, false, false);
+        public Config(Configuration keyboardConf) {
+            this(keyboardConf, false, false, false);
         }
 
         public Config(
-                Configuration keyboardConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
+                Configuration keyboardConf, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
         ) {
-            this.keyboardConfig = keyboardConfig;
+            this.keyboardConf = keyboardConf;
 
             this.hasInputs = hasInputs;
             this.hasRevokingInputs = hasRevokingInputs;
@@ -547,19 +547,19 @@ public abstract class KeyTable {
 
         // ================================================================
         public boolean isLeftHandMode() {
-            return this.keyboardConfig.isLeftHandMode();
+            return this.keyboardConf.isLeftHandMode();
         }
 
         public boolean isSingleLineInput() {
-            return this.keyboardConfig.bool(Conf.single_line_input);
+            return this.keyboardConf.bool(Conf.single_line_input);
         }
 
         public boolean isXInputPadEnabled() {
-            return this.keyboardConfig.isXInputPadEnabled();
+            return this.keyboardConf.isXInputPadEnabled();
         }
 
         public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
-            return this.keyboardConfig.isLatinUsePinyinKeysInXInputPadEnabled();
+            return this.keyboardConf.isLatinUsePinyinKeysInXInputPadEnabled();
         }
     }
 }

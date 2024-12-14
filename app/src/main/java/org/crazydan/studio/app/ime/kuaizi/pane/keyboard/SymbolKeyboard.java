@@ -48,15 +48,21 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
 
     @Override
     public void start(InputList inputList) {
-        Input<?> input = inputList.getSelected();
-        boolean hasPair = input != null && !input.isGap() && ((CharInput) input).hasPair();
+        Input<?> selected = inputList.getSelected();
+        boolean onlyPair = selected != null && !selected.isGap() && ((CharInput) selected).hasPair();
 
-        start_Symbol_Choosing(inputList, hasPair);
+        start_Symbol_Choosing(inputList, onlyPair);
+    }
+
+    private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
+        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+
+        return SymbolEmojiKeyTable.create(keyTableConf);
     }
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
+        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
 
         SymbolChooseStateData stateData = (SymbolChooseStateData) this.state.data;
 
@@ -95,10 +101,11 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         }
     }
 
+    /** 进入符号选择状态，并处理符号翻页 */
     private void start_Symbol_Choosing(InputList inputList, boolean onlyPair) {
         CharInput pending = inputList.getPending();
 
-        SymbolEmojiKeyTable keyTable = SymbolEmojiKeyTable.create(createKeyTableConfig(inputList));
+        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseStateData stateData = new SymbolChooseStateData(pending, pageSize, onlyPair);
@@ -117,20 +124,21 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         SymbolChooseStateData stateData = (SymbolChooseStateData) this.state.data;
         stateData.setGroup(group);
 
-        fire_InputCandidate_Choose_Doing(stateData.input, key);
+        fire_InputCandidate_Choose_Doing(key);
     }
 
     private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {
-        boolean isDirectInputting = inputList.isEmpty();
-        boolean isPair = key.isPair();
+        boolean directInputting = inputList.isEmpty();
+        boolean pairKey = key.isPair();
 
-        if (!isDirectInputting) {
-            if (isPair) {
+        if (!directInputting) {
+            if (pairKey) {
                 prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) key.getSymbol());
 
-                // Note：配对符号输入后不再做连续输入，切换回原键盘
                 confirm_InputList_Pending(inputList, key);
-                switch_Keyboard_to_Previous(key);
+
+                // Note：配对符号输入后不再做连续输入，退出当前键盘
+                exit_Keyboard(key);
             } else {
                 confirm_or_New_InputList_Pending(inputList);
 
@@ -140,7 +148,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         }
 
         CharInput pending = inputList.newPending();
-        if (isPair) {
+        if (pairKey) {
             Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
 
             prepare_for_PairSymbol_Inputting(inputList, symbol);
@@ -150,11 +158,11 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         }
 
         // 直接提交输入
-        commit_InputList(inputList, false, false, isPair);
+        commit_InputList(inputList, false, false, pairKey);
 
-        // Note：非连续输入的情况下，配对符号输入后不再做连续输入，切换回原键盘
-        if (isPair && !continuousInput) {
-            switch_Keyboard_to_Previous(key);
+        // Note：非连续输入的情况下，配对符号输入后不再做连续输入，退出当前键盘
+        if (pairKey && !continuousInput) {
+            exit_Keyboard(key);
         }
     }
 

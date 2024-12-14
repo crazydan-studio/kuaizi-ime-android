@@ -67,7 +67,8 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(createKeyTableConfig(inputList));
+        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
         PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
         switch (this.state.type) {

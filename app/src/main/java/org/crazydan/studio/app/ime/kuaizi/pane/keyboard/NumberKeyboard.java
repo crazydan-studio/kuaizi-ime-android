@@ -38,7 +38,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
 
     @Override
     public void start(InputList inputList) {
-        // 若是在 X 型输入中切换过来的，则需要在禁用 X 型输入后，提供退出按钮以回到前一键盘
+        // 若是在 X 型输入中切换过来的，则需要在禁用 X 型输入后，提供退出按钮以回到原键盘
         this.needToShowExit = isXInputPadEnabled();
 
         super.start(inputList);
@@ -46,15 +46,16 @@ public class NumberKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        NumberKeyTable keyTable = NumberKeyTable.create(createKeyTableConfig(inputList));
+        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        NumberKeyTable keyTable = NumberKeyTable.create(keyTableConf);
 
         return () -> keyTable.createKeys(this.needToShowExit);
     }
 
     @Override
-    protected void switch_Keyboard_to_Previous(Key<?> key) {
+    protected void exit_Keyboard(Key<?> key) {
         this.needToShowExit = false;
 
-        super.switch_Keyboard_to_Previous(key);
+        super.exit_Keyboard(key);
     }
 }

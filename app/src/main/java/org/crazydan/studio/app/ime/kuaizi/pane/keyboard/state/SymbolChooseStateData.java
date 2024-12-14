@@ -56,6 +56,7 @@ public class SymbolChooseStateData extends PagingStateData<Symbol> {
     public void setGroup(SymbolGroup group) {
         if (group != null) {
             this.group = group;
+
             resetPageStart();
         }
     }
