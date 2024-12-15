@@ -62,11 +62,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
  * @date 2023-07-01
  */
 public class InputPaneView extends FrameLayout implements UserMsgListener, InputMsgListener {
-    /** 记录系统的持久化配置 */
-    private final InputConfig sysConf;
-    /** 记录应用临时变更的配置 */
-    private final InputConfig appConf;
-
     private final AudioPlayer audioPlayer;
 
     private KeyboardView keyboardView;
@@ -86,9 +81,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     public InputPaneView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        this.appConf = new InputConfig();
-        this.sysConf = new InputConfig();
-
         this.audioPlayer = new AudioPlayer();
         this.audioPlayer.load(getContext(),
                               R.raw.tick_single,
@@ -98,21 +90,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                               R.raw.tick_ping);
 
         relayout();
-    }
-
-    public InputConfig getConfig() {
-        InputConfig config = this.sysConf.copy();
-        config.merge(this.appConf);
-
-        Keyboard.Orientation orientation;
-        if (getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-            orientation = Keyboard.Orientation.landscape;
-        } else {
-            orientation = Keyboard.Orientation.portrait;
-        }
-        config.set(InputConfig.Key.orientation, orientation);
-
-        return config;
     }
 
     public XPadKeyView getXPadKeyView() {

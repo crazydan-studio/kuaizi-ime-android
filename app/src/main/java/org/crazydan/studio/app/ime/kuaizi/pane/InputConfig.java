@@ -33,14 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
  * @date 2023-12-05
  */
 public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private final ChangeListener listener;
     private final Map<Key, Object> vars = new HashMap<>();
 
-    public InputConfig() {
-        this(null);
-    }
+    private ChangeListener listener;
 
-    public InputConfig(ChangeListener listener) {
+    public void setListener(ChangeListener listener) {
         this.listener = listener;
     }
 
@@ -84,10 +81,6 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
         return true;
     }
 
-    public void merge(InputConfig other) {
-        other.vars.forEach(this::set);
-    }
-
     /** 创建副本，副本仅记录发生了更新的配置项，未变更的直接从源配置中取值 */
     public InputConfig copy() {
         return new InputConfig.Copied(this);
@@ -95,8 +88,8 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
 
     // ======================= Start: 消息处理 ======================
 
-    /** 与 {@link SharedPreferences} 绑定，以便于监听系统配置的变更 */
-    public void bind(SharedPreferences preferences) {
+    /** 与 {@link SharedPreferences} 同步数据，并监听其变更 */
+    public void syncWith(SharedPreferences preferences) {
         Map<String, ?> all = preferences.getAll();
 
         // 遍历所有枚举项以便于为各项赋默认值
@@ -155,7 +148,9 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
     private static class Copied extends InputConfig {
         private final InputConfig source;
 
-        private Copied(InputConfig source) {this.source = source;}
+        private Copied(InputConfig source) {
+            this.source = source;
+        }
 
         @Override
         public <T> T get(Key key) {
@@ -176,30 +171,43 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
 
     /** 配置项 */
     public enum Key {
+        // ====================== Start: 临时性配置 =====================
         /** IME 子类型 */
         ime_subtype(ImeSubtype.class, ImeSubtype.hans),
-        //
         /** 键盘布局方向 */
         orientation(Keyboard.Orientation.class, Keyboard.Orientation.portrait),
         /** 是否为单行输入 */
         single_line_input(Boolean.class, false),
-        //
+        /** 是否重置输入，即，清空已输入内容 */
+        reset_inputting(Boolean.class, false),
+        // ====================== End: 临时性配置 =====================
+
         /** 主题样式 */
-        theme(Keyboard.Theme.class, Keyboard.Theme.light),
+        theme(Keyboard.Theme.class, Keyboard.Theme.follow_system),
         /** 左右手使用模式 */
         hand_mode(Keyboard.HandMode.class, Keyboard.HandMode.right),
-        //
+
+        /** 禁用对用户输入的数据存储 */
         disable_user_input_data(Boolean.class, false),
+        /** 禁用按键点击音效 */
         disable_key_clicked_audio(Boolean.class, false),
+        /** 禁用按键动画 */
         disable_key_animation(Boolean.class, false),
+        /** 禁用输入候选字翻页音效 */
         disable_input_candidates_paging_audio(Boolean.class, false),
+        /** 禁用输入按键气泡提示 */
         disable_input_key_popup_tips(Boolean.class, false),
+        /** 禁用滑屏轨迹 */
         disable_gesture_slipping_trail(Boolean.class, false),
-        //
+
+        /** 启用候选字变体优先：主要针对拼音字的繁/简体 */
         enable_candidate_variant_first(Boolean.class, false),
+        /** 启用 X 输入面板 */
         enable_x_input_pad(Boolean.class, false),
+        /** 启用在 X 输入面板中让拉丁文输入共用拼音输入的按键布局 */
         enable_latin_use_pinyin_keys_in_x_input_pad(Boolean.class, false),
-        //
+
+        /** 适配移动端的上滑手势 */
         adapt_desktop_swipe_up_gesture(Boolean.class, false),
         ;
 

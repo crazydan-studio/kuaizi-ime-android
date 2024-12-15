@@ -32,8 +32,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditMsgData;
@@ -174,19 +174,28 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         this.editorSelection = null;
 
         ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
-        this.inputPane.updateConfig((conf) -> {
+
+        this.inputPane.start(keyboardType, (conf) -> {
+            conf.set(InputConfig.Key.reset_inputting, resetInputting);
             conf.set(InputConfig.Key.ime_subtype, imeSubtype);
             conf.set(InputConfig.Key.single_line_input, useSingleLineInputting, true);
             conf.set(InputConfig.Key.disable_input_key_popup_tips, usePasswordInputting, true);
-        });
 
-        this.inputPane.start(keyboardType, resetInputting);
+            Keyboard.Orientation orientation;
+            if (getResources().getConfiguration().orientation
+                == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                orientation = Keyboard.Orientation.landscape;
+            } else {
+                orientation = Keyboard.Orientation.portrait;
+            }
+            conf.set(InputConfig.Key.orientation, orientation);
+        });
     }
 
     // =============================== Start: 消息处理 ===================================
 
     @Override
-    public void onMsg(Keyboard keyboard, InputMsg msg) {
+    public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;

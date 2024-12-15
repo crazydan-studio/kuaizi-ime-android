@@ -19,11 +19,12 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
@@ -74,9 +75,18 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
+    private KeyboardConfig config;
     private InputMsgListener listener;
 
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
+
+    @Override
+    public boolean updateConfig(KeyboardConfig config) {
+        boolean changed = !config.equals(this.config);
+        this.config = config;
+
+        return changed;
+    }
 
     @Override
     public void setListener(InputMsgListener listener) {
@@ -96,7 +106,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     public boolean isXInputPadEnabled() {
-        return getConfig().isXInputPadEnabled();
+        return this.config.xInputPadEnabled;
     }
 
     @Override

@@ -36,6 +36,17 @@ public interface Keyboard {
 
     KeyFactory getKeyFactory(InputList inputList);
 
+    /**
+     * 更新配置
+     * <p/>
+     * Note: 必须在 {@link #start} 之前做配置初始更新
+     *
+     * @return 若存在更新，则返回 true，否则，返回 false
+     */
+    boolean updateConfig(KeyboardConfig config);
+
+    // ==========================================================
+
     /** 启动 */
     void start(InputList inputList);
 
@@ -45,6 +56,8 @@ public interface Keyboard {
     /** 销毁 */
     void destroy();
 
+    // ==========================================================
+
     /** 注册 {@link InputMsg} 消息监听 */
     void setListener(InputMsgListener listener);
 
@@ -53,6 +66,8 @@ public interface Keyboard {
 
     /** 响应 {@link UserKeyMsg} 消息 */
     void onMsg(InputList inputList, UserKeyMsg msg);
+
+    // ==========================================================
 
     /** 键盘类型 */
     enum Type {
