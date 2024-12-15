@@ -22,9 +22,9 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

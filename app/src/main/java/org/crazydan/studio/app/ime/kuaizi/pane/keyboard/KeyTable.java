@@ -282,7 +282,7 @@ public abstract class KeyTable {
     }
 
     public CtrlKey enterCtrlKey() {
-        return this.config.isSingleLineInput() //
+        return this.config.keyboard.singleLineInput //
                ? ctrlKey(CtrlKey.create(CtrlKey.Type.Enter), key_ctrl_ok_style) //
                : ctrlKey(CtrlKey.Type.Enter);
     }
@@ -317,24 +317,23 @@ public abstract class KeyTable {
         return ctrlKey(CtrlKey.create(type));
     }
 
-    public CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style) {
-        return ctrlKey(ctrlKey(type), style);
-    }
-
     public CtrlKey ctrlKey(CtrlKey key) {
         KeyStyle style = ctrl_key_styles.get(key.getType());
 
         return ctrlKey(key, style);
     }
 
-    public CtrlKey ctrlKey(CtrlKey key, KeyStyle style) {
+    private CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style) {
+        return ctrlKey(ctrlKey(type), style);
+    }
+
+    private CtrlKey ctrlKey(CtrlKey key, KeyStyle style) {
         Integer icon = null;
         Key.Color color = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.none();
 
         if (style != null) {
             icon = style.icon.right;
-            if (this.config != null //
-                && this.config.isLeftHandMode()) {
+            if (this.config.keyboard.handMode == Keyboard.HandMode.left) {
                 icon = style.icon.left;
             }
 
@@ -409,10 +408,10 @@ public abstract class KeyTable {
                 //
                 null, null, null, xPadKey, null, null,
                 //
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
+                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs),
                 //
                 null, null, null, null, null, null,
                 //

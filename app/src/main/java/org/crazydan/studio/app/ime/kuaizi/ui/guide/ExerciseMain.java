@@ -39,8 +39,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -427,9 +427,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         Key<?> key_level_0 = keyTable.level0CharKey("sh");
         Key<?> key_level_1 = keyTable.level1CharKey("u");
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell,
-                                                             "shū",
-                                                             null);
+        Key<?> key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū", null);
 
         Exercise exercise = Exercise.normal("拼音候选字过滤", sandboxView::getImage);
 
@@ -653,8 +651,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (((InputCharsInputMsgData) msg.data).inputMode
-                            != InputCharsInputMsgData.InputMode.tap //
+                        if (((InputCharsInputMsgData) msg.data).inputMode != InputCharsInputMsgData.InputMode.tap //
                             || !key.getText().equalsIgnoreCase(key_char.getText())) {
                             warning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
                                     + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_char.getText());
@@ -674,8 +671,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (((InputCharsInputMsgData) msg.data).inputMode
-                            != InputCharsInputMsgData.InputMode.tap //
+                        if (((InputCharsInputMsgData) msg.data).inputMode != InputCharsInputMsgData.InputMode.tap //
                             || !key.getText().equals(key_char.getText())) {
                             warning("请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
                                     key_char.getText());
@@ -843,9 +839,14 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 
-        String sample = Arrays.stream(latinSample).map(org.crazydan.studio.app.ime.kuaizi.pane.Key::getText).collect(Collectors.joining(""))
-                        + key_ctrl_space.getText()
-                        + pinyinWordsSample.keySet().stream().map(InputWord::getValue).collect(Collectors.joining(""));
+        String sample = Arrays.stream(latinSample)
+                              .map(org.crazydan.studio.app.ime.kuaizi.pane.Key::getText)
+                              .collect(Collectors.joining("")) + key_ctrl_space.getText() + pinyinWordsSample.keySet()
+                                                                                                             .stream()
+                                                                                                             .map(InputWord::getValue)
+                                                                                                             .collect(
+                                                                                                                     Collectors.joining(
+                                                                                                                             ""));
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">" + sample + "</span>；");
 
         String config_label = getResources().getString(R.string.label_config_theme);

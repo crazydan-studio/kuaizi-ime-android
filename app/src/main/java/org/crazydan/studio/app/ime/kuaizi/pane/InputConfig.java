@@ -81,11 +81,6 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
         return true;
     }
 
-    /** 创建副本，副本仅记录发生了更新的配置项，未变更的直接从源配置中取值 */
-    public InputConfig copy() {
-        return new InputConfig.Copied(this);
-    }
-
     // ======================= Start: 消息处理 ======================
 
     /** 与 {@link SharedPreferences} 同步数据，并监听其变更 */
@@ -124,45 +119,6 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
 
     // ======================= End: 消息处理 ======================
 
-    // ========================== Start: 辅助方法 ========================
-
-    /** 仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的 */
-    public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
-        return bool(Key.enable_latin_use_pinyin_keys_in_x_input_pad) && get(Key.ime_subtype) == ImeSubtype.hans;
-    }
-
-    public boolean isLeftHandMode() {
-        return get(Key.hand_mode) == Keyboard.HandMode.left;
-    }
-
-    public boolean isUserInputDataDisabled() {
-        return bool(Key.disable_user_input_data);
-    }
-
-    public boolean isXInputPadEnabled() {
-        return bool(Key.enable_x_input_pad);
-    }
-
-    // ========================== End: 辅助方法 ========================
-
-    private static class Copied extends InputConfig {
-        private final InputConfig source;
-
-        private Copied(InputConfig source) {
-            this.source = source;
-        }
-
-        @Override
-        public <T> T get(Key key) {
-            // 若副本内没有，则从源配置中查找
-            if (!has(key)) {
-                return this.source.get(key);
-            } else {
-                return super.get(key);
-            }
-        }
-    }
-
     /** 配置变更监听器 */
     public interface ChangeListener {
         /** 仅当新旧配置值不相等时才会触发 */
@@ -180,6 +136,8 @@ public class InputConfig implements SharedPreferences.OnSharedPreferenceChangeLi
         single_line_input(Boolean.class, false),
         /** 是否重置输入，即，清空已输入内容 */
         reset_inputting(Boolean.class, false),
+        /** 原键盘类型 */
+        prev_keyboard_type(Keyboard.Type.class, null),
         // ====================== End: 临时性配置 =====================
 
         /** 主题样式 */

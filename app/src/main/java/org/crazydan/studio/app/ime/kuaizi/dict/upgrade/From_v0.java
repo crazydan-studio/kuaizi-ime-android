@@ -23,9 +23,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictDBType;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.copySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;

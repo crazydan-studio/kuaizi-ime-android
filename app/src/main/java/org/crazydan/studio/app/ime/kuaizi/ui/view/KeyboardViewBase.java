@@ -24,13 +24,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

@@ -184,7 +184,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        if (isXInputPadEnabled()) {
+        if (this.config.xInputPadEnabled) {
             if (msg.type == UserKeyMsgType.SingleTap_Key) {
                 if (CharKey.isAlphabet(key)) {
                     confirm_or_New_InputList_Pending(inputList);
@@ -633,10 +633,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void handle_UserInput_Data(InputList inputList, Consumer<UserInputData> consumer) {
-        // TODO 根据配置确定是否禁用对输入数据的存储
-//        if (getConfig().isUserInputDataDisabled()) {
-//            return;
-//        }
+        if (this.config.userInputDataDisabled) {
+            return;
+        }
 
         List<List<PinyinWord>> phrases = inputList.getPinyinPhraseWords();
         List<InputWord> emojis = inputList.getEmojis();

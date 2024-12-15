@@ -112,8 +112,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         this.state = new State(State.Type.Symbol_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
-        // TODO 通过配置获取原键盘类型
-        if (getType() == Type.Pinyin) {
+        if (this.config.prevType == Type.Pinyin) {
             group = SymbolGroup.han;
         }
 

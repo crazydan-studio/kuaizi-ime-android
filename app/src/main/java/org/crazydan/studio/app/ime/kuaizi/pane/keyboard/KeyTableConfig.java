@@ -17,7 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 
 /**
  * {@link KeyTable} 的配置
@@ -26,59 +27,29 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
  * @date 2024-12-15
  */
 public class KeyTableConfig {
-    private final boolean hasInputs;
+    /** 是否存在输入 */
+    public final boolean hasInputs;
     /** 是否有待撤回输入 */
-    private final boolean hasRevokingInputs;
+    public final boolean hasRevokingInputs;
     /** 是否已选中字符输入 */
-    private final boolean charInputSelected;
+    public final boolean charInputSelected;
 
-    private final boolean leftHandMode;
-    private final boolean singleLineInput;
-    private final boolean xInputPadEnabled;
-    private final boolean latinUsePinyinKeysInXInputPadEnabled;
+    /** 键盘配置 */
+    public final KeyboardConfig keyboard;
 
-    public KeyTableConfig(InputConfig inputConfig) {
-        this(inputConfig, false, false, false);
+    public static KeyTableConfig from(KeyboardConfig keyboardConfig) {
+        return from(keyboardConfig, null);
     }
 
-    public KeyTableConfig(
-            InputConfig inputConfig, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
-    ) {
-        this.hasInputs = hasInputs;
-        this.hasRevokingInputs = hasRevokingInputs;
-        this.charInputSelected = charInputSelected;
-
-        this.leftHandMode = inputConfig.isLeftHandMode();
-        this.singleLineInput = inputConfig.bool(InputConfig.Key.single_line_input);
-        this.xInputPadEnabled = inputConfig.isXInputPadEnabled();
-        this.latinUsePinyinKeysInXInputPadEnabled = inputConfig.isLatinUsePinyinKeysInXInputPadEnabled();
+    public static KeyTableConfig from(KeyboardConfig keyboardConfig, InputList inputList) {
+        return new KeyTableConfig(keyboardConfig, inputList);
     }
 
-    public boolean hasInputs() {
-        return this.hasInputs;
-    }
+    KeyTableConfig(KeyboardConfig keyboardConfig, InputList inputList) {
+        this.hasInputs = inputList != null && !inputList.isEmpty();
+        this.hasRevokingInputs = inputList != null && inputList.canRevokeCommit();
+        this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
-    public boolean hasRevokingInputs() {
-        return this.hasRevokingInputs;
-    }
-
-    public boolean isCharInputSelected() {
-        return this.charInputSelected;
-    }
-
-    public boolean isLeftHandMode() {
-        return this.leftHandMode;
-    }
-
-    public boolean isSingleLineInput() {
-        return this.singleLineInput;
-    }
-
-    public boolean isXInputPadEnabled() {
-        return this.xInputPadEnabled;
-    }
-
-    public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
-        return this.latinUsePinyinKeysInXInputPadEnabled;
+        this.keyboard = keyboardConfig;
     }
 }

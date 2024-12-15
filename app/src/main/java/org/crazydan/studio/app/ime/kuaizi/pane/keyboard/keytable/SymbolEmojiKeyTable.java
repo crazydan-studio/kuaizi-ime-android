@@ -20,10 +20,10 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 import java.util.Arrays;
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
@@ -72,11 +72,11 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
-        gridKeys[2][index_end] = this.config.isCharInputSelected()
+        gridKeys[2][index_end] = this.config.charInputSelected
                                  ? ctrlKey(CtrlKey.Type.DropInput)
                                  : ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
-        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
+        gridKeys[3][index_end] = this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
@@ -148,11 +148,11 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
 
-        gridKeys[2][index_end] = this.config.isCharInputSelected()
+        gridKeys[2][index_end] = this.config.charInputSelected
                                  ? ctrlKey(CtrlKey.Type.DropInput)
                                  : ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[3][index_mid] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
-        gridKeys[3][index_end] = this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
+        gridKeys[3][index_end] = this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 

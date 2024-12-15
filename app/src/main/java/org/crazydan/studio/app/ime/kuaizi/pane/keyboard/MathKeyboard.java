@@ -156,7 +156,7 @@ public class MathKeyboard extends BaseKeyboard {
                     commit_InputList(parentInputList, true, false);
 
                     // Note：在 X 型输入中仅需重置算术输入，而不需要退出当前键盘
-                    if (isXInputPadEnabled()) {
+                    if (this.config.xInputPadEnabled) {
                         resetMathInputList();
                         return true;
                     }

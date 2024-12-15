@@ -29,18 +29,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Hmm;
 import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 
-import static org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi.calcViterbi;
-import static org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi.getBestPhraseFromViterbi;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawUpsertParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.upsertSQLite;
+import static org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi.calcViterbi;
+import static org.crazydan.studio.app.ime.kuaizi.dict.hmm.Viterbi.getBestPhraseFromViterbi;
 
 /**
  * {@link Hmm} 数据库，提供对 HMM 数据的持久化处理接口

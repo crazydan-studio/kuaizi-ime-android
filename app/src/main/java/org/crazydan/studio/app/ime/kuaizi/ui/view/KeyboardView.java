@@ -111,9 +111,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         switch (msg.type) {
             case FingerMoving_Start: {
                 // 对光标移动和文本选择按键启用轨迹
-                if (CtrlKey.isAny(msg.data.key,
-                                  CtrlKey.Type.Editor_Cursor_Locator,
-                                  CtrlKey.Type.Editor_Range_Selector) //
+                if (CtrlKey.isAny(msg.data.key, CtrlKey.Type.Editor_Cursor_Locator, CtrlKey.Type.Editor_Range_Selector)
+                    //
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);

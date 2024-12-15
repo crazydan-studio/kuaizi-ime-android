@@ -20,9 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
  * {@link Keyboard 键盘}{@link CtrlKey 隐藏按键}的视图

@@ -18,12 +18,12 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import android.graphics.PointF;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListenerTrigger;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 
 /**
  * {@link Keyboard 键盘}{@link KeyView 按键}的手势监听器

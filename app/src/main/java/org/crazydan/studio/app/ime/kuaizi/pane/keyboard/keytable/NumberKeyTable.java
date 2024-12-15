@@ -48,7 +48,7 @@ public class NumberKeyTable extends KeyTable {
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
     public Key<?>[][] createKeys(boolean showExitKey) {
-        if (this.config.isXInputPadEnabled()) {
+        if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 

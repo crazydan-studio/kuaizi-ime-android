@@ -48,7 +48,7 @@ public class LatinKeyTable extends KeyTable {
 
     /** 创建{@link LatinKeyboard 拉丁文键盘}按键 */
     public Key<?>[][] createKeys() {
-        if (this.config.isXInputPadEnabled()) {
+        if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
@@ -93,7 +93,7 @@ public class LatinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
                 alphabetKey("w").withReplacements("W"),
                 alphabetKey("p").withReplacements("P"),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Symbol),
@@ -131,7 +131,7 @@ public class LatinKeyTable extends KeyTable {
 
     @Override
     protected XPadKey createXPadKey() {
-        if (this.config.isLatinUsePinyinKeysInXInputPadEnabled()) {
+        if (this.config.keyboard.latinUsePinyinKeysInXInputPadEnabled) {
             return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                     new Key[][] {
                             new Key[] {

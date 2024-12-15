@@ -22,7 +22,7 @@ import android.content.SharedPreferences;
 /**
  * {@link InputPane} 的配置
  * <p/>
- * 同时处理系统配置和运行时配置，且运行时的配置优先
+ * 其同时处理系统配置和运行时配置，且运行时的配置优先
  * <p/>
  * 其将自动与系统配置的变更进行同步
  *
@@ -32,8 +32,6 @@ import android.content.SharedPreferences;
 class InputPaneConfig extends InputConfig {
     /** 系统配置：与系统设置做同步更新 */
     private final InputConfig system = new InputConfig();
-    /** 运行时配置：记录运行期间更新的配置 */
-    private final InputConfig runtime = new InputConfig();
 
     public InputListConfig createInputListConfig() {
         return InputListConfig.from(this);
@@ -45,19 +43,14 @@ class InputPaneConfig extends InputConfig {
 
     @Override
     public boolean has(Key key) {
-        return this.runtime.has(key) || this.system.has(key);
+        return super.has(key) || this.system.has(key);
     }
 
     /** 获取配置值，且以运行时的配置优先 */
     @Override
     public <T> T get(Key key) {
-        return this.runtime.has(key) ? this.runtime.get(key) : this.system.get(key);
-    }
-
-    /** 更新运行时配置 */
-    @Override
-    public <T> boolean set(Key key, T value, boolean ignoreNull) {
-        return this.runtime.set(key, value, ignoreNull);
+        // Note: 该配置自身记录的便为运行时配置
+        return super.has(key) ? super.get(key) : this.system.get(key);
     }
 
     /** 监听系统配置的变化 */

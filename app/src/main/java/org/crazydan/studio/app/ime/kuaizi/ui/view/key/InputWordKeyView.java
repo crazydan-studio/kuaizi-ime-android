@@ -21,12 +21,12 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

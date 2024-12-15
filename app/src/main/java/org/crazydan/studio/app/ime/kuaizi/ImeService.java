@@ -176,8 +176,8 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
 
         this.inputPane.start(keyboardType, (conf) -> {
-            conf.set(InputConfig.Key.reset_inputting, resetInputting);
             conf.set(InputConfig.Key.ime_subtype, imeSubtype);
+            conf.set(InputConfig.Key.reset_inputting, resetInputting);
             conf.set(InputConfig.Key.single_line_input, useSingleLineInputting, true);
             conf.set(InputConfig.Key.disable_input_key_popup_tips, usePasswordInputting, true);
 

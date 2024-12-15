@@ -28,13 +28,13 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.ImeService;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.SoftwareServiceAgreement;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
  * 使用指南

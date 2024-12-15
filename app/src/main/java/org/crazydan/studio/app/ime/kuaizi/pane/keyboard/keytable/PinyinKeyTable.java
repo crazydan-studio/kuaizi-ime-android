@@ -62,7 +62,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
     public Key<?>[][] createKeys() {
-        if (this.config.isXInputPadEnabled()) {
+        if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
@@ -107,7 +107,7 @@ public class PinyinKeyTable extends KeyTable {
                 ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
                 level0CharKey("r").withReplacements("R"),
                 level0CharKey("h").withReplacements("H"),
-                this.config.hasInputs() ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
+                this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Symbol),
@@ -121,7 +121,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("k").withReplacements("K"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs()),
+                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs),
                 symbolKey("，").withReplacements(","),
                 level0CharKey("sh").withReplacements("Sh", "SH"),
                 level0CharKey("ch").withReplacements("Ch", "CH"),

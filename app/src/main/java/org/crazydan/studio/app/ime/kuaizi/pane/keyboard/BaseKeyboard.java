@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -75,9 +74,9 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
-    private KeyboardConfig config;
     private InputMsgListener listener;
 
+    protected KeyboardConfig config;
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
 
     @Override
@@ -103,10 +102,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected State createInitState() {
         return new State(State.Type.InputChars_Input_Wait_Doing);
-    }
-
-    public boolean isXInputPadEnabled() {
-        return this.config.xInputPadEnabled;
     }
 
     @Override
@@ -137,13 +132,13 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void destroy() {
+        this.listener = null;
+        this.config = null;
+        this.state = null;
     }
 
     protected KeyTableConfig createKeyTableConfig(InputList inputList) {
-        return new KeyTableConfig(getConfig(),
-                                  !inputList.isEmpty(),
-                                  inputList.canRevokeCommit(),
-                                  !inputList.isGapSelected());
+        return KeyTableConfig.from(this.config, inputList);
     }
 
     // ====================== Start: 对 InputMsg 的处理 ======================
@@ -298,7 +293,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     private boolean try_On_UserKey_Msg_Over_XPad(UserKeyMsg msg, Key<?> key) {
-        if (!isXInputPadEnabled() || !(key instanceof CtrlKey)) {
+        if (!this.config.xInputPadEnabled || !(key instanceof CtrlKey)) {
             return false;
         }
 
@@ -571,7 +566,7 @@ public abstract class BaseKeyboard implements Keyboard {
         if (pending.isMathExpr()) {
             switch_Keyboard_To(Type.Math);
             return;
-        } else if (isXInputPadEnabled()) {
+        } else if (this.config.xInputPadEnabled) {
             // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
             // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
             if (pending.isPinyin() && getType() != Type.Pinyin) {
@@ -910,9 +905,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode(Key<?> key) {
-        InputConfig config = getConfig();
-        HandMode mode = config.get(InputConfig.Key.hand_mode);
-
+        HandMode mode = this.config.handMode;
         switch (mode) {
             case left:
                 mode = Keyboard.HandMode.right;

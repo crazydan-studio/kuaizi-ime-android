@@ -42,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
@@ -50,7 +49,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
 
 /**
@@ -177,16 +175,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayMsgData) msg.data);
                 return;
             }
-            case Keyboard_HandMode_Switch_Doing: {
-                Keyboard.HandMode mode = ((KeyboardHandModeSwitchMsgData) msg.data).mode;
-                this.appConf.set(InputConfig.Key.hand_mode, mode);
-
-                onMsg(new InputMsg(InputMsgType.Keyboard_HandMode_Switch_Done,
-                                   msg.data,
-                                   msg.keyFactory,
-                                   msg.inputFactory));
-                return;
-            }
             case InputChars_Input_Popup_Show_Doing: {
                 showInputKeyPopupWindow(((InputCharsInputPopupShowMsgData) msg.data).text,
                                         ((InputCharsInputPopupShowMsgData) msg.data).hideDelayed);
@@ -246,7 +234,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         // Note: 仅竖屏模式下需要添加底部空白
         addBottomSpacing(this,
                          config.bool(InputConfig.Key.adapt_desktop_swipe_up_gesture)
-                         && !config.isXInputPadEnabled()
+                         && !config.bool(InputConfig.Key.enable_x_input_pad)
                          && Objects.equals(config.get(InputConfig.Key.orientation), Keyboard.Orientation.portrait));
     }
 

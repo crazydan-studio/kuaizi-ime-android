@@ -22,8 +22,8 @@ import java.util.List;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

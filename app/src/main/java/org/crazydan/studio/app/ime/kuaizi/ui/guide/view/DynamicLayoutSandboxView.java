@@ -27,9 +27,9 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
  * 动态布局的沙盒视图，用于获取布局后的按键视图的图形

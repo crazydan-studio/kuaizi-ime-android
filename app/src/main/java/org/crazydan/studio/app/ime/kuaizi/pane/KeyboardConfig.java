@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import android.content.Context;
+import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
@@ -27,8 +28,19 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  * @date 2024-12-03
  */
 public class KeyboardConfig {
-    /** X 输入面板是否已启用 */
+    /** 原键盘类型 */
+    public final Keyboard.Type prevType;
+
+    /** 是否已启用 X 输入面板 */
     public final boolean xInputPadEnabled;
+    /** 左右手使用模式 */
+    public final Keyboard.HandMode handMode;
+    /** 是否为单行输入 */
+    public final boolean singleLineInput;
+    /** 是否已启用在 X 输入面板中让拉丁文输入共用拼音输入的按键布局 */
+    public final boolean latinUsePinyinKeysInXInputPadEnabled;
+    /** 是否已禁用对用户输入数据的保存 */
+    public final boolean userInputDataDisabled;
 
     /** 通过 {@link InputConfig} 构造 {@link KeyboardConfig} */
     public static KeyboardConfig from(InputConfig inputConfig) {
@@ -36,6 +48,17 @@ public class KeyboardConfig {
     }
 
     KeyboardConfig(InputConfig inputConfig) {
+        this.prevType = inputConfig.get(InputConfig.Key.prev_keyboard_type);
+
+        this.xInputPadEnabled = inputConfig.bool(InputConfig.Key.enable_x_input_pad);
+        this.handMode = inputConfig.get(InputConfig.Key.hand_mode);
+        this.singleLineInput = inputConfig.bool(InputConfig.Key.single_line_input);
+        this.userInputDataDisabled = inputConfig.bool(InputConfig.Key.disable_user_input_data);
+
+        this.latinUsePinyinKeysInXInputPadEnabled
+                = inputConfig.bool(InputConfig.Key.enable_latin_use_pinyin_keys_in_x_input_pad)
+                  // Note: 仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的
+                  && inputConfig.get(InputConfig.Key.ime_subtype) == ImeSubtype.hans;
     }
 
     public static int getThemeResId(Context context, Keyboard.Theme theme) {

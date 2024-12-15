@@ -21,8 +21,8 @@ import android.view.View;
 import android.widget.Button;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

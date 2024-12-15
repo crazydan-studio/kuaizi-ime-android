@@ -42,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigChangeMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Config_Change_Done;
@@ -49,6 +50,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Switch_Done;
@@ -228,6 +230,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
                 // Note: 在键盘切换过程中，不向上转发消息
                 return;
             }
+            case Keyboard_HandMode_Switch_Doing: {
+                on_Keyboard_HandMode_Switch_Doing((KeyboardHandModeSwitchMsgData) msg.data);
+                return;
+            }
             // 向键盘派发 InputList 的消息
             case Input_Choose_Doing:
             case InputList_Clean_Done:
@@ -274,8 +280,15 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
             this.keyboardSwitches.push(oldType);
         }
 
-        InputMsg msg = new InputMsg(Keyboard_Switch_Done, new KeyboardSwitchMsgData(data.key, type));
-        onMsg(msg);
+        fire_InputMsg(Keyboard_Switch_Done, data);
+    }
+
+    /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */
+    private void on_Keyboard_HandMode_Switch_Doing(KeyboardHandModeSwitchMsgData data) {
+        Keyboard.HandMode mode = data.mode;
+        this.config.set(InputConfig.Key.hand_mode, mode);
+
+        fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -288,7 +301,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
     private Keyboard.Type switchKeyboardTo(Keyboard.Type type) {
         Keyboard old = this.keyboard;
         Keyboard.Type oldType = getKeyboardType();
-        KeyboardConfig config = this.config.createKeyboardConfig();
 
         // 保持键盘不变，仅需重置键盘即可
         if (oldType != null //
@@ -296,9 +308,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
                 || type == Keyboard.Type.Keep_Current //
             ) //
         ) {
+            KeyboardConfig config = this.config.createKeyboardConfig();
             old.updateConfig(config);
-            old.reset();
 
+            old.reset();
             return null;
         }
 
@@ -322,7 +335,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
         if (old != null) {
             old.destroy();
         }
+        this.config.set(InputConfig.Key.prev_keyboard_type, oldType);
 
+        KeyboardConfig config = this.config.createKeyboardConfig();
         this.keyboard = createKeyboard(type);
         this.keyboard.updateConfig(config);
         this.keyboard.setListener(this);

@@ -19,8 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg.user;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
 /**
  * {@link UserKeyMsgType#FingerFlipping} 消息数据
