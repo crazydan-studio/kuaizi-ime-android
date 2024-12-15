@@ -24,6 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
 
 /**
@@ -34,11 +35,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
  */
 public class MathKeyTable extends KeyTable {
 
-    protected MathKeyTable(Config config) {
+    protected MathKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static MathKeyTable create(Config config) {
+    public static MathKeyTable create(KeyTableConfig config) {
         return new MathKeyTable(config);
     }
 

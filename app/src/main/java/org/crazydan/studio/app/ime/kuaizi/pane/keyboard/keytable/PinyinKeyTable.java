@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinKeyboard;
 
 /**
@@ -46,11 +47,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinKeyboard;
  */
 public class PinyinKeyTable extends KeyTable {
 
-    protected PinyinKeyTable(Config config) {
+    protected PinyinKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static PinyinKeyTable create(Config config) {
+    public static PinyinKeyTable create(KeyTableConfig config) {
         return new PinyinKeyTable(config);
     }
 
@@ -642,11 +643,9 @@ public class PinyinKeyTable extends KeyTable {
     ) {
         Key<?>[][] gridKeys = createEmptyGrid();
 
-        boolean isOnlyPinyin = currentOption != null
-                               && currentOption.wordSpellUsedType == InputWord.SpellUsedType.replacing;
-        boolean isWithPinyin = currentOption != null
-                               && currentOption.wordSpellUsedType == InputWord.SpellUsedType.following;
-        boolean isVariantUsed = currentOption != null && currentOption.wordVariantUsed;
+        boolean isOnlyPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.replacing;
+        boolean isWithPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.following;
+        boolean isVariantUsed = currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 
         gridKeys[1][index_end] = commitOptionKey( //

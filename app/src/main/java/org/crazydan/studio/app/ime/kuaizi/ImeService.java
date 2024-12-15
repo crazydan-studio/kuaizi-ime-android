@@ -27,8 +27,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
 import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
@@ -175,9 +175,9 @@ public class ImeService extends InputMethodService implements InputMsgListener {
 
         ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
         this.inputPane.updateConfig((conf) -> {
-            conf.set(Conf.ime_subtype, imeSubtype);
-            conf.set(Conf.single_line_input, useSingleLineInputting, true);
-            conf.set(Conf.disable_input_key_popup_tips, usePasswordInputting, true);
+            conf.set(InputConfig.Key.ime_subtype, imeSubtype);
+            conf.set(InputConfig.Key.single_line_input, useSingleLineInputting, true);
+            conf.set(InputConfig.Key.disable_input_key_popup_tips, usePasswordInputting, true);
         });
 
         this.inputPane.start(keyboardType, resetInputting);

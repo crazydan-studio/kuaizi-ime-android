@@ -23,7 +23,7 @@ import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 
 /**
- * {@link InputPane 键盘}配置
+ * {@link Keyboard} 的配置
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03

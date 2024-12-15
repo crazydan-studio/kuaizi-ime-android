@@ -39,8 +39,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -51,7 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
@@ -91,8 +90,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
 
-        Configuration config = this.imeView.getConfig();
-        Keyboard.Theme theme = config.get(Conf.theme);
+        InputConfig config = this.imeView.getConfig();
+        Keyboard.Theme theme = config.get(InputConfig.Key.theme);
         int imeThemeResId = KeyboardConfig.getThemeResId(getApplicationContext(), theme);
 
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
@@ -136,7 +135,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
 
     /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
     private int getDrawerGravity() {
-        Configuration config = this.imeView.getConfig();
+        InputConfig config = this.imeView.getConfig();
 
         return config.isLeftHandMode() ? GravityCompat.START : GravityCompat.END;
     }
@@ -293,7 +292,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Basic_Introduce(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.Switch_HandMode);
         Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
@@ -385,7 +384,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Slipping_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         InputWord expected_auto_word = new InputWord(100, "块", "kuài");
         InputWord case_word = new InputWord(101, "筷", "kuài");
@@ -419,7 +418,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Candidate_Filtering(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         InputWord expected_auto_word = new InputWord(100, "术", "shù");
         InputWord case_word = new InputWord(101, "输", "shū");
@@ -460,7 +459,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Committed_Processing(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         InputWord expected_auto_word = new InputWord(100, "自", "zì");
         InputWord case_word = new InputWord(101, "字", "zì");
@@ -538,7 +537,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Editor_Editing(DynamicLayoutSandboxView sandboxView) {
-        EditorKeyTable keyTable = EditorKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        EditorKeyTable keyTable = EditorKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         Key<?> key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         Key<?> key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
@@ -611,7 +610,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Char_Replacement_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         Key<?> key_symbol_tanhao = keyTable.symbolKey("！");
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
@@ -716,7 +715,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Math_Inputting(DynamicLayoutSandboxView sandboxView) {
-        MathKeyTable keyTable = MathKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        MathKeyTable keyTable = MathKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
@@ -805,7 +804,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTable.Config(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
 
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin);
@@ -844,7 +843,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                 keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 
-        String sample = Arrays.stream(latinSample).map(Key::getText).collect(Collectors.joining(""))
+        String sample = Arrays.stream(latinSample).map(org.crazydan.studio.app.ime.kuaizi.pane.Key::getText).collect(Collectors.joining(""))
                         + key_ctrl_space.getText()
                         + pinyinWordsSample.keySet().stream().map(InputWord::getValue).collect(Collectors.joining(""));
         exercise.addStep("本次练习输入 <span style=\"color:#ed4c67;\">" + sample + "</span>；");

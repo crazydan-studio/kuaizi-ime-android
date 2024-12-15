@@ -162,7 +162,7 @@ public class InputWord {
     }
 
     /** 读音使用类型 */
-    public enum SpellUsedType {
+    public enum SpellUsedMode {
         /** 替代 {@link InputWord} */
         replacing,
         /** 跟随 {@link InputWord} */

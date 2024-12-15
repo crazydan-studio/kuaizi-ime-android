@@ -46,7 +46,7 @@ public class LatinKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
         LatinKeyTable keyTable = LatinKeyTable.create(keyTableConf);
 
         return keyTable::createKeys;

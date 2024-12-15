@@ -19,8 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -130,11 +129,11 @@ public abstract class BaseKeyboard implements Keyboard {
     public void destroy() {
     }
 
-    protected KeyTable.Config createKeyTableConfig(InputList inputList) {
-        return new KeyTable.Config(getConfig(),
-                                   !inputList.isEmpty(),
-                                   inputList.canRevokeCommit(),
-                                   !inputList.isGapSelected());
+    protected KeyTableConfig createKeyTableConfig(InputList inputList) {
+        return new KeyTableConfig(getConfig(),
+                                  !inputList.isEmpty(),
+                                  inputList.canRevokeCommit(),
+                                  !inputList.isGapSelected());
     }
 
     // ====================== Start: 对 InputMsg 的处理 ======================
@@ -901,8 +900,8 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode(Key<?> key) {
-        Configuration config = getConfig();
-        HandMode mode = config.get(Conf.hand_mode);
+        InputConfig config = getConfig();
+        HandMode mode = config.get(InputConfig.Key.hand_mode);
 
         switch (mode) {
             case left:

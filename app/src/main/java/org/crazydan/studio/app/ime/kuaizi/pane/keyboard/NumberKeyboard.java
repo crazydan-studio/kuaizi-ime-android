@@ -46,7 +46,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
         NumberKeyTable keyTable = NumberKeyTable.create(keyTableConf);
 
         return () -> keyTable.createKeys(this.needToShowExit);

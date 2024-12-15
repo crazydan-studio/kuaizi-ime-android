@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 
 /**
  * 表情、标点符号按键表
@@ -37,11 +38,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
  */
 public class SymbolEmojiKeyTable extends KeyTable {
 
-    protected SymbolEmojiKeyTable(Config config) {
+    protected SymbolEmojiKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static SymbolEmojiKeyTable create(Config config) {
+    public static SymbolEmojiKeyTable create(KeyTableConfig config) {
         return new SymbolEmojiKeyTable(config);
     }
 

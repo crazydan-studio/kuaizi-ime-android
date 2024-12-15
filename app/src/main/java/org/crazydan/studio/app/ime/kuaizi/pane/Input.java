@@ -144,12 +144,13 @@ public interface Input<T extends Input<?>> extends RecyclerViewData {
     InputWord getWord();
 
     class Option {
-        public final InputWord.SpellUsedType wordSpellUsedType;
+        /** 采用何种读音使用模式 */
+        public final InputWord.SpellUsedMode wordSpellUsedMode;
         /** 是否使用候选字变体 */
         public final boolean wordVariantUsed;
 
-        public Option(InputWord.SpellUsedType wordSpellUsedType, boolean wordVariantUsed) {
-            this.wordSpellUsedType = wordSpellUsedType;
+        public Option(InputWord.SpellUsedMode wordSpellUsedMode, boolean wordVariantUsed) {
+            this.wordSpellUsedMode = wordSpellUsedMode;
             this.wordVariantUsed = wordVariantUsed;
         }
     }

@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
@@ -59,24 +57,16 @@ public class InputList implements UserInputMsgListener {
     private final List<Input<?>> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
-    private Supplier<Configuration> configGetter;
+    private InputListConfig config;
     private InputMsgListener listener;
+
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
     private Staged staged;
-
     private Input.Option option;
     private List<CompletionInput> phraseCompletions;
 
     public InputList() {
         this.staged = doReset(Staged.Type.none);
-    }
-
-    public Configuration getConfig() {
-        return this.configGetter.get();
-    }
-
-    public void setConfig(Supplier<Configuration> getter) {
-        this.configGetter = getter;
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -229,7 +219,7 @@ public class InputList implements UserInputMsgListener {
         this.inputs.add(gap);
         doSelect(gap);
 
-        setOption(null);
+        resetOption();
         this.staged = Staged.none();
 
         return staged;
@@ -250,22 +240,40 @@ public class InputList implements UserInputMsgListener {
         };
     }
 
-    /** 当前的待输入是否为空 */
-    public boolean hasEmptyPending() {
-        return Input.isEmpty(getPending());
+    /**
+     * 更新配置
+     *
+     * @return 若存在更新，则返回 true，否则，返回 false
+     */
+    public boolean updateConfig(InputListConfig config) {
+        boolean changed = !config.equals(this.config);
+        this.config = config;
+
+        if (this.option == null) {
+            resetOption();
+        } else {
+            this.option = new Input.Option(this.option.wordSpellUsedMode, this.config.useCandidateVariantFirst);
+        }
+
+        return changed;
     }
 
     public Input.Option getOption() {
-        if (this.option == null) {
-            Configuration config = getConfig();
-
-            this.option = new Input.Option(null, config.isCandidateVariantFirstEnabled());
-        }
         return this.option;
     }
 
-    public void setOption(Input.Option option) {
+    public void updateOption(Input.Option option) {
         this.option = option;
+    }
+
+    /** 重置 {@link Input.Option} 以便于使用默认设置 */
+    public void resetOption() {
+        this.option = new Input.Option(null, this.config.useCandidateVariantFirst);
+    }
+
+    /** 当前的待输入是否为空 */
+    public boolean hasEmptyPending() {
+        return Input.isEmpty(getPending());
     }
 
     /** 设置短语输入补全 */

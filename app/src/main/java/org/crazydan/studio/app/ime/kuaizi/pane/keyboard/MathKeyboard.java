@@ -63,11 +63,11 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
-    protected KeyTable.Config createKeyTableConfig(InputList inputList) {
-        return new KeyTable.Config(getConfig(),
-                                   !getParentInputList().isEmpty(),
-                                   getParentInputList().canRevokeCommit(),
-                                   !getInputList().isGapSelected());
+    protected KeyTableConfig createKeyTableConfig(InputList inputList) {
+        return new KeyTableConfig(getConfig(),
+                                  !getParentInputList().isEmpty(),
+                                  getParentInputList().canRevokeCommit(),
+                                  !getInputList().isGapSelected());
     }
 
     /** 处理来自本层的算术 InputList 的消息 */
@@ -419,7 +419,7 @@ public class MathKeyboard extends BaseKeyboard {
         // 在父输入列表中绑定算术输入列表
         MathExprInput input = (MathExprInput) parentInputList.getPending();
         this.mathInputList = input.getInputList();
-        this.mathInputList.setConfig(parentInputList::getConfig);
+        this.mathInputList.updateOption(parentInputList.getOption());
         this.mathInputList.setListener(this::onMathUserInputMsg);
     }
 }

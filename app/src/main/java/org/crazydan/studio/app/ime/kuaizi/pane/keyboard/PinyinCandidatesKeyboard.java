@@ -66,7 +66,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     private PinyinKeyTable createKeyTable(InputList inputList) {
-        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
 
         return PinyinKeyTable.create(keyTableConf);
     }

@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
@@ -40,29 +38,37 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
  */
 public abstract class KeyTable {
     /** {@link CharKey} 按键的配色 */
-    protected static final Key.Color key_char_color = Key.Color.create(R.attr.key_fg_color, R.attr.key_bg_color);
+    protected static final Key.Color key_char_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** 特殊的 {@link CharKey} 按键的配色 */
-    protected static final Key.Color key_char_special_color = Key.Color.create(R.attr.key_highlight_fg_color,
-                                                                               R.attr.key_bg_color);
+    protected static final Key.Color key_char_special_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_highlight_fg_color,
+                                                                       R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
-    protected static final Key.Color key_char_symbol_color = Key.Color.create(R.attr.key_char_symbol_fg_color,
-                                                                              R.attr.key_char_symbol_bg_color);
+    protected static final Key.Color key_char_symbol_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_symbol_fg_color,
+                                                                       R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
     protected static final Key.Color key_char_emoji_color = key_char_symbol_color;
     /** 字母按键调色板 */
     private static final Map<List<String>, Key.Color> char_key_color_palette = new HashMap<>();
     /** 控制按键样式：图标+背景色 */
     private static final Map<CtrlKey.Type, KeyStyle> ctrl_key_styles = new HashMap<>();
-    private static final Key.Color key_char_level_0_color = Key.Color.create(R.attr.key_char_level_0_fg_color,
-                                                                             R.attr.key_char_level_0_bg_color);
-    private static final Key.Color key_char_level_1_color = Key.Color.create(R.attr.key_char_level_1_fg_color,
-                                                                             R.attr.key_char_level_1_bg_color);
-    private static final Key.Color key_char_level_2_color = Key.Color.create(R.attr.key_char_level_2_fg_color,
-                                                                             R.attr.key_char_level_2_bg_color);
-    private static final Key.Color key_char_level_3_color = Key.Color.create(R.attr.key_char_level_3_fg_color,
-                                                                             R.attr.key_char_level_3_bg_color);
-    private static final Key.Color key_char_level_4_color = Key.Color.create(R.attr.key_char_level_4_fg_color,
-                                                                             R.attr.key_char_level_4_bg_color);
+    private static final Key.Color key_char_level_0_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_0_fg_color,
+                                                                       R.attr.key_char_level_0_bg_color);
+    private static final Key.Color key_char_level_1_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_1_fg_color,
+                                                                       R.attr.key_char_level_1_bg_color);
+    private static final Key.Color key_char_level_2_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_2_fg_color,
+                                                                       R.attr.key_char_level_2_bg_color);
+    private static final Key.Color key_char_level_3_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_3_fg_color,
+                                                                       R.attr.key_char_level_3_bg_color);
+    private static final Key.Color key_char_level_4_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_4_fg_color,
+                                                                       R.attr.key_char_level_4_bg_color);
     /** {@link InputWordKey 候选字}按键的配色 */
     protected static final Key.Color[] key_input_word_level_colors = new Key.Color[] {
             key_char_level_0_color,
@@ -71,8 +77,9 @@ public abstract class KeyTable {
             key_char_level_3_color,
             key_char_level_4_color,
             };
-    private static final Key.Color key_char_level_5_color = Key.Color.create(R.attr.key_char_level_5_fg_color,
-                                                                             R.attr.key_char_level_5_bg_color);
+    private static final Key.Color key_char_level_5_color
+            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_5_fg_color,
+                                                                       R.attr.key_char_level_5_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -150,9 +157,9 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);
     }
 
-    protected final Config config;
+    protected final KeyTableConfig config;
 
-    protected KeyTable(Config config) {
+    protected KeyTable(KeyTableConfig config) {
         this.config = config;
     }
 
@@ -322,7 +329,7 @@ public abstract class KeyTable {
 
     public CtrlKey ctrlKey(CtrlKey key, KeyStyle style) {
         Integer icon = null;
-        Key.Color color = Key.Color.none();
+        Key.Color color = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.none();
 
         if (style != null) {
             icon = style.icon.right;
@@ -461,7 +468,7 @@ public abstract class KeyTable {
         }
 
         public static KeyStyle withColor(int fg, int bg) {
-            return withColor(Key.Color.create(fg, bg));
+            return withColor(org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(fg, bg));
         }
 
         public static KeyStyle withColor(Key.Color color) {
@@ -469,11 +476,12 @@ public abstract class KeyTable {
         }
 
         public static KeyStyle withIcon(int right, int left, int bg) {
-            return new KeyStyle(new KeyIcon(right, left), Key.Color.create(null, bg));
+            return new KeyStyle(new KeyIcon(right, left),
+                                org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(null, bg));
         }
 
         public static KeyStyle withIcon(int resId, int bg) {
-            return new KeyStyle(new KeyIcon(resId), Key.Color.create(null, bg));
+            return new KeyStyle(new KeyIcon(resId), org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(null, bg));
         }
     }
 
@@ -507,59 +515,6 @@ public abstract class KeyTable {
             this.row = row;
             this.column = column;
             this.layer = layer;
-        }
-    }
-
-    public static class Config {
-        private final Configuration keyboardConf;
-
-        private final boolean hasInputs;
-        /** 是否有待撤回输入 */
-        private final boolean hasRevokingInputs;
-        /** 是否已选中字符输入 */
-        private final boolean charInputSelected;
-
-        public Config(Configuration keyboardConf) {
-            this(keyboardConf, false, false, false);
-        }
-
-        public Config(
-                Configuration keyboardConf, boolean hasInputs, boolean hasRevokingInputs, boolean charInputSelected
-        ) {
-            this.keyboardConf = keyboardConf;
-
-            this.hasInputs = hasInputs;
-            this.hasRevokingInputs = hasRevokingInputs;
-            this.charInputSelected = charInputSelected;
-        }
-
-        public boolean hasInputs() {
-            return this.hasInputs;
-        }
-
-        public boolean hasRevokingInputs() {
-            return this.hasRevokingInputs;
-        }
-
-        public boolean isCharInputSelected() {
-            return this.charInputSelected;
-        }
-
-        // ================================================================
-        public boolean isLeftHandMode() {
-            return this.keyboardConf.isLeftHandMode();
-        }
-
-        public boolean isSingleLineInput() {
-            return this.keyboardConf.bool(Conf.single_line_input);
-        }
-
-        public boolean isXInputPadEnabled() {
-            return this.keyboardConf.isXInputPadEnabled();
-        }
-
-        public boolean isLatinUsePinyinKeysInXInputPadEnabled() {
-            return this.keyboardConf.isLatinUsePinyinKeysInXInputPadEnabled();
         }
     }
 }

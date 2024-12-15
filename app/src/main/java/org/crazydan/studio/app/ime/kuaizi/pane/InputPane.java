@@ -23,9 +23,9 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
@@ -41,8 +41,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Config_Change_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
@@ -55,9 +58,9 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class InputPane implements InputMsgListener, UserMsgListener {
+public class InputPane implements InputMsgListener, UserMsgListener, InputConfig.ChangeListener {
     private PinyinDict dict;
-    private Configuration conf;
+    private InputConfig config;
 
     private Keyboard keyboard;
     private InputList inputList;
@@ -68,12 +71,12 @@ public class InputPane implements InputMsgListener, UserMsgListener {
     InputPane(PinyinDict dict) {
         this.dict = dict;
 
-        this.conf = new Configuration();
+        this.config = new InputConfig(this);
         this.inputList = new InputList();
+        this.inputList.setListener(this);
+
         this.switchedKeyboards = new Stack<>();
         this.listeners = new ArrayList<>();
-
-        this.inputList.setListener(this);
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -85,7 +88,15 @@ public class InputPane implements InputMsgListener, UserMsgListener {
         dict.init(context);
         dict.open(context);
 
-        return new InputPane(dict);
+        InputPane pane = new InputPane(dict);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        pane.config.bind(preferences);
+
+        // 初始同步配置信息
+        pane.inputList.updateConfig(InputListConfig.from(pane.config));
+
+        return pane;
     }
 
     /**
@@ -105,17 +116,15 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.inputList.reset(false);
         }
 
-        InputMsg msg = new InputMsg(Keyboard_Start_Done, new InputMsgData());
-        onMsg(msg);
+        fire_InputMsg(Keyboard_Start_Done);
     }
 
     /** 隐藏 {@link InputPane}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
         this.inputList.clearCompletions();
-        onMsg(new InputMsg(Input_Completion_Clean_Done, new InputMsgData()));
+        fire_InputMsg(Input_Completion_Clean_Done);
 
-        InputMsg msg = new InputMsg(Keyboard_Hide_Done, new InputMsgData());
-        onMsg(msg);
+        fire_InputMsg(Keyboard_Hide_Done);
     }
 
     /** 退出 {@link InputPane}，即，重置输入状态 */
@@ -127,14 +136,13 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             this.keyboard.reset();
         }
 
-        InputMsg msg = new InputMsg(Keyboard_Exit_Done, new InputMsgData());
-        onMsg(msg);
+        fire_InputMsg(Keyboard_Exit_Done);
     }
 
     /** 销毁 {@link InputPane}，即，关闭并回收资源 */
     public void destroy() {
         this.dict = null;
-        this.conf = null;
+        this.config = null;
         this.keyboard = null;
         this.inputList = null;
         this.switchedKeyboards = null;
@@ -163,8 +171,8 @@ public class InputPane implements InputMsgListener, UserMsgListener {
      * <p/>
      * 通过更新函数以支持批量更新，并便于一次性触发多个配置的更新消息
      */
-    public void updateConfig(Consumer<Configuration> updater) {
-        updater.accept(this.conf);
+    public void updateConfig(Consumer<InputConfig> updater) {
+        updater.accept(this.config);
     }
 
     // =============================== End: 内部状态 ===================================
@@ -195,6 +203,17 @@ public class InputPane implements InputMsgListener, UserMsgListener {
 
     // --------------------------------------
 
+    /** 响应 {@link InputConfig} 变更消息：将其转换为 {@link InputMsgType#Config_Change_Done} 消息后，再向上传递给外部监听者 */
+    @Override
+    public void onChanged(InputConfig.Key key, Object oldValue, Object newValue) {
+        if (this.inputList.updateConfig(InputListConfig.from(this.config))) {
+            fire_InputMsg(InputList_Config_Update_Done);
+        }
+
+        InputMsgData msgData = new ConfigChangeMsgData(key, oldValue, newValue);
+        fire_InputMsg(Config_Change_Done, msgData);
+    }
+
     /** 响应键盘的 {@link InputMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(InputMsg msg) {
@@ -222,11 +241,22 @@ public class InputPane implements InputMsgListener, UserMsgListener {
             }
         }
 
+        fire_InputMsg(msg.type, msg.data);
+    }
+
+    /** 发送 {@link InputMsg} 消息：附带空的消息数据 */
+    private void fire_InputMsg(InputMsgType type) {
+        fire_InputMsg(type, new InputMsgData());
+    }
+
+    /** 发送 {@link InputMsg} 消息 */
+    private void fire_InputMsg(InputMsgType type, InputMsgData data) {
+        InputList inputList = this.inputList;
+        Keyboard keyboard = this.keyboard;
+
         // TODO 附件输入状态数据，如，InputList 是否为空、是否可撤销删除、CompletionInputFactory 等
-        InputMsg newMsg = new InputMsg(msg.type,
-                                       msg.data,
-                                       keyboard.getKeyFactory(inputList),
-                                       inputList.getInputFactory());
+        InputMsg newMsg = new InputMsg(type, data, keyboard.getKeyFactory(inputList), inputList.getInputFactory());
+
         this.listeners.forEach(listener -> listener.onMsg(newMsg));
     }
 
@@ -271,7 +301,7 @@ public class InputPane implements InputMsgListener, UserMsgListener {
                 // 切换本输入法到不同的系统键盘时的情况
             case By_ImeSubtype: {
                 // Note: ImeService 将在每次 start 本键盘时更新该项配置
-                ImeSubtype imeSubtype = this.conf.get(Conf.ime_subtype);
+                ImeSubtype imeSubtype = this.config.get(InputConfig.Key.ime_subtype);
 
                 if (imeSubtype == ImeSubtype.latin) {
                     type = Keyboard.Type.Latin;

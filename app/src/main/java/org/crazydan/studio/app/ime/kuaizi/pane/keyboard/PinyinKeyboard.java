@@ -65,7 +65,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {
-        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
         PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
@@ -562,7 +562,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
                     play_DoubleTick_InputAudio(key);
 
-                    inputList.setOption(null);
+                    inputList.resetOption();
 
                     change_State_to_Init(key);
                 }
@@ -579,32 +579,32 @@ public class PinyinKeyboard extends BaseKeyboard {
         Input.Option newInputOption = null;
         switch (option) {
             case only_pinyin: {
-                InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
-                if (spellUsedType == InputWord.SpellUsedType.replacing) {
-                    spellUsedType = null;
+                InputWord.SpellUsedMode spellUsedMode = oldInputOption.wordSpellUsedMode;
+                if (spellUsedMode == InputWord.SpellUsedMode.replacing) {
+                    spellUsedMode = null;
                 } else {
-                    spellUsedType = InputWord.SpellUsedType.replacing;
+                    spellUsedMode = InputWord.SpellUsedMode.replacing;
                 }
 
-                newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
+                newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
                 break;
             }
             case with_pinyin: {
-                InputWord.SpellUsedType spellUsedType = oldInputOption.wordSpellUsedType;
-                if (spellUsedType == InputWord.SpellUsedType.following) {
-                    spellUsedType = null;
+                InputWord.SpellUsedMode spellUsedMode = oldInputOption.wordSpellUsedMode;
+                if (spellUsedMode == InputWord.SpellUsedMode.following) {
+                    spellUsedMode = null;
                 } else {
-                    spellUsedType = InputWord.SpellUsedType.following;
+                    spellUsedMode = InputWord.SpellUsedMode.following;
                 }
 
-                newInputOption = new Input.Option(spellUsedType, oldInputOption.wordVariantUsed);
+                newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
                 break;
             }
             case switch_trad_to_simple:
             case switch_simple_to_trad: {
                 // 被禁用的繁简转换按钮不做响应
                 if (!key.isDisabled()) {
-                    newInputOption = new Input.Option(oldInputOption.wordSpellUsedType,
+                    newInputOption = new Input.Option(oldInputOption.wordSpellUsedMode,
                                                       !oldInputOption.wordVariantUsed);
                 }
                 break;
@@ -612,7 +612,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         if (newInputOption != null) {
-            inputList.setOption(newInputOption);
+            inputList.updateOption(newInputOption);
 
             ((InputListCommitOptionChooseStateData) this.state.data).update(inputList);
         }

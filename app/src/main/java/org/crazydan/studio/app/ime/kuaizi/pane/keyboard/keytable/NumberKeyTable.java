@@ -22,6 +22,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
 
 /**
@@ -32,11 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
  */
 public class NumberKeyTable extends KeyTable {
 
-    protected NumberKeyTable(Config config) {
+    protected NumberKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static NumberKeyTable create(Config config) {
+    public static NumberKeyTable create(KeyTableConfig config) {
         return new NumberKeyTable(config);
     }
 

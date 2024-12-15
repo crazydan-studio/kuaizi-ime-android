@@ -22,6 +22,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
 
 /**
@@ -32,11 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
  */
 public class LatinKeyTable extends KeyTable {
 
-    protected LatinKeyTable(Config config) {
+    protected LatinKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static LatinKeyTable create(Config config) {
+    public static LatinKeyTable create(KeyTableConfig config) {
         return new LatinKeyTable(config);
     }
 

@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 import java.util.Objects;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -30,27 +29,25 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
-import org.crazydan.studio.app.ime.kuaizi.conf.Conf;
-import org.crazydan.studio.app.ime.kuaizi.conf.Configuration;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
@@ -66,9 +63,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
  */
 public class InputPaneView extends FrameLayout implements UserMsgListener, InputMsgListener {
     /** 记录系统的持久化配置 */
-    private final Configuration sysConf;
+    private final InputConfig sysConf;
     /** 记录应用临时变更的配置 */
-    private final Configuration appConf;
+    private final InputConfig appConf;
 
     private final AudioPlayer audioPlayer;
 
@@ -89,10 +86,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     public InputPaneView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        this.appConf = new Configuration();
-        this.sysConf = new Configuration(this::onConfigurationChanged);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        this.sysConf.bind(preferences);
+        this.appConf = new InputConfig();
+        this.sysConf = new InputConfig();
 
         this.audioPlayer = new AudioPlayer();
         this.audioPlayer.load(getContext(),
@@ -105,8 +100,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         relayout();
     }
 
-    public Configuration getConfig() {
-        Configuration config = this.sysConf.copy();
+    public InputConfig getConfig() {
+        InputConfig config = this.sysConf.copy();
         config.merge(this.appConf);
 
         Keyboard.Orientation orientation;
@@ -115,7 +110,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         } else {
             orientation = Keyboard.Orientation.portrait;
         }
-        config.set(Conf.orientation, orientation);
+        config.set(InputConfig.Key.orientation, orientation);
 
         return config;
     }
@@ -128,13 +123,13 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     /** 若传参 null，则表示使用系统持久化配置值 */
     public void disableUserInputData(Boolean disabled) {
-        this.appConf.set(Conf.disable_user_input_data, disabled);
+        this.appConf.set(InputConfig.Key.disable_user_input_data, disabled);
     }
 
     /** 若传参 null，则表示使用系统持久化配置值 */
     public void enableXInputPad(Boolean enabled) {
-        Boolean old = this.appConf.get(Conf.enable_x_input_pad);
-        this.appConf.set(Conf.enable_x_input_pad, enabled);
+        Boolean old = this.appConf.get(InputConfig.Key.enable_x_input_pad);
+        this.appConf.set(InputConfig.Key.enable_x_input_pad, enabled);
 
         if (!Objects.equals(old, enabled)) {
             updateBottomSpacing();
@@ -143,36 +138,13 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     /** 若传参 null，则表示使用系统持久化配置值 */
     public void enableCandidateVariantFirst(Boolean enabled) {
-        this.appConf.set(Conf.enable_candidate_variant_first, enabled);
+        this.appConf.set(InputConfig.Key.enable_candidate_variant_first, enabled);
     }
 
     public void disableSettingsBtn(boolean disabled) {
         this.disableSettingsBtn = disabled;
 
         toggleEnableSettingsBtn();
-    }
-    // ============================================
-
-    private void onConfigurationChanged(Conf conf, Object oldValue, Object newValue) {
-        // Note: 系统只会在新旧配置值不相等时，才会触发配置更新事件，故而，在这里仅需检查哪些配置项发生了变更即可
-        switch (conf) {
-            case theme: {
-                relayout();
-                break;
-            }
-            case enable_x_input_pad:
-            case adapt_desktop_swipe_up_gesture: {
-                updateBottomSpacing();
-                break;
-            }
-            case enable_candidate_variant_first: {
-                getInputList().setOption(null);
-                break;
-            }
-        }
-
-        InputMsg msg = new InputMsg(InputMsgType.Keyboard_Config_Update_Done, new InputMsgData());
-        onMsg(msg);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -202,6 +174,20 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.inputListView.onMsg(msg);
 
         switch (msg.type) {
+            case Config_Change_Done: {
+                switch (((ConfigChangeMsgData) msg.data).conf) {
+                    case theme: {
+                        relayout();
+                        break;
+                    }
+                    case enable_x_input_pad:
+                    case adapt_desktop_swipe_up_gesture: {
+                        updateBottomSpacing();
+                        break;
+                    }
+                }
+                break;
+            }
             case Input_Completion_Clean_Done:
             case Input_Completion_Apply_Done:
             case Input_Completion_Update_Done: {
@@ -216,7 +202,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
             }
             case Keyboard_HandMode_Switch_Doing: {
                 Keyboard.HandMode mode = ((KeyboardHandModeSwitchMsgData) msg.data).mode;
-                this.appConf.set(Conf.hand_mode, mode);
+                this.appConf.set(InputConfig.Key.hand_mode, mode);
 
                 onMsg(new InputMsg(InputMsgType.Keyboard_HandMode_Switch_Done,
                                    msg.data,
@@ -248,8 +234,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
-        Configuration config = getConfig();
-        Keyboard.Theme theme = config.get(Conf.theme);
+        InputConfig config = getConfig();
+        Keyboard.Theme theme = config.get(InputConfig.Key.theme);
         int themeResId = KeyboardConfig.getThemeResId(getContext(), theme);
 
         View rootView = inflateWithTheme(R.layout.input_pane_view_layout, themeResId);
@@ -278,13 +264,13 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void updateBottomSpacing() {
-        Configuration config = getConfig();
+        InputConfig config = getConfig();
 
         // Note: 仅竖屏模式下需要添加底部空白
         addBottomSpacing(this,
-                         config.bool(Conf.adapt_desktop_swipe_up_gesture)
+                         config.bool(InputConfig.Key.adapt_desktop_swipe_up_gesture)
                          && !config.isXInputPadEnabled()
-                         && Objects.equals(config.get(Conf.orientation), Keyboard.Orientation.portrait));
+                         && Objects.equals(config.get(InputConfig.Key.orientation), Keyboard.Orientation.portrait));
     }
 
     private void addBottomSpacing(View rootView, boolean needSpacing) {
@@ -353,8 +339,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
-        Configuration config = getConfig();
-        if (config.bool(Conf.disable_input_key_popup_tips)) {
+        InputConfig config = getConfig();
+        if (config.bool(InputConfig.Key.disable_input_key_popup_tips)) {
             return;
         }
 
@@ -457,12 +443,12 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void on_InputAudio_Play_Doing_Msg(InputAudioPlayMsgData data) {
-        Configuration config = getConfig();
+        InputConfig config = getConfig();
         if (data.audioType == InputAudioPlayMsgData.AudioType.PageFlip) {
-            if (config.bool(Conf.disable_input_candidates_paging_audio)) {
+            if (config.bool(InputConfig.Key.disable_input_candidates_paging_audio)) {
                 return;
             }
-        } else if (config.bool(Conf.disable_key_clicked_audio)) {
+        } else if (config.bool(InputConfig.Key.disable_key_clicked_audio)) {
             return;
         }
 

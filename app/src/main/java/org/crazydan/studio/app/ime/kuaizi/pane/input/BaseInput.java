@@ -208,20 +208,17 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             String spell = word.getSpell().value;
             String variant = word.getVariant();
 
-            if (option != null) {
-                if (option.wordVariantUsed && variant != null) {
-                    value = variant;
-                }
-
-                if (option.wordSpellUsedType != null && spell != null) {
-                    switch (option.wordSpellUsedType) {
-                        case following:
-                            value = String.format("%s(%s)", value, spell);
-                            break;
-                        case replacing:
-                            value = spell;
-                            break;
-                    }
+            if (option.wordVariantUsed && variant != null) {
+                value = variant;
+            }
+            if (option.wordSpellUsedMode != null && spell != null) {
+                switch (option.wordSpellUsedMode) {
+                    case following:
+                        value = String.format("%s(%s)", value, spell);
+                        break;
+                    case replacing:
+                        value = spell;
+                        break;
                 }
             }
 
@@ -236,10 +233,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
 
     @Override
     public boolean isTextOnlyWordSpell(Option option) {
-        return option != null
-               && option.wordSpellUsedType == InputWord.SpellUsedType.replacing
-               && hasWord()
-               && getWord().hasSpell();
+        return option.wordSpellUsedMode == InputWord.SpellUsedMode.replacing && hasWord() && getWord().hasSpell();
     }
 
     @Override

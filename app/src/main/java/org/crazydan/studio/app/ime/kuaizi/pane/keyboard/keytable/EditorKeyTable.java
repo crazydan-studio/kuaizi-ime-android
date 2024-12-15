@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 
 /**
@@ -30,11 +31,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
  */
 public class EditorKeyTable extends KeyTable {
 
-    protected EditorKeyTable(Config config) {
+    protected EditorKeyTable(KeyTableConfig config) {
         super(config);
     }
 
-    public static EditorKeyTable create(Config config) {
+    public static EditorKeyTable create(KeyTableConfig config) {
         return new EditorKeyTable(config);
     }
 

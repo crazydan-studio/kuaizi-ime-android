@@ -55,7 +55,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     }
 
     private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
-        KeyTable.Config keyTableConf = createKeyTableConfig(inputList);
+        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
 
         return SymbolEmojiKeyTable.create(keyTableConf);
     }
