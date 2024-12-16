@@ -295,12 +295,6 @@ public class InputList implements UserInputMsgListener {
         this.phraseCompletions = null;
     }
 
-    /** 是否有输入补全 */
-    public boolean hasCompletions() {
-        return (this.phraseCompletions != null) //
-               || (getPending() != null && getPending().hasCompletions());
-    }
-
     /** 获取输入补全 */
     public List<CompletionInput> getCompletions() {
         if (this.phraseCompletions != null) {
@@ -308,7 +302,7 @@ public class InputList implements UserInputMsgListener {
         } else if (getPending() != null && getPending().hasCompletions()) {
             return getPending().getCompletions();
         }
-        return null;
+        return List.of();
     }
 
     /** 应用输入补全 */

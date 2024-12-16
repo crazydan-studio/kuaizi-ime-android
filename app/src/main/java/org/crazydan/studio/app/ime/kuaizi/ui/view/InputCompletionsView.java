@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
@@ -89,9 +88,7 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
 
     // =============================== End: 消息处理 ===================================
 
-    public void update(InputList inputList) {
-        List<CompletionInput> completions = inputList.getCompletions();
-
+    public void update(List<CompletionInput> completions) {
         this.adapter.updateDataList(completions);
     }
 

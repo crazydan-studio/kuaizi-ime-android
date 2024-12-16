@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.Objects;
+import java.util.List;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -31,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
@@ -39,9 +40,9 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
@@ -50,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCompletionUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
 
 /**
@@ -89,7 +91,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                               R.raw.tick_clock,
                               R.raw.tick_ping);
 
-        relayout();
+        doLayout();
     }
 
     public void setConfig(Config config) {
@@ -102,7 +104,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     public void disableSettingsBtn(boolean disabled) {
         this.disableSettingsBtn = disabled;
-
         toggleEnableSettingsBtn();
     }
 
@@ -130,7 +131,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
         switch (key) {
             case theme: {
-                relayout();
+                doLayout();
                 break;
             }
             case enable_x_input_pad:
@@ -150,27 +151,33 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.inputListView.onMsg(msg);
 
         switch (msg.type) {
-            case Input_Completion_Clean_Done:
-            case Input_Completion_Apply_Done:
-            case Input_Completion_Update_Done: {
-                boolean completionsShown = inputList.hasCompletions();
-
-                showInputCompletionsPopupWindow(inputList, completionsShown);
+            case Keyboard_Start_Done: {
+                // Note: 键盘启动时，涉及横竖屏转换，故而，做一次更新
+                updateBottomSpacing();
                 break;
             }
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg((InputAudioPlayMsgData) msg.data);
-                return;
+                break;
+            }
+            case Input_Completion_Update_Done: {
+                InputCompletionUpdateMsgData data = (InputCompletionUpdateMsgData) msg.data;
+                showInputCompletionsPopupWindow(data.completions);
+                break;
+            }
+            case Input_Completion_Clean_Done:
+            case Input_Completion_Apply_Done: {
+                showInputCompletionsPopupWindow(null);
+                break;
             }
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = (InputCharsInputPopupShowMsgData) msg.data;
-
                 showInputKeyPopupWindow(data.text, data.hideDelayed);
-                return;
+                break;
             }
             case InputChars_Input_Popup_Hide_Doing: {
                 showInputKeyPopupWindow(null, false);
-                return;
+                break;
             }
             default: {
                 // TODO 从消息中获取输入状态数据
@@ -193,8 +200,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     // =============================== End: 消息处理 ===================================
 
-    /** 重新布局视图 */
-    private void relayout() {
+    // =============================== Start: 视图更新 ===================================
+
+    /** 布局视图 */
+    private void doLayout() {
         resetPopupWindows();
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
@@ -202,7 +211,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         Keyboard.Theme theme = this.config.get(ConfigKey.theme);
         int themeResId = theme.getResId(getContext());
 
-        View rootView = inflateWithTheme(R.layout.input_pane_view_layout, themeResId);
+        View rootView = inflateWithTheme(R.layout.input_pane_view_layout, themeResId, true);
 
         this.settingsBtnView = rootView.findViewById(R.id.settings);
         toggleEnableSettingsBtn();
@@ -220,7 +229,6 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
         this.inputCompletionsView.setListener(this);
-
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         updateBottomSpacing();
@@ -228,17 +236,14 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     private void updateBottomSpacing() {
         // Note: 仅竖屏模式下需要添加底部空白
-        addBottomSpacing(this,
-                         this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
-                         && !this.config.bool(ConfigKey.enable_x_input_pad)
-                         && Objects.equals(this.config.get(ConfigKey.orientation), Keyboard.Orientation.portrait));
-    }
+        boolean needSpacing = this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
+                              && !this.config.bool(ConfigKey.enable_x_input_pad)
+                              && this.config.get(ConfigKey.orientation) == Keyboard.Orientation.portrait;
 
-    private void addBottomSpacing(View rootView, boolean needSpacing) {
         float height = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
         height -= this.keyboardView.getBottomSpacing();
 
-        View bottomSpacingView = rootView.findViewById(R.id.bottom_spacing_view);
+        View bottomSpacingView = this.findViewById(R.id.bottom_spacing_view);
         if (needSpacing && height > 0) {
             ViewUtils.show(bottomSpacingView);
             ViewUtils.setHeight(bottomSpacingView, (int) height);
@@ -247,8 +252,35 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
     }
 
-    private <T extends View> T inflateWithTheme(int resId, int themeResId) {
-        return inflateWithTheme(resId, themeResId, true);
+    private void toggleEnableSettingsBtn() {
+        if (this.disableSettingsBtn) {
+            this.settingsBtnView.setAlpha(0.4f);
+            this.settingsBtnView.setOnClickListener(null);
+        } else {
+            this.settingsBtnView.setAlpha(1.0f);
+            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
+        }
+    }
+
+    private void toggleShowInputListCleanBtn() {
+        if (getInputList().isEmpty()) {
+            if (getInputList().canCancelDelete()) {
+                ViewUtils.hide(this.inputListCleanBtnView);
+                ViewUtils.show(this.inputListCleanCancelBtnView);
+            } else {
+                ViewUtils.show(this.inputListCleanBtnView).setAlpha(0);
+                ViewUtils.hide(this.inputListCleanCancelBtnView);
+            }
+
+            this.inputListCleanBtnView.setOnClickListener(null);
+            this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
+        } else {
+            ViewUtils.show(this.inputListCleanBtnView).setAlpha(1);
+            ViewUtils.hide(this.inputListCleanCancelBtnView);
+
+            this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
+            this.inputListCleanCancelBtnView.setOnClickListener(null);
+        }
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId, boolean attachToRoot) {
@@ -257,35 +289,18 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         return ThemeUtils.inflate(this, resId, themeResId, attachToRoot);
     }
 
-    private void resetPopupWindows() {
-        if (this.inputCompletionsPopupWindow != null) {
-            this.inputCompletionsPopupWindow.dismiss();
-        } else {
-            this.inputCompletionsPopupWindow = new PopupWindow();
-        }
+    // =============================== End: 视图更新 ===================================
 
-        if (this.inputKeyPopupWindow != null) {
-            this.inputKeyPopupWindow.dismiss();
-        } else {
-            this.inputKeyPopupWindow = new PopupWindow();
-        }
-    }
+    // ==================== Start: 气泡提示 ==================
 
-    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
-        resetPopupWindows();
-
-        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
-        initPopupWindow(this.inputKeyPopupWindow, keyView);
-    }
-
-    private void showInputCompletionsPopupWindow(InputList inputList, boolean shown) {
+    private void showInputCompletionsPopupWindow(List<CompletionInput> completions) {
         PopupWindow window = this.inputCompletionsPopupWindow;
-        if (!shown) {
+        if (CollectionUtils.isEmpty(completions)) {
             window.dismiss();
             return;
         }
 
-        this.inputCompletionsView.update(inputList);
+        this.inputCompletionsView.update(completions);
         if (window.isShowing()) {
             return;
         }
@@ -327,35 +342,11 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
     }
 
-    private void toggleEnableSettingsBtn() {
-        if (this.disableSettingsBtn) {
-            this.settingsBtnView.setAlpha(0.4f);
-            this.settingsBtnView.setOnClickListener(null);
-        } else {
-            this.settingsBtnView.setAlpha(1.0f);
-            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
-        }
-    }
+    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
+        resetPopupWindows();
 
-    private void toggleShowInputListCleanBtn() {
-        if (getInputList().isEmpty()) {
-            if (getInputList().canCancelDelete()) {
-                ViewUtils.hide(this.inputListCleanBtnView);
-                ViewUtils.show(this.inputListCleanCancelBtnView);
-            } else {
-                ViewUtils.show(this.inputListCleanBtnView).setAlpha(0);
-                ViewUtils.hide(this.inputListCleanCancelBtnView);
-            }
-
-            this.inputListCleanBtnView.setOnClickListener(null);
-            this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
-        } else {
-            ViewUtils.show(this.inputListCleanBtnView).setAlpha(1);
-            ViewUtils.hide(this.inputListCleanCancelBtnView);
-
-            this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
-            this.inputListCleanCancelBtnView.setOnClickListener(null);
-        }
+        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
+        initPopupWindow(this.inputKeyPopupWindow, keyView);
     }
 
     private void initPopupWindow(PopupWindow window, View contentView) {
@@ -366,6 +357,20 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         window.setContentView(contentView);
 
         window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+    }
+
+    private void resetPopupWindows() {
+        if (this.inputCompletionsPopupWindow != null) {
+            this.inputCompletionsPopupWindow.dismiss();
+        } else {
+            this.inputCompletionsPopupWindow = new PopupWindow();
+        }
+
+        if (this.inputKeyPopupWindow != null) {
+            this.inputKeyPopupWindow.dismiss();
+        } else {
+            this.inputKeyPopupWindow = new PopupWindow();
+        }
     }
 
     private void showPopupWindow(PopupWindow window, int width, int height, int gravity) {
@@ -382,6 +387,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
         post(() -> window.showAtLocation(parent, gravity, x, y));
     }
+
+    // ==================== End: 气泡提示 ==================
 
     // ==================== Start: 按键事件处理 ==================
 

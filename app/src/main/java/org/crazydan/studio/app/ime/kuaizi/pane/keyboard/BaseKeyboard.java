@@ -41,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCompletionUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
@@ -533,7 +534,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         });
 
-        fire_Common_InputMsg(Input_Completion_Update_Done, pending);
+        fire_Input_Completion_Update_Done(inputList, pending);
     }
 
     /** 更新当前输入位置的短语输入补全 */
@@ -543,7 +544,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Input<?> input = inputList.getSelected();
         do_InputList_Phrase_Completion_Updating(inputList, input);
 
-        fire_Common_InputMsg(Input_Completion_Update_Done, input);
+        fire_Input_Completion_Update_Done(inputList, input);
     }
 
     protected void do_InputList_Phrase_Completion_Updating(InputList inputList, Input<?> input) {}
@@ -811,6 +812,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputCharsInputMsgData(key, input);
 
         fire_InputMsg(InputChars_Input_Done, data);
+    }
+
+    /** 触发 {@link InputMsgType#Input_Completion_Update_Done} 消息 */
+    protected void fire_Input_Completion_Update_Done(InputList inputList, Input<?> input) {
+        InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(input, inputList.getCompletions());
+
+        fire_InputMsg(Input_Completion_Update_Done, data);
     }
 
     /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */
