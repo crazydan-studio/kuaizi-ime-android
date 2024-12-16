@@ -79,14 +79,11 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
             return;
         }
 
-        switch (type) {
-            case SingleTap: {
-                CompletionInput completion = completionView.getData();
+        if (type == ViewGestureDetector.GestureType.SingleTap) {
+            CompletionInput completion = completionView.getData();
 
-                UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
-                this.listener.onMsg(msg);
-                break;
-            }
+            UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
+            this.listener.onMsg(msg);
         }
     }
 

@@ -101,7 +101,6 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
             case InputList_Update_Done:
             case InputList_Input_Completion_Update_Done:
             case InputList_Input_Completion_Apply_Done:
-            case Config_Change_Done:
                 return;
         }
 

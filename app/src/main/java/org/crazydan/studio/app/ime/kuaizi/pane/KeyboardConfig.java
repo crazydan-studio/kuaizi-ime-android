@@ -17,9 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
-import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
-import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 
 /**
  * {@link Keyboard} 的配置
@@ -31,59 +31,35 @@ public class KeyboardConfig {
     /** 原键盘类型 */
     public final Keyboard.Type prevType;
 
-    /** 是否已启用 X 输入面板 */
-    public final boolean xInputPadEnabled;
     /** 左右手使用模式 */
     public final Keyboard.HandMode handMode;
     /** 是否为单行输入 */
     public final boolean singleLineInput;
+
+    /** 是否已启用 X 输入面板 */
+    public final boolean xInputPadEnabled;
     /** 是否已启用在 X 输入面板中让拉丁文输入共用拼音输入的按键布局 */
     public final boolean latinUsePinyinKeysInXInputPadEnabled;
+
     /** 是否已禁用对用户输入数据的保存 */
     public final boolean userInputDataDisabled;
 
-    /** 通过 {@link InputConfig} 构造 {@link KeyboardConfig} */
-    public static KeyboardConfig from(InputConfig inputConfig) {
-        return new KeyboardConfig(inputConfig);
+    /** 通过 {@link Config} 构造 {@link KeyboardConfig} */
+    public static KeyboardConfig from(Config config) {
+        return new KeyboardConfig(config);
     }
 
-    KeyboardConfig(InputConfig inputConfig) {
-        this.prevType = inputConfig.get(InputConfig.Key.prev_keyboard_type);
+    KeyboardConfig(Config config) {
+        this.prevType = config.get(ConfigKey.prev_keyboard_type);
 
-        this.xInputPadEnabled = inputConfig.bool(InputConfig.Key.enable_x_input_pad);
-        this.handMode = inputConfig.get(InputConfig.Key.hand_mode);
-        this.singleLineInput = inputConfig.bool(InputConfig.Key.single_line_input);
-        this.userInputDataDisabled = inputConfig.bool(InputConfig.Key.disable_user_input_data);
+        this.handMode = config.get(ConfigKey.hand_mode);
+        this.singleLineInput = config.bool(ConfigKey.single_line_input);
 
-        this.latinUsePinyinKeysInXInputPadEnabled
-                = inputConfig.bool(InputConfig.Key.enable_latin_use_pinyin_keys_in_x_input_pad)
-                  // Note: 仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的
-                  && inputConfig.get(InputConfig.Key.ime_subtype) == ImeSubtype.hans;
-    }
+        this.xInputPadEnabled = config.bool(ConfigKey.enable_x_input_pad);
+        this.latinUsePinyinKeysInXInputPadEnabled = config.bool(ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad)
+                                                    // Note: 仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的
+                                                    && config.get(ConfigKey.ime_subtype) == ImeSubtype.hans;
 
-    public static int getThemeResId(Context context, Keyboard.Theme theme) {
-        int themeResId = R.style.Theme_Kuaizi_IME_Light;
-        if (theme == null) {
-            return themeResId;
-        }
-
-        switch (theme) {
-            case night:
-                themeResId = R.style.Theme_Kuaizi_IME_Night;
-                break;
-            case follow_system:
-                int themeMode = context.getResources().getConfiguration().uiMode
-                                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-                switch (themeMode) {
-                    case android.content.res.Configuration.UI_MODE_NIGHT_NO:
-                        themeResId = R.style.Theme_Kuaizi_IME_Light;
-                        break;
-                    case android.content.res.Configuration.UI_MODE_NIGHT_YES:
-                        themeResId = R.style.Theme_Kuaizi_IME_Night;
-                        break;
-                }
-                break;
-        }
-        return themeResId;
+        this.userInputDataDisabled = config.bool(ConfigKey.disable_user_input_data);
     }
 }

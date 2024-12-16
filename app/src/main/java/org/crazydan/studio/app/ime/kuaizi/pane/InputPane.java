@@ -17,15 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
-import java.util.function.Consumer;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
@@ -41,11 +39,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Config_Change_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Config_Update_Done;
@@ -61,28 +57,23 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class InputPane implements InputMsgListener, UserMsgListener, InputConfig.ChangeListener {
+public class InputPane implements InputMsgListener, UserMsgListener, ConfigChangeListener {
     private PinyinDict dict;
-    private InputPaneConfig config;
+    private Config.Mutable config;
 
     private Keyboard keyboard;
     private InputList inputList;
     private Stack<Keyboard.Type> keyboardSwitches;
 
-    private List<InputMsgListener> listeners;
+    private InputMsgListener listener;
 
-    InputPane(PinyinDict dict, SharedPreferences preferences) {
+    InputPane(PinyinDict dict) {
         this.dict = dict;
-
-        this.config = new InputPaneConfig();
-        this.config.syncWith(preferences);
-        this.config.setListener(this);
 
         this.inputList = new InputList();
         this.inputList.setListener(this);
 
         this.keyboardSwitches = new Stack<>();
-        this.listeners = new ArrayList<>();
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -94,22 +85,16 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
         dict.init(context);
         dict.open(context);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        return new InputPane(dict, preferences);
+        return new InputPane(dict);
     }
 
     /**
      * 启动 {@link InputPane}
-     * <p/>
-     * 强制提供配置更新函数，以避免遗漏对配置的更新处理
      *
      * @param keyboardType
      *         待使用的键盘类型
      */
-    public void start(Keyboard.Type keyboardType, Consumer<InputConfig> configUpdater) {
-        configUpdater.accept(this.config);
-
+    public void start(Keyboard.Type keyboardType, boolean resetInputting) {
         // 全新的切换，故而需清空键盘切换记录
         this.keyboardSwitches.clear();
 
@@ -117,8 +102,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
         switchKeyboardTo(keyboardType);
 
         // 再重置输入列表
-        this.inputList.updateConfig(this.config.createInputListConfig());
-        if (this.config.get(InputConfig.Key.reset_inputting)) {
+        this.inputList.updateConfig(createInputListConfig());
+        if (resetInputting) {
             this.inputList.reset(false);
         }
 
@@ -152,7 +137,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
         this.keyboard = null;
         this.inputList = null;
         this.keyboardSwitches = null;
-        this.listeners = null;
+        this.listener = null;
 
         // 确保拼音字典库能够被及时关闭
         PinyinDict.instance().close();
@@ -161,6 +146,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
     // =============================== End: 生命周期 ===================================
 
     // =============================== Start: 内部状态 ===================================
+
+    public void setConfig(Config.Mutable config) {
+        this.config = config;
+    }
 
     /** 获取键盘类型 */
     public Keyboard.Type getKeyboardType() {
@@ -176,30 +165,22 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
 
     // =============================== Start: 消息处理 ===================================
 
-    public void addListener(InputMsgListener listener) {
-        if (!this.listeners.contains(listener)) {
-            this.listeners.add(listener);
-        }
-    }
-
-    public void removeListener(InputMsgListener listener) {
-        this.listeners.remove(listener);
+    public void setListener(InputMsgListener listener) {
+        this.listener = listener;
     }
 
     // --------------------------------------
 
-    /** 响应 {@link InputConfig} 变更消息：将其转换为 {@link InputMsgType#Config_Change_Done} 消息后，再向上传递给外部监听者 */
+    /** 响应 {@link Config} 变更消息 */
     @Override
-    public void onChanged(InputConfig.Key key, Object oldValue, Object newValue) {
-        if (this.inputList.updateConfig(this.config.createInputListConfig())) {
+    public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
+        if (this.inputList.updateConfig(createInputListConfig())) {
             fire_InputMsg(InputList_Config_Update_Done);
         }
-        if (this.keyboard.updateConfig(this.config.createKeyboardConfig())) {
+
+        if (this.keyboard.updateConfig(createKeyboardConfig())) {
             fire_InputMsg(Keyboard_Config_Update_Done);
         }
-
-        InputMsgData msgData = new ConfigChangeMsgData(key, oldValue, newValue);
-        fire_InputMsg(Config_Change_Done, msgData);
     }
 
     // --------------------------------------
@@ -226,12 +207,12 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
-                on_Keyboard_Switch_Doing((KeyboardSwitchMsgData) msg.data);
+                on_Keyboard_Switch_Doing_Msg((KeyboardSwitchMsgData) msg.data);
                 // Note: 在键盘切换过程中，不向上转发消息
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
-                on_Keyboard_HandMode_Switch_Doing((KeyboardHandModeSwitchMsgData) msg.data);
+                on_Keyboard_HandMode_Switch_Doing_Msg((KeyboardHandModeSwitchMsgData) msg.data);
                 return;
             }
             // 向键盘派发 InputList 的消息
@@ -264,12 +245,11 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
 
         // TODO 附件输入状态数据，如，InputList 是否为空、是否可撤销删除、CompletionInputFactory 等
         InputMsg newMsg = new InputMsg(type, data, keyboard.getKeyFactory(inputList), inputList.getInputFactory());
-
-        this.listeners.forEach(listener -> listener.onMsg(newMsg));
+        this.listener.onMsg(newMsg);
     }
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
-    private void on_Keyboard_Switch_Doing(KeyboardSwitchMsgData data) {
+    private void on_Keyboard_Switch_Doing_Msg(KeyboardSwitchMsgData data) {
         Keyboard.Type type = data.type;
         if (type == null && !this.keyboardSwitches.isEmpty()) {
             type = this.keyboardSwitches.pop();
@@ -284,9 +264,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
     }
 
     /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */
-    private void on_Keyboard_HandMode_Switch_Doing(KeyboardHandModeSwitchMsgData data) {
+    private void on_Keyboard_HandMode_Switch_Doing_Msg(KeyboardHandModeSwitchMsgData data) {
         Keyboard.HandMode mode = data.mode;
-        this.config.set(InputConfig.Key.hand_mode, mode);
+        this.config.set(ConfigKey.hand_mode, mode);
 
         fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
     }
@@ -308,7 +288,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
                 || type == Keyboard.Type.Keep_Current //
             ) //
         ) {
-            KeyboardConfig config = this.config.createKeyboardConfig();
+            KeyboardConfig config = createKeyboardConfig();
             old.updateConfig(config);
 
             old.reset();
@@ -321,7 +301,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
                 // 切换本输入法到不同的系统键盘时的情况
             case By_ImeSubtype: {
                 // Note: ImeService 将在每次 start 本键盘时更新该项配置
-                ImeSubtype imeSubtype = this.config.get(InputConfig.Key.ime_subtype);
+                ImeSubtype imeSubtype = this.config.get(ConfigKey.ime_subtype);
 
                 if (imeSubtype == ImeSubtype.latin) {
                     type = Keyboard.Type.Latin;
@@ -335,9 +315,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
         if (old != null) {
             old.destroy();
         }
-        this.config.set(InputConfig.Key.prev_keyboard_type, oldType);
+        this.config.set(ConfigKey.prev_keyboard_type, oldType);
 
-        KeyboardConfig config = this.config.createKeyboardConfig();
+        KeyboardConfig config = createKeyboardConfig();
         this.keyboard = createKeyboard(type);
         this.keyboard.updateConfig(config);
         this.keyboard.setListener(this);
@@ -366,5 +346,13 @@ public class InputPane implements InputMsgListener, UserMsgListener, InputConfig
             default:
                 return new PinyinKeyboard(this.dict);
         }
+    }
+
+    private InputListConfig createInputListConfig() {
+        return InputListConfig.from(this.config);
+    }
+
+    private KeyboardConfig createKeyboardConfig() {
+        return KeyboardConfig.from(this.config);
     }
 }

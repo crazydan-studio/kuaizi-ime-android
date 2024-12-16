@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+
 /**
  * {@link InputList} 的配置
  *
@@ -27,13 +30,13 @@ public class InputListConfig {
     /** 是否优先使用候选字的变体：主要针对拼音输入的候选字 */
     public final boolean useCandidateVariantFirst;
 
-    /** 通过 {@link InputConfig} 构造 {@link InputListConfig} */
-    public static InputListConfig from(InputConfig inputConfig) {
-        return new InputListConfig(inputConfig);
+    /** 通过 {@link Config} 构造 {@link InputListConfig} */
+    public static InputListConfig from(Config config) {
+        return new InputListConfig(config);
     }
 
-    InputListConfig(InputConfig inputConfig) {
-        this.useCandidateVariantFirst = inputConfig.bool(InputConfig.Key.enable_candidate_variant_first);
+    InputListConfig(Config config) {
+        this.useCandidateVariantFirst = config.bool(ConfigKey.enable_candidate_variant_first);
     }
 
     @Override

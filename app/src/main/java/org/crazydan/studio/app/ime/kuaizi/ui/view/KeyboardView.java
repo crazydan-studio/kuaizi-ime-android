@@ -29,7 +29,8 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -60,7 +61,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
 
     private UserKeyMsgListener listener;
 
-    private Supplier<InputConfig> configGetter;
+    private Supplier<Config> configGetter;
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -85,18 +86,18 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    public InputConfig getConfig() {
+    public Config getConfig() {
         return this.configGetter.get();
     }
 
-    public void setConfig(Supplier<InputConfig> getter) {
+    public void setConfig(Supplier<Config> getter) {
         this.configGetter = getter;
     }
 
     public boolean isGestureTrailerDisabled() {
-        InputConfig config = getConfig();
+        Config config = getConfig();
 
-        return config.bool(InputConfig.Key.disable_gesture_slipping_trail);
+        return config.bool(ConfigKey.disable_gesture_slipping_trail);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -136,14 +137,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     @Override
     public void onMsg(InputMsg msg) {
         KeyFactory keyFactory = msg.keyFactory;
-        InputConfig config = getConfig();
+        Config config = getConfig();
 
         switch (msg.type) {
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
-            case Keyboard_HandMode_Switch_Done:
-            case Config_Change_Done: {
-                if (config.bool(InputConfig.Key.disable_key_animation)) {
+            case Keyboard_HandMode_Switch_Done: {
+                if (config.bool(ConfigKey.disable_key_animation)) {
                     setItemAnimator(null);
                 } else {
                     setItemAnimator(this.animator);
@@ -175,7 +175,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         //updateKeys(new Key[][] {});
     }
 
-    private void update(InputConfig config, KeyFactory keyFactory) {
+    private void update(Config config, KeyFactory keyFactory) {
         if (keyFactory == null) {
             return;
         }

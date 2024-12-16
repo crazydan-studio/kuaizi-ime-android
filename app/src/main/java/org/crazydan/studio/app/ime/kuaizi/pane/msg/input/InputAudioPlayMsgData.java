@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
@@ -36,10 +37,17 @@ public class InputAudioPlayMsgData extends InputMsgData {
     }
 
     public enum AudioType {
-        SingleTick,
-        DoubleTick,
-        ClockTick,
-        PingTick,
-        PageFlip,
+        SingleTick(R.raw.tick_single),
+        DoubleTick(R.raw.tick_double),
+        ClockTick(R.raw.tick_clock),
+        PingTick(R.raw.tick_ping),
+        PageFlip(R.raw.page_flip),
+        ;
+
+        public final int resId;
+
+        AudioType(int resId) {
+            this.resId = resId;
+        }
     }
 }

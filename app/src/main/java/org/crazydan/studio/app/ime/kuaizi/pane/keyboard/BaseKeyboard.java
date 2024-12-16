@@ -151,7 +151,13 @@ public abstract class BaseKeyboard implements Keyboard {
                 break;
             }
             case InputList_Clean_Done: {
+                play_SingleTick_InputAudio(null);
+
                 change_State_to_Init();
+                break;
+            }
+            case InputList_Cleaned_Cancel_Done: {
+                play_SingleTick_InputAudio(null);
                 break;
             }
         }

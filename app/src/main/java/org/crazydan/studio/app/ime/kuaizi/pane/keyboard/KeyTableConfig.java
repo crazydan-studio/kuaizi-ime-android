@@ -37,19 +37,19 @@ public class KeyTableConfig {
     /** 键盘配置 */
     public final KeyboardConfig keyboard;
 
-    public static KeyTableConfig from(KeyboardConfig keyboardConfig) {
-        return from(keyboardConfig, null);
+    public static KeyTableConfig from(KeyboardConfig keyboard) {
+        return from(keyboard, null);
     }
 
-    public static KeyTableConfig from(KeyboardConfig keyboardConfig, InputList inputList) {
-        return new KeyTableConfig(keyboardConfig, inputList);
+    public static KeyTableConfig from(KeyboardConfig keyboard, InputList inputList) {
+        return new KeyTableConfig(keyboard, inputList);
     }
 
-    KeyTableConfig(KeyboardConfig keyboardConfig, InputList inputList) {
+    KeyTableConfig(KeyboardConfig keyboard, InputList inputList) {
         this.hasInputs = inputList != null && !inputList.isEmpty();
         this.hasRevokingInputs = inputList != null && inputList.canRevokeCommit();
         this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
-        this.keyboard = keyboardConfig;
+        this.keyboard = keyboard;
     }
 }

@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
+import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
@@ -102,6 +103,17 @@ public interface Keyboard {
         portrait,
         /** 横向 */
         landscape,
+        ;
+
+        /** 确定键盘布局方向 */
+        public static Orientation from(Context context) {
+            if (context.getResources().getConfiguration().orientation
+                == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                return landscape;
+            } else {
+                return portrait;
+            }
+        }
     }
 
     /** 左右手模式 */
@@ -114,19 +126,37 @@ public interface Keyboard {
 
     /** 键盘主题样式 */
     enum Theme {
-        light(R.string.value_theme_light),
-        night(R.string.value_theme_night),
-        follow_system(R.string.value_theme_follow_system),
+        light(R.style.Theme_Kuaizi_IME_Light),
+        night(R.style.Theme_Kuaizi_IME_Night),
+        follow_system(-1),
         ;
 
-        private final int labelResId;
+        private final int resId;
 
-        Theme(int labelResId) {
-            this.labelResId = labelResId;
+        Theme(int resId) {
+            this.resId = resId;
         }
 
-        public int getLabelResId() {
-            return this.labelResId;
+        /** 获取主题资源 id，若其为 {@link #follow_system}，则通过 {@link #from} 确定最终主题，再获取其资源 id */
+        public int getResId(Context context) {
+            if (this == follow_system) {
+                return from(context).resId;
+            }
+            return this.resId;
+        }
+
+        /** 根据系统主题获取键盘主题，若系统不支持暗黑设置，则返回主题 {@link #light} */
+        public static Theme from(Context context) {
+            int themeMode = context.getResources().getConfiguration().uiMode
+                            & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+
+            switch (themeMode) {
+                case android.content.res.Configuration.UI_MODE_NIGHT_NO:
+                    return light;
+                case android.content.res.Configuration.UI_MODE_NIGHT_YES:
+                    return night;
+            }
+            return light;
         }
     }
 }

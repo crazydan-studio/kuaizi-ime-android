@@ -15,25 +15,10 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
+package org.crazydan.studio.app.ime.kuaizi.conf;
 
-import android.content.Context;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-
-/**
- * IME 子类型
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-03
- */
-public enum ImeSubtype {
-    /** 拉丁文 */
-    latin,
-    /** 汉字 */
-    hans,
-    ;
-
-    public static ImeSubtype from(Context context) {
-        return SystemUtils.getImeSubtype(context);
-    }
+/** 配置变更监听器 */
+public interface ConfigChangeListener {
+    /** 仅当新旧配置值不相等时才会触发 */
+    void onChanged(ConfigKey key, Object oldValue, Object newValue);
 }

@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -26,15 +28,20 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
+import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
@@ -47,12 +54,39 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
  */
-public class ImeService extends InputMethodService implements InputMsgListener {
+public class ImeService extends InputMethodService implements UserMsgListener, InputMsgListener, ConfigChangeListener {
+    private ImeConfig config;
+
     private InputPane inputPane;
     private InputPaneView inputPaneView;
 
     private int prevFieldId;
     private EditorSelection editorSelection;
+
+    /** 系统输入法切换到本输入法时调用 */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        this.config = new ImeConfig();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        this.config.syncWith(preferences);
+        this.config.setListener(this);
+    }
+
+    /** 切换到其他系统输入法时调用 */
+    @Override
+    public void onDestroy() {
+        this.inputPane.destroy();
+        this.config.destroy();
+
+        this.config = null;
+        this.inputPane = null;
+        this.inputPaneView = null;
+        this.editorSelection = null;
+
+        super.onDestroy();
+    }
 
     /**
      * 启动输入，先于 {@link #onCreateInputView()} 和
@@ -65,31 +99,18 @@ public class ImeService extends InputMethodService implements InputMsgListener {
         super.onStartInput(attribute, restarting);
     }
 
-    /** 切换到其他系统输入法时调用 */
-    @Override
-    public void onDestroy() {
-        this.inputPane.destroy();
-
-        this.inputPane = null;
-        this.inputPaneView = null;
-        this.editorSelection = null;
-
-        super.onDestroy();
-    }
-
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
         this.inputPane = InputPane.create(getApplicationContext());
         this.inputPaneView = (InputPaneView) getLayoutInflater().inflate(R.layout.input_pane_view, null);
 
-        // 从视图向键盘转发按键消息
-        this.inputPaneView.setListener(this.inputPane);
-        // 从键盘向视图转发键盘的消息
-        this.inputPane.addListener(this.inputPaneView);
+        this.inputPane.setConfig(this.config.mutable());
+        this.inputPaneView.setConfig(this.config.immutable());
 
-        // 响应键盘消息以实现文本编辑
-        this.inputPane.addListener(this);
+        // 通过当前层向逻辑层和视图层分别转发用户消息和输入消息
+        this.inputPane.setListener(this);
+        this.inputPaneView.setListener(this);
 
         return this.inputPaneView;
     }
@@ -173,29 +194,39 @@ public class ImeService extends InputMethodService implements InputMsgListener {
     ) {
         this.editorSelection = null;
 
-        ImeSubtype imeSubtype = SystemUtils.getImeSubtype(getApplicationContext());
+        Context context = getApplicationContext();
+        ImeSubtype imeSubtype = ImeSubtype.from(context);
+        Keyboard.Orientation orientation = Keyboard.Orientation.from(context);
+        this.config.set(ConfigKey.ime_subtype, imeSubtype);
+        this.config.set(ConfigKey.orientation, orientation);
+        this.config.set(ConfigKey.single_line_input, useSingleLineInputting, true);
+        this.config.set(ConfigKey.disable_input_key_popup_tips, usePasswordInputting, true);
 
-        this.inputPane.start(keyboardType, (conf) -> {
-            conf.set(InputConfig.Key.ime_subtype, imeSubtype);
-            conf.set(InputConfig.Key.reset_inputting, resetInputting);
-            conf.set(InputConfig.Key.single_line_input, useSingleLineInputting, true);
-            conf.set(InputConfig.Key.disable_input_key_popup_tips, usePasswordInputting, true);
-
-            Keyboard.Orientation orientation;
-            if (getResources().getConfiguration().orientation
-                == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-                orientation = Keyboard.Orientation.landscape;
-            } else {
-                orientation = Keyboard.Orientation.portrait;
-            }
-            conf.set(InputConfig.Key.orientation, orientation);
-        });
+        this.inputPane.start(keyboardType, resetInputting);
     }
 
     // =============================== Start: 消息处理 ===================================
 
     @Override
+    public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
+        this.inputPane.onChanged(key, oldValue, newValue);
+        this.inputPaneView.onChanged(key, oldValue, newValue);
+    }
+
+    @Override
+    public void onMsg(UserInputMsg msg) {
+        this.inputPane.onMsg(msg);
+    }
+
+    @Override
+    public void onMsg(UserKeyMsg msg) {
+        this.inputPane.onMsg(msg);
+    }
+
+    @Override
     public void onMsg(InputMsg msg) {
+        this.inputPaneView.onMsg(msg);
+
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;

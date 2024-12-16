@@ -25,7 +25,7 @@ import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -93,10 +93,10 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences_theme, rootKey);
 
-            SwitchPreferenceCompat xPad = findPreference(InputConfig.Key.enable_x_input_pad.name());
+            SwitchPreferenceCompat xPad = findPreference(ConfigKey.enable_x_input_pad.name());
             Preference latinUsePinyinKeys
-                    = findPreference(InputConfig.Key.enable_latin_use_pinyin_keys_in_x_input_pad.name());
-            Preference adaptGesture = findPreference(InputConfig.Key.adapt_desktop_swipe_up_gesture.name());
+                    = findPreference(ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad.name());
+            Preference adaptGesture = findPreference(ConfigKey.adapt_desktop_swipe_up_gesture.name());
 
             xPad.setOnPreferenceClickListener(pref -> {
                 latinUsePinyinKeys.setEnabled(xPad.isChecked());

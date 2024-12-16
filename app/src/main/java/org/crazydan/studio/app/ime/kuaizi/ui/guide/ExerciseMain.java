@@ -39,12 +39,12 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
@@ -90,9 +90,8 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         this.imeView = findViewById(R.id.ime_view);
         this.imeView.startInput(Keyboard.Type.Pinyin);
 
-        InputConfig config = this.imeView.getConfig();
-        Keyboard.Theme theme = config.get(InputConfig.Key.theme);
-        int imeThemeResId = KeyboardConfig.getThemeResId(getApplicationContext(), theme);
+        Keyboard.Theme theme = config.get(ConfigKey.theme);
+        int imeThemeResId = theme.getResId(getApplicationContext());
 
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
         DynamicLayoutSandboxView xPadSandboxView = findViewById(R.id.xpad_step_image_sandbox_view);
@@ -135,7 +134,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
 
     /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
     private int getDrawerGravity() {
-        InputConfig config = this.imeView.getConfig();
+        Config config = this.imeView.getConfig();
 
         return config.isLeftHandMode() ? GravityCompat.START : GravityCompat.END;
     }
