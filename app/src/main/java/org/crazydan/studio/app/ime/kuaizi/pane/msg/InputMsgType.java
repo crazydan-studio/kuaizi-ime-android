@@ -97,4 +97,7 @@ public enum InputMsgType {
 
     /** 输入法切换中 */
     IME_Switch_Doing,
+
+    /** （系统）配置已更新 */
+    Config_Update_Done,
 }

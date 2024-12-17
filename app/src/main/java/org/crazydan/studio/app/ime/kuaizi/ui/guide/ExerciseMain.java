@@ -53,7 +53,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
@@ -71,7 +70,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExerciseMain extends ImeIntegratedActivity implements InputMsgListener {
+public class ExerciseMain extends ImeIntegratedActivity {
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
@@ -225,6 +224,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements InputMsgListe
 
     @Override
     public void onMsg(InputMsg msg) {
+        super.onMsg(msg);
+
         ExerciseView exerciseView = this.exerciseListView.getActiveExerciseView();
         exerciseView.onMsg(msg);
     }
@@ -1255,6 +1256,6 @@ public class ExerciseMain extends ImeIntegratedActivity implements InputMsgListe
     }
 
     private void changePinyinWord(InputWord word) {
-        this.inputPane.getInputList().getLastCharInput().setWord(PinyinWord.from(word));
+        this.inputPane.changeLastInputWord(PinyinWord.from(word));
     }
 }

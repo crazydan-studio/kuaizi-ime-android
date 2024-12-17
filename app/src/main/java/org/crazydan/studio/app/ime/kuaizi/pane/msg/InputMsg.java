@@ -48,15 +48,9 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     public InputMsg(InputMsgType type, InputMsgData data, Keyboard keyboard, InputList inputList) {
         super(type, data);
 
-        if (keyboard != null && inputList != null) {
-            this.keyFactory = keyboard.getKeyFactory(inputList);
-            this.inputFactory = inputList.getInputFactory();
-            this.inputList = new InputListState(inputList);
-        } else {
-            this.keyFactory = null;
-            this.inputFactory = null;
-            this.inputList = null;
-        }
+        this.keyFactory = keyboard != null ? keyboard.getKeyFactory(inputList) : null;
+        this.inputFactory = inputList != null ? inputList.getInputFactory() : null;
+        this.inputList = new InputListState(inputList);
     }
 
     public static class InputListState {
@@ -66,8 +60,8 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         public final boolean deletedCancelable;
 
         private InputListState(InputList inputList) {
-            this.empty = inputList.isEmpty();
-            this.deletedCancelable = inputList.canCancelDelete();
+            this.empty = inputList == null || inputList.isEmpty();
+            this.deletedCancelable = inputList != null && inputList.canCancelDelete();
         }
     }
 }

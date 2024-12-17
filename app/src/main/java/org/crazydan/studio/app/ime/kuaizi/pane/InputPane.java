@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
+import java.util.List;
 import java.util.Stack;
 
 import android.content.Context;
@@ -25,6 +26,8 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
@@ -39,9 +42,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Config_Update_Done;
@@ -156,11 +161,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         return this.keyboard != null ? this.keyboard.getType() : null;
     }
 
-    /** 获取输入列表 */
-    public InputList getInputList() {
-        return this.inputList;
-    }
-
     // =============================== End: 内部状态 ===================================
 
     // =============================== Start: 消息处理 ===================================
@@ -181,6 +181,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         if (this.keyboard.updateConfig(createKeyboardConfig())) {
             fire_InputMsg(Keyboard_Config_Update_Done);
         }
+
+        ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
+        fire_InputMsg(Config_Update_Done, data);
     }
 
     // --------------------------------------
@@ -242,8 +245,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         InputList inputList = this.inputList;
         Keyboard keyboard = this.keyboard;
 
-        InputMsg newMsg = new InputMsg(type, data, keyboard, inputList);
-        this.listener.onMsg(newMsg);
+        InputMsg msg = new InputMsg(type, data, keyboard, inputList);
+        this.listener.onMsg(msg);
     }
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
@@ -353,4 +356,39 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     public KeyboardConfig createKeyboardConfig() {
         return KeyboardConfig.from(this.config);
     }
+
+    // =============================== Start: 自动化，用于模拟输入等 ===================================
+
+    /** 更改最后一个输入的候选字 */
+    public void changeLastInputWord(InputWord word) {
+        this.inputList.getLastCharInput().setWord(word);
+    }
+
+    /**
+     * 向输入列表做预备输入
+     *
+     * @param tuples
+     *         其元素为 <code>["chars", "word value", "word spell"]</code> 三元数组
+     */
+    public void prepareInputs(List<String[]> tuples) {
+        this.inputList.reset(false);
+
+        for (int i = 0; i < tuples.size(); i++) {
+            String[] tuple = tuples.get(i);
+            String chars = tuple[0];
+            String wordValue = tuple[1];
+            String wordSpell = tuple[2];
+
+            InputWord word = new InputWord(100 + i, wordValue, wordSpell);
+            List<Key<?>> keys = CharKey.from(chars);
+            CharInput input = CharInput.from(keys);
+            input.setWord(word);
+
+            this.inputList.selectLast();
+            this.inputList.withPending(input);
+            this.inputList.confirmPending();
+        }
+    }
+
+    // =============================== End: 自动化，用于模拟输入等 ===================================
 }

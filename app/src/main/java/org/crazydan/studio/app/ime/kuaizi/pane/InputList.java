@@ -268,7 +268,11 @@ public class InputList implements UserInputMsgListener {
 
     /** 重置 {@link Input.Option} 以便于使用默认设置 */
     public void resetOption() {
-        this.option = new Input.Option(null, this.config.useCandidateVariantFirst);
+        if (this.config != null) {
+            this.option = new Input.Option(null, this.config.useCandidateVariantFirst);
+        } else {
+            this.option = null;
+        }
     }
 
     /** 当前的待输入是否为空 */

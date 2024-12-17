@@ -20,9 +20,11 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 
 /**
  * {@link InputList} 的视图
@@ -41,6 +43,13 @@ public class InputListView extends InputListViewBase implements InputMsgListener
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
+            case Config_Update_Done: {
+                ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+                // Note: 若非主题更新，则无需更新视图
+                if (data.key != ConfigKey.theme) {
+                    break;
+                }
+            }
             case Input_Selected_Delete_Done:
             case Input_Pending_Drop_Done:
             case Input_Completion_Apply_Done:
@@ -60,6 +69,7 @@ public class InputListView extends InputListViewBase implements InputMsgListener
                 update(msg.inputFactory);
                 break;
         }
+
         super.onMsg(msg);
     }
 

@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAnimator;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
@@ -131,6 +132,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         KeyFactory keyFactory = msg.keyFactory;
 
         switch (msg.type) {
+            case Config_Update_Done: {
+                ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+                // Note: 若非主题更新，则无需更新视图
+                if (data.key != ConfigKey.theme) {
+                    return;
+                }
+            }
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
             case Keyboard_HandMode_Switch_Done: {
@@ -183,6 +191,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             post(() -> setItemAnimator(this.animator));
         }
 
-        super.update(keys, config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left);
+        boolean leftHandMode = config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
+        super.update(keys, leftHandMode);
     }
 }

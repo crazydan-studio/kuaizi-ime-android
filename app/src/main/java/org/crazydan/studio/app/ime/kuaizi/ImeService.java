@@ -206,7 +206,6 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
         this.inputPane.onChanged(key, oldValue, newValue);
-        this.inputPaneView.onChanged(key, oldValue, newValue);
     }
 
     @Override

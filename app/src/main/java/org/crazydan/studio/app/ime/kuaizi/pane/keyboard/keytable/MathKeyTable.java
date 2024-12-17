@@ -25,7 +25,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
 
 /**
  * {@link MathKeyboard 数学键盘}按键表

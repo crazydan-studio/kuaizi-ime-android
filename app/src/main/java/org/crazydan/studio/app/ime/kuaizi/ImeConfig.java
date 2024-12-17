@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-16
  */
-public class ImeConfig extends Config.Mutable {
+public class ImeConfig extends Config.Mutable implements SharedPreferences.OnSharedPreferenceChangeListener {
     private ConfigChangeListener listener;
 
     private Runnable cleaner;
@@ -95,15 +95,15 @@ public class ImeConfig extends Config.Mutable {
             ((Mutable) this.source).set(key, value);
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(this::onSharedPreferenceChanged);
-
+        // Note: 监听器不能为 lambda 函数，否则，会造成监听仅对第一次变更有效
+        preferences.registerOnSharedPreferenceChangeListener(this);
         this.cleaner = () -> {
-            preferences.unregisterOnSharedPreferenceChangeListener(this::onSharedPreferenceChanged);
+            preferences.unregisterOnSharedPreferenceChangeListener(this);
         };
     }
 
     /** 同步对系统配置的更新 */
-    private void onSharedPreferenceChanged(SharedPreferences preferences, String keyName) {
+    public void onSharedPreferenceChanged(SharedPreferences preferences, String keyName) {
         for (ConfigKey key : ConfigKey.values()) {
             if (!key.name().equals(keyName)) {
                 continue;

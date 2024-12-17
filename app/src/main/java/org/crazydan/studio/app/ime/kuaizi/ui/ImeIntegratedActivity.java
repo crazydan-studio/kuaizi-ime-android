@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
+import java.util.List;
+
 import android.content.Context;
 import android.os.Bundle;
 import org.crazydan.studio.app.ime.kuaizi.ImeConfig;
@@ -90,7 +92,6 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
         this.inputPane.onChanged(key, oldValue, newValue);
-        this.inputPaneView.onChanged(key, oldValue, newValue);
     }
 
     @Override
@@ -110,12 +111,16 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     // =============================== End: 消息处理 ===================================
 
+    protected void prepareInputs(String[]... inputs) {
+        this.inputPane.prepareInputs(List.of(inputs));
+    }
+
     protected void startKeyboard(Keyboard.Type type) {
         this.inputPane.start(type, false);
     }
 
     protected KeyTableConfig createKeyTableConfig() {
-        return KeyTableConfig.from(this.inputPane.createKeyboardConfig(), this.inputPane.getInputList());
+        return KeyTableConfig.from(this.inputPane.createKeyboardConfig());
     }
 
     protected PinyinKeyTable createPinyinKeyTable() {

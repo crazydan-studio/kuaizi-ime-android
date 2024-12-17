@@ -38,7 +38,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
-import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -49,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCompletionUpdateMsgData;
@@ -62,7 +62,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class InputPaneView extends FrameLayout implements UserMsgListener, InputMsgListener, ConfigChangeListener {
+public class InputPaneView extends FrameLayout implements UserMsgListener, InputMsgListener {
     private final AudioPlayer audioPlayer;
 
     private KeyboardView keyboardView;
@@ -76,6 +76,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
 
+    private boolean needToAddBottomSpacing;
     private boolean needToDisableSettingsBtn;
     private boolean needToDisableInputListCleanBtn = true;
     private boolean needToDisableInputListCleanCancelBtn = true;
@@ -129,33 +130,17 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     // -------------------------------------------
 
-    @Override
-    public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
-        switch (key) {
-            case theme: {
-                doLayout();
-                break;
-            }
-            case enable_x_input_pad:
-            case adapt_desktop_swipe_up_gesture: {
-                updateBottomSpacing();
-                break;
-            }
-        }
-    }
-
-    // -------------------------------------------
-
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
-        this.keyboardView.onMsg(msg);
-        this.inputListView.onMsg(msg);
-
         switch (msg.type) {
+            case Config_Update_Done: {
+                on_Config_Update_Done_Msg((ConfigUpdateMsgData) msg.data);
+                break;
+            }
             case Keyboard_Start_Done: {
-                // Note: 键盘启动时，涉及横竖屏转换，故而，做一次更新
-                updateBottomSpacing();
+                // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次更新
+                updateBottomSpacing(false);
                 break;
             }
             case InputAudio_Play_Doing: {
@@ -181,11 +166,25 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 showInputKeyPopupWindow(null, false);
                 break;
             }
-            default: {
-                this.needToDisableInputListCleanBtn = msg.inputList.empty;
-                this.needToDisableInputListCleanCancelBtn = !msg.inputList.deletedCancelable;
+        }
 
-                toggleEnableInputListCleanBtn();
+        toggleEnableInputListCleanBtnByMsg(msg);
+
+        // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
+        this.keyboardView.onMsg(msg);
+        this.inputListView.onMsg(msg);
+    }
+
+    private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
+        switch (data.key) {
+            case theme: {
+                doLayout();
+                break;
+            }
+            case enable_x_input_pad:
+            case adapt_desktop_swipe_up_gesture: {
+                updateBottomSpacing(false);
+                break;
             }
         }
     }
@@ -200,6 +199,20 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
 
         this.audioPlayer.play(data.audioType.resId);
+    }
+
+    private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
+        boolean disableCleanBtn = msg.inputList.empty;
+        boolean disableCleanCancelBtn = !msg.inputList.deletedCancelable;
+
+        if (this.needToDisableInputListCleanBtn != disableCleanBtn
+            || this.needToDisableInputListCleanCancelBtn != disableCleanCancelBtn //
+        ) {
+            this.needToDisableInputListCleanBtn = disableCleanBtn;
+            this.needToDisableInputListCleanCancelBtn = disableCleanCancelBtn;
+
+            toggleEnableInputListCleanBtn();
+        }
     }
 
     // =============================== End: 消息处理 ===================================
@@ -236,14 +249,19 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.inputCompletionsView.setListener(this);
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
-        updateBottomSpacing();
+        updateBottomSpacing(true);
     }
 
-    private void updateBottomSpacing() {
+    private void updateBottomSpacing(boolean force) {
         // Note: 仅竖屏模式下需要添加底部空白
         boolean needSpacing = this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
                               && !this.config.bool(ConfigKey.enable_x_input_pad)
                               && this.config.get(ConfigKey.orientation) == Keyboard.Orientation.portrait;
+
+        if (!force && this.needToAddBottomSpacing == needSpacing) {
+            return;
+        }
+        this.needToAddBottomSpacing = needSpacing;
 
         float height = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
         height -= this.keyboardView.getBottomSpacing();
