@@ -38,14 +38,36 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     /** 用于重新布局 {@link Input} */
     public final InputFactory inputFactory;
 
+    /** 输入列表状态 */
+    public final InputListState inputList;
+
     public InputMsg(InputMsgType type, InputMsgData data) {
         this(type, data, null, null);
     }
 
-    public InputMsg(InputMsgType type, InputMsgData data, KeyFactory keyFactory, InputFactory inputFactory) {
+    public InputMsg(InputMsgType type, InputMsgData data, Keyboard keyboard, InputList inputList) {
         super(type, data);
 
-        this.keyFactory = keyFactory;
-        this.inputFactory = inputFactory;
+        if (keyboard != null && inputList != null) {
+            this.keyFactory = keyboard.getKeyFactory(inputList);
+            this.inputFactory = inputList.getInputFactory();
+            this.inputList = new InputListState(inputList);
+        } else {
+            this.keyFactory = null;
+            this.inputFactory = null;
+            this.inputList = null;
+        }
+    }
+
+    public static class InputListState {
+        /** 输入列表是否为空 */
+        public final boolean empty;
+        /** 输入列表的 已删除 是否可取消 */
+        public final boolean deletedCancelable;
+
+        private InputListState(InputList inputList) {
+            this.empty = inputList.isEmpty();
+            this.deletedCancelable = inputList.canCancelDelete();
+        }
     }
 }

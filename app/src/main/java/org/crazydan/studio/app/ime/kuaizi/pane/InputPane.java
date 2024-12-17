@@ -223,7 +223,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
                 break;
             }
             default: {
-                // TODO 若有新输入，则清空 删除撤销数据
                 if (!inputList.isEmpty()) {
                     inputList.clearDeleteCancels();
                 }
@@ -243,8 +242,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         InputList inputList = this.inputList;
         Keyboard keyboard = this.keyboard;
 
-        // TODO 附件输入状态数据，如，InputList 是否为空、是否可撤销删除、CompletionInputFactory 等
-        InputMsg newMsg = new InputMsg(type, data, keyboard.getKeyFactory(inputList), inputList.getInputFactory());
+        InputMsg newMsg = new InputMsg(type, data, keyboard, inputList);
         this.listener.onMsg(newMsg);
     }
 

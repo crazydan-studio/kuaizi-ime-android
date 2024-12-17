@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.function.Supplier;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -48,8 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
  * <p/>
  * 负责显示各类键盘的按键布局，并提供事件监听等处理
  * <p/>
- * 注：在 {@link InputPaneView ImeInputView}
- * 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link InputPaneView} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
@@ -59,9 +56,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyViewAnimator animator;
 
+    private Config config;
     private UserKeyMsgListener listener;
-
-    private Supplier<Config> configGetter;
 
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -86,18 +82,12 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     .addListener(this.gestureTrailer);
     }
 
-    public Config getConfig() {
-        return this.configGetter.get();
-    }
-
-    public void setConfig(Supplier<Config> getter) {
-        this.configGetter = getter;
+    public void setConfig(Config config) {
+        this.config = config;
     }
 
     public boolean isGestureTrailerDisabled() {
-        Config config = getConfig();
-
-        return config.bool(ConfigKey.disable_gesture_slipping_trail);
+        return this.config.bool(ConfigKey.disable_gesture_slipping_trail);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -112,8 +102,9 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         switch (msg.type) {
             case FingerMoving_Start: {
                 // 对光标移动和文本选择按键启用轨迹
-                if (CtrlKey.isAny(msg.data.key, CtrlKey.Type.Editor_Cursor_Locator, CtrlKey.Type.Editor_Range_Selector)
-                    //
+                if (CtrlKey.isAny(msg.data.key, //
+                                  CtrlKey.Type.Editor_Cursor_Locator, //
+                                  CtrlKey.Type.Editor_Range_Selector) //
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);
@@ -136,8 +127,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     /** 响应来自上层派发的 {@link InputMsg} 消息 */
     @Override
     public void onMsg(InputMsg msg) {
+        Config config = this.config;
         KeyFactory keyFactory = msg.keyFactory;
-        Config config = getConfig();
 
         switch (msg.type) {
             case Keyboard_Switch_Done:
@@ -185,12 +176,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         boolean animationDisabled = keyFactory instanceof KeyFactory.NoAnimation;
         if (animationDisabled) {
             setItemAnimator(null);
+
             // Note：post 的参数是在当前渲染线程执行完毕后再调用的，
             // 因此，在无动效的按键渲染完毕后可以恢复原动画设置，
             // 确保其他需要动画的按键能够正常显示动画效果
             post(() -> setItemAnimator(this.animator));
         }
 
-        super.update(keys, config.isLeftHandMode());
+        super.update(keys, config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left);
     }
 }

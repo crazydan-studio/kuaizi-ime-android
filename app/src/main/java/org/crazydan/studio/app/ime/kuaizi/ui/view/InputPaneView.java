@@ -75,7 +75,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     private View settingsBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
-    private boolean disableSettingsBtn;
+
+    private boolean needToDisableSettingsBtn;
+    private boolean needToDisableInputListCleanBtn = true;
+    private boolean needToDisableInputListCleanCancelBtn = true;
 
     private Config config;
     private UserMsgListener listener;
@@ -90,12 +93,11 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                               R.raw.page_flip,
                               R.raw.tick_clock,
                               R.raw.tick_ping);
-
-        doLayout();
     }
 
     public void setConfig(Config config) {
         this.config = config;
+        doLayout();
     }
 
     public XPadKeyView getXPadKeyView() {
@@ -103,7 +105,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     public void disableSettingsBtn(boolean disabled) {
-        this.disableSettingsBtn = disabled;
+        this.needToDisableSettingsBtn = disabled;
         toggleEnableSettingsBtn();
     }
 
@@ -180,8 +182,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 break;
             }
             default: {
-                // TODO 从消息中获取输入状态数据
-                toggleShowInputListCleanBtn();
+                this.needToDisableInputListCleanBtn = msg.inputList.empty;
+                this.needToDisableInputListCleanCancelBtn = !msg.inputList.deletedCancelable;
+
+                toggleEnableInputListCleanBtn();
             }
         }
     }
@@ -218,9 +222,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
-        toggleShowInputListCleanBtn();
+        toggleEnableInputListCleanBtn();
 
         this.keyboardView = rootView.findViewById(R.id.keyboard);
+        this.keyboardView.setConfig(this.config);
         this.keyboardView.setListener(this);
 
         this.inputListView = rootView.findViewById(R.id.input_list);
@@ -253,7 +258,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void toggleEnableSettingsBtn() {
-        if (this.disableSettingsBtn) {
+        if (this.needToDisableSettingsBtn) {
             this.settingsBtnView.setAlpha(0.4f);
             this.settingsBtnView.setOnClickListener(null);
         } else {
@@ -262,9 +267,9 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
     }
 
-    private void toggleShowInputListCleanBtn() {
-        if (getInputList().isEmpty()) {
-            if (getInputList().canCancelDelete()) {
+    private void toggleEnableInputListCleanBtn() {
+        if (this.needToDisableInputListCleanBtn) {
+            if (!this.needToDisableInputListCleanCancelBtn) {
                 ViewUtils.hide(this.inputListCleanBtnView);
                 ViewUtils.show(this.inputListCleanCancelBtnView);
             } else {

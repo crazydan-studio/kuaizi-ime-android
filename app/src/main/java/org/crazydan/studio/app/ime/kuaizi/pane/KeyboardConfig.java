@@ -62,4 +62,6 @@ public class KeyboardConfig {
 
         this.userInputDataDisabled = config.bool(ConfigKey.disable_user_input_data);
     }
+
+    // TODO 补充 equals 方法
 }
