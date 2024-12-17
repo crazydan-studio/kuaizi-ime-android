@@ -31,26 +31,23 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-15
  */
-public class PreferencesTheme extends FollowSystemThemeActivity {
-    private InputPaneView imeView;
+public class PreferencesTheme extends ImeIntegratedActivity {
+
+    public PreferencesTheme() {
+        super(R.layout.app_preferences_theme_activity);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.app_preferences_theme_activity);
-
-        this.imeView = findViewById(R.id.ime_view);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                                       .replace(R.id.settings, new SettingsFragment(this.imeView))
-                                       .commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
         }
     }
 
@@ -62,7 +59,7 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
     }
 
     private void prepareImeInput() {
-        InputList inputList = this.imeView.getInputList();
+        InputList inputList = this.inputPane.getInputList();
         inputList.reset(false);
 
         InputWord[] words = new InputWord[] {
@@ -81,13 +78,10 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             inputList.confirmPending();
         }
 
-        this.imeView.startInput(Keyboard.Type.Pinyin, false);
+        startKeyboard(Keyboard.Type.Pinyin);
     }
 
-    public static class SettingsFragment extends PreferenceFragmentCompat {
-        private final InputPaneView imeView;
-
-        public SettingsFragment(InputPaneView imeView) {this.imeView = imeView;}
+    public class SettingsFragment extends PreferenceFragmentCompat {
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -97,6 +91,12 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             Preference latinUsePinyinKeys
                     = findPreference(ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad.name());
             Preference adaptGesture = findPreference(ConfigKey.adapt_desktop_swipe_up_gesture.name());
+            PreferenceCategory xPadCategory = findPreference("preference_x_input_pad");
+
+            assert xPad != null;
+            assert latinUsePinyinKeys != null;
+            assert adaptGesture != null;
+            assert xPadCategory != null;
 
             xPad.setOnPreferenceClickListener(pref -> {
                 latinUsePinyinKeys.setEnabled(xPad.isChecked());
@@ -107,12 +107,11 @@ public class PreferencesTheme extends FollowSystemThemeActivity {
             adaptGesture.setEnabled(!xPad.isChecked());
 
             ImeSubtype subtype = SystemUtils.getImeSubtype(getContext());
-            PreferenceCategory xPadCategory = findPreference("preference_x_input_pad");
             xPadCategory.setVisible(subtype == ImeSubtype.hans);
 
             // 显示配置后的拉丁文键盘布局
             latinUsePinyinKeys.setOnPreferenceClickListener(pref -> {
-                this.imeView.startInput(Keyboard.Type.Latin, false);
+                startKeyboard(Keyboard.Type.Latin);
                 return true;
             });
         }

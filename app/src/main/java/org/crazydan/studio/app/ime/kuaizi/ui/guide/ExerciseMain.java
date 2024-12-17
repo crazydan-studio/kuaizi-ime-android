@@ -39,9 +39,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -50,7 +48,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
@@ -61,11 +58,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.FollowSystemThemeActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.ImeIntegratedActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -75,22 +71,21 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgListener {
+public class ExerciseMain extends ImeIntegratedActivity implements InputMsgListener {
     private DrawerLayout drawerLayout;
     private NavigationView exerciseNavView;
 
-    private InputPaneView imeView;
     private ExerciseListView exerciseListView;
+
+    public ExerciseMain() {
+        super(R.layout.guide_exercise_main_activity);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.guide_exercise_main_activity);
 
-        this.imeView = findViewById(R.id.ime_view);
-        this.imeView.startInput(Keyboard.Type.Pinyin);
-
-        Keyboard.Theme theme = config.get(ConfigKey.theme);
+        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
         int imeThemeResId = theme.getResId(getApplicationContext());
 
         DynamicLayoutSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
@@ -107,23 +102,6 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         initExerciseList(exercises);
     }
 
-    // Activity 生命周期: https://media.geeksforgeeks.org/wp-content/uploads/20210303165235/ActivityLifecycleinAndroid-601x660.jpg
-    @Override
-    protected void onStart() {
-        // 确保拼音字典库保持就绪状态
-        PinyinDict.instance().open(getApplicationContext());
-
-        this.imeView.setListener(this);
-
-        super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        this.imeView.setListener(null);
-    }
-
     @Override
     public void onBackPressed() {
         // 关闭侧边栏或返回到前一个窗口
@@ -134,9 +112,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
 
     /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
     private int getDrawerGravity() {
-        Config config = this.imeView.getConfig();
-
-        return config.isLeftHandMode() ? GravityCompat.START : GravityCompat.END;
+        return this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left ? GravityCompat.START : GravityCompat.END;
     }
 
     private void toggleDrawer() {
@@ -219,23 +195,25 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
             switch (exercise.mode) {
                 case free:
                 case introduce: {
-                    this.imeView.enableXInputPad(exercise.mode == Exercise.Mode.free ? null : false);
-                    this.imeView.enableCandidateVariantFirst(null);
-                    this.imeView.disableUserInputData(null);
-                    this.imeView.disableSettingsBtn(false);
+                    this.config.set(ConfigKey.enable_x_input_pad, exercise.mode == Exercise.Mode.free ? null : false);
+                    this.config.set(ConfigKey.enable_candidate_variant_first, null);
+                    this.config.set(ConfigKey.disable_user_input_data, null);
+
+                    this.inputPaneView.disableSettingsBtn(false);
                     break;
                 }
                 case normal: {
-                    this.imeView.enableXInputPad(exercise.isEnableXInputPad());
-                    this.imeView.enableCandidateVariantFirst(false);
-                    this.imeView.disableUserInputData(true);
-                    this.imeView.disableSettingsBtn(true);
+                    this.config.set(ConfigKey.enable_x_input_pad, exercise.isEnableXInputPad());
+                    this.config.set(ConfigKey.enable_candidate_variant_first, false);
+                    this.config.set(ConfigKey.disable_user_input_data, true);
+
+                    this.inputPaneView.disableSettingsBtn(true);
                     break;
                 }
             }
-            exerciseView.withIme(this.imeView);
+            exerciseView.withIme(this.inputPaneView);
 
-            this.imeView.startInput(Keyboard.Type.Pinyin);
+            startKeyboard(Keyboard.Type.Pinyin);
         });
 
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
@@ -291,7 +269,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Basic_Introduce(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.Switch_HandMode);
         Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
@@ -383,7 +361,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Slipping_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         InputWord expected_auto_word = new InputWord(100, "块", "kuài");
         InputWord case_word = new InputWord(101, "筷", "kuài");
@@ -417,7 +395,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Candidate_Filtering(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         InputWord expected_auto_word = new InputWord(100, "术", "shù");
         InputWord case_word = new InputWord(101, "输", "shū");
@@ -456,7 +434,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Pinyin_Committed_Processing(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         InputWord expected_auto_word = new InputWord(100, "自", "zì");
         InputWord case_word = new InputWord(101, "字", "zì");
@@ -534,7 +512,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Editor_Editing(DynamicLayoutSandboxView sandboxView) {
-        EditorKeyTable keyTable = EditorKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        EditorKeyTable keyTable = EditorKeyTable.create(createKeyTableConfig());
 
         Key<?> key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         Key<?> key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
@@ -607,7 +585,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Char_Replacement_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         Key<?> key_symbol_tanhao = keyTable.symbolKey("！");
         Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
@@ -710,7 +688,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_Math_Inputting(DynamicLayoutSandboxView sandboxView) {
-        MathKeyTable keyTable = MathKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig());
 
         Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
@@ -799,7 +777,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
     }
 
     private Exercise exercise_XPad_Inputting(DynamicLayoutSandboxView sandboxView) {
-        PinyinKeyTable keyTable = PinyinKeyTable.create(new KeyTableConfig(this.imeView.getConfig()));
+        PinyinKeyTable keyTable = createPinyinKeyTable();
 
         Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin);
@@ -891,7 +869,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                  @Override
                                  public void start() {
                                      if (isFirstStep || simulator.get().isStopped()) {
-                                         ExerciseMain.this.imeView.startInput(Keyboard.Type.Latin);
+                                         startKeyboard(Keyboard.Type.Latin);
                                          simulator.get().input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
                                      } else {
                                          simulator.get().input(key, exercise::gotoNextStep);
@@ -999,7 +977,7 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
                                      @Override
                                      public void start() {
                                          if (isFirstStep || simulator.get().isStopped()) {
-                                             ExerciseMain.this.imeView.startInput(Keyboard.Type.Pinyin, false);
+                                             startKeyboard(Keyboard.Type.Pinyin);
                                              simulator.get().input(key_ctrl_switch_pinyin, key, exercise::gotoNextStep);
                                          } else {
                                              simulator.get().input(key, exercise::gotoNextStep);
@@ -1270,13 +1248,13 @@ public class ExerciseMain extends FollowSystemThemeActivity implements InputMsgL
         AtomicReference<XPadView.GestureSimulator> simulator = new AtomicReference<>();
         return () -> {
             if (simulator.get() == null) {
-                simulator.set(this.imeView.getXPadKeyView().getXPad().createSimulator());
+                simulator.set(this.inputPaneView.getXPadKeyView().getXPad().createSimulator());
             }
             return simulator.get();
         };
     }
 
     private void changePinyinWord(InputWord word) {
-        this.imeView.getInputList().getLastCharInput().setWord(PinyinWord.from(word));
+        this.inputPane.getInputList().getLastCharInput().setWord(PinyinWord.from(word));
     }
 }

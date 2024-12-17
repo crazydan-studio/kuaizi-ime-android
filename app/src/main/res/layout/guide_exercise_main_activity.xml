@@ -82,7 +82,7 @@
 
         <include
                 layout="@layout/input_pane_view"
-                android:id="@+id/ime_view"
+                android:id="@+id/input_pane_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
     </LinearLayout>

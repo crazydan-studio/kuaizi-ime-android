@@ -96,12 +96,6 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
                 } else {
                     break;
                 }
-            case InputList_Pending_Drop_Done:
-            case InputList_Input_Choose_Done:
-            case InputList_Update_Done:
-            case InputList_Input_Completion_Update_Done:
-            case InputList_Input_Completion_Apply_Done:
-                return;
         }
 
         current.onInputMsg(msg);

@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi;
 import java.util.List;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.view.KeyEvent;
@@ -28,7 +27,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
-import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -68,9 +66,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     public void onCreate() {
         super.onCreate();
 
-        this.config = new ImeConfig();
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        this.config.syncWith(preferences);
+        this.config = ImeConfig.create(getApplicationContext());
         this.config.setListener(this);
     }
 

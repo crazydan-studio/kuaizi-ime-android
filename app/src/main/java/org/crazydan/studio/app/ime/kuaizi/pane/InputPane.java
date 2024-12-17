@@ -132,15 +132,15 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 销毁 {@link InputPane}，即，关闭并回收资源 */
     public void destroy() {
+        // 确保拼音字典库能够被及时关闭
+        this.dict.close();
+
         this.dict = null;
         this.config = null;
         this.keyboard = null;
         this.inputList = null;
         this.keyboardSwitches = null;
         this.listener = null;
-
-        // 确保拼音字典库能够被及时关闭
-        PinyinDict.instance().close();
     }
 
     // =============================== End: 生命周期 ===================================
@@ -350,7 +350,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         return InputListConfig.from(this.config);
     }
 
-    private KeyboardConfig createKeyboardConfig() {
+    public KeyboardConfig createKeyboardConfig() {
         return KeyboardConfig.from(this.config);
     }
 }

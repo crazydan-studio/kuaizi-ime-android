@@ -90,6 +90,8 @@ public class PinyinDict {
     /** 用户词组数据的基础权重，以确保用户输入权重大于应用词组数据 */
     private final int userPhraseBaseWeight = 500;
 
+    /** 开启的引用计数 */
+    private int openedRefs;
     private Future<Boolean> dbInited;
     private Future<Boolean> dbOpened;
 
@@ -124,8 +126,10 @@ public class PinyinDict {
         });
     }
 
-    /** 在任意需要启用输入法的情况下调用该开启接口 */
+    /** 在任意需要开启字典的情况下调用该接口 */
     public synchronized void open(Context context) {
+        this.openedRefs += 1;
+
         if (isOpened()) {
             return;
         }
@@ -139,8 +143,13 @@ public class PinyinDict {
         });
     }
 
-    /** 在任意存在完全退出的情况下调用该关闭接口 */
+    /** 在任意需要关闭字典的情况下调用该接口 */
     public synchronized void close() {
+        this.openedRefs -= 1;
+        if (this.openedRefs > 0) {
+            return;
+        }
+
         if (isOpened()) {
             doClose();
         }

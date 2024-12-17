@@ -19,7 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.Map;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -35,12 +37,21 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-16
  */
-public class ImeConfig extends Config.Mutable implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class ImeConfig extends Config.Mutable {
     private ConfigChangeListener listener;
 
     private Runnable cleaner;
 
-    public ImeConfig() {
+    public static ImeConfig create(Context context) {
+        ImeConfig config = new ImeConfig();
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        config.syncWith(preferences);
+
+        return config;
+    }
+
+    ImeConfig() {
         // 其源配置为 系统配置
         super(new Mutable());
     }
@@ -73,7 +84,7 @@ public class ImeConfig extends Config.Mutable implements SharedPreferences.OnSha
     }
 
     /** 与 {@link SharedPreferences} 同步数据，并监听其变更 */
-    public void syncWith(SharedPreferences preferences) {
+    private void syncWith(SharedPreferences preferences) {
         Map<String, ?> all = preferences.getAll();
 
         // 遍历所有枚举项以便于为各项赋默认值
@@ -84,16 +95,15 @@ public class ImeConfig extends Config.Mutable implements SharedPreferences.OnSha
             ((Mutable) this.source).set(key, value);
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(this);
+        preferences.registerOnSharedPreferenceChangeListener(this::onSharedPreferenceChanged);
 
         this.cleaner = () -> {
-            preferences.unregisterOnSharedPreferenceChangeListener(this);
+            preferences.unregisterOnSharedPreferenceChangeListener(this::onSharedPreferenceChanged);
         };
     }
 
     /** 同步对系统配置的更新 */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences preferences, String keyName) {
+    private void onSharedPreferenceChanged(SharedPreferences preferences, String keyName) {
         for (ConfigKey key : ConfigKey.values()) {
             if (!key.name().equals(keyName)) {
                 continue;
