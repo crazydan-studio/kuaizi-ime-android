@@ -131,6 +131,8 @@ input_pane ..> input_list: dispatch\n<<UserInputMsg>>
 @enduml
 ```
 
+</details>
+
 设计要点：
 
 - 消息始终保持单向流动，模型层或视图层发送的消息均由上一层进行转发，
@@ -141,8 +143,6 @@ input_pane ..> input_list: dispatch\n<<UserInputMsg>>
 - 视图层中的 `KeyboardView` 将触发 `UserKeyMsg`（用户操作按键的消息），
   其最终由模型层中的 `Keyboard` 处理，而 `InputListView` 则触发
   `UserInputMsg`（用户操作输入的消息），并由 `InputList` 进行处理
-
-</details>
 
 ## 参考资料
 
