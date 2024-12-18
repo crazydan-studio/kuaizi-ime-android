@@ -1,8 +1,6 @@
 筷字输入法 Android 客户端
 ===================================
 
-**当前代码还在改进优化中，将会涉及较大改动，因此，不建议阅读或修改本仓库代码**
-
 **注意**：本仓库仅作为筷字输入法 Android 客户端的源码仓库，
 若有缺陷反馈和改进意见，请移步至
 [crazydan-studio/kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime/issues)
@@ -13,6 +11,138 @@
 [字典库](./app/src/main/res/raw/pinyin_word_dict.db)和[词典库](./app/src/main/res/raw/pinyin_phrase_dict.db)由
 [kuaizi-ime/tools/pinyin-dict](https://github.com/crazydan-studio/kuaizi-ime/blob/master/tools/pinyin-dict/README.md)
 生成。其中，字典数据来自于[汉典网](https://www.zdic.net)，词典数据来自于[古文之家](https://www.cngwzj.com)。
+
+## 构建
+
+### 发布包
+
+可直接在本项目的根目录下执行 `bash ./pack-release.sh` 构建发布包。
+
+而在构建打包前，需要调整构建脚本中变量 `JAVA_HOME` 的值，默认为
+`/usr/lib/jvm/java-17-openjdk`。
+
+然后，在本项目的根目录下准备 APK 证书的配置文件 `./keystore/release.properties`：
+
+```bash
+cat > keystore/release.properties <<EOF
+storeFile = /path/to/android-release-key.jks
+storePassword = store-pass
+keyPassword = key-pass
+keyAlias = android-key-alias
+EOF
+```
+
+> 在[《参考资料》](#参考资料)章节可阅读签名证书的生成相关的资料。
+
+## 架构
+
+### 核心类图
+
+![核心类图](./docs/img/class-diagram.png)
+
+<details><summary>PlantUML 代码</summary>
+
+```plantuml
+@startuml
+class "InputMethodService" as sys_ime_svc
+class "ImeService" as ime_svc #pink ##[bold]red
+class "ImeConfig" as ime_conf
+
+class "InputPane" as input_pane #pink ##[bold]red
+class "PinyinDict" as dict
+class "InputList" as input_list
+class "Keyboard" as keyboard
+class "PinyinKeyboard" as pinyin_kb
+class "NumberKeyboard" as number_kb
+class "LatinKeyboard" as latin_kb
+class "SymbolKeyboard" as symbol_kb
+class "EmojiKeyboard" as emoji_kb
+class "MathKeyboard" as math_kb
+
+class "InputPaneView" as input_pane_view #pink ##[bold]red
+class "KeyboardView" as keyboard_view
+class "InputListView" as input_list_view
+
+sys_ime_svc <|-down- ime_svc: extends
+
+ime_svc *-right- ime_conf: contains >
+ime_svc *-down- input_pane: contains >
+ime_svc *-down- input_pane_view: contains >
+
+input_pane_view *-right- input_list_view: contains >
+input_pane_view *-down- keyboard_view: contains >
+
+input_pane *-left- input_list: contains >
+input_pane *-down- keyboard: contains >
+input_pane *-right- dict: contains >
+
+keyboard <|-down- pinyin_kb: extends
+keyboard <|-down- number_kb: extends
+keyboard <|-down- latin_kb: extends
+keyboard <|-down- symbol_kb: extends
+keyboard <|-down- emoji_kb: extends
+keyboard <|-down- math_kb: extends
+
+@enduml
+```
+
+</details>
+
+设计要点：
+
+- 模型与视图分离，二者不做直接关联，模型的变更通过消息（`InputMsg`）机制触发对应视图的更新
+- 将输入面板 `InputPaneView` 分为 `InputListView`（输入列表）和 `KeyboardView`（键盘）上下两部分，
+  前者显示输入内容，并做候选字调整，后者则显示输入按键，并与用户做按键交互
+- 与以上视图相对应的逻辑模型则分别为 `InputPane`、`InputList` 和 `Keyboard`，
+  其负责对输入过程中的状态变更进行处理，实现完整的输入逻辑
+
+### 消息传播图
+
+![消息传播图](./docs/img/message-transfer.png)
+
+<details><summary>PlantUML 代码</summary>
+
+```plantuml
+@startuml
+component [ImeService] as ime_svc
+
+component [InputPane] as input_pane
+component [InputList] as input_list
+component [Keyboard] as keyboard
+
+component [InputPaneView] as input_pane_view
+component [KeyboardView] as keyboard_view
+component [InputListView] as input_list_view
+
+keyboard ..> input_pane: send\n<<InputMsg>>
+input_list ..> input_pane: send\n<<InputMsg>>
+input_pane ..> ime_svc: transfer\n<<InputMsg>>
+ime_svc ..> input_pane_view: dispatch\n<<InputMsg>>
+input_pane_view ..> keyboard_view: dispatch\n<<InputMsg>>
+input_pane_view ..> input_list_view: dispatch\n<<InputMsg>>
+
+keyboard_view ..> input_pane_view: send\n<<UserKeyMsg>>
+input_list_view ..> input_pane_view: send\n<<UserInputMsg>>
+input_pane_view ..> ime_svc: transfer\n<<UserKeyMsg>>\nor <<UserInputMsg>>
+ime_svc ..> input_pane: dispatch\n<<UserKeyMsg>>\nor <<UserInputMsg>>
+input_pane ..> keyboard: dispatch\n<<UserKeyMsg>>
+input_pane ..> input_list: dispatch\n<<UserInputMsg>>
+
+@enduml
+```
+
+设计要点：
+
+- 消息始终保持单向流动，模型层或视图层发送的消息均由上一层进行转发，
+  再由最顶层（`ImeService`）将消息向下分别派发至视图层或模型层。
+  模型层与视图层之间不直接传递消息，从而确保二者的独立性
+- 模型层中的 `Keyboard` 和 `InputList` 均触发 `InputMsg`（输入消息），
+  再由相应的视图根据消息携带的数据 `InputMsgData` 做视图更新
+- 视图层中的 `KeyboardView` 将触发 `UserKeyMsg`（用户操作按键的消息），
+  其最终由模型层中的 `Keyboard` 处理，而 `InputListView` 则触发
+  `UserInputMsg`（用户操作输入的消息），并由 `InputList` 进行处理
+
+</details>
 
 ## 参考资料
 
