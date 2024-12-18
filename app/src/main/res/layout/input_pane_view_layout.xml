@@ -113,11 +113,27 @@
             android:orientation="vertical"
             android:visibility="visible">
 
-        <org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView
-                android:id="@+id/keyboard"
+        <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/keyboard_view_height"
-                android:layout_margin="4dp" />
+                android:layout_margin="4dp">
+
+            <TextView
+                    android:id="@+id/keyboard_warning"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/text_dict_db_init_warning"
+                    android:textColor="?attr/input_fg_color"
+                    android:textSize="@dimen/char_input_word_text_size"
+                    android:visibility="gone" />
+
+            <org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView
+                    android:id="@+id/keyboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+        </FrameLayout>
 
         <View
                 android:id="@+id/bottom_spacing_view"

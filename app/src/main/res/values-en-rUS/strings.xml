@@ -126,6 +126,9 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         Please input any text for free exercises
     </string>
+    <string name="text_dict_db_init_warning">
+        Loading Dict DB, please wait a moment …
+    </string>
     <string name="text_alpha_using_warning">@null</string>
 
     <string name="value_theme_light">Light</string>

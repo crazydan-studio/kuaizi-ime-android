@@ -110,6 +110,9 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习
     </string>
+    <string name="text_dict_db_init_warning">
+        正在加载字典，请稍等一会儿 。。。
+    </string>
     <string name="text_alpha_using_warning">@null</string>
 
     <string name="value_theme_light">浅色主题</string>

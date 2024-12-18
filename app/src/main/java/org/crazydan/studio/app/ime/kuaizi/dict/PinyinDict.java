@@ -97,7 +97,6 @@ public class PinyinDict {
 
     private String version;
     private SQLiteDatabase db;
-    private Listener listener = new Listener() {};
 
     // <<<<<<<<<<<<< 缓存常量数据
     private PinyinCharsTree pinyinCharsTree;
@@ -118,30 +117,31 @@ public class PinyinDict {
         return this.pinyinCharsTree;
     }
 
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
-
     // =================== Start: 生命周期 ==================
 
-    /** 在使用前开启字典 */
-    public synchronized void open(Context context) {
+    /**
+     * 在使用前开启字典：由开启方负责 {@link #close 关闭}
+     *
+     * @param listener
+     *         仅用于监听实际的开启过程，若字典已开启，则不会调用该监听
+     */
+    public synchronized void open(Context context, Listener listener) {
         this.openedRefs += 1;
         if (isOpened()) {
             return;
         }
 
-        this.listener.beforeOpen(this);
+        listener.beforeOpen(this);
 
         doUpgrade(context);
         doOpen(context);
 
-        this.listener.afterOpen(this);
+        listener.afterOpen(this);
 
         this.opened = true;
     }
 
-    /** 在资源回收前关闭字典 */
+    /** 在资源回收前关闭字典：由 {@link #open 开启} 方负责关闭 */
     public synchronized void close() {
         this.openedRefs -= 1;
         if (this.openedRefs > 0) {
@@ -481,5 +481,7 @@ public class PinyinDict {
         default void beforeOpen(PinyinDict dict) {}
 
         default void afterOpen(PinyinDict dict) {}
+
+        class Noop implements Listener {}
     }
 }

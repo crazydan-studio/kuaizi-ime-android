@@ -66,7 +66,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
         Context context = getApplicationContext();
         this.config = ImeConfig.create(context);
-        this.inputPane = InputPane.create(context);
+        this.inputPane = InputPane.create();
         this.inputPaneView = findViewById(R.id.input_pane_view);
 
         this.inputPane.setConfig(this.config.mutable());
@@ -116,7 +116,8 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     protected void startKeyboard(Keyboard.Type type) {
-        this.inputPane.start(type, false);
+        Context context = getApplicationContext();
+        this.inputPane.start(context, type, false);
     }
 
     protected KeyTableConfig createKeyTableConfig() {

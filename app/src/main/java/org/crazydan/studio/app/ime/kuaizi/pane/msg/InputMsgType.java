@@ -86,6 +86,8 @@ public enum InputMsgType {
     Keyboard_Switch_Doing,
     /** 键盘已切换 */
     Keyboard_Switch_Done,
+    /** 键盘启动中 */
+    Keyboard_Start_Doing,
     /** 键盘已启动 */
     Keyboard_Start_Done,
     /** 键盘已隐藏 */
@@ -97,7 +99,6 @@ public enum InputMsgType {
 
     /** 输入法切换中 */
     IME_Switch_Doing,
-
     /** （系统）配置已更新 */
     Config_Update_Done,
 }

@@ -53,6 +53,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
+import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Start_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Switch_Done;
 
@@ -62,7 +63,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class InputPane implements InputMsgListener, UserMsgListener, ConfigChangeListener {
+public class InputPane implements InputMsgListener, UserMsgListener, ConfigChangeListener, PinyinDict.Listener {
     private PinyinDict dict;
     private Config.Mutable config;
 
@@ -84,10 +85,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     // =============================== Start: 生命周期 ===================================
 
     /** 创建 {@link InputPane} */
-    public static InputPane create(Context context) {
-        // 确保拼音字典库保持就绪状态
+    public static InputPane create() {
         PinyinDict dict = PinyinDict.instance();
-        dict.open(context);
 
         return new InputPane(dict);
     }
@@ -98,10 +97,14 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
      * @param keyboardType
      *         待使用的键盘类型
      */
-    public void start(Keyboard.Type keyboardType, boolean resetInputting) {
+    public void start(Context context, Keyboard.Type keyboardType, boolean resetInputting) {
+        if (!this.config.bool(ConfigKey.disable_dict_db)) {
+            // 同步开启字典库，以确保字典处于就绪状态，并且监听其开启过程
+            this.dict.open(context, this);
+        }
+
         // 全新的切换，故而需清空键盘切换记录
         this.keyboardSwitches.clear();
-
         // 先切换键盘
         switchKeyboardTo(keyboardType);
 
@@ -166,6 +169,14 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     public void setListener(InputMsgListener listener) {
         this.listener = listener;
+    }
+
+    // --------------------------------------
+
+    /** {@link PinyinDict} 开启前 */
+    @Override
+    public void beforeOpen(PinyinDict dict) {
+        fire_InputMsg(Keyboard_Start_Doing);
     }
 
     // --------------------------------------

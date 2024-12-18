@@ -98,7 +98,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        this.inputPane = InputPane.create(getApplicationContext());
+        this.inputPane = InputPane.create();
         this.inputPaneView = (InputPaneView) getLayoutInflater().inflate(R.layout.input_pane_view, null);
 
         this.inputPane.setConfig(this.config.mutable());
@@ -198,7 +198,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         this.config.set(ConfigKey.single_line_input, useSingleLineInputting, true);
         this.config.set(ConfigKey.disable_input_key_popup_tips, usePasswordInputting, true);
 
-        this.inputPane.start(keyboardType, resetInputting);
+        this.inputPane.start(context, keyboardType, resetInputting);
     }
 
     // =============================== Start: 消息处理 ===================================

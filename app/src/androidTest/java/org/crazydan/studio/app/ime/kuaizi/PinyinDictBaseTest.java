@@ -33,9 +33,7 @@ public abstract class PinyinDictBaseTest {
     public static void before() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        PinyinDict dict = PinyinDict.instance();
-        dict.init(context);
-        dict.open(context);
+        PinyinDict.instance().open(context, new PinyinDict.Listener.Noop());
     }
 
     @AfterClass

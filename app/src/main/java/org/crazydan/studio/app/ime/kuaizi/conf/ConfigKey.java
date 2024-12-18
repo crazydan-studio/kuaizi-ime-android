@@ -31,6 +31,8 @@ public enum ConfigKey {
     single_line_input(Boolean.class, false),
     /** 原键盘类型 */
     prev_keyboard_type(Keyboard.Type.class, null),
+    /** 是否禁用字典库 */
+    disable_dict_db(Boolean.class, false),
     // ====================== End: 临时性配置 =====================
 
     /** 主题样式 */

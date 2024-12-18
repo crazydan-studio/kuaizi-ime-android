@@ -67,6 +67,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
 
     private KeyboardView keyboardView;
     private InputListView inputListView;
+    private TextView keyboardWarningView;
 
     private PopupWindow inputKeyPopupWindow;
     private PopupWindow inputCompletionsPopupWindow;
@@ -134,13 +135,18 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
-            case Config_Update_Done: {
-                on_Config_Update_Done_Msg((ConfigUpdateMsgData) msg.data);
+            case Keyboard_Start_Doing: {
+                toggleShowKeyboardWarning(true);
                 break;
             }
             case Keyboard_Start_Done: {
+                toggleShowKeyboardWarning(false);
                 // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次更新
                 updateBottomSpacing(false);
+                break;
+            }
+            case Config_Update_Done: {
+                on_Config_Update_Done_Msg((ConfigUpdateMsgData) msg.data);
                 break;
             }
             case InputAudio_Play_Doing: {
@@ -237,6 +243,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
         toggleEnableInputListCleanBtn();
 
+        this.keyboardWarningView = rootView.findViewById(R.id.keyboard_warning);
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.keyboardView.setConfig(this.config);
         this.keyboardView.setListener(this);
@@ -304,6 +311,11 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
             this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
+    }
+
+    private void toggleShowKeyboardWarning(boolean shown) {
+        ViewUtils.visible(this.keyboardView, !shown);
+        ViewUtils.visible(this.keyboardWarningView, shown);
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId, boolean attachToRoot) {
