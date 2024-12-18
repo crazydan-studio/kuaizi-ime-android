@@ -87,7 +87,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     public static InputPane create(Context context) {
         // 确保拼音字典库保持就绪状态
         PinyinDict dict = PinyinDict.instance();
-        dict.init(context);
         dict.open(context);
 
         return new InputPane(dict);
@@ -380,8 +379,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             String wordSpell = tuple[2];
 
             InputWord word = new InputWord(100 + i, wordValue, wordSpell);
-            List<Key<?>> keys = CharKey.from(chars);
-            CharInput input = CharInput.from(keys);
+            CharKey key = CharKey.create(CharKey.Type.Alphabet, chars);
+            CharInput input = CharInput.from(key);
             input.setWord(word);
 
             this.inputList.selectLast();

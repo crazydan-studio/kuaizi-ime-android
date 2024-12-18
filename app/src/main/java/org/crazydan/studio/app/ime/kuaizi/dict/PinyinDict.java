@@ -28,7 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -67,9 +69,6 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.save
  * <p/>
  * 应用内置的拼音字典数据库的表结构和数据生成见
  * <a href="https://github.com/crazydan-studio/kuaizi-ime/blob/master/tools/pinyin-dict/src/generate/sqlite/ime/index.mjs">kuaizi-ime/tools/pinyin-dict</a>
- * <p/>
- * 采用单例方式读写数据，以确保可以支持在 Guide 和 InputMethodService 中进行数据库的开启和关闭，
- * 且在两者同时启动时，不会重复开关数据库
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-24
@@ -90,60 +89,59 @@ public class PinyinDict {
     /** 用户词组数据的基础权重，以确保用户输入权重大于应用词组数据 */
     private final int userPhraseBaseWeight = 500;
 
-    /** 开启的引用计数 */
+    /** 字典 {@link #open} 的引用计数 */
     private int openedRefs;
-    private Future<Boolean> dbInited;
-    private Future<Boolean> dbOpened;
+    private boolean opened;
+    /** 异步线程池 */
+    private ThreadPoolExecutor executor;
 
     private String version;
-    /** 用户库 */
     private SQLiteDatabase db;
+    private Listener listener = new Listener() {};
 
     // <<<<<<<<<<<<< 缓存常量数据
     private PinyinCharsTree pinyinCharsTree;
     // >>>>>>>>>>>>>
 
-    private PinyinDict() {
+    PinyinDict() {
     }
 
     public static PinyinDict instance() {
         return instance;
     }
 
-    /**
-     * 仅在确定的某个地方初始化一次
-     * <p/>
-     * 仅第一次调用起作用，后续调用均会被忽略
-     */
-    public synchronized void init(Context context) {
-        if (isInited()) {
-            return;
-        }
-
-        this.dbInited = Async.executor.submit(() -> {
-            doInit(context);
-            return true;
-        });
+    public boolean isOpened() {
+        return this.opened;
     }
 
-    /** 在任意需要开启字典的情况下调用该接口 */
+    public PinyinCharsTree getPinyinCharsTree() {
+        return this.pinyinCharsTree;
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    // =================== Start: 生命周期 ==================
+
+    /** 在使用前开启字典 */
     public synchronized void open(Context context) {
         this.openedRefs += 1;
-
         if (isOpened()) {
             return;
         }
 
-        this.dbOpened = Async.executor.submit(() -> {
-            // 等待初始化完成后，再开启数据库
-            if (isInited()) {
-                doOpen(context);
-            }
-            return true;
-        });
+        this.listener.beforeOpen(this);
+
+        doUpgrade(context);
+        doOpen(context);
+
+        this.listener.afterOpen(this);
+
+        this.opened = true;
     }
 
-    /** 在任意需要关闭字典的情况下调用该接口 */
+    /** 在资源回收前关闭字典 */
     public synchronized void close() {
         this.openedRefs -= 1;
         if (this.openedRefs > 0) {
@@ -153,20 +151,12 @@ public class PinyinDict {
         if (isOpened()) {
             doClose();
         }
-        this.dbOpened = null;
+        this.opened = false;
     }
 
-    private boolean isInited() {
-        return Boolean.TRUE.equals(Async.value(this.dbInited));
-    }
+    // =================== End: 生命周期 ==================
 
-    private boolean isOpened() {
-        return Boolean.TRUE.equals(Async.value(this.dbOpened));
-    }
-
-    public PinyinCharsTree getPinyinCharsTree() {
-        return this.pinyinCharsTree;
-    }
+    // =================== Start: 数据查询 ==================
 
     /** 获取指定拼音的候选拼音字列表：已按权重等排序 */
     public Map<Integer, InputWord> getCandidatePinyinWords(CharInput input) {
@@ -319,6 +309,10 @@ public class PinyinDict {
         return getLatinsByStarts(db, text, top);
     }
 
+    // =================== End: 数据查询 ==================
+
+    // =================== Start: 保存用户输入数据 ==================
+
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
     public void saveUserInputData(UserInputData data) {
         doSaveUserInputData(data, false);
@@ -335,8 +329,9 @@ public class PinyinDict {
             return;
         }
 
-        Async.executor.execute(() -> {
+        this.executor.execute(() -> {
             data.phrases.forEach((phrase) -> doSaveUsedPhrase(phrase, reverse));
+
             doSaveUsedEmojis(data.emojis, reverse);
             doSaveUsedLatins(data.latins, reverse);
         });
@@ -363,35 +358,12 @@ public class PinyinDict {
         saveUsedLatins(db, latins.stream().filter((latin) -> latin.length() > 3).collect(Collectors.toList()), reverse);
     }
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    public File getDBFile(Context context, PinyinDictDBType dbType) {
-        return new File(context.getFilesDir(), dbType.fileName);
-    }
+    // =================== End: 保存用户输入数据 ==================
 
-    public void saveUserDB(Context context, OutputStream output) {
-        File userDBFile = getUserDBFile(context);
+    // =================== Start: 数据库管理 ==================
 
-        try (InputStream input = FileUtils.newInput(userDBFile)) {
-            ResourceUtils.copy(input, output);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    private void doInit(Context context) {
-        // <<<<<<<<<< 版本升级
-        String version = getVersion(context);
-
-        if (FIRST_INSTALL_VERSION.equals(version)) {
-            From_v0.upgrade(context, this);
-        } else if (VERSION_V2.equals(version) && LATEST_VERSION.equals(VERSION_V3)) {
-            From_v2_to_v3.upgrade(context, this);
-        }
-
-        updateToLatestVersion(context);
-        // >>>>>>>>>>>>>>
+    public SQLiteDatabase getDB() {
+        return isOpened() ? this.db : null;
     }
 
     private void doOpen(Context context) {
@@ -416,28 +388,57 @@ public class PinyinDict {
 
             this.pinyinCharsTree = PinyinCharsTree.create(pinyinCharsAndIdMap);
         }
+
+        this.executor = new ThreadPoolExecutor(1, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
     }
 
     private void doClose() {
+        Async.waitAndShutdown(this.executor, 1500);
+
         closeSQLite(this.db);
 
         this.db = null;
         this.pinyinCharsTree = null;
+        this.executor = null;
     }
 
     private File getUserDBFile(Context context) {
         return getDBFile(context, PinyinDictDBType.user);
     }
 
-    public SQLiteDatabase getDB() {
-        return isOpened() ? this.db : null;
+    public File getDBFile(Context context, PinyinDictDBType dbType) {
+        return new File(context.getFilesDir(), dbType.fileName);
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    public void saveUserDB(Context context, OutputStream output) {
+        File userDBFile = getUserDBFile(context);
 
-    /** 获取应用本地的用户数据库的版本 */
-    public String getVersion(Context context) {
+        try (InputStream input = FileUtils.newInput(userDBFile)) {
+            ResourceUtils.copy(input, output);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    // =================== End: 数据库管理 ==================
+
+    // =================== Start: 数据版本升级 ==================
+
+    /** 升级数据版本：已成功升级的，将不会重复处理 */
+    private void doUpgrade(Context context) {
+        String version = getVersion(context);
+
+        if (FIRST_INSTALL_VERSION.equals(version)) {
+            From_v0.upgrade(context, this);
+        } else if (VERSION_V2.equals(version) && LATEST_VERSION.equals(VERSION_V3)) {
+            From_v2_to_v3.upgrade(context, this);
+        }
+
+        updateToLatestVersion(context);
+    }
+
+    /** 获取应用本地的用户数据的版本 */
+    private String getVersion(Context context) {
         if (this.version == null) {
             File userDBFile = getDBFile(context, PinyinDictDBType.user);
             File versionFile = getVersionFile(context);
@@ -472,5 +473,13 @@ public class PinyinDict {
     private File getVersionFile(Context context) {
         return new File(context.getFilesDir(), db_version_file);
     }
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    // =================== End: 数据版本升级 ==================
+
+    public interface Listener {
+
+        default void beforeOpen(PinyinDict dict) {}
+
+        default void afterOpen(PinyinDict dict) {}
+    }
 }

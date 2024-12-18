@@ -18,15 +18,23 @@
 package org.crazydan.studio.app.ime.kuaizi.common.utils;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-12-09
  */
 public class Async {
-    public final static ExecutorService executor = Executors.newFixedThreadPool(5);
+
+    public static void waitAndShutdown(ExecutorService executor, long ms) {
+        try {
+            executor.awaitTermination(ms, TimeUnit.MILLISECONDS);
+        } catch (Exception ignore) {
+        }
+
+        executor.shutdown();
+    }
 
     public static <T> T value(Future<T> f) {
         return value(f, null);
