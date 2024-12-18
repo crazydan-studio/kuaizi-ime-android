@@ -139,8 +139,12 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 销毁 {@link InputPane}，即，关闭并回收资源 */
     public void destroy() {
-        // 确保拼音字典库能够被及时关闭
-        this.dict.close();
+        // 确保拼音字典库能够被开启方及时关闭
+        if (!this.config.bool(ConfigKey.disable_dict_db) //
+            && this.keyboard != null // 已调用 #start 方法
+        ) {
+            this.dict.close();
+        }
 
         this.dict = null;
         this.config = null;

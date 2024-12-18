@@ -55,14 +55,6 @@ public class DynamicLayoutSandboxView extends KeyboardViewBase {
         return result;
     }
 
-    /** 根据新的主题重新布局视图，以确保所有视图应用新的主题 */
-    public void updateWithNewTheme(int themeResId) {
-        // 清空
-        update(new Key[0][0], false);
-
-        updateWithTheme(themeResId);
-    }
-
     public String withKey(Key<?> key) {
         if (key == null) {
             return "";
@@ -72,7 +64,6 @@ public class DynamicLayoutSandboxView extends KeyboardViewBase {
         if (!this.keys.containsKey(code)) {
             this.keys.put(code, key);
         }
-
         return code;
     }
 

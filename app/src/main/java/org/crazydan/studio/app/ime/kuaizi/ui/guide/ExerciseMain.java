@@ -102,6 +102,14 @@ public class ExerciseMain extends ImeIntegratedActivity {
     }
 
     @Override
+    public void onMsg(InputMsg msg) {
+        super.onMsg(msg);
+
+        ExerciseView exerciseView = this.exerciseListView.getActiveExerciseView();
+        exerciseView.onMsg(msg);
+    }
+
+    @Override
     public void onBackPressed() {
         // 关闭侧边栏或返回到前一个窗口
         if (!closeDrawer()) {
@@ -218,16 +226,8 @@ public class ExerciseMain extends ImeIntegratedActivity {
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(this.exerciseListView);
 
-        // Note：延迟激活指定的练习，以确保始终能被选中
+        // Note：延迟激活指定的练习，以确保其始终可被选中
         this.exerciseListView.post(() -> activeExercise(1));
-    }
-
-    @Override
-    public void onMsg(InputMsg msg) {
-        super.onMsg(msg);
-
-        ExerciseView exerciseView = this.exerciseListView.getActiveExerciseView();
-        exerciseView.onMsg(msg);
     }
 
     private List<Exercise> createExercises(
