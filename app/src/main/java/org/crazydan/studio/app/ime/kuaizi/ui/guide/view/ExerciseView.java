@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
- * {@link Exercise 练习题}视图
+ * {@link Exercise} 视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19

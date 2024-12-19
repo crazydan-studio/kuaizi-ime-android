@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,55 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import android.graphics.drawable.Drawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 
 /**
+ * {@link Exercise} 的步骤
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep implements RecyclerViewData {
-    public final String name;
-    public final String content;
-    public final Action action;
-    public final ImageGetter imageGetter;
+public class Step implements RecyclerViewData {
+    private String name;
+    private String content;
+    private Action action;
 
     private boolean running;
 
-    private ExerciseStep(String name, String content, Action action, ImageGetter imageGetter) {
-        this.name = name;
-        this.content = content;
-        this.action = action;
-        this.imageGetter = imageGetter;
+    // ================== Start: 链式调用 ==================
+
+    public String name() {
+        return this.name;
     }
 
-    public static ExerciseStep create(String name, String content, Action action, ImageGetter imageGetter) {
-        return new ExerciseStep(name, content, action, imageGetter);
+    public Step name(String name) {
+        this.name = name;
+        return this;
     }
+
+    public String content() {
+        return this.content;
+    }
+
+    public Step content(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public Action action() {
+        return this.action;
+    }
+
+    public Step action(Action action) {
+        this.action = action;
+        return this;
+    }
+
+    // ================== End: 链式调用 ==================
 
     public void reset() {
         this.running = false;
@@ -86,17 +107,11 @@ public class ExerciseStep implements RecyclerViewData {
         default void onInputMsg(InputMsg msg) {}
     }
 
-    public interface ImageGetter {
-        Drawable get(String id, int width, int height);
-    }
-
-    public static class Final extends ExerciseStep {
+    public static class Final extends Step {
         public final Runnable restartCallback;
         public final Runnable continueCallback;
 
         public Final(Runnable restartCallback, Runnable continueCallback) {
-            super(null, null, null, null);
-
             this.restartCallback = restartCallback;
             this.continueCallback = continueCallback;
         }

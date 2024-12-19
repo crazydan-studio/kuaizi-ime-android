@@ -22,7 +22,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -40,10 +40,10 @@ public class ExerciseStepFinalView extends ExerciseStepView {
     }
 
     @Override
-    public void bind(ExerciseStep step, int position) {
+    public void bind(Step step, int position) {
         super.bind(step);
 
-        ExerciseStep.Final finalStep = (ExerciseStep.Final) step;
+        Step.Final finalStep = (Step.Final) step;
 
         this.restartBtn.setOnClickListener(null);
         if (finalStep.restartCallback != null) {

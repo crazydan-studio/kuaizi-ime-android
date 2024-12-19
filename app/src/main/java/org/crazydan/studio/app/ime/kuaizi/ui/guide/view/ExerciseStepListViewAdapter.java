@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -33,9 +33,9 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     private final static int VIEW_TYPE_NORMAL = 0;
     private final static int VIEW_TYPE_FINAL = 1;
 
-    private List<ExerciseStep> data;
+    private List<Step> data;
 
-    public void bind(List<ExerciseStep> data) {
+    public void bind(List<Step> data) {
         this.data = data;
 
         notifyDataSetChanged();
@@ -48,7 +48,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public void onBindViewHolder(@NonNull ExerciseStepView view, int position) {
-        ExerciseStep step = this.data.get(position);
+        Step step = this.data.get(position);
 
         view.bind(step, position);
     }
@@ -64,9 +64,9 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public int getItemViewType(int position) {
-        ExerciseStep step = this.data.get(position);
+        Step step = this.data.get(position);
 
-        if (step instanceof ExerciseStep.Final) {
+        if (step instanceof Step.Final) {
             return VIEW_TYPE_FINAL;
         }
         return VIEW_TYPE_NORMAL;
@@ -74,7 +74,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     public boolean isFinalStep(int position) {
         if (position < getItemCount()) {
-            return this.data.get(position) instanceof ExerciseStep.Final;
+            return this.data.get(position) instanceof Step.Final;
         }
         return false;
     }

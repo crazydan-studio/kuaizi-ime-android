@@ -41,13 +41,13 @@
             <!-- Note：按键视图无法通过动态构造得到绘制图形，
             必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
             -->
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.KeyboardSandboxView
                     android:id="@+id/step_image_sandbox_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
 
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.DynamicLayoutSandboxView
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.KeyboardSandboxView
                     android:id="@+id/xpad_step_image_sandbox_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"

@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStep;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
@@ -38,7 +38,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
+public class ExerciseStepView extends RecyclerViewHolder<Step> {
     private final ImageView pointerView;
     private final TextView contentView;
 
@@ -49,7 +49,7 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
         this.contentView = itemView.findViewById(R.id.content_view);
     }
 
-    public void bind(ExerciseStep step, int position) {
+    public void bind(Step step, int position) {
         super.bind(step);
 
         ViewUtils.visible(this.pointerView, step.isRunning());
@@ -58,16 +58,16 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
         this.contentView.setText(html(step, step.isRunning() ? "<b>" + text + "</b>" : text));
     }
 
-    private Spanned html(ExerciseStep step, String text) {
+    private Spanned html(Step step, String text) {
         return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> getImage(step, source), null);
     }
 
-    private Drawable getImage(ExerciseStep step, String source) {
-        if (step.imageGetter == null) {
+    private Drawable getImage(Step step, String source) {
+        if (step.keyImageRender == null) {
             return null;
         }
 
         int size = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
-        return step.imageGetter.get(source, size, size);
+        return step.keyImageRender.renderKey(source, size, size);
     }
 }

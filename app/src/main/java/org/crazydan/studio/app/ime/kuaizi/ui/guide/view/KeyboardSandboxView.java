@@ -29,20 +29,21 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.KeyImageRender;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
 
 /**
- * 动态布局的沙盒视图，用于获取布局后的按键视图的图形
+ * 键盘的沙盒视图，用于获取与键盘按键相同的图形
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public class DynamicLayoutSandboxView extends KeyboardViewBase {
+public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRender {
     private final Map<String, Key<?>> keys = new LinkedHashMap<>();
 
     private final Map<String, Drawable> imageCache = new HashMap<>();
 
-    public DynamicLayoutSandboxView(Context context, AttributeSet attrs) {
+    public KeyboardSandboxView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -50,35 +51,33 @@ public class DynamicLayoutSandboxView extends KeyboardViewBase {
     public <T> T withMutation(int themeResId, Supplier<T> mutation) {
         T result = mutation.get();
 
-        updateWithTheme(themeResId);
+        this.imageCache.clear();
+        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
 
         return result;
     }
 
+    @Override
     public String withKey(Key<?> key) {
         if (key == null) {
             return "";
         }
 
-        String code = "hash:" + key.hashCode();
+        String code = "key-hash:" + key.hashCode();
         if (!this.keys.containsKey(code)) {
+            // TODO 已添加的 key 数量超过 8x6 时，如何处理？
             this.keys.put(code, key);
         }
         return code;
     }
 
-    public Drawable getImage(String code, int width, int height) {
+    @Override
+    public Drawable renderKey(String code, int width, int height) {
         String key = String.format(Locale.getDefault(), "%s:%d:%d", code, width, height);
 
         return this.imageCache.computeIfAbsent(key, (k) -> {
             View view = getItemViewByKey(this.keys.get(code));
             return ViewUtils.toDrawable(view, width, height);
         });
-    }
-
-    public void updateWithTheme(int themeResId) {
-        this.imageCache.clear();
-
-        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
     }
 }
