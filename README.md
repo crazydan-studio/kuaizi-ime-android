@@ -42,9 +42,9 @@ EOF
 
 ## 架构
 
-### 核心类图
+### 核心类
 
-![核心类图](./docs/img/class-diagram.png)
+![核心类](./docs/img/class-diagram.png)
 
 <details><summary>PlantUML 代码</summary>
 
@@ -102,30 +102,23 @@ keyboard <|-down- math_kb: extends
 - 与以上视图相对应的逻辑模型则分别为 `InputPane`、`InputList` 和 `Keyboard`，
   其负责对输入过程中的状态变更进行处理，实现完整的输入逻辑
 
-### 消息传播图
+### 消息流转
 
-![消息传播图](./docs/img/message-transfer.png)
+![消息流转](./docs/img/message-transfer.png)
 
 <details><summary>PlantUML 代码</summary>
 
 ```plantuml
 @startuml
-component [ImeService] as ime_svc
+component [ImeService] as ime_svc #pink
 
-component [InputPane] as input_pane
-component [InputList] as input_list
-component [Keyboard] as keyboard
-
-component [InputPaneView] as input_pane_view
+component [InputPaneView] as input_pane_view #pink
 component [KeyboardView] as keyboard_view
 component [InputListView] as input_list_view
 
-keyboard ..> input_pane: send\n<<InputMsg>>
-input_list ..> input_pane: send\n<<InputMsg>>
-input_pane ..> ime_svc: transfer\n<<InputMsg>>
-ime_svc ..> input_pane_view: dispatch\n<<InputMsg>>
-input_pane_view ..> keyboard_view: dispatch\n<<InputMsg>>
-input_pane_view ..> input_list_view: dispatch\n<<InputMsg>>
+component [InputPane] as input_pane #pink
+component [InputList] as input_list
+component [Keyboard] as keyboard
 
 keyboard_view ..> input_pane_view: send\n<<UserKeyMsg>>
 input_list_view ..> input_pane_view: send\n<<UserInputMsg>>
@@ -133,6 +126,13 @@ input_pane_view ..> ime_svc: transfer\n<<UserKeyMsg>>\nor <<UserInputMsg>>
 ime_svc ..> input_pane: dispatch\n<<UserKeyMsg>>\nor <<UserInputMsg>>
 input_pane ..> keyboard: dispatch\n<<UserKeyMsg>>
 input_pane ..> input_list: dispatch\n<<UserInputMsg>>
+
+keyboard ..> input_pane: send\n<<InputMsg>>
+input_list ..> input_pane: send\n<<InputMsg>>
+input_pane ..> ime_svc: transfer\n<<InputMsg>>
+ime_svc ..> input_pane_view: dispatch\n<<InputMsg>>
+input_pane_view ..> keyboard_view: dispatch\n<<InputMsg>>
+input_pane_view ..> input_list_view: dispatch\n<<InputMsg>>
 
 @enduml
 ```
