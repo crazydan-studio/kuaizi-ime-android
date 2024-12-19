@@ -6,13 +6,19 @@
 [crazydan-studio/kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime/issues)
 创建 Issue。
 
-## 字词库
+## 项目构建
 
-[字典库](./app/src/main/res/raw/pinyin_word_dict.db)和[词典库](./app/src/main/res/raw/pinyin_phrase_dict.db)由
+> 若需要自己生成字词典数据库，则需要从项目
+> [kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime?tab=readme-ov-file#%E9%A1%B9%E7%9B%AE%E5%85%8B%E9%9A%86)
+> 的子模块 `android` 克隆本项目：`git submodule update --init android`。
+
+### 字/词典
+
+客户端默认自带的[字典库](./app/src/main/res/raw/pinyin_word_dict.db)和[词典库](./app/src/main/res/raw/pinyin_phrase_dict.db)由工具
 [kuaizi-ime/tools/pinyin-dict](https://github.com/crazydan-studio/kuaizi-ime/blob/master/tools/pinyin-dict/README.md)
-生成。其中，字典数据来自于[汉典网](https://www.zdic.net)，词典数据来自于[古文之家](https://www.cngwzj.com)。
+生成，请参考该工具的使用说明构建客户端专用的字词典数据库。
 
-## 构建
+> 注：字典数据来自于[汉典网](https://www.zdic.net)，词典数据来自于[古文之家](https://www.cngwzj.com)。
 
 ### 发布包
 
@@ -159,3 +165,13 @@ input_pane ..> input_list: dispatch\n<<UserInputMsg>>
 - [维特比算法](https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95)
 - [wmhst7/THU_AI_Course_Pinyin](https://github.com/wmhst7/THU_AI_Course_Pinyin)
 - [基于 Bigram+HMM 的拼音汉字转换](https://github.com/iseesaw/Pinyin2ChineseChars)
+
+## 友情赞助
+
+**注**：赞助时请添加备注信息 `筷字输入法`。
+
+详细的赞助清单请查看[《友情赞助清单》](https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/index.md)。
+
+| 支付宝 | 微信支付 |
+| -- | -- |
+| <img src="https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/alipay.jpg?raw=true" width="200px"/> | <img src="https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/wechat.png?raw=true" width="200px"/> |
