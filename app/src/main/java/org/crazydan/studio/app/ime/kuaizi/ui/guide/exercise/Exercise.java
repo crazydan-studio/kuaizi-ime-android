@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewDat
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 /**
  * 练习题
@@ -38,13 +37,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 public class Exercise implements RecyclerViewData, InputMsgListener {
     public final Mode mode;
     public final String title;
-    public final List<Step> steps = new ArrayList<>();
+    public final List<ExerciseStep> steps = new ArrayList<>();
     private final Function<Key<?>, String> renderKeyRegister;
 
     private boolean enableXInputPad;
     private String sampleText;
 
-    private Step runningStep;
+    private ExerciseStep runningStep;
 
     private ProgressListener progressListener;
 
@@ -73,14 +72,14 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
 
     public void reset() {
         this.runningStep = null;
-        for (Step step : this.steps) {
+        for (ExerciseStep step : this.steps) {
             step.reset();
         }
     }
 
     @Override
     public void onMsg(InputMsg msg) {
-        Step current = this.runningStep;
+        ExerciseStep current = this.runningStep;
         if (current == null) {
             return;
         }
@@ -113,8 +112,8 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
     }
 
     /** 在模板参数为 {@link Key} 时，自动转换为 &lt;img/&gt; 图片标签 */
-    public Step newStep(String content, Object... args) {
-        Step step = new Step();
+    public ExerciseStep newStep(String content, Object... args) {
+        ExerciseStep step = new ExerciseStep();
         addStep(0, step);
 
         if (args.length > 0) {
@@ -128,15 +127,15 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         return step.content(content);
     }
 
-    public Step newStep(Object[] args) {
+    public ExerciseStep newStep(Object[] args) {
         return newStep((String) args[0], Arrays.copyOfRange(args, 1, args.length));
     }
 
-    public void addStep(Step step) {
+    public void addStep(ExerciseStep step) {
         addStep(0, step);
     }
 
-    public void addStep(int offset, Step step) {
+    public void addStep(int offset, ExerciseStep step) {
         int index = this.steps.size() + offset;
         this.steps.add(index, step);
     }
@@ -166,7 +165,7 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         return false;
     }
 
-    private void gotoStep(Step step) {
+    private void gotoStep(ExerciseStep step) {
         if (this.runningStep != null) {
             this.runningStep.reset();
         }
@@ -179,14 +178,14 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         fireProgressListener(this.runningStep);
     }
 
-    private void fireProgressListener(Step step) {
+    private void fireProgressListener(ExerciseStep step) {
         if (this.progressListener != null && step != null) {
             this.progressListener.onStep(step, this.steps.indexOf(step));
         }
     }
 
-    private Step getRunningStep(String name) {
-        for (Step step : this.steps) {
+    private ExerciseStep getRunningStep(String name) {
+        for (ExerciseStep step : this.steps) {
             if (Objects.equals(step.name(), name) && step.isRunnable()) {
                 return step;
             }
@@ -194,10 +193,10 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         return null;
     }
 
-    private Step nextRunnableStep(Step prev) {
+    private ExerciseStep nextRunnableStep(ExerciseStep prev) {
         int start = this.steps.indexOf(prev);
         for (int i = start + 1; i < this.steps.size(); i++) {
-            Step step = this.steps.get(i);
+            ExerciseStep step = this.steps.get(i);
             if (step.isRunnable()) {
                 return step;
             }
@@ -215,6 +214,6 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
     }
 
     public interface ProgressListener {
-        void onStep(Step step, int position);
+        void onStep(ExerciseStep step, int position);
     }
 }

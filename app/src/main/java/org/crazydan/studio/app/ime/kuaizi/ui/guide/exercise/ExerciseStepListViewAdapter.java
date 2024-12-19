@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.List;
 
@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -33,9 +32,9 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     private final static int VIEW_TYPE_NORMAL = 0;
     private final static int VIEW_TYPE_FINAL = 1;
 
-    private List<Step> data;
+    private List<ExerciseStep> data;
 
-    public void bind(List<Step> data) {
+    public void bind(List<ExerciseStep> data) {
         this.data = data;
 
         notifyDataSetChanged();
@@ -48,7 +47,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public void onBindViewHolder(@NonNull ExerciseStepView view, int position) {
-        Step step = this.data.get(position);
+        ExerciseStep step = this.data.get(position);
 
         view.bind(step, position);
     }
@@ -64,9 +63,9 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public int getItemViewType(int position) {
-        Step step = this.data.get(position);
+        ExerciseStep step = this.data.get(position);
 
-        if (step instanceof Step.Final) {
+        if (step instanceof ExerciseStep.Final) {
             return VIEW_TYPE_FINAL;
         }
         return VIEW_TYPE_NORMAL;
@@ -74,7 +73,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     public boolean isFinalStep(int position) {
         if (position < getItemCount()) {
-            return this.data.get(position) instanceof Step.Final;
+            return this.data.get(position) instanceof ExerciseStep.Final;
         }
         return false;
     }

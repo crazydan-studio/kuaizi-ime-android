@@ -31,7 +31,7 @@
             android:textColor="?attr/key_highlight_fg_color"
             android:layout_marginBottom="12dp" />
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseStepListView
+    <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseStepListView
             android:id="@+id/step_list_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -41,7 +41,7 @@
             android:paddingHorizontal="12dp"
             android:scrollbars="vertical" />
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseEditText
+    <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseEditText
             android:id="@+id/text_view"
             android:layout_width="match_parent"
             android:layout_height="80dp"

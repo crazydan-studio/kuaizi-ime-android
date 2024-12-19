@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import android.view.View;
 import android.widget.Button;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -40,10 +39,10 @@ public class ExerciseStepFinalView extends ExerciseStepView {
     }
 
     @Override
-    public void bind(Step step, int position) {
+    public void bind(ExerciseStep step, int position) {
         super.bind(step);
 
-        Step.Final finalStep = (Step.Final) step;
+        ExerciseStep.Final finalStep = (ExerciseStep.Final) step;
 
         this.restartBtn.setOnClickListener(null);
         if (finalStep.restartCallback != null) {

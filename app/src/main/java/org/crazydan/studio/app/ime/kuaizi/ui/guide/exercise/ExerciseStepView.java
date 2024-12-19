@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.Locale;
 
@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
@@ -38,7 +37,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepView extends RecyclerViewHolder<Step> {
+public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
     private final ImageView pointerView;
     private final TextView contentView;
 
@@ -49,7 +48,7 @@ public class ExerciseStepView extends RecyclerViewHolder<Step> {
         this.contentView = itemView.findViewById(R.id.content_view);
     }
 
-    public void bind(Step step, int position) {
+    public void bind(ExerciseStep step, int position) {
         super.bind(step);
 
         ViewUtils.visible(this.pointerView, step.isRunning());
@@ -58,11 +57,11 @@ public class ExerciseStepView extends RecyclerViewHolder<Step> {
         this.contentView.setText(html(step, step.isRunning() ? "<b>" + text + "</b>" : text));
     }
 
-    private Spanned html(Step step, String text) {
+    private Spanned html(ExerciseStep step, String text) {
         return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> getImage(step, source), null);
     }
 
-    private Drawable getImage(Step step, String source) {
+    private Drawable getImage(ExerciseStep step, String source) {
         if (step.keyImageRender == null) {
             return null;
         }

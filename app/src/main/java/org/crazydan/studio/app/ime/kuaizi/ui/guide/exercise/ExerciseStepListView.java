@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,28 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import android.util.AttributeSet;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView;
 
 /**
- * {@link ExerciseListView} 的布局器
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListViewLayoutManager extends LinearLayoutManager {
+public class ExerciseStepListView extends RecyclerView {
+    public final ExerciseStepListViewAdapter adapter;
 
-    public ExerciseListViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+
+        this.adapter = new ExerciseStepListViewAdapter();
+        setAdapter(this.adapter);
+
+        ExerciseStepListViewLayoutManager layoutManager = new ExerciseStepListViewLayoutManager(context);
+        setLayoutManager(layoutManager);
     }
 }

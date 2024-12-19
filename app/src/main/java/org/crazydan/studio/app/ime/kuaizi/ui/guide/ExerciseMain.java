@@ -39,6 +39,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -58,10 +59,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.ImeIntegratedActivity;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Step;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.KeyboardSandboxView;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.ExerciseView;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseStep;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -86,14 +87,14 @@ public class ExerciseMain extends ImeIntegratedActivity {
         super.onCreate(savedInstanceState);
 
         Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int imeThemeResId = theme.getResId(getApplicationContext());
+        int themeResId = theme.getResId(getApplicationContext());
 
-        KeyboardSandboxView sandboxView = findViewById(R.id.step_image_sandbox_view);
-        KeyboardSandboxView xPadSandboxView = findViewById(R.id.xpad_step_image_sandbox_view);
+        KeyboardSandboxView sandboxView = findViewById(R.id.keyboard_sandbox_view);
+        KeyboardSandboxView xPadSandboxView = findViewById(R.id.xpad_keyboard_sandbox_view);
         xPadSandboxView.setGridItemOrientation(HexagonOrientation.FLAT_TOP);
 
-        List<Exercise> exercises = sandboxView.withMutation(imeThemeResId,
-                                                            () -> xPadSandboxView.withMutation(imeThemeResId,
+        List<Exercise> exercises = sandboxView.withMutation(themeResId,
+                                                            () -> xPadSandboxView.withMutation(themeResId,
                                                                                                () -> createExercises(
                                                                                                        sandboxView,
                                                                                                        xPadSandboxView)));
@@ -110,6 +111,8 @@ public class ExerciseMain extends ImeIntegratedActivity {
         exerciseView.onMsg(msg);
     }
 
+    // ================ Start: 初始化视图 =================
+
     @Override
     public void onBackPressed() {
         // 关闭侧边栏或返回到前一个窗口
@@ -123,7 +126,7 @@ public class ExerciseMain extends ImeIntegratedActivity {
         return this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left ? GravityCompat.START : GravityCompat.END;
     }
 
-    private void toggleDrawer() {
+    private void toggleDrawer(View v) {
         if (!closeDrawer()) {
             this.drawerLayout.openDrawer(getDrawerGravity());
         }
@@ -165,7 +168,7 @@ public class ExerciseMain extends ImeIntegratedActivity {
         // 通过编码方式在指定位置弹出侧边栏
         // - 该设定必须放在 ActionBarDrawerToggle 初始化之后，
         //   以覆盖 ActionBarDrawerToggle 对其的默认设置
-        toolbar.setNavigationOnClickListener((v) -> toggleDrawer());
+        toolbar.setNavigationOnClickListener(this::toggleDrawer);
 
         Menu menu = this.exerciseNavView.getMenu();
         for (int i = 0; i < exercises.size(); i++) {
@@ -190,6 +193,8 @@ public class ExerciseMain extends ImeIntegratedActivity {
         activeDrawerNavItem(position);
         this.exerciseListView.active(position);
     }
+
+    // ================ End: 初始化视图 =================
 
     private void initExerciseList(List<Exercise> exercises) {
         this.exerciseListView = findViewById(R.id.exercise_list_view);
@@ -259,8 +264,10 @@ public class ExerciseMain extends ImeIntegratedActivity {
                 exercise.newStep("本次练习已结束，您可以重做当前练习。").action((msg) -> {});
             }
 
-            Step.Final finalStep = new Step.Final(exercise::restart,
-                                                  !lastOne ? () -> this.exerciseListView.activeNext() : null);
+            ExerciseStep.Final finalStep = new ExerciseStep.Final(exercise::restart,
+                                                                  !lastOne
+                                                                  ? () -> this.exerciseListView.activeNext()
+                                                                  : null);
             exercise.addStep(finalStep);
 
             exerciseList.add(exercise);
@@ -815,7 +822,7 @@ public class ExerciseMain extends ImeIntegratedActivity {
 
             exercise.newStep("请注意观看 <span style=\"color:#ed4c67;\">%s</span> 的输入演示动画；", key.getLabel()) //
                     .name(simulatorStepName) //
-                    .action(new Step.AutoAction() {
+                    .action(new ExerciseStep.AutoAction() {
                         @Override
                         public void start() {
                             if (isFirstStep || simulator.get().isStopped()) {
@@ -835,15 +842,15 @@ public class ExerciseMain extends ImeIntegratedActivity {
                         }
                     });
 
-            Step step = isFirstStep
-                        ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
-                                           + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
-                                           key_ctrl_switch_latin,
-                                           key.getLabel())
-                        : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入"
-                                           + " <span style=\"color:#ed4c67;\">%s</span>。"
-                                           + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
-                                           key.getLabel());
+            ExerciseStep step = isFirstStep
+                                ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                                   + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
+                                                   key_ctrl_switch_latin,
+                                                   key.getLabel())
+                                : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入"
+                                                   + " <span style=\"color:#ed4c67;\">%s</span>。"
+                                                   + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
+                                                   key.getLabel());
             step.action((msg) -> {
                 switch (msg.type) {
                     // Note：拉丁文输入为直输
@@ -919,7 +926,7 @@ public class ExerciseMain extends ImeIntegratedActivity {
                                  ? key
                                  : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ") //
                         .name(simulatorStepName) //
-                        .action(new Step.AutoAction() {
+                        .action(new ExerciseStep.AutoAction() {
                             @Override
                             public void start() {
                                 if (isFirstStep || simulator.get().isStopped()) {
@@ -939,16 +946,18 @@ public class ExerciseMain extends ImeIntegratedActivity {
                             }
                         });
 
-                Step step = isFirstStep
-                            ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
-                                               + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
-                                               key_ctrl_switch_pinyin,
-                                               key.getLabel())
-                            : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入%s。"
-                                               + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
-                                               key instanceof CtrlKey
-                                               ? key
-                                               : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ");
+                ExerciseStep step = isFirstStep
+                                    ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                                       + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
+                                                       key_ctrl_switch_pinyin,
+                                                       key.getLabel())
+                                    : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入%s。"
+                                                       + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
+                                                       key instanceof CtrlKey
+                                                       ? key
+                                                       : " <span style=\"color:#ed4c67;\">"
+                                                         + key.getLabel()
+                                                         + "</span> ");
                 step.action((msg) -> {
                     switch (msg.type) {
                         case InputChars_Input_Doing: {

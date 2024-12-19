@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
 
 /**
  * {@link Exercise} 的步骤
@@ -27,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.Exercise;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Step implements RecyclerViewData {
+public class ExerciseStep implements RecyclerViewData {
     private String name;
     private String content;
     private Action action;
@@ -40,7 +39,7 @@ public class Step implements RecyclerViewData {
         return this.name;
     }
 
-    public Step name(String name) {
+    public ExerciseStep name(String name) {
         this.name = name;
         return this;
     }
@@ -49,7 +48,7 @@ public class Step implements RecyclerViewData {
         return this.content;
     }
 
-    public Step content(String content) {
+    public ExerciseStep content(String content) {
         this.content = content;
         return this;
     }
@@ -58,7 +57,7 @@ public class Step implements RecyclerViewData {
         return this.action;
     }
 
-    public Step action(Action action) {
+    public ExerciseStep action(Action action) {
         this.action = action;
         return this;
     }
@@ -107,7 +106,7 @@ public class Step implements RecyclerViewData {
         default void onInputMsg(InputMsg msg) {}
     }
 
-    public static class Final extends Step {
+    public static class Final extends ExerciseStep {
         public final Runnable restartCallback;
         public final Runnable continueCallback;
 

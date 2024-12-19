@@ -41,8 +41,8 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.view.Alert;
 
 /**
  * 输入法配置界面

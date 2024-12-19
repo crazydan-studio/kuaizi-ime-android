@@ -17,22 +17,40 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import android.graphics.drawable.Drawable;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import android.view.View;
+import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
- * {@link Key} 的图形渲染器
- * <p/>
- * 负责获取与实际输入按键相同的图形
+ * {@link Exercise 练习题}视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-19
+ * @date 2023-09-19
  */
-public interface KeyImageRender {
+public class ExerciseIntroduceView extends ExerciseView {
 
-    /** 添加待渲染的 {@link Key}，并返回按键唯一标识 */
-    String withKey(Key<?> key);
+    public ExerciseIntroduceView(@NonNull View itemView) {
+        super(itemView);
+    }
 
-    /** 根据 {@link #withKey} 所生成的唯一标识，渲染该标识对应的 {@link Key} 的图像 */
-    Drawable renderKey(String code, int width, int height);
+    @Override
+    public void withIme(InputPaneView ime) {
+        // keep it empty
+    }
+
+    @Override
+    public void onMsg(InputMsg msg) {
+        // keep it empty
+    }
+
+    @Override
+    public void bind(Exercise exercise, int position) {
+        super.bind(exercise);
+
+        String title = createTitle(exercise, position);
+        this.titleView.setText(title);
+
+        updateSteps();
+    }
 }

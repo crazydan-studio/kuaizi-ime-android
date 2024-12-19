@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.view;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,7 +29,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.KeyImageRender;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
 
 /**

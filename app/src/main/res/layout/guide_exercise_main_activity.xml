@@ -41,14 +41,14 @@
             <!-- Note：按键视图无法通过动态构造得到绘制图形，
             必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
             -->
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.KeyboardSandboxView
-                    android:id="@+id/step_image_sandbox_view"
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
+                    android:id="@+id/keyboard_sandbox_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
 
-            <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.KeyboardSandboxView
-                    android:id="@+id/xpad_step_image_sandbox_view"
+            <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
+                    android:id="@+id/xpad_keyboard_sandbox_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
@@ -61,13 +61,13 @@
                     app:alignItems="center"
                     app:alignContent="stretch">
 
-                <org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseListView
+                <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView
                         android:id="@+id/exercise_list_view"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         app:layout_flexGrow="1" />
 
-                <org.crazydan.studio.app.ime.kuaizi.ui.guide.view.RecyclerPageIndicatorView
+                <org.crazydan.studio.app.ime.kuaizi.common.widget.RecyclerPageIndicatorView
                         android:id="@+id/exercise_list_indicator_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
