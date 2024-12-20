@@ -178,6 +178,15 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         return null;
     }
 
+    public boolean hasRunnableStep() {
+        for (ExerciseStep step : this.steps) {
+            if (step.runnable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ================ End: 驱动练习 ================
 
     // ================ Start: 消息处理 =================

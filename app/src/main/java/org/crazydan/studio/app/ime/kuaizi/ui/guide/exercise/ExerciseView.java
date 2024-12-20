@@ -62,6 +62,8 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
         String title = createTitle(exercise, position);
         this.titleView.setText(title);
 
+        // Note: 可能会因为渲染时间过长而导致试题翻页出现迟滞，
+        // 并且易出现选中的页与实际切换的页不相符的问题
         update();
     }
 

@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.RecyclerViewOnScrolledListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
@@ -57,17 +58,17 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
         setLayoutManager(layoutManager);
 
         // 以翻页形式切换项目至视图中心
-        // - 用RecyclerView打造一个轮播图: https://juejin.cn/post/6844903512447385613
+        // - 用 RecyclerView 打造一个轮播图: https://juejin.cn/post/6844903512447385613
         // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置: https://cloud.tencent.com/developer/article/1041258
-        // - 用RecyclerView打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
-        // - RecyclerView实现Gallery画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
+        // - 用 RecyclerView 打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
+        // - RecyclerView 实现 Gallery 画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
         this.pager = new PagerSnapHelper();
         this.pager.attachToRecyclerView(this);
 
-        addOnScrollListener(new RecyclerView.OnScrollListener() {
+        addOnScrollListener(new RecyclerViewOnScrolledListener() {
             @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                ((ExerciseListView) recyclerView).onRecyclerViewScroll();
+            public void onScrolled(@NonNull RecyclerView recyclerView) {
+                onRecyclerViewScrolled();
             }
         });
     }
@@ -107,11 +108,13 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
         }
     }
 
-    private void onRecyclerViewScroll() {
-        ExerciseView view = getActiveView();
-        int index = view.getAdapterPosition();
+    private void onRecyclerViewScrolled() {
+        int position = getActivePosition();
+        if (position < 0) {
+            return;
+        }
 
-        ExerciseViewMsg msg = new ExerciseViewMsg(index);
+        ExerciseViewMsg msg = new ExerciseViewMsg(position);
         this.listener.onMsg(msg);
     }
 
@@ -129,12 +132,16 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
 
     /** 激活当前位置之后的视图 */
     public void activateNext() {
-        int position = ((ExerciseListViewLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+        int position = getActivePosition();
         int total = getAdapter().getItemCount();
 
         if (position < total - 1) {
             activateAt(position + 1);
         }
+    }
+
+    private int getActivePosition() {
+        return ((ExerciseListViewLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
     }
 
     private ExerciseView getActiveView() {

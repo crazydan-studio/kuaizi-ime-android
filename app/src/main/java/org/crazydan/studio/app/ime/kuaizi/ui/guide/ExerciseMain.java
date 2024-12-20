@@ -184,10 +184,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     }
 
     private void initExerciseListView() {
-        this.exerciseListView.setListener(this);
-
         RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
         indicatorView.attachTo(this.exerciseListView);
+
+        this.exerciseListView.setListener(this);
     }
 
     // ================ End: 初始化视图 =================

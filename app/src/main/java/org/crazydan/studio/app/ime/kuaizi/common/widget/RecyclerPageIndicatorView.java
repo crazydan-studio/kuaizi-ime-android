@@ -63,61 +63,50 @@ public class RecyclerPageIndicatorView extends LinearLayout {
     }
 
     public void attachTo(RecyclerView view) {
-        createDots(view);
-        activeDot(view);
+        this.activeDot = 0;
 
-        view.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        view.addOnScrollListener(new RecyclerViewOnScrolledListener() {
             @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            public void onScrolled(@NonNull RecyclerView recyclerView) {
                 activeDot(view);
             }
         });
+
+        createDots(view);
     }
 
     private void createDots(RecyclerView view) {
         RecyclerView.Adapter<?> adapter = view.getAdapter();
-        if (adapter == null) {
-            return;
-        }
+        assert adapter != null;
 
-        createDots(view, adapter.getItemCount());
+        Runnable updateDots = () -> {
+            createDots(view, adapter.getItemCount());
+            activeDot(view);
+        };
+
         adapter.registerAdapterDataObserver(new DefaultAdapterDataObserver() {
             @Override
             public void onChanged() {
-                createDots(view, adapter.getItemCount());
-                activeDot(view);
+                updateDots.run();
             }
         });
+
+        updateDots.run();
     }
 
-    private void clearDots() {
-        removeAllViews();
-    }
-
+    /** 重建锚点 */
     private void createDots(RecyclerView recycler, int count) {
+        // 清空重建，以避免视图复用造成定位不准的问题
+        removeAllViews();
+
         int size = this.dotSize;
         if (size <= 0 || count <= 0) {
-            clearDots();
             return;
         }
 
-        int childCount = getChildCount();
-        if (childCount == count) {
-            return;
-        }
-
-        // 删除多余的
-        if (childCount > count) {
-            for (int i = count; i < childCount; i++) {
-                removeViewAt(i);
-            }
-        }
-        // 补充新增的
-        else {
-            for (int i = childCount; i < count; i++) {
-                View view = createDot(recycler, i, i == this.activeDot);
-                addView(view);
-            }
+        for (int i = 0; i < count; i++) {
+            View view = createDot(recycler, i, i == this.activeDot);
+            addView(view);
         }
     }
 
@@ -171,6 +160,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         return view;
     }
 
+    /** 确保监听函数均最终调用 {@link DefaultAdapterDataObserver#onChanged()}，从而减少重载的接口数 */
     private static class DefaultAdapterDataObserver extends RecyclerView.AdapterDataObserver {
 
         @Override
