@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.view.ViewGroup;
@@ -35,12 +36,14 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     private final static int VIEW_TYPE_NORMAL_MODE = 1;
     private final static int VIEW_TYPE_INTRODUCE_MODE = 2;
 
-    private List<Exercise> data;
+    private List<Exercise> data = new ArrayList<>();
 
-    public void bind(List<Exercise> data) {
+    /** 更新 {@link Exercise} 列表 */
+    public void updateDataList(List<Exercise> data) {
+        List<Exercise> oldData = this.data;
         this.data = data;
 
-        notifyDataSetChanged();
+        updateItems(oldData, this.data);
     }
 
     @Override
@@ -58,7 +61,8 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
     @NonNull
     @Override
     public ExerciseView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int resId;
+        int resId = R.layout.guide_exercise_mode_normal_view;
+
         switch (viewType) {
             case VIEW_TYPE_FREE_MODE: {
                 resId = R.layout.guide_exercise_mode_free_view;
@@ -67,10 +71,6 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
             case VIEW_TYPE_INTRODUCE_MODE: {
                 resId = R.layout.guide_exercise_mode_introduce_view;
                 return new ExerciseIntroduceView(inflateItemView(parent, resId));
-            }
-            default: {
-                resId = R.layout.guide_exercise_mode_normal_view;
-                break;
             }
         }
         return new ExerciseView(inflateItemView(parent, resId));

@@ -15,26 +15,18 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
-
-import android.view.View;
-import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg;
 
 /**
- * {@link Exercise 练习题}视图
+ * {@link ExerciseMsg} 消息的类型
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-19
+ * @date 2024-12-20
  */
-public class ExerciseIntroduceView extends ExerciseView {
+public enum ExerciseMsgType {
+    /** 列表已启动 */
+    List_Start_Done,
 
-    public ExerciseIntroduceView(@NonNull View itemView) {
-        super(itemView);
-    }
-
-    @Override
-    public void onMsg(InputMsg msg) {
-        // keep it empty
-    }
+    /** 步骤已开始 */
+    Step_Start_Done,
 }

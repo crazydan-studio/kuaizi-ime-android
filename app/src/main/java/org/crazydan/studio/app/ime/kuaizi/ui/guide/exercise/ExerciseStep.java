@@ -17,8 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.Objects;
+
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
 
 /**
  * {@link Exercise} 的步骤
@@ -26,12 +30,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep implements RecyclerViewData {
+public class ExerciseStep implements RecyclerViewData, InputMsgListener {
+    public final KeyImageRender keyImageRender;
+
     private String name;
     private String content;
     private Action action;
 
     private boolean running;
+
+    public ExerciseStep(KeyImageRender keyImageRender) {
+        this.keyImageRender = keyImageRender;
+    }
 
     // ================== Start: 链式调用 ==================
 
@@ -62,6 +72,14 @@ public class ExerciseStep implements RecyclerViewData {
         return this;
     }
 
+    public boolean running() {
+        return this.running;
+    }
+
+    public boolean runnable() {
+        return this.action != null;
+    }
+
     // ================== End: 链式调用 ==================
 
     public void reset() {
@@ -76,34 +94,45 @@ public class ExerciseStep implements RecyclerViewData {
         }
     }
 
-    public void onInputMsg(InputMsg msg) {
+    @Override
+    public void onMsg(InputMsg msg) {
         if (this.action != null) {
-            this.action.onInputMsg(msg);
+            this.action.onMsg(msg);
         }
-    }
-
-    public boolean isRunnable() {
-        return this.action != null;
-    }
-
-    public boolean isRunning() {
-        return this.running;
     }
 
     @Override
     public boolean isSameWith(Object o) {
-        return false;
+        return equals(o);
     }
 
-    public interface Action {
-        void onInputMsg(InputMsg msg);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ExerciseStep that = (ExerciseStep) o;
+        return this.running == that.running //
+               && Objects.equals(this.name, that.name) //
+               && Objects.equals(this.content, that.content);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.content, this.running);
+    }
+
+    public interface Action extends InputMsgListener {}
 
     public interface AutoAction extends Action {
         void start();
 
         @Override
-        default void onInputMsg(InputMsg msg) {}
+        default void onMsg(InputMsg msg) {}
     }
 
     public static class Final extends ExerciseStep {
@@ -111,6 +140,8 @@ public class ExerciseStep implements RecyclerViewData {
         public final Runnable continueCallback;
 
         public Final(Runnable restartCallback, Runnable continueCallback) {
+            super(null);
+
             this.restartCallback = restartCallback;
             this.continueCallback = continueCallback;
         }

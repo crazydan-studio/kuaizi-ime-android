@@ -91,7 +91,7 @@
     https://stackoverflow.com/questions/62436886/navigation-view-menu-item-doesnt-respond-to-any-click#answer-62439907
     -->
     <com.google.android.material.navigation.NavigationView
-            android:id="@+id/nav_view"
+            android:id="@+id/drawer_nav_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="end"

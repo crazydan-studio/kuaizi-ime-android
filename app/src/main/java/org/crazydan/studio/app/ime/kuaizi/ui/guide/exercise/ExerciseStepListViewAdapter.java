@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.view.ViewGroup;
@@ -32,17 +33,19 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     private final static int VIEW_TYPE_NORMAL = 0;
     private final static int VIEW_TYPE_FINAL = 1;
 
-    private List<ExerciseStep> data;
+    private List<ExerciseStep> data = new ArrayList<>();
 
-    public void bind(List<ExerciseStep> data) {
+    /** 更新 {@link ExerciseStep} 列表 */
+    public void updateDataList(List<ExerciseStep> data) {
+        List<ExerciseStep> oldData = this.data;
         this.data = data;
 
-        notifyDataSetChanged();
+        updateItems(oldData, this.data);
     }
 
     @Override
     public int getItemCount() {
-        return this.data != null ? this.data.size() : 0;
+        return this.data.size();
     }
 
     @Override
@@ -71,6 +74,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
         return VIEW_TYPE_NORMAL;
     }
 
+    /** 指定位置是否为最后一步 */
     public boolean isFinalStep(int position) {
         if (position < getItemCount()) {
             return this.data.get(position) instanceof ExerciseStep.Final;

@@ -15,26 +15,15 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
-
-import android.view.View;
-import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg;
 
 /**
- * {@link Exercise 练习题}视图
+ * {@link ExerciseMsg} 监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-19
+ * @date 2024-12-20
  */
-public class ExerciseIntroduceView extends ExerciseView {
+public interface ExerciseMsgListener {
 
-    public ExerciseIntroduceView(@NonNull View itemView) {
-        super(itemView);
-    }
-
-    @Override
-    public void onMsg(InputMsg msg) {
-        // keep it empty
-    }
+    void onMsg(ExerciseMsg msg);
 }

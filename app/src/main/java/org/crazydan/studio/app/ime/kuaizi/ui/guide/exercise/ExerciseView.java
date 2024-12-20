@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputPaneView;
 
 /**
  * {@link Exercise} 视图
@@ -39,6 +38,10 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
 
+    public static String createTitle(Exercise exercise, int position) {
+        return String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+    }
+
     public ExerciseView(@NonNull View itemView) {
         super(itemView);
 
@@ -47,58 +50,43 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
         this.textView = itemView.findViewById(R.id.text_view);
     }
 
-    public static String createTitle(Exercise exercise, int position) {
-        return String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+    @Override
+    public void onMsg(InputMsg msg) {
+        this.textView.onMsg(msg);
     }
 
+    /** 视图与数据的初始绑定 */
     public void bind(Exercise exercise, int position) {
         super.bind(exercise);
 
         String title = createTitle(exercise, position);
         this.titleView.setText(title);
 
-        updateSteps();
+        update();
     }
 
-    public void withIme(InputPaneView ime) {
+    /** 激活指定位置的步骤 */
+    public void activateStepAt(int index) {
+        update();
+
+        this.stepListView.scrollTo(index);
+    }
+
+    /** 更新视图 */
+    private void update() {
         Exercise exercise = getData();
 
-        this.textView.requestFocus();
-
-        String text = exercise.getSampleText();
-        this.textView.setText(text);
-        this.textView.setSelection(text != null ? text.length() : 0);
-
-        exercise.setProgressListener((step, position) -> {
-            updateSteps();
-            scrollTo(position);
-        });
-
-        exercise.restart();
-    }
-
-    @Override
-    public void onMsg(InputMsg msg) {
-        this.textView.onMsg(msg);
-
-        getData().onMsg(msg);
-    }
-
-    protected void scrollTo(int position) {
-        // 提前定位到最后一个 step
-        if (this.stepListView.adapter.isFinalStep(position + 1)) {
-            position += 1;
+        // Note: 初始绑定时，该视图为 null
+        if (this.textView != null) {
+            String text = exercise.getSampleText();
+            this.textView.requestFocus();
+            this.textView.setText(text);
+            this.textView.setSelection(text != null ? text.length() : 0);
         }
 
-        this.stepListView.smoothScrollToPosition(position);
-    }
-
-    protected void updateSteps() {
-        if (this.stepListView == null) {
-            return;
+        // Note: 初始绑定时，该视图为 null
+        if (this.stepListView != null) {
+            this.stepListView.update(exercise.steps);
         }
-
-        Exercise exercise = getData();
-        this.stepListView.adapter.bind(exercise.steps);
     }
 }

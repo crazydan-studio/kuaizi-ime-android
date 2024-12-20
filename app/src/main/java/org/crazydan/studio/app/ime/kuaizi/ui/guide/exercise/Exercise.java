@@ -21,12 +21,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseStepStartDoneMsgData;
 
 /**
  * 练习题
@@ -35,91 +40,70 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
  * @date 2023-09-19
  */
 public class Exercise implements RecyclerViewData, InputMsgListener {
+    public enum Mode {
+        /** 自由模式 */
+        free,
+        /** 互动模式 */
+        normal,
+        /** 介绍模式，无互动 */
+        introduce,
+    }
+
     public final Mode mode;
     public final String title;
     public final List<ExerciseStep> steps = new ArrayList<>();
-    private final Function<Key<?>, String> renderKeyRegister;
+    private final KeyImageRender keyImageRender;
 
-    private boolean enableXInputPad;
+    private boolean xInputPadEnabled;
+    /** 输入框内的演示内容 */
     private String sampleText;
 
-    private ExerciseStep runningStep;
-
-    private ProgressListener progressListener;
+    private ExerciseStep currentStep;
+    private ExerciseMsgListener listener;
 
     public static Exercise free(String title) {
         return new Exercise(Mode.free, title, null);
     }
 
-    public static Exercise normal(String title, Function<Key<?>, String> renderKeyRegister) {
-        return new Exercise(Mode.normal, title, renderKeyRegister);
+    public static Exercise normal(String title, KeyImageRender keyImageRender) {
+        return new Exercise(Mode.normal, title, keyImageRender);
     }
 
-    public static Exercise introduce(String title, Function<Key<?>, String> renderKeyRegister) {
-        return new Exercise(Mode.introduce, title, renderKeyRegister);
+    public static Exercise introduce(String title, KeyImageRender keyImageRender) {
+        return new Exercise(Mode.introduce, title, keyImageRender);
     }
 
-    Exercise(Mode mode, String title, Function<Key<?>, String> renderKeyRegister) {
+    Exercise(Mode mode, String title, KeyImageRender keyImageRender) {
         this.mode = mode;
         this.title = title;
-        this.renderKeyRegister = renderKeyRegister;
+        this.keyImageRender = keyImageRender;
     }
 
-    public void restart() {
-        reset();
-        gotoNextStep();
+    public boolean isXInputPadEnabled() {
+        return this.xInputPadEnabled;
     }
 
-    public void reset() {
-        this.runningStep = null;
-        for (ExerciseStep step : this.steps) {
-            step.reset();
-        }
+    public void enableXInputPad() {
+        this.xInputPadEnabled = true;
     }
 
-    @Override
-    public void onMsg(InputMsg msg) {
-        ExerciseStep current = this.runningStep;
-        if (current == null) {
-            return;
-        }
-
-        Key<?> key = msg.data.key;
-        switch (msg.type) {
-            case InputChars_Input_Doing:
-                if (key == null || key.getText() == null) {
-                    return;
-                } else {
-                    break;
-                }
-            case Keyboard_State_Change_Done:
-                if (key == null) {
-                    return;
-                } else {
-                    break;
-                }
-        }
-
-        current.onInputMsg(msg);
+    public String getSampleText() {
+        return this.sampleText;
     }
 
-    public void gotoNextStep() {
-        gotoStep(nextRunnableStep(this.runningStep));
-    }
-
-    public void gotoStep(String name) {
-        gotoStep(getRunningStep(name));
+    public void setSampleText(String sampleText) {
+        this.sampleText = sampleText;
     }
 
     /** 在模板参数为 {@link Key} 时，自动转换为 &lt;img/&gt; 图片标签 */
     public ExerciseStep newStep(String content, Object... args) {
-        ExerciseStep step = new ExerciseStep();
+        ExerciseStep step = new ExerciseStep(this.keyImageRender);
         addStep(0, step);
 
         if (args.length > 0) {
             content = String.format(content, Arrays.stream(args).map((arg) -> {
                 if (arg instanceof Key) {
-                    return "<img src=\"" + this.renderKeyRegister.apply((Key<?>) arg) + "\"/>";
+                    return "<img src=\"" + this.keyImageRender.withKey((Key<?>) arg) + "\"/>";
                 }
                 return arg;
             }).toArray());
@@ -140,80 +124,137 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         this.steps.add(index, step);
     }
 
-    public boolean isEnableXInputPad() {
-        return this.enableXInputPad;
+    // ================ Start: 驱动练习 ================
+
+    public void restart() {
+        this.currentStep = null;
+        for (ExerciseStep step : this.steps) {
+            step.reset();
+        }
+
+        gotoNextStep();
     }
 
-    public void setEnableXInputPad(boolean enableXInputPad) {
-        this.enableXInputPad = enableXInputPad;
+    public void gotoStep(String name) {
+        ExerciseStep step = getRunnableStep(name);
+        gotoStep(step);
     }
 
-    public String getSampleText() {
-        return this.sampleText;
-    }
-
-    public void setSampleText(String sampleText) {
-        this.sampleText = sampleText;
-    }
-
-    public void setProgressListener(ProgressListener progressListener) {
-        this.progressListener = progressListener;
-    }
-
-    @Override
-    public boolean isSameWith(Object o) {
-        return false;
+    public void gotoNextStep() {
+        ExerciseStep step = getNextRunnableStep(this.currentStep);
+        gotoStep(step);
     }
 
     private void gotoStep(ExerciseStep step) {
-        if (this.runningStep != null) {
-            this.runningStep.reset();
+        if (this.currentStep != null) {
+            this.currentStep.reset();
         }
 
-        this.runningStep = step;
-        if (this.runningStep != null) {
-            this.runningStep.start();
+        this.currentStep = step;
+        if (this.currentStep != null) {
+            this.currentStep.start();
         }
 
-        fireProgressListener(this.runningStep);
+        on_Step_Start_Done_Msg(this.currentStep);
     }
 
-    private void fireProgressListener(ExerciseStep step) {
-        if (this.progressListener != null && step != null) {
-            this.progressListener.onStep(step, this.steps.indexOf(step));
-        }
-    }
-
-    private ExerciseStep getRunningStep(String name) {
+    private ExerciseStep getRunnableStep(String name) {
         for (ExerciseStep step : this.steps) {
-            if (Objects.equals(step.name(), name) && step.isRunnable()) {
+            if (Objects.equals(step.name(), name) && step.runnable()) {
                 return step;
             }
         }
         return null;
     }
 
-    private ExerciseStep nextRunnableStep(ExerciseStep prev) {
+    private ExerciseStep getNextRunnableStep(ExerciseStep prev) {
         int start = this.steps.indexOf(prev);
         for (int i = start + 1; i < this.steps.size(); i++) {
             ExerciseStep step = this.steps.get(i);
-            if (step.isRunnable()) {
+            if (step.runnable()) {
                 return step;
             }
         }
         return null;
     }
 
-    public enum Mode {
-        /** 自由模式 */
-        free,
-        /** 互动模式 */
-        normal,
-        /** 介绍模式，无互动 */
-        introduce,
+    // ================ End: 驱动练习 ================
+
+    // ================ Start: 消息处理 =================
+
+    public void setListener(ExerciseMsgListener listener) {
+        this.listener = listener;
     }
 
-    public interface ProgressListener {
-        void onStep(ExerciseStep step, int position);
+    @Override
+    public void onMsg(InputMsg msg) {
+        ExerciseStep current = this.currentStep;
+        if (current == null) {
+            return;
+        }
+
+        Key<?> key = msg.data.key;
+        switch (msg.type) {
+            case InputChars_Input_Doing:
+                if (key == null || key.getText() == null) {
+                    return;
+                } else {
+                    break;
+                }
+            case Keyboard_State_Change_Done:
+                if (key == null) {
+                    return;
+                } else {
+                    break;
+                }
+        }
+
+        current.onMsg(msg);
+    }
+
+    private void on_Step_Start_Done_Msg(ExerciseStep step) {
+        if (this.listener == null || step == null) {
+            return;
+        }
+
+        ExerciseMsgData msgData = new ExerciseStepStartDoneMsgData(this.steps.indexOf(step));
+        ExerciseMsg msg = new ExerciseMsg(ExerciseMsgType.Step_Start_Done, msgData);
+        this.listener.onMsg(msg);
+    }
+
+    // ================ End: 消息处理 =================
+
+    @Override
+    public boolean isSameWith(Object o) {
+        return equals(o);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Exercise that = (Exercise) o;
+        return this.xInputPadEnabled == that.xInputPadEnabled
+               && this.mode == that.mode
+               && Objects.equals(this.title,
+                                 that.title)
+               && Objects.equals(this.steps, that.steps)
+               && Objects.equals(this.sampleText, that.sampleText)
+               && Objects.equals(this.currentStep, that.currentStep);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.mode,
+                            this.title,
+                            this.steps,
+                            this.xInputPadEnabled,
+                            this.sampleText,
+                            this.currentStep);
     }
 }

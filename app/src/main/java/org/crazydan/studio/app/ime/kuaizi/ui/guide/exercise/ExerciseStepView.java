@@ -48,13 +48,14 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
         this.contentView = itemView.findViewById(R.id.content_view);
     }
 
+    /** 视图与数据的初始绑定 */
     public void bind(ExerciseStep step, int position) {
         super.bind(step);
 
-        ViewUtils.visible(this.pointerView, step.isRunning());
+        ViewUtils.visible(this.pointerView, step.running());
 
-        String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content);
-        this.contentView.setText(html(step, step.isRunning() ? "<b>" + text + "</b>" : text));
+        String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content());
+        this.contentView.setText(html(step, step.running() ? "<b>" + text + "</b>" : text));
     }
 
     private Spanned html(ExerciseStep step, String text) {

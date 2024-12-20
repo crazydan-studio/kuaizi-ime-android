@@ -116,8 +116,12 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     protected void startKeyboard(Keyboard.Type type) {
+        startKeyboard(type, false);
+    }
+
+    protected void startKeyboard(Keyboard.Type type, boolean resetInputting) {
         Context context = getApplicationContext();
-        this.inputPane.start(context, type, false);
+        this.inputPane.start(context, type, resetInputting);
     }
 
     protected KeyTableConfig createKeyTableConfig() {

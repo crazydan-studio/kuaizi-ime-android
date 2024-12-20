@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.List;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -24,18 +26,26 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsg;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseListStartDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseStepStartDoneMsgData;
 
 /**
- * {@link Exercise 练习题}列表视图
+ * {@link ExerciseList} 视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListView extends RecyclerView {
-    public final ExerciseListViewAdapter adapter;
+public class ExerciseListView extends RecyclerView implements InputMsgListener, ExerciseMsgListener {
+    private final ExerciseListViewAdapter adapter;
     private final PagerSnapHelper pager;
 
-    private ExerciseActiveListener exerciseActiveListener;
+    private ExerciseViewMsgListener listener;
 
     public ExerciseListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -57,43 +67,81 @@ public class ExerciseListView extends RecyclerView {
         addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                ExerciseView exerciseView = getActiveExerciseView();
-                ExerciseActiveListener listener = ((ExerciseListView) recyclerView).exerciseActiveListener;
-
-                if (exerciseView == null || listener == null) {
-                    return;
-                }
-
-                listener.onActive(exerciseView);
+                ((ExerciseListView) recyclerView).onRecyclerViewScroll();
             }
         });
     }
 
-    public void active(int position) {
+    /** 更新视图 */
+    public void update(List<Exercise> exercises) {
+        this.adapter.updateDataList(exercises);
+    }
+
+    // ================ Start: 消息处理 =================
+
+    public void setListener(ExerciseViewMsgListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void onMsg(InputMsg msg) {
+        ExerciseView view = getActiveView();
+        view.onMsg(msg);
+    }
+
+    @Override
+    public void onMsg(ExerciseMsg msg) {
+        switch (msg.type) {
+            case List_Start_Done: {
+                ExerciseListStartDoneMsgData data = (ExerciseListStartDoneMsgData) msg.data;
+                update(data.exercises);
+                break;
+            }
+            case Step_Start_Done: {
+                ExerciseStepStartDoneMsgData data = (ExerciseStepStartDoneMsgData) msg.data;
+
+                ExerciseView view = getActiveView();
+                view.activateStepAt(data.stepIndex);
+                break;
+            }
+        }
+    }
+
+    private void onRecyclerViewScroll() {
+        ExerciseView view = getActiveView();
+        int index = view.getAdapterPosition();
+
+        ExerciseViewMsg msg = new ExerciseViewMsg(index);
+        this.listener.onMsg(msg);
+    }
+
+    // ================ End: 消息处理 =================
+
+    /** 延迟激活指定位置的视图 */
+    public void delayActivateAt(int position) {
+        post(() -> smoothScrollToPosition(position));
+    }
+
+    /** 激活指定位置的视图 */
+    public void activateAt(int position) {
         smoothScrollToPosition(position);
     }
 
-    public void activeNext() {
+    /** 激活当前位置之后的视图 */
+    public void activateNext() {
         int position = ((ExerciseListViewLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
         int total = getAdapter().getItemCount();
 
         if (position < total - 1) {
-            active(position + 1);
+            activateAt(position + 1);
         }
     }
 
-    public void setExerciseActiveListener(ExerciseActiveListener exerciseActiveListener) {
-        this.exerciseActiveListener = exerciseActiveListener;
-    }
-
-    public ExerciseView getActiveExerciseView() {
+    private ExerciseView getActiveView() {
         // https://stackoverflow.com/questions/43305295/how-to-get-the-center-item-after-recyclerview-snapped-it-to-center#answer-43305341
         View view = this.pager.findSnapView(getLayoutManager());
+        assert view != null;
 
-        return view != null ? (ExerciseView) getChildViewHolder(view) : null;
-    }
-
-    public interface ExerciseActiveListener {
-        void onActive(ExerciseView exerciseView);
+        return (ExerciseView) getChildViewHolder(view);
     }
 }

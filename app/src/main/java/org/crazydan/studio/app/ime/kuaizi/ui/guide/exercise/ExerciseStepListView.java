@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.List;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
@@ -28,7 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
  * @date 2023-09-19
  */
 public class ExerciseStepListView extends RecyclerView {
-    public final ExerciseStepListViewAdapter adapter;
+    private final ExerciseStepListViewAdapter adapter;
 
     public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -38,5 +40,20 @@ public class ExerciseStepListView extends RecyclerView {
 
         ExerciseStepListViewLayoutManager layoutManager = new ExerciseStepListViewLayoutManager(context);
         setLayoutManager(layoutManager);
+    }
+
+    /** 更新视图 */
+    public void update(List<ExerciseStep> steps) {
+        this.adapter.updateDataList(steps);
+    }
+
+    /** 滚动到指定位置 */
+    public void scrollTo(int position) {
+        // 提前定位到最后一个 step
+        if (this.adapter.isFinalStep(position + 1)) {
+            position += 1;
+        }
+
+        smoothScrollToPosition(position);
     }
 }

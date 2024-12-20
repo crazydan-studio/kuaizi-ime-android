@@ -38,6 +38,7 @@ public class ExerciseStepFinalView extends ExerciseStepView {
         this.continueBtn = itemView.findViewById(R.id.continue_btn);
     }
 
+    /** 视图与数据的初始绑定 */
     @Override
     public void bind(ExerciseStep step, int position) {
         super.bind(step);
