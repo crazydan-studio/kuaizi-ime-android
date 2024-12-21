@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.Locale;
-
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -39,7 +37,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
     private final ExerciseEditText textView;
 
     public static String createTitle(Exercise exercise, int position) {
-        return String.format(Locale.getDefault(), "%d. %s", position + 1, exercise.title);
+        return (position + 1) + ". " + exercise.title;
     }
 
     public ExerciseView(@NonNull View itemView) {
@@ -63,8 +61,11 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
         this.titleView.setText(title);
 
         // Note: 可能会因为渲染时间过长而导致试题翻页出现迟滞，
-        // 并且易出现选中的页与实际切换的页不相符的问题
-        update();
+        // 并且易出现选中的页与实际切换的页不相符的问题，
+        // 故而，仅对不含交互步骤的练习做初始渲染
+        if (!exercise.hasRunnableStep()) {
+            update();
+        }
     }
 
     /** 激活指定位置的步骤 */

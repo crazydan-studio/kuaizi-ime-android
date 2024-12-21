@@ -69,6 +69,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
         this.gridItemOrientation = gridItemOrientation;
     }
 
+    /** 更新视图 */
     protected void update(Key<?>[][] keys, boolean isLeftHandMode) {
         int columns = keys[0].length;
         int rows = keys.length;
@@ -76,6 +77,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
         update(keys, columns, rows, null, isLeftHandMode);
     }
 
+    /** 更新视图 */
     protected void update(
             Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
     ) {

@@ -17,10 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.Locale;
-
-import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.ImageView;
@@ -30,8 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -54,20 +48,14 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
 
         ViewUtils.visible(this.pointerView, step.running());
 
-        String text = String.format(Locale.getDefault(), "%d. %s", position + 1, step.content());
-        this.contentView.setText(html(step, step.running() ? "<b>" + text + "</b>" : text));
-    }
-
-    private Spanned html(ExerciseStep step, String text) {
-        return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> getImage(step, source), null);
-    }
-
-    private Drawable getImage(ExerciseStep step, String source) {
-        if (step.keyImageRender == null) {
-            return null;
+        String text = (position + 1) + ". " + step.content();
+        if (step.running()) {
+            text = "<b>" + text + "</b>";
         }
 
-        int size = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
-        return step.keyImageRender.renderKey(source, size, size);
+        int imageSize = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
+        Spanned spannedText = step.renderText(text, imageSize);
+
+        this.contentView.setText(spannedText);
     }
 }

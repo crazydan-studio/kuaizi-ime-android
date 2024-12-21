@@ -48,9 +48,11 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
 
     /** 在涉及添加视图的操作完成后，统一进行全部视图的更新 */
     public <T> T withMutation(int themeResId, Supplier<T> mutation) {
-        T result = mutation.get();
-
         this.imageCache.clear();
+
+        T result = mutation.get();
+        // Note: 在所要绘制的按键超过矩阵可含按键数量时（8x6），
+        // 可适当增加行列数，只要确保与实际按键的相对大小一致且图像不模糊即可
         update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
 
         return result;
@@ -64,7 +66,6 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
 
         String code = "key-hash:" + key.hashCode();
         if (!this.keys.containsKey(code)) {
-            // TODO 已添加的 key 数量超过 8x6 时，如何处理？
             this.keys.put(code, key);
         }
         return code;

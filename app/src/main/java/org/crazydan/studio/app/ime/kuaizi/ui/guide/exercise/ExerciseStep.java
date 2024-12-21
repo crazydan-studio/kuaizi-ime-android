@@ -17,12 +17,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
+import android.text.Html;
+import android.text.Spanned;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * {@link Exercise} 的步骤
@@ -31,7 +37,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
  * @date 2023-09-19
  */
 public class ExerciseStep implements RecyclerViewData, InputMsgListener {
-    public final KeyImageRender keyImageRender;
+    private final KeyImageRender keyImageRender;
+    /** 缓存显示文本 */
+    private final Map<String, Spanned> spannedCache = new HashMap<>();
 
     private String name;
     private String content;
@@ -82,6 +90,13 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
 
     // ================== End: 链式调用 ==================
 
+    @Override
+    public void onMsg(InputMsg msg) {
+        if (this.action != null) {
+            this.action.onMsg(msg);
+        }
+    }
+
     public void reset() {
         this.running = false;
     }
@@ -94,11 +109,16 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
         }
     }
 
-    @Override
-    public void onMsg(InputMsg msg) {
-        if (this.action != null) {
-            this.action.onMsg(msg);
-        }
+    public Spanned renderText(String text, int imageSize) {
+        return this.spannedCache.computeIfAbsent(text, (k) -> {
+            //
+            return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> {
+                if (this.keyImageRender == null) {
+                    return null;
+                }
+                return this.keyImageRender.renderKey(source, imageSize, imageSize);
+            }, null);
+        });
     }
 
     @Override
