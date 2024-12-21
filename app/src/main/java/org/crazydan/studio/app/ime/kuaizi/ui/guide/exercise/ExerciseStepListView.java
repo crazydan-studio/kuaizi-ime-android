@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.List;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
@@ -43,14 +41,16 @@ public class ExerciseStepListView extends RecyclerView {
     }
 
     /** 更新视图 */
-    public void update(List<ExerciseStep> steps) {
-        this.adapter.updateDataList(steps);
+    public void update(Exercise.ViewData exercise) {
+        this.adapter.setKeyImageRender(exercise.keyImageRender);
+
+        this.adapter.updateDataList(exercise.steps);
     }
 
     /** 滚动到指定位置 */
     public void scrollTo(int position) {
         // 提前定位到最后一个 step
-        if (this.adapter.isFinalStep(position + 1)) {
+        if (this.adapter.isLastStep(position + 1)) {
             position += 1;
         }
 

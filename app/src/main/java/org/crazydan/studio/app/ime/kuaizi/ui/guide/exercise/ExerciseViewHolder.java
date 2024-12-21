@@ -31,16 +31,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputMsgListener {
+public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> implements InputMsgListener {
     protected final TextView titleView;
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
 
-    public static String createTitle(Exercise exercise, int position) {
-        return (position + 1) + ". " + exercise.title;
+    public static String createTitle(String title, int position) {
+        return (position + 1) + ". " + title;
     }
 
-    public ExerciseView(@NonNull View itemView) {
+    public ExerciseViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.titleView = itemView.findViewById(R.id.title_view);
@@ -54,34 +54,25 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
     }
 
     /** 视图与数据的初始绑定 */
-    public void bind(Exercise exercise, int position) {
-        super.bind(exercise);
-
-        String title = createTitle(exercise, position);
+    public void bind(Exercise.ViewData data, int position) {
+        String title = createTitle(data.title, position);
         this.titleView.setText(title);
 
-        // Note: 可能会因为渲染时间过长而导致试题翻页出现迟滞，
-        // 并且易出现选中的页与实际切换的页不相符的问题，
-        // 故而，仅对不含交互步骤的练习做初始渲染
-        if (!exercise.hasRunnableStep()) {
-            update();
-        }
+        update(data);
     }
 
     /** 激活指定位置的步骤 */
-    public void activateStepAt(int index) {
-        update();
+    public void activateStepAt(Exercise.ViewData data, int stepIndex) {
+        update(data);
 
-        this.stepListView.scrollTo(index);
+        this.stepListView.scrollTo(stepIndex);
     }
 
     /** 更新视图 */
-    private void update() {
-        Exercise exercise = getData();
-
+    public void update(Exercise.ViewData data) {
         // Note: 初始绑定时，该视图为 null
         if (this.textView != null) {
-            String text = exercise.getSampleText();
+            String text = data.sampleText;
             this.textView.requestFocus();
             this.textView.setText(text);
             this.textView.setSelection(text != null ? text.length() : 0);
@@ -89,7 +80,7 @@ public class ExerciseView extends RecyclerViewHolder<Exercise> implements InputM
 
         // Note: 初始绑定时，该视图为 null
         if (this.stepListView != null) {
-            this.stepListView.update(exercise.steps);
+            this.stepListView.update(data);
         }
     }
 }

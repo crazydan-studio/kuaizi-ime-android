@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
+import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,16 +27,17 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
+public class ExerciseStepViewHolder extends RecyclerViewHolder<ExerciseStep.ViewData> {
     private final ImageView pointerView;
     private final TextView contentView;
 
-    public ExerciseStepView(@NonNull View itemView) {
+    public ExerciseStepViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.pointerView = itemView.findViewById(R.id.pointer_view);
@@ -43,19 +45,26 @@ public class ExerciseStepView extends RecyclerViewHolder<ExerciseStep> {
     }
 
     /** 视图与数据的初始绑定 */
-    public void bind(ExerciseStep step, int position) {
-        super.bind(step);
+    public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
+        ViewUtils.visible(this.pointerView, data.active);
 
-        ViewUtils.visible(this.pointerView, step.running());
-
-        String text = (position + 1) + ". " + step.content();
-        if (step.running()) {
+        String text = (position + 1) + ". " + data.content;
+        if (data.active) {
             text = "<b>" + text + "</b>";
         }
 
         int imageSize = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
-        Spanned spannedText = step.renderText(text, imageSize);
+        Spanned spannedText = renderText(keyImageRender, text, imageSize);
 
         this.contentView.setText(spannedText);
+    }
+
+    private Spanned renderText(KeyImageRender keyImageRender, String text, int imageSize) {
+        return Html.fromHtml(text,
+                             Html.FROM_HTML_MODE_COMPACT,
+                             (source) -> keyImageRender != null
+                                         ? keyImageRender.renderKey(source, imageSize, imageSize)
+                                         : null,
+                             null);
     }
 }

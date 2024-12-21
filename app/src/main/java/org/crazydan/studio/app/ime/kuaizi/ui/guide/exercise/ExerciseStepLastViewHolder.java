@@ -22,16 +22,17 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-19
  */
-public class ExerciseStepFinalView extends ExerciseStepView {
+public class ExerciseStepLastViewHolder extends ExerciseStepViewHolder {
     private final Button restartBtn;
     private final Button continueBtn;
 
-    public ExerciseStepFinalView(@NonNull View itemView) {
+    public ExerciseStepLastViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.restartBtn = itemView.findViewById(R.id.restart_btn);
@@ -40,22 +41,20 @@ public class ExerciseStepFinalView extends ExerciseStepView {
 
     /** 视图与数据的初始绑定 */
     @Override
-    public void bind(ExerciseStep step, int position) {
-        super.bind(step);
-
-        ExerciseStep.Final finalStep = (ExerciseStep.Final) step;
+    public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
+        super.bind(keyImageRender, data, position);
 
         this.restartBtn.setOnClickListener(null);
-        if (finalStep.restartCallback != null) {
-            this.restartBtn.setOnClickListener((v) -> finalStep.restartCallback.run());
+        if (data.restartCallback != null) {
+            this.restartBtn.setOnClickListener((v) -> data.restartCallback.run());
         } else {
             ViewUtils.hide(this.restartBtn);
         }
 
         this.continueBtn.setOnClickListener(null);
-        if (finalStep.continueCallback != null) {
+        if (data.continueCallback != null) {
             ViewUtils.show(this.continueBtn);
-            this.continueBtn.setOnClickListener((v) -> finalStep.continueCallback.run());
+            this.continueBtn.setOnClickListener((v) -> data.continueCallback.run());
         } else {
             ViewUtils.hide(this.continueBtn);
         }

@@ -19,13 +19,17 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseListStartDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseThemeUpdateDoneMsgData;
 
 /**
  * {@link Exercise} 列表
@@ -74,6 +78,18 @@ public class ExerciseList implements InputMsgListener, ExerciseMsgListener {
 
     @Override
     public void onMsg(InputMsg msg) {
+        if (msg.type == InputMsgType.Config_Update_Done) {
+            ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+            if (data.key == ConfigKey.theme) {
+                this.exercises.forEach((exercise) -> {
+                    exercise.updateStepTheme(data.newValue);
+                });
+
+                onMsg(new ExerciseMsg(ExerciseMsgType.Theme_Update_Done,
+                                      new ExerciseThemeUpdateDoneMsgData(this.active)));
+            }
+        }
+
         if (this.active != null) {
             this.active.onMsg(msg);
         }

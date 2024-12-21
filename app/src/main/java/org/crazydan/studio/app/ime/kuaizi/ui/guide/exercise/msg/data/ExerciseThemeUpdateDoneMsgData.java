@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data;
+
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
 
 /**
- * {@link ExerciseMsg} 消息的类型
+ * {@link ExerciseMsgType#Theme_Update_Done} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-20
+ * @date 2024-12-21
  */
-public enum ExerciseMsgType {
-    /** 列表已启动 */
-    List_Start_Done,
+public class ExerciseThemeUpdateDoneMsgData extends ExerciseMsgData {
+    /** 当前的练习 */
+    public final Exercise exercise;
 
-    /** 步骤已开始 */
-    Step_Start_Done,
-
-    /** 主题样式已更新 */
-    Theme_Update_Done,
+    public ExerciseThemeUpdateDoneMsgData(Exercise exercise) {
+        this.exercise = exercise;
+    }
 }

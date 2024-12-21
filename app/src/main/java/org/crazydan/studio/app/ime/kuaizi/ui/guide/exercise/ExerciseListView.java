@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -35,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseListStartDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseStepStartDoneMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseThemeUpdateDoneMsgData;
 
 /**
  * {@link ExerciseList} 视图
@@ -75,7 +77,7 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
 
     /** 更新视图 */
     public void update(List<Exercise> exercises) {
-        this.adapter.updateDataList(exercises);
+        this.adapter.updateDataList(exercises.stream().map(Exercise::createViewData).collect(Collectors.toList()));
     }
 
     // ================ Start: 消息处理 =================
@@ -86,8 +88,8 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
 
     @Override
     public void onMsg(InputMsg msg) {
-        ExerciseView view = getActiveView();
-        view.onMsg(msg);
+        ExerciseViewHolder holder = getActiveViewHolder();
+        holder.onMsg(msg);
     }
 
     @Override
@@ -98,11 +100,18 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
                 update(data.exercises);
                 break;
             }
+            case Theme_Update_Done: {
+                ExerciseThemeUpdateDoneMsgData data = (ExerciseThemeUpdateDoneMsgData) msg.data;
+
+                ExerciseViewHolder holder = getActiveViewHolder();
+                holder.update(data.exercise.createViewData());
+                break;
+            }
             case Step_Start_Done: {
                 ExerciseStepStartDoneMsgData data = (ExerciseStepStartDoneMsgData) msg.data;
 
-                ExerciseView view = getActiveView();
-                view.activateStepAt(data.stepIndex);
+                ExerciseViewHolder holder = getActiveViewHolder();
+                holder.activateStepAt(data.exercise.createViewData(), data.stepIndex);
                 break;
             }
         }
@@ -119,11 +128,6 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
     }
 
     // ================ End: 消息处理 =================
-
-    /** 延迟激活指定位置的视图 */
-    public void delayActivateAt(int position) {
-        post(() -> smoothScrollToPosition(position));
-    }
 
     /** 激活指定位置的视图 */
     public void activateAt(int position) {
@@ -144,11 +148,11 @@ public class ExerciseListView extends RecyclerView implements InputMsgListener, 
         return ((ExerciseListViewLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
     }
 
-    private ExerciseView getActiveView() {
+    private ExerciseViewHolder getActiveViewHolder() {
         // https://stackoverflow.com/questions/43305295/how-to-get-the-center-item-after-recyclerview-snapped-it-to-center#answer-43305341
         View view = this.pager.findSnapView(getLayoutManager());
         assert view != null;
 
-        return (ExerciseView) getChildViewHolder(view);
+        return (ExerciseViewHolder) getChildViewHolder(view);
     }
 }

@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import android.content.Context;
 import android.view.ContextThemeWrapper;
@@ -65,7 +66,10 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
     public void updateDataList(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
+        Integer oldThemeResId = this.themeResId;
+        HexagonOrientation oldOrientation = this.orientation;
         this.themeResId = themeResId;
+        this.orientation = orientation;
 
         List<Key<?>> oldKeys = this.keys;
         this.keys = new ArrayList<>();
@@ -74,11 +78,11 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyView<?, ?>> {
             this.keys.addAll(Arrays.asList(key));
         }
 
-        if (this.orientation != orientation) {
-            this.orientation = orientation;
-
-            // Note：若正六边形方向发生了变化，则始终更新视图
-            updateItems(oldKeys, this.keys, (o, n) -> -1);
+        if (!Objects.equals(oldThemeResId, this.themeResId) //
+            || !Objects.equals(oldOrientation, this.orientation) //
+        ) {
+            // Note：若正六边形方向或者主题样式发生了变化，则始终更新视图
+            updateItemsForce(oldKeys, this.keys);
         } else {
             updateItems(oldKeys, this.keys);
         }

@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data;
 
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
 
@@ -27,10 +28,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
  * @date 2024-12-20
  */
 public class ExerciseStepStartDoneMsgData extends ExerciseMsgData {
+    /** 当前的练习 */
+    public final Exercise exercise;
     /** 已开始步骤的序号 */
     public final int stepIndex;
 
-    public ExerciseStepStartDoneMsgData(int stepIndex) {
+    public ExerciseStepStartDoneMsgData(Exercise exercise, int stepIndex) {
+        this.exercise = exercise;
         this.stepIndex = stepIndex;
     }
 }

@@ -63,7 +63,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseList;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseStep;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseView;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
@@ -85,6 +85,9 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     private DrawerLayout drawerLayout;
     private NavigationView drawerNavView;
 
+    private KeyboardSandboxView sandboxView;
+    private KeyboardSandboxView xPadSandboxView;
+
     private ExerciseList exerciseList;
     private ExerciseListView exerciseListView;
 
@@ -96,29 +99,25 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        this.exerciseList = new ExerciseList();
+        this.exerciseList.setListener(this);
+
         this.drawerLayout = findViewById(R.id.drawer_layout);
         this.drawerNavView = findViewById(R.id.drawer_nav_view);
         this.exerciseListView = findViewById(R.id.exercise_list_view);
         initDrawerView();
         initExerciseListView();
 
-        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int themeResId = theme.getResId(getApplicationContext());
+        this.sandboxView = findViewById(R.id.keyboard_sandbox_view);
+        this.xPadSandboxView = findViewById(R.id.xpad_keyboard_sandbox_view);
 
-        KeyboardSandboxView sandboxView = findViewById(R.id.keyboard_sandbox_view);
-        KeyboardSandboxView xPadSandboxView = findViewById(R.id.xpad_keyboard_sandbox_view);
-        xPadSandboxView.setGridItemOrientation(HexagonOrientation.FLAT_TOP);
-
-        List<Exercise> exercises = //
-                sandboxView.withMutation(themeResId, () -> //
-                        xPadSandboxView.withMutation(themeResId, () -> //
-                                createExercises(sandboxView, xPadSandboxView)));
-
-        this.exerciseList = new ExerciseList();
-        this.exerciseList.setListener(this);
+        // 创建练习，并向 sandbox view 注册待渲染的按键
+        List<Exercise> exercises = createExercises(this.sandboxView, this.xPadSandboxView);
+        // 渲染 sandbox view 中已注册的按键
+        updateSandboxView();
 
         // 准备就绪，开始练习
-        // Note: 激活练习由视图 ExerciseListView 触发
+        // Note: 由视图 ExerciseListView 在滚动到目标练习后，再激活具体的 Exercise
         this.exerciseList.start(exercises);
     }
 
@@ -146,7 +145,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return false;
     }
 
-    // ================ Start: 初始化视图 =================
+    // ================ Start: 视图相关 =================
 
     private void initDrawerView() {
         // 设置侧边栏打开位置
@@ -190,7 +189,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         this.exerciseListView.setListener(this);
     }
 
-    // ================ End: 初始化视图 =================
+    private void updateSandboxView() {
+        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
+        int themeResId = theme.getResId(getApplicationContext());
+
+        this.sandboxView.update(themeResId);
+
+        this.xPadSandboxView.setGridItemOrientation(HexagonOrientation.FLAT_TOP);
+        this.xPadSandboxView.update(themeResId);
+    }
+
+    // ================ End: 视图相关 =================
 
     // ================ Start: 消息处理 =================
 
@@ -204,6 +213,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     @Override
     public void onMsg(ExerciseMsg msg) {
+        if (msg.type == ExerciseMsgType.Theme_Update_Done) {
+            updateSandboxView();
+        }
+
         // Note: 涉及视图初始化，故而，先派发消息给视图
         this.exerciseListView.onMsg(msg);
 
@@ -216,23 +229,29 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Menu menu = this.drawerNavView.getMenu();
         for (int i = 0; i < data.exercises.size(); i++) {
             Exercise exercise = data.exercises.get(i);
-            String title = ExerciseView.createTitle(exercise, i);
+            String title = ExerciseViewHolder.createTitle(exercise.getTitle(), i);
 
             menu.add(Menu.NONE, i + DRAWER_NAV_MENU_ITEM_BASE_ID, i, title).setCheckable(true);
         }
 
-        // Note：延迟激活指定的练习，以确保其始终可被选中
-        this.exerciseListView.delayActivateAt(1);
+        this.exerciseListView.activateAt(1);
     }
 
     @Override
     public void onMsg(ExerciseViewMsg msg) {
         int index = msg.activeIndex;
+
+        // Note: 先确保视图完成更新，再切换键盘，以避免 InputMsg 被旧状态处理
+        this.exerciseList.activateAt(index);
+        this.drawerNavView.setCheckedItem(index + DRAWER_NAV_MENU_ITEM_BASE_ID);
+
         Exercise exercise = this.exerciseList.get(index);
-        switch (exercise.mode) {
+        boolean freeMode = false;
+        switch (exercise.getMode()) {
             case free:
+                freeMode = true;
             case introduce: {
-                this.config.set(ConfigKey.enable_x_input_pad, exercise.mode == Exercise.Mode.free ? null : false);
+                this.config.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
                 this.config.set(ConfigKey.enable_candidate_variant_first, null);
                 this.config.set(ConfigKey.disable_user_input_data, null);
 
@@ -249,9 +268,6 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             }
         }
         startKeyboard(Keyboard.Type.Pinyin, true);
-
-        this.drawerNavView.setCheckedItem(index + DRAWER_NAV_MENU_ITEM_BASE_ID);
-        this.exerciseList.activateAt(index);
     }
 
     // ================ End: 消息处理 =================
@@ -286,11 +302,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 exercise.newStep("本次练习已结束，您可以重做当前练习。").action((msg) -> {});
             }
 
-            ExerciseStep.Final finalStep = new ExerciseStep.Final(exercise::restart,
-                                                                  !lastOne
-                                                                  ? () -> this.exerciseListView.activateNext()
-                                                                  : null);
-            exercise.addStep(finalStep);
+            ExerciseStep.Last lastStep = new ExerciseStep.Last(exercise::restart,
+                                                               !lastOne
+                                                               ? () -> this.exerciseListView.activateNext()
+                                                               : null);
+            exercise.addStep(lastStep);
 
             exerciseList.add(exercise);
         }

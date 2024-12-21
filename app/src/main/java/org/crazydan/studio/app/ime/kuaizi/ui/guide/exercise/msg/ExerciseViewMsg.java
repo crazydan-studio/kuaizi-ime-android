@@ -17,10 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseView;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseViewHolder;
 
 /**
- * {@link ExerciseView} 相关的消息
+ * {@link ExerciseViewHolder} 相关的消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-20

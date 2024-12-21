@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolComm
 /**
  * 用于筷字输入法使用练习的编辑框
  * <p/>
- * 注：在 {@link ExerciseView} 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link ExerciseViewHolder} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-16

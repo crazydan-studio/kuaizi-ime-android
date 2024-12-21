@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -39,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseSte
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class Exercise implements RecyclerViewData, InputMsgListener {
+public class Exercise implements InputMsgListener {
     public enum Mode {
         /** 自由模式 */
         free,
@@ -49,15 +49,15 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         introduce,
     }
 
-    public final Mode mode;
-    public final String title;
-    public final List<ExerciseStep> steps = new ArrayList<>();
+    private final Mode mode;
+    private final String title;
     private final KeyImageRender keyImageRender;
+    private final List<ExerciseStep> steps = new ArrayList<>();
 
-    private boolean xInputPadEnabled;
     /** 输入框内的演示内容 */
     private String sampleText;
 
+    private boolean xInputPadEnabled;
     private ExerciseStep currentStep;
     private ExerciseMsgListener listener;
 
@@ -79,6 +79,14 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         this.keyImageRender = keyImageRender;
     }
 
+    public Mode getMode() {
+        return this.mode;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
     public boolean isXInputPadEnabled() {
         return this.xInputPadEnabled;
     }
@@ -87,17 +95,17 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         this.xInputPadEnabled = true;
     }
 
-    public String getSampleText() {
-        return this.sampleText;
-    }
-
     public void setSampleText(String sampleText) {
         this.sampleText = sampleText;
     }
 
+    public Exercise.ViewData createViewData() {
+        return new ViewData(this);
+    }
+
     /** 在模板参数为 {@link Key} 时，自动转换为 &lt;img/&gt; 图片标签 */
     public ExerciseStep newStep(String content, Object... args) {
-        ExerciseStep step = new ExerciseStep(this.keyImageRender);
+        ExerciseStep step = new ExerciseStep();
         addStep(0, step);
 
         if (args.length > 0) {
@@ -122,6 +130,11 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
     public void addStep(int offset, ExerciseStep step) {
         int index = this.steps.size() + offset;
         this.steps.add(index, step);
+    }
+
+    /** 更新步骤样式 */
+    public void updateStepTheme(Object theme) {
+        this.steps.forEach((step) -> step.theme(theme));
     }
 
     // ================ Start: 驱动练习 ================
@@ -152,7 +165,7 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
 
         this.currentStep = step;
         if (this.currentStep != null) {
-            this.currentStep.start();
+            this.currentStep.activate();
         }
 
         on_Step_Start_Done_Msg(this.currentStep);
@@ -160,7 +173,7 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
 
     private ExerciseStep getRunnableStep(String name) {
         for (ExerciseStep step : this.steps) {
-            if (Objects.equals(step.name(), name) && step.runnable()) {
+            if (step.hasSameName(name) && step.isRunnable()) {
                 return step;
             }
         }
@@ -171,20 +184,11 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
         int start = this.steps.indexOf(prev);
         for (int i = start + 1; i < this.steps.size(); i++) {
             ExerciseStep step = this.steps.get(i);
-            if (step.runnable()) {
+            if (step.isRunnable()) {
                 return step;
             }
         }
         return null;
-    }
-
-    public boolean hasRunnableStep() {
-        for (ExerciseStep step : this.steps) {
-            if (step.runnable()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // ================ End: 驱动练习 ================
@@ -204,6 +208,13 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
 
         Key<?> key = msg.data.key;
         switch (msg.type) {
+            case Config_Update_Done:
+            case Keyboard_Exit_Done:
+            case Keyboard_Hide_Done:
+            case Keyboard_Start_Doing:
+            case Keyboard_Start_Done: {
+                return;
+            }
             case InputChars_Input_Doing:
                 if (key == null || key.getText() == null) {
                     return;
@@ -226,44 +237,34 @@ public class Exercise implements RecyclerViewData, InputMsgListener {
             return;
         }
 
-        ExerciseMsgData msgData = new ExerciseStepStartDoneMsgData(this.steps.indexOf(step));
+        ExerciseMsgData msgData = new ExerciseStepStartDoneMsgData(this, this.steps.indexOf(step));
         ExerciseMsg msg = new ExerciseMsg(ExerciseMsgType.Step_Start_Done, msgData);
         this.listener.onMsg(msg);
     }
 
     // ================ End: 消息处理 =================
 
-    @Override
-    public boolean isSameWith(Object o) {
-        return equals(o);
-    }
+    public static class ViewData implements RecyclerViewData {
+        public final KeyImageRender keyImageRender;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        public final Mode mode;
+        public final String title;
+        /** 输入框内的演示内容 */
+        public final String sampleText;
+
+        public final List<ExerciseStep.ViewData> steps;
+
+        ViewData(Exercise exercise) {
+            this.keyImageRender = exercise.keyImageRender;
+            this.mode = exercise.mode;
+            this.title = exercise.title;
+            this.sampleText = exercise.sampleText;
+            this.steps = exercise.steps.stream().map(ExerciseStep::createViewData).collect(Collectors.toList());
         }
-        if (o == null || getClass() != o.getClass()) {
+
+        @Override
+        public boolean isSameWith(Object o) {
             return false;
         }
-
-        Exercise that = (Exercise) o;
-        return this.xInputPadEnabled == that.xInputPadEnabled
-               && this.mode == that.mode
-               && Objects.equals(this.title,
-                                 that.title)
-               && Objects.equals(this.steps, that.steps)
-               && Objects.equals(this.sampleText, that.sampleText)
-               && Objects.equals(this.currentStep, that.currentStep);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.mode,
-                            this.title,
-                            this.steps,
-                            this.xInputPadEnabled,
-                            this.sampleText,
-                            this.currentStep);
     }
 }

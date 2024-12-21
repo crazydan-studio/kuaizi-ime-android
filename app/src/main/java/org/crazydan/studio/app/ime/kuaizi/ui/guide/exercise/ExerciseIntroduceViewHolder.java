@@ -27,9 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseIntroduceView extends ExerciseView {
+public class ExerciseIntroduceViewHolder extends ExerciseViewHolder {
 
-    public ExerciseIntroduceView(@NonNull View itemView) {
+    public ExerciseIntroduceViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 

@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -46,16 +45,13 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
         super(context, attrs);
     }
 
-    /** 在涉及添加视图的操作完成后，统一进行全部视图的更新 */
-    public <T> T withMutation(int themeResId, Supplier<T> mutation) {
+    /** 更新视图 */
+    public void update(int themeResId) {
         this.imageCache.clear();
 
-        T result = mutation.get();
         // Note: 在所要绘制的按键超过矩阵可含按键数量时（8x6），
         // 可适当增加行列数，只要确保与实际按键的相对大小一致且图像不模糊即可
         update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
-
-        return result;
     }
 
     @Override

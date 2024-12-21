@@ -24,60 +24,67 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStepView> {
+public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStepViewHolder> {
     private final static int VIEW_TYPE_NORMAL = 0;
     private final static int VIEW_TYPE_FINAL = 1;
 
-    private List<ExerciseStep> data = new ArrayList<>();
+    private KeyImageRender keyImageRender;
+
+    private List<ExerciseStep.ViewData> dataList = new ArrayList<>();
+
+    public void setKeyImageRender(KeyImageRender keyImageRender) {
+        this.keyImageRender = keyImageRender;
+    }
 
     /** 更新 {@link ExerciseStep} 列表 */
-    public void updateDataList(List<ExerciseStep> data) {
-        List<ExerciseStep> oldData = this.data;
-        this.data = data;
+    public void updateDataList(List<ExerciseStep.ViewData> dataList) {
+        List<ExerciseStep.ViewData> oldDataList = this.dataList;
+        this.dataList = dataList;
 
-        updateItems(oldData, this.data);
+        updateItems(oldDataList, this.dataList);
     }
 
     @Override
     public int getItemCount() {
-        return this.data.size();
+        return this.dataList.size();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ExerciseStepView view, int position) {
-        ExerciseStep step = this.data.get(position);
+    public void onBindViewHolder(@NonNull ExerciseStepViewHolder holder, int position) {
+        ExerciseStep.ViewData data = this.dataList.get(position);
 
-        view.bind(step, position);
+        holder.bind(this.keyImageRender, data, position);
     }
 
     @NonNull
     @Override
-    public ExerciseStepView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ExerciseStepViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_FINAL) {
-            return new ExerciseStepFinalView(inflateItemView(parent, R.layout.guide_exercise_step_final_view));
+            return new ExerciseStepLastViewHolder(inflateItemView(parent, R.layout.guide_exercise_step_final_view));
         }
-        return new ExerciseStepView(inflateItemView(parent, R.layout.guide_exercise_step_normal_view));
+        return new ExerciseStepViewHolder(inflateItemView(parent, R.layout.guide_exercise_step_normal_view));
     }
 
     @Override
     public int getItemViewType(int position) {
-        ExerciseStep step = this.data.get(position);
+        ExerciseStep.ViewData data = this.dataList.get(position);
 
-        if (step instanceof ExerciseStep.Final) {
+        if (data.last) {
             return VIEW_TYPE_FINAL;
         }
         return VIEW_TYPE_NORMAL;
     }
 
     /** 指定位置是否为最后一步 */
-    public boolean isFinalStep(int position) {
+    public boolean isLastStep(int position) {
         if (position < getItemCount()) {
-            return this.data.get(position) instanceof ExerciseStep.Final;
+            return this.dataList.get(position).last;
         }
         return false;
     }

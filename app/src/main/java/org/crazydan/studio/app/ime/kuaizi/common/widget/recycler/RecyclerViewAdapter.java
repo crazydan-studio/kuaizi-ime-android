@@ -45,6 +45,10 @@ public abstract class RecyclerViewAdapter<T extends RecyclerView.ViewHolder> ext
         updateItems(oldItems, newItems, (o, n) -> Objects.equals(o, n) ? 0 : -1);
     }
 
+    protected <I> void updateItemsForce(List<I> oldItems, List<I> newItems) {
+        updateItems(oldItems, newItems, (o, n) -> -1);
+    }
+
     protected <I> void updateItems(List<I> oldItems, List<I> newItems, Comparator<I> comparator) {
         int oldItemsSize = oldItems != null ? oldItems.size() : 0;
         int newItemsSize = newItems != null ? newItems.size() : 0;

@@ -31,36 +31,40 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAda
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
+public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseViewHolder> {
     private final static int VIEW_TYPE_FREE_MODE = 0;
     private final static int VIEW_TYPE_NORMAL_MODE = 1;
     private final static int VIEW_TYPE_INTRODUCE_MODE = 2;
 
-    private List<Exercise> data = new ArrayList<>();
+    private List<Exercise.ViewData> dataList = new ArrayList<>();
 
     /** 更新 {@link Exercise} 列表 */
-    public void updateDataList(List<Exercise> data) {
-        List<Exercise> oldData = this.data;
-        this.data = data;
+    public void updateDataList(List<Exercise.ViewData> dataList) {
+        List<Exercise.ViewData> oldDataList = this.dataList;
+        this.dataList = dataList;
 
-        updateItems(oldData, this.data);
+        updateItems(oldDataList, this.dataList);
+    }
+
+    public Exercise.ViewData getItem(int position) {
+        return this.dataList.get(position);
     }
 
     @Override
     public int getItemCount() {
-        return this.data.size();
+        return this.dataList.size();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ExerciseView view, int position) {
-        Exercise exercise = this.data.get(position);
+    public void onBindViewHolder(@NonNull ExerciseViewHolder holder, int position) {
+        Exercise.ViewData data = this.dataList.get(position);
 
-        view.bind(exercise, position);
+        holder.bind(data, position);
     }
 
     @NonNull
     @Override
-    public ExerciseView onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ExerciseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int resId = R.layout.guide_exercise_mode_normal_view;
 
         switch (viewType) {
@@ -70,17 +74,17 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseView> {
             }
             case VIEW_TYPE_INTRODUCE_MODE: {
                 resId = R.layout.guide_exercise_mode_introduce_view;
-                return new ExerciseIntroduceView(inflateItemView(parent, resId));
+                return new ExerciseIntroduceViewHolder(inflateItemView(parent, resId));
             }
         }
-        return new ExerciseView(inflateItemView(parent, resId));
+        return new ExerciseViewHolder(inflateItemView(parent, resId));
     }
 
     @Override
     public int getItemViewType(int position) {
-        Exercise exercise = this.data.get(position);
+        Exercise.ViewData data = this.dataList.get(position);
 
-        switch (exercise.mode) {
+        switch (data.mode) {
             case free:
                 return VIEW_TYPE_FREE_MODE;
             case introduce:

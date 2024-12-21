@@ -17,18 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
-import android.text.Html;
-import android.text.Spanned;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * {@link Exercise} 的步骤
@@ -36,34 +29,23 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStep implements RecyclerViewData, InputMsgListener {
-    private final KeyImageRender keyImageRender;
-    /** 缓存显示文本 */
-    private final Map<String, Spanned> spannedCache = new HashMap<>();
-
+public class ExerciseStep implements InputMsgListener {
     private String name;
     private String content;
+    private Object theme;
     private Action action;
 
-    private boolean running;
+    private boolean active;
 
-    public ExerciseStep(KeyImageRender keyImageRender) {
-        this.keyImageRender = keyImageRender;
+    public ViewData createViewData() {
+        return new ViewData(this);
     }
 
     // ================== Start: 链式调用 ==================
 
-    public String name() {
-        return this.name;
-    }
-
     public ExerciseStep name(String name) {
         this.name = name;
         return this;
-    }
-
-    public String content() {
-        return this.content;
     }
 
     public ExerciseStep content(String content) {
@@ -71,8 +53,9 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
         return this;
     }
 
-    public Action action() {
-        return this.action;
+    public ExerciseStep theme(Object theme) {
+        this.theme = theme;
+        return this;
     }
 
     public ExerciseStep action(Action action) {
@@ -80,11 +63,11 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
         return this;
     }
 
-    public boolean running() {
-        return this.running;
+    public boolean hasSameName(String name) {
+        return Objects.equals(this.name, name);
     }
 
-    public boolean runnable() {
+    public boolean isRunnable() {
         return this.action != null;
     }
 
@@ -98,52 +81,15 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
     }
 
     public void reset() {
-        this.running = false;
+        this.active = false;
     }
 
-    public void start() {
-        this.running = true;
+    public void activate() {
+        this.active = true;
 
         if (this.action instanceof AutoAction) {
             ((AutoAction) this.action).start();
         }
-    }
-
-    public Spanned renderText(String text, int imageSize) {
-        return this.spannedCache.computeIfAbsent(text, (k) -> {
-            //
-            return Html.fromHtml(text, FROM_HTML_MODE_COMPACT, (source) -> {
-                if (this.keyImageRender == null) {
-                    return null;
-                }
-                return this.keyImageRender.renderKey(source, imageSize, imageSize);
-            }, null);
-        });
-    }
-
-    @Override
-    public boolean isSameWith(Object o) {
-        return equals(o);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        ExerciseStep that = (ExerciseStep) o;
-        return this.running == that.running //
-               && Objects.equals(this.name, that.name) //
-               && Objects.equals(this.content, that.content);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.name, this.content, this.running);
     }
 
     public interface Action extends InputMsgListener {}
@@ -155,15 +101,67 @@ public class ExerciseStep implements RecyclerViewData, InputMsgListener {
         default void onMsg(InputMsg msg) {}
     }
 
-    public static class Final extends ExerciseStep {
+    /** 最后一步 */
+    public static class Last extends ExerciseStep {
+        private final Runnable restartCallback;
+        private final Runnable continueCallback;
+
+        public Last(Runnable restartCallback, Runnable continueCallback) {
+            this.restartCallback = restartCallback;
+            this.continueCallback = continueCallback;
+        }
+    }
+
+    public static class ViewData implements RecyclerViewData {
+        public final String name;
+        public final String content;
+        /** 主题样式信息，主要用于触发视图更新 */
+        public final Object theme;
+
+        /** 是否已激活 */
+        public final boolean active;
+        /** 是否为最后一个步骤 */
+        public final boolean last;
+
         public final Runnable restartCallback;
         public final Runnable continueCallback;
 
-        public Final(Runnable restartCallback, Runnable continueCallback) {
-            super(null);
+        ViewData(ExerciseStep step) {
+            this.name = step.name;
+            this.content = step.content;
+            this.theme = step.theme;
+            this.active = step.active;
 
-            this.restartCallback = restartCallback;
-            this.continueCallback = continueCallback;
+            this.last = step instanceof Last;
+            this.restartCallback = this.last ? ((Last) step).restartCallback : null;
+            this.continueCallback = this.last ? ((Last) step).continueCallback : null;
+        }
+
+        @Override
+        public boolean isSameWith(Object o) {
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            ViewData that = (ViewData) o;
+            return this.active == that.active
+                   && this.last == that.last
+                   && Objects.equals(this.name, that.name)
+                   && Objects.equals(this.content, that.content)
+                   && Objects.equals(this.theme, that.theme);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.content, this.theme, this.active, this.last);
         }
     }
 }
