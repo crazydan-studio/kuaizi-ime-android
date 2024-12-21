@@ -62,7 +62,7 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
     }
 
     /** 激活指定位置的步骤 */
-    public void activateStepAt(Exercise.ViewData data, int stepIndex) {
+    public void activateStep(Exercise.ViewData data, int stepIndex) {
         update(data);
 
         this.stepListView.scrollTo(stepIndex);

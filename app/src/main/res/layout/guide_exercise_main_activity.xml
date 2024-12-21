@@ -67,7 +67,7 @@
                         android:layout_height="0dp"
                         app:layout_flexGrow="1" />
 
-                <org.crazydan.studio.app.ime.kuaizi.common.widget.RecyclerPageIndicatorView
+                <org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView
                         android:id="@+id/exercise_list_indicator_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

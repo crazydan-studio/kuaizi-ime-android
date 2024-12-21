@@ -39,7 +39,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.RecyclerPageIndicatorView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -177,7 +177,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         });
 
         this.drawerNavView.setNavigationItemSelectedListener((item) -> {
-            this.exerciseListView.activateAt(item.getOrder());
+            this.exerciseListView.activatePage(item.getOrder());
             return true;
         });
     }
@@ -234,7 +234,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             menu.add(Menu.NONE, i + DRAWER_NAV_MENU_ITEM_BASE_ID, i, title).setCheckable(true);
         }
 
-        this.exerciseListView.activateAt(1);
+        this.exerciseListView.activatePage(1);
     }
 
     @Override
@@ -304,7 +304,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
             ExerciseStep.Last lastStep = new ExerciseStep.Last(exercise::restart,
                                                                !lastOne
-                                                               ? () -> this.exerciseListView.activateNext()
+                                                               ? () -> this.exerciseListView.activateNextPage()
                                                                : null);
             exercise.addStep(lastStep);
 

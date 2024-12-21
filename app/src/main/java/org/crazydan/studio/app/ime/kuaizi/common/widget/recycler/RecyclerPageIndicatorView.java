@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.common.widget;
+package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -23,7 +23,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
@@ -62,20 +61,23 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         this.dotSpacing = dotSpacing;
     }
 
-    public void attachTo(RecyclerView view) {
+    public void attachTo(RecyclerPageView view) {
         this.activeDot = 0;
 
-        view.addOnScrollListener(new RecyclerViewOnScrolledListener() {
+        view.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            // 该接口在滚动过程中将被实时调用
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView) {
-                activeDot(view);
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                int position = view.getVisiblePagePosition();
+                // 激活滚动过程中切换的页的指示器
+                activeDot(position);
             }
         });
 
         createDots(view);
     }
 
-    private void createDots(RecyclerView view) {
+    private void createDots(RecyclerPageView view) {
         RecyclerView.Adapter<?> adapter = view.getAdapter();
         assert adapter != null;
 
@@ -95,7 +97,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
     }
 
     /** 重建锚点 */
-    private void createDots(RecyclerView recycler, int count) {
+    private void createDots(RecyclerPageView recycler, int count) {
         // 清空重建，以避免视图复用造成定位不准的问题
         removeAllViews();
 
@@ -110,15 +112,9 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         }
     }
 
-    private void activeDot(RecyclerView view) {
-        RecyclerView.LayoutManager manager = view.getLayoutManager();
-
-        // https://stackoverflow.com/questions/24989218/get-visible-items-in-recyclerview#answer-64054637
-        if (manager instanceof LinearLayoutManager) {
-            int position = ((LinearLayoutManager) manager).findFirstCompletelyVisibleItemPosition();
-
-            activeDot(position);
-        }
+    private void activeDot(RecyclerPageView view) {
+        int position = view.getActivePagePosition();
+        activeDot(position);
     }
 
     private void activeDot(int position) {
@@ -140,7 +136,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         newActive.setBackgroundResource(R.drawable.bg_dot_full);
     }
 
-    private View createDot(RecyclerView recycler, int position, boolean isActive) {
+    private View createDot(RecyclerPageView view, int position, boolean active) {
         int size = this.dotSize;
         int spacing = this.dotSpacing;
 
@@ -148,16 +144,13 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         LayoutParams params = new LayoutParams(size, size);
         params.setMargins(spacing, 0, spacing, 0);
 
-        View view = new View(getContext());
-        view.setBackgroundResource(isActive ? R.drawable.bg_dot_full : R.drawable.bg_dot_hole);
-        view.setLayoutParams(params);
+        View dotView = new View(getContext());
+        dotView.setBackgroundResource(active ? R.drawable.bg_dot_full : R.drawable.bg_dot_hole);
+        dotView.setLayoutParams(params);
 
-        view.setOnClickListener((v) -> {
-            activeDot(position);
-            recycler.smoothScrollToPosition(position);
-        });
+        dotView.setOnClickListener((v) -> view.activatePage(position));
 
-        return view;
+        return dotView;
     }
 
     /** 确保监听函数均最终调用 {@link DefaultAdapterDataObserver#onChanged()}，从而减少重载的接口数 */
