@@ -299,7 +299,11 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             selected = inputList.getSelected();
         }
 
-        choose_InputList_Input(inputList, selected);
+        if (!selected.isPinyin()) {
+            exit_Keyboard(key);
+        } else {
+            choose_InputList_Input(inputList, selected);
+        }
     }
 
     /**

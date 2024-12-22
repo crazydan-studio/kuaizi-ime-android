@@ -127,13 +127,21 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     @Override
+    public void restart(InputList inputList) {
+        reset();
+        start(inputList);
+    }
+
+    @Override
     public void reset() {
         change_State_to_Init();
     }
 
     @Override
     public void destroy() {
-        this.listener = null;
+        // Note: 在同一实例中可能需要同时触发退出和其他消息，
+        // 因此，不重置监听为 null，以确保退出后的其他消息能够继续向上转发
+        // this.listener = null;
         this.config = null;
         this.state = null;
     }
@@ -577,10 +585,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput pending = inputList.getPending();
 
         // 处理选中的输入需要切换到原键盘的情况
-        if (pending.isMathExpr()) {
-            switch_Keyboard_To(Type.Math);
-            return;
-        } else if (this.config.xInputPadEnabled) {
+        if (this.config.xInputPadEnabled) {
             // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
             // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
             if (pending.isPinyin() && getType() != Type.Pinyin) {
@@ -589,7 +594,9 @@ public abstract class BaseKeyboard implements Keyboard {
             }
         }
 
-        if (pending.isEmoji()) {
+        if (pending.isMathExpr()) {
+            switch_Keyboard_To(Type.Math);
+        } else if (pending.isEmoji()) {
             switch_Keyboard_To(Type.Emoji);
         } else if (pending.isSymbol()) {
             switch_Keyboard_To(Type.Symbol);

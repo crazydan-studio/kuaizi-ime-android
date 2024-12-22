@@ -51,6 +51,9 @@ public interface Keyboard {
     /** 启动 */
     void start(InputList inputList);
 
+    /** 重新启动 */
+    void restart(InputList inputList);
+
     /** 重置 */
     void reset();
 

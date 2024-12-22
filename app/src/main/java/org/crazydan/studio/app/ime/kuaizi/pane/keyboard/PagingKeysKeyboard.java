@@ -41,6 +41,17 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputCand
 public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
     @Override
+    public void reset() {
+        // Note: 分页键盘无复位状态，直接等待新的 start 调用即可
+    }
+
+    @Override
+    protected void change_State_to_Init(Key<?> key) {
+        // Note: 分页键盘没有初始状态，直接退出即可
+        exit_Keyboard(key);
+    }
+
+    @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
         if (try_On_Common_UserKey_Msg(inputList, msg)) {
             return;

@@ -219,8 +219,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     /** 响应键盘的 {@link InputMsg} 消息：从键盘向上传递给外部监听者 */
     @Override
     public void onMsg(InputMsg msg) {
-        InputList inputList = this.inputList;
-        Keyboard keyboard = this.keyboard;
+        // Note: 涉及消息的嵌套处理，可能会发生键盘切换，因此，不能定义 keyboard 的本地变量
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
@@ -236,12 +235,12 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             case Input_Choose_Doing:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done: {
-                keyboard.onMsg(inputList, msg);
+                this.keyboard.onMsg(this.inputList, msg);
                 break;
             }
             default: {
-                if (!inputList.isEmpty()) {
-                    inputList.clearDeleteCancels();
+                if (!this.inputList.isEmpty()) {
+                    this.inputList.clearDeleteCancels();
                 }
             }
         }
@@ -256,10 +255,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        InputList inputList = this.inputList;
-        Keyboard keyboard = this.keyboard;
-
-        InputMsg msg = new InputMsg(type, data, keyboard, inputList);
+        InputMsg msg = new InputMsg(type, data, this.keyboard, this.inputList);
         this.listener.onMsg(msg);
     }
 
@@ -306,7 +302,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             KeyboardConfig config = createKeyboardConfig();
             old.updateConfig(config);
 
-            old.reset();
+            old.restart(this.inputList);
             return null;
         }
 
