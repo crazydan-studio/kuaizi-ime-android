@@ -73,6 +73,10 @@ public class Exercise implements InputMsgListener {
         return new Exercise(Mode.introduce, title, keyImageRender);
     }
 
+    public static String createViewTitle(String title, int index) {
+        return (index + 1) + ". " + title;
+    }
+
     Exercise(Mode mode, String title, KeyImageRender keyImageRender) {
         this.mode = mode;
         this.title = title;

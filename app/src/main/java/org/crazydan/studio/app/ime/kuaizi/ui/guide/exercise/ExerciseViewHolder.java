@@ -36,10 +36,6 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
     protected final ExerciseStepListView stepListView;
     private final ExerciseEditText textView;
 
-    public static String createTitle(String title, int position) {
-        return (position + 1) + ". " + title;
-    }
-
     public ExerciseViewHolder(@NonNull View itemView) {
         super(itemView);
 
@@ -55,7 +51,7 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
 
     /** 视图与数据的初始绑定 */
     public void bind(Exercise.ViewData data, int position) {
-        String title = createTitle(data.title, position);
+        String title = Exercise.createViewTitle(data.title, position);
         this.titleView.setText(title);
 
         update(data);
@@ -66,19 +62,21 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         update(data);
 
         this.stepListView.scrollTo(stepIndex);
+        // Note: 捕获输入焦点必须在 ExerciseView 视图就绪后进行，而不能在初始绑定时，
+        // 否则，其会迟滞页面的滚动，容易造成实际激活的页与选定的不一致
+        this.textView.requestFocus();
     }
 
     /** 更新视图 */
     public void update(Exercise.ViewData data) {
-        // Note: 初始绑定时，该视图为 null
+        // Note: 初始绑定时，视图可能为 null
         if (this.textView != null) {
             String text = data.sampleText;
-            this.textView.requestFocus();
             this.textView.setText(text);
             this.textView.setSelection(text != null ? text.length() : 0);
         }
 
-        // Note: 初始绑定时，该视图为 null
+        // Note: 初始绑定时，视图可能为 null
         if (this.stepListView != null) {
             this.stepListView.update(data);
         }

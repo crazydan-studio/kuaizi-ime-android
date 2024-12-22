@@ -44,10 +44,12 @@ public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends Rec
         view.setScaleY(scale);
     }
 
+    // TODO 视图与数据不应该做强绑定，需解耦
     public T getData() {
         return this.data;
     }
 
+    // TODO 视图与数据不应该做强绑定，需解耦
     public void bind(T data) {
         this.data = data;
     }

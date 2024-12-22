@@ -63,7 +63,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseList;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseStep;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
@@ -203,6 +202,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     // ================ Start: 消息处理 =================
 
+    /** 响应 {@link Keyboard} 的状态变更消息 */
     @Override
     public void onMsg(InputMsg msg) {
         super.onMsg(msg);
@@ -211,6 +211,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         this.exerciseListView.onMsg(msg);
     }
 
+    /** 响应 {@link Exercise} 的状态变更消息 */
     @Override
     public void onMsg(ExerciseMsg msg) {
         if (msg.type == ExerciseMsgType.Theme_Update_Done) {
@@ -229,7 +230,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Menu menu = this.drawerNavView.getMenu();
         for (int i = 0; i < data.exercises.size(); i++) {
             Exercise exercise = data.exercises.get(i);
-            String title = ExerciseViewHolder.createTitle(exercise.getTitle(), i);
+            String title = Exercise.createViewTitle(exercise.getTitle(), i);
 
             menu.add(Menu.NONE, i + DRAWER_NAV_MENU_ITEM_BASE_ID, i, title).setCheckable(true);
         }
@@ -237,11 +238,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         this.exerciseListView.activatePage(1);
     }
 
+    /** 响应 {@link ExerciseListView} 视图的交互消息 */
     @Override
     public void onMsg(ExerciseViewMsg msg) {
         int index = msg.activeIndex;
 
-        // Note: 先确保视图完成更新，再切换键盘，以避免 InputMsg 被旧状态处理
+        // Note: 先确保视图完成更新，再切换键盘，以避免 InputMsg 被旧 Exercise 处理
         this.exerciseList.activateAt(index);
         this.drawerNavView.setCheckedItem(index + DRAWER_NAV_MENU_ITEM_BASE_ID);
 
@@ -280,17 +282,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         List<Exercise> exerciseList = new ArrayList<>();
 
         exerciseList.add(Exercise.free("自由练习"));
-        exerciseList.add(exercise_Basic_Introduce(sandboxView));
+        exerciseList.add(create_Exercise_Basic_Introduce(sandboxView));
 
         Exercise[] exercises = new Exercise[] {
-                exercise_Pinyin_Slipping_Inputting(sandboxView),
-                exercise_Pinyin_Candidate_Filtering(sandboxView),
-                exercise_Char_Replacement_Inputting(sandboxView),
-                exercise_Math_Inputting(sandboxView),
-                exercise_Editor_Editing(sandboxView),
-                exercise_Pinyin_Committed_Processing(sandboxView),
+                create_Exercise_Pinyin_Slipping_Inputting(sandboxView),
+                create_Exercise_Pinyin_Candidate_Filtering(sandboxView),
+                create_Exercise_Char_Replacement_Inputting(sandboxView),
+                create_Exercise_Math_Inputting(sandboxView),
+                create_Exercise_Editor_Editing(sandboxView),
+                create_Exercise_Pinyin_Committed_Processing(sandboxView),
                 // exercise for XPad
-                exercise_XPad_Inputting(xPadSandboxView),
+                create_Exercise_XPad_Inputting(xPadSandboxView),
                 };
         for (int i = 0; i < exercises.length; i++) {
             Exercise exercise = exercises[i];
@@ -314,7 +316,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exerciseList;
     }
 
-    private Exercise exercise_Basic_Introduce(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Basic_Introduce(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.introduce("功能按键简介", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
@@ -394,7 +396,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Pinyin_Slipping_Inputting(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Pinyin_Slipping_Inputting(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("拼音滑屏输入", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
@@ -421,7 +423,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Pinyin_Candidate_Filtering(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Pinyin_Candidate_Filtering(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("拼音候选字过滤", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
@@ -450,7 +452,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Pinyin_Committed_Processing(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Pinyin_Committed_Processing(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("拼音输入提交选项", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
@@ -518,7 +520,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Editor_Editing(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Editor_Editing(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("内容编辑", sandboxView);
 
         EditorKeyTable keyTable = EditorKeyTable.create(createKeyTableConfig());
@@ -589,7 +591,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Char_Replacement_Inputting(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Char_Replacement_Inputting(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("字符输入变换", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
@@ -693,7 +695,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_Math_Inputting(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_Math_Inputting(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("算术输入", sandboxView);
 
         MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig());
@@ -779,7 +781,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         return exercise;
     }
 
-    private Exercise exercise_XPad_Inputting(KeyboardSandboxView sandboxView) {
+    private Exercise create_Exercise_XPad_Inputting(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView);
 
         PinyinKeyTable keyTable = createPinyinKeyTable();

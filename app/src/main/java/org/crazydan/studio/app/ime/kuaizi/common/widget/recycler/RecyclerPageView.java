@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 
 /**
  * 支持翻页的 {@link RecyclerView} 视图
@@ -36,11 +37,10 @@ import androidx.recyclerview.widget.RecyclerView;
  * @date 2024-12-21
  */
 public abstract class RecyclerPageView extends RecyclerView {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private final PagerSnapHelper pager;
     private final List<PageActiveListener> pageActiveListeners = new ArrayList<>();
-
-    private int activePagePosition;
-    private boolean scrolling;
 
     public RecyclerPageView(
             @NonNull Context context, @Nullable AttributeSet attrs, //
@@ -63,7 +63,6 @@ public abstract class RecyclerPageView extends RecyclerView {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 if (newState == SCROLL_STATE_IDLE) {
                     onRecyclerViewScrolled();
-                    RecyclerPageView.this.scrolling = false;
                 }
             }
         });
@@ -75,9 +74,6 @@ public abstract class RecyclerPageView extends RecyclerView {
 
     /** 激活指定位置的视图 */
     public void activatePage(int position) {
-        this.activePagePosition = position;
-
-        this.scrolling = true;
         smoothScrollToPosition(position);
     }
 
@@ -93,10 +89,7 @@ public abstract class RecyclerPageView extends RecyclerView {
 
     /** 获取激活页的位置 */
     public int getActivePagePosition() {
-        if (this.scrolling) {
-            return this.activePagePosition;
-        }
-        return getVisiblePagePosition();
+        return ((LinearLayoutManager) getLayoutManager()).findFirstCompletelyVisibleItemPosition();
     }
 
     public <T extends ViewHolder> T getActivePageViewHolder() {
@@ -107,17 +100,13 @@ public abstract class RecyclerPageView extends RecyclerView {
         return (T) getChildViewHolder(view);
     }
 
-    /** 获取当前可见页的位置：在切换过程中，可见页是不断变动的 */
-    public int getVisiblePagePosition() {
-        return ((LinearLayoutManager) getLayoutManager()).findFirstVisibleItemPosition();
-    }
-
     private void onRecyclerViewScrolled() {
         int position = getActivePagePosition();
         if (position < 0) {
             return;
         }
 
+        this.log.debug("Trigger active page %d", position);
         this.pageActiveListeners.forEach((listener) -> listener.onPageActive(position));
     }
 

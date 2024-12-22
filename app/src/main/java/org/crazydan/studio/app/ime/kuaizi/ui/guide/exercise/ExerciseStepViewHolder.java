@@ -48,10 +48,7 @@ public class ExerciseStepViewHolder extends RecyclerViewHolder<ExerciseStep.View
     public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
         ViewUtils.visible(this.pointerView, data.active);
 
-        String text = (position + 1) + ". " + data.content;
-        if (data.active) {
-            text = "<b>" + text + "</b>";
-        }
+        String text = ExerciseStep.createViewContent(data, position);
 
         int imageSize = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
         Spanned spannedText = renderText(keyImageRender, text, imageSize);

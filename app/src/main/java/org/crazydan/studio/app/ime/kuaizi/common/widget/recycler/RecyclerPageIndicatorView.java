@@ -23,8 +23,10 @@ import android.view.View;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 
 /**
@@ -34,6 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
  * @date 2023-09-20
  */
 public class RecyclerPageIndicatorView extends LinearLayout {
+    protected final Logger log = Logger.getLogger(getClass());
+
     /** 指示器的大小（dp） */
     private int dotSize;
     /** 指示器间距（dp） */
@@ -64,15 +68,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
     public void attachTo(RecyclerPageView view) {
         this.activeDot = 0;
 
-        view.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            // 该接口在滚动过程中将被实时调用
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                int position = view.getVisiblePagePosition();
-                // 激活滚动过程中切换的页的指示器
-                activeDot(position);
-            }
-        });
+        view.addOnScrollListener(new RecyclerOnScrollListener());
 
         createDots(view);
     }
@@ -83,7 +79,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
 
         Runnable updateDots = () -> {
             createDots(view, adapter.getItemCount());
-            activeDot(view);
+            activateDot(view);
         };
 
         adapter.registerAdapterDataObserver(new DefaultAdapterDataObserver() {
@@ -112,12 +108,12 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         }
     }
 
-    private void activeDot(RecyclerPageView view) {
+    private void activateDot(RecyclerPageView view) {
         int position = view.getActivePagePosition();
-        activeDot(position);
+        activateDot(position);
     }
 
-    private void activeDot(int position) {
+    private void activateDot(int position) {
         if (this.activeDot == position || position < 0) {
             return;
         }
@@ -151,6 +147,34 @@ public class RecyclerPageIndicatorView extends LinearLayout {
         dotView.setOnClickListener((v) -> view.activatePage(position));
 
         return dotView;
+    }
+
+    private class RecyclerOnScrollListener extends RecyclerView.OnScrollListener {
+        private boolean dragging;
+
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                this.dragging = true;
+            } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                this.dragging = false;
+            }
+        }
+
+        /** 该接口在滚动过程中将被实时调用 */
+        @Override
+        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            LinearLayoutManager layout = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+            // Note: 若是拖动，则需要以最终可见页为准，若是滚动，则以正在切换的页为准
+            int position = this.dragging
+                           ? layout.findFirstCompletelyVisibleItemPosition()
+                           : layout.findFirstVisibleItemPosition();
+            RecyclerPageIndicatorView.this.log.debug("Realtime scrolling to %d: %d, %d", position, dx, dy);
+
+            // 激活滚动过程中切换的页的指示器
+            activateDot(position);
+        }
     }
 
     /** 确保监听函数均最终调用 {@link DefaultAdapterDataObserver#onChanged()}，从而减少重载的接口数 */
