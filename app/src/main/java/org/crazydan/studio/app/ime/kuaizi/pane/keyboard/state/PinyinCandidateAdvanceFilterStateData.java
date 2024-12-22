@@ -35,10 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-27
  */
-public class PinyinCandidateAdvanceFilterStateData extends PagingStateData<PinyinWord.Radical> {
+public class PinyinCandidateAdvanceFilterStateData extends PinyinCandidateFilterStateData<PinyinWord.Radical> {
     private final Map<PinyinWord.Spell, List<WordRadical>> spellAndRadicalsMap;
-
-    private PinyinWord.Filter filter;
 
     public PinyinCandidateAdvanceFilterStateData(
             CharInput input, List<InputWord> candidates, int pageSize
@@ -52,19 +50,6 @@ public class PinyinCandidateAdvanceFilterStateData extends PagingStateData<Pinyi
     @Override
     public List<PinyinWord.Radical> getPagingData() {
         return getRadicals();
-    }
-
-    public PinyinWord.Filter getFilter() {
-        return new PinyinWord.Filter(this.filter);
-    }
-
-    public void setFilter(PinyinWord.Filter filter) {
-        PinyinWord.Filter oldFilter = this.filter;
-        this.filter = new PinyinWord.Filter(filter);
-
-        if (!oldFilter.equals(this.filter)) {
-            resetPageStart();
-        }
     }
 
     public List<PinyinWord.Spell> getSpells() {

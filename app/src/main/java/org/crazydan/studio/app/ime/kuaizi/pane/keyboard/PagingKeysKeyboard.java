@@ -55,7 +55,7 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
         } else {
             if (key instanceof CtrlKey) {
                 on_InputCandidate_Choose_Doing_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
-            } else {
+            } else if (!key.isDisabled()) {
                 on_InputCandidate_Choose_Doing_PagingKey_Msg(inputList, msg);
             }
         }

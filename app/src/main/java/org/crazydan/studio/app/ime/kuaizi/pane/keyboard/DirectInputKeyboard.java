@@ -53,7 +53,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         Key<?> key = msg.data.key;
         if (key instanceof CharKey) {
             on_CharKey_Msg(inputList, msg, (CharKey) key);
-        } else if (key instanceof CtrlKey) {
+        } else if (key instanceof CtrlKey && !key.isDisabled()) {
             on_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
         }
     }

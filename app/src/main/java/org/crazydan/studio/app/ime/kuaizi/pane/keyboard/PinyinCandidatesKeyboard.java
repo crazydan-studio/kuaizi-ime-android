@@ -115,7 +115,9 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         if (msg.type == UserKeyMsgType.FingerFlipping) {
             // Note: 高级过滤的翻页与普通翻页共享逻辑代码
             on_InputCandidate_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
-        } else if (key instanceof CtrlKey) {
+        }
+        // Note: 部首和拼音过滤均为 CtrlKey 类型
+        else if (key instanceof CtrlKey) {
             on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
         }
         return true;
@@ -123,8 +125,13 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     @Override
     protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+        // Note: 先做消息过滤，因为，不同的消息会携带不同类型的按键
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
+        }
+
         InputWordKey key = (InputWordKey) msg.data.key;
-        if (key.isDisabled() || msg.type != UserKeyMsgType.SingleTap_Key) {
+        if (key.isDisabled()) {
             return;
         }
 
@@ -195,16 +202,10 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
                 PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
 
-                CtrlKey.Option<?> option = key.getOption();
-                PinyinWord.Spell value = (PinyinWord.Spell) option.value();
                 PinyinWord.Filter filter = stateData.getFilter();
+                filter.addSpellByKey(key);
 
-                filter.clear();
-                if (!key.isDisabled()) {
-                    filter.spells.add(value);
-                }
-
-                stateData.setFilter(filter);
+                stateData.updateFilter(filter);
 
                 fire_InputCandidate_Choose_Doing(key);
                 break;
@@ -349,7 +350,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(pending,
                                                                                                     prevStateData.getCandidates(),
                                                                                                     pageSize);
-        stateData.setFilter(filter);
+        stateData.updateFilter(filter);
 
         State state = new State(State.Type.InputCandidate_Advance_Filter_Doing, stateData, this.state);
         change_State_To(state, key);
@@ -380,7 +381,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
                 PinyinCandidateChooseStateData prevStateData
                         = (PinyinCandidateChooseStateData) this.state.previous.data;
-                prevStateData.setFilter(stateData.getFilter());
+                prevStateData.updateFilter(stateData.getFilter());
 
                 exit_Keyboard(key);
                 break;
@@ -390,31 +391,20 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     /** 更新高级过滤的过滤条件 */
     private void update_InputCandidate_Advance_Filter(PinyinCandidateAdvanceFilterStateData stateData, CtrlKey key) {
-        CtrlKey.Option<?> option = key.getOption();
         PinyinWord.Filter filter = stateData.getFilter();
 
         switch (key.getType()) {
             case Filter_PinyinCandidate_by_Spell: {
-                PinyinWord.Spell value = (PinyinWord.Spell) option.value();
-
-                filter.clear();
-                if (!key.isDisabled()) {
-                    filter.spells.add(value);
-                }
+                filter.addSpellByKey(key);
                 break;
             }
             case Filter_PinyinCandidate_by_Radical: {
-                PinyinWord.Radical value = (PinyinWord.Radical) option.value();
-                if (key.isDisabled()) {
-                    filter.radicals.remove(value);
-                } else {
-                    filter.radicals.add(value);
-                }
+                filter.addRadicalByKey(key);
                 break;
             }
         }
 
-        stateData.setFilter(filter);
+        stateData.updateFilter(filter);
     }
 
     // ====================== End: 候选字的高级过滤 =========================

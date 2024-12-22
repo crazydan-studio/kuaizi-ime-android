@@ -137,16 +137,16 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(InputList inputList, UserKeyMsg msg) {
-        Key<?> key = msg.data.key;
-
         if (try_On_Common_UserKey_Msg(inputList, msg)) {
-            // Note：被禁用的部分按键也需要接受处理
-            if (!CtrlKey.isAny(key,
-                               CtrlKey.Type.Filter_PinyinCandidate_by_Spell,
-                               CtrlKey.Type.Filter_PinyinCandidate_by_Radical,
-                               CtrlKey.Type.Commit_InputList_Option)) {
-                return;
-            }
+            return;
+        }
+
+        Key<?> key = msg.data.key;
+        // Note：被禁用的部分控制按键也需要接受处理
+        if (key instanceof CtrlKey //
+            && key.isDisabled() //
+            && !CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
+            return;
         }
 
         switch (this.state.type) {

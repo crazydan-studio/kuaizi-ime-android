@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
@@ -40,6 +41,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseSte
  * @date 2023-09-19
  */
 public class Exercise implements InputMsgListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     public enum Mode {
         /** 自由模式 */
         free,
@@ -211,28 +214,39 @@ public class Exercise implements InputMsgListener {
         }
 
         Key<?> key = msg.data.key;
+        this.log.debug("On Input message: %s - %s", msg.type, key);
+
         switch (msg.type) {
-            case Config_Update_Done:
-            case Keyboard_Exit_Done:
-            case Keyboard_Hide_Done:
-            case Keyboard_Start_Doing:
-            case Keyboard_Start_Done: {
-                return;
-            }
             case InputChars_Input_Doing:
                 if (key == null || key.getText() == null) {
                     return;
                 } else {
                     break;
                 }
-            case Keyboard_State_Change_Done:
-                if (key == null) {
-                    return;
-                } else {
-                    break;
-                }
+//            case Keyboard_State_Change_Done:
+//                if (key == null) {
+//                    return;
+//                } else {
+//                    break;
+//                }
+            case Editor_Range_Select_Doing:
+            case Editor_Cursor_Move_Doing:
+            case InputList_Committed_Revoke_Doing:
+            case Editor_Edit_Doing:
+            case Keyboard_Switch_Done:
+            case Keyboard_XPad_Simulation_Terminated:
+            case InputList_Commit_Doing:
+            case InputCandidate_Choose_Done:
+            case InputCandidate_Choose_Doing:
+            case InputChars_Input_Done: {
+                break;
+            }
+            default: {
+                return;
+            }
         }
 
+        this.log.debug("Pass Input message %s to active step", msg.type);
         current.onMsg(msg);
     }
 

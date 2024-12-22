@@ -38,20 +38,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-10
  */
-public class PinyinCandidateChooseStateData extends PagingStateData<InputWord> {
+public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateData<InputWord> {
     private final List<InputWord> candidates;
     private final List<PinyinWord.Spell> spells;
 
-    private PinyinWord.Filter filter;
     private List<InputWord> cachedFilterCandidates;
 
     public PinyinCandidateChooseStateData(CharInput input, List<InputWord> candidates, int pageSize) {
         super(input, pageSize);
 
         this.candidates = candidates;
-
         this.cachedFilterCandidates = candidates;
-        this.filter = new PinyinWord.Filter();
 
         this.spells = candidates.stream()
                                 .filter((word) -> word instanceof PinyinWord)
@@ -75,18 +72,13 @@ public class PinyinCandidateChooseStateData extends PagingStateData<InputWord> {
         return this.spells;
     }
 
-    public PinyinWord.Filter getFilter() {
-        return new PinyinWord.Filter(this.filter);
-    }
-
-    public void setFilter(PinyinWord.Filter filter) {
-        PinyinWord.Filter oldFilter = this.filter;
-        this.filter = new PinyinWord.Filter(filter);
-
-        if (!oldFilter.equals(this.filter)) {
-            resetPageStart();
+    @Override
+    public boolean updateFilter(PinyinWord.Filter filter) {
+        if (super.updateFilter(filter)) {
             this.cachedFilterCandidates = filterCandidates(this.candidates);
+            return true;
         }
+        return false;
     }
 
     private List<InputWord> filterCandidates(List<InputWord> candidates) {

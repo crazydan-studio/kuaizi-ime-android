@@ -41,6 +41,7 @@ import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
@@ -235,7 +236,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             menu.add(Menu.NONE, i + DRAWER_NAV_MENU_ITEM_BASE_ID, i, title).setCheckable(true);
         }
 
-        this.exerciseListView.activatePage(1);
+        this.exerciseListView.activatePage(2);
     }
 
     /** 响应 {@link ExerciseListView} 视图的交互消息 */
@@ -1180,22 +1181,29 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         "请在候选字列表区域中点击正确的候选字%s。<b>注</b>：可在该区域中上下翻页；", key_case_word
                 }) //
                 .name("choose_correct_word").action((msg) -> {
-                    if (msg.type == InputMsgType.InputCandidate_Choose_Done) {
-                        CharInput input = (CharInput) msg.data.input;
-                        InputWord word = input.getWord();
-
-                        if (word != null && case_word.getValue().equals(word.getValue())) {
-                            exercise.gotoNextStep();
-                        } else {
-                            showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                        + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
-                            exercise.gotoStep("select_auto_word");
+                    switch (msg.type) {
+                        case Keyboard_Switch_Done:
+                        case InputCandidate_Choose_Doing: {
+                            return;
                         }
-                    } else if (msg.type != InputMsgType.InputCandidate_Choose_Doing) {
-                        showWarning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                    + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
-                        exercise.gotoStep("select_auto_word");
+                        case InputCandidate_Choose_Done: {
+                            CharInput input = (CharInput) msg.data.input;
+                            InputWord word = input.getWord();
+
+                            if (word != null && case_word.getValue().equals(word.getValue())) {
+                                exercise.gotoNextStep();
+                            } else {
+                                showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
+                                            + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+                                exercise.gotoStep("select_auto_word");
+                            }
+                            return;
+                        }
                     }
+
+                    showWarning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
+                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+                    exercise.gotoStep("select_auto_word");
                 });
     }
 
@@ -1234,6 +1242,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     }
 
     private void changePinyinWord(InputWord word) {
+        // Note: 仅在输入过程中调用，故而，字典已完成初始化
+        PinyinDict dict = PinyinDict.instance();
+        word = dict.getPinyinWord(word.getValue(), word.getSpell().value);
+
         this.inputPane.changeLastInputWord(PinyinWord.from(word));
     }
 }

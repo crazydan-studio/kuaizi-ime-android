@@ -44,6 +44,11 @@ public class ExerciseStepLastViewHolder extends ExerciseStepViewHolder {
     public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
         super.bind(keyImageRender, data, position);
 
+        // Note: 初始绑定时，视图可能为 null
+        if (this.restartBtn == null || this.continueBtn == null) {
+            return;
+        }
+
         this.restartBtn.setOnClickListener(null);
         if (data.restartCallback != null) {
             this.restartBtn.setOnClickListener((v) -> data.restartCallback.run());

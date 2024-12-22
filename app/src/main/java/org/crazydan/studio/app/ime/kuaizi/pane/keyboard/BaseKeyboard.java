@@ -171,25 +171,31 @@ public abstract class BaseKeyboard implements Keyboard {
     /**
      * 尝试对 {@link UserKeyMsg} 做处理
      * <p/>
-     * {@link CtrlKey#isDisabled() 被禁用}的 {@link CtrlKey} 将始终返回 <code>true</code>
+     * 注意，对于已禁用的按键一般不在该方法内处理，直接返回 false
      *
      * @return 若返回 true，则表示消息已处理，否则，返回 false
      */
     protected boolean try_On_Common_UserKey_Msg(InputList inputList, UserKeyMsg msg) {
         Key<?> key = msg.data.key;
+        if (key == null) {
+            return true;
+        }
 
         // Note: NoOp 控制按键上的消息不能忽略，滑屏输入和翻页等状态下会涉及该类控制按键的消息处理
         if (key instanceof CtrlKey //
-            && (key.isDisabled() //
-                || try_On_Common_CtrlKey_Msg(inputList, msg, (CtrlKey) key))) {
+            && try_On_Common_CtrlKey_Msg(inputList, msg, (CtrlKey) key)) {
             return true;
         }
 
         return try_On_UserKey_Msg_Over_XPad(msg, key);
     }
 
-    /** 尝试处理控制按键消息 */
+    /** 尝试处理控制按键消息：已禁用的不做处理 */
     protected boolean try_On_Common_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+        if (key.isDisabled()) {
+            return false;
+        }
+
         switch (msg.type) {
             case LongPress_Key_Tick: {
                 switch (key.getType()) {
@@ -299,8 +305,9 @@ public abstract class BaseKeyboard implements Keyboard {
         return false;
     }
 
+    /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */
     private boolean try_On_UserKey_Msg_Over_XPad(UserKeyMsg msg, Key<?> key) {
-        if (!this.config.xInputPadEnabled || !(key instanceof CtrlKey)) {
+        if (!this.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.isDisabled()) {
             return false;
         }
 

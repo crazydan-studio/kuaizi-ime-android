@@ -41,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
+import org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
@@ -157,6 +158,13 @@ public class PinyinDict {
     // =================== End: 生命周期 ==================
 
     // =================== Start: 数据查询 ==================
+
+    /** 通过字及其读音获取 {@link InputWord} 对象 */
+    public InputWord getPinyinWord(String word, String pinyin) {
+        SQLiteDatabase db = getDB();
+
+        return PinyinDictDBHelper.getPinyinWord(db, word, pinyin);
+    }
 
     /** 获取指定拼音的候选拼音字列表：已按权重等排序 */
     public Map<Integer, InputWord> getCandidatePinyinWords(CharInput input) {

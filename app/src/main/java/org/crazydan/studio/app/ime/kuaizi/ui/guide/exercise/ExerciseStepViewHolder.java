@@ -46,6 +46,11 @@ public class ExerciseStepViewHolder extends RecyclerViewHolder<ExerciseStep.View
 
     /** 视图与数据的初始绑定 */
     public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
+        // Note: 初始绑定时，视图可能为 null
+        if (this.pointerView == null || this.contentView == null) {
+            return;
+        }
+
         ViewUtils.visible(this.pointerView, data.active);
 
         String text = ExerciseStep.createViewContent(data, position);
