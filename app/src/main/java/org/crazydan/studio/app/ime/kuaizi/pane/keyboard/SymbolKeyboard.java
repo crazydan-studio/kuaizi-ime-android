@@ -43,9 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 public class SymbolKeyboard extends PagingKeysKeyboard {
 
     @Override
-    public Type getType() {
-        return Type.Symbol;
-    }
+    public Type getType() {return Type.Symbol;}
 
     @Override
     public void start(KeyboardContext context) {

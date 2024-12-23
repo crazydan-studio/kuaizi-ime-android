@@ -32,9 +32,10 @@ public class NumberKeyboard extends DirectInputKeyboard {
     private boolean needToShowExit;
 
     @Override
-    public Type getType() {
-        return Type.Number;
-    }
+    public Type getType() {return Type.Number;}
+
+    @Override
+    public boolean isMaster() {return true;}
 
     @Override
     public void start(KeyboardContext context) {

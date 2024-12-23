@@ -114,6 +114,11 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     /** 每次弹出键盘时调用 */
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
+        int oldPrevFieldId = this.prevFieldId;
+        // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
+        this.prevFieldId = attribute.fieldId;
+
+        boolean resetInputting = oldPrevFieldId != this.prevFieldId;
         boolean singleLineInputting = false;
         boolean passwordInputting = false;
 
@@ -125,6 +130,8 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             case InputType.TYPE_CLASS_DATETIME:
             case InputType.TYPE_CLASS_PHONE:
                 keyboardType = Keyboard.Type.Number;
+                // 输入数字的情况下，应该强制清空输入列表
+                resetInputting = true;
                 break;
             case InputType.TYPE_CLASS_TEXT:
                 // Note: 切换前为数字键盘时，需强制切换到拼音键盘，否则无法输入文本
@@ -149,11 +156,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
                 }
         }
 
-        int prevFieldId = this.prevFieldId;
-        // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
-        this.prevFieldId = attribute.fieldId;
-
-        doStartInput(keyboardType, singleLineInputting, passwordInputting, prevFieldId != attribute.fieldId);
+        doStartInput(keyboardType, singleLineInputting, passwordInputting, resetInputting);
     }
 
     /** 响应系统对键盘类型的修改 */

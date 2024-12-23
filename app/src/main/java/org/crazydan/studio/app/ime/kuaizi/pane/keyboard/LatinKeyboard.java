@@ -40,9 +40,10 @@ public class LatinKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    public Type getType() {
-        return Type.Latin;
-    }
+    public Type getType() {return Type.Latin;}
+
+    @Override
+    public boolean isMaster() {return true;}
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {

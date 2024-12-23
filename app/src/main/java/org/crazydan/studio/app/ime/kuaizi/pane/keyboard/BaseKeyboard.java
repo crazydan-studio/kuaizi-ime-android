@@ -121,7 +121,13 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void reset(KeyboardContext context) {
-        change_State_to_Init(context);
+        if (isMaster()) {
+            change_State_to_Init(context);
+        }
+        // 对于非主键盘，复位的结果便是重启
+        else {
+            start(context);
+        }
     }
 
     protected KeyTableConfig createKeyTableConfig(InputList inputList) {
@@ -888,7 +894,12 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 状态回到{@link State.Type#InputChars_Input_Wait_Doing 待输入} */
     protected void change_State_to_Init(KeyboardContext context) {
-        change_State_To(context, getInitState());
+        // Note: 仅主键盘才具备初始状态，而其余键盘的初始态就是回到切换前的主键盘
+        if (isMaster()) {
+            change_State_To(context, getInitState());
+        } else {
+            exit_Keyboard(context);
+        }
     }
 
     protected void change_State_To(KeyboardContext context, State state) {

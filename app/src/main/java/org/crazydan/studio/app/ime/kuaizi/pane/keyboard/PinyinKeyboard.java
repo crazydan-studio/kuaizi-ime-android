@@ -60,9 +60,10 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
-    public Type getType() {
-        return Type.Pinyin;
-    }
+    public Type getType() {return Type.Pinyin;}
+
+    @Override
+    public boolean isMaster() {return true;}
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {

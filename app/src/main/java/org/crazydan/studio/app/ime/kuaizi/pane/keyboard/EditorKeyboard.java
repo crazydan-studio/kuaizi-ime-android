@@ -39,9 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgDat
 public class EditorKeyboard extends DirectInputKeyboard {
 
     @Override
-    public Type getType() {
-        return Type.Editor;
-    }
+    public Type getType() {return Type.Editor;}
 
     @Override
     public KeyFactory getKeyFactory(InputList inputList) {

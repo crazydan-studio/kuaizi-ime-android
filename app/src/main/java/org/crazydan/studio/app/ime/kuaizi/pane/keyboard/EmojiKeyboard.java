@@ -45,9 +45,7 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    public Type getType() {
-        return Type.Emoji;
-    }
+    public Type getType() {return Type.Emoji;}
 
     @Override
     public void start(KeyboardContext context) {

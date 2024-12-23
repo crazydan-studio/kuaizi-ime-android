@@ -57,9 +57,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    public Type getType() {
-        return Type.Pinyin_Candidates;
-    }
+    public Type getType() {return Type.Pinyin_Candidates;}
 
     @Override
     public void start(KeyboardContext context) {

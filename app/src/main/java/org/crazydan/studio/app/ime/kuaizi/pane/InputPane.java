@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.List;
-import java.util.Stack;
 
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
@@ -72,7 +71,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     private Keyboard keyboard;
     private InputList inputList;
-    private Stack<Keyboard.Type> keyboardSwitches;
+    /** 切换前的主键盘类型 */
+    private Keyboard.Type prevMainKeyboardType;
 
     private InputMsgListener listener;
 
@@ -81,8 +81,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
         this.inputList = new InputList();
         this.inputList.setListener(this);
-
-        this.keyboardSwitches = new Stack<>();
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -106,8 +104,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             this.dict.open(context, this);
         }
 
-        // 全新的切换，故而需清空键盘切换记录
-        this.keyboardSwitches.clear();
         // 先切换键盘
         switchKeyboardTo(keyboardType);
 
@@ -154,7 +150,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         this.config = null;
         this.keyboard = null;
         this.inputList = null;
-        this.keyboardSwitches = null;
+        this.prevMainKeyboardType = null;
         this.listener = null;
     }
 
@@ -270,15 +266,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
     private void on_Keyboard_Switch_Doing_Msg(KeyboardSwitchMsgData data) {
-        Keyboard.Type type = data.type;
-        if (type == null && !this.keyboardSwitches.isEmpty()) {
-            type = this.keyboardSwitches.pop();
-        }
+        Keyboard.Type type = data.type != null ? data.type : this.prevMainKeyboardType;
+        assert type != null;
 
-        Keyboard.Type oldType = switchKeyboardTo(type);
-        if (oldType != null) {
-            this.keyboardSwitches.push(oldType);
-        }
+        this.prevMainKeyboardType = switchKeyboardTo(type);
 
         fire_InputMsg(Keyboard_Switch_Done, data);
     }

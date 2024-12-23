@@ -41,8 +41,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_Input;
