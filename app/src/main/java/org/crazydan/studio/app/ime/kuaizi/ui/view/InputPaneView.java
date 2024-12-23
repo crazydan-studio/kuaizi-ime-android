@@ -70,8 +70,8 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     private TextView keyboardWarningView;
 
     private PopupWindow inputKeyPopupWindow;
-    private PopupWindow inputCompletionsPopupWindow;
-    private InputCompletionsView inputCompletionsView;
+    private PopupWindow completionInputsPopupWindow;
+    private CompletionInputsView completionInputsView;
 
     private View settingsBtnView;
     private View inputListCleanBtnView;
@@ -252,9 +252,9 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         this.inputListView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
-        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
-        this.inputCompletionsView.setListener(this);
-        preparePopupWindows(this.inputCompletionsView, inputKeyView);
+        this.completionInputsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
+        this.completionInputsView.setListener(this);
+        preparePopupWindows(this.completionInputsView, inputKeyView);
 
         updateBottomSpacing(true);
     }
@@ -329,13 +329,13 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     // ==================== Start: 气泡提示 ==================
 
     private void showInputCompletionsPopupWindow(List<CompletionInput> completions) {
-        PopupWindow window = this.inputCompletionsPopupWindow;
+        PopupWindow window = this.completionInputsPopupWindow;
         if (CollectionUtils.isEmpty(completions)) {
             window.dismiss();
             return;
         }
 
-        this.inputCompletionsView.update(completions);
+        this.completionInputsView.update(completions);
         if (window.isShowing()) {
             return;
         }
@@ -377,10 +377,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         }
     }
 
-    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
+    private void preparePopupWindows(CompletionInputsView completionsView, View keyView) {
         resetPopupWindows();
 
-        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
+        initPopupWindow(this.completionInputsPopupWindow, completionsView);
         initPopupWindow(this.inputKeyPopupWindow, keyView);
     }
 
@@ -395,10 +395,10 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     private void resetPopupWindows() {
-        if (this.inputCompletionsPopupWindow != null) {
-            this.inputCompletionsPopupWindow.dismiss();
+        if (this.completionInputsPopupWindow != null) {
+            this.completionInputsPopupWindow.dismiss();
         } else {
-            this.inputCompletionsPopupWindow = new PopupWindow();
+            this.completionInputsPopupWindow = new PopupWindow();
         }
 
         if (this.inputKeyPopupWindow != null) {

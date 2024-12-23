@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputsViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputsViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_CompletionInput;
 
@@ -45,18 +45,18 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class InputCompletionsView extends RecyclerView implements ViewGestureDetector.Listener {
-    private final CompletionInputViewAdapter adapter;
+public class CompletionInputsView extends RecyclerView implements ViewGestureDetector.Listener {
+    private final CompletionInputsViewAdapter adapter;
 
     private UserInputMsgListener listener;
 
-    public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public CompletionInputsView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        CompletionViewLayoutManager layoutManager = new CompletionViewLayoutManager(context);
+        CompletionInputsViewLayoutManager layoutManager = new CompletionInputsViewLayoutManager(context);
         setLayoutManager(layoutManager);
 
-        this.adapter = new CompletionInputViewAdapter(layoutManager);
+        this.adapter = new CompletionInputsViewAdapter(layoutManager);
         setAdapter(this.adapter);
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
@@ -73,13 +73,13 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        CompletionInputView completionView = findCompletionViewUnder(data.x, data.y);
-        if (completionView == null) {
+        CompletionInputViewHolder holder = findCompletionViewHolderUnder(data.x, data.y);
+        if (holder == null) {
             return;
         }
 
         if (type == ViewGestureDetector.GestureType.SingleTap) {
-            CompletionInput completion = completionView.getData();
+            CompletionInput completion = holder.getData();
 
             UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
             this.listener.onMsg(msg);
@@ -92,15 +92,15 @@ public class InputCompletionsView extends RecyclerView implements ViewGestureDet
         this.adapter.updateDataList(completions);
     }
 
-    private CompletionInputView findCompletionViewUnder(float x, float y) {
+    private CompletionInputViewHolder findCompletionViewHolderUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
         if (view == null) {
             return null;
         }
 
-        CompletionInputView viewHolder = (CompletionInputView) getChildViewHolder(view);
-        this.adapter.updateBindViewHolder(viewHolder);
+        CompletionInputViewHolder holder = (CompletionInputViewHolder) getChildViewHolder(view);
+        this.adapter.updateViewHolder(holder);
 
-        return viewHolder;
+        return holder;
     }
 }

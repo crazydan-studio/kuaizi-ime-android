@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.view.ViewGroup;
@@ -38,7 +39,7 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
 
-    private List<InputViewData> dataList;
+    private List<InputViewData> dataList = new ArrayList<>();
     private boolean canBeSelected;
 
     /** 更新输入列表 */
@@ -53,7 +54,7 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>
 
     @Override
     public int getItemCount() {
-        return this.dataList == null ? 0 : this.dataList.size();
+        return this.dataList.size();
     }
 
     @Override

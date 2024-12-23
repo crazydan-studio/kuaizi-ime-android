@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
@@ -31,16 +32,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
 
 /**
- * {@link CompletionInput} 的视图
+ * {@link CompletionInput} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputView extends RecyclerViewHolder<CompletionInput> {
+public class CompletionInputViewHolder extends RecyclerViewHolder<CompletionInput> {
     private final HorizontalScrollView scrollView;
     private final ViewGroup inputsView;
 
-    public CompletionInputView(@NonNull View itemView) {
+    public CompletionInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.inputsView = itemView.findViewById(R.id.inputs_view);
@@ -59,27 +60,29 @@ public class CompletionInputView extends RecyclerViewHolder<CompletionInput> {
     public void bind(CompletionInput data) {
         super.bind(data);
 
-        this.inputsView.removeAllViews();
+        whenViewReady(this.inputsView, (view) -> {
+            view.removeAllViews();
 
-        data.inputs.forEach(this::createView);
+            data.inputs.forEach((input) -> createChildView(view, input));
+        });
     }
 
-    private void createView(CharInput input) {
+    private void createChildView(ViewGroup view, CharInput input) {
         // Note：若设置了 root，则返回值也为该 root，
         // 这里需直接处理 R.layout.char_input_view 视图，故设置为 null
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.input_char_view, null);
+        View childView = LayoutInflater.from(getContext()).inflate(R.layout.input_char_view, null);
 
         // Note：在 layout xml 中设置的布局不会生效，需显式设置
         ViewGroup.MarginLayoutParams layoutParams
                 = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                                                    ViewGroup.LayoutParams.MATCH_PARENT);
-        view.setLayoutParams(layoutParams);
+        childView.setLayoutParams(layoutParams);
 
-        new CharInputViewHolder(view).bind(input);
+        new CharInputViewHolder(childView).bind(input);
 
         // 采用 itemView 的背景
-        view.setBackgroundColor(Color.TRANSPARENT);
+        childView.setBackgroundColor(Color.TRANSPARENT);
 
-        this.inputsView.addView(view);
+        view.addView(childView);
     }
 }
