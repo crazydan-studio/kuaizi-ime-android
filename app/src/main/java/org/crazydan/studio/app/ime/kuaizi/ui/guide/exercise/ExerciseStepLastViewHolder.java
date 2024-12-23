@@ -44,24 +44,18 @@ public class ExerciseStepLastViewHolder extends ExerciseStepViewHolder {
     public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
         super.bind(keyImageRender, data, position);
 
-        // Note: 初始绑定时，视图可能为 null
-        if (this.restartBtn == null || this.continueBtn == null) {
-            return;
-        }
+        whenViewReady(this.restartBtn, (btn) -> {
+            ViewUtils.visible(btn, data.restartCallback != null);
 
-        this.restartBtn.setOnClickListener(null);
-        if (data.restartCallback != null) {
-            this.restartBtn.setOnClickListener((v) -> data.restartCallback.run());
-        } else {
-            ViewUtils.hide(this.restartBtn);
-        }
+            btn.setOnClickListener(data.restartCallback == null //
+                                   ? null : (v) -> data.restartCallback.run());
+        });
 
-        this.continueBtn.setOnClickListener(null);
-        if (data.continueCallback != null) {
-            ViewUtils.show(this.continueBtn);
-            this.continueBtn.setOnClickListener((v) -> data.continueCallback.run());
-        } else {
-            ViewUtils.hide(this.continueBtn);
-        }
+        whenViewReady(this.continueBtn, (btn) -> {
+            ViewUtils.visible(btn, data.continueCallback != null);
+
+            btn.setOnClickListener(data.continueCallback == null //
+                                   ? null : (v) -> data.continueCallback.run());
+        });
     }
 }

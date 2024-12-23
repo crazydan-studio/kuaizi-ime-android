@@ -124,12 +124,6 @@ public abstract class BaseKeyboard implements Keyboard {
         change_State_to_Init(context);
     }
 
-    @Override
-    public void destroy() {
-        this.config = null;
-        this.state = null;
-    }
-
     protected KeyTableConfig createKeyTableConfig(InputList inputList) {
         return KeyTableConfig.from(this.config, inputList);
     }

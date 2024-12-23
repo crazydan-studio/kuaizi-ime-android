@@ -19,18 +19,18 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 
 /**
- * {@link Keyboard 键盘}{@link CharKey 字符按键}的视图
+ * {@link CharKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class CharKeyView extends BaseCharKeyView<CharKey> {
+public class CharKeyViewHolder extends BaseCharKeyViewHolder<CharKey> {
 
-    public CharKeyView(@NonNull View itemView) {
+    public CharKeyViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 }

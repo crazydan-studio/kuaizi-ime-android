@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
 
 /**
  * {@link CompletionInput} 的视图
@@ -75,7 +75,7 @@ public class CompletionInputView extends RecyclerViewHolder<CompletionInput> {
                                                    ViewGroup.LayoutParams.MATCH_PARENT);
         view.setLayoutParams(layoutParams);
 
-        new CharInputView(view).bind(input);
+        new CharInputViewHolder(view).bind(input);
 
         // 采用 itemView 的背景
         view.setBackgroundColor(Color.TRANSPARENT);

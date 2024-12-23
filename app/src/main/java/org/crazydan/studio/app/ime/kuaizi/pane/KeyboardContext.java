@@ -30,19 +30,21 @@ public class KeyboardContext {
     public final InputList inputList;
     public final InputMsgListener listener;
 
-    private Key<?> key;
+    private final Key<?> key;
 
     public KeyboardContext(InputList inputList, InputMsgListener listener) {
+        this(inputList, listener, null);
+    }
+
+    KeyboardContext(InputList inputList, InputMsgListener listener, Key<?> key) {
         this.inputList = inputList;
         this.listener = listener;
+        this.key = key;
     }
 
     /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
     public KeyboardContext newWithKey(Key<?> key) {
-        KeyboardContext context = new KeyboardContext(this.inputList, this.listener);
-        context.key = key;
-
-        return context;
+        return new KeyboardContext(this.inputList, this.listener, key);
     }
 
     /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键 */

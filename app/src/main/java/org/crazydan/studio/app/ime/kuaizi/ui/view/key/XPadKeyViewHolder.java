@@ -18,25 +18,49 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import android.view.View;
-import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**
- * {@link Keyboard 键盘}{@link CtrlKey 隐藏按键}的视图
+ * {@link XPadKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-09
+ * @date 2023-11-04
  */
-public class NullKeyView extends KeyView<CtrlKey, ImageView> {
+public class XPadKeyViewHolder extends KeyViewHolder<XPadKey, XPadView> {
 
-    public NullKeyView(@NonNull View itemView) {
+    public XPadKeyViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 
-    public void bind() {
-        ViewUtils.hide(this.itemView);
+    public XPadView getXPad() {
+        return this.fgView;
     }
+
+    @Override
+    public void bind(XPadKey key) {
+        super.bind(key, null);
+
+        getXPad().updateZoneKeys(key.zone_0_key, key.zone_1_keys, key.zone_2_keys);
+    }
+
+    // <<<<<<<<<<<<<<<< Start 重载无效的功能接口
+    @Override
+    public void disable() {
+    }
+
+    @Override
+    public void enable() {
+    }
+
+    @Override
+    public void touchDown() {
+    }
+
+    @Override
+    public void touchUp() {
+    }
+    // >>>>>>>>>>>>>>>>> End
 }

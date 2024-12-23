@@ -19,18 +19,18 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 
 /**
- * {@link Keyboard 键盘}{@link MathOpKey 字符按键}的视图
+ * {@link MathOpKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public class MathOpKeyView extends BaseCharKeyView<MathOpKey> {
+public class MathOpKeyViewHolder extends BaseCharKeyViewHolder<MathOpKey> {
 
-    public MathOpKeyView(@NonNull View itemView) {
+    public MathOpKeyViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 }

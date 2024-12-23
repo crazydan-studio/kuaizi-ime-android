@@ -23,6 +23,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
@@ -31,17 +32,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
- * {@link GapInput} 的视图
+ * {@link GapInput} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class GapInputView extends InputView<GapInput> {
+public class GapInputViewHolder extends InputViewHolder<GapInput> {
     private final View cursorView;
     private final View pendingView;
     private final View blinkView;
 
-    public GapInputView(@NonNull View itemView) {
+    public GapInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.cursorView = itemView.findViewById(R.id.cursor_view);
@@ -54,35 +55,40 @@ public class GapInputView extends InputView<GapInput> {
 
         CharInput pending = data.pending;
         boolean hasPending = !Input.isEmpty(pending);
-        if (hasPending) {
-            addLeftSpaceMargin(this.pendingView, data.gapSpaces);
+        whenViewReady(this.pendingView, (view) -> {
+            if (hasPending) {
+                addLeftSpaceMargin(view, data.gapSpaces);
+                setSelectedBgColor(view, selected);
 
-            ViewUtils.hide(this.cursorView);
-            ViewUtils.show(this.pendingView);
+                showWord(data.option, pending, selected);
+            }
+            ViewUtils.visible(view, hasPending);
+        });
 
-            showWord(data.option, pending, selected);
-            setSelectedBgColor(this.pendingView, selected);
-        } else {
-            addLeftSpaceMargin(this.cursorView, data.gapSpaces);
+        whenViewReady(this.cursorView, (view) -> {
+            if (!hasPending) {
+                addLeftSpaceMargin(view, data.gapSpaces);
+            }
+            ViewUtils.visible(view, !hasPending);
+        });
 
-            ViewUtils.show(this.cursorView);
-            ViewUtils.hide(this.pendingView);
-        }
+        whenViewReady(this.blinkView, (view) -> {
+            boolean shown = selected && !hasPending;
+            ViewUtils.visible(view, shown);
 
-        if (selected && !hasPending) {
-            ViewUtils.show(this.blinkView);
-            startCursorBlink();
-        } else {
-            ViewUtils.hide(this.blinkView);
-            stopCursorBlink();
-        }
+            if (shown) {
+                startCursorBlink(view);
+            } else {
+                stopCursorBlink(view);
+            }
+        });
     }
 
-    public void stopCursorBlink() {
-        this.blinkView.clearAnimation();
+    private void stopCursorBlink(View view) {
+        view.clearAnimation();
     }
 
-    public void startCursorBlink() {
+    private void startCursorBlink(View view) {
         // 图形扩散淡化消失的效果
         // https://cloud.tencent.com/developer/article/1742156
         AnimationSet animationSet = new AnimationSet(true);
@@ -98,6 +104,6 @@ public class GapInputView extends InputView<GapInput> {
             animationSet.addAnimation(animation);
         }
 
-        this.blinkView.startAnimation(animationSet);
+        view.startAnimation(animationSet);
     }
 }

@@ -20,17 +20,17 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.HexagonDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}{@link Key 按键}的视图
+ * {@link Key} 视图的 {@link RecyclerView.ViewHolder}
  * <p/>
  * 视图存在重复使用的情况，故在
  * {@link #bind(Key, HexagonOrientation)}
@@ -39,11 +39,11 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class KeyView<K extends Key<?>, V extends View> extends RecyclerViewHolder<K> {
+public abstract class KeyViewHolder<K extends Key<?>, V extends View> extends RecyclerViewHolder<K> {
     protected final ImageView bgView;
     protected final V fgView;
 
-    public KeyView(@NonNull View itemView) {
+    public KeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.bgView = itemView.findViewById(R.id.bg_view);
@@ -63,16 +63,17 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
     }
 
     private void updateBgView(K key, HexagonOrientation orientation) {
-        if (this.bgView == null) {
-            return;
-        }
-
-        if (key.getColor().bg != null) {
-            HexagonDrawable drawable = new HexagonDrawable(orientation);
+        whenViewReady(this.bgView, (view) -> {
+            if (key.getColor().bg == null) {
+                view.setImageDrawable(null);
+                return;
+            }
+            ViewUtils.enableHardwareAccelerated(view);
 
             int bgColor = getColorByAttrId(key.getColor().bg);
             float cornerRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_corner_radius);
 
+            HexagonDrawable drawable = new HexagonDrawable(orientation);
             drawable.setCornerRadius(cornerRadius);
             drawable.setFillColor(bgColor);
 
@@ -83,10 +84,7 @@ public abstract class KeyView<K extends Key<?>, V extends View> extends Recycler
                 drawable.setBorder(getStringByAttrId(R.attr.key_disabled_border_style));
             }
 
-            ViewUtils.enableHardwareAccelerated(this.bgView);
-            this.bgView.setImageDrawable(drawable);
-        } else {
-            this.bgView.setImageDrawable(null);
-        }
+            view.setImageDrawable(drawable);
+        });
     }
 }

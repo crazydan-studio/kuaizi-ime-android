@@ -40,8 +40,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewLayoutManager;
 
@@ -84,7 +84,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        InputView<?> inputView = findVisibleInputViewUnder(data.x, data.y);
+        InputViewHolder<?> inputView = findVisibleInputViewUnder(data.x, data.y);
 
         switch (type) {
             case SingleTap: {
@@ -196,13 +196,13 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         }
     }
 
-    /** 找到指定坐标下可见的 {@link  InputView} */
-    private InputView<?> findVisibleInputViewUnder(float x, float y) {
+    /** 找到指定坐标下可见的 {@link  InputViewHolder} */
+    private InputViewHolder<?> findVisibleInputViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
-        InputView<?> inputView = view != null ? (InputView<?>) getChildViewHolder(view) : null;
+        InputViewHolder<?> inputView = view != null ? (InputViewHolder<?>) getChildViewHolder(view) : null;
 
         // 若点击位置更靠近输入之间的 Gap 位置，则返回该 Gap
-        if (inputView instanceof CharInputView) {
+        if (inputView instanceof CharInputViewHolder) {
             int gap = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
             int position = getChildAdapterPosition(view);
             float left = view.getLeft();
@@ -212,11 +212,11 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
             // Note：不能通过 getChildAt(position) 方式获取 ViewHolder 对应位置的视图，
             // 因为子视图的位置不一定与 ViewHolder 的视图位置等同
             if (x < left - gap) {
-                inputView = (InputView<?>) findViewHolderForAdapterPosition(position - 1);
+                inputView = (InputViewHolder<?>) findViewHolderForAdapterPosition(position - 1);
             }
             // 取当前输入右边的 Gap
             else if (x > right - gap) {
-                inputView = (InputView<?>) findViewHolderForAdapterPosition(position + 1);
+                inputView = (InputViewHolder<?>) findViewHolderForAdapterPosition(position + 1);
             }
         }
 

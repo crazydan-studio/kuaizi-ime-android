@@ -26,15 +26,15 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListenerTrigger;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 
 /**
- * {@link Keyboard 键盘}{@link KeyView 按键}的手势监听器
+ * {@link Keyboard 键盘}{@link KeyViewHolder 按键}的手势监听器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-13
  */
 public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
-    private KeyView<?, ?> prevKeyView;
-    private KeyView<?, ?> movingOverXPadKeyView;
+    private KeyViewHolder<?, ?> prevKeyView;
+    private KeyViewHolder<?, ?> movingOverXPadKeyView;
 
     public KeyViewGestureListener(KeyboardView keyboardView) {
         super(keyboardView);
@@ -43,9 +43,9 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
 
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        KeyView<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
+        KeyViewHolder<?, ?> keyView = this.keyboardView.findVisibleKeyViewUnderLoose(data.x, data.y);
 
-        KeyView<?, ?> oldKeyView = this.prevKeyView;
+        KeyViewHolder<?, ?> oldKeyView = this.prevKeyView;
         this.prevKeyView = keyView;
 
         // 处理普通键盘的按键发生切换的情况
@@ -66,7 +66,7 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
             }
             return;
         } else {
-            KeyView<?, ?> xPadKeyView = this.movingOverXPadKeyView;
+            KeyViewHolder<?, ?> xPadKeyView = this.movingOverXPadKeyView;
             switch (type) {
                 case PressEnd:
                     this.movingOverXPadKeyView = null;
@@ -94,9 +94,9 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
     }
 
     private boolean try_OnXPadGesture(
-            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
-        if (!(keyView instanceof XPadKeyView)) {
+        if (!(keyView instanceof XPadKeyViewHolder)) {
             return false;
         }
 
@@ -105,13 +105,13 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
         PointF offset = new PointF(-x, -y);
 
         boolean disableTrailer = this.keyboardView.isGestureTrailerDisabled();
-        ((XPadKeyView) keyView).getXPad().onGesture(this, type, data, offset, disableTrailer);
+        ((XPadKeyViewHolder) keyView).getXPad().onGesture(this, type, data, offset, disableTrailer);
 
         return true;
     }
 
     private void onPressStart(
-            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchDown();
@@ -121,7 +121,7 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
     }
 
     private void onPressEnd(
-            KeyView<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?, ?> keyView, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
         if (isAvailableKeyView(keyView)) {
             keyView.touchUp();
@@ -130,13 +130,13 @@ public class KeyViewGestureListener extends UserKeyMsgListenerTrigger implements
         super.onGesture(getKey(keyView), type, data);
     }
 
-    private Key<?> getKey(KeyView<?, ?> keyView) {
+    private Key<?> getKey(KeyViewHolder<?, ?> keyView) {
         return keyView != null ? keyView.getData() : null;
     }
 
-    private boolean isAvailableKeyView(KeyView<?, ?> keyView) {
+    private boolean isAvailableKeyView(KeyViewHolder<?, ?> keyView) {
         return keyView != null //
-               && (!(keyView instanceof CtrlKeyView) //
+               && (!(keyView instanceof CtrlKeyViewHolder) //
                    || !(CtrlKey.isNoOp(keyView.getData()))) //
                && !keyView.getData().isDisabled();
     }

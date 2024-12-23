@@ -21,22 +21,22 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}{@link CtrlKey 控制按键}的视图
+ * {@link CtrlKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-02
  */
-public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
+public class CtrlKeyViewHolder extends KeyViewHolder<CtrlKey, ImageView> {
     private final TextView fgTextView;
 
-    public CtrlKeyView(@NonNull View itemView) {
+    public CtrlKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.fgTextView = itemView.findViewById(R.id.fg_text_view);
@@ -45,18 +45,21 @@ public class CtrlKeyView extends KeyView<CtrlKey, ImageView> {
     public void bind(CtrlKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        if (key.getIconResId() != null) {
-            ViewUtils.hide(this.fgTextView);
-            ViewUtils.show(this.fgView).setImageResource(key.getIconResId());
-        } else if (key.getLabel() != null) {
-            ViewUtils.hide(this.fgView);
-            ViewUtils.show(this.fgTextView).setText(key.getLabel());
+        whenViewReady(this.fgView, (view) -> {
+            boolean shown = key.getIconResId() != null;
+            if (shown) {
+                view.setImageResource(key.getIconResId());
+            }
+            ViewUtils.visible(view, shown);
+        });
 
-            setTextColorByAttrId(this.fgTextView, key.getColor().fg);
-        } else {
-            // 存在复用的情况，故，需在其他情况对其进行重置
-            ViewUtils.hide(this.fgTextView);
-            ViewUtils.hide(this.fgView);
-        }
+        whenViewReady(this.fgTextView, (view) -> {
+            boolean shown = key.getIconResId() == null && key.getLabel() != null;
+            if (shown) {
+                setTextColorByAttrId(view, key.getColor().fg);
+                view.setText(key.getLabel());
+            }
+            ViewUtils.visible(view, shown);
+        });
     }
 }

@@ -46,19 +46,17 @@ public class ExerciseStepViewHolder extends RecyclerViewHolder<ExerciseStep.View
 
     /** 视图与数据的初始绑定 */
     public void bind(KeyImageRender keyImageRender, ExerciseStep.ViewData data, int position) {
-        // Note: 初始绑定时，视图可能为 null
-        if (this.pointerView == null || this.contentView == null) {
-            return;
-        }
+        whenViewReady(this.pointerView, (view) -> {
+            ViewUtils.visible(view, data.active);
+        });
 
-        ViewUtils.visible(this.pointerView, data.active);
+        whenViewReady(this.contentView, (view) -> {
+            int imageSize = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
+            String text = ExerciseStep.createViewContent(data, position);
+            Spanned spannedText = renderText(keyImageRender, text, imageSize);
 
-        String text = ExerciseStep.createViewContent(data, position);
-
-        int imageSize = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.guide_exercise_step_icon_size);
-        Spanned spannedText = renderText(keyImageRender, text, imageSize);
-
-        this.contentView.setText(spannedText);
+            view.setText(spannedText);
+        });
     }
 
     private Spanned renderText(KeyImageRender keyImageRender, String text, int imageSize) {

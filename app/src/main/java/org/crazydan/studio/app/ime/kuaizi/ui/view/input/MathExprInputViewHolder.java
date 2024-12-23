@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
@@ -28,16 +29,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
 
 /**
- * {@link MathExprInput} 的视图
+ * {@link MathExprInput} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-15
  */
-public class MathExprInputView extends InputView<Input<?>> {
+public class MathExprInputViewHolder extends InputViewHolder<Input<?>> {
     private final InputListViewReadonly inputListView;
     private final View markerView;
 
-    public MathExprInputView(@NonNull View itemView) {
+    public MathExprInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.inputListView = itemView.findViewById(R.id.input_list);
@@ -50,12 +51,16 @@ public class MathExprInputView extends InputView<Input<?>> {
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
 
         InputList inputList = ((MathExprInput) data.input).getInputList();
-        this.inputListView.update(inputList.getInputFactory(), selected, false);
+        whenViewReady(this.inputListView, (view) -> {
+            view.update(inputList.getInputFactory(), selected, false);
+        });
 
-        setBackgroundColorByAttrId(this.markerView,
-                                   selected
-                                   ? R.attr.input_char_math_expr_border_highlight_color
-                                   : R.attr.input_char_math_expr_border_color);
-        ViewUtils.visible(this.markerView, !inputList.isEmpty());
+        whenViewReady(this.markerView, (view) -> {
+            setBackgroundColorByAttrId(view,
+                                       selected
+                                       ? R.attr.input_char_math_expr_border_highlight_color
+                                       : R.attr.input_char_math_expr_border_color);
+            ViewUtils.visible(view, !inputList.isEmpty());
+        });
     }
 }

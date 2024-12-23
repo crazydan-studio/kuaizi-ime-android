@@ -20,22 +20,22 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}切换 输入拼写 的{@link CtrlKey 控制按键}视图
+ * 切换 输入拼写 的{@link CtrlKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-11
  */
-public class CtrlToggleInputSpellKeyView extends KeyView<CtrlKey, View> {
+public class CtrlToggleInputSpellKeyViewHolder extends KeyViewHolder<CtrlKey, View> {
     private final TextView sourceView;
     private final TextView targetView;
 
-    public CtrlToggleInputSpellKeyView(@NonNull View itemView) {
+    public CtrlToggleInputSpellKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.sourceView = itemView.findViewById(R.id.source_view);
@@ -46,7 +46,11 @@ public class CtrlToggleInputSpellKeyView extends KeyView<CtrlKey, View> {
         super.bind(key, orientation);
 
         String[] splits = key.getLabel().split(",");
-        this.sourceView.setText(splits[0]);
-        this.targetView.setText(splits[1]);
+        whenViewReady(this.sourceView, (view) -> {
+            view.setText(splits[0]);
+        });
+        whenViewReady(this.targetView, (view) -> {
+            view.setText(splits[1]);
+        });
     }
 }

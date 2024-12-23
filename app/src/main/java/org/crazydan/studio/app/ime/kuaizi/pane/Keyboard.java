@@ -54,9 +54,6 @@ public interface Keyboard {
     /** 重置 */
     void reset(KeyboardContext context);
 
-    /** 销毁 */
-    void destroy();
-
     // ==========================================================
 
     /** 响应来自 {@link InputList} 的 {@link InputMsg} 消息 */

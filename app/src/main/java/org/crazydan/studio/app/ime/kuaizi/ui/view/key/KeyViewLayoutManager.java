@@ -31,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.Hexagon;
@@ -44,7 +43,7 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
 import static org.crazydan.studio.app.ime.kuaizi.common.Constants.cos_30;
 
 /**
- * {@link Keyboard 键盘}{@link Key 按键}的{@link RecyclerView}布局器
+ * {@link Key} 的 {@link RecyclerView} 布局器
  * <p/>
  * 注意：<ul>
  * <li>通过按键布局视图的 margin 设置按键与父视图的间隙，
@@ -349,7 +348,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
                 xPadKeyView.setScaleY(scale);
             }
 
-            XPadView xPad = (new XPadKeyView(xPadKeyView)).getXPad();
+            XPadView xPad = (new XPadKeyViewHolder(xPadKeyView)).getXPad();
             xPad.setReversed(this.reversed);
             xPad.setCenterHexagonRadius(radius);
 

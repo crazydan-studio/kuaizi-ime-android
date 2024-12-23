@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
@@ -32,17 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 
 /**
- * {@link Input 键盘输入}的视图
+ * {@link Input} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I> {
+public abstract class InputViewHolder<I extends Input<?>> extends RecyclerViewHolder<I> {
     private final TextView spellView;
     private final TextView wordView;
     private final ImageView spaceView;
 
-    public InputView(@NonNull View itemView) {
+    public InputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.spellView = itemView.findViewById(R.id.spell_view);
@@ -77,22 +78,28 @@ public abstract class InputView<I extends Input<?>> extends RecyclerViewHolder<I
             }
         }
 
-        if (input.isSpace()) {
-            this.wordView.setText(null);
-            ViewUtils.show(this.spaceView);
-        } else {
-            this.wordView.setText(value);
-            setSelectedTextColor(this.wordView, selected);
+        String wordValue = value;
+        whenViewReady(this.wordView, (view) -> {
+            setSelectedTextColor(view, selected);
 
-            ViewUtils.hide(this.spaceView);
-        }
+            boolean shown = !input.isSpace();
+            view.setText(shown ? wordValue : null);
 
-        if (!CharUtils.isBlank(spell)) {
-            ViewUtils.show(this.spellView).setText(spell);
-            setSelectedTextColor(this.spellView, selected);
-        } else {
-            ViewUtils.hide(this.spellView);
-        }
+            ViewUtils.visible(view, shown);
+        });
+        whenViewReady(this.spaceView, (view) -> {
+            ViewUtils.visible(view, input.isSpace());
+        });
+
+        String spellText = spell;
+        whenViewReady(this.spellView, (view) -> {
+            boolean shown = !CharUtils.isBlank(spellText);
+            if (shown) {
+                setSelectedTextColor(view, selected);
+                view.setText(spellText);
+            }
+            ViewUtils.visible(view, shown);
+        });
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

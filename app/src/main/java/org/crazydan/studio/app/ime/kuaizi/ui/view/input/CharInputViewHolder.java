@@ -19,19 +19,20 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
- * {@link CharInput} 的视图
+ * {@link CharInput} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class CharInputView extends InputView<CharInput> {
+public class CharInputViewHolder extends InputViewHolder<CharInput> {
 
-    public CharInputView(@NonNull View itemView) {
+    public CharInputViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 

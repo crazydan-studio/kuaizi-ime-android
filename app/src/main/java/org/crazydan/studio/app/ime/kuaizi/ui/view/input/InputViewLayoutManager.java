@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 
 /**
- * {@link Input 输入}的{@link RecyclerView}布局器
+ * {@link Input} 的 {@link RecyclerView} 布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07

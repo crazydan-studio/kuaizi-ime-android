@@ -27,10 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -96,7 +96,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
 
         if (xPadEnabled) {
             // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
-            XPadKeyView xPadKeyView = getXPadKeyView(xPadKey);
+            XPadKeyViewHolder xPadKeyView = getXPadKeyView(xPadKey);
             if (xPadKeyView != null) {
                 xPadKeyView.bind(xPadKey);
             }
@@ -109,24 +109,24 @@ public abstract class KeyboardViewBase extends RecyclerView {
         return this.layoutManager.getGridPaddingBottom();
     }
 
-    public XPadKeyView getXPadKeyView() {
+    public XPadKeyViewHolder getXPadKeyView() {
         XPadKey xPadKey = this.adapter.getXPadKey();
         return getXPadKeyView(xPadKey);
     }
 
-    private XPadKeyView getXPadKeyView(XPadKey xPadKey) {
-        return ((XPadKeyView) getVisibleKeyView(getItemViewByKey(xPadKey)));
+    private XPadKeyViewHolder getXPadKeyView(XPadKey xPadKey) {
+        return ((XPadKeyViewHolder) getVisibleKeyView(getItemViewByKey(xPadKey)));
     }
 
-    /** 找到指定坐标下可见的{@link  KeyView 按键视图} */
-    public KeyView<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
+    /** 找到指定坐标下可见的{@link  KeyViewHolder 按键视图} */
+    public KeyViewHolder<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
         View child = this.layoutManager.findChildViewUnderLoose(x, y);
 
         return getVisibleKeyView(child);
     }
 
-    private KeyView<?, ?> getVisibleKeyView(View view) {
-        KeyView<?, ?> keyView = view != null ? (KeyView<?, ?>) getChildViewHolder(view) : null;
+    private KeyViewHolder<?, ?> getVisibleKeyView(View view) {
+        KeyViewHolder<?, ?> keyView = view != null ? (KeyViewHolder<?, ?>) getChildViewHolder(view) : null;
 
         return keyView != null && !keyView.isHidden() ? keyView : null;
     }
@@ -139,7 +139,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
         int total = this.layoutManager.getChildCount();
         for (int i = 0; i < total; i++) {
             View view = this.layoutManager.getChildAt(i);
-            KeyView<?, ?> keyView = getVisibleKeyView(view);
+            KeyViewHolder<?, ?> keyView = getVisibleKeyView(view);
 
             if (keyView != null && keyView.getData().equals(key)) {
                 return view;

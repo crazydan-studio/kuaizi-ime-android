@@ -51,11 +51,10 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
 
     /** 视图与数据的初始绑定 */
     public void bind(Exercise.ViewData data, int position) {
-        // Note: 初始绑定时，视图可能为 null
-        if (this.titleView != null) {
+        whenViewReady(this.titleView, (view) -> {
             String title = Exercise.createViewTitle(data.title, position);
-            this.titleView.setText(title);
-        }
+            view.setText(title);
+        });
 
         update(data);
     }
@@ -72,15 +71,14 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
 
     /** 更新视图 */
     public void update(Exercise.ViewData data) {
-        // Note: 初始绑定时，视图可能为 null
-        if (this.textView == null || this.stepListView == null) {
-            return;
-        }
+        whenViewReady(this.textView, (view) -> {
+            String text = data.sampleText;
+            view.setText(text);
+            view.setSelection(text != null ? text.length() : 0);
+        });
 
-        String text = data.sampleText;
-        this.textView.setText(text);
-        this.textView.setSelection(text != null ? text.length() : 0);
-
-        this.stepListView.update(data);
+        whenViewReady(this.stepListView, (view) -> {
+            view.update(data);
+        });
     }
 }

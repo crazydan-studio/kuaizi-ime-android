@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
+import java.util.function.Consumer;
+
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -35,31 +37,31 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends RecyclerView.ViewHolder {
     private T data;
 
-    public RecyclerViewHolder(@NonNull View itemView) {
-        super(itemView);
-    }
-
     public static void setScale(View view, float scale) {
         view.setScaleX(scale);
         view.setScaleY(scale);
     }
 
-    // TODO 视图与数据不应该做强绑定，需解耦
-    public T getData() {
-        return this.data;
+    public RecyclerViewHolder(@NonNull View itemView) {
+        super(itemView);
     }
 
     // TODO 视图与数据不应该做强绑定，需解耦
+    public final Context getContext() {
+        return this.itemView.getContext();
+    }
+
+    public T getData() {
+        return this.data;
+    }
+    // TODO 视图与数据不应该做强绑定，需解耦
+
     public void bind(T data) {
         this.data = data;
     }
 
     public boolean isHidden() {
         return this.itemView.getVisibility() == View.GONE;
-    }
-
-    public final Context getContext() {
-        return this.itemView.getContext();
     }
 
     public void disable() {
@@ -130,5 +132,16 @@ public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends Rec
         ObjectAnimator fade = ObjectAnimator.ofObject(view, "backgroundColor", new ArgbEvaluator(), fromColor, toColor);
         fade.setDuration(500);
         fade.start();
+    }
+
+    /**
+     * 在指定的视图就绪时，执行指定的函数
+     * <p/>
+     * {@link RecyclerView} 的元素在做数据绑定时，其内部的子视图可能为 null，因此，需在子视图不为 null 时，再对其做相关操作
+     */
+    protected <V extends View> void whenViewReady(V view, Consumer<V> consumer) {
+        if (view != null) {
+            consumer.accept(view);
+        }
     }
 }

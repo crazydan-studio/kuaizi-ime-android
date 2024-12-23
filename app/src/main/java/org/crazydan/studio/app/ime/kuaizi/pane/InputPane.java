@@ -333,9 +333,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             }
         }
 
-        if (old != null) {
-            old.destroy();
-        }
         this.config.set(ConfigKey.prev_keyboard_type, oldType);
 
         KeyboardConfig config = createKeyboardConfig();

@@ -52,7 +52,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCompletionUpdateMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 
 /**
  * {@link InputPane 输入面板}的视图
@@ -102,7 +102,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
         doLayout();
     }
 
-    public XPadKeyView getXPadKeyView() {
+    public XPadKeyViewHolder getXPadKeyView() {
         return this.keyboardView.getXPadKeyView();
     }
 

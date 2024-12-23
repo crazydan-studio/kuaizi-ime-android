@@ -27,12 +27,12 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAda
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 
 /**
- * {@link InputView} 的 {@link RecyclerView} 适配器
+ * {@link InputViewHolder} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
+public class InputViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
@@ -56,16 +56,16 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull InputView<?> view, int position) {
+    public void onBindViewHolder(@NonNull InputViewHolder<?> holder, int position) {
         InputViewData data = this.dataList.get(position);
         boolean selected = this.canBeSelected && data.selected;
 
         if (data.input.isMathExpr()) {
-            ((MathExprInputView) view).bind(data, selected);
+            ((MathExprInputViewHolder) holder).bind(data, selected);
         } else if (data.input.isGap()) {
-            ((GapInputView) view).bind(data, selected);
+            ((GapInputViewHolder) holder).bind(data, selected);
         } else {
-            ((CharInputView) view).bind(data, selected);
+            ((CharInputViewHolder) holder).bind(data, selected);
         }
     }
 
@@ -84,13 +84,13 @@ public class InputViewAdapter extends RecyclerViewAdapter<InputView<?>> {
 
     @NonNull
     @Override
-    public InputView<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public InputViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CHAR_INPUT) {
-            return new CharInputView(inflateItemView(parent, R.layout.input_char_view));
+            return new CharInputViewHolder(inflateItemView(parent, R.layout.input_char_view));
         } else if (viewType == VIEW_TYPE_CHAR_MATH_EXPR_INPUT) {
-            return new MathExprInputView(inflateItemView(parent, R.layout.input_math_expr_view));
+            return new MathExprInputViewHolder(inflateItemView(parent, R.layout.input_math_expr_view));
         } else {
-            return new GapInputView(inflateItemView(parent, R.layout.input_gap_view));
+            return new GapInputViewHolder(inflateItemView(parent, R.layout.input_gap_view));
         }
     }
 }

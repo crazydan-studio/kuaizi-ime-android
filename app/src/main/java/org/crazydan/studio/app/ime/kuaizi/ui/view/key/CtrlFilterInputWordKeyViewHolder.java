@@ -20,23 +20,23 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}过滤 输入候选字 的{@link CtrlKey 控制按键}视图
+ * 过滤 输入候选字 的{@link CtrlKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-27
  */
-public class CtrlFilterInputWordKeyView extends KeyView<CtrlKey, View> {
+public class CtrlFilterInputWordKeyViewHolder extends KeyViewHolder<CtrlKey, View> {
     private final TextView fgTextView;
     private final TextView subTextView;
 
-    public CtrlFilterInputWordKeyView(@NonNull View itemView) {
+    public CtrlFilterInputWordKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.fgTextView = itemView.findViewById(R.id.fg_text_view);
@@ -47,17 +47,19 @@ public class CtrlFilterInputWordKeyView extends KeyView<CtrlKey, View> {
         super.bind(key, orientation);
 
         String[] splits = key.getLabel().split("/");
-        String text = splits[0];
-        String subText = splits.length > 1 ? splits[1] : null;
 
-        this.fgTextView.setText(text);
-        setTextColorByAttrId(this.fgTextView, key.getColor().fg);
+        whenViewReady(this.fgTextView, (view) -> {
+            setTextColorByAttrId(view, key.getColor().fg);
 
-        if (subText != null) {
-            ViewUtils.show(this.subTextView).setText(subText);
-            setTextColorByAttrId(this.subTextView, key.getColor().fg);
-        } else {
-            ViewUtils.hide(this.subTextView);
-        }
+            String text = splits[0];
+            view.setText(text);
+        });
+
+        whenViewReady(this.subTextView, (view) -> {
+            String subText = splits.length > 1 ? splits[1] : null;
+            setTextColorByAttrId(view, subText != null ? key.getColor().fg : null);
+
+            ViewUtils.visible(view, subText != null).setText(subText);
+        });
     }
 }

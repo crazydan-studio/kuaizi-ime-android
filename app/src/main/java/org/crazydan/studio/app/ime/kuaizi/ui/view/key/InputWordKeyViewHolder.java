@@ -20,27 +20,27 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link Keyboard 键盘}{@link InputWordKey 候选字按键}的视图
+ * {@link InputWordKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class InputWordKeyView extends KeyView<InputWordKey, View> {
+public class InputWordKeyViewHolder extends KeyViewHolder<InputWordKey, View> {
     private final TextView spellView;
     private final TextView wordView;
     private final View traditionalMarkView;
 
-    public InputWordKeyView(@NonNull View itemView) {
+    public InputWordKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.spellView = this.fgView.findViewById(R.id.spell_view);
@@ -53,22 +53,25 @@ public class InputWordKeyView extends KeyView<InputWordKey, View> {
 
         InputWord word = key.getWord();
 
-        if (word instanceof PinyinWord && ((PinyinWord) word).isTraditional()) {
-            ViewUtils.show(this.traditionalMarkView);
-        } else {
-            ViewUtils.hide(this.traditionalMarkView);
-        }
+        whenViewReady(this.traditionalMarkView, (view) -> {
+            boolean shown = word instanceof PinyinWord && ((PinyinWord) word).isTraditional();
+            ViewUtils.visible(view, shown);
+        });
 
         String value = word != null ? word.getValue() : "";
-        String spell = word != null ? word.getSpell().value : null;
-        this.wordView.setText(value);
-        setTextColorByAttrId(this.wordView, key.getColor().fg);
+        whenViewReady(this.wordView, (view) -> {
+            setTextColorByAttrId(view, key.getColor().fg);
+            view.setText(value);
+        });
 
-        if (CharUtils.isBlank(spell)) {
-            ViewUtils.hide(this.spellView);
-        } else {
-            ViewUtils.show(this.spellView).setText(spell);
-            setTextColorByAttrId(this.spellView, key.getColor().fg);
-        }
+        String spell = word != null ? word.getSpell().value : null;
+        whenViewReady(this.spellView, (view) -> {
+            boolean shown = !CharUtils.isBlank(spell);
+            if (shown) {
+                setTextColorByAttrId(view, key.getColor().fg);
+                view.setText(spell);
+            }
+            ViewUtils.visible(view, shown);
+        });
     }
 }
