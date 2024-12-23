@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
-import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 
 /**
- * {@link Input} 的 {@link RecyclerView} 布局器
+ * {@link KeyboardView} 的按键动效
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2023-07-16
  */
-public class InputViewLayoutManager extends LinearLayoutManager {
+public class KeyboardViewKeyAnimator extends DefaultItemAnimator {
 
-    public InputViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public void reset() {
     }
 }

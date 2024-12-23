@@ -30,8 +30,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.Hexagon;
 import org.hexworks.mixite.core.api.HexagonOrientation;
@@ -43,7 +43,7 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
 import static org.crazydan.studio.app.ime.kuaizi.common.Constants.cos_30;
 
 /**
- * {@link Key} 的 {@link RecyclerView} 布局器
+ * {@link KeyboardView} 的 {@link RecyclerView} 布局器
  * <p/>
  * 注意：<ul>
  * <li>通过按键布局视图的 margin 设置按键与父视图的间隙，
@@ -53,7 +53,7 @@ import static org.crazydan.studio.app.ime.kuaizi.common.Constants.cos_30;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
+public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
     /** 按键正六边形方向 */
     private HexagonOrientation gridItemOrientation;
 
@@ -81,7 +81,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
     private RectHexagon xPadKeyRectHexagon = null;
     private List<RectHexagon> rectHexagons;
 
-    public KeyViewLayoutManager(HexagonOrientation gridItemOrientation) {
+    public KeyboardViewLayoutManager(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
     }
 
@@ -314,7 +314,7 @@ public class KeyViewLayoutManager extends RecyclerViewLayoutManager {
 
     private void layoutRectHexagons(RecyclerView.Recycler recycler, List<RectHexagon> rectHexagons, int itemCount) {
         View xPadKeyView = null;
-        int xPadKeyViewType = KeyViewAdapter.getKeyViewType(new XPadKey());
+        int xPadKeyViewType = KeyboardViewAdapter.getKeyViewType(new XPadKey());
 
         for (RectHexagon rectHexagon : rectHexagons) {
             int index = rectHexagon.index;

@@ -27,9 +27,9 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -46,8 +46,8 @@ public abstract class KeyboardViewBase extends RecyclerView {
     private final float gridItemMinRadius;
     private final float gridItemSpacing;
 
-    private final KeyViewAdapter adapter;
-    private final KeyViewLayoutManager layoutManager;
+    private final KeyboardViewAdapter adapter;
+    private final KeyboardViewLayoutManager layoutManager;
 
     private HexagonOrientation gridItemOrientation = HexagonOrientation.POINTY_TOP;
 
@@ -58,8 +58,8 @@ public abstract class KeyboardViewBase extends RecyclerView {
         this.gridItemMinRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_bg_min_radius);
         this.gridItemSpacing = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_spacing);
 
-        this.adapter = new KeyViewAdapter(this.gridItemOrientation);
-        this.layoutManager = new KeyViewLayoutManager(this.gridItemOrientation);
+        this.adapter = new KeyboardViewAdapter(this.gridItemOrientation);
+        this.layoutManager = new KeyboardViewLayoutManager(this.gridItemOrientation);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
@@ -96,9 +96,9 @@ public abstract class KeyboardViewBase extends RecyclerView {
 
         if (xPadEnabled) {
             // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
-            XPadKeyViewHolder xPadKeyView = getXPadKeyView(xPadKey);
-            if (xPadKeyView != null) {
-                xPadKeyView.bind(xPadKey);
+            XPadKeyViewHolder holder = getXPadKeyViewHolder(xPadKey);
+            if (holder != null) {
+                holder.bind(xPadKey);
             }
         }
 
@@ -109,26 +109,26 @@ public abstract class KeyboardViewBase extends RecyclerView {
         return this.layoutManager.getGridPaddingBottom();
     }
 
-    public XPadKeyViewHolder getXPadKeyView() {
+    public XPadKeyViewHolder getXPadKeyViewHolder() {
         XPadKey xPadKey = this.adapter.getXPadKey();
-        return getXPadKeyView(xPadKey);
+        return getXPadKeyViewHolder(xPadKey);
     }
 
-    private XPadKeyViewHolder getXPadKeyView(XPadKey xPadKey) {
-        return ((XPadKeyViewHolder) getVisibleKeyView(getItemViewByKey(xPadKey)));
+    private XPadKeyViewHolder getXPadKeyViewHolder(XPadKey xPadKey) {
+        return ((XPadKeyViewHolder) getVisibleKeyViewHolder(getItemViewByKey(xPadKey)));
     }
 
-    /** 找到指定坐标下可见的{@link  KeyViewHolder 按键视图} */
-    public KeyViewHolder<?, ?> findVisibleKeyViewUnderLoose(float x, float y) {
+    /** 找到指定坐标下可见的 {@link  KeyViewHolder} */
+    public KeyViewHolder<?, ?> findVisibleKeyViewHolderUnderLoose(float x, float y) {
         View child = this.layoutManager.findChildViewUnderLoose(x, y);
 
-        return getVisibleKeyView(child);
+        return getVisibleKeyViewHolder(child);
     }
 
-    private KeyViewHolder<?, ?> getVisibleKeyView(View view) {
-        KeyViewHolder<?, ?> keyView = view != null ? (KeyViewHolder<?, ?>) getChildViewHolder(view) : null;
+    private KeyViewHolder<?, ?> getVisibleKeyViewHolder(View view) {
+        KeyViewHolder<?, ?> holder = view != null ? (KeyViewHolder<?, ?>) getChildViewHolder(view) : null;
 
-        return keyView != null && !keyView.isHidden() ? keyView : null;
+        return holder != null && !holder.isHidden() ? holder : null;
     }
 
     protected View getItemViewByKey(Key<?> key) {
@@ -139,9 +139,9 @@ public abstract class KeyboardViewBase extends RecyclerView {
         int total = this.layoutManager.getChildCount();
         for (int i = 0; i < total; i++) {
             View view = this.layoutManager.getChildAt(i);
-            KeyViewHolder<?, ?> keyView = getVisibleKeyView(view);
+            KeyViewHolder<?, ?> holder = getVisibleKeyViewHolder(view);
 
-            if (keyView != null && keyView.getData().equals(key)) {
+            if (holder != null && holder.getData().equals(key)) {
                 return view;
             }
         }

@@ -103,7 +103,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
     }
 
     public XPadKeyViewHolder getXPadKeyView() {
-        return this.keyboardView.getXPadKeyView();
+        return this.keyboardView.getXPadKeyViewHolder();
     }
 
     public void disableSettingsBtn(boolean disabled) {

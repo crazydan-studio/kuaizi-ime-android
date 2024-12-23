@@ -41,9 +41,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_Input;
 
@@ -54,16 +54,16 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @date 2023-06-30
  */
 public class InputListViewBase extends RecyclerView implements ViewGestureDetector.Listener, InputMsgListener {
-    private final InputViewAdapter adapter;
-    private final InputViewLayoutManager layoutManager;
+    private final InputListViewAdapter adapter;
+    private final InputListViewLayoutManager layoutManager;
 
     private UserInputMsgListener listener;
 
     public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        this.adapter = new InputViewAdapter();
-        this.layoutManager = new InputViewLayoutManager(context);
+        this.adapter = new InputListViewAdapter();
+        this.layoutManager = new InputListViewLayoutManager(context);
 
         setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);

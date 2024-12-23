@@ -39,8 +39,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewAnimator;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewGestureListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewKeyAnimator;
 
 /**
  * {@link Keyboard 键盘}的视图
@@ -55,7 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewGestureListener;
 public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener, InputMsgListener {
     private final RecyclerViewGestureDetector gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
-    private final KeyViewAnimator animator;
+    private final KeyboardViewKeyAnimator animator;
 
     private Config config;
     private UserKeyMsgListener listener;
@@ -73,13 +73,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
         });
 
-        this.animator = new KeyViewAnimator();
+        this.animator = new KeyboardViewKeyAnimator();
         setItemAnimator(this.animator);
 
         this.gesture = new RecyclerViewGestureDetector();
         this.gesture.bind(this) //
                     // Note：以下监听的执行顺序与注册顺序一致
-                    .addListener(new KeyViewGestureListener(this)) //
+                    .addListener(new KeyboardViewGestureListener(this)) //
                     .addListener(this.gestureTrailer);
     }
 

@@ -25,14 +25,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
 
 /**
- * {@link InputViewHolder} 的 {@link RecyclerView} 适配器
+ * {@link InputListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>> {
+public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;

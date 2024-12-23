@@ -36,15 +36,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * {@link KeyViewHolder} 的 {@link RecyclerView} 适配器
+ * {@link KeyboardView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
+public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
     private static final int VIEW_TYPE_CHAR_KEY = 0;
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
@@ -59,7 +60,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
     private List<Key<?>> dataList = new ArrayList<>();
     private Integer themeResId;
 
-    public KeyViewAdapter(HexagonOrientation orientation) {
+    public KeyboardViewAdapter(HexagonOrientation orientation) {
         this.orientation = orientation;
     }
 
@@ -114,7 +115,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
             context = new ContextThemeWrapper(context, this.themeResId);
         }
 
-        return createKeyView(context, parent, viewType);
+        return createKeyViewHolder(context, parent, viewType);
     }
 
     public XPadKey getXPadKey() {
@@ -150,7 +151,7 @@ public class KeyViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
     }
 
     /** 注：创建的视图未附加到 root 上 */
-    private static KeyViewHolder<?, ?> createKeyView(Context context, ViewGroup root, int viewType) {
+    private static KeyViewHolder<?, ?> createKeyViewHolder(Context context, ViewGroup root, int viewType) {
         if (viewType == VIEW_TYPE_CTRL_KEY) {
             return new CtrlKeyViewHolder(inflateItemView(context, root, R.layout.key_ctrl_view));
         } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
