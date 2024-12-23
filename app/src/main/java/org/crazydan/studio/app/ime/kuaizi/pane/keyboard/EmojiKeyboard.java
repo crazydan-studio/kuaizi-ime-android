@@ -21,8 +21,8 @@ import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
@@ -50,8 +50,8 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    public void start(InputList inputList) {
-        start_Emoji_Choosing(inputList);
+    public void start(KeyboardContext context) {
+        start_Emoji_Choosing(context);
     }
 
     private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
@@ -73,37 +73,37 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
-        InputWordKey key = (InputWordKey) msg.data.key;
-
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         switch (msg.type) {
             case LongPress_Key_Tick:
             case SingleTap_Key: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
 
-                do_Single_Emoji_Inputting(inputList, key);
+                do_Single_Emoji_Inputting(context);
                 break;
             }
         }
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
+        CtrlKey key = context.key();
         if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
-            play_SingleTick_InputAudio(key);
+            play_SingleTick_InputAudio(context);
 
             CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
-            do_Emoji_Choosing(key, option.value());
+            do_Emoji_Choosing(context, option.value());
         }
     }
 
     /** 进入表情选择状态，并处理表情翻页 */
-    private void start_Emoji_Choosing(InputList inputList) {
+    private void start_Emoji_Choosing(KeyboardContext context) {
+        InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
@@ -120,22 +120,25 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
             group = stateData.getGroups().get(1);
         }
 
-        do_Emoji_Choosing(null, group);
+        do_Emoji_Choosing(context, group);
     }
 
-    private void do_Emoji_Choosing(Key<?> key, String group) {
+    private void do_Emoji_Choosing(KeyboardContext context, String group) {
         EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
         stateData.setGroup(group);
 
-        fire_InputCandidate_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(context);
     }
 
-    private void do_Single_Emoji_Inputting(InputList inputList, InputWordKey key) {
+    private void do_Single_Emoji_Inputting(KeyboardContext context) {
+        InputWordKey key = context.key();
+        InputList inputList = context.inputList;
         boolean directInputting = inputList.isEmpty();
-        if (!directInputting) {
-            confirm_or_New_InputList_Pending(inputList);
 
-            confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+        if (!directInputting) {
+            confirm_or_New_InputList_Pending(context);
+
+            confirm_InputList_Input_with_SingleKey_Only(context);
             return;
         }
 
@@ -146,6 +149,6 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         pending.setWord(word);
 
         // 直接提交输入
-        commit_InputList(inputList, false, false);
+        commit_InputList(context, false, false);
     }
 }

@@ -22,6 +22,7 @@ import java.util.Stack;
 
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -64,6 +65,8 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @date 2024-12-03
  */
 public class InputPane implements InputMsgListener, UserMsgListener, ConfigChangeListener, PinyinDict.Listener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private PinyinDict dict;
     private Config.Mutable config;
 
@@ -131,7 +134,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         this.inputList.clear();
         // 重置键盘
         if (this.keyboard != null) {
-            this.keyboard.reset();
+            KeyboardContext context = createKeyboardContext();
+            this.keyboard.reset(context);
         }
 
         fire_InputMsg(Keyboard_Exit_Done);
@@ -205,7 +209,11 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给 {@link Keyboard} */
     @Override
     public void onMsg(UserKeyMsg msg) {
-        this.keyboard.onMsg(this.inputList, msg);
+        // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息
+        Key<?> key = msg.data.key;
+        KeyboardContext context = createKeyboardContext().newWithKey(key);
+
+        this.keyboard.onMsg(context, msg);
     }
 
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
@@ -235,7 +243,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             case Input_Choose_Doing:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done: {
-                this.keyboard.onMsg(this.inputList, msg);
+                KeyboardContext context = createKeyboardContext();
+                this.keyboard.onMsg(context, msg);
                 break;
             }
             default: {
@@ -300,9 +309,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             ) //
         ) {
             KeyboardConfig config = createKeyboardConfig();
+            KeyboardContext context = createKeyboardContext();
             old.updateConfig(config);
 
-            old.restart(this.inputList);
+            old.reset(context);
             return null;
         }
 
@@ -329,11 +339,11 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         this.config.set(ConfigKey.prev_keyboard_type, oldType);
 
         KeyboardConfig config = createKeyboardConfig();
+        KeyboardContext context = createKeyboardContext();
         this.keyboard = createKeyboard(type);
         this.keyboard.updateConfig(config);
-        this.keyboard.setListener(this);
 
-        this.keyboard.start(this.inputList);
+        this.keyboard.start(context);
 
         return oldType;
     }
@@ -365,6 +375,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     public KeyboardConfig createKeyboardConfig() {
         return KeyboardConfig.from(this.config);
+    }
+
+    public KeyboardContext createKeyboardContext() {
+        return new KeyboardContext(this.inputList, this);
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================

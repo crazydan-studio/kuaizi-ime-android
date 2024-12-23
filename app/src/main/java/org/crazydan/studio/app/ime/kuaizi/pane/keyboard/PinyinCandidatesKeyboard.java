@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
@@ -61,8 +62,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    public void start(InputList inputList) {
-        start_InputCandidate_Choosing(inputList, null, false);
+    public void start(KeyboardContext context) {
+        start_InputCandidate_Choosing(context, false);
     }
 
     private PinyinKeyTable createKeyTable(InputList inputList) {
@@ -101,8 +102,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected boolean try_On_Common_UserKey_Msg(InputList inputList, UserKeyMsg msg) {
-        if (super.try_On_Common_UserKey_Msg(inputList, msg)) {
+    protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
+        if (super.try_On_Common_UserKey_Msg(context, msg)) {
             return true;
         }
 
@@ -111,32 +112,34 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
             return false;
         }
 
-        Key<?> key = msg.data.key;
+        Key<?> key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
             // Note: 高级过滤的翻页与普通翻页共享逻辑代码
-            on_InputCandidate_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
+            on_InputCandidate_Choose_Doing_PageFlipping_Msg(context, msg);
         }
         // Note: 部首和拼音过滤均为 CtrlKey 类型
         else if (key instanceof CtrlKey) {
-            on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(msg, (CtrlKey) key);
+            on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(context, msg);
         }
         return true;
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         // Note: 先做消息过滤，因为，不同的消息会携带不同类型的按键
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
-        InputWordKey key = (InputWordKey) msg.data.key;
+        InputWordKey key = context.key();
+        InputList inputList = context.inputList;
+
         if (key.isDisabled()) {
             return;
         }
 
-        play_SingleTick_InputAudio(key);
-        show_InputChars_Input_Popup(key);
+        play_SingleTick_InputAudio(context);
+        show_InputChars_Input_Popup(context);
 
         InputWord word = key.getWord();
         // 候选字列表中的表情作为新增插入，不对当前候选字做替换
@@ -152,34 +155,37 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         pending.setWord(word);
 
         // 确认候选字
-        confirm_InputList_Pending_InputCandidate(inputList, key);
+        confirm_InputList_Pending_InputCandidate(context);
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
+        CtrlKey key = context.key();
         switch (key.getType()) {
             case DropInput: {
-                play_SingleTick_InputAudio(key);
+                play_SingleTick_InputAudio(context);
 
-                delete_InputList_Selected(inputList, key);
+                delete_InputList_Selected(context);
 
-                exit_Keyboard(key);
+                exit_Keyboard(context);
                 break;
             }
             case ConfirmInput: {
-                play_SingleTick_InputAudio(key);
+                play_SingleTick_InputAudio(context);
 
-                confirm_InputList_Pending_InputCandidate(inputList, key);
+                confirm_InputList_Pending_InputCandidate(context);
                 break;
             }
             case Toggle_Pinyin_spell: {
-                play_SingleTick_InputAudio(key);
+                play_SingleTick_InputAudio(context);
 
+                InputList inputList = context.inputList;
                 CharInput pending = inputList.getPending();
+
                 CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
                 switch (option.value()) {
                     case ng:
@@ -193,12 +199,12 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
                         break;
                 }
 
-                start_InputCandidate_Choosing(inputList, key, true);
+                start_InputCandidate_Choosing(context, true);
                 break;
             }
             case Filter_PinyinCandidate_by_Spell: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
 
                 PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
 
@@ -207,13 +213,13 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
                 stateData.updateFilter(filter);
 
-                fire_InputCandidate_Choose_Doing(key);
+                fire_InputCandidate_Choose_Doing(context);
                 break;
             }
             case Filter_PinyinCandidate_advance: {
-                play_SingleTick_InputAudio(key);
+                play_SingleTick_InputAudio(context);
 
-                start_InputCandidate_Advance_Filtering(inputList, key);
+                start_InputCandidate_Advance_Filtering(context);
                 break;
             }
         }
@@ -222,7 +228,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
     // ===================== Start: 候选字选择 =====================
 
     /** 进入候选字选择状态，并处理候选字翻页 */
-    private void start_InputCandidate_Choosing(InputList inputList, Key<?> key, boolean pinyinChanged) {
+    private void start_InputCandidate_Choosing(KeyboardContext context, boolean pinyinChanged) {
+        InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
         PinyinKeyTable keyTable = createKeyTable(inputList);
@@ -277,17 +284,19 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         PinyinCandidateChooseStateData stateData = new PinyinCandidateChooseStateData(pending, allCandidates, pageSize);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
-        fire_InputCandidate_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(context);
     }
 
     /** 确认待输入的候选字。若存在下一个拼音输入，则自动切换到对该输入的候选字选择，否则，选中相邻的输入 */
-    private void confirm_InputList_Pending_InputCandidate(InputList inputList, Key<?> key) {
+    private void confirm_InputList_Pending_InputCandidate(KeyboardContext context) {
+        InputList inputList = context.inputList;
+
         CharInput pending = inputList.getPending();
         pending.markWordConfirmed();
 
         inputList.confirmPendingAndSelectNext();
 
-        fire_InputCandidate_Choose_Done(pending, key);
+        fire_InputCandidate_Choose_Done(context, pending);
 
         // 继续选择下一个拼音输入的候选字
         Input<?> selected = inputList.selectNextFirstMatched(Input::isPinyin);
@@ -300,9 +309,9 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         }
 
         if (!selected.isPinyin()) {
-            exit_Keyboard(key);
+            exit_Keyboard(context);
         } else {
-            choose_InputList_Input(inputList, selected);
+            choose_InputList_Input(context, selected);
         }
     }
 
@@ -342,7 +351,8 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
     // ====================== Start: 候选字的高级过滤 =========================
 
-    private void start_InputCandidate_Advance_Filtering(InputList inputList, Key<?> key) {
+    private void start_InputCandidate_Advance_Filtering(KeyboardContext context) {
+        InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
         PinyinCandidateChooseStateData prevStateData = (PinyinCandidateChooseStateData) this.state.data;
@@ -357,37 +367,38 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         stateData.updateFilter(filter);
 
         State state = new State(State.Type.InputCandidate_Advance_Filter_Doing, stateData, this.state);
-        change_State_To(state, key);
+        change_State_To(context, state);
 
-        fire_InputCandidate_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(context);
     }
 
     /** 高级过滤状态对 {@link CtrlKey} 的处理 */
-    private void on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(UserKeyMsg msg, CtrlKey key) {
+    private void on_InputCandidate_Advance_Filter_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
+        CtrlKey key = context.key();
         PinyinCandidateAdvanceFilterStateData stateData = (PinyinCandidateAdvanceFilterStateData) this.state.data;
         switch (key.getType()) {
             case Filter_PinyinCandidate_by_Spell:
             case Filter_PinyinCandidate_by_Radical: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
 
                 update_InputCandidate_Advance_Filter(stateData, key);
 
-                fire_InputCandidate_Choose_Doing(key);
+                fire_InputCandidate_Choose_Doing(context);
                 break;
             }
             case Confirm_PinyinCandidate_Filter: {
-                play_SingleTick_InputAudio(key);
+                play_SingleTick_InputAudio(context);
 
                 PinyinCandidateChooseStateData prevStateData
                         = (PinyinCandidateChooseStateData) this.state.previous.data;
                 prevStateData.updateFilter(stateData.getFilter());
 
-                exit_Keyboard(key);
+                exit_Keyboard(context);
                 break;
             }
         }

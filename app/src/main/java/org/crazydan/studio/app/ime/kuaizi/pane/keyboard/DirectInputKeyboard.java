@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
@@ -37,37 +38,41 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 public abstract class DirectInputKeyboard extends BaseKeyboard {
 
     @Override
-    public void onMsg(InputList inputList, InputMsg msg) {
+    public void onMsg(KeyboardContext context, InputMsg msg) {
+        InputList inputList = context.inputList;
+
         // Note: 在输入列表为空时，直输键盘无预处理过程，故不对输入列表事件做响应
         if (!inputList.isEmpty()) {
-            super.onMsg(inputList, msg);
+            super.onMsg(context, msg);
         }
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_On_Common_UserKey_Msg(inputList, msg)) {
+    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+        if (try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }
 
-        Key<?> key = msg.data.key;
+        Key<?> key = context.key();
         if (key instanceof CharKey) {
-            on_CharKey_Msg(inputList, msg, (CharKey) key);
+            on_CharKey_Msg(context, msg);
         } else if (key instanceof CtrlKey && !key.isDisabled()) {
-            on_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
+            on_CtrlKey_Msg(context, msg);
         }
     }
 
-    protected void on_CharKey_Msg(InputList inputList, UserKeyMsg msg, CharKey key) {
+    protected void on_CharKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         // 单字符直接输入
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
+        InputList inputList = context.inputList;
         boolean directInputting = inputList.isEmpty();
-        start_Single_Key_Inputting(inputList, key, (UserSingleTapMsgData) msg.data, directInputting);
+
+        start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, directInputting);
     }
 
-    protected void on_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
     }
 }

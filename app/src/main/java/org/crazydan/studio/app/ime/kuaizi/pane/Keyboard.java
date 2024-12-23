@@ -21,7 +21,6 @@ import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 
 /**
@@ -35,8 +34,6 @@ public interface Keyboard {
     /** 获取当前键盘类型 */
     Type getType();
 
-    KeyFactory getKeyFactory(InputList inputList);
-
     /**
      * 更新配置
      * <p/>
@@ -46,30 +43,27 @@ public interface Keyboard {
      */
     boolean updateConfig(KeyboardConfig config);
 
+    /** 获取当前的按键布局 */
+    KeyFactory getKeyFactory(InputList inputList);
+
     // ==========================================================
 
     /** 启动 */
-    void start(InputList inputList);
-
-    /** 重新启动 */
-    void restart(InputList inputList);
+    void start(KeyboardContext context);
 
     /** 重置 */
-    void reset();
+    void reset(KeyboardContext context);
 
     /** 销毁 */
     void destroy();
 
     // ==========================================================
 
-    /** 注册 {@link InputMsg} 消息监听 */
-    void setListener(InputMsgListener listener);
-
     /** 响应来自 {@link InputList} 的 {@link InputMsg} 消息 */
-    void onMsg(InputList inputList, InputMsg msg);
+    void onMsg(KeyboardContext context, InputMsg msg);
 
     /** 响应 {@link UserKeyMsg} 消息 */
-    void onMsg(InputList inputList, UserKeyMsg msg);
+    void onMsg(KeyboardContext context, UserKeyMsg msg);
 
     // ==========================================================
 

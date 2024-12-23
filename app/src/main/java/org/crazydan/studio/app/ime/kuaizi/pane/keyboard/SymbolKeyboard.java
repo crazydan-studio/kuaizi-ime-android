@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
@@ -47,11 +48,12 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    public void start(InputList inputList) {
+    public void start(KeyboardContext context) {
+        InputList inputList = context.inputList;
         Input<?> selected = inputList.getSelected();
         boolean onlyPair = selected != null && !selected.isGap() && ((CharInput) selected).hasPair();
 
-        start_Symbol_Choosing(inputList, onlyPair);
+        start_Symbol_Choosing(context, onlyPair);
     }
 
     private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
@@ -70,39 +72,40 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         boolean continuous = false;
 
-        SymbolKey key = (SymbolKey) msg.data.key;
         switch (msg.type) {
             case LongPress_Key_Tick:
                 continuous = true;
             case SingleTap_Key: {
-                play_SingleTick_InputAudio(key);
-                show_InputChars_Input_Popup(key);
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
 
-                do_Single_Symbol_Inputting(inputList, key, continuous);
+                do_Single_Symbol_Inputting(context, continuous);
                 break;
             }
         }
     }
 
     @Override
-    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;
         }
 
+        CtrlKey key = context.key();
         if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
-            play_SingleTick_InputAudio(key);
+            play_SingleTick_InputAudio(context);
 
             CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();
-            do_Symbol_Choosing(key, option.value());
+            do_Symbol_Choosing(context, option.value());
         }
     }
 
     /** 进入符号选择状态，并处理符号翻页 */
-    private void start_Symbol_Choosing(InputList inputList, boolean onlyPair) {
+    private void start_Symbol_Choosing(KeyboardContext context, boolean onlyPair) {
+        InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
@@ -116,32 +119,34 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
             group = SymbolGroup.han;
         }
 
-        do_Symbol_Choosing(null, group);
+        do_Symbol_Choosing(context, group);
     }
 
-    private void do_Symbol_Choosing(Key<?> key, SymbolGroup group) {
+    private void do_Symbol_Choosing(KeyboardContext context, SymbolGroup group) {
         SymbolChooseStateData stateData = (SymbolChooseStateData) this.state.data;
         stateData.setGroup(group);
 
-        fire_InputCandidate_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(context);
     }
 
-    private void do_Single_Symbol_Inputting(InputList inputList, SymbolKey key, boolean continuousInput) {
+    private void do_Single_Symbol_Inputting(KeyboardContext context, boolean continuousInput) {
+        SymbolKey key = context.key();
+        InputList inputList = context.inputList;
         boolean directInputting = inputList.isEmpty();
         boolean pairKey = key.isPair();
 
         if (!directInputting) {
             if (pairKey) {
-                prepare_for_PairSymbol_Inputting(inputList, (Symbol.Pair) key.getSymbol());
+                prepare_for_PairSymbol_Inputting(context, (Symbol.Pair) key.getSymbol());
 
-                confirm_InputList_Pending(inputList, key);
+                confirm_InputList_Pending(context);
 
                 // Note：配对符号输入后不再做连续输入，退出当前键盘
-                exit_Keyboard(key);
+                exit_Keyboard(context);
             } else {
-                confirm_or_New_InputList_Pending(inputList);
+                confirm_or_New_InputList_Pending(context);
 
-                confirm_InputList_Input_with_SingleKey_Only(inputList, key);
+                confirm_InputList_Input_with_SingleKey_Only(context);
             }
             return;
         }
@@ -150,31 +155,32 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         if (pairKey) {
             Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
 
-            prepare_for_PairSymbol_Inputting(inputList, symbol);
+            prepare_for_PairSymbol_Inputting(context, symbol);
         } else {
             pending.appendKey(key);
             pending.clearPair();
         }
 
         // 直接提交输入
-        commit_InputList(inputList, false, false, pairKey);
+        commit_InputList(context, false, false, pairKey);
 
         // Note：非连续输入的情况下，配对符号输入后不再做连续输入，退出当前键盘
         if (pairKey && !continuousInput) {
-            exit_Keyboard(key);
+            exit_Keyboard(context);
         }
     }
 
-    private void prepare_for_PairSymbol_Inputting(InputList inputList, Symbol.Pair symbol) {
+    private void prepare_for_PairSymbol_Inputting(KeyboardContext context, Symbol.Pair symbol) {
         String left = symbol.left;
         String right = symbol.right;
 
-        prepare_for_PairKey_Inputting(inputList,
+        prepare_for_PairKey_Inputting(context,
                                       () -> SymbolKey.create(Symbol.single(left)),
                                       () -> SymbolKey.create(Symbol.single(right)));
     }
 
-    private void prepare_for_PairKey_Inputting(InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right) {
+    private void prepare_for_PairKey_Inputting(KeyboardContext context, Supplier<Key<?>> left, Supplier<Key<?>> right) {
+        InputList inputList = context.inputList;
         Input<?> selected = inputList.getSelected();
 
         Key<?> leftKey = left.get();

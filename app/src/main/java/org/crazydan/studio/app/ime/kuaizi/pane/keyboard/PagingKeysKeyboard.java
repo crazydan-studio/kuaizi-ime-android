@@ -17,8 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.PagingStateData;
@@ -41,39 +41,40 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputCand
 public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
     @Override
-    public void reset() {
-        // Note: 分页键盘无复位状态，直接等待新的 start 调用即可
+    public void reset(KeyboardContext context) {
+        // Note: 分页键盘无复位状态，直接重启即可
+        start(context);
     }
 
     @Override
-    protected void change_State_to_Init(Key<?> key) {
+    protected void change_State_to_Init(KeyboardContext context) {
         // Note: 分页键盘没有初始状态，直接退出即可
-        exit_Keyboard(key);
+        exit_Keyboard(context);
     }
 
     @Override
-    public void onMsg(InputList inputList, UserKeyMsg msg) {
-        if (try_On_Common_UserKey_Msg(inputList, msg)) {
+    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+        if (try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }
         if (this.state.type != State.Type.InputCandidate_Choose_Doing) {
             return;
         }
 
-        Key<?> key = msg.data.key;
+        Key<?> key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
-            on_InputCandidate_Choose_Doing_PageFlipping_Msg(inputList, msg, key);
+            on_InputCandidate_Choose_Doing_PageFlipping_Msg(context, msg);
         } else {
             if (key instanceof CtrlKey) {
-                on_InputCandidate_Choose_Doing_CtrlKey_Msg(inputList, msg, (CtrlKey) key);
+                on_InputCandidate_Choose_Doing_CtrlKey_Msg(context, msg);
             } else if (!key.isDisabled()) {
-                on_InputCandidate_Choose_Doing_PagingKey_Msg(inputList, msg);
+                on_InputCandidate_Choose_Doing_PagingKey_Msg(context, msg);
             }
         }
     }
 
     /** 响应翻页消息，以根据 {@link UserKeyMsg} 更新 {@link PagingStateData 分页数据} */
-    protected void on_InputCandidate_Choose_Doing_PageFlipping_Msg(InputList inputList, UserKeyMsg msg, Key<?> key) {
+    protected void on_InputCandidate_Choose_Doing_PageFlipping_Msg(KeyboardContext context, UserKeyMsg msg) {
         PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
         UserFingerFlippingMsgData msgData = (UserFingerFlippingMsgData) msg.data;
 
@@ -81,27 +82,27 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
         boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
         boolean needPaging = pageUp ? stateData.nextPage() : stateData.prevPage();
         if (needPaging) {
-            play_PageFlip_InputAudio();
+            play_PageFlip_InputAudio(context);
         }
 
-        fire_InputCandidate_Choose_Doing(key);
+        fire_InputCandidate_Choose_Doing(context);
     }
 
     /** 响应在翻页数据按键上的消息 */
-    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(InputList inputList, UserKeyMsg msg) {}
+    protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(KeyboardContext context, UserKeyMsg msg) {}
 
     /** 响应在控制按键上的消息 */
-    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(InputList inputList, UserKeyMsg msg, CtrlKey key) {}
+    protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {}
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Doing} 消息 */
-    protected void fire_InputCandidate_Choose_Doing(Key<?> key) {
+    protected void fire_InputCandidate_Choose_Doing(KeyboardContext context) {
         PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
 
-        fire_Common_InputMsg(InputCandidate_Choose_Doing, key, stateData.input);
+        fire_Common_InputMsg(context, InputCandidate_Choose_Doing, stateData.input);
     }
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Done} 消息 */
-    protected void fire_InputCandidate_Choose_Done(CharInput input, Key<?> key) {
-        fire_Common_InputMsg(InputCandidate_Choose_Done, key, input);
+    protected void fire_InputCandidate_Choose_Done(KeyboardContext context, CharInput input) {
+        fire_Common_InputMsg(context, InputCandidate_Choose_Done, input);
     }
 }

@@ -33,6 +33,9 @@ public class ExerciseStepListView extends RecyclerView {
     public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
+        // 禁用动画，以避免练习题在切换过程中出现残影
+        setItemAnimator(null);
+
         this.adapter = new ExerciseStepListViewAdapter();
         setAdapter(this.adapter);
 
