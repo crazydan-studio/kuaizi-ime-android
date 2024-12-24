@@ -72,7 +72,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     private Keyboard keyboard;
     private InputList inputList;
     /** 切换前的主键盘类型 */
-    private Keyboard.Type prevMainKeyboardType;
+    private Keyboard.Type prevMasterKeyboardType;
 
     private InputMsgListener listener;
 
@@ -150,7 +150,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         this.config = null;
         this.keyboard = null;
         this.inputList = null;
-        this.prevMainKeyboardType = null;
+        this.prevMasterKeyboardType = null;
         this.listener = null;
     }
 
@@ -266,10 +266,14 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */
     private void on_Keyboard_Switch_Doing_Msg(KeyboardSwitchMsgData data) {
-        Keyboard.Type type = data.type != null ? data.type : this.prevMainKeyboardType;
-        assert type != null;
+        Keyboard.Type newType = data.type != null ? data.type : this.prevMasterKeyboardType;
+        assert newType != null;
 
-        this.prevMainKeyboardType = switchKeyboardTo(type);
+        boolean prevMaster = this.keyboard != null && this.keyboard.isMaster();
+        Keyboard.Type prevType = switchKeyboardTo(newType);
+        if (prevMaster) {
+            this.prevMasterKeyboardType = prevType;
+        }
 
         fire_InputMsg(Keyboard_Switch_Done, data);
     }
@@ -289,25 +293,25 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
      *
      * @return 切换前的键盘类型，若为 null，则表示为首次创建键盘，或者，未发生键盘切换
      */
-    private Keyboard.Type switchKeyboardTo(Keyboard.Type type) {
-        Keyboard old = this.keyboard;
-        Keyboard.Type oldType = getKeyboardType();
+    private Keyboard.Type switchKeyboardTo(Keyboard.Type newType) {
+        Keyboard current = this.keyboard;
+        Keyboard.Type currentType = getKeyboardType();
 
         // 保持键盘不变，仅需重置键盘即可
-        if (oldType != null //
-            && (oldType == type //
-                || type == Keyboard.Type.Keep_Current //
+        if (currentType != null //
+            && (currentType == newType //
+                || newType == Keyboard.Type.Keep_Current //
             ) //
         ) {
             KeyboardConfig config = createKeyboardConfig();
             KeyboardContext context = createKeyboardContext();
-            old.updateConfig(config);
+            current.updateConfig(config);
 
-            old.reset(context);
+            current.reset(context);
             return null;
         }
 
-        switch (type) {
+        switch (newType) {
             // 首次切换到本输入法时的情况
             case Keep_Current:
                 // 切换本输入法到不同的系统键盘时的情况
@@ -316,24 +320,24 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
                 ImeSubtype imeSubtype = this.config.get(ConfigKey.ime_subtype);
 
                 if (imeSubtype == ImeSubtype.latin) {
-                    type = Keyboard.Type.Latin;
+                    newType = Keyboard.Type.Latin;
                 } else {
-                    type = Keyboard.Type.Pinyin;
+                    newType = Keyboard.Type.Pinyin;
                 }
                 break;
             }
         }
 
-        this.config.set(ConfigKey.prev_keyboard_type, oldType);
+        this.config.set(ConfigKey.prev_keyboard_type, currentType);
 
         KeyboardConfig config = createKeyboardConfig();
         KeyboardContext context = createKeyboardContext();
-        this.keyboard = createKeyboard(type);
+        this.keyboard = createKeyboard(newType);
         this.keyboard.updateConfig(config);
 
         this.keyboard.start(context);
 
-        return oldType;
+        return currentType;
     }
 
     private Keyboard createKeyboard(Keyboard.Type type) {

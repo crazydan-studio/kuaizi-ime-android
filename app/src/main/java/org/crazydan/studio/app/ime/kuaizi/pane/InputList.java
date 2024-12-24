@@ -122,7 +122,8 @@ public class InputList implements UserInputMsgListener {
             case SingleTap_Btn_Cancel_Clean_InputList: {
                 cancelDelete();
 
-                fire_InputMsg(InputList_Cleaned_Cancel_Done, null);
+                Input<?> input = getSelected();
+                fire_InputMsg(InputList_Cleaned_Cancel_Done, input);
                 break;
             }
         }
