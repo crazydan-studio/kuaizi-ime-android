@@ -215,16 +215,19 @@ public class Exercise implements InputMsgListener {
         }
 
         Key<?> key = msg.data.key;
-        this.log.debug("On Input message: %s - %s", msg.type, key);
+        this.log.debug("Got %s %s: key - %s", msg.getClass().getSimpleName(), msg.type, key);
 
         switch (msg.type) {
             case InputChars_Input_Doing:
                 if (key == null || key.getText() == null) {
                     return;
-                } else {
-                    break;
                 }
+                break;
             case Keyboard_State_Change_Done:
+                if (key == null) {
+                    return;
+                }
+                break;
             case Editor_Range_Select_Doing:
             case Editor_Cursor_Move_Doing:
             case InputList_Committed_Revoke_Doing:
@@ -242,7 +245,7 @@ public class Exercise implements InputMsgListener {
             }
         }
 
-        this.log.debug("Pass Input message %s to active step", msg.type);
+        this.log.debug("Pass %s %s to the active step", msg.getClass().getSimpleName(), msg.type);
         current.onMsg(msg);
     }
 

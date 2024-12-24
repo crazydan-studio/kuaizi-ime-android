@@ -59,6 +59,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     private InputPaneView inputPaneView;
 
     private int prevFieldId;
+    /** 记录可撤回输入的位置信息 */
     private EditorSelection editorSelection;
 
     /** 系统输入法切换到本输入法时调用 */
@@ -229,28 +230,39 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
 
         switch (msg.type) {
             case InputList_Commit_Doing: {
+                this.editorSelection = null;
+
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
                 commitText(d.text, d.replacements);
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
                 revokeTextCommitting();
+                this.editorSelection = null;
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
+                this.editorSelection = null;
+
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
+                this.editorSelection = null;
+
                 moveCursor((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Range_Select_Doing: {
+                this.editorSelection = null;
+
                 selectText((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Edit_Doing: {
+                this.editorSelection = null;
+
                 EditorEditMsgData d = (EditorEditMsgData) msg.data;
                 editText(d.action);
                 break;
@@ -344,7 +356,6 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         if (selection == null) {
             return;
         }
-        this.editorSelection = null;
 
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
@@ -361,7 +372,6 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         if (ic == null) {
             return;
         }
-        this.editorSelection = null;
 
         // Note: 假设替换字符的长度均相同
         CharSequence raw = ic.getTextBeforeCursor(text.length(), 0);

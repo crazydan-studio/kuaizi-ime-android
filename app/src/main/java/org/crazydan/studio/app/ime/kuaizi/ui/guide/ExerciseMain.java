@@ -625,72 +625,80 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 continue;
             }
 
+            boolean useUpperCase = Character.isUpperCase(ch);
             Key<?> key_char = keyTable.level0CharKey(String.valueOf(ch).toLowerCase());
 
-            if (Character.isUpperCase(ch)) {
-                exercise.newStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入大写字母"
-                                 + " <span style=\"color:#ed4c67;\">%s</span>；", key_char, ch) //
-                        .action((msg) -> {
-                            if (msg.type == InputMsgType.InputChars_Input_Doing) {
+            exercise.newStep(useUpperCase
+                             ? "请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入大写字母"
+                               + " <span style=\"color:#ed4c67;\">%s</span>；"
+                             : "请点击按键%s以输入小写字母 <span style=\"color:#ed4c67;\">%s</span>；", key_char, ch) //
+                    .action((msg) -> {
+                        switch (msg.type) {
+                            case Keyboard_Switch_Done: {
+                                KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                                if (data.type != Keyboard.Type.Pinyin) {
+                                    showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字母");
+                                }
+                                return;
+                            }
+                            case InputChars_Input_Doing: {
                                 InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
                                 Key<?> key = data.key;
+                                boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
+                                                  && key.getText().equals(String.valueOf(ch));
 
-                                if (data.inputMode != InputCharsInputMsgData.InputMode.tap //
-                                    || !key.getText().equalsIgnoreCase(key_char.getText()) //
-                                ) {
-                                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
-                                                + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_char.getText());
-                                } else if (key.getText().equals(String.valueOf(ch))) {
+                                if (matched) {
                                     exercise.gotoNextStep();
                                 }
-                            } else {
-                                showWarning("请按当前步骤的指导要求输入字母"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>", ch);
-                            }
-                        });
-            } else {
-                exercise.newStep("请点击按键%s以输入小写字母 <span style=\"color:#ed4c67;\">%s</span>；",
-                                 key_char,
-                                 ch) //
-                        .action((msg) -> {
-                            if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key<?> key = msg.data.key;
-
-                                if (((InputCharsInputMsgData) msg.data).inputMode
-                                    != InputCharsInputMsgData.InputMode.tap //
-                                    || !key.getText().equals(key_char.getText())) {
-                                    showWarning("请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
+                                // 若点击的不是预期按键，则显示提示信息
+                                else if (!key.getText().equalsIgnoreCase(key_char.getText())) {
+                                    showWarning(useUpperCase
+                                                ? "请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                                                  + "按键 <span style=\"color:#ed4c67;\">%s</span>"
+                                                : "请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
                                                 key_char.getText());
-                                } else {
-                                    exercise.gotoNextStep();
                                 }
-                            } else {
-                                showWarning("请按当前步骤的指导要求输入字母 <span style=\"color:#ed4c67;\">%s</span>",
-                                            ch);
+                                return;
                             }
-                        });
-            }
+                        }
+
+                        showWarning("请按当前步骤的指导要求输入字母 <span style=\"color:#ed4c67;\">%s</span>", ch);
+                    });
         }
 
-        exercise.newStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入英文标点"
-                         + " <span style=\"color:#ed4c67;\">!</span>；", key_symbol_tanhao) //
+        String tanhao = "!";
+        exercise.newStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入字符"
+                         + " <span style=\"color:#ed4c67;\">%s</span>；", key_symbol_tanhao, tanhao) //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                        InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
-                        Key<?> key = data.key;
-
-                        if (data.inputMode != InputCharsInputMsgData.InputMode.tap //
-                            || (!key.getText().equals("!") //
-                                && !key.getText().equals(key_symbol_tanhao.getText())) //
-                        ) {
-                            showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
-                                        + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.getText());
-                        } else if (key.getText().equals("!")) {
-                            exercise.gotoNextStep();
+                    switch (msg.type) {
+                        case Keyboard_Switch_Done: {
+                            KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                            if (data.type != Keyboard.Type.Pinyin) {
+                                showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字符");
+                            }
+                            return;
                         }
-                    } else if (msg.type != InputMsgType.InputChars_Input_Done) {
-                        showWarning("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">!</span>");
+                        case InputChars_Input_Done:
+                        case InputChars_Input_Doing: {
+                            InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                            Key<?> key = data.key;
+                            boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
+                                              && key.getText().equals(tanhao);
+
+                            if (matched) {
+                                exercise.gotoNextStep();
+                            }
+                            // 若点击的不是预期按键，则显示提示信息
+                            else if (!key.getText().equals(key_symbol_tanhao.getText())) {
+                                showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                                            + "按键 <span style=\"color:#ed4c67;\">%s</span>",
+                                            key_symbol_tanhao.getText());
+                            }
+                            return;
+                        }
                     }
+
+                    showWarning("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">%s</span>", tanhao);
                 });
 
         add_Common_Input_Committing_Step(exercise, key_ctrl_commit);
@@ -1064,24 +1072,37 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请将手指放在下方键盘的按键%s上，并让手指贴着屏幕从该按键上滑出；", key_level_0) //
                 .name("input_level_0") //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                        InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
-                        Key<?> key = data.key;
-
-                        if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
-                            showWarning("请按当前步骤的指导要求从按键"
-                                        + " <span style=\"color:#ed4c67;\">%s</span>"
-                                        + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
-                        } else if (key.getLabel().equals(key_level_0.getLabel())) {
-                            exercise.gotoNextStep();
-                        } else {
-                            showWarning("请按当前步骤的指导要求从按键"
-                                        + " <span style=\"color:#ed4c67;\">%s</span>"
-                                        + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
+                    switch (msg.type) {
+                        case Keyboard_State_Change_Done: {
+                            return;
                         }
-                    } else if (msg.type != InputMsgType.Keyboard_State_Change_Done) {
-                        showWarning("请按当前步骤的指导要求输入拼音");
+                        case Keyboard_Switch_Done: {
+                            KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                            if (data.type != Keyboard.Type.Pinyin) {
+                                showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入拼音");
+                            }
+                            return;
+                        }
+                        case InputChars_Input_Doing: {
+                            InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                            Key<?> key = data.key;
+
+                            if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
+                                showWarning("请按当前步骤的指导要求从按键"
+                                            + " <span style=\"color:#ed4c67;\">%s</span>"
+                                            + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
+                            } else if (key.getLabel().equals(key_level_0.getLabel())) {
+                                exercise.gotoNextStep();
+                            } else {
+                                showWarning("请按当前步骤的指导要求从按键"
+                                            + " <span style=\"color:#ed4c67;\">%s</span>"
+                                            + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
+                            }
+                            return;
+                        }
                     }
+
+                    showWarning("请按当前步骤的指导要求输入拼音");
                 });
 
         if (key_level_2 == null) {
@@ -1097,7 +1118,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
                                                 + " 上，再就地释放手指", key_level_1.getLabel());
                                 }
-                                break;
+                                return;
                             }
                             case InputChars_Input_Done: {
                                 Key<?> key = msg.data.key;
@@ -1109,7 +1130,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     showWarning("当前输入的拼音与练习内容不符，请重新开始本练习");
                                     exercise.restart();
                                 }
-                                break;
+                                return;
                             }
                         }
                     });
@@ -1145,7 +1166,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                                 + " 上，再从其上滑出", key_level_1.getLabel());
                                     exercise.gotoStep("input_level_1");
                                 }
-                                break;
+                                return;
                             }
                             case InputChars_Input_Done: {
                                 Key<?> key = msg.data.key;
@@ -1157,7 +1178,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     showWarning("当前输入的拼音与练习内容不符，请重新开始本练习");
                                     exercise.restart();
                                 }
-                                break;
+                                return;
                             }
                         }
                     });
@@ -1168,6 +1189,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .name("select_auto_word") //
                 .action((msg) -> {
                     switch (msg.type) {
+                        case Keyboard_Switch_Done:
                         case Keyboard_State_Change_Done: {
                             return;
                         }

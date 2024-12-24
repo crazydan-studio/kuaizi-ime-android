@@ -43,6 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolComm
  * @date 2023-07-16
  */
 public class ExerciseEditText extends AppCompatEditText implements InputMsgListener {
+    /** 记录可撤回输入的位置信息 */
     private EditorSelection editorSelection;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
@@ -57,28 +58,39 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
+                this.editorSelection = null;
+
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
                 commitText(d.text, d.replacements);
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
                 revokeTextCommitting();
+                this.editorSelection = null;
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
+                this.editorSelection = null;
+
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
+                this.editorSelection = null;
+
                 moveCursor(((EditorCursorMsgData) msg.data).anchor);
                 break;
             }
             case Editor_Range_Select_Doing: {
+                this.editorSelection = null;
+
                 selectText(((EditorCursorMsgData) msg.data).anchor);
                 break;
             }
             case Editor_Edit_Doing: {
+                this.editorSelection = null;
+
                 EditorEditMsgData d = (EditorEditMsgData) msg.data;
                 editText(d.action);
                 break;
@@ -87,8 +99,6 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     }
 
     private void commitText(CharSequence text, List<String> replacements) {
-        this.editorSelection = null;
-
         EditorSelection before = EditorSelection.from(this);
 
         int start = before.start;
@@ -202,7 +212,6 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         if (selection == null) {
             return;
         }
-        this.editorSelection = null;
 
         replaceText(selection.content, selection.origStart, selection.end);
         setSelection(selection.origStart, selection.origEnd);
