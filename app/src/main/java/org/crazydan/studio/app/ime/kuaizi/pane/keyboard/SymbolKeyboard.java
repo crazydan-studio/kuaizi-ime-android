@@ -110,7 +110,7 @@ public class SymbolKeyboard extends PagingKeysKeyboard {
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseStateData stateData = new SymbolChooseStateData(pending, pageSize, onlyPair);
-        this.state = new State(State.Type.Symbol_Choose_Doing, stateData);
+        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
         if (this.config.prevType == Type.Pinyin) {

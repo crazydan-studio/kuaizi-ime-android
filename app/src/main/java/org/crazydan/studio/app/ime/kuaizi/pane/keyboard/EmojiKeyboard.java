@@ -110,7 +110,7 @@ public class EmojiKeyboard extends PagingKeysKeyboard {
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
 
         EmojiChooseStateData stateData = new EmojiChooseStateData(pending, emojis, pageSize);
-        this.state = new State(State.Type.Emoji_Choose_Doing, stateData);
+        this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         String group = null;
         // 若默认分组（常用）的数据为空，则切换到第二个分组

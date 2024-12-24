@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
- * {@link State.Type#Symbol_Choose_Doing} 状态数据
+ * 符号选择 {@link State.Type#InputCandidate_Choose_Doing} 的状态数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-24

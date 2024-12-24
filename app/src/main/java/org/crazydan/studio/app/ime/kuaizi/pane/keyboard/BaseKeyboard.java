@@ -215,14 +215,9 @@ public abstract class BaseKeyboard implements Keyboard {
                         return true;
                     }
                     case DropInput: {
-                        switch (this.state.type) {
-                            case Emoji_Choose_Doing:
-                            case Symbol_Choose_Doing:
-                                play_SingleTick_InputAudio(context);
-                                delete_InputList_Selected(context);
-                                return true;
-                        }
-                        break;
+                        play_SingleTick_InputAudio(context);
+                        delete_InputList_Selected(context);
+                        return true;
                     }
                     case RevokeInput: {
                         play_SingleTick_InputAudio(context);
@@ -363,6 +358,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         switch (action) {
             case noop:
+            case select_all:
             case copy:
                 // 不影响输入撤回的操作，则无需清空待撤回输入数据
                 break;
