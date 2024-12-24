@@ -56,19 +56,15 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
             view.setText(title);
         });
 
-        // Note: 仅在初始化时填充待编辑内容
-        whenViewReady(this.textView, (view) -> {
-            String text = data.sampleText;
-            view.setText(text);
-            // 将光标移到内容尾部
-            view.setSelection(text != null ? text.length() : 0);
-        });
-
+        resetTextView(data);
         updateSteps(data);
     }
 
     /** 激活指定位置的步骤 */
-    public void activateStep(Exercise.ViewData data, int stepIndex) {
+    public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
+        if (needToReset) {
+            resetTextView(data);
+        }
         updateSteps(data);
 
         this.stepListView.scrollTo(stepIndex);
@@ -81,6 +77,15 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
     public void updateSteps(Exercise.ViewData data) {
         whenViewReady(this.stepListView, (view) -> {
             view.update(data);
+        });
+    }
+
+    private void resetTextView(Exercise.ViewData data) {
+        whenViewReady(this.textView, (view) -> {
+            String text = data.sampleText;
+            view.setText(text);
+            // 将光标移到内容尾部
+            view.setSelection(text != null ? text.length() : 0);
         });
     }
 }

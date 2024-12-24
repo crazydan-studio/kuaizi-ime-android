@@ -47,7 +47,7 @@ public class KeyboardContext {
         return new KeyboardContext(this.inputList, this.listener, key);
     }
 
-    /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键 */
+    /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
     public <T extends Key<?>> T key() {
         return (T) this.key;
     }

@@ -91,7 +91,7 @@ public class ExerciseListView extends RecyclerPageView implements InputMsgListen
                 ExerciseStepStartDoneMsgData data = (ExerciseStepStartDoneMsgData) msg.data;
 
                 ExerciseViewHolder holder = getActivePageViewHolder();
-                holder.activateStep(data.exercise.createViewData(), data.stepIndex);
+                holder.activateStep(data.exercise.createViewData(), data.stepIndex, data.restarted);
                 break;
             }
         }

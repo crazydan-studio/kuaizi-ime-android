@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -75,6 +76,8 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
  * @date 2023-06-28
  */
 public abstract class BaseKeyboard implements Keyboard {
+    protected final Logger log = Logger.getLogger(getClass());
+
     protected KeyboardConfig config;
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
 
@@ -170,6 +173,7 @@ public abstract class BaseKeyboard implements Keyboard {
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         Key<?> key = context.key();
         if (key == null) {
+            this.log.debug("%s: No key for %s", msg.getClass().getSimpleName(), msg.type);
             return true;
         }
 

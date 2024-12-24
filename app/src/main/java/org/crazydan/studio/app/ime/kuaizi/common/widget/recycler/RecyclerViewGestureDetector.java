@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -62,8 +61,7 @@ public class RecyclerViewGestureDetector extends ViewGestureDetector implements 
             }
         }
 
-        Log.d(getClass().getSimpleName(),
-              String.format("%s: action - %s", rv.getClass().getSimpleName(), getActionName(e)));
+        //this.log.debug("%s: fire event %s", rv.getClass().getSimpleName(), getActionName(e));
 
         onTouchEvent(e);
     }

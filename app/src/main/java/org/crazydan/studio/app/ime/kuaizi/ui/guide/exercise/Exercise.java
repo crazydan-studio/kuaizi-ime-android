@@ -166,6 +166,7 @@ public class Exercise implements InputMsgListener {
     }
 
     private void gotoStep(ExerciseStep step) {
+        boolean restarted = this.currentStep == null;
         if (this.currentStep != null) {
             this.currentStep.reset();
         }
@@ -175,7 +176,7 @@ public class Exercise implements InputMsgListener {
             this.currentStep.activate();
         }
 
-        on_Step_Start_Done_Msg(this.currentStep);
+        on_Step_Start_Done_Msg(this.currentStep, restarted);
     }
 
     private ExerciseStep getRunnableStep(String name) {
@@ -224,11 +225,6 @@ public class Exercise implements InputMsgListener {
                     break;
                 }
             case Keyboard_State_Change_Done:
-//                if (key == null) {
-//                    return;
-//                } else {
-//                    break;
-//                }
             case Editor_Range_Select_Doing:
             case Editor_Cursor_Move_Doing:
             case InputList_Committed_Revoke_Doing:
@@ -250,12 +246,13 @@ public class Exercise implements InputMsgListener {
         current.onMsg(msg);
     }
 
-    private void on_Step_Start_Done_Msg(ExerciseStep step) {
+    private void on_Step_Start_Done_Msg(ExerciseStep step, boolean restarted) {
         if (this.listener == null || step == null) {
             return;
         }
 
-        ExerciseMsgData msgData = new ExerciseStepStartDoneMsgData(this, this.steps.indexOf(step));
+        int stepIndex = this.steps.indexOf(step);
+        ExerciseMsgData msgData = new ExerciseStepStartDoneMsgData(this, stepIndex, restarted);
         ExerciseMsg msg = new ExerciseMsg(ExerciseMsgType.Step_Start_Done, msgData);
         this.listener.onMsg(msg);
     }

@@ -28,6 +28,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
 
 /**
@@ -45,6 +46,8 @@ public class ViewGestureDetector {
     private static final long DOUBLE_TAP_TIMEOUT_MILLS = 300;
     /** 确定滑动的超时时间 */
     private static final long FLIPPING_TIMEOUT_MILLS = 400;
+
+    protected final Logger log = Logger.getLogger(getClass());
 
     private final Set<Listener> listeners = new LinkedHashSet<>();
 

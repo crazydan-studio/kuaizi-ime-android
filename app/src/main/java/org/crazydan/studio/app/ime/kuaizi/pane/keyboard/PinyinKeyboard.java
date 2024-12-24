@@ -139,11 +139,12 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(KeyboardContext context, UserKeyMsg msg) {
-        if (try_On_Common_UserKey_Msg(context, msg)) {
+        Key<?> key = context.key();
+        // Note: 在滑动结束时可能无关联按键，此时需继续由不同的状态处理该结束消息
+        if (key != null && try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }
 
-        Key<?> key = context.key();
         // Note：被禁用的部分控制按键也需要接受处理
         if (key instanceof CtrlKey //
             && key.isDisabled() //

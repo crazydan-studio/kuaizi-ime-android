@@ -1167,15 +1167,21 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          + " <span style=\"color:#ed4c67;\">%s</span>；", expected_auto_word.getValue()) //
                 .name("select_auto_word") //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.InputCandidate_Choose_Doing) {
-                        CharInput input = (CharInput) msg.data.input;
-                        InputWord word = input.getWord();
-
-                        if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
-                            exercise.gotoNextStep();
+                    switch (msg.type) {
+                        case Keyboard_State_Change_Done: {
                             return;
                         }
+                        case InputCandidate_Choose_Doing: {
+                            CharInput input = (CharInput) msg.data.input;
+                            InputWord word = input.getWord();
+
+                            if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
+                                exercise.gotoNextStep();
+                                return;
+                            }
+                        }
                     }
+
                     showWarning("请按当前步骤的指导要求选中指定的拼音候选字"
                                 + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
                 });
@@ -1186,6 +1192,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .name("choose_correct_word").action((msg) -> {
                     switch (msg.type) {
                         case Keyboard_Switch_Done:
+                        case Keyboard_State_Change_Done:
                         case InputCandidate_Choose_Doing: {
                             return;
                         }
@@ -1198,6 +1205,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             } else {
                                 showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+
+                                changePinyinWord(expected_auto_word);
                                 exercise.gotoStep("select_auto_word");
                             }
                             return;
@@ -1206,6 +1215,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
                     showWarning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
                                 + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+
+                    changePinyinWord(expected_auto_word);
                     exercise.gotoStep("select_auto_word");
                 });
     }

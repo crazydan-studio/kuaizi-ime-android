@@ -32,9 +32,12 @@ public class ExerciseStepStartDoneMsgData extends ExerciseMsgData {
     public final Exercise exercise;
     /** 已开始步骤的序号 */
     public final int stepIndex;
+    /** 是否为已重启练习 */
+    public final boolean restarted;
 
-    public ExerciseStepStartDoneMsgData(Exercise exercise, int stepIndex) {
+    public ExerciseStepStartDoneMsgData(Exercise exercise, int stepIndex, boolean restarted) {
         this.exercise = exercise;
         this.stepIndex = stepIndex;
+        this.restarted = restarted;
     }
 }
