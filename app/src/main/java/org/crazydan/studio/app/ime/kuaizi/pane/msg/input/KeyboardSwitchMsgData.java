@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @date 2023-07-27
  */
 public class KeyboardSwitchMsgData extends InputMsgData {
-    /** 切换到的类型，若为 null 则由上层处理键盘切换 */
+    /** 所切换到的键盘类型，若为 null 则由上层处理键盘切换 */
     public final Keyboard.Type type;
 
     public KeyboardSwitchMsgData(Key<?> key, Keyboard.Type type) {

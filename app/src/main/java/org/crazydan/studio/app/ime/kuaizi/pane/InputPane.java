@@ -205,7 +205,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给 {@link Keyboard} */
     @Override
     public void onMsg(UserKeyMsg msg) {
-        // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息
+        // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
         Key<?> key = msg.data.key;
         KeyboardContext context = createKeyboardContext().newWithKey(key);
 
@@ -275,6 +275,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             this.prevMasterKeyboardType = prevType;
         }
 
+        data = new KeyboardSwitchMsgData(data.key, newType);
         fire_InputMsg(Keyboard_Switch_Done, data);
     }
 

@@ -223,7 +223,7 @@ public class Exercise implements InputMsgListener {
                 } else {
                     break;
                 }
-//            case Keyboard_State_Change_Done:
+            case Keyboard_State_Change_Done:
 //                if (key == null) {
 //                    return;
 //                } else {

@@ -84,7 +84,7 @@ public class ExerciseListView extends RecyclerPageView implements InputMsgListen
                 ExerciseThemeUpdateDoneMsgData data = (ExerciseThemeUpdateDoneMsgData) msg.data;
 
                 ExerciseViewHolder holder = getActivePageViewHolder();
-                holder.update(data.exercise.createViewData());
+                holder.updateSteps(data.exercise.createViewData());
                 break;
             }
             case Step_Start_Done: {

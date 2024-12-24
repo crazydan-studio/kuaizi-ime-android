@@ -67,7 +67,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
             }
             case InputList_PairSymbol_Commit_Doing: {
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
-                commitText(d.left, d.right);
+                commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
@@ -90,9 +90,6 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         this.editorSelection = null;
 
         EditorSelection before = EditorSelection.from(this);
-        if (before == null) {
-            return;
-        }
 
         int start = before.start;
         int end = before.end;
@@ -116,11 +113,8 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         this.editorSelection = new EditorSelection(after.start, after.end, before.start, before.end, before.content);
     }
 
-    private void commitText(CharSequence left, CharSequence right) {
+    private void commitPairSymbolText(CharSequence left, CharSequence right) {
         EditorSelection selection = EditorSelection.from(this);
-        if (selection == null) {
-            return;
-        }
 
         int start = selection.start;
         int end = selection.end;
@@ -208,6 +202,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         if (selection == null) {
             return;
         }
+        this.editorSelection = null;
 
         replaceText(selection.content, selection.origStart, selection.end);
         setSelection(selection.origStart, selection.origEnd);
@@ -226,12 +221,10 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
     }
 
-    /** 替换指定范围内的文本 */
+    /** 替换指定范围内（posStart ~ posEnd）的文本 */
     private void replaceText(CharSequence text, int posStart, int posEnd) {
         Editable editable = getText();
-        if (editable == null) {
-            return;
-        }
+        assert editable != null;
 
         if (text == null) {
             text = "";

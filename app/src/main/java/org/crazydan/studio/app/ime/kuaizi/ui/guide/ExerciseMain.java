@@ -483,7 +483,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
                         Key<?> key = msg.data.key;
 
-                        if (key != null && key.equals(key_ctrl_commit)) {
+                        if (key_ctrl_commit.equals(key)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -496,7 +496,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     if (msg.type == InputMsgType.InputChars_Input_Done) {
                         Key<?> key = msg.data.key;
 
-                        if (key != null && key.equals(key_ctrl_commit_opt_with_pinyin)) {
+                        if (key_ctrl_commit_opt_with_pinyin.equals(key)) {
                             exercise.gotoNextStep();
                         }
                     }
@@ -542,7 +542,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     if (msg.type == InputMsgType.Editor_Cursor_Move_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (key.equals(key_ctrl_cursor_locator)) {
+                        if (key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -552,10 +552,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请<span style=\"color:#ed4c67;\">长按或双击</span>光标定位按键%s以进入<b>内容编辑</b>模式；",
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
+                    if (msg.type == InputMsgType.Keyboard_Switch_Done) {
                         Key<?> key = msg.data.key;
 
-                        if (key != null && key.equals(key_ctrl_cursor_locator)) {
+                        if (key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
                         } else {
                             showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按或双击</span>"
@@ -568,7 +568,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     if (msg.type == InputMsgType.Editor_Range_Select_Doing) {
                         Key<?> key = msg.data.key;
 
-                        if (key.equals(key_ctrl_range_selector)) {
+                        if (key_ctrl_range_selector.equals(key)) {
                             exercise.gotoNextStep();
                         }
                     }
@@ -584,7 +584,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         exercise.newStep("请点击退出按键%s以切换回原键盘；", key_ctrl_exit) //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
+                    if (msg.type == InputMsgType.Keyboard_Switch_Done) {
                         exercise.gotoNextStep();
                     }
                 });
@@ -676,11 +676,13 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          + " <span style=\"color:#ed4c67;\">!</span>；", key_symbol_tanhao) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                        Key<?> key = msg.data.key;
+                        InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                        Key<?> key = data.key;
 
-                        if (((InputCharsInputMsgData) msg.data).inputMode != InputCharsInputMsgData.InputMode.tap
-                            //
-                            || (!key.getText().equals("!") && !key.getText().equals(key_symbol_tanhao.getText()))) {
+                        if (data.inputMode != InputCharsInputMsgData.InputMode.tap //
+                            || (!key.getText().equals("!") //
+                                && !key.getText().equals(key_symbol_tanhao.getText())) //
+                        ) {
                             showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
                                         + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.getText());
                         } else if (key.getText().equals("!")) {
@@ -1063,9 +1065,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .name("input_level_0") //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                        Key<?> key = msg.data.key;
+                        InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                        Key<?> key = data.key;
 
-                        if (((InputCharsInputMsgData) msg.data).inputMode != InputCharsInputMsgData.InputMode.slip) {
+                        if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
                             showWarning("请按当前步骤的指导要求从按键"
                                         + " <span style=\"color:#ed4c67;\">%s</span>"
                                         + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());

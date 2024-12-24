@@ -146,6 +146,8 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
                     keyboardType = Keyboard.Type.Latin;
                     singleLineInputting = true;
                     passwordInputting = true;
+                    // 清空输入列表，以确保采用直输模式
+                    resetInputting = true;
                 }
 
                 if (variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
@@ -237,7 +239,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             }
             case InputList_PairSymbol_Commit_Doing: {
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
-                commitText(d.left, d.right);
+                commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
@@ -342,6 +344,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         if (selection == null) {
             return;
         }
+        this.editorSelection = null;
 
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
@@ -386,7 +389,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         }
     }
 
-    private void commitText(CharSequence left, CharSequence right) {
+    private void commitPairSymbolText(CharSequence left, CharSequence right) {
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) {
             return;

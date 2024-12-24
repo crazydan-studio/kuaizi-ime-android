@@ -24,15 +24,22 @@ import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 
 /**
+ * 编辑的选区信息，包含选区的起始位置以及被选中的{@link #content 内容}
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-22
  */
 public class EditorSelection {
+    /** 选区的起点位置，已排序，其始终小于 {@link #end} */
     public final int start;
+    /** 选区的起点位置，已排序，其始终大于 {@link #start} */
     public final int end;
+    /** 选区原始的起点位置，反向选择时，该值将大于 {@link #origEnd} */
     public final int origStart;
+    /** 选区原始的终点位置，反向选择时，该值将小于 {@link #origStart} */
     public final int origEnd;
 
+    /** 在从 {@link #start} 至 {@link #end} 的选区范围内的已选中内容，其可能为空，即，未选中内容 */
     public final CharSequence content;
 
     public EditorSelection(int start, int end, int origStart, int origEnd, CharSequence content) {
@@ -61,9 +68,6 @@ public class EditorSelection {
 
     public static EditorSelection from(EditText editText) {
         Editable editable = editText.getText();
-        if (editable == null) {
-            return null;
-        }
 
         int start = Math.min(editText.getSelectionStart(), editText.getSelectionEnd());
         int end = Math.max(editText.getSelectionStart(), editText.getSelectionEnd());

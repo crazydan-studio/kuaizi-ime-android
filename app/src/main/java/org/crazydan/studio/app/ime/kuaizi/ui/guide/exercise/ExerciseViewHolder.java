@@ -56,12 +56,20 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
             view.setText(title);
         });
 
-        update(data);
+        // Note: 仅在初始化时填充待编辑内容
+        whenViewReady(this.textView, (view) -> {
+            String text = data.sampleText;
+            view.setText(text);
+            // 将光标移到内容尾部
+            view.setSelection(text != null ? text.length() : 0);
+        });
+
+        updateSteps(data);
     }
 
     /** 激活指定位置的步骤 */
     public void activateStep(Exercise.ViewData data, int stepIndex) {
-        update(data);
+        updateSteps(data);
 
         this.stepListView.scrollTo(stepIndex);
         // Note: 捕获输入焦点必须在 ExerciseView 视图就绪后进行，而不能在初始绑定时，
@@ -69,14 +77,8 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         this.textView.requestFocus();
     }
 
-    /** 更新视图 */
-    public void update(Exercise.ViewData data) {
-        whenViewReady(this.textView, (view) -> {
-            String text = data.sampleText;
-            view.setText(text);
-            view.setSelection(text != null ? text.length() : 0);
-        });
-
+    /** 更新步骤视图 */
+    public void updateSteps(Exercise.ViewData data) {
         whenViewReady(this.stepListView, (view) -> {
             view.update(data);
         });
