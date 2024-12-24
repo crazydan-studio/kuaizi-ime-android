@@ -32,4 +32,10 @@ public interface KeyFactory {
 
     /** 无动效的生成器 */
     interface NoAnimation extends KeyFactory {}
+
+    /** 左手模式的生成器 */
+    interface LeftHandMode extends KeyFactory {}
+
+    /** {@link NoAnimation} 与 {@link LeftHandMode} 的组合 */
+    interface LeftHandMode_NoAnimation extends NoAnimation, LeftHandMode {}
 }

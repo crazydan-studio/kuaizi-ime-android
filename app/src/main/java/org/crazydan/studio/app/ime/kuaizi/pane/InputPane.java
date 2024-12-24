@@ -260,7 +260,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        InputMsg msg = new InputMsg(type, data, this.keyboard, this.inputList);
+        InputMsg msg = new InputMsg(type, data, this.keyboard, this.inputList, this.config);
         this.listener.onMsg(msg);
     }
 
@@ -282,7 +282,11 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */
     private void on_Keyboard_HandMode_Switch_Doing_Msg(KeyboardHandModeSwitchMsgData data) {
         Keyboard.HandMode mode = data.mode;
+
         this.config.set(ConfigKey.hand_mode, mode);
+
+        KeyboardConfig config = createKeyboardConfig();
+        this.keyboard.updateConfig(config);
 
         fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
     }

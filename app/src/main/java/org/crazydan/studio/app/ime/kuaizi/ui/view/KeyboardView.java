@@ -159,9 +159,13 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 }
                 break;
             }
+            // 不影响布局的消息直接忽略
+            case InputAudio_Play_Doing: {
+                return;
+            }
         }
 
-        update(config, keyFactory);
+        update(keyFactory);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -174,7 +178,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         //updateKeys(new Key[][] {});
     }
 
-    private void update(Config config, KeyFactory keyFactory) {
+    private void update(KeyFactory keyFactory) {
         if (keyFactory == null) {
             return;
         }
@@ -191,7 +195,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             post(() -> setItemAnimator(this.animator));
         }
 
-        boolean leftHandMode = config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
+        boolean leftHandMode = keyFactory instanceof KeyFactory.LeftHandMode;
         super.update(keys, leftHandMode);
     }
 }
