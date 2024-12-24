@@ -31,9 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputsViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputsViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_CompletionInput;
 
@@ -45,18 +45,18 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class CompletionInputsView extends RecyclerView implements ViewGestureDetector.Listener {
-    private final CompletionInputsViewAdapter adapter;
+public class CompletionInputListView extends RecyclerView implements ViewGestureDetector.Listener {
+    private final CompletionInputListViewAdapter adapter;
 
     private UserInputMsgListener listener;
 
-    public CompletionInputsView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public CompletionInputListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        CompletionInputsViewLayoutManager layoutManager = new CompletionInputsViewLayoutManager(context);
+        CompletionInputListViewLayoutManager layoutManager = new CompletionInputListViewLayoutManager(context);
         setLayoutManager(layoutManager);
 
-        this.adapter = new CompletionInputsViewAdapter(layoutManager);
+        this.adapter = new CompletionInputListViewAdapter(layoutManager);
         setAdapter(this.adapter);
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();

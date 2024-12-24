@@ -28,20 +28,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputsView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
 
 /**
- * {@link CompletionInputsView} 的 {@link RecyclerView} 适配器
+ * {@link CompletionInputListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputsViewAdapter extends RecyclerViewAdapter<CompletionInputViewHolder> {
-    private final CompletionInputsViewLayoutManager manager;
+public class CompletionInputListViewAdapter extends RecyclerViewAdapter<CompletionInputViewHolder> {
+    private final CompletionInputListViewLayoutManager manager;
 
     private List<CompletionInput> dataList = new ArrayList<>();
 
-    public CompletionInputsViewAdapter(CompletionInputsViewLayoutManager manager) {
+    public CompletionInputListViewAdapter(CompletionInputListViewLayoutManager manager) {
         this.manager = manager;
     }
 
