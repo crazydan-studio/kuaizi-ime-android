@@ -96,7 +96,7 @@ keyboard <|-down- math_kb: extends
 
 设计要点：
 
-- 模型与视图分离，二者不做直接关联，模型的变更通过消息（`InputMsg`）机制触发对应视图的更新
+- 模型与视图分离，二者不做直接关联，模型的变更通过消息（`InputMsg`）机制触发相关视图的更新
 - 将输入面板 `InputPaneView` 分为 `InputListView`（输入列表）和 `KeyboardView`（键盘）上下两部分，
   前者显示输入内容，并做候选字调整，后者则显示输入按键，并与用户做按键交互
 - 与以上视图相对应的逻辑模型则分别为 `InputPane`、`InputList` 和 `Keyboard`，
