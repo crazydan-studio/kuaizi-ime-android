@@ -51,10 +51,10 @@ EOF
 ```plantuml
 @startuml
 class "InputMethodService" as sys_ime_svc
-class "ImeService" as ime_svc #pink ##[bold]red
+class "ImeService" as ime_svc #pink
 class "ImeConfig" as ime_conf
 
-class "InputPane" as input_pane #pink ##[bold]red
+class "InputPane" as input_pane #pink
 class "PinyinDict" as dict
 class "InputList" as input_list
 class "Keyboard" as keyboard
@@ -65,7 +65,7 @@ class "SymbolKeyboard" as symbol_kb
 class "EmojiKeyboard" as emoji_kb
 class "MathKeyboard" as math_kb
 
-class "InputPaneView" as input_pane_view #pink ##[bold]red
+class "InputPaneView" as input_pane_view #pink
 class "KeyboardView" as keyboard_view
 class "InputListView" as input_list_view
 
