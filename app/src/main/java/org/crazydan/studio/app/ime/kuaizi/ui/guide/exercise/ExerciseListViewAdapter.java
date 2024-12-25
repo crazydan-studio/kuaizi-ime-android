@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -65,19 +66,19 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseViewHol
     @NonNull
     @Override
     public ExerciseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int resId = R.layout.guide_exercise_mode_normal_view;
-
         switch (viewType) {
             case VIEW_TYPE_FREE_MODE: {
-                resId = R.layout.guide_exercise_mode_free_view;
-                break;
+                View view = inflateItemView(parent, R.layout.guide_exercise_mode_free_view);
+                return new ExerciseFreeViewHolder(view);
             }
             case VIEW_TYPE_INTRODUCE_MODE: {
-                resId = R.layout.guide_exercise_mode_introduce_view;
-                return new ExerciseIntroduceViewHolder(inflateItemView(parent, resId));
+                View view = inflateItemView(parent, R.layout.guide_exercise_mode_introduce_view);
+                return new ExerciseIntroduceViewHolder(view);
             }
         }
-        return new ExerciseViewHolder(inflateItemView(parent, resId));
+
+        View view = inflateItemView(parent, R.layout.guide_exercise_mode_normal_view);
+        return new ExerciseViewHolder(view);
     }
 
     @Override

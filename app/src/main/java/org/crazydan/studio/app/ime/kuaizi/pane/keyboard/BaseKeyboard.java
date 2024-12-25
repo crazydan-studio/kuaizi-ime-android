@@ -358,14 +358,9 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void do_Editor_Editing(KeyboardContext context, EditorEditAction action) {
         InputList inputList = context.inputList;
 
-        switch (action) {
-            case noop:
-            case select_all:
-            case copy:
-                // 不影响输入撤回的操作，则无需清空待撤回输入数据
-                break;
-            default:
-                inputList.clearCommitRevokes();
+        // 对编辑内容会造成修改的操作，需要清空待撤回输入数据
+        if (EditorEditAction.hasEffect(action)) {
+            inputList.clearCommitRevokes();
         }
 
         InputMsgData data = new EditorEditMsgData(action);
@@ -762,7 +757,7 @@ public abstract class BaseKeyboard implements Keyboard {
             CharInput left = inputList.getFirstCharInput();
             CharInput right = inputList.getLastCharInput();
 
-            inputList.commit(canBeRevoked);
+            inputList.commit(false);
 
             fire_InputList_PairSymbol_Commit_Doing(context, left.getText(), right.getText());
         } else {

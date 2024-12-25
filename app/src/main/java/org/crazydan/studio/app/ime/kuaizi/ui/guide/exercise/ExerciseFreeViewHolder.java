@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,42 +15,26 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane.msg;
+package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
+
+import android.view.View;
+import androidx.annotation.NonNull;
 
 /**
- * 编辑器的编辑动作
+ * 题型为 {@link Exercise.Mode#free} 的练习题视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-14
+ * @date 2024-12-25
  */
-public enum EditorEditAction {
-    /** 无操作 */
-    noop,
+public class ExerciseFreeViewHolder  extends ExerciseViewHolder{
 
-    /** 回删 */
-    backspace,
-    /** 全选 */
-    select_all,
-    /** 复制 */
-    copy,
-    /** 粘贴 */
-    paste,
-    /** 剪切 */
-    cut,
-    /** 撤销 */
-    undo,
-    /** 重做 */
-    redo,
-    ;
+    public ExerciseFreeViewHolder(@NonNull View itemView) {
+        super(itemView);
+    }
 
-    /** 检查指定的编辑动作是否会造成内容修改 */
-    public static boolean hasEffect(EditorEditAction action) {
-        switch (action) {
-            case noop:
-            case select_all:
-            case copy:
-                return false;
-        }
-        return true;
+    @Override
+    public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
+        // Note: 自由模式仅包含输入框，并且保留已输入内容
+        this.textView.requestFocus();
     }
 }

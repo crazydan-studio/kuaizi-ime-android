@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane;
+package org.crazydan.studio.app.ime.kuaizi.common.widget;
+
+import java.util.function.BiFunction;
 
 import android.text.Editable;
 import android.view.inputmethod.ExtractedText;
@@ -30,25 +32,22 @@ import android.widget.EditText;
  * @date 2023-10-22
  */
 public class EditorSelection {
-    /** 选区的起点位置，已排序，其始终小于 {@link #end} */
+    /** 选区的起点位置，其始终小于 {@link #end} */
     public final int start;
-    /** 选区的起点位置，已排序，其始终大于 {@link #start} */
+    /** 选区的终点位置，其始终大于 {@link #start} */
     public final int end;
-    /** 选区原始的起点位置，反向选择时，该值将大于 {@link #origEnd} */
-    public final int origStart;
-    /** 选区原始的终点位置，反向选择时，该值将小于 {@link #origStart} */
-    public final int origEnd;
+    /** 是否为反向选择，即，实际的起点位置大于终点位置 */
+    public final boolean reversed;
 
     /** 在从 {@link #start} 至 {@link #end} 的选区范围内的已选中内容，其可能为空，即，未选中内容 */
     public final CharSequence content;
 
-    public EditorSelection(int start, int end, int origStart, int origEnd, CharSequence content) {
-        this.start = start;
-        this.end = end;
-        this.origStart = origStart;
-        this.origEnd = origEnd;
+    public EditorSelection(int start, int end, BiFunction<Integer, Integer, CharSequence> contentGetter) {
+        this.start = Math.min(start, end);
+        this.end = Math.max(start, end);
+        this.reversed = start > end;
 
-        this.content = content;
+        this.content = contentGetter.apply(this.start, this.end);
     }
 
     public static EditorSelection from(InputConnection ic) {
@@ -56,26 +55,25 @@ public class EditorSelection {
         // Note: ExtractedText#text 为当前编辑器的全部内容
         ExtractedText extractedText = ic.getExtractedText(new ExtractedTextRequest(), 0);
 
-        int start = Math.min(extractedText.selectionStart, extractedText.selectionEnd);
-        int end = Math.max(extractedText.selectionStart, extractedText.selectionEnd);
-
-        return new EditorSelection(start,
-                                   end,
-                                   extractedText.selectionStart,
+        return new EditorSelection(extractedText.selectionStart,
                                    extractedText.selectionEnd,
-                                   ic.getSelectedText(InputConnection.GET_TEXT_WITH_STYLES));
+                                   (s, e) -> ic.getSelectedText(InputConnection.GET_TEXT_WITH_STYLES));
     }
 
     public static EditorSelection from(EditText editText) {
         Editable editable = editText.getText();
 
-        int start = Math.min(editText.getSelectionStart(), editText.getSelectionEnd());
-        int end = Math.max(editText.getSelectionStart(), editText.getSelectionEnd());
+        return new EditorSelection(editText.getSelectionStart(), editText.getSelectionEnd(), editable::subSequence);
+    }
 
-        return new EditorSelection(start,
-                                   end,
-                                   editText.getSelectionStart(),
-                                   editText.getSelectionEnd(),
-                                   editable.subSequence(start, end));
+    /** 还原对 {@link EditorSelection} 选区的变更 */
+    public static class ChangeRevertion {
+        public final EditorSelection before;
+        public final EditorSelection after;
+
+        public ChangeRevertion(EditorSelection before, EditorSelection after) {
+            this.before = before;
+            this.after = after;
+        }
     }
 }

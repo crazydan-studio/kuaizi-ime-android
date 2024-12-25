@@ -22,7 +22,7 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 
 /**
- * {@link Exercise 练习题}视图
+ * 题型为 {@link Exercise.Mode#introduce} 的练习题视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
@@ -35,6 +35,12 @@ public class ExerciseIntroduceViewHolder extends ExerciseViewHolder {
 
     @Override
     public void onMsg(InputMsg msg) {
-        // keep it empty
+        // Note: 介绍模式下，无输入框，不对输入消息做处理
+    }
+
+    @Override
+    public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
+        // Note: 介绍模式下，仅需要更新步骤列表即可，因为，仅涉及主题样式的更新
+        updateSteps(data);
     }
 }

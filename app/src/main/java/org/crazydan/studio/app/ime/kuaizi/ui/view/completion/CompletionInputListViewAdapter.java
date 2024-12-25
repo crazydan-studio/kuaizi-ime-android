@@ -83,7 +83,8 @@ public class CompletionInputListViewAdapter extends RecyclerViewAdapter<Completi
     @NonNull
     @Override
     public CompletionInputViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new CompletionInputViewHolder(inflateItemView(parent, R.layout.input_completion_view));
+        View view = inflateItemView(parent, R.layout.input_completion_view);
+        return new CompletionInputViewHolder(view);
     }
 
     private boolean handleScrollViewEvent(View view, MotionEvent event) {

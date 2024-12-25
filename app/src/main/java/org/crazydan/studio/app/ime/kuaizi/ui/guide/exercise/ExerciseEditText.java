@@ -24,7 +24,7 @@ import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import androidx.appcompat.widget.AppCompatEditText;
-import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
@@ -43,8 +43,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListPairSymbolComm
  * @date 2023-07-16
  */
 public class ExerciseEditText extends AppCompatEditText implements InputMsgListener {
-    /** 记录可撤回输入的位置信息 */
-    private EditorSelection editorSelection;
+    /** 记录可撤回输入的选区信息 */
+    private EditorSelection.ChangeRevertion editorChangeRevertion;
 
     public ExerciseEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -58,7 +58,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
 
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
                 commitText(d.text, d.replacements);
@@ -66,32 +66,30 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
             }
             case InputList_Committed_Revoke_Doing: {
                 revokeTextCommitting();
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
 
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                this.editorSelection = null;
-
                 moveCursor(((EditorCursorMsgData) msg.data).anchor);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                this.editorSelection = null;
-
                 selectText(((EditorCursorMsgData) msg.data).anchor);
                 break;
             }
             case Editor_Edit_Doing: {
-                this.editorSelection = null;
-
                 EditorEditMsgData d = (EditorEditMsgData) msg.data;
+
+                if (EditorEditAction.hasEffect(d.action)) {
+                    this.editorChangeRevertion = null;
+                }
                 editText(d.action);
                 break;
             }
@@ -120,7 +118,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         setSelection(start + offset);
 
         EditorSelection after = EditorSelection.from(this);
-        this.editorSelection = new EditorSelection(after.start, after.end, before.start, before.end, before.content);
+        this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
     }
 
     private void commitPairSymbolText(CharSequence left, CharSequence right) {
@@ -133,12 +131,9 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         replaceText(right, end, end);
         replaceText(left, start, start);
 
-        if (start == end) {
-            setSelection(start + left.length());
-        } else {
-            // 重新选中初始文本：以上添加文本过程中，EditText 会自动更新选区，且选区结束位置在配对符号的右符号的最右侧
-            setSelection(selection.origStart, selection.origEnd - right.length());
-        }
+        // 重新选中初始文本
+        int offset = left.length();
+        setSelection(start + offset, end + offset);
     }
 
     private void backspace() {
@@ -207,14 +202,18 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
     }
 
     private void revokeTextCommitting() {
+        // Note: 撤销由编辑器控制，其可能会撤销间隔时间较短的多个输入，
+        // 故而，只能采用记录输入前的范围，再还原的方式实现输入的撤回
         //editEditor(EditorEditAction.undo);
-        EditorSelection selection = this.editorSelection;
-        if (selection == null) {
+        EditorSelection.ChangeRevertion revertion = this.editorChangeRevertion;
+        if (revertion == null) {
             return;
         }
 
-        replaceText(selection.content, selection.origStart, selection.end);
-        setSelection(selection.origStart, selection.origEnd);
+        // 将 从编辑前的开始位置 到 编辑后的终点位置 之间的内容恢复为编辑前的内容
+        replaceText(revertion.before.content, revertion.before.start, revertion.after.end);
+        // 还原编辑前的选区
+        setSelection(revertion.before.start, revertion.before.end);
     }
 
     private void sendKey(int code) {

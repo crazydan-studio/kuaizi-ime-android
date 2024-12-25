@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -32,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
  */
 public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStepViewHolder> {
     private final static int VIEW_TYPE_NORMAL = 0;
-    private final static int VIEW_TYPE_FINAL = 1;
+    private final static int VIEW_TYPE_LAST = 1;
 
     private KeyImageRender keyImageRender;
 
@@ -65,10 +66,13 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     @NonNull
     @Override
     public ExerciseStepViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_FINAL) {
-            return new ExerciseStepLastViewHolder(inflateItemView(parent, R.layout.guide_exercise_step_final_view));
+        if (viewType == VIEW_TYPE_LAST) {
+            View view = inflateItemView(parent, R.layout.guide_exercise_step_last_view);
+            return new ExerciseStepLastViewHolder(view);
         }
-        return new ExerciseStepViewHolder(inflateItemView(parent, R.layout.guide_exercise_step_normal_view));
+
+        View view = inflateItemView(parent, R.layout.guide_exercise_step_normal_view);
+        return new ExerciseStepViewHolder(view);
     }
 
     @Override
@@ -76,7 +80,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
         ExerciseStep.ViewData data = this.dataList.get(position);
 
         if (data.last) {
-            return VIEW_TYPE_FINAL;
+            return VIEW_TYPE_LAST;
         }
         return VIEW_TYPE_NORMAL;
     }

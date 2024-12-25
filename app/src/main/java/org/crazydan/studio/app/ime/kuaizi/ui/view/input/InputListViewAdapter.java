@@ -20,6 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -79,20 +80,26 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>
             return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
         } else if (data.input.isGap()) {
             return VIEW_TYPE_GAP_INPUT;
-        } else {
-            return VIEW_TYPE_CHAR_INPUT;
         }
+        return VIEW_TYPE_CHAR_INPUT;
     }
 
     @NonNull
     @Override
     public InputViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_CHAR_INPUT) {
-            return new CharInputViewHolder(inflateItemView(parent, R.layout.input_char_view));
-        } else if (viewType == VIEW_TYPE_CHAR_MATH_EXPR_INPUT) {
-            return new MathExprInputViewHolder(inflateItemView(parent, R.layout.input_math_expr_view));
-        } else {
-            return new GapInputViewHolder(inflateItemView(parent, R.layout.input_gap_view));
+        switch (viewType) {
+            case VIEW_TYPE_CHAR_INPUT: {
+                View view = inflateItemView(parent, R.layout.input_char_view);
+                return new CharInputViewHolder(view);
+            }
+            case VIEW_TYPE_CHAR_MATH_EXPR_INPUT: {
+                View view = inflateItemView(parent, R.layout.input_math_expr_view);
+                return new MathExprInputViewHolder(view);
+            }
+            default: {
+                View view = inflateItemView(parent, R.layout.input_gap_view);
+                return new GapInputViewHolder(view);
+            }
         }
     }
 }

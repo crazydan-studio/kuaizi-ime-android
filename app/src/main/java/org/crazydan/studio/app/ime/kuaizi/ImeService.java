@@ -28,9 +28,9 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
@@ -59,8 +59,8 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     private InputPaneView inputPaneView;
 
     private int prevFieldId;
-    /** 记录可撤回输入的位置信息 */
-    private EditorSelection editorSelection;
+    /** 记录可撤回输入的选区信息 */
+    private EditorSelection.ChangeRevertion editorChangeRevertion;
 
     /** 系统输入法切换到本输入法时调用 */
     @Override
@@ -80,7 +80,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         this.config = null;
         this.inputPane = null;
         this.inputPaneView = null;
-        this.editorSelection = null;
+        this.editorChangeRevertion = null;
 
         super.onDestroy();
     }
@@ -184,7 +184,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onFinishInput() {
         this.inputPane.exit();
-        this.editorSelection = null;
+        this.editorChangeRevertion = null;
 
         super.onFinishInput();
     }
@@ -194,7 +194,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             Boolean useSingleLineInputting, Boolean usePasswordInputting, //
             boolean resetInputting
     ) {
-        this.editorSelection = null;
+        this.editorChangeRevertion = null;
 
         Context context = getApplicationContext();
         ImeSubtype imeSubtype = ImeSubtype.from(context);
@@ -230,7 +230,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
 
         switch (msg.type) {
             case InputList_Commit_Doing: {
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
 
                 InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
                 commitText(d.text, d.replacements);
@@ -238,32 +238,30 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             }
             case InputList_Committed_Revoke_Doing: {
                 revokeTextCommitting();
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
-                this.editorSelection = null;
+                this.editorChangeRevertion = null;
 
                 InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                this.editorSelection = null;
-
                 moveCursor((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Range_Select_Doing: {
-                this.editorSelection = null;
-
                 selectText((EditorCursorMsgData) msg.data);
                 break;
             }
             case Editor_Edit_Doing: {
-                this.editorSelection = null;
-
                 EditorEditMsgData d = (EditorEditMsgData) msg.data;
+
+                if (EditorEditAction.hasEffect(d.action)) {
+                    this.editorChangeRevertion = null;
+                }
                 editText(d.action);
                 break;
             }
@@ -352,8 +350,8 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         // Note: 撤销由编辑器控制，其可能会撤销间隔时间较短的多个输入，
         // 故而，只能采用记录输入前的范围，再还原的方式实现输入的撤回
         //editEditor(EditorEditAction.undo);
-        EditorSelection selection = this.editorSelection;
-        if (selection == null) {
+        EditorSelection.ChangeRevertion revertion = this.editorChangeRevertion;
+        if (revertion == null) {
             return;
         }
 
@@ -362,9 +360,10 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             return;
         }
 
-        replaceText(ic, selection.content, selection.origStart, selection.end);
-        // 重新选中
-        ic.setSelection(selection.origStart, selection.origEnd);
+        // 将 从编辑前的开始位置 到 编辑后的终点位置 之间的内容恢复为编辑前的内容
+        replaceText(ic, revertion.before.content, revertion.before.start, revertion.after.end);
+        // 还原编辑前的选区
+        ic.setSelection(revertion.before.start, revertion.before.end);
     }
 
     private void commitText(CharSequence text, List<String> replacements) {
@@ -391,11 +390,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
 
             EditorSelection after = EditorSelection.from(ic);
 
-            this.editorSelection = new EditorSelection(after.start,
-                                                       after.end,
-                                                       before.start,
-                                                       before.end,
-                                                       before.content);
+            this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
         }
     }
 
@@ -416,9 +411,9 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         addText(ic, right, end);
         addText(ic, left, start);
 
-        // 重新选中初始文本：确保选区的选择移动方向不变
+        // 重新选中初始文本
         int offset = left.length();
-        ic.setSelection(selection.origStart + offset, selection.origEnd + offset);
+        ic.setSelection(start + offset, end + offset);
 
         ic.endBatchEdit();
     }
@@ -463,7 +458,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     private void replaceTextBeforeCursor(InputConnection ic, CharSequence text, int length) {
         EditorSelection selection = EditorSelection.from(ic);
 
-        int start = selection.origStart;
+        int start = selection.start;
         replaceText(ic, text, start - length, start);
     }
 

@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import android.content.Context;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -145,31 +146,45 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>
             return VIEW_TYPE_XPAD_KEY;
         } else if (key == null) {
             return VIEW_TYPE_NULL_KEY;
-        } else {
-            return VIEW_TYPE_CHAR_KEY;
         }
+        return VIEW_TYPE_CHAR_KEY;
     }
 
     /** 注：创建的视图未附加到 root 上 */
     private static KeyViewHolder<?, ?> createKeyViewHolder(Context context, ViewGroup root, int viewType) {
-        if (viewType == VIEW_TYPE_CTRL_KEY) {
-            return new CtrlKeyViewHolder(inflateItemView(context, root, R.layout.key_ctrl_view));
-        } else if (viewType == VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY) {
-            return new CtrlToggleInputSpellKeyViewHolder(inflateItemView(context,
-                                                                         root,
-                                                                         R.layout.key_ctrl_toggle_input_spell_view));
-        } else if (viewType == VIEW_TYPE_INPUT_WORD_KEY) {
-            return new InputWordKeyViewHolder(inflateItemView(context, root, R.layout.key_char_input_word_view));
-        } else if (viewType == VIEW_TYPE_SYMBOL_KEY) {
-            return new SymbolKeyViewHolder(inflateItemView(context, root, R.layout.key_char_view));
-        } else if (viewType == VIEW_TYPE_MATH_OP_KEY) {
-            return new MathOpKeyViewHolder(inflateItemView(context, root, R.layout.key_char_view));
-        } else if (viewType == VIEW_TYPE_XPAD_KEY) {
-            return new XPadKeyViewHolder(inflateItemView(context, root, R.layout.key_xpad_view));
-        } else if (viewType == VIEW_TYPE_NULL_KEY) {
-            return new NullKeyViewHolder(inflateItemView(context, root, R.layout.key_ctrl_view));
-        } else {
-            return new CharKeyViewHolder(inflateItemView(context, root, R.layout.key_char_view));
+        switch (viewType) {
+            case VIEW_TYPE_CTRL_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_ctrl_view);
+                return new CtrlKeyViewHolder(view);
+            }
+            case VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_ctrl_toggle_input_spell_view);
+                return new CtrlToggleInputSpellKeyViewHolder(view);
+            }
+            case VIEW_TYPE_INPUT_WORD_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_char_input_word_view);
+                return new InputWordKeyViewHolder(view);
+            }
+            case VIEW_TYPE_SYMBOL_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_char_view);
+                return new SymbolKeyViewHolder(view);
+            }
+            case VIEW_TYPE_MATH_OP_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_char_view);
+                return new MathOpKeyViewHolder(view);
+            }
+            case VIEW_TYPE_XPAD_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_xpad_view);
+                return new XPadKeyViewHolder(view);
+            }
+            case VIEW_TYPE_NULL_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_ctrl_view);
+                return new NullKeyViewHolder(view);
+            }
+            default: {
+                View view = inflateItemView(context, root, R.layout.key_char_view);
+                return new CharKeyViewHolder(view);
+            }
         }
     }
 

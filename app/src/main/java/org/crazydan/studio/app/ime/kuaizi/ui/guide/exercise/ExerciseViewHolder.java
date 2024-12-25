@@ -33,15 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
  */
 public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> implements InputMsgListener {
     protected final TextView titleView;
+    protected final ExerciseEditText textView;
+
     protected final ExerciseStepListView stepListView;
-    private final ExerciseEditText textView;
 
     public ExerciseViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.titleView = itemView.findViewById(R.id.title_view);
-        this.stepListView = itemView.findViewById(R.id.step_list_view);
         this.textView = itemView.findViewById(R.id.text_view);
+
+        this.stepListView = itemView.findViewById(R.id.step_list_view);
     }
 
     @Override
@@ -67,10 +69,11 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         }
         updateSteps(data);
 
-        this.stepListView.scrollTo(stepIndex);
         // Note: 捕获输入焦点必须在 ExerciseView 视图就绪后进行，而不能在初始绑定时，
         // 否则，其会迟滞页面的滚动，容易造成实际激活的页与选定的不一致
         this.textView.requestFocus();
+
+        this.stepListView.scrollTo(stepIndex);
     }
 
     /** 更新步骤视图 */
