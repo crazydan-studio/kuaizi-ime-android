@@ -72,7 +72,7 @@ public interface Keyboard {
         /** 拼音键盘 */
         Pinyin,
         /** 拼音候选字键盘 */
-        Pinyin_Candidates,
+        Pinyin_Candidate,
 
         /** 算术键盘：支持数学计算 */
         Math,

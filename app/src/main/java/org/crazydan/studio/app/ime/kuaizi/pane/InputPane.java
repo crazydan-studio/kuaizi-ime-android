@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.NumberKeyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidatesKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.SymbolKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
@@ -359,8 +359,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
                 return new LatinKeyboard(this.dict);
             case Emoji:
                 return new EmojiKeyboard(this.dict);
-            case Pinyin_Candidates:
-                return new PinyinCandidatesKeyboard(this.dict);
+            case Pinyin_Candidate:
+                return new PinyinCandidateKeyboard(this.dict);
             default:
                 return new PinyinKeyboard(this.dict);
         }

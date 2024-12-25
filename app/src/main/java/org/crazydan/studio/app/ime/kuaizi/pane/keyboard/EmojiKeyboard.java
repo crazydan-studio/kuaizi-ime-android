@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class EmojiKeyboard extends PagingKeysKeyboard {
+public class EmojiKeyboard extends InputCandidateKeyboard {
     private final PinyinDict dict;
 
     public EmojiKeyboard(PinyinDict dict) {

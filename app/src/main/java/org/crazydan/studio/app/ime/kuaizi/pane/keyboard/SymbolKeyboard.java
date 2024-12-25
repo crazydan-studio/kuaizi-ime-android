@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class SymbolKeyboard extends PagingKeysKeyboard {
+public class SymbolKeyboard extends InputCandidateKeyboard {
 
     @Override
     public Type getType() {return Type.Symbol;}

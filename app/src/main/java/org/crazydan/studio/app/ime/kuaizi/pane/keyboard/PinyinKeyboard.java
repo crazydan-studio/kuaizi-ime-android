@@ -43,8 +43,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidatesKeyboard.determine_NotConfirmed_InputWord;
-import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidatesKeyboard.predict_NotConfirmed_Phrase_InputWords;
+import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKeyboard.determine_NotConfirmed_InputWord;
+import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords;
 
 /**
  * {@link Type#Pinyin 拼音键盘}

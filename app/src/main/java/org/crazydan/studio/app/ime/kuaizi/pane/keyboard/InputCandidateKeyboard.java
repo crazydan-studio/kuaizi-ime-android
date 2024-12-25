@@ -32,13 +32,13 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputCand
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputCandidate_Choose_Done;
 
 /**
- * 支持按键分页的键盘，
- * 负责统一处理按键的分页和翻页逻辑
+ * 输入候选字选择键盘，
+ * 负责统一处理候选字的分页和翻页逻辑
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-11
  */
-public abstract class PagingKeysKeyboard extends BaseKeyboard {
+public abstract class InputCandidateKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(KeyboardContext context, UserKeyMsg msg) {
@@ -51,7 +51,7 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
 
         Key<?> key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
-            on_InputCandidate_Choose_Doing_PageFlipping_Msg(context, msg);
+            on_InputCandidate_Choose_Doing_FingerFlipping_Msg(context, msg);
         } else {
             if (key instanceof CtrlKey) {
                 on_InputCandidate_Choose_Doing_CtrlKey_Msg(context, msg);
@@ -62,7 +62,7 @@ public abstract class PagingKeysKeyboard extends BaseKeyboard {
     }
 
     /** 响应翻页消息，以根据 {@link UserKeyMsg} 更新 {@link PagingStateData 分页数据} */
-    protected void on_InputCandidate_Choose_Doing_PageFlipping_Msg(KeyboardContext context, UserKeyMsg msg) {
+    protected void on_InputCandidate_Choose_Doing_FingerFlipping_Msg(KeyboardContext context, UserKeyMsg msg) {
         PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
         UserFingerFlippingMsgData msgData = (UserFingerFlippingMsgData) msg.data;
 

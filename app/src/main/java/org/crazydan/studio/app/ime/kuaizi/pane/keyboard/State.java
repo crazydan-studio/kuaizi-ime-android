@@ -66,11 +66,6 @@ public class State {
         InputCandidate_Choose_Doing,
         /** 输入候选字高级过滤中 */
         InputCandidate_Advance_Filter_Doing,
-
-        /** 表情符号选择中 */
-        Emoji_Choose_Doing,
-        /** 符号（标点、表情）选择中 */
-        Symbol_Choose_Doing,
     }
 
     public interface Data {}

@@ -44,20 +44,20 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 
 /**
- * {@link Type#Pinyin_Candidates 拼音候选字键盘}
+ * {@link Type#Pinyin_Candidate 拼音候选字键盘}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
+public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     private final PinyinDict dict;
 
-    public PinyinCandidatesKeyboard(PinyinDict dict) {
+    public PinyinCandidateKeyboard(PinyinDict dict) {
         this.dict = dict;
     }
 
     @Override
-    public Type getType() {return Type.Pinyin_Candidates;}
+    public Type getType() {return Type.Pinyin_Candidate;}
 
     @Override
     public void start(KeyboardContext context) {
@@ -113,7 +113,7 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
         Key<?> key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
             // Note: 高级过滤的翻页与普通翻页共享逻辑代码
-            on_InputCandidate_Choose_Doing_PageFlipping_Msg(context, msg);
+            on_InputCandidate_Choose_Doing_FingerFlipping_Msg(context, msg);
         }
         // Note: 部首和拼音过滤均为 CtrlKey 类型
         else if (key instanceof CtrlKey) {
@@ -164,14 +164,6 @@ public class PinyinCandidatesKeyboard extends PagingKeysKeyboard {
 
         CtrlKey key = context.key();
         switch (key.getType()) {
-            case DropInput: {
-                play_SingleTick_InputAudio(context);
-
-                delete_InputList_Selected(context);
-
-                exit_Keyboard(context);
-                break;
-            }
             case ConfirmInput: {
                 play_SingleTick_InputAudio(context);
 

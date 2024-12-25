@@ -217,6 +217,8 @@ public abstract class BaseKeyboard implements Keyboard {
                     case DropInput: {
                         play_SingleTick_InputAudio(context);
                         delete_InputList_Selected(context);
+
+                        change_State_to_Init(context);
                         return true;
                     }
                     case RevokeInput: {
@@ -610,7 +612,7 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (pending.isSymbol()) {
             switch_Keyboard_To(context, Type.Symbol);
         } else if (pending.isPinyin()) {
-            switch_Keyboard_To(context, Type.Pinyin_Candidates);
+            switch_Keyboard_To(context, Type.Pinyin_Candidate);
         } else {
             // 在选择输入时，对于新输入，需先确认其 pending
             if (input.isGap() && !pending.isEmpty()) {
