@@ -49,6 +49,17 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
+    protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
+        CtrlKey key = context.key();
+
+        // 在当前键盘内单独处理光标移动按键
+        if (CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
+            return false;
+        }
+        return super.try_On_Common_CtrlKey_Msg(context, msg);
+    }
+
+    @Override
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
 

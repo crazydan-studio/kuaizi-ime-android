@@ -50,6 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
@@ -58,6 +59,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardStateChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.ImeIntegratedActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
@@ -481,13 +483,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
-                        Key<?> key = msg.data.key;
+                        KeyboardStateChangeMsgData data = (KeyboardStateChangeMsgData) msg.data;
+                        Key<?> key = data.key;
 
-                        if (key_ctrl_commit.equals(key)) {
+                        if (data.state.type == State.Type.InputList_Commit_Option_Choose_Doing //
+                            && key_ctrl_commit.equals(key) //
+                        ) {
                             exercise.gotoNextStep();
                             return;
                         }
                     }
+
                     showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
                 });
         exercise.newStep("请点击按键%s以设置待提交的输入需携带拼音。<b>注</b>：可多次点击做形式切换；",
@@ -513,9 +519,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Committed_Revoke_Doing) {
                         exercise.gotoNextStep();
-                    } else {
-                        showWarning("请按当前步骤的指导要求撤回输入内容");
+                        return;
                     }
+
+                    showWarning("请按当前步骤的指导要求撤回输入内容");
                 });
 
         return exercise;
@@ -547,21 +554,24 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                     }
+
                     showWarning("请按当前步骤的指导要求移动目标编辑器中的光标");
                 });
         exercise.newStep("请<span style=\"color:#ed4c67;\">长按或双击</span>光标定位按键%s以进入<b>内容编辑</b>模式；",
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
-                        Key<?> key = msg.data.key;
+                        KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                        Key<?> key = data.key;
 
-                        if (key_ctrl_cursor_locator.equals(key)) {
+                        if (data.type == Keyboard.Type.Editor && key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
-                        } else {
-                            showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按或双击</span>"
-                                        + " <b>光标定位按键</b>");
+                            return;
                         }
                     }
+
+                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按或双击</span>"
+                                + " <b>光标定位按键</b>");
                 });
         exercise.newStep("请在内容选择按键%s上快速滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {
@@ -570,8 +580,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
                         if (key_ctrl_range_selector.equals(key)) {
                             exercise.gotoNextStep();
+                            return;
                         }
                     }
+
+                    showWarning("请按当前步骤的指导要求选择编辑内容");
                 });
         exercise.newStep("请尝试点击%s、%s等按键，并观察复制、粘贴、剪切、撤销和重做等操作的结果；",
                          key_ctrl_edit_copy,
@@ -579,7 +592,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Edit_Doing) {
                         exercise.gotoNextStep();
+                        return;
                     }
+
+                    showWarning("请按当前步骤的指导要求操作编辑内容");
                 });
 
         exercise.newStep("请点击退出按键%s以切换回原键盘；", key_ctrl_exit) //
@@ -620,6 +636,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     return;
                                 }
                             }
+
                             showWarning("请按当前步骤的指导要求输入空格");
                         });
                 continue;
@@ -728,6 +745,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                     }
+
                     showWarning("请按当前步骤的指导要求切换到算术键盘");
                 });
         String[] chars = new String[] {
@@ -755,6 +773,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     return;
                                 }
                             }
+
                             showWarning("请按当前步骤的指导要求输入数字 <span style=\"color:#ed4c67;\">%s</span>",
                                         key_number.getText());
                         });
@@ -773,6 +792,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     return;
                                 }
                             }
+
                             showWarning("请按当前步骤的指导要求输入运算符 <span style=\"color:#ed4c67;\">%s</span>",
                                         key_op.getText());
                         });
@@ -784,9 +804,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         exercise.gotoNextStep();
-                    } else {
-                        showWarning("请按当前步骤的指导要求提交输入内容");
+                        return;
                     }
+
+                    showWarning("请按当前步骤的指导要求提交输入内容");
                 });
 
         return exercise;
@@ -1248,9 +1269,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         exercise.gotoNextStep();
-                    } else {
-                        showWarning("请按当前步骤的指导要求提交输入内容");
+                        return;
                     }
+
+                    showWarning("请按当前步骤的指导要求提交输入内容");
                 });
     }
 
