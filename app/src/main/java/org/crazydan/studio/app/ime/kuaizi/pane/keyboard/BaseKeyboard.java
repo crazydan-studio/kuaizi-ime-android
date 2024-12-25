@@ -408,43 +408,17 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        InputList inputList = context.inputList;
-        // Note：该类键盘不涉及配对符号的输入，故始终清空配对符号的绑定
-        inputList.clearPairOnSelected();
-
-        Key<?> key = context.key();
-        if (key instanceof CharKey) {
-            do_Single_CharKey_Inputting(context);
-        }
-        // 针对非字符类型的表情和符号按键
-        else if (key.isEmoji() || key.isSymbol()) {
-            confirm_or_New_InputList_Pending(context);
-            confirm_InputList_Input_with_SingleKey_Only(context);
-        }
-    }
-
-    /** 单字符按键输入 */
-    protected void do_Single_CharKey_Inputting(KeyboardContext context) {
         CharKey key = context.key();
         InputList inputList = context.inputList;
+
+        // Note: 此处不涉及配对符号的输入，故始终清空配对符号的绑定
+        inputList.clearPairOnSelected();
 
         switch (key.getType()) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emoji:
             case Symbol: {
-                boolean directInputting = inputList.isEmpty();
-
-                if (!directInputting) {
-                    // Note：被选中的输入直接对其做替换
-                    inputList.newPending();
-
-                    inputList.getPending().appendKey(key);
-
-                    confirm_InputList_Pending(context);
-                } else {
-                    // 单个标点、表情，直接提交输入
-                    commit_InputList_with_SingleKey_Only(context, false);
-                }
+                do_Single_CharKey_Replace_or_NewPending_Inputting(context);
                 break;
             }
             // 字母、数字可连续输入
@@ -518,6 +492,18 @@ public abstract class BaseKeyboard implements Keyboard {
 
         show_InputChars_Input_Popup(context);
         commit_InputList_with_SingleKey_Only(context, true);
+    }
+
+    /**
+     * 当前输入做单一字符替换，或者在新的待输入中录入该单一字符
+     * <p/>
+     * 主要针对符号和表情输入，在当前输入为 Gap 时，先提交其待输入，
+     * 再在新的待输入中录入当前按键，而对于已存在的输入，则直接将其替换为当前按键
+     */
+    protected void do_Single_CharKey_Replace_or_NewPending_Inputting(KeyboardContext context) {
+        confirm_or_New_InputList_Pending(context);
+
+        confirm_InputList_Input_with_SingleKey_Only(context);
     }
 
     // ======================== End: 单字符输入 ========================

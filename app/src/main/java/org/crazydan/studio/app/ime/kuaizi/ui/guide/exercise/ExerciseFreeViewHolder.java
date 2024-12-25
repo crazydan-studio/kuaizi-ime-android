@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-25
  */
-public class ExerciseFreeViewHolder  extends ExerciseViewHolder{
+public class ExerciseFreeViewHolder extends ExerciseViewHolder {
 
     public ExerciseFreeViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -34,7 +34,7 @@ public class ExerciseFreeViewHolder  extends ExerciseViewHolder{
 
     @Override
     public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
-        // Note: 自由模式仅包含输入框，并且保留已输入内容
-        this.textView.requestFocus();
+        // Note: 自由模式仅包含输入框，并且不清空已输入内容
+        focusOnEditor();
     }
 }

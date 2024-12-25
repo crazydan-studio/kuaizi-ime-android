@@ -189,15 +189,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         if (this.config.xInputPadEnabled) {
-            if (msg.type == UserKeyMsgType.SingleTap_Key) {
-                if (CharKey.isAlphabet(key)) {
-                    confirm_or_New_InputList_Pending(context);
-
-                    start_InputChars_XPad_Inputting(context);
-                } else {
-                    start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, false);
-                }
-            }
+            on_CharKey_Msg_Over_XPad(context, msg);
             return;
         }
 
@@ -425,6 +417,21 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // ================== Start: X 型面板输入 =====================
 
+    private void on_CharKey_Msg_Over_XPad(KeyboardContext context, UserKeyMsg msg) {
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
+        }
+
+        Key<?> key = context.key();
+        if (CharKey.isAlphabet(key)) {
+            confirm_or_New_InputList_Pending(context);
+
+            start_InputChars_XPad_Inputting(context);
+        } else {
+            start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, false);
+        }
+    }
+
     private void start_InputChars_XPad_Inputting(KeyboardContext context) {
         State state = new State(State.Type.InputChars_XPad_Input_Doing,
                                 new InputCharsSlipStateData(),
@@ -579,9 +586,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg.type) {
             case SingleTap_Key: {
                 if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
-                    play_SingleTick_InputAudio(context);
-
-                    update_InputList_Commit_Option(context);
+                    if (update_InputList_Commit_Option(context)) {
+                        play_SingleTick_InputAudio(context);
+                    }
 
                     fire_InputChars_Input_Done(context, null);
                 }
@@ -600,53 +607,59 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    /** 更新输入列表提交选项 */
-    private void update_InputList_Commit_Option(KeyboardContext context) {
+    /**
+     * 更新输入列表提交选项
+     *
+     * @return 若存在变更，则返回 true，否则，返回 false
+     */
+    private boolean update_InputList_Commit_Option(KeyboardContext context) {
         CtrlKey key = context.key();
         InputList inputList = context.inputList;
+        InputListCommitOptionChooseStateData stateData = (InputListCommitOptionChooseStateData) this.state.data;
         CtrlKey.InputListCommitOption.Option option = ((CtrlKey.InputListCommitOption) key.getOption()).value();
 
         Input.Option oldInputOption = inputList.getOption();
         Input.Option newInputOption = null;
-        switch (option) {
-            case only_pinyin: {
-                InputWord.SpellUsedMode spellUsedMode = oldInputOption.wordSpellUsedMode;
-                if (spellUsedMode == InputWord.SpellUsedMode.replacing) {
-                    spellUsedMode = null;
-                } else {
-                    spellUsedMode = InputWord.SpellUsedMode.replacing;
-                }
 
-                newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
-                break;
-            }
-            case with_pinyin: {
-                InputWord.SpellUsedMode spellUsedMode = oldInputOption.wordSpellUsedMode;
-                if (spellUsedMode == InputWord.SpellUsedMode.following) {
-                    spellUsedMode = null;
-                } else {
-                    spellUsedMode = InputWord.SpellUsedMode.following;
-                }
+        if (stateData.hasSpell()) {
+            switch (option) {
+                case only_pinyin:
+                case with_pinyin: {
+                    InputWord.SpellUsedMode expected = //
+                            option == CtrlKey.InputListCommitOption.Option.only_pinyin
+                            ? InputWord.SpellUsedMode.replacing
+                            : InputWord.SpellUsedMode.following;
 
-                newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
-                break;
-            }
-            case switch_trad_to_simple:
-            case switch_simple_to_trad: {
-                // 被禁用的繁简转换按钮不做响应
-                if (!key.isDisabled()) {
-                    newInputOption = new Input.Option(oldInputOption.wordSpellUsedMode,
-                                                      !oldInputOption.wordVariantUsed);
+                    InputWord.SpellUsedMode spellUsedMode = //
+                            oldInputOption.wordSpellUsedMode == expected ? null : expected;
+
+                    newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
+                    break;
                 }
-                break;
+            }
+        }
+        if (stateData.hasVariant()) {
+            switch (option) {
+                case switch_trad_to_simple:
+                case switch_simple_to_trad: {
+                    // 被禁用的繁简转换按钮不做响应
+                    if (!key.isDisabled()) {
+                        newInputOption = //
+                                new Input.Option(oldInputOption.wordSpellUsedMode, !oldInputOption.wordVariantUsed);
+                    }
+                    break;
+                }
             }
         }
 
         if (newInputOption != null) {
             inputList.updateOption(newInputOption);
 
-            ((InputListCommitOptionChooseStateData) this.state.data).update(inputList);
+            stateData.update(inputList);
+
+            return true;
         }
+        return false;
     }
 
     // ================== End: 对输入列表 提交选项 的操作 =====================

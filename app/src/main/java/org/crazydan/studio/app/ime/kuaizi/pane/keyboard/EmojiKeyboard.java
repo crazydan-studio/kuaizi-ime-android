@@ -131,12 +131,10 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
     private void do_Single_Emoji_Inputting(KeyboardContext context) {
         InputWordKey key = context.key();
         InputList inputList = context.inputList;
+
         boolean directInputting = inputList.isEmpty();
-
         if (!directInputting) {
-            confirm_or_New_InputList_Pending(context);
-
-            confirm_InputList_Input_with_SingleKey_Only(context);
+            do_Single_CharKey_Replace_or_NewPending_Inputting(context);
             return;
         }
 

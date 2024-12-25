@@ -250,7 +250,7 @@ public class Exercise implements InputMsgListener {
     }
 
     private void on_Step_Start_Done_Msg(ExerciseStep step, boolean restarted) {
-        if (this.listener == null || step == null) {
+        if (this.listener == null) {
             return;
         }
 

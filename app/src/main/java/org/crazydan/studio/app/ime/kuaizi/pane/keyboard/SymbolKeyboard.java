@@ -130,11 +130,12 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     private void do_Single_Symbol_Inputting(KeyboardContext context, boolean continuousInput) {
         SymbolKey key = context.key();
         InputList inputList = context.inputList;
+
         boolean directInputting = inputList.isEmpty();
-        boolean pairKey = key.isPair();
+        boolean isPairKey = key.isPair();
 
         if (!directInputting) {
-            if (pairKey) {
+            if (isPairKey) {
                 prepare_for_PairSymbol_Inputting(context, (Symbol.Pair) key.getSymbol());
 
                 confirm_InputList_Pending(context);
@@ -142,15 +143,13 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
                 // Note：配对符号输入后不再做连续输入，退出当前键盘
                 exit_Keyboard(context);
             } else {
-                confirm_or_New_InputList_Pending(context);
-
-                confirm_InputList_Input_with_SingleKey_Only(context);
+                do_Single_CharKey_Replace_or_NewPending_Inputting(context);
             }
             return;
         }
 
         CharInput pending = inputList.newPending();
-        if (pairKey) {
+        if (isPairKey) {
             Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
 
             prepare_for_PairSymbol_Inputting(context, symbol);
@@ -160,10 +159,10 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         }
 
         // 直接提交输入
-        commit_InputList(context, false, false, pairKey);
+        commit_InputList(context, false, false, isPairKey);
 
         // Note：非连续输入的情况下，配对符号输入后不再做连续输入，退出当前键盘
-        if (pairKey && !continuousInput) {
+        if (isPairKey && !continuousInput) {
             exit_Keyboard(context);
         }
     }

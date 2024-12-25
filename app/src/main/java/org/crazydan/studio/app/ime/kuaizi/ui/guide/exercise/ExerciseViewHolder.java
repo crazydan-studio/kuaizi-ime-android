@@ -69,11 +69,11 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         }
         updateSteps(data);
 
+        this.stepListView.scrollTo(stepIndex);
+
         // Note: 捕获输入焦点必须在 ExerciseView 视图就绪后进行，而不能在初始绑定时，
         // 否则，其会迟滞页面的滚动，容易造成实际激活的页与选定的不一致
-        this.textView.requestFocus();
-
-        this.stepListView.scrollTo(stepIndex);
+        focusOnEditor();
     }
 
     /** 更新步骤视图 */
@@ -81,6 +81,10 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         whenViewReady(this.stepListView, (view) -> {
             view.update(data);
         });
+    }
+
+    protected void focusOnEditor() {
+        whenViewReady(this.textView, View::requestFocus);
     }
 
     private void resetTextView(Exercise.ViewData data) {

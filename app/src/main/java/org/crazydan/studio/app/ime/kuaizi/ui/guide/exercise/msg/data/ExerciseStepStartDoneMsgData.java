@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
 public class ExerciseStepStartDoneMsgData extends ExerciseMsgData {
     /** 当前的练习 */
     public final Exercise exercise;
-    /** 已开始步骤的序号 */
+    /** 已开始步骤的序号，在无可运行的步骤时（主要针对自由模式与介绍模式），该值为 -1 */
     public final int stepIndex;
     /** 是否为已重启练习 */
     public final boolean restarted;
