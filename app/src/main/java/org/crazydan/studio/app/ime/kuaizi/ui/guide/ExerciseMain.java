@@ -256,16 +256,15 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             case free:
                 freeMode = true;
             case introduce: {
+                // Note: 置为 null 的配置项将被移除而采用系统配置
                 this.config.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
-                this.config.set(ConfigKey.enable_candidate_variant_first, null);
-                this.config.set(ConfigKey.disable_user_input_data, null);
+                this.config.set(ConfigKey.disable_user_input_data, freeMode ? null : true);
 
                 this.inputPaneView.disableSettingsBtn(false);
                 break;
             }
             case normal: {
                 this.config.set(ConfigKey.enable_x_input_pad, exercise.isXInputPadEnabled());
-                this.config.set(ConfigKey.enable_candidate_variant_first, false);
                 this.config.set(ConfigKey.disable_user_input_data, true);
 
                 this.inputPaneView.disableSettingsBtn(true);
