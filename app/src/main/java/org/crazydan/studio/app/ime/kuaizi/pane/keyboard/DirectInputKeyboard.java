@@ -70,7 +70,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         InputList inputList = context.inputList;
         boolean directInputting = inputList.isEmpty();
 
-        start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, directInputting);
+        start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, directInputting);
     }
 
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {

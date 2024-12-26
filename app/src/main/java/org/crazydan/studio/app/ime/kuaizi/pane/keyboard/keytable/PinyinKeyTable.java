@@ -663,6 +663,7 @@ public class PinyinKeyTable extends KeyTable {
         ).setDisabled(!hasVariant || isOnlyPinyin);
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
+        gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
         return gridKeys;
     }

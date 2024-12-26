@@ -135,6 +135,17 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
+    @Override
+    protected void change_State_to_Previous(KeyboardContext context) {
+        // Note: 从输入选项状态退出前，需做状态清理
+        if (this.state.type == State.Type.InputList_Commit_Option_Choose_Doing) {
+            InputList inputList = context.inputList;
+            inputList.resetOption();
+        }
+
+        super.change_State_to_Previous(context);
+    }
+
     // ====================== Start: 消息处理 ======================
 
     @Override
@@ -205,7 +216,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case SingleTap_Key: {
                 // 单字符输入
-                start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, false);
+                start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, false);
                 break;
             }
         }
@@ -225,6 +236,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case SingleTap_Key: {
+                // Note: 预留的 XPad 拼音提前结束输入的控制键
                 if (CtrlKey.is(key, CtrlKey.Type.Pinyin_End)) {
                     play_SingleTick_InputAudio(context);
                     show_InputChars_Input_Popup(context);
@@ -422,13 +434,13 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        Key<?> key = context.key();
+        CharKey key = context.key();
         if (CharKey.isAlphabet(key)) {
             confirm_or_New_InputList_Pending(context);
 
             start_InputChars_XPad_Inputting(context);
         } else {
-            start_Single_Key_Inputting(context, (UserSingleTapMsgData) msg.data, false);
+            start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, false);
         }
     }
 
@@ -580,31 +592,19 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputList_Commit_Option_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        CtrlKey key = context.key();
-        InputList inputList = context.inputList;
-
-        switch (msg.type) {
-            case SingleTap_Key: {
-                if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
-                    if (update_InputList_Commit_Option(context)) {
-                        play_SingleTick_InputAudio(context);
-                    }
-
-                    fire_InputChars_Input_Done(context, null);
-                }
-                break;
-            }
-            case LongPress_Key_Start: {
-                if (CtrlKey.is(key, CtrlKey.Type.Commit_InputList)) {
-                    play_DoubleTick_InputAudio(context);
-
-                    inputList.resetOption();
-
-                    change_State_to_Init(context);
-                }
-                break;
-            }
+        if (msg.type != UserKeyMsgType.SingleTap_Key) {
+            return;
         }
+
+        CtrlKey key = context.key();
+        if (!CtrlKey.is(key, CtrlKey.Type.Commit_InputList_Option)) {
+            return;
+        }
+
+        if (update_InputList_Commit_Option(context)) {
+            play_SingleTick_InputAudio(context);
+        }
+        fire_InputChars_Input_Done(context, null);
     }
 
     /**

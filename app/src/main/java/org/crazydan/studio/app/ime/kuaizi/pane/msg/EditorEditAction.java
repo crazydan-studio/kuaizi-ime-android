@@ -24,9 +24,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
  * @date 2023-09-14
  */
 public enum EditorEditAction {
-    /** 无操作 */
-    noop,
-
     /** 回删 */
     backspace,
     /** 全选 */
@@ -46,7 +43,6 @@ public enum EditorEditAction {
     /** 检查指定的编辑动作是否会造成内容修改 */
     public static boolean hasEffect(EditorEditAction action) {
         switch (action) {
-            case noop:
             case select_all:
             case copy:
                 return false;

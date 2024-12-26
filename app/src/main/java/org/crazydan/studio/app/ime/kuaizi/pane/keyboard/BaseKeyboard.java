@@ -384,7 +384,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * <p/>
      * 对于有替代字符的按键，根据连续点击次数确定替代字符并替换前序按键字符
      */
-    protected void start_Single_Key_Inputting(
+    protected void start_Single_CharKey_Inputting(
             KeyboardContext context, UserSingleTapMsgData data, boolean directInputting
     ) {
         play_SingleTick_InputAudio(context);
@@ -393,16 +393,16 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = context.inputList;
         inputList.clearPhraseCompletions();
 
-        Key<?> key = context.key();
-        if (key instanceof CharKey && ((CharKey) key).hasReplacement() && data.tick > 0) {
+        CharKey key = context.key();
+        if (key.hasReplacement() && data.tick > 0) {
             do_Single_CharKey_Replacement_Inputting(context, data.tick, directInputting);
         } else {
-            do_Single_Key_Inputting(context, directInputting);
+            do_Single_CharKey_Inputting(context, directInputting);
         }
     }
 
-    /** 单一按键输入 */
-    protected void do_Single_Key_Inputting(KeyboardContext context, boolean directInputting) {
+    /** 单一字符按键输入 */
+    protected void do_Single_CharKey_Inputting(KeyboardContext context, boolean directInputting) {
         if (directInputting) {
             commit_InputList_with_SingleKey_Only(context, false);
             return;
@@ -466,7 +466,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Key<?> lastKey = input.getLastKey();
         if (!key.canReplaceTheKey(lastKey)) {
             // 转为单字符输入
-            do_Single_Key_Inputting(context, false);
+            do_Single_CharKey_Inputting(context, false);
             return;
         }
 
