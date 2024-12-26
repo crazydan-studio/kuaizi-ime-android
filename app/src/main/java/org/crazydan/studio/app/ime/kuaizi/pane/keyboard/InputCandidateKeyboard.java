@@ -47,6 +47,8 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+        show_InputCandidate_Popup_when_LongPress_Msg(context, msg);
+
         if (try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }
@@ -86,6 +88,27 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
 
     /** 响应在控制按键上的消息 */
     protected void on_InputCandidate_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {}
+
+    /** 长按期间手指经过的数据按键，将会为其显示气泡提示 */
+    protected void show_InputCandidate_Popup_when_LongPress_Msg(KeyboardContext context, UserKeyMsg msg) {
+        switch (msg.type) {
+            case LongPress_Key_Start:
+            case LongPress_Key_Tick: {
+                Key<?> key = context.key();
+
+                if (!(key instanceof CtrlKey)) {
+                    String text = key.toString();
+
+                    show_InputChars_Input_Popup(context, text, false);
+                }
+                break;
+            }
+            case LongPress_Key_Stop: {
+                hide_InputChars_Input_Popup(context);
+                break;
+            }
+        }
+    }
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Doing} 消息 */
     protected void fire_InputCandidate_Choose_Doing(KeyboardContext context) {

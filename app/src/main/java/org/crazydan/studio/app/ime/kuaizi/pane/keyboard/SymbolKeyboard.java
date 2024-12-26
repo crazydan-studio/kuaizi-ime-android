@@ -76,14 +76,15 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
 
     @Override
     protected void on_InputCandidate_Choose_Doing_PagingKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        boolean continuous = false;
-
+        boolean continuous = true;
         switch (msg.type) {
-            case LongPress_Key_Tick:
-                continuous = true;
             case SingleTap_Key: {
-                play_SingleTick_InputAudio(context);
+                continuous = false;
                 show_InputChars_Input_Popup(context);
+            }
+            // Note: 长按显示提示气泡有基类处理
+            case LongPress_Key_Tick: {
+                play_SingleTick_InputAudio(context);
 
                 do_Single_Symbol_Inputting(context, continuous);
                 break;

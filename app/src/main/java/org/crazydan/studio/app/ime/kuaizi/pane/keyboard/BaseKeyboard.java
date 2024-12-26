@@ -907,7 +907,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 触发 {@link InputMsgType#InputAudio_Play_Doing} 消息 */
     private void fire_InputAudio_Play_Doing(KeyboardContext context, InputAudioPlayMsgData.AudioType audioType) {
         Key<?> key = context.key();
-        if (CtrlKey.isNoOp(key)) {
+        if (CtrlKey.isNoOp(key) && audioType != InputAudioPlayMsgData.AudioType.PageFlip) {
             return;
         }
 
@@ -1013,11 +1013,24 @@ public abstract class BaseKeyboard implements Keyboard {
      * 显示输入提示气泡
      *
      * @param hideDelayed
-     *         是否延迟隐藏
+     *         是否延迟隐藏，若为 false，则不自动隐藏气泡
      */
     protected void show_InputChars_Input_Popup(KeyboardContext context, boolean hideDelayed) {
         Key<?> key = context.key();
         String text = key != null ? key.getLabel() : null;
+
+        show_InputChars_Input_Popup(context, text, hideDelayed);
+    }
+
+    /**
+     * 显示输入提示气泡
+     *
+     * @param text
+     *         气泡显示内容
+     * @param hideDelayed
+     *         是否延迟隐藏，若为 false，则不自动隐藏气泡
+     */
+    protected void show_InputChars_Input_Popup(KeyboardContext context, String text, boolean hideDelayed) {
         InputMsgData data = new InputCharsInputPopupShowMsgData(text, hideDelayed);
 
         fire_InputMsg(context, InputChars_Input_Popup_Show_Doing, data);
