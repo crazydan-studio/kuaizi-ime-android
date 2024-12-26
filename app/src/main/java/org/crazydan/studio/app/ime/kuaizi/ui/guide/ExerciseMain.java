@@ -1143,9 +1143,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 return;
                             }
                             case InputChars_Input_Done: {
-                                Key<?> key = msg.data.key;
+                                InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                                Key<?> key = data.input.getLastKey();
 
-                                if (key != null && key.getLabel().equals(key_level_1.getLabel())) {
+                                if (key.getLabel().equals(key_level_1.getLabel())) {
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {
@@ -1191,9 +1192,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 return;
                             }
                             case InputChars_Input_Done: {
-                                Key<?> key = msg.data.key;
+                                InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                                Key<?> key = data.input.getLastKey();
 
-                                if (key != null && key.getLabel().equals(key_level_2.getLabel())) {
+                                if (key.getLabel().equals(key_level_2.getLabel())) {
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {
@@ -1250,7 +1252,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
                                             + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
 
-                                changePinyinWord(expected_auto_word);
+                                // Note: 对于选中的非拼音候选字，则不做替换
+                                if (word instanceof PinyinWord) {
+                                    changePinyinWord(expected_auto_word);
+                                }
                                 exercise.gotoStep("select_auto_word");
                             }
                             return;

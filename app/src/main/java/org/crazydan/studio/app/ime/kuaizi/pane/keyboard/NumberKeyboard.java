@@ -31,6 +31,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.NumberKeyTable;
 public class NumberKeyboard extends DirectInputKeyboard {
     private boolean needToShowExit;
 
+    public NumberKeyboard() {
+        super(null);
+    }
+
     @Override
     public Type getType() {return Type.Number;}
 

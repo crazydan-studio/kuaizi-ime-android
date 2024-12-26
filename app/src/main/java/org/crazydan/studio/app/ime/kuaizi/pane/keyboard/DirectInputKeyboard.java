@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
@@ -36,6 +37,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
  * @date 2023-07-30
  */
 public abstract class DirectInputKeyboard extends BaseKeyboard {
+
+    protected DirectInputKeyboard(PinyinDict dict) {
+        super(dict);
+    }
 
     @Override
     public void onMsg(KeyboardContext context, InputMsg msg) {

@@ -33,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
@@ -702,11 +703,14 @@ public class InputList implements UserInputMsgListener {
 
     /** 获取全部的表情符号 */
     public List<InputWord> getEmojis() {
-        return getInputs().stream()
-                          .filter(Input::isEmoji)
-                          .map(Input::getWord)
-                          .filter(Objects::nonNull)
-                          .collect(Collectors.toList());
+        return getInputs().stream().filter(Input::isEmoji).map((input) -> {
+            InputWord word = input.getWord();
+            Key<?> key = input.getFirstKey();
+
+            return word != null //
+                   ? word : key instanceof InputWordKey //
+                            ? ((InputWordKey) key).getWord() : null;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /** 获取拉丁文输入 */

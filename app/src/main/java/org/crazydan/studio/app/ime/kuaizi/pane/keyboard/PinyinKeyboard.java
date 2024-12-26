@@ -19,11 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
@@ -31,7 +29,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
@@ -53,10 +50,9 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKe
  * @date 2023-06-28
  */
 public class PinyinKeyboard extends BaseKeyboard {
-    private final PinyinDict dict;
 
     public PinyinKeyboard(PinyinDict dict) {
-        this.dict = dict;
+        super(dict);
     }
 
     @Override
@@ -663,34 +659,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     // ================== End: 对输入列表 提交选项 的操作 =====================
-
-    // ================== Start: 处理用户输入数据 =====================
-
-    @Override
-    protected void before_Commit_InputList(KeyboardContext context) {
-        handle_UserInput_Data(context, this.dict::saveUserInputData);
-    }
-
-    @Override
-    protected void after_Revoke_Committed_InputList(KeyboardContext context) {
-        handle_UserInput_Data(context, this.dict::revokeSavedUserInputData);
-    }
-
-    private void handle_UserInput_Data(KeyboardContext context, Consumer<UserInputData> consumer) {
-        if (this.config.userInputDataDisabled) {
-            return;
-        }
-
-        InputList inputList = context.inputList;
-        List<List<PinyinWord>> phrases = inputList.getPinyinPhraseWords();
-        List<InputWord> emojis = inputList.getEmojis();
-        List<String> latins = inputList.getLatins();
-
-        UserInputData data = new UserInputData(phrases, emojis, latins);
-        consumer.accept(data);
-    }
-
-    // ================== End: 处理用户输入数据 =====================
 
     /** 结束输入：始终针对 {@link InputList#getPending() 待输入}，并做状态复位 */
     private void stop_InputChars_Inputting(KeyboardContext context) {

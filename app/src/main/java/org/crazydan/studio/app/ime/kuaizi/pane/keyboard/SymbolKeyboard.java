@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.function.Supplier;
 
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
@@ -41,6 +42,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
  * @date 2024-12-10
  */
 public class SymbolKeyboard extends InputCandidateKeyboard {
+
+    public SymbolKeyboard(PinyinDict dict) {
+        super(dict);
+    }
 
     @Override
     public Type getType() {return Type.Symbol;}

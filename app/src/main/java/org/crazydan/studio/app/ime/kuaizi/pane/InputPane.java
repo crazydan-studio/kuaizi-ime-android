@@ -352,7 +352,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             case Number:
                 return new NumberKeyboard();
             case Symbol:
-                return new SymbolKeyboard();
+                return new SymbolKeyboard(this.dict);
             case Editor:
                 return new EditorKeyboard();
             case Latin:

@@ -18,16 +18,21 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
@@ -78,8 +83,18 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_
 public abstract class BaseKeyboard implements Keyboard {
     protected final Logger log = Logger.getLogger(getClass());
 
+    /**
+     * 为确保在各键盘内提交输入均能对{@link #handle_UserInput_Data 用户输入做保存}，
+     * 因此，需要在基类中统一调用字典的存储接口
+     */
+    protected final PinyinDict dict;
+
     protected KeyboardConfig config;
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
+
+    protected BaseKeyboard(PinyinDict dict) {
+        this.dict = dict;
+    }
 
     @Override
     public boolean updateConfig(KeyboardConfig config) {
@@ -723,9 +738,6 @@ public abstract class BaseKeyboard implements Keyboard {
         commit_InputList(context, canBeRevoked, needToBeReplaced, false);
     }
 
-    /** 在 {@link #commit_InputList} 之前需要做的事情 */
-    protected void before_Commit_InputList(KeyboardContext context) {}
-
     /** 提交输入列表 */
     protected void commit_InputList(
             KeyboardContext context, boolean canBeRevoked, boolean needToBeReplaced, boolean isPairSymbol
@@ -776,9 +788,6 @@ public abstract class BaseKeyboard implements Keyboard {
         choose_InputList_Selected_Input(context);
     }
 
-    /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
-    protected void after_Revoke_Committed_InputList(KeyboardContext context) {}
-
     /**
      * 回删输入列表中的输入或 目标编辑器 的内容
      * <p/>
@@ -793,6 +802,39 @@ public abstract class BaseKeyboard implements Keyboard {
         } else {
             do_Editor_Backspacing(context);
         }
+    }
+
+    /** 在 {@link #commit_InputList} 之前需要做的事情 */
+    protected void before_Commit_InputList(KeyboardContext context) {
+        if (this.dict != null) {
+            handle_UserInput_Data(context, this.dict::saveUserInputData);
+        }
+    }
+
+    /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
+    protected void after_Revoke_Committed_InputList(KeyboardContext context) {
+        if (this.dict != null) {
+            handle_UserInput_Data(context, this.dict::revokeSavedUserInputData);
+        }
+    }
+
+    /**
+     * 在未{@link KeyboardConfig#userInputDataDisabled 禁用}对用户输入数据的保存的情况下，
+     * 调用 <code>consumer</code> 对{@link UserInputData 用户输入数据}做处理
+     */
+    protected void handle_UserInput_Data(KeyboardContext context, Consumer<UserInputData> consumer) {
+        if (this.config.userInputDataDisabled) {
+            return;
+        }
+
+        InputList inputList = context.inputList;
+
+        List<List<PinyinWord>> phrases = inputList.getPinyinPhraseWords();
+        List<InputWord> emojis = inputList.getEmojis();
+        List<String> latins = inputList.getLatins();
+
+        UserInputData data = new UserInputData(phrases, emojis, latins);
+        consumer.accept(data);
     }
 
     // ======================== End: 操作输入列表 ========================

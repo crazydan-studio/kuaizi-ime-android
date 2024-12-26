@@ -208,10 +208,10 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             String spell = word.getSpell().value;
             String variant = word.getVariant();
 
-            if (option.wordVariantUsed && variant != null) {
+            if (option != null && option.wordVariantUsed && variant != null) {
                 value = variant;
             }
-            if (option.wordSpellUsedMode != null && spell != null) {
+            if (option != null && option.wordSpellUsedMode != null && spell != null) {
                 switch (option.wordSpellUsedMode) {
                     case following:
                         value = String.format("%s(%s)", value, spell);

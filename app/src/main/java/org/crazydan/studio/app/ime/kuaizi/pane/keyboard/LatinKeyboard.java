@@ -33,10 +33,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.LatinKeyTable;
  * @date 2023-07-29
  */
 public class LatinKeyboard extends DirectInputKeyboard {
-    private final PinyinDict dict;
 
     public LatinKeyboard(PinyinDict dict) {
-        this.dict = dict;
+        super(dict);
     }
 
     @Override

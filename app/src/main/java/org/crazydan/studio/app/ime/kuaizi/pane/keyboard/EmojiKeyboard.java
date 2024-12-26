@@ -38,10 +38,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
  * @date 2024-12-10
  */
 public class EmojiKeyboard extends InputCandidateKeyboard {
-    private final PinyinDict dict;
 
     public EmojiKeyboard(PinyinDict dict) {
-        this.dict = dict;
+        super(dict);
     }
 
     @Override
