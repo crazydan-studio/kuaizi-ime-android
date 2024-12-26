@@ -470,6 +470,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key<?> key_ctrl_commit_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
         Key<?> key_ctrl_commit_opt_with_pinyin
                 = keyTable.commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin);
+        Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；",
                          case_word.getValue(),
@@ -509,7 +510,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 });
 
         exercise.newStep("请点击输入提交按键%s将当前形式的输入提交至目标编辑器。"
-                         + "<b>注</b>：长按该按键可退出<b>输入提交选项</b>模式；", key_ctrl_commit) //
+                         + "<b>注</b>：可点击按键%s退出<b>输入提交选项</b>模式；", key_ctrl_commit, key_ctrl_exit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         exercise.gotoNextStep();

@@ -87,7 +87,7 @@ public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> im
         whenViewReady(this.textView, View::requestFocus);
     }
 
-    private void resetTextView(Exercise.ViewData data) {
+    protected void resetTextView(Exercise.ViewData data) {
         whenViewReady(this.textView, (view) -> {
             String text = data.sampleText;
             view.setText(text);
