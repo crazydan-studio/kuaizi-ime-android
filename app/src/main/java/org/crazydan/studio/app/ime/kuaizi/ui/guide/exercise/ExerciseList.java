@@ -79,7 +79,7 @@ public class ExerciseList implements InputMsgListener, ExerciseMsgListener {
     @Override
     public void onMsg(InputMsg msg) {
         if (msg.type == InputMsgType.Config_Update_Done) {
-            ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+            ConfigUpdateMsgData data = msg.data();
             if (data.key == ConfigKey.theme) {
                 this.exercises.forEach((exercise) -> {
                     exercise.updateStepTheme(data.newValue);

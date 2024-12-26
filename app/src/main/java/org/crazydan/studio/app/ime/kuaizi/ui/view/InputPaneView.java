@@ -146,15 +146,15 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 break;
             }
             case Config_Update_Done: {
-                on_Config_Update_Done_Msg((ConfigUpdateMsgData) msg.data);
+                on_Config_Update_Done_Msg(msg.data());
                 break;
             }
             case InputAudio_Play_Doing: {
-                on_InputAudio_Play_Doing_Msg((InputAudioPlayMsgData) msg.data);
+                on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
             case Input_Completion_Update_Done: {
-                InputCompletionUpdateMsgData data = (InputCompletionUpdateMsgData) msg.data;
+                InputCompletionUpdateMsgData data = msg.data();
                 showInputCompletionListPopupWindow(data.completions);
                 break;
             }
@@ -164,7 +164,7 @@ public class InputPaneView extends FrameLayout implements UserMsgListener, Input
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
-                InputCharsInputPopupShowMsgData data = (InputCharsInputPopupShowMsgData) msg.data;
+                InputCharsInputPopupShowMsgData data = msg.data();
                 showInputKeyPopupWindow(data.text, data.hideDelayed);
                 break;
             }

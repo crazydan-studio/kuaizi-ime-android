@@ -158,7 +158,7 @@ public abstract class BaseKeyboard implements Keyboard {
     public void onMsg(KeyboardContext context, InputMsg msg) {
         switch (msg.type) {
             case Input_Choose_Doing: {
-                choose_InputList_Input(context, msg.data.input);
+                choose_InputList_Input(context, msg.data().input);
                 break;
             }
             case InputList_Clean_Done: {
@@ -217,7 +217,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Enter:
                         // 长按 tick 视为连续单击
                         return try_On_Common_CtrlKey_Msg(context,
-                                                         new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data));
+                                                         new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data()));
                 }
                 break;
             }
@@ -303,7 +303,8 @@ public abstract class BaseKeyboard implements Keyboard {
                     play_SingleTick_InputAudio(context);
 
                     // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
-                    Motion motion = ((UserFingerFlippingMsgData) msg.data).motion;
+                    UserFingerFlippingMsgData data = msg.data();
+                    Motion motion = data.motion;
 
                     do_Editor_Cursor_Moving(context, motion);
                     return true;

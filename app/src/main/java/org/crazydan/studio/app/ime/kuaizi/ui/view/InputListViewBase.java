@@ -118,7 +118,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                 // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
                 // 注：事件是从父 InputList 传递到子 InputList 的，
                 // 所以，无法优先处理子 InputList 的事件
-                boolean needToLockScrolling = msg.data.input.isMathExpr();
+                boolean needToLockScrolling = msg.data().input.isMathExpr();
 
                 update(msg.inputFactory, true, needToLockScrolling);
                 break;

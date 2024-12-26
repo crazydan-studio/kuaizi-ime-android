@@ -70,8 +70,8 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
 
     /** 响应翻页消息，以根据 {@link UserKeyMsg} 更新 {@link PagingStateData 分页数据} */
     protected void on_InputCandidate_Choose_Doing_FingerFlipping_Msg(KeyboardContext context, UserKeyMsg msg) {
-        PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
-        UserFingerFlippingMsgData msgData = (UserFingerFlippingMsgData) msg.data;
+        PagingStateData<?> stateData = this.state.data();
+        UserFingerFlippingMsgData msgData = msg.data();
 
         Motion motion = msgData.motion;
         boolean pageUp = motion.direction == Motion.Direction.up || motion.direction == Motion.Direction.left;
@@ -112,7 +112,7 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
 
     /** 触发 {@link InputMsgType#InputCandidate_Choose_Doing} 消息 */
     protected void fire_InputCandidate_Choose_Doing(KeyboardContext context) {
-        PagingStateData<?> stateData = (PagingStateData<?>) this.state.data;
+        PagingStateData<?> stateData = this.state.data();
 
         fire_Common_InputMsg(context, InputCandidate_Choose_Doing, stateData.input);
     }

@@ -27,7 +27,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
  */
 public class State {
     public final Type type;
-    public final Data data;
+    private final Data data;
+
     public final State previous;
 
     public State(Type type) {
@@ -46,6 +47,11 @@ public class State {
         this.type = type;
         this.data = data;
         this.previous = previous;
+    }
+
+    /** 用于自动做 {@link #data} 的类型转换 */
+    public <T extends Data> T data() {
+        return (T) this.data;
     }
 
     public enum Type {

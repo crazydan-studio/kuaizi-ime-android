@@ -23,10 +23,15 @@ package org.crazydan.studio.app.ime.kuaizi.pane.msg;
  */
 public abstract class BaseMsg<T, D> {
     public final T type;
-    public final D data;
+    private final D data;
 
     public BaseMsg(T type, D data) {
         this.type = type;
         this.data = data;
+    }
+
+    /** 用于自动做 {@link #data} 的类型转换 */
+    public <DD extends D> DD data() {
+        return (DD) this.data;
     }
 }

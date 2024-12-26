@@ -77,8 +77,9 @@ public class EditorKeyboard extends DirectInputKeyboard {
                 }
                 break;
             }
-            case FingerFlipping:
-                Motion motion = ((UserFingerFlippingMsgData) msg.data).motion;
+            case FingerFlipping: {
+                UserFingerFlippingMsgData data = msg.data();
+                Motion motion = data.motion;
                 switch (key.getType()) {
                     case Editor_Cursor_Locator:
                         play_SingleTick_InputAudio(context);
@@ -92,6 +93,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
                         break;
                 }
                 break;
+            }
         }
     }
 

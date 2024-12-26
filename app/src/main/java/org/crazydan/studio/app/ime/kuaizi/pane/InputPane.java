@@ -206,7 +206,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     @Override
     public void onMsg(UserKeyMsg msg) {
         // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
-        Key<?> key = msg.data.key;
+        Key<?> key = msg.data().key;
         KeyboardContext context = createKeyboardContext().newWithKey(key);
 
         this.keyboard.onMsg(context, msg);
@@ -227,12 +227,12 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
-                on_Keyboard_Switch_Doing_Msg((KeyboardSwitchMsgData) msg.data);
+                on_Keyboard_Switch_Doing_Msg(msg.data());
                 // Note: 在键盘切换过程中，不向上转发消息
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
-                on_Keyboard_HandMode_Switch_Doing_Msg((KeyboardHandModeSwitchMsgData) msg.data);
+                on_Keyboard_HandMode_Switch_Doing_Msg(msg.data());
                 return;
             }
             // 向键盘派发 InputList 的消息
@@ -250,7 +250,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             }
         }
 
-        fire_InputMsg(msg.type, msg.data);
+        fire_InputMsg(msg.type, msg.data());
     }
 
     /** 发送 {@link InputMsg} 消息：附带空的消息数据 */
@@ -348,7 +348,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     private Keyboard createKeyboard(Keyboard.Type type) {
         switch (type) {
 //            case Math:
-//                return new MathKeyboard();
+//                return new MathKeyboard(this.dict);
             case Number:
                 return new NumberKeyboard();
             case Symbol:

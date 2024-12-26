@@ -75,7 +75,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
-                PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData = this.state.data();
                 PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
                 return () -> keyTable.createInputCandidateKeys(charsTree,
@@ -86,8 +86,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                                                                stateData.getFilter());
             }
             case InputCandidate_Advance_Filter_Doing: {
-                PinyinCandidateAdvanceFilterStateData stateData
-                        = (PinyinCandidateAdvanceFilterStateData) this.state.data;
+                PinyinCandidateAdvanceFilterStateData stateData = this.state.data();
 
                 return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
                                                                             stateData.getPagingData(),
@@ -195,7 +194,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 play_SingleTick_InputAudio(context);
                 show_InputChars_Input_Popup(context);
 
-                PinyinCandidateChooseStateData stateData = (PinyinCandidateChooseStateData) this.state.data;
+                PinyinCandidateChooseStateData stateData = this.state.data();
 
                 PinyinWord.Filter filter = stateData.getFilter();
                 filter.addSpellByKey(key);
@@ -344,7 +343,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
-        PinyinCandidateChooseStateData prevStateData = (PinyinCandidateChooseStateData) this.state.data;
+        PinyinCandidateChooseStateData prevStateData = this.state.data();
         PinyinWord.Filter filter = prevStateData.getFilter();
 
         PinyinKeyTable keyTable = createKeyTable(inputList);
@@ -368,7 +367,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         }
 
         CtrlKey key = context.key();
-        PinyinCandidateAdvanceFilterStateData stateData = (PinyinCandidateAdvanceFilterStateData) this.state.data;
+        PinyinCandidateAdvanceFilterStateData stateData = this.state.data();
         switch (key.getType()) {
             case Filter_PinyinCandidate_by_Spell:
             case Filter_PinyinCandidate_by_Radical: {
@@ -383,8 +382,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
             case Confirm_PinyinCandidate_Filter: {
                 play_SingleTick_InputAudio(context);
 
-                PinyinCandidateChooseStateData prevStateData
-                        = (PinyinCandidateChooseStateData) this.state.previous.data;
+                PinyinCandidateChooseStateData prevStateData = this.state.previous.data();
                 prevStateData.updateFilter(stateData.getFilter());
 
                 exit_Keyboard(context);

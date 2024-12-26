@@ -103,7 +103,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         switch (msg.type) {
             case FingerMoving_Start: {
                 // 对光标移动和文本选择按键启用轨迹
-                if (CtrlKey.isAny(msg.data.key, //
+                if (CtrlKey.isAny(msg.data().key, //
                                   CtrlKey.Type.Editor_Cursor_Locator, //
                                   CtrlKey.Type.Editor_Range_Selector) //
                     && !isGestureTrailerDisabled() //
@@ -133,7 +133,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
 
         switch (msg.type) {
             case Config_Update_Done: {
-                ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+                ConfigUpdateMsgData data = msg.data();
                 // Note: 若非主题更新，则无需更新视图
                 if (data.key != ConfigKey.theme) {
                     return;
@@ -152,7 +152,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
             case InputChars_Input_Doing: {
                 // 滑屏输入显示轨迹
-                if (((InputCharsInputMsgData) msg.data).inputMode == InputCharsInputMsgData.InputMode.slip
+                InputCharsInputMsgData data = msg.data();
+                if (data.inputMode == InputCharsInputMsgData.InputMode.slip //
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);

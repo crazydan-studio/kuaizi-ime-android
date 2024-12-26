@@ -61,7 +61,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
     public KeyFactory getKeyFactory(InputList inputList) {
         SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
 
-        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
+        EmojiChooseStateData stateData = this.state.data();
 
         return () -> keyTable.createEmojiKeys(stateData.getGroups(),
                                               stateData.getPagingData(),
@@ -123,7 +123,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
     }
 
     private void do_Emoji_Choosing(KeyboardContext context, String group) {
-        EmojiChooseStateData stateData = (EmojiChooseStateData) this.state.data;
+        EmojiChooseStateData stateData = this.state.data();
         stateData.setGroup(group);
 
         fire_InputCandidate_Choose_Doing(context);

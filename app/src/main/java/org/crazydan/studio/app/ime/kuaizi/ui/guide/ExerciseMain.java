@@ -483,7 +483,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
-                        KeyboardStateChangeMsgData data = (KeyboardStateChangeMsgData) msg.data;
+                        KeyboardStateChangeMsgData data = msg.data();
                         Key<?> key = data.key;
 
                         if (data.state.type == State.Type.InputList_Commit_Option_Choose_Doing //
@@ -500,7 +500,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_commit_opt_with_pinyin) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Done) {
-                        Key<?> key = msg.data.key;
+                        Key<?> key = msg.data().key;
 
                         if (key_ctrl_commit_opt_with_pinyin.equals(key)) {
                             exercise.gotoNextStep();
@@ -547,7 +547,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Cursor_Move_Doing) {
-                        Key<?> key = msg.data.key;
+                        Key<?> key = msg.data().key;
 
                         if (key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
@@ -561,7 +561,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
-                        KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                        KeyboardSwitchMsgData data = msg.data();
                         Key<?> key = data.key;
 
                         if (data.type == Keyboard.Type.Editor && key_ctrl_cursor_locator.equals(key)) {
@@ -576,7 +576,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请在内容选择按键%s上快速滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Range_Select_Doing) {
-                        Key<?> key = msg.data.key;
+                        Key<?> key = msg.data().key;
 
                         if (key_ctrl_range_selector.equals(key)) {
                             exercise.gotoNextStep();
@@ -629,7 +629,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 exercise.newStep("请点击按键%s以输入空格；", key_ctrl_space) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Done) {
-                                Key<?> key = msg.data.key;
+                                Key<?> key = msg.data().key;
 
                                 if (key.getText().equals(key_ctrl_space.getText())) {
                                     exercise.gotoNextStep();
@@ -652,14 +652,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action((msg) -> {
                         switch (msg.type) {
                             case Keyboard_Switch_Done: {
-                                KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                                KeyboardSwitchMsgData data = msg.data();
                                 if (data.type != Keyboard.Type.Pinyin) {
                                     showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字母");
                                 }
                                 return;
                             }
                             case InputChars_Input_Doing: {
-                                InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                                InputCharsInputMsgData data = msg.data();
                                 Key<?> key = data.key;
                                 boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
                                                   && key.getText().equals(String.valueOf(ch));
@@ -689,7 +689,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     switch (msg.type) {
                         case Keyboard_Switch_Done: {
-                            KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                            KeyboardSwitchMsgData data = msg.data();
                             if (data.type != Keyboard.Type.Pinyin) {
                                 showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字符");
                             }
@@ -697,7 +697,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         }
                         case InputChars_Input_Done:
                         case InputChars_Input_Doing: {
-                            InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                            InputCharsInputMsgData data = msg.data();
                             Key<?> key = data.key;
                             boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
                                               && key.getText().equals(tanhao);
@@ -738,7 +738,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请点击按键%s以切换到算术键盘；", key_ctrl_switch_math) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
-                        Keyboard.Type type = ((KeyboardSwitchMsgData) msg.data).type;
+                        KeyboardSwitchMsgData data = msg.data();
+                        Keyboard.Type type = data.type;
 
                         if (type == Keyboard.Type.Math) {
                             exercise.gotoNextStep();
@@ -766,7 +767,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                  key_number.getText()) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key<?> key = msg.data.key;
+                                Key<?> key = msg.data().key;
 
                                 if (key.getText().equals(key_number.getText())) {
                                     exercise.gotoNextStep();
@@ -785,7 +786,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                  key_op.getText()) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key<?> key = msg.data.key;
+                                Key<?> key = msg.data().key;
 
                                 if (key.getText().equals(key_op.getText())) {
                                     exercise.gotoNextStep();
@@ -868,7 +869,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请点击回车按键%s以开始英文输入演示动画；", key_ctrl_enter) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
-                        if (key_ctrl_enter.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
+                        InputListCommitMsgData data = msg.data();
+                        if (key_ctrl_enter.getText().contentEquals(data.text)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -927,7 +929,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 switch (msg.type) {
                     // Note：拉丁文输入为直输
                     case InputList_Commit_Doing: {
-                        if (key.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
+                        InputListCommitMsgData data = msg.data();
+                        if (key.getText().contentEquals(data.text)) {
                             exercise.gotoNextStep();
                         } else {
                             restart.run();
@@ -936,7 +939,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     }
                     case Keyboard_State_Change_Done: {
                         // 忽略正常切换的情况
-                        if (CtrlKey.isNoOp(msg.data.key)) {
+                        if (CtrlKey.isNoOp(msg.data().key)) {
                             restart.run();
                             return;
                         }
@@ -958,7 +961,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_space) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
-                        if (key_ctrl_space.getText().contentEquals(((InputListCommitMsgData) msg.data).text)) {
+                        InputListCommitMsgData data = msg.data();
+                        if (key_ctrl_space.getText().contentEquals(data.text)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -1031,9 +1035,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                                          + key.getLabel()
                                                          + "</span> ");
                 step.action((msg) -> {
+                    Key<?> msgKey = msg.data().key;
                     switch (msg.type) {
                         case InputChars_Input_Doing: {
-                            if (key.getText().equals(msg.data.key.getText())) {
+                            if (key.getText().equals(msgKey.getText())) {
                                 exercise.gotoNextStep();
                             } else {
                                 restart.run();
@@ -1041,7 +1046,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                         case InputChars_Input_Done: {
-                            if (lastKey.getText().equals(msg.data.key.getText())) {
+                            if (lastKey.getText().equals(msgKey.getText())) {
                                 changePinyinWord(word);
                             } else {
                                 restart.run();
@@ -1051,10 +1056,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         case Keyboard_State_Change_Done: {
                             // InputChars_Input_Done 触发后，键盘布局还未发生变化，
                             // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
-                            if (lastKey.getText().equals(msg.data.key.getText())) {
+                            if (lastKey.getText().equals(msgKey.getText())) {
                                 exercise.gotoNextStep();
                                 return;
-                            } else if (CtrlKey.isNoOp(msg.data.key)) {
+                            } else if (CtrlKey.isNoOp(msgKey)) {
                                 restart.run();
                                 return;
                             }
@@ -1098,14 +1103,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                         case Keyboard_Switch_Done: {
-                            KeyboardSwitchMsgData data = (KeyboardSwitchMsgData) msg.data;
+                            KeyboardSwitchMsgData data = msg.data();
                             if (data.type != Keyboard.Type.Pinyin) {
                                 showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入拼音");
                             }
                             return;
                         }
                         case InputChars_Input_Doing: {
-                            InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                            InputCharsInputMsgData data = msg.data();
                             Key<?> key = data.key;
 
                             if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
@@ -1132,7 +1137,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action((msg) -> {
                         switch (msg.type) {
                             case InputChars_Input_Doing: {
-                                Key<?> key = msg.data.key;
+                                Key<?> key = msg.data().key;
 
                                 if (!key.getLabel().equals(key_level_1.getLabel())) {
                                     showWarning("请重新滑回到按键"
@@ -1142,7 +1147,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 return;
                             }
                             case InputChars_Input_Done: {
-                                InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                                InputCharsInputMsgData data = msg.data();
                                 Key<?> key = data.input.getLastKey();
 
                                 if (key.getLabel().equals(key_level_1.getLabel())) {
@@ -1161,7 +1166,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .name("input_level_1") //
                     .action((msg) -> {
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                            Key<?> key = msg.data.key;
+                            Key<?> key = msg.data().key;
 
                             if (key.getLabel().equals(key_level_1.getLabel())) {
                                 exercise.gotoNextStep();
@@ -1180,7 +1185,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action((msg) -> {
                         switch (msg.type) {
                             case InputChars_Input_Doing: {
-                                Key<?> key = msg.data.key;
+                                Key<?> key = msg.data().key;
 
                                 if (!key.getLabel().startsWith(key_level_0.getLabel() + key_level_1.getLabel())) {
                                     showWarning("请重新滑回到按键"
@@ -1191,7 +1196,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 return;
                             }
                             case InputChars_Input_Done: {
-                                InputCharsInputMsgData data = (InputCharsInputMsgData) msg.data;
+                                InputCharsInputMsgData data = msg.data();
                                 Key<?> key = data.input.getLastKey();
 
                                 if (key.getLabel().equals(key_level_2.getLabel())) {
@@ -1217,7 +1222,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                         case InputCandidate_Choose_Doing: {
-                            CharInput input = (CharInput) msg.data.input;
+                            CharInput input = (CharInput) msg.data().input;
                             InputWord word = input.getWord();
 
                             if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
@@ -1242,7 +1247,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                         case InputCandidate_Choose_Done: {
-                            CharInput input = (CharInput) msg.data.input;
+                            CharInput input = (CharInput) msg.data().input;
                             InputWord word = input.getWord();
 
                             if (word != null && case_word.getValue().equals(word.getValue())) {

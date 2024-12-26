@@ -44,7 +44,7 @@ public class InputListView extends InputListViewBase implements InputMsgListener
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
             case Config_Update_Done: {
-                ConfigUpdateMsgData data = (ConfigUpdateMsgData) msg.data;
+                ConfigUpdateMsgData data = msg.data();
                 // Note: 若非主题更新，则无需更新视图
                 if (data.key != ConfigKey.theme) {
                     break;

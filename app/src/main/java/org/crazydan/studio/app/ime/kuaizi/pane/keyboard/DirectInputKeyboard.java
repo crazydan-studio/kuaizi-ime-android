@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 
 /**
  * 按键直接输入目标组件的键盘，
@@ -75,7 +74,7 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         InputList inputList = context.inputList;
         boolean directInputting = inputList.isEmpty();
 
-        start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, directInputting);
+        start_Single_CharKey_Inputting(context, msg.data(), directInputting);
     }
 
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {

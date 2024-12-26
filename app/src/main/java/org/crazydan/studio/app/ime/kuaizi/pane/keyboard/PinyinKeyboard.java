@@ -69,7 +69,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
-                InputCharsSlipStateData stateData = ((InputCharsSlipStateData) this.state.data);
+                InputCharsSlipStateData stateData = this.state.data();
 
                 String level0Char = stateData.getLevel0Key() != null ? stateData.getLevel0Key().getText() : null;
                 if (level0Char == null) {
@@ -86,12 +86,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                                                   stateData.getLevel2NextChars());
             }
             case InputChars_Flip_Doing: {
-                InputCharsFlipStateData stateData = ((InputCharsFlipStateData) this.state.data);
+                InputCharsFlipStateData stateData = this.state.data();
 
                 return (KeyFactory.NoAnimation) () -> keyTable.createFullCharKeys(charsTree, stateData.startChar);
             }
             case InputChars_XPad_Input_Doing: {
-                InputCharsSlipStateData stateData = ((InputCharsSlipStateData) this.state.data);
+                InputCharsSlipStateData stateData = this.state.data();
 
                 String level0Char = stateData.getLevel0Key() != null ? stateData.getLevel0Key().getText() : null;
                 if (level0Char == null) {
@@ -106,7 +106,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                              stateData.getLevel2NextChars());
             }
             case InputList_Commit_Option_Choose_Doing: {
-                InputListCommitOptionChooseStateData stateData = (InputListCommitOptionChooseStateData) this.state.data;
+                InputListCommitOptionChooseStateData stateData = this.state.data();
 
                 return () -> keyTable.createInputListCommittingOptionKeys(stateData.getOption(),
                                                                           stateData.hasSpell(),
@@ -121,7 +121,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                         case InputChars_Slip_Doing:
                         case InputChars_Flip_Doing:
                             // Note：将前序状态置空，以确保按键动画仅在前后状态变化时被禁用一次
-                            this.state = new State(this.state.type, this.state.data);
+                            this.state = new State(this.state.type, (State.Data) this.state.data());
 
                             return (KeyFactory.NoAnimation) keyTable::createKeys;
                     }
@@ -212,7 +212,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case SingleTap_Key: {
                 // 单字符输入
-                start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, false);
+                start_Single_CharKey_Inputting(context, msg.data(), false);
                 break;
             }
         }
@@ -311,7 +311,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         play_DoubleTick_InputAudio(context);
         show_InputChars_Input_Popup(context, false);
 
-        InputCharsSlipStateData stateData = ((InputCharsSlipStateData) this.state.data);
+        InputCharsSlipStateData stateData = this.state.data();
 
         // 添加输入拼音的后继字母
         Key.Level currentKeyLevel = key.getLevel();
@@ -436,7 +436,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
             start_InputChars_XPad_Inputting(context);
         } else {
-            start_Single_CharKey_Inputting(context, (UserSingleTapMsgData) msg.data, false);
+            start_Single_CharKey_Inputting(context, msg.data(), false);
         }
     }
 
@@ -458,7 +458,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         play_SingleTick_InputAudio(context);
         show_InputChars_Input_Popup(context);
 
-        InputCharsSlipStateData stateData = ((InputCharsSlipStateData) this.state.data);
+        InputCharsSlipStateData stateData = this.state.data();
         Key.Level currentKeyLevel = key.getLevel();
 
         PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
@@ -611,7 +611,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private boolean update_InputList_Commit_Option(KeyboardContext context) {
         CtrlKey key = context.key();
         InputList inputList = context.inputList;
-        InputListCommitOptionChooseStateData stateData = (InputListCommitOptionChooseStateData) this.state.data;
+        InputListCommitOptionChooseStateData stateData = this.state.data();
         CtrlKey.InputListCommitOption.Option option = ((CtrlKey.InputListCommitOption) key.getOption()).value();
 
         Input.Option oldInputOption = inputList.getOption();

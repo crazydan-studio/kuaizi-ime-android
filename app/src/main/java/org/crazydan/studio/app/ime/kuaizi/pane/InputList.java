@@ -83,8 +83,8 @@ public class InputList implements UserInputMsgListener {
     public void onMsg(UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_Input: {
-                Input<?> input = msg.data.target;
-                switch (msg.data.where) {
+                Input<?> input = msg.data().target;
+                switch (msg.data().where) {
                     case head:
                         input = getFirstInput();
                         break;
@@ -105,7 +105,7 @@ public class InputList implements UserInputMsgListener {
                 break;
             }
             case SingleTap_CompletionInput: {
-                CompletionInput completion = (CompletionInput) msg.data.target;
+                CompletionInput completion = (CompletionInput) msg.data().target;
 
                 applyCompletion(completion);
                 // Note：待输入的补全数据将在 confirm 时清除

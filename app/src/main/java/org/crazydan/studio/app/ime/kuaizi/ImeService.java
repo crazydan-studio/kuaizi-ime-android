@@ -241,7 +241,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             case InputList_Commit_Doing: {
                 this.editorChangeRevertion = null;
 
-                InputListCommitMsgData d = (InputListCommitMsgData) msg.data;
+                InputListCommitMsgData d = msg.data();
                 commitText(d.text, d.replacements);
                 break;
             }
@@ -253,20 +253,20 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             case InputList_PairSymbol_Commit_Doing: {
                 this.editorChangeRevertion = null;
 
-                InputListPairSymbolCommitMsgData d = (InputListPairSymbolCommitMsgData) msg.data;
+                InputListPairSymbolCommitMsgData d = msg.data();
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
-                moveCursor((EditorCursorMsgData) msg.data);
+                moveCursor(msg.data());
                 break;
             }
             case Editor_Range_Select_Doing: {
-                selectText((EditorCursorMsgData) msg.data);
+                selectText(msg.data());
                 break;
             }
             case Editor_Edit_Doing: {
-                EditorEditMsgData d = (EditorEditMsgData) msg.data;
+                EditorEditMsgData d = msg.data();
 
                 if (EditorEditAction.hasEffect(d.action)) {
                     this.editorChangeRevertion = null;

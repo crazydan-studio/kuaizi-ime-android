@@ -214,7 +214,7 @@ public class Exercise implements InputMsgListener {
             return;
         }
 
-        Key<?> key = msg.data.key;
+        Key<?> key = msg.data().key;
         this.log.debug("Got %s %s: key - %s", msg.getClass().getSimpleName(), msg.type, key);
 
         switch (msg.type) {
