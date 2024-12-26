@@ -166,7 +166,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype) {
         // Note: 切换系统键盘时，视图可能还未创建
-        if (this.inputPaneView == null) {
+        if (this.inputPane == null) {
             return;
         }
 
@@ -176,14 +176,20 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
     /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
     @Override
     public void onFinishInputView(boolean finishingInput) {
-        this.inputPane.hide();
+        if (this.inputPane != null) {
+            this.inputPane.hide();
+        }
+
         super.onFinishInputView(finishingInput);
     }
 
     /** 输入结束：彻底退出编辑。注意，熄屏也会调用该接口 */
     @Override
     public void onFinishInput() {
-        this.inputPane.exit();
+        // Note: 在 #onCreateInputView 之前，该接口也会被调用
+        if (this.inputPane != null) {
+            this.inputPane.exit();
+        }
         this.editorChangeRevertion = null;
 
         super.onFinishInput();
@@ -211,7 +217,10 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
 
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
-        this.inputPane.onChanged(key, oldValue, newValue);
+        // Note: 配置变更也可能发生在输入法未初始化时
+        if (this.inputPane != null) {
+            this.inputPane.onChanged(key, oldValue, newValue);
+        }
     }
 
     @Override

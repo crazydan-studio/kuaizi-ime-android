@@ -238,7 +238,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             menu.add(Menu.NONE, i + DRAWER_NAV_MENU_ITEM_BASE_ID, i, title).setCheckable(true);
         }
 
-        this.exerciseListView.activatePage(2);
+        this.exerciseListView.activatePage(1);
     }
 
     /** 响应 {@link ExerciseListView} 视图的交互消息 */
