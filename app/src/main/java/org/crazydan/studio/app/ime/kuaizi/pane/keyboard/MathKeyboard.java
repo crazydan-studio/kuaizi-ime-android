@@ -66,33 +66,34 @@ public class MathKeyboard extends BaseKeyboard {
     }
 
     @Override
+    public void stop(KeyboardContext context) {
+        stop_Math_Inputting(context);
+    }
+
+    @Override
     public void onMsg(KeyboardContext context, InputMsg msg) {
-//        switch (msg.type) {
-//            case Input_Completion_Apply_Done: {
-//                withMathExprPending(parentInputList);
-//                fire_InputChars_Input_Doing_in_TapMode(null, null);
-//                break;
-//            }
-//            case Input_Choose_Doing: {
-//                Input<?> input = msg.data().input;
-//
-//                // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
-//                parentInputList.confirmPendingAndSelect(input);
-//
-//                // 仅处理算术表达式输入
-//                if (!input.isMathExpr()) {
-//                    super.switch_Keyboard_to_Previous(null);
-//                } else {
-//                    resetMathInputList();
-//                }
-//                break;
-//            }
-//            case InputList_Clean_Done:
-//            case InputList_Cleaned_Cancel_Done: {
-//                resetMathInputList();
-//                break;
-//            }
-//        }
+        switch (msg.type) {
+            case Input_Choose_Doing: {
+                InputList parentInputList = getParentInputList(context);
+
+                Input<?> input = msg.data().input;
+                // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
+                parentInputList.confirmPendingAndSelect(input);
+
+                // 仅处理算术表达式输入
+                if (!input.isMathExpr()) {
+                    super.switch_Keyboard_to_Previous(null);
+                } else {
+                    resetMathInputList(context);
+                }
+                break;
+            }
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done: {
+                resetMathInputList(context);
+                break;
+            }
+        }
     }
 
     @Override
@@ -254,6 +255,85 @@ public class MathKeyboard extends BaseKeyboard {
         }
     }
 
+    /** 进入算术输入状态 */
+    private void start_Math_Inputting(KeyboardContext context) {
+        InputList parentInputList = getParentInputList(context);
+
+        // 先提交从其他键盘切过来之前的待输入
+        if (parentInputList.isGapSelected() //
+            && !parentInputList.hasEmptyPending() //
+            && !parentInputList.getPending().isMathExpr()) {
+            parentInputList.confirmPendingAndSelectNext();
+        } else {
+            parentInputList.confirmPending();
+        }
+
+        resetMathInputList(context);
+    }
+
+    /** 结束算术输入 */
+    private void stop_Math_Inputting(KeyboardContext context) {
+        InputList parentInputList = getParentInputList(context);
+        parentInputList.getPending().clearCompletions();
+
+        // 在切换前，确保当前的算术输入列表已被确认
+        // Note：新位置的待输入将被设置为普通输入，可接受非算术输入，故，不需要处理
+        if (parentInputList.getSelected().isMathExpr() //
+            || parentInputList.getPending().isMathExpr() //
+        ) {
+            parentInputList.confirmPendingAndSelectNext();
+        }
+    }
+
+    /** 获取上层输入列表 */
+    private InputList getParentInputList(KeyboardContext context) {
+        return context.inputList;
+    }
+
+    /** 获取算数输入列表 */
+    private InputList getMathInputList(KeyboardContext context) {
+        InputList parentInputList = getParentInputList(context);
+        MathExprInput pending = (MathExprInput) parentInputList.getPending();
+
+        return pending.getInputList();
+    }
+
+    /** 重置算术输入列表（已输入内容将保持不变） */
+    private void resetMathInputList(KeyboardContext context) {
+        InputList parentInputList = getParentInputList(context);
+
+        Input<?> selected = parentInputList.getSelected();
+        CharInput pending = parentInputList.getPending();
+
+        // 在父输入列表中绑定算术输入列表
+        if (pending == null || !pending.isMathExpr()) {
+            if (selected.isMathExpr()) {
+                pending = ((MathExprInput) selected).copy();
+            } else {
+                pending = new MathExprInput();
+            }
+
+            parentInputList.withPending(pending);
+        }
+
+        MathExprInput input = (MathExprInput) parentInputList.getPending();
+        input.getInputList().updateOption(parentInputList.getOption());
+    }
+
+    // ===================== Start: 重载置空无关接口 =====================
+
+    @Override
+    protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
+        // Note: 无需输入补全处理
+    }
+
+    @Override
+    protected void do_InputList_Current_Phrase_Completion_Updating(KeyboardContext context) {
+        // Note: 无需输入补全处理
+    }
+
+    // ===================== End: 重载置空无关接口 =====================
+
     /** 同时处理父输入列表和算术输入列表的向前删除操作 */
     @Override
     protected void do_InputList_Backspacing(KeyboardContext context) {
@@ -287,89 +367,4 @@ public class MathKeyboard extends BaseKeyboard {
         // 不管哪个层级的输入列表为空，均重置算术输入列表，以接受新的算术输入
         resetMathInputList(context);
     }
-//
-//    @Override
-//    protected void revoke_Committed_InputList(KeyboardContext context) {
-//        InputList parentInputList = getParentInputList();
-//
-//        super.revoke_Committed_InputList(parentInputList, key);
-//    }
-//    // >>>>>>>>>>>>>>>> End
-
-    private void before_ChangeState_Or_SwitchKeyboard(InputList parentInputList) {
-        parentInputList.getPending().clearCompletions();
-
-        // 在切换前，确保当前的算术输入列表已被确认
-        // Note：新位置的待输入将被设置为普通输入，可接受非算术输入，故，不需要处理
-        if (parentInputList.getSelected().isMathExpr() //
-            || parentInputList.getPending().isMathExpr() //
-        ) {
-            parentInputList.confirmPendingAndSelectNext();
-        }
-    }
-
-    /** 进入算术输入状态 */
-    private void start_Math_Inputting(KeyboardContext context) {
-        InputList parentInputList = getParentInputList(context);
-
-        // 先提交从其他键盘切过来之前的待输入
-        if (parentInputList.isGapSelected() //
-            && !parentInputList.hasEmptyPending() //
-            && !parentInputList.getPending().isMathExpr()) {
-            parentInputList.confirmPendingAndSelectNext();
-        } else {
-            parentInputList.confirmPending();
-        }
-
-        resetMathInputList(context);
-    }
-
-    /** 获取上层输入列表 */
-    private InputList getParentInputList(KeyboardContext context) {
-        return context.inputList;
-    }
-
-    /** 获取算数输入列表 */
-    private InputList getMathInputList(KeyboardContext context) {
-        InputList parentInputList = getParentInputList(context);
-
-        return ((MathExprInput) parentInputList.getPending()).getInputList();
-    }
-
-    /** 重置算术输入列表（已输入内容将保持不变） */
-    private void resetMathInputList(KeyboardContext context) {
-        InputList parentInputList = getParentInputList(context);
-
-        Input<?> selected = parentInputList.getSelected();
-        CharInput pending = parentInputList.getPending();
-
-        // 在父输入列表中绑定算术输入列表
-        if (pending == null || !pending.isMathExpr()) {
-            if (selected.isMathExpr()) {
-                pending = ((MathExprInput) selected).copy();
-            } else {
-                pending = new MathExprInput();
-            }
-
-            parentInputList.withPending(pending);
-        }
-
-        MathExprInput input = (MathExprInput) parentInputList.getPending();
-        input.getInputList().updateOption(parentInputList.getOption());
-//        this.mathInputList.setListener(this::onMathUserInputMsg);
-    }
-
-    // ===================== Start: 重载置空无关接口 =====================
-
-    @Override
-    protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
-        // Note: 无需输入补全处理
-    }
-
-    @Override
-    protected void do_InputList_Current_Phrase_Completion_Updating(KeyboardContext context) {
-        // Note: 无需输入补全处理
-    }
-
-    // ===================== End: 重载置空无关接口 =====================
 }

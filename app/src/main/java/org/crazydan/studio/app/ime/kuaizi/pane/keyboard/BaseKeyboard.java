@@ -139,6 +139,10 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
+    @Override
+    public void stop(KeyboardContext context) {
+    }
+
     protected KeyTableConfig createKeyTableConfig(KeyboardContext context) {
         return KeyTableConfig.from(context.config, context.inputList);
     }

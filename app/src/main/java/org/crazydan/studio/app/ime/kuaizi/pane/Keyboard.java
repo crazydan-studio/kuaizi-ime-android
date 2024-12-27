@@ -48,6 +48,9 @@ public interface Keyboard {
     /** 重置 */
     void reset(KeyboardContext context);
 
+    /** 结束 */
+    void stop(KeyboardContext context);
+
     // ==========================================================
 
     /** 响应来自 {@link InputList} 的 {@link InputMsg} 消息 */

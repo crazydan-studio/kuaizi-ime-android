@@ -325,6 +325,11 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             }
         }
 
+        // 确保前序键盘完成退出清理工作
+        if (current != null) {
+            KeyboardContext context = createKeyboardContext();
+            current.stop(context);
+        }
         this.config.set(ConfigKey.prev_keyboard_type, currentType);
 
         KeyboardContext context = createKeyboardContext();

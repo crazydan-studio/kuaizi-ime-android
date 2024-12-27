@@ -24,6 +24,7 @@ import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -102,7 +103,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         }
 
         UserInputMsg msg = new UserInputMsg(SingleTap_Input, new UserInputMsgData(input, where));
-        this.listener.onMsg(msg);
+        fire_UserInputMsg(msg);
     }
 
     /** 响应来自上层派发的 {@link InputMsg} 消息 */
@@ -120,6 +121,23 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
                 boolean needToLockScrolling = msg.data().input.isMathExpr();
 
                 update(msg.inputFactory, true, needToLockScrolling);
+                break;
+            }
+        }
+    }
+
+    /** 发送 {@link UserInputMsg} 消息 */
+    protected void fire_UserInputMsg(UserInputMsg msg) {
+        if (this.listener != null) {
+            this.listener.onMsg(msg);
+            return;
+        }
+
+        // Note: 此类视图存在嵌套的情况，故而，需将消息交给最上层的视图转发
+        ViewParent parent = this;
+        while ((parent = parent.getParent()) != null) {
+            if (parent instanceof InputListViewBase) {
+                ((InputListViewBase) parent).fire_UserInputMsg(msg);
                 break;
             }
         }

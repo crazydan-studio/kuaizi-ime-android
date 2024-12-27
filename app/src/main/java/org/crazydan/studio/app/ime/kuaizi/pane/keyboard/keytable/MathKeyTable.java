@@ -73,15 +73,18 @@ public class MathKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
-                mathOpKey(MathOpKey.Type.equal),
+                //
                 mathOpKey(MathOpKey.Type.dot),
-                mathOpKey(MathOpKey.Type.multiply),
-                mathOpKey(MathOpKey.Type.divide),
+                mathOpKey(MathOpKey.Type.equal),
+                //
                 mathOpKey(MathOpKey.Type.plus),
-                mathOpKey(MathOpKey.Type.minus),
+                mathOpKey(MathOpKey.Type.multiply),
                 mathOpKey(MathOpKey.Type.brackets),
-                mathOpKey(MathOpKey.Type.percent),
                 mathOpKey(MathOpKey.Type.permill),
+                //
+                mathOpKey(MathOpKey.Type.minus),
+                mathOpKey(MathOpKey.Type.divide),
+                mathOpKey(MathOpKey.Type.percent),
                 mathOpKey(MathOpKey.Type.permyriad),
                 };
 
@@ -91,7 +94,6 @@ public class MathKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][index_begin] = ctrlKey(CtrlKey.Type.Switch_HandMode);
-        gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
         gridKeys[3][index_end] = this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
@@ -179,15 +181,15 @@ public class MathKeyTable extends KeyTable {
                         },
                 // expression
                 new GridCoord[] {
-                        coord(3, 4), coord(1, 5),
+                        coord(3, 4), coord(1, 7),
                         //
-                        coord(1, 4), coord(1, 3),
+                        coord(1, 5), coord(1, 4),
+                        //
+                        coord(1, 3), coord(1, 2),
                         //
                         coord(0, 6), coord(0, 5),
                         //
                         coord(0, 4), coord(0, 3),
-                        //
-                        coord(1, 2), coord(0, 2),
                         },
                 };
     }
