@@ -25,9 +25,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
+import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.MathKeyboard;
 
 /**
- * {@link MathKeyboard 数学键盘}按键表
+ * {@link MathKeyboard} 按键表
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31
@@ -55,7 +56,7 @@ public class MathKeyTable extends KeyTable {
         return new Key[6][8];
     }
 
-    /** 创建{@link MathKeyboard 数学键盘}按键 */
+    /** 创建 {@link MathKeyboard} 按键 */
     public Key<?>[][] createKeys() {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();

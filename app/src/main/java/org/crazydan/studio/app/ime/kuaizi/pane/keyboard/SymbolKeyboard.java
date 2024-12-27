@@ -174,16 +174,18 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     }
 
     private void prepare_for_PairSymbol_Inputting(KeyboardContext context, Symbol.Pair symbol) {
+        InputList inputList = context.inputList;
         String left = symbol.left;
         String right = symbol.right;
 
-        prepare_for_PairKey_Inputting(context,
+        prepare_for_PairKey_Inputting(inputList,
                                       () -> SymbolKey.create(Symbol.single(left)),
                                       () -> SymbolKey.create(Symbol.single(right)));
     }
 
-    private void prepare_for_PairKey_Inputting(KeyboardContext context, Supplier<Key<?>> left, Supplier<Key<?>> right) {
-        InputList inputList = context.inputList;
+    public static void prepare_for_PairKey_Inputting(
+            InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right
+    ) {
         Input<?> selected = inputList.getSelected();
 
         Key<?> leftKey = left.get();

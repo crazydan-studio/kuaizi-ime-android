@@ -84,26 +84,25 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        InputViewHolder<?> inputView = findVisibleInputViewUnder(data.x, data.y);
+        InputViewHolder<?> holder = findVisibleInputViewUnder(data.x, data.y);
 
-        switch (type) {
-            case SingleTap: {
-                Input<?> input = inputView != null ? inputView.getData() : null;
+        if (type != ViewGestureDetector.GestureType.SingleTap) {
+            return;
+        }
 
-                UserInputMsgData.Where where = UserInputMsgData.Where.inner;
-                if (input == null) {
-                    if (data.x < getPaddingStart()) {
-                        where = UserInputMsgData.Where.head;
-                    } else {
-                        where = UserInputMsgData.Where.tail;
-                    }
-                }
+        UserInputMsgData.Where where = UserInputMsgData.Where.inner;
+        Input<?> input = holder != null ? holder.getData() : null;
 
-                UserInputMsg msg = new UserInputMsg(SingleTap_Input, new UserInputMsgData(input, where));
-                this.listener.onMsg(msg);
-                break;
+        if (input == null) {
+            if (data.x < getPaddingStart()) {
+                where = UserInputMsgData.Where.head;
+            } else {
+                where = UserInputMsgData.Where.tail;
             }
         }
+
+        UserInputMsg msg = new UserInputMsg(SingleTap_Input, new UserInputMsgData(input, where));
+        this.listener.onMsg(msg);
     }
 
     /** 响应来自上层派发的 {@link InputMsg} 消息 */
@@ -199,10 +198,10 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     /** 找到指定坐标下可见的 {@link  InputViewHolder} */
     private InputViewHolder<?> findVisibleInputViewUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
-        InputViewHolder<?> inputView = view != null ? (InputViewHolder<?>) getChildViewHolder(view) : null;
+        InputViewHolder<?> holder = view != null ? (InputViewHolder<?>) getChildViewHolder(view) : null;
 
         // 若点击位置更靠近输入之间的 Gap 位置，则返回该 Gap
-        if (inputView instanceof CharInputViewHolder) {
+        if (holder instanceof CharInputViewHolder) {
             int gap = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
             int position = getChildAdapterPosition(view);
             float left = view.getLeft();
@@ -212,37 +211,35 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
             // Note：不能通过 getChildAt(position) 方式获取 ViewHolder 对应位置的视图，
             // 因为子视图的位置不一定与 ViewHolder 的视图位置等同
             if (x < left - gap) {
-                inputView = (InputViewHolder<?>) findViewHolderForAdapterPosition(position - 1);
+                holder = (InputViewHolder<?>) findViewHolderForAdapterPosition(position - 1);
             }
             // 取当前输入右边的 Gap
             else if (x > right - gap) {
-                inputView = (InputViewHolder<?>) findViewHolderForAdapterPosition(position + 1);
+                holder = (InputViewHolder<?>) findViewHolderForAdapterPosition(position + 1);
             }
         }
 
-        return inputView;
+        return holder;
     }
 
     /** 获取选中输入的视图，若选中输入为算术输入，则获取其内部所选中的输入视图 */
     private View getSelectedInputView(Input<?> selectedInput, int selectedIndex) {
         View view = this.layoutManager.findViewByPosition(selectedIndex);
-        if (view == null) {
-            return null;
+
+        if (view == null || !selectedInput.isMathExpr()) {
+            return view;
         }
 
-        if (selectedInput.isMathExpr()) {
-            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
-                View child = ((ViewGroup) view).getChildAt(i);
+        for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+            View child = ((ViewGroup) view).getChildAt(i);
 
-                if (child instanceof InputListViewReadonly) {
-                    InputListViewReadonly ro = (InputListViewReadonly) child;
-                    int position = ((MathExprInput) selectedInput).getInputList().getSelectedIndex();
+            if (child instanceof InputListViewReadonly) {
+                InputListViewReadonly ro = (InputListViewReadonly) child;
+                int position = ((MathExprInput) selectedInput).getInputList().getSelectedIndex();
 
-                    return ro.getLayoutManager().findViewByPosition(position);
-                }
+                return ro.getLayoutManager().findViewByPosition(position);
             }
         }
-
-        return view;
+        return null;
     }
 }

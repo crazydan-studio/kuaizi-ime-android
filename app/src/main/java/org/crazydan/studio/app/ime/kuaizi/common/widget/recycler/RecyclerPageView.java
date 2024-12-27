@@ -74,7 +74,13 @@ public abstract class RecyclerPageView extends RecyclerView {
 
     /** 激活指定位置的视图 */
     public void activatePage(int position) {
-        smoothScrollToPosition(position);
+        // Note: 若首次激活的为第一个页，则无需滚动，直接触发激活消息即可
+        if (position == 0 && getActivePagePosition() < 0) {
+            // 在当前视图渲染完成后，再触发消息
+            post(() -> firePageActive(position));
+        } else {
+            smoothScrollToPosition(position);
+        }
     }
 
     /** 激活当前位置之后的视图 */
@@ -106,6 +112,10 @@ public abstract class RecyclerPageView extends RecyclerView {
             return;
         }
 
+        firePageActive(position);
+    }
+
+    private void firePageActive(int position) {
         this.log.debug("Trigger active page %d", position);
         this.pageActiveListeners.forEach((listener) -> listener.onPageActive(position));
     }

@@ -47,6 +47,11 @@ public class KeyboardContext {
         return new KeyboardContext(this.inputList, this.listener, key);
     }
 
+    /** 根据 {@link InputList} 新建实例，以使其携带新的 {@link InputList} */
+    public KeyboardContext newWithInputList(InputList inputList) {
+        return new KeyboardContext(inputList, this.listener, this.key);
+    }
+
     /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
     public <T extends Key<?>> T key() {
         return (T) this.key;
