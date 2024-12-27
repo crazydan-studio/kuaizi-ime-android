@@ -38,7 +38,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state.InputListCommitOpt
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKeyboard.determine_NotConfirmed_InputWord;
 import static org.crazydan.studio.app.ime.kuaizi.pane.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords;
@@ -62,11 +61,11 @@ public class PinyinKeyboard extends BaseKeyboard {
     public boolean isMaster() {return true;}
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
-        PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
+        PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
                 InputCharsSlipStateData stateData = this.state.data();
@@ -195,7 +194,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        if (this.config.xInputPadEnabled) {
+        if (context.config.xInputPadEnabled) {
             on_CharKey_Msg_Over_XPad(context, msg);
             return;
         }

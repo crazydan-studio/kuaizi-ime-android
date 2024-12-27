@@ -37,17 +37,8 @@ public interface Keyboard {
     /** 当前键盘是否为主键盘，即，常驻性键盘，其余类型的键盘均为临时性切换，其在退出后均需要回到切换前所在的主键盘上 */
     default boolean isMaster() {return false;}
 
-    /**
-     * 更新配置
-     * <p/>
-     * Note: 必须在 {@link #start} 之前做配置初始更新
-     *
-     * @return 若存在更新，则返回 true，否则，返回 false
-     */
-    boolean updateConfig(KeyboardConfig config);
-
     /** 获取当前的按键布局 */
-    KeyFactory getKeyFactory(InputList inputList);
+    KeyFactory getKeyFactory(KeyboardContext context);
 
     // ==========================================================
 

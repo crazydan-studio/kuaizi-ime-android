@@ -52,15 +52,10 @@ public class MathKeyboard extends BaseKeyboard {
     @Override
     public Type getType() {return Type.Math;}
 
-    private MathKeyTable createKeyTable(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
-
-        return MathKeyTable.create(keyTableConf);
-    }
-
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        MathKeyTable keyTable = createKeyTable(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
+        MathKeyTable keyTable = MathKeyTable.create(keyTableConf);
 
         return keyTable::createKeys;
     }
@@ -160,7 +155,7 @@ public class MathKeyboard extends BaseKeyboard {
                 commit_InputList(context, true, false);
 
                 // Note：在 X 型输入中仅需重置算术输入，而不需要退出当前键盘
-                if (this.config.xInputPadEnabled) {
+                if (context.config.xInputPadEnabled) {
                     resetMathInputList(context);
                 } else {
                     // 在回到前序键盘前，需先确认待输入

@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
@@ -46,8 +45,9 @@ public class EditorKeyboard extends DirectInputKeyboard {
     public Type getType() {return Type.Editor;}
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        EditorKeyTable keyTable = EditorKeyTable.create(createKeyTableConfig(inputList));
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        KeyTableConfig keyTableConfig = createKeyTableConfig(context);
+        EditorKeyTable keyTable = EditorKeyTable.create(keyTableConfig);
 
         return keyTable::createKeys;
     }
@@ -100,7 +100,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
     @Override
     protected void switch_Keyboard_to_Previous(KeyboardContext context) {
         // Note: 编辑键盘均直接回到其切换前的键盘，而不管切换前的是否为主键盘
-        switch_Keyboard_To(context, this.config.prevType);
+        switch_Keyboard_To(context, context.config.prevType);
     }
 
     private void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {

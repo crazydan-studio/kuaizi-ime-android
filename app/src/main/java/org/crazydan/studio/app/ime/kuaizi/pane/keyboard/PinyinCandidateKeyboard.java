@@ -63,15 +63,15 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         start_InputCandidate_Choosing(context, false);
     }
 
-    private PinyinKeyTable createKeyTable(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
+    private PinyinKeyTable createKeyTable(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
 
         return PinyinKeyTable.create(keyTableConf);
     }
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        PinyinKeyTable keyTable = createKeyTable(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        PinyinKeyTable keyTable = createKeyTable(context);
 
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
@@ -220,7 +220,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
-        PinyinKeyTable keyTable = createKeyTable(inputList);
+        PinyinKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getInputCandidateKeysPageSize();
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
@@ -346,7 +346,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         PinyinCandidateChooseStateData prevStateData = this.state.data();
         PinyinWord.Filter filter = prevStateData.getFilter();
 
-        PinyinKeyTable keyTable = createKeyTable(inputList);
+        PinyinKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
 
         PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(pending,

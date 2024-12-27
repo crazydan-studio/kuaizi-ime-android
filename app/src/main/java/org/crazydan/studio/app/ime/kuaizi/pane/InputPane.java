@@ -50,7 +50,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.InputList_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Completion_Clean_Done;
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Keyboard_Hide_Done;
@@ -193,10 +192,6 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             fire_InputMsg(InputList_Config_Update_Done);
         }
 
-        if (this.keyboard.updateConfig(createKeyboardConfig())) {
-            fire_InputMsg(Keyboard_Config_Update_Done);
-        }
-
         ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
         fire_InputMsg(Config_Update_Done, data);
     }
@@ -261,7 +256,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        InputMsg msg = new InputMsg(type, data, this.keyboard, this.inputList, this.config);
+        KeyFactory keyFactory = createKeyboardKeyFactory(this.keyboard);
+
+        InputMsg msg = new InputMsg(type, data, this.inputList, keyFactory);
         this.listener.onMsg(msg);
     }
 
@@ -283,11 +280,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */
     private void on_Keyboard_HandMode_Switch_Doing_Msg(KeyboardHandModeSwitchMsgData data) {
         Keyboard.HandMode mode = data.mode;
-
         this.config.set(ConfigKey.hand_mode, mode);
-
-        KeyboardConfig config = createKeyboardConfig();
-        this.keyboard.updateConfig(config);
 
         fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
     }
@@ -309,11 +302,9 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
                 || newType == Keyboard.Type.Keep_Current //
             ) //
         ) {
-            KeyboardConfig config = createKeyboardConfig();
             KeyboardContext context = createKeyboardContext();
-            current.updateConfig(config);
-
             current.reset(context);
+
             return null;
         }
 
@@ -336,11 +327,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
 
         this.config.set(ConfigKey.prev_keyboard_type, currentType);
 
-        KeyboardConfig config = createKeyboardConfig();
         KeyboardContext context = createKeyboardContext();
         this.keyboard = createKeyboard(newType);
-        this.keyboard.updateConfig(config);
-
         this.keyboard.start(context);
 
         return currentType;
@@ -375,8 +363,27 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
         return KeyboardConfig.from(this.config);
     }
 
-    public KeyboardContext createKeyboardContext() {
-        return new KeyboardContext(this.inputList, this);
+    private KeyboardContext createKeyboardContext() {
+        KeyboardConfig config = createKeyboardConfig();
+
+        return new KeyboardContext(config, this.inputList, this);
+    }
+
+    /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
+    private KeyFactory createKeyboardKeyFactory(Keyboard keyboard) {
+        KeyboardContext context = createKeyboardContext();
+        KeyFactory factory = keyboard != null ? keyboard.getKeyFactory(context) : null;
+
+        boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
+        if (!leftHandMode || factory == null) {
+            return factory;
+        }
+
+        if (factory instanceof KeyFactory.NoAnimation) {
+            return (KeyFactory.LeftHandMode_NoAnimation) factory::getKeys;
+        } else {
+            return (KeyFactory.LeftHandMode) factory::getKeys;
+        }
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================

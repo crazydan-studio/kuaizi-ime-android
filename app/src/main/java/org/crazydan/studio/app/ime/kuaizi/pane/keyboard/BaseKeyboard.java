@@ -89,19 +89,10 @@ public abstract class BaseKeyboard implements Keyboard {
      */
     protected final PinyinDict dict;
 
-    protected KeyboardConfig config;
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
 
     protected BaseKeyboard(PinyinDict dict) {
         this.dict = dict;
-    }
-
-    @Override
-    public boolean updateConfig(KeyboardConfig config) {
-        boolean changed = !config.equals(this.config);
-        this.config = config;
-
-        return changed;
     }
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Wait_Doing 待输入}状态 */
@@ -148,8 +139,8 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
-    protected KeyTableConfig createKeyTableConfig(InputList inputList) {
-        return KeyTableConfig.from(this.config, inputList);
+    protected KeyTableConfig createKeyTableConfig(KeyboardContext context) {
+        return KeyTableConfig.from(context.config, context.inputList);
     }
 
     // ====================== Start: 对 InputMsg 的处理 ======================
@@ -318,7 +309,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */
     private boolean try_On_UserKey_Msg_Over_XPad(KeyboardContext context, UserKeyMsg msg) {
         Key<?> key = context.key();
-        if (!this.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.isDisabled()) {
+        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.isDisabled()) {
             return false;
         }
 
@@ -593,7 +584,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput pending = inputList.getPending();
 
         // 处理选中的输入需要切换到原键盘的情况
-        if (this.config.xInputPadEnabled) {
+        if (context.config.xInputPadEnabled) {
             // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
             // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
             if (pending.isPinyin() && getType() != Type.Pinyin) {
@@ -824,7 +815,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 调用 <code>consumer</code> 对{@link UserInputData 用户输入数据}做处理
      */
     protected void handle_UserInput_Data(KeyboardContext context, Consumer<UserInputData> consumer) {
-        if (this.config.userInputDataDisabled) {
+        if (context.config.userInputDataDisabled) {
             return;
         }
 
@@ -982,7 +973,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode(KeyboardContext context) {
-        HandMode mode = this.config.handMode;
+        HandMode mode = context.config.handMode;
         switch (mode) {
             case left:
                 mode = Keyboard.HandMode.right;

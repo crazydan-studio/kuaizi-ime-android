@@ -59,15 +59,15 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         start_Symbol_Choosing(context, onlyPair);
     }
 
-    private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
+    private SymbolEmojiKeyTable createKeyTable(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
 
         return SymbolEmojiKeyTable.create(keyTableConf);
     }
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        SymbolEmojiKeyTable keyTable = createKeyTable(context);
 
         SymbolChooseStateData stateData = this.state.data();
 
@@ -112,14 +112,14 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
-        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
+        SymbolEmojiKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getSymbolKeysPageSize();
 
         SymbolChooseStateData stateData = new SymbolChooseStateData(pending, pageSize, onlyPair);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
-        if (this.config.prevType == Type.Pinyin) {
+        if (context.config.prevType == Type.Pinyin) {
             group = SymbolGroup.han;
         }
 

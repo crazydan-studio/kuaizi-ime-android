@@ -20,8 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.LatinKeyTable;
 
 /**
@@ -45,8 +45,8 @@ public class LatinKeyboard extends DirectInputKeyboard {
     public boolean isMaster() {return true;}
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
         LatinKeyTable keyTable = LatinKeyTable.create(keyTableConf);
 
         return keyTable::createKeys;

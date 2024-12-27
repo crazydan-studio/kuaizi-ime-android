@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.conf.Config;
-import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
@@ -44,35 +42,18 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     public final InputListState inputList;
 
     public InputMsg(InputMsgType type, InputMsgData data) {
-        this(type, data, null, null, null);
+        this(type, data, null, null);
     }
 
     public InputMsg(
             InputMsgType type, InputMsgData data, //
-            Keyboard keyboard, InputList inputList, //
-            Config config
+            InputList inputList, KeyFactory keyFactory
     ) {
         super(type, data);
 
-        this.keyFactory = keyboard != null ? createKeyFactory(keyboard, inputList, config) : null;
+        this.keyFactory = keyFactory;
         this.inputFactory = inputList != null ? inputList.getInputFactory() : null;
         this.inputList = new InputListState(inputList);
-    }
-
-    /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
-    private KeyFactory createKeyFactory(Keyboard keyboard, InputList inputList, Config config) {
-        KeyFactory factory = keyboard.getKeyFactory(inputList);
-        boolean leftHandMode = config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
-
-        if (!leftHandMode || factory == null) {
-            return factory;
-        }
-
-        if (factory instanceof KeyFactory.NoAnimation) {
-            return (KeyFactory.LeftHandMode_NoAnimation) factory::getKeys;
-        } else {
-            return (KeyFactory.LeftHandMode) factory::getKeys;
-        }
     }
 
     public static class InputListState {

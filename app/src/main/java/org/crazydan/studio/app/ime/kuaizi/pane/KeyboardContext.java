@@ -27,16 +27,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
  * @date 2024-12-23
  */
 public class KeyboardContext {
+    public final KeyboardConfig config;
     public final InputList inputList;
     public final InputMsgListener listener;
 
     private final Key<?> key;
 
-    public KeyboardContext(InputList inputList, InputMsgListener listener) {
-        this(inputList, listener, null);
+    public KeyboardContext(KeyboardConfig config, InputList inputList, InputMsgListener listener) {
+        this(config, inputList, listener, null);
     }
 
-    KeyboardContext(InputList inputList, InputMsgListener listener, Key<?> key) {
+    KeyboardContext(KeyboardConfig config, InputList inputList, InputMsgListener listener, Key<?> key) {
+        this.config = config;
         this.inputList = inputList;
         this.listener = listener;
         this.key = key;
@@ -44,12 +46,12 @@ public class KeyboardContext {
 
     /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
     public KeyboardContext newWithKey(Key<?> key) {
-        return new KeyboardContext(this.inputList, this.listener, key);
+        return new KeyboardContext(this.config, this.inputList, this.listener, key);
     }
 
     /** 根据 {@link InputList} 新建实例，以使其携带新的 {@link InputList} */
     public KeyboardContext newWithInputList(InputList inputList) {
-        return new KeyboardContext(inputList, this.listener, this.key);
+        return new KeyboardContext(this.config, inputList, this.listener, this.key);
     }
 
     /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */

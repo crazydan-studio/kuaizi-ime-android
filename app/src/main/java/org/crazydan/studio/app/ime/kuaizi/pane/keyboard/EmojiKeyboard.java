@@ -51,15 +51,15 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         start_Emoji_Choosing(context);
     }
 
-    private SymbolEmojiKeyTable createKeyTable(InputList inputList) {
-        KeyTableConfig keyTableConf = createKeyTableConfig(inputList);
+    private SymbolEmojiKeyTable createKeyTable(KeyboardContext context) {
+        KeyTableConfig keyTableConf = createKeyTableConfig(context);
 
         return SymbolEmojiKeyTable.create(keyTableConf);
     }
 
     @Override
-    public KeyFactory getKeyFactory(InputList inputList) {
-        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
+    public KeyFactory getKeyFactory(KeyboardContext context) {
+        SymbolEmojiKeyTable keyTable = createKeyTable(context);
 
         EmojiChooseStateData stateData = this.state.data();
 
@@ -105,7 +105,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
-        SymbolEmojiKeyTable keyTable = createKeyTable(inputList);
+        SymbolEmojiKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getEmojiKeysPageSize();
 
         Emojis emojis = this.dict.getAllEmojis(pageSize / 2);
