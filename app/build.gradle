@@ -12,8 +12,8 @@ android {
         minSdk 25
         targetSdk 35
         // https://developer.android.com/studio/publish/versioning
-        versionCode 210
-        versionName '2.1.0'
+        versionCode 300
+        versionName '3.0.0'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -74,25 +74,21 @@ android {
     }
 }
 
-android.applicationVariants.all { variant ->
+android.applicationVariants.configureEach { variant ->
     if (variant.buildType.name == 'debug') {
         return
     }
 
-    // 修改 APK 输出路径，统一放在 build/outputs/apk 下
-    // https://stackoverflow.com/questions/46985530/change-apk-output-folder-in-gradle-4-1#answer-46987692
-    // https://stackoverflow.com/questions/54206898/variantoutput-getpackageapplication-is-obsolete#answer-56164030
-    variant.outputs.all {
-        def baseOutputDir = "${project.buildDir.absolutePath}/outputs/apk/${variant.buildType.name}"
+    // 统一设置 apk 的打包名称
+    variant.outputs.configureEach { output ->
         def projectName = rootProject.name.replaceAll('\\s+', '_')
         def versionName = variant.versionName
 
         outputFileName = "${projectName}-${versionName}.apk"
-        variant.packageApplicationProvider.get().outputDirectory = new File(baseOutputDir)
     }
 }
 // Note：以下代码不能放在 android 中初始化
-android.buildTypes.all { buildType ->
+android.buildTypes.configureEach { buildType ->
     // 统一配置 APK 签署证书
     // https://developer.android.com/build/gradle-tips#sign-your-app
     // https://stackoverflow.com/questions/17040494/signing-product-flavors-with-gradle#answer-65811638

@@ -22,7 +22,9 @@
 
 ### 发布包
 
-可直接在本项目的根目录下执行 `bash ./pack-release.sh` 构建发布包。
+可直接在本项目的根目录下执行 `bash ./pack-release.sh` 以构建发布包。
+
+> 最终的发布包可在项目根目录下的 `app/build/outputs/apk/release/` 中找到。
 
 而在构建打包前，需要调整构建脚本中变量 `JAVA_HOME` 的值，默认为
 `/usr/lib/jvm/java-17-openjdk`。

@@ -95,6 +95,8 @@ public class InputList implements UserInputMsgListener {
 
                 clearPhraseCompletions();
 
+                // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
+                // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上
                 fire_InputMsg(Input_Choose_Doing, input);
                 break;
             }
