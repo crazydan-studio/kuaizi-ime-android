@@ -109,23 +109,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
     @Override
     public void start(KeyboardContext context) {
-//        Input<?> pending = inputList.getPending();
-//        boolean isXPadSwitchToPinyin = isXInputPadEnabled() //
-//                                       && this.prevType != null //
-//                                       && getType() == Type.Pinyin;
-//        // 在 X 型输入中，切换到拼音键盘时，先确认新输入（非新输入将做输入替换）
-//        if (isXPadSwitchToPinyin && inputList.isGapSelected()) {
-//            inputList.confirmPendingAndSelectNext();
-//        }
-//
-//        // 将算术键盘视为内嵌键盘，故而，在选中其他类型输入时，需做选择处理。
-//        // 而对于其他键盘（非 X 型输入），选中的输入将视为将被替换的输入，故不做选择处理
-//        if ((this.prevType == Type.Math //
-//             && !pending.isMathExpr()) //
-//            || (isXPadSwitchToPinyin && pending.isPinyin()) //
-//        ) {
-//            choose_InputList_Selected_Input(inputList);
-//        }
     }
 
     @Override
@@ -164,6 +147,9 @@ public abstract class BaseKeyboard implements Keyboard {
             }
             case InputList_Cleaned_Cancel_Done: {
                 play_SingleTick_InputAudio(context);
+
+                // 重新选中清空输入列表前的已选中输入
+                choose_InputList_Selected_Input(context);
                 break;
             }
         }

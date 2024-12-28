@@ -91,8 +91,8 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public boolean isMathOperator() {
-        return test(Key::isMathOperator);
+    public boolean isMathOp() {
+        return test(Key::isMathOp);
     }
 
     @Override

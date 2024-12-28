@@ -70,6 +70,21 @@ public class MathKeyboard extends BaseKeyboard {
         stop_Math_Inputting(context);
     }
 
+    /** 获取上层输入列表 */
+    private InputList getParentInputList(KeyboardContext context) {
+        return context.inputList;
+    }
+
+    /** 获取算数输入列表 */
+    private InputList getMathInputList(KeyboardContext context) {
+        InputList parentInputList = getParentInputList(context);
+        MathExprInput pending = (MathExprInput) parentInputList.getPending();
+
+        return pending.getInputList();
+    }
+
+    // ===================== Start: 消息处理 ======================
+
     @Override
     public void onMsg(KeyboardContext context, InputMsg msg) {
         switch (msg.type) {
@@ -77,19 +92,28 @@ public class MathKeyboard extends BaseKeyboard {
                 InputList parentInputList = getParentInputList(context);
 
                 Input<?> input = msg.data().input;
-                // 需首先确认当前输入，以确保在 Gap 上的待输入能够进入输入列表
-                parentInputList.confirmPendingAndSelect(input);
-
-                // 仅处理算术表达式输入
-                if (!input.isMathExpr()) {
-                    super.switch_Keyboard_to_Previous(null);
-                } else {
-                    resetMathInputList(context);
+                // 若所选中的输入属于上层输入列表，则由基类逻辑处理
+                if (parentInputList.contains(input)) {
+                    super.onMsg(context, msg);
+                    return;
                 }
+
+                // 否则，视为选中的是算术输入列表中的输入，按算术输入逻辑处理
+                InputList mathInputList = getMathInputList(context);
+
+                mathInputList.confirmPendingAndSelect(input);
+                // 对非括号输入的修改均做替换
+                if (!isBracketInput(input)) {
+                    mathInputList.newPending();
+                }
+
+                resetMathInputList(context);
                 break;
             }
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done: {
+                play_SingleTick_InputAudio(context);
+
                 resetMathInputList(context);
                 break;
             }
@@ -108,6 +132,10 @@ public class MathKeyboard extends BaseKeyboard {
         }
     }
 
+    // ===================== End: 消息处理 ======================
+
+    // ===================== Start: 处理控制按键 ======================
+
     @Override
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (on_Math_Input_Doing_CtrlKey_Msg(context, msg)) {
@@ -115,20 +143,6 @@ public class MathKeyboard extends BaseKeyboard {
         }
         return super.try_On_Common_CtrlKey_Msg(context, msg);
     }
-
-//    /** 处理来自本层的算术 InputList 的消息 */
-//    protected void onMathUserInputMsg(InputMsg msg) {
-//        // 数字、数学符号不做候选切换：需支持更多符号时，可增加数学计算符的候选键盘
-//        if (msg.type == InputMsgType.Input_Choose_Doing) {
-//            Input<?> input = msg.data().input;
-//
-//            matchInputList.confirmPendingAndSelect(input);
-//            // 对输入的修改均做替换输入
-//            matchInputList.newPending();
-//
-//            change_State_to_Init();
-//        }
-//    }
 
     /** 响应算术输入的控制按键消息 */
     private boolean on_Math_Input_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
@@ -145,7 +159,7 @@ public class MathKeyboard extends BaseKeyboard {
                 show_InputChars_Input_Popup(context);
 
                 // Note: 若上层输入列表为空，则会对编辑器做删除，
-                // 不需要处理对待输入的向前删除 #do_InputList_Backspacing
+                // 不需要处理对待输入的向前删除，而向前删除逻辑详见 #do_InputList_Backspacing
                 backspace_InputList_or_Editor(context);
                 return true;
             }
@@ -177,16 +191,17 @@ public class MathKeyboard extends BaseKeyboard {
                 // 在上层输入上确认空格输入，以便于继续添加新的算术输入
                 confirm_InputList_Input_Enter_or_Space(context);
 
-                // 若不是直输空格，则新建算术输入
-                if (!parentInputList.isEmpty()) {
-                    resetMathInputList(context);
-                }
+                resetMathInputList(context);
                 return true;
             }
         }
 
         return false;
     }
+
+    // ===================== End: 处理控制按键 ======================
+
+    // ===================== Start: 处理按键输入 ======================
 
     /** 响应算术输入的按键消息 */
     private void on_Math_Input_Doing_MathKey_Msg(KeyboardContext context, UserKeyMsg msg) {
@@ -209,8 +224,7 @@ public class MathKeyboard extends BaseKeyboard {
 
         InputList mathInputList = getMathInputList(context);
         if (key instanceof CharKey) {
-            CharInput pending = mathInputList.getPending();
-            pending.appendKey(key);
+            do_Single_MathCharKey_Inputting(mathInputList, (CharKey) key);
         }
         //
         else if (key instanceof MathOpKey) {
@@ -222,38 +236,77 @@ public class MathKeyboard extends BaseKeyboard {
         fire_InputChars_Input_Doing_in_TapMode(context, pending);
     }
 
+    /** 处理字符输入 */
+    private void do_Single_MathCharKey_Inputting(InputList mathInputList, CharKey key) {
+        CharInput pending = mathInputList.getPending();
+
+        // Note: 若待输入为括号，则不能在其上追加数字
+        if (isBracketInput(pending)) {
+            mathInputList.confirmPendingAndSelectNext();
+        }
+
+        // Note: 在选中输入时，非括号的待输入已被清空，故而，可直接添加新输入
+        mathInputList.getPending().appendKey(key);
+    }
+
     /** 处理运算符号的输入 */
-    private void do_Single_MathOpKey_Inputting(InputList inputList, MathOpKey key) {
-        CharInput pending = inputList.getPending();
+    private void do_Single_MathOpKey_Inputting(InputList mathInputList, MathOpKey key) {
+        switch (key.getType()) {
+            // 针对以下输入，对当前的选中的数字输入做追加，而不是替换
+            case percent:
+            case permill:
+            case permyriad:
+            case brackets:
+            case dot: {
+                prepare_for_Pending_Append_Inputting(mathInputList);
+                break;
+            }
+        }
 
         switch (key.getType()) {
-            case dot:
-                // 一个输入中只能有一个符号
-                if (!pending.hasSameKey(key)) {
+            case dot: {
+                CharInput pending = mathInputList.getPending();
+                // 小数点只能出现在数字中，且只能出现一次
+                if (isNumberInput(pending) && !pending.hasSameKey(key)) {
                     pending.appendKey(key);
                 }
                 break;
-            case brackets:
-                prepare_for_PairKey_Inputting(inputList,
+            }
+            case brackets: {
+                Input<?> selected = mathInputList.getSelected();
+                CharInput pending = mathInputList.getPending();
+                // 对于正在输入的数字，先提交其待输入，再输入括号，以确保数字被括号包裹
+                if (selected.isGap() && isNumberInput(pending)) {
+                    mathInputList.confirmPending();
+                }
+
+                prepare_for_PairKey_Inputting(mathInputList,
                                               () -> MathKeyTable.bracketKey("("),
                                               () -> MathKeyTable.bracketKey(")"));
                 break;
-            case equal:
+            }
+            case equal: {
                 // 除开头以外的位置，等号始终添加到输入列表的末尾
-                if (!inputList.isGapSelected() || inputList.getSelectedIndex() > 1) {
-                    inputList.confirmPendingAndSelectLast();
+                if (!mathInputList.isGapSelected() || mathInputList.getSelectedIndex() > 1) {
+                    mathInputList.confirmPendingAndSelectLast();
                 }
                 // Note：等号需按 default 逻辑添加至输入列表末尾
                 //break;
-            default:
-                inputList.confirmPendingAndSelectNext();
+            }
+            default: {
+                mathInputList.confirmPendingAndSelectNext();
 
-                inputList.getPending().appendKey(key);
+                mathInputList.getPending().appendKey(key);
 
                 // Note：单算术符号不支持追加输入
-                inputList.confirmPendingAndSelectNext();
+                mathInputList.confirmPendingAndSelectNext();
+            }
         }
     }
+
+    // ===================== End: 处理按键输入 ======================
+
+    // ===================== Start: 准备算术输入 ======================
 
     /** 进入算术输入状态 */
     private void start_Math_Inputting(KeyboardContext context) {
@@ -285,19 +338,6 @@ public class MathKeyboard extends BaseKeyboard {
         }
     }
 
-    /** 获取上层输入列表 */
-    private InputList getParentInputList(KeyboardContext context) {
-        return context.inputList;
-    }
-
-    /** 获取算数输入列表 */
-    private InputList getMathInputList(KeyboardContext context) {
-        InputList parentInputList = getParentInputList(context);
-        MathExprInput pending = (MathExprInput) parentInputList.getPending();
-
-        return pending.getInputList();
-    }
-
     /** 重置算术输入列表（已输入内容将保持不变） */
     private void resetMathInputList(KeyboardContext context) {
         InputList parentInputList = getParentInputList(context);
@@ -316,9 +356,11 @@ public class MathKeyboard extends BaseKeyboard {
             parentInputList.withPending(pending);
         }
 
-        MathExprInput input = (MathExprInput) parentInputList.getPending();
-        input.getInputList().updateOption(parentInputList.getOption());
+        InputList mathInputList = getMathInputList(context);
+        mathInputList.updateOption(parentInputList.getOption());
     }
+
+    // ===================== End: 准备算术输入 ======================
 
     // ===================== Start: 重载置空无关接口 =====================
 
@@ -342,9 +384,11 @@ public class MathKeyboard extends BaseKeyboard {
 
         // 若当前算术输入不为空，则对其做删除，
         if (!mathInputList.isEmpty()) {
-            context = context.newWithInputList(mathInputList);
+            prepare_for_Pending_Append_Inputting(mathInputList);
 
-            super.do_InputList_Backspacing(context);
+            // Note: 该上下文仅用于做前向删除，不能覆盖 context 变量
+            KeyboardContext mathContext = context.newWithInputList(mathInputList);
+            super.do_InputList_Backspacing(mathContext);
 
             // 当前算术输入已清空，且该输入在上层中不是 Gap 的待输入，则从父输入中移除该输入
             if (!parentInputList.isGapSelected() && mathInputList.isEmpty()) {
@@ -364,7 +408,39 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        // 不管哪个层级的输入列表为空，均重置算术输入列表，以接受新的算术输入
+        // 重置算术输入列表，以接受新的算术输入
         resetMathInputList(context);
+    }
+
+    /** 确保非运算符类型的待输入能够做追加输入（注：默认的被选中输入是做{@link #onMsg(KeyboardContext, InputMsg) 替换输入}） */
+    private void prepare_for_Pending_Append_Inputting(InputList mathInputList) {
+        Input<?> selected = mathInputList.getSelected();
+        CharInput pending = mathInputList.getPending();
+
+        // 若待输入为空且当前选中输入是数字，则重新选中输入，以确保可在前向删除后，继续追加输入
+        if (pending.isEmpty() && isNumberInput(selected)) {
+            mathInputList.confirmPendingAndSelect(selected, true);
+        }
+    }
+
+    /** 指定输入是否为数字。注意，百分号为单独的输入 */
+    private boolean isNumberInput(Input<?> input) {
+        for (Key<?> key : input.getKeys()) {
+            // Note: 只有 运算符 和 数字符 两种按键
+            if (key instanceof MathOpKey) {
+                if (((MathOpKey) key).getType() != MathOpKey.Type.dot) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** 指定输入是否为括号 */
+    private boolean isBracketInput(Input<?> input) {
+        Key<?> key = input.getFirstKey();
+
+        return key instanceof MathOpKey //
+               && ((MathOpKey) key).getType() == MathOpKey.Type.brackets;
     }
 }

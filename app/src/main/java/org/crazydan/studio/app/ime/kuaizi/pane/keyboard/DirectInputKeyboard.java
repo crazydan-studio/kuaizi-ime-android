@@ -46,9 +46,11 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         InputList inputList = context.inputList;
 
         // Note: 在输入列表为空时，直输键盘无预处理过程，故不对输入列表事件做响应
-        if (!inputList.isEmpty()) {
-            super.onMsg(context, msg);
+        if (inputList.isEmpty()) {
+            return;
         }
+
+        super.onMsg(context, msg);
     }
 
     @Override

@@ -135,8 +135,8 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
                 resetInputting = true;
                 break;
             case InputType.TYPE_CLASS_TEXT:
-                // Note: 切换前为数字键盘时，需强制切换到拼音键盘，否则无法输入文本
-                if (this.inputPane.getKeyboardType() == Keyboard.Type.Number) {
+                // Note: 文本输入默认仅由 latin 和 pinyin 键盘处理
+                if (this.inputPane.getKeyboardType() != Keyboard.Type.Latin) {
                     keyboardType = Keyboard.Type.Pinyin;
                 }
 

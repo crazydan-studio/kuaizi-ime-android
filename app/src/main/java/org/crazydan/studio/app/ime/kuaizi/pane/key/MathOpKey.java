@@ -49,7 +49,7 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
     }
 
     @Override
-    public boolean isMathOperator() {
+    public boolean isMathOp() {
         switch (this.type) {
             case percent:
             case permill:
@@ -62,7 +62,7 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
     @Override
     public boolean isSymbol() {
         // 确保数字和非运算符之间无空格
-        return !isMathOperator();
+        return !isMathOp();
     }
 
     @Override

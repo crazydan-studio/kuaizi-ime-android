@@ -93,15 +93,9 @@ public class InputList implements UserInputMsgListener {
                         break;
                 }
 
-                boolean isMathExprSelected = input.isMathExpr() //
-                                             && (isSelected(input) //
-                                                 || getPending() == input);
-                // 忽略对已选中算术表达式的处理，由其自身的视图做响应
-                if (!isMathExprSelected) {
-                    clearPhraseCompletions();
+                clearPhraseCompletions();
 
-                    fire_InputMsg(Input_Choose_Doing, input);
-                }
+                fire_InputMsg(Input_Choose_Doing, input);
                 break;
             }
             case SingleTap_CompletionInput: {
@@ -385,8 +379,26 @@ public class InputList implements UserInputMsgListener {
 
     /** {@link #confirmPending() 确认当前待输入}，并{@link #select(Input) 选中指定输入} */
     public void confirmPendingAndSelect(Input<?> input) {
+        confirmPendingAndSelect(input, false);
+    }
+
+    /**
+     * {@link #confirmPending() 确认当前待输入}，并{@link #select(Input) 选中指定输入}
+     *
+     * @param force
+     *         若为 true，则对于已选中的 input，将强制重新{@link #doSelect 选择}
+     */
+    public void confirmPendingAndSelect(Input<?> input, boolean force) {
         confirmPending();
-        select(input);
+
+        int index = indexOf(input);
+        if (index < 0) {
+            return;
+        }
+
+        if (force || !isSelected(input)) {
+            doSelect(input);
+        }
     }
 
     /** {@link #confirmPending() 确认当前待输入}，并{@link #selectLast() 选中最后一个输入} */
@@ -425,9 +437,12 @@ public class InputList implements UserInputMsgListener {
             return -1;
         }
 
-        if (hasEmptyPending()) {
+        Input<?> selected = getSelected();
+        CharInput pending = getPending();
+
+        if (Input.isEmpty(pending)) {
             // 若当前为空白算术输入，则直接将其移除
-            if (getSelected().isMathExpr() && getSelected().isEmpty()) {
+            if (selected.isMathExpr() && selected.isEmpty()) {
                 removeCharInputAt(selectedIndex);
                 // 选中相邻的后继 Gap
                 doSelect(selectedIndex - 1);
@@ -440,8 +455,6 @@ public class InputList implements UserInputMsgListener {
             return -1;
         }
 
-        Input<?> selected = getSelected();
-        CharInput pending = getPending();
         // 先由待输入做其内部确认
         pending.confirm();
 
@@ -925,7 +938,7 @@ public class InputList implements UserInputMsgListener {
             return !right.isSymbol();
         } else if (right.isLatin()) {
             return !left.isSymbol();
-        } else if (left.isMathOperator() || right.isMathOperator()) {
+        } else if (left.isMathOp() || right.isMathOp()) {
             // 数学运算符前后都有空格
             return true;
         } else if (left.isTextOnlyWordSpell(option)) {
@@ -940,6 +953,11 @@ public class InputList implements UserInputMsgListener {
     public boolean needGapSpace(Input<?> input) {
         int i = indexOf(input);
         return needGapSpace(i);
+    }
+
+    /** 是否包含指定的输入 */
+    public boolean contains(Input<?> input) {
+        return indexOf(input, true) >= 0;
     }
 
     /** 获取指定输入的位置 */
@@ -981,12 +999,12 @@ public class InputList implements UserInputMsgListener {
         return CollectionUtils.last(getCharInputs());
     }
 
-    /** 选中指定的输入，但其待输入不变 */
+    /** 选中指定的输入，并重建其待输入 */
     private void doSelect(Input<?> input) {
         this.cursor.select(input);
     }
 
-    /** 选中指定的输入，但其待输入不变 */
+    /** 选中指定的输入，并重建其待输入 */
     private void doSelect(int index) {
         Input<?> input = this.inputs.get(index);
         doSelect(input);
