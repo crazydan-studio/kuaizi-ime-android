@@ -22,12 +22,14 @@
         android:layout_gravity="bottom"
         android:orientation="vertical">
 
+    <!-- 算术输入是内嵌的输入列表 -->
     <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly
             android:id="@+id/input_list"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
+    <!-- 用于显示下划线，以方便区分算术输入和普通输入 -->
     <View
             android:id="@+id/marker"
             android:layout_width="match_parent"
