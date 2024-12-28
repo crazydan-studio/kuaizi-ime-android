@@ -31,7 +31,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-11
  */
-public class CtrlToggleInputSpellKeyViewHolder extends KeyViewHolder<CtrlKey, View> {
+public class CtrlToggleInputSpellKeyViewHolder extends KeyViewHolder<View> {
     private final TextView sourceView;
     private final TextView targetView;
 

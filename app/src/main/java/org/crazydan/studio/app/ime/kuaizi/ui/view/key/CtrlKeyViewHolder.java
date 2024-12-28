@@ -33,7 +33,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-02
  */
-public class CtrlKeyViewHolder extends KeyViewHolder<CtrlKey, ImageView> {
+public class CtrlKeyViewHolder extends KeyViewHolder<ImageView> {
     private final TextView fgTextView;
 
     public CtrlKeyViewHolder(@NonNull View itemView) {

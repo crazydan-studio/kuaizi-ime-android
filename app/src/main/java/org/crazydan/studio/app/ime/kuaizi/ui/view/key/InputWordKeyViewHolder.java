@@ -35,7 +35,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class InputWordKeyViewHolder extends KeyViewHolder<InputWordKey, View> {
+public class InputWordKeyViewHolder extends KeyViewHolder<View> {
     private final TextView spellView;
     private final TextView wordView;
     private final View traditionalMarkView;

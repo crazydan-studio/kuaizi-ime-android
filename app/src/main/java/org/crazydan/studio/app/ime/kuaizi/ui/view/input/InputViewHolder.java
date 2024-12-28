@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class InputViewHolder<I extends Input<?>> extends RecyclerViewHolder<I> {
+public abstract class InputViewHolder extends RecyclerViewHolder {
     private final TextView spellView;
     private final TextView wordView;
     private final ImageView spaceView;

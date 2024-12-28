@@ -74,7 +74,7 @@ public class RecyclerViewGestureDetector extends ViewGestureDetector implements 
         // 因为监测状态被重置了，所以，只能根据数据自身是否变化做监测重置判断
         View view = rv.findChildViewUnder(e.getX(), e.getY());
         RecyclerViewData newViewData = view != null
-                                       ? ((RecyclerViewHolder<?>) rv.getChildViewHolder(view)).getData()
+                                       ? ((RecyclerViewHolder) rv.getChildViewHolder(view)).getData()
                                        : null;
 
         this.prevViewData = newViewData;

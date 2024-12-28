@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -31,36 +28,25 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStepViewHolder> {
+public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseStep.ViewData, ExerciseStepViewHolder> {
     private final static int VIEW_TYPE_NORMAL = 0;
     private final static int VIEW_TYPE_LAST = 1;
 
     private KeyImageRender keyImageRender;
 
-    private List<ExerciseStep.ViewData> dataList = new ArrayList<>();
+    public ExerciseStepListViewAdapter() {
+        super(ItemUpdatePolicy.differ);
+    }
 
     public void setKeyImageRender(KeyImageRender keyImageRender) {
         this.keyImageRender = keyImageRender;
     }
 
-    /** 更新 {@link ExerciseStep} 列表 */
-    public void updateDataList(List<ExerciseStep.ViewData> dataList) {
-        List<ExerciseStep.ViewData> oldDataList = this.dataList;
-        this.dataList = dataList;
-
-        updateItems(oldDataList, this.dataList);
-    }
-
-    @Override
-    public int getItemCount() {
-        return this.dataList.size();
-    }
-
     @Override
     public void onBindViewHolder(@NonNull ExerciseStepViewHolder holder, int position) {
-        ExerciseStep.ViewData data = this.dataList.get(position);
+        ExerciseStep.ViewData item = getItem(position);
 
-        holder.bind(this.keyImageRender, data, position);
+        holder.bind(this.keyImageRender, item, position);
     }
 
     @NonNull
@@ -77,9 +63,9 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
 
     @Override
     public int getItemViewType(int position) {
-        ExerciseStep.ViewData data = this.dataList.get(position);
+        ExerciseStep.ViewData item = getItem(position);
 
-        if (data.last) {
+        if (item.last) {
             return VIEW_TYPE_LAST;
         }
         return VIEW_TYPE_NORMAL;
@@ -88,7 +74,7 @@ public class ExerciseStepListViewAdapter extends RecyclerViewAdapter<ExerciseSte
     /** 指定位置是否为最后一步 */
     public boolean isLastStep(int position) {
         if (position < getItemCount()) {
-            return this.dataList.get(position).last;
+            return getItem(position).last;
         }
         return false;
     }

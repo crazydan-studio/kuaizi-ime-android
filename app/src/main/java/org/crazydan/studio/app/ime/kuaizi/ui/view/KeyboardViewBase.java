@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.Objects;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -102,7 +104,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
             }
         }
 
-        this.adapter.updateDataList(keys, themeResId, orientation);
+        this.adapter.updateItems(keys, themeResId, orientation);
     }
 
     public float getBottomSpacing() {
@@ -119,14 +121,14 @@ public abstract class KeyboardViewBase extends RecyclerView {
     }
 
     /** 找到指定坐标下可见的 {@link  KeyViewHolder} */
-    public KeyViewHolder<?, ?> findVisibleKeyViewHolderUnderLoose(float x, float y) {
+    public KeyViewHolder<?> findVisibleKeyViewHolderUnderLoose(float x, float y) {
         View child = this.layoutManager.findChildViewUnderLoose(x, y);
 
         return getVisibleKeyViewHolder(child);
     }
 
-    private KeyViewHolder<?, ?> getVisibleKeyViewHolder(View view) {
-        KeyViewHolder<?, ?> holder = view != null ? (KeyViewHolder<?, ?>) getChildViewHolder(view) : null;
+    private KeyViewHolder<?> getVisibleKeyViewHolder(View view) {
+        KeyViewHolder<?> holder = view != null ? (KeyViewHolder<?>) getChildViewHolder(view) : null;
 
         return holder != null && !holder.isHidden() ? holder : null;
     }
@@ -139,9 +141,10 @@ public abstract class KeyboardViewBase extends RecyclerView {
         int total = this.layoutManager.getChildCount();
         for (int i = 0; i < total; i++) {
             View view = this.layoutManager.getChildAt(i);
-            KeyViewHolder<?, ?> holder = getVisibleKeyViewHolder(view);
+            KeyViewHolder<?> holder = getVisibleKeyViewHolder(view);
+            Key<?> viewKey = this.adapter.getItem(holder);
 
-            if (holder != null && holder.getData().equals(key)) {
+            if (Objects.equals(viewKey, key)) {
                 return view;
             }
         }

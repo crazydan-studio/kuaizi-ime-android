@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseViewHolder extends RecyclerViewHolder<Exercise.ViewData> implements InputMsgListener {
+public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgListener {
     protected final TextView titleView;
     protected final ExerciseEditText textView;
 

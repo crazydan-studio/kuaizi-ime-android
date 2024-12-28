@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyImageRender;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepViewHolder extends RecyclerViewHolder<ExerciseStep.ViewData> {
+public class ExerciseStepViewHolder extends RecyclerViewHolder {
     private final ImageView pointerView;
     private final TextView contentView;
 

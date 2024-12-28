@@ -33,13 +33,12 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class SymbolKeyViewHolder extends KeyViewHolder<SymbolKey, TextView> {
+public class SymbolKeyViewHolder extends KeyViewHolder<TextView> {
 
     public SymbolKeyViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 
-    @Override
     public void bind(SymbolKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 

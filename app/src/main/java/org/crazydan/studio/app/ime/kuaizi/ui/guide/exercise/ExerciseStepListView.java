@@ -47,7 +47,7 @@ public class ExerciseStepListView extends RecyclerView {
     public void update(Exercise.ViewData exercise) {
         this.adapter.setKeyImageRender(exercise.keyImageRender);
 
-        this.adapter.updateDataList(exercise.steps);
+        this.adapter.updateItems(exercise.steps);
     }
 
     /** 滚动到指定位置 */

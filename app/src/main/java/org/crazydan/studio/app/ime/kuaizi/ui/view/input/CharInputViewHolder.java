@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class CharInputViewHolder extends InputViewHolder<CharInput> {
+public class CharInputViewHolder extends InputViewHolder {
 
     public CharInputViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -40,8 +40,6 @@ public class CharInputViewHolder extends InputViewHolder<CharInput> {
         CharInput input = (CharInput) data.input;
         CharInput pending = data.pending;
 
-        super.bind(input);
-
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
         setSelectedBgColor(this.itemView, selected);
 
@@ -49,8 +47,6 @@ public class CharInputViewHolder extends InputViewHolder<CharInput> {
     }
 
     public void bind(CharInput input) {
-        super.bind(input);
-
         addLeftSpaceMargin(this.itemView, 0);
         setSelectedBgColor(this.itemView, false);
 

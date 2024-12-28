@@ -79,7 +79,7 @@ public class CompletionInputListView extends RecyclerView implements ViewGesture
         }
 
         if (type == ViewGestureDetector.GestureType.SingleTap) {
-            CompletionInput completion = holder.getData();
+            CompletionInput completion = this.adapter.getItem(holder);
 
             UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
             this.listener.onMsg(msg);
@@ -89,7 +89,7 @@ public class CompletionInputListView extends RecyclerView implements ViewGesture
     // =============================== End: 消息处理 ===================================
 
     public void update(List<CompletionInput> completions) {
-        this.adapter.updateDataList(completions);
+        this.adapter.updateItems(completions);
     }
 
     private CompletionInputViewHolder findCompletionViewHolderUnder(float x, float y) {

@@ -57,7 +57,7 @@ public class ExerciseListView extends RecyclerPageView implements InputMsgListen
 
     /** 更新视图 */
     public void update(List<Exercise> exercises) {
-        this.adapter.updateDataList(exercises.stream().map(Exercise::createViewData).collect(Collectors.toList()));
+        this.adapter.updateItems(exercises.stream().map(Exercise::createViewData).collect(Collectors.toList()));
     }
 
     // ================ Start: 消息处理 =================

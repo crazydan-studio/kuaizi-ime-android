@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputViewHolder extends RecyclerViewHolder<CompletionInput> {
+public class CompletionInputViewHolder extends RecyclerViewHolder {
     private final HorizontalScrollView scrollView;
     private final ViewGroup inputsView;
 
@@ -56,10 +56,7 @@ public class CompletionInputViewHolder extends RecyclerViewHolder<CompletionInpu
         return this.scrollView;
     }
 
-    @Override
     public void bind(CompletionInput data) {
-        super.bind(data);
-
         whenViewReady(this.inputsView, (view) -> {
             view.removeAllViews();
 

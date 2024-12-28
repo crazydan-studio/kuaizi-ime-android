@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.view.View;
@@ -35,50 +34,46 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>> {
+public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, InputViewHolder> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
 
-    private List<InputViewData> dataList = new ArrayList<>();
     private boolean canBeSelected;
 
-    /** 更新输入列表 */
-    public void updateDataList(List<InputViewData> dataList, boolean canBeSelected) {
-        this.dataList = dataList;
+    public InputListViewAdapter() {
+        // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
+        // 其判断逻辑较复杂且容易遗漏更新，故而，始终对列表视图做全量更新
+        super(ItemUpdatePolicy.full);
+    }
+
+    public void updateItems(List<InputViewData> newItems, boolean canBeSelected) {
         this.canBeSelected = canBeSelected;
 
-        // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
-        // 其判断逻辑较复杂且容易遗漏更新，故而，直接对列表视图做全量更新
-        notifyDataSetChanged();
+        super.updateItems(newItems);
     }
 
     @Override
-    public int getItemCount() {
-        return this.dataList.size();
-    }
+    public void onBindViewHolder(@NonNull InputViewHolder holder, int position) {
+        InputViewData item = getItem(position);
+        boolean selected = this.canBeSelected && item.selected;
 
-    @Override
-    public void onBindViewHolder(@NonNull InputViewHolder<?> holder, int position) {
-        InputViewData data = this.dataList.get(position);
-        boolean selected = this.canBeSelected && data.selected;
-
-        if (data.input.isMathExpr()) {
-            ((MathExprInputViewHolder) holder).bind(data, selected);
-        } else if (data.input.isGap()) {
-            ((GapInputViewHolder) holder).bind(data, selected);
+        if (item.input.isMathExpr()) {
+            ((MathExprInputViewHolder) holder).bind(item, selected);
+        } else if (item.input.isGap()) {
+            ((GapInputViewHolder) holder).bind(item, selected);
         } else {
-            ((CharInputViewHolder) holder).bind(data, selected);
+            ((CharInputViewHolder) holder).bind(item, selected);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        InputViewData data = this.dataList.get(position);
+        InputViewData item = getItem(position);
 
-        if (data.input.isMathExpr()) {
+        if (item.input.isMathExpr()) {
             return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
-        } else if (data.input.isGap()) {
+        } else if (item.input.isGap()) {
             return VIEW_TYPE_GAP_INPUT;
         }
         return VIEW_TYPE_CHAR_INPUT;
@@ -86,7 +81,7 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewHolder<?>
 
     @NonNull
     @Override
-    public InputViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public InputViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
             case VIEW_TYPE_CHAR_INPUT: {
                 View view = inflateItemView(parent, R.layout.input_char_view);

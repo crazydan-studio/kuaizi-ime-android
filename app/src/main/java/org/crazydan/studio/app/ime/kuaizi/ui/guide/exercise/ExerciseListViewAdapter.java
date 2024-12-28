@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -32,35 +29,20 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAda
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseViewHolder> {
+public class ExerciseListViewAdapter extends RecyclerViewAdapter<Exercise.ViewData, ExerciseViewHolder> {
     private final static int VIEW_TYPE_FREE_MODE = 0;
     private final static int VIEW_TYPE_NORMAL_MODE = 1;
     private final static int VIEW_TYPE_INTRODUCE_MODE = 2;
 
-    private List<Exercise.ViewData> dataList = new ArrayList<>();
-
-    /** 更新 {@link Exercise} 列表 */
-    public void updateDataList(List<Exercise.ViewData> dataList) {
-        List<Exercise.ViewData> oldDataList = this.dataList;
-        this.dataList = dataList;
-
-        updateItems(oldDataList, this.dataList);
-    }
-
-    public Exercise.ViewData getItem(int position) {
-        return this.dataList.get(position);
-    }
-
-    @Override
-    public int getItemCount() {
-        return this.dataList.size();
+    public ExerciseListViewAdapter() {
+        super(ItemUpdatePolicy.differ);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ExerciseViewHolder holder, int position) {
-        Exercise.ViewData data = this.dataList.get(position);
+        Exercise.ViewData item = getItem(position);
 
-        holder.bind(data, position);
+        holder.bind(item, position);
     }
 
     @NonNull
@@ -83,9 +65,9 @@ public class ExerciseListViewAdapter extends RecyclerViewAdapter<ExerciseViewHol
 
     @Override
     public int getItemViewType(int position) {
-        Exercise.ViewData data = this.dataList.get(position);
+        Exercise.ViewData item = getItem(position);
 
-        switch (data.mode) {
+        switch (item.mode) {
             case free:
                 return VIEW_TYPE_FREE_MODE;
             case introduce:

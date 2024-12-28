@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class GapInputViewHolder extends InputViewHolder<GapInput> {
+public class GapInputViewHolder extends InputViewHolder {
     private final View cursorView;
     private final View pendingView;
     private final View blinkView;
@@ -51,8 +51,6 @@ public class GapInputViewHolder extends InputViewHolder<GapInput> {
     }
 
     public void bind(InputViewData data, boolean selected) {
-        super.bind((GapInput) data.input);
-
         CharInput pending = data.pending;
         boolean hasPending = !Input.isEmpty(pending);
         whenViewReady(this.pendingView, (view) -> {

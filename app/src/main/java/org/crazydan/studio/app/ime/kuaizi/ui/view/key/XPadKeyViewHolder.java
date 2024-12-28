@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04
  */
-public class XPadKeyViewHolder extends KeyViewHolder<XPadKey, XPadView> {
+public class XPadKeyViewHolder extends KeyViewHolder<XPadView> {
 
     public XPadKeyViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -39,7 +39,6 @@ public class XPadKeyViewHolder extends KeyViewHolder<XPadKey, XPadView> {
         return this.fgView;
     }
 
-    @Override
     public void bind(XPadKey key) {
         super.bind(key, null);
 

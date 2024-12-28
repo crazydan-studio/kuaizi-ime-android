@@ -34,8 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends RecyclerView.ViewHolder {
-    private T data;
+public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     public static void setScale(View view, float scale) {
         view.setScaleX(scale);
@@ -46,18 +45,8 @@ public abstract class RecyclerViewHolder<T extends RecyclerViewData> extends Rec
         super(itemView);
     }
 
-    // TODO 视图与数据不应该做强绑定，需解耦
     public final Context getContext() {
         return this.itemView.getContext();
-    }
-
-    public T getData() {
-        return this.data;
-    }
-    // TODO 视图与数据不应该做强绑定，需解耦
-
-    public void bind(T data) {
-        this.data = data;
     }
 
     public boolean isHidden() {

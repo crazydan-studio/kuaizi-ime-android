@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
@@ -34,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-15
  */
-public class MathExprInputViewHolder extends InputViewHolder<Input<?>> {
+public class MathExprInputViewHolder extends InputViewHolder {
     private final InputListViewReadonly inputListView;
     private final View markerView;
 
@@ -46,8 +45,6 @@ public class MathExprInputViewHolder extends InputViewHolder<Input<?>> {
     }
 
     public void bind(InputViewData data, boolean selected) {
-        super.bind(data.input);
-
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
 
         InputList inputList = ((MathExprInput) data.input).getInputList();

@@ -46,7 +46,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>> {
+public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHolder<?>> {
     private static final int VIEW_TYPE_CHAR_KEY = 0;
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
@@ -58,59 +58,55 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>
 
     private HexagonOrientation orientation;
 
-    private List<Key<?>> dataList = new ArrayList<>();
     private Integer themeResId;
 
     public KeyboardViewAdapter(HexagonOrientation orientation) {
+        super(ItemUpdatePolicy.manual);
+
         this.orientation = orientation;
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateDataList(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
+    public void updateItems(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
         Integer oldThemeResId = this.themeResId;
         HexagonOrientation oldOrientation = this.orientation;
         this.themeResId = themeResId;
         this.orientation = orientation;
 
-        List<Key<?>> oldDataList = this.dataList;
-        this.dataList = new ArrayList<>();
-
+        List<Key<?>> newItems = new ArrayList<>();
         for (Key<?>[] key : keys) {
-            this.dataList.addAll(Arrays.asList(key));
+            newItems.addAll(Arrays.asList(key));
         }
+
+        List<Key<?>> oldItems = super.updateItems(newItems);
 
         if (!Objects.equals(oldThemeResId, this.themeResId) //
             || !Objects.equals(oldOrientation, this.orientation) //
         ) {
             // Note：若正六边形方向或者主题样式发生了变化，则始终更新视图
-            updateItemsForce(oldDataList, this.dataList);
+            updateItemsByFull(oldItems, newItems);
         } else {
-            updateItems(oldDataList, this.dataList);
+            updateItemsByDiffer(oldItems, newItems);
         }
     }
 
     @Override
-    public int getItemCount() {
-        return this.dataList.size();
-    }
+    public void onBindViewHolder(@NonNull KeyViewHolder<?> holder, int position) {
+        Key<?> item = getItem(position);
 
-    @Override
-    public void onBindViewHolder(@NonNull KeyViewHolder<?, ?> holder, int position) {
-        Key<?> data = this.dataList.get(position);
-
-        bindKeyView(holder, data, this.orientation);
+        bindKeyView(holder, item, this.orientation);
     }
 
     @Override
     public int getItemViewType(int position) {
-        Key<?> data = this.dataList.get(position);
+        Key<?> item = getItem(position);
 
-        return getKeyViewType(data);
+        return getKeyViewType(item);
     }
 
     @NonNull
     @Override
-    public KeyViewHolder<?, ?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public KeyViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         if (this.themeResId != null) {
             context = new ContextThemeWrapper(context, this.themeResId);
@@ -120,7 +116,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>
     }
 
     public XPadKey getXPadKey() {
-        for (Key<?> key : this.dataList) {
+        for (Key<?> key : this.items) {
             if (key instanceof XPadKey) {
                 return (XPadKey) key;
             }
@@ -151,7 +147,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>
     }
 
     /** 注：创建的视图未附加到 root 上 */
-    private static KeyViewHolder<?, ?> createKeyViewHolder(Context context, ViewGroup root, int viewType) {
+    private static KeyViewHolder<?> createKeyViewHolder(Context context, ViewGroup root, int viewType) {
         switch (viewType) {
             case VIEW_TYPE_CTRL_KEY: {
                 View view = inflateItemView(context, root, R.layout.key_ctrl_view);
@@ -188,7 +184,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<KeyViewHolder<?, ?>
         }
     }
 
-    private static void bindKeyView(KeyViewHolder<?, ?> holder, Key<?> key, HexagonOrientation orientation) {
+    private static void bindKeyView(KeyViewHolder<?> holder, Key<?> key, HexagonOrientation orientation) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Toggle_Pinyin_spell:

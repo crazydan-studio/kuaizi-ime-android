@@ -22,7 +22,6 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 
 /**
  * 值为 null 的按键视图的 {@link RecyclerView.ViewHolder}
@@ -30,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class NullKeyViewHolder extends KeyViewHolder<CtrlKey, ImageView> {
+public class NullKeyViewHolder extends KeyViewHolder<ImageView> {
 
     public NullKeyViewHolder(@NonNull View itemView) {
         super(itemView);

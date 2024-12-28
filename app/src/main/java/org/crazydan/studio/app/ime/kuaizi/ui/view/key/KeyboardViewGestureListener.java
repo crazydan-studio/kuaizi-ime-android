@@ -33,8 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger implements ViewGestureDetector.Listener {
     private final KeyboardView keyboardView;
 
-    private KeyViewHolder<?, ?> prevKeyViewHolder;
-    private KeyViewHolder<?, ?> movingOverXPadKeyViewHolder;
+    private KeyViewHolder<?> prevKeyViewHolder;
+    private KeyViewHolder<?> movingOverXPadKeyViewHolder;
 
     public KeyboardViewGestureListener(KeyboardView keyboardView) {
         super(keyboardView);
@@ -43,9 +43,9 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
 
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        KeyViewHolder<?, ?> keyViewHolder = this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.x, data.y);
+        KeyViewHolder<?> keyViewHolder = this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.x, data.y);
 
-        KeyViewHolder<?, ?> oldKeyViewHolder = this.prevKeyViewHolder;
+        KeyViewHolder<?> oldKeyViewHolder = this.prevKeyViewHolder;
         this.prevKeyViewHolder = keyViewHolder;
 
         // 处理普通键盘的按键发生切换的情况
@@ -66,7 +66,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
             }
             return;
         } else {
-            KeyViewHolder<?, ?> xPadKeyViewHolder = this.movingOverXPadKeyViewHolder;
+            KeyViewHolder<?> xPadKeyViewHolder = this.movingOverXPadKeyViewHolder;
             switch (type) {
                 case PressEnd:
                     this.movingOverXPadKeyViewHolder = null;
@@ -94,7 +94,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
     }
 
     private boolean try_OnXPadGesture(
-            KeyViewHolder<?, ?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
         if (!(holder instanceof XPadKeyViewHolder)) {
             return false;
@@ -111,7 +111,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
     }
 
     private void onPressStart(
-            KeyViewHolder<?, ?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
         if (isAvailableKeyView(holder)) {
             holder.touchDown();
@@ -121,7 +121,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
     }
 
     private void onPressEnd(
-            KeyViewHolder<?, ?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
+            KeyViewHolder<?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
         if (isAvailableKeyView(holder)) {
             holder.touchUp();
@@ -130,11 +130,11 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
         super.onGesture(getKey(holder), type, data);
     }
 
-    private Key<?> getKey(KeyViewHolder<?, ?> holder) {
+    private Key<?> getKey(KeyViewHolder<?> holder) {
         return holder != null ? holder.getData() : null;
     }
 
-    private boolean isAvailableKeyView(KeyViewHolder<?, ?> holder) {
+    private boolean isAvailableKeyView(KeyViewHolder<?> holder) {
         return holder != null //
                && (!(holder instanceof CtrlKeyViewHolder) //
                    || !(CtrlKey.isNoOp(holder.getData()))) //

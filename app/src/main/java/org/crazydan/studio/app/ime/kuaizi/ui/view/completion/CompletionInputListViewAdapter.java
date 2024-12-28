@@ -17,9 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.completion;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,47 +33,33 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputListViewAdapter extends RecyclerViewAdapter<CompletionInputViewHolder> {
+public class CompletionInputListViewAdapter extends RecyclerViewAdapter<CompletionInput, CompletionInputViewHolder> {
     private final CompletionInputListViewLayoutManager manager;
 
-    private List<CompletionInput> dataList = new ArrayList<>();
-
     public CompletionInputListViewAdapter(CompletionInputListViewLayoutManager manager) {
+        super(ItemUpdatePolicy.differ);
+
         this.manager = manager;
     }
 
-    public void updateDataList(List<CompletionInput> dataList) {
-        List<CompletionInput> oldDataList = this.dataList;
-        this.dataList = dataList;
-
-        updateItems(oldDataList, dataList);
-    }
-
     public void updateViewHolder(CompletionInputViewHolder holder) {
-        if (this.dataList == null) {
-            return;
-        }
+        CompletionInput item = getItem(holder);
 
-        CompletionInput data = holder.getData();
-        int index = this.dataList.indexOf(data);
-        CompletionInput newData = this.dataList.get(index);
+        int index = this.items.indexOf(item);
+        CompletionInput newItem = getItem(index);
 
         // 更新 变更了补全位置 的数据，以确保在应用补全时能够对应到正确的补全位置
-        if (newData != data) {
-            holder.bind(newData);
+        if (newItem != item) {
+            holder.bind(newItem);
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return this.dataList.size();
     }
 
     @Override
     public void onBindViewHolder(@NonNull CompletionInputViewHolder holder, int position) {
-        CompletionInput data = this.dataList.get(position);
+        CompletionInput item = getItem(position);
 
-        holder.bind(data);
+        holder.bind(item);
+
         holder.getScrollView().setOnTouchListener(this::handleScrollViewEvent);
     }
 
