@@ -113,31 +113,32 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
     private void onPressStart(
             KeyViewHolder<?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
-        if (isAvailableKeyView(holder)) {
+        if (isAvailableKeyViewHolder(holder)) {
             holder.touchDown();
         }
 
-        super.onGesture(getKey(holder), type, data);
+        Key<?> key = getKey(holder);
+        super.onGesture(key, type, data);
     }
 
     private void onPressEnd(
             KeyViewHolder<?> holder, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data
     ) {
-        if (isAvailableKeyView(holder)) {
+        if (isAvailableKeyViewHolder(holder)) {
             holder.touchUp();
         }
 
-        super.onGesture(getKey(holder), type, data);
+        Key<?> key = getKey(holder);
+        super.onGesture(key, type, data);
     }
 
     private Key<?> getKey(KeyViewHolder<?> holder) {
-        return holder != null ? holder.getData() : null;
+        return this.keyboardView.getAdapterItem(holder);
     }
 
-    private boolean isAvailableKeyView(KeyViewHolder<?> holder) {
-        return holder != null //
-               && (!(holder instanceof CtrlKeyViewHolder) //
-                   || !(CtrlKey.isNoOp(holder.getData()))) //
-               && !holder.getData().isDisabled();
+    private boolean isAvailableKeyViewHolder(KeyViewHolder<?> holder) {
+        Key<?> key = getKey(holder);
+
+        return key != null && !CtrlKey.isNoOp(key) && !key.isDisabled();
     }
 }

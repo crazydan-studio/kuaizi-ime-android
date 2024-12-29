@@ -41,23 +41,24 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseThe
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListView extends RecyclerPageView implements InputMsgListener, ExerciseMsgListener {
-    private final ExerciseListViewAdapter adapter;
-
+public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter>
+        implements InputMsgListener, ExerciseMsgListener {
     private ExerciseViewMsgListener listener;
 
     public ExerciseListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs, new ExerciseListViewLayoutManager(context));
 
-        this.adapter = new ExerciseListViewAdapter();
-        setAdapter(this.adapter);
-
         addPageActiveListener(this::onPageActive);
+    }
+
+    @Override
+    protected ExerciseListViewAdapter createAdapter() {
+        return new ExerciseListViewAdapter();
     }
 
     /** 更新视图 */
     public void update(List<Exercise> exercises) {
-        this.adapter.updateItems(exercises.stream().map(Exercise::createViewData).collect(Collectors.toList()));
+        getAdapter().updateItems(exercises.stream().map(Exercise::createViewData).collect(Collectors.toList()));
     }
 
     // ================ Start: 消息处理 =================

@@ -21,14 +21,13 @@ import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepListView extends RecyclerView {
-    private final ExerciseStepListViewAdapter adapter;
+public class ExerciseStepListView extends RecyclerView<ExerciseStepListViewAdapter> {
 
     public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -36,24 +35,26 @@ public class ExerciseStepListView extends RecyclerView {
         // 禁用动画，以避免练习题在切换过程中出现残影
         setItemAnimator(null);
 
-        this.adapter = new ExerciseStepListViewAdapter();
-        setAdapter(this.adapter);
-
         ExerciseStepListViewLayoutManager layoutManager = new ExerciseStepListViewLayoutManager(context);
         setLayoutManager(layoutManager);
     }
 
+    @Override
+    protected ExerciseStepListViewAdapter createAdapter() {
+        return new ExerciseStepListViewAdapter();
+    }
+
     /** 更新视图 */
     public void update(Exercise.ViewData exercise) {
-        this.adapter.setKeyImageRender(exercise.keyImageRender);
+        getAdapter().setKeyImageRender(exercise.keyImageRender);
 
-        this.adapter.updateItems(exercise.steps);
+        getAdapter().updateItems(exercise.steps);
     }
 
     /** 滚动到指定位置 */
     public void scrollTo(int position) {
         // 提前定位到最后一个 step
-        if (this.adapter.isLastStep(position + 1)) {
+        if (getAdapter().isLastStep(position + 1)) {
             position += 1;
         }
 

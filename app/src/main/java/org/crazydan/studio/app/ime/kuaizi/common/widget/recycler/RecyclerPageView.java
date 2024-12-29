@@ -27,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 
 /**
@@ -36,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-21
  */
-public abstract class RecyclerPageView extends RecyclerView {
+public abstract class RecyclerPageView<A extends RecyclerViewAdapter<?, ?>> extends RecyclerView<A> {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final PagerSnapHelper pager;
@@ -60,7 +59,7 @@ public abstract class RecyclerPageView extends RecyclerView {
 
         addOnScrollListener(new OnScrollListener() {
             @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            public void onScrollStateChanged(@NonNull androidx.recyclerview.widget.RecyclerView rv, int newState) {
                 if (newState == SCROLL_STATE_IDLE) {
                     onRecyclerViewScrolled();
                 }

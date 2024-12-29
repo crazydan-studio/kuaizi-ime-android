@@ -24,9 +24,9 @@ import android.util.AttributeSet;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewHolder;
@@ -43,12 +43,11 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public abstract class KeyboardViewBase extends RecyclerView {
+public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter> {
     private final float gridMaxPaddingRight;
     private final float gridItemMinRadius;
     private final float gridItemSpacing;
 
-    private final KeyboardViewAdapter adapter;
     private final KeyboardViewLayoutManager layoutManager;
 
     private HexagonOrientation gridItemOrientation = HexagonOrientation.POINTY_TOP;
@@ -60,11 +59,13 @@ public abstract class KeyboardViewBase extends RecyclerView {
         this.gridItemMinRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_bg_min_radius);
         this.gridItemSpacing = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_spacing);
 
-        this.adapter = new KeyboardViewAdapter(this.gridItemOrientation);
-        this.layoutManager = new KeyboardViewLayoutManager(this.gridItemOrientation);
-
-        setAdapter(this.adapter);
+        this.layoutManager = new KeyboardViewLayoutManager();
         setLayoutManager(this.layoutManager);
+    }
+
+    @Override
+    protected KeyboardViewAdapter createAdapter() {
+        return new KeyboardViewAdapter();
     }
 
     public void setGridItemOrientation(HexagonOrientation gridItemOrientation) {
@@ -104,7 +105,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
             }
         }
 
-        this.adapter.updateItems(keys, themeResId, orientation);
+        getAdapter().updateItems(keys, themeResId, orientation);
     }
 
     public float getBottomSpacing() {
@@ -112,7 +113,7 @@ public abstract class KeyboardViewBase extends RecyclerView {
     }
 
     public XPadKeyViewHolder getXPadKeyViewHolder() {
-        XPadKey xPadKey = this.adapter.getXPadKey();
+        XPadKey xPadKey = getAdapter().getXPadKey();
         return getXPadKeyViewHolder(xPadKey);
     }
 
@@ -142,8 +143,8 @@ public abstract class KeyboardViewBase extends RecyclerView {
         for (int i = 0; i < total; i++) {
             View view = this.layoutManager.getChildAt(i);
             KeyViewHolder<?> holder = getVisibleKeyViewHolder(view);
-            Key<?> viewKey = this.adapter.getItem(holder);
 
+            Key<?> viewKey = getAdapterItem(holder);
             if (Objects.equals(viewKey, key)) {
                 return view;
             }

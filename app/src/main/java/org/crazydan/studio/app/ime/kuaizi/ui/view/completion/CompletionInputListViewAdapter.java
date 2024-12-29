@@ -34,12 +34,14 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
  * @date 2023-10-12
  */
 public class CompletionInputListViewAdapter extends RecyclerViewAdapter<CompletionInput, CompletionInputViewHolder> {
-    private final CompletionInputListViewLayoutManager manager;
+    private CompletionInputListViewLayoutManager layoutManager;
 
-    public CompletionInputListViewAdapter(CompletionInputListViewLayoutManager manager) {
+    public CompletionInputListViewAdapter() {
         super(ItemUpdatePolicy.differ);
+    }
 
-        this.manager = manager;
+    public void setLayoutManager(CompletionInputListViewLayoutManager layoutManager) {
+        this.layoutManager = layoutManager;
     }
 
     public void updateViewHolder(CompletionInputViewHolder holder) {
@@ -76,12 +78,12 @@ public class CompletionInputListViewAdapter extends RecyclerViewAdapter<Completi
         // https://stackoverflow.com/questions/29426858/scrollview-inside-a-recyclerview-android/68506793#answer-68506793
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                this.manager.enableScroll(!canScrollCompletion);
+                this.layoutManager.enableScroll(!canScrollCompletion);
                 break;
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
-                this.manager.enableScroll(true);
+                this.layoutManager.enableScroll(true);
                 break;
             }
         }

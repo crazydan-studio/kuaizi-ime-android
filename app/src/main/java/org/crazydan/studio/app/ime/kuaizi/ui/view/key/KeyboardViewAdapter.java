@@ -56,14 +56,11 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
     private static final int VIEW_TYPE_XPAD_KEY = 8;
 
+    private Integer themeResId;
     private HexagonOrientation orientation;
 
-    private Integer themeResId;
-
-    public KeyboardViewAdapter(HexagonOrientation orientation) {
+    public KeyboardViewAdapter() {
         super(ItemUpdatePolicy.manual);
-
-        this.orientation = orientation;
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */

@@ -81,10 +81,6 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
     private RectHexagon xPadKeyRectHexagon = null;
     private List<RectHexagon> rectHexagons;
 
-    public KeyboardViewLayoutManager(HexagonOrientation gridItemOrientation) {
-        this.gridItemOrientation = gridItemOrientation;
-    }
-
     public void setGridItemOrientation(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
     }

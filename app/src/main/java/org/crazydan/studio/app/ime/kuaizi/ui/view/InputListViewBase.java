@@ -27,11 +27,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
@@ -55,8 +55,8 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListViewBase extends RecyclerView implements ViewGestureDetector.Listener, InputMsgListener {
-    private final InputListViewAdapter adapter;
+public class InputListViewBase extends RecyclerView<InputListViewAdapter>
+        implements ViewGestureDetector.Listener, InputMsgListener {
     private final InputListViewLayoutManager layoutManager;
 
     private UserInputMsgListener listener;
@@ -64,17 +64,19 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
     public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        this.adapter = new InputListViewAdapter();
         this.layoutManager = new InputListViewLayoutManager(context);
-
-        setAdapter(this.adapter);
         setLayoutManager(this.layoutManager);
+
         // Note：取消动画以确保输入能够直接显隐，不做淡化
         setItemAnimator(null);
 
-        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector();
-        gesture.bind(this) //
-               .addListener(this);
+        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector(this);
+        gesture.addListener(this);
+    }
+
+    @Override
+    protected InputListViewAdapter createAdapter() {
+        return new InputListViewAdapter();
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -93,7 +95,9 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
         }
 
         UserInputMsgData.Where where = UserInputMsgData.Where.inner;
-        Input<?> input = Optional.ofNullable(this.adapter.getItem(holder)).map((item) -> item.input).orElse(null);
+        Input<?> input = Optional.ofNullable((InputViewData) getAdapterItem(holder))
+                                 .map((item) -> item.input)
+                                 .orElse(null);
 
         if (input == null) {
             if (data.x < getPaddingStart()) {
@@ -154,7 +158,7 @@ public class InputListViewBase extends RecyclerView implements ViewGestureDetect
 
     public void update(InputFactory inputFactory, boolean canBeSelected, boolean needToLockScrolling) {
         List<InputViewData> dataList = inputFactory.getInputs();
-        this.adapter.updateItems(dataList, canBeSelected);
+        getAdapter().updateItems(dataList, canBeSelected);
 
         if (!needToLockScrolling) {
             scrollToSelectedInput(dataList);

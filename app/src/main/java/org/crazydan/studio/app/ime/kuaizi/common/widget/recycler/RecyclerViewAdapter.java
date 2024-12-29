@@ -75,7 +75,7 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
     }
 
     /** 根据 {@link RecyclerView.ViewHolder} 获取与其绑定的数据项 */
-    public I getItem(H holder) {
+    public I getItem(RecyclerView.ViewHolder holder) {
         int position = holder != null ? holder.getAdapterPosition() : -1;
 
         return getItem(position);

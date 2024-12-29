@@ -76,11 +76,11 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         this.animator = new KeyboardViewKeyAnimator();
         setItemAnimator(this.animator);
 
-        this.gesture = new RecyclerViewGestureDetector();
-        this.gesture.bind(this) //
-                    // Note：以下监听的执行顺序与注册顺序一致
-                    .addListener(new KeyboardViewGestureListener(this)) //
-                    .addListener(this.gestureTrailer);
+        this.gesture = new RecyclerViewGestureDetector(this);
+        this.gesture
+                // Note：以下监听的执行顺序与注册顺序一致
+                .addListener(new KeyboardViewGestureListener(this)) //
+                .addListener(this.gestureTrailer);
     }
 
     public void setConfig(Config config) {
