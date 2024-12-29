@@ -753,12 +753,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         Key[] mathKeys = new Key[] {
                 keyTable.numberKey("3"),
-                keyTable.mathOpKey(MathOpKey.Type.multiply),
-                keyTable.mathOpKey(MathOpKey.Type.brackets),
+                keyTable.mathOpKey(MathOpKey.Type.Multiply),
+                keyTable.mathOpKey(MathOpKey.Type.Brackets),
                 keyTable.numberKey("2"),
-                keyTable.mathOpKey(MathOpKey.Type.plus),
+                keyTable.mathOpKey(MathOpKey.Type.Plus),
                 keyTable.numberKey("1"),
-                keyTable.mathOpKey(MathOpKey.Type.equal),
+                keyTable.mathOpKey(MathOpKey.Type.Equal),
                 };
         for (Key mathKey : mathKeys) {
             exercise.newStep("请点击按键%s以输入%s <span style=\"color:#ed4c67;\">%s</span>；",

@@ -253,18 +253,18 @@ public class MathKeyboard extends BaseKeyboard {
     private void do_Single_MathOpKey_Inputting(InputList mathInputList, MathOpKey key) {
         switch (key.getType()) {
             // 针对以下输入，对当前的选中的数字输入做追加，而不是替换
-            case percent:
-            case permill:
-            case permyriad:
-            case brackets:
-            case dot: {
+            case Percent:
+            case Permill:
+            case Permyriad:
+            case Brackets:
+            case Dot: {
                 prepare_for_Pending_Append_Inputting(mathInputList);
                 break;
             }
         }
 
         switch (key.getType()) {
-            case dot: {
+            case Dot: {
                 CharInput pending = mathInputList.getPending();
                 // 小数点只能出现在数字中，且只能出现一次
                 if (isNumberInput(pending) && !pending.hasSameKey(key)) {
@@ -272,7 +272,7 @@ public class MathKeyboard extends BaseKeyboard {
                 }
                 break;
             }
-            case brackets: {
+            case Brackets: {
                 Input selected = mathInputList.getSelected();
                 CharInput pending = mathInputList.getPending();
                 // 对于正在输入的数字，先提交其待输入，再输入括号，以确保数字被括号包裹
@@ -285,7 +285,7 @@ public class MathKeyboard extends BaseKeyboard {
                                               () -> MathKeyTable.bracketKey(")"));
                 break;
             }
-            case equal: {
+            case Equal: {
                 // 除开头以外的位置，等号始终添加到输入列表的末尾
                 if (!mathInputList.isGapSelected() || mathInputList.getSelectedIndex() > 1) {
                     mathInputList.confirmPendingAndSelectLast();
@@ -428,7 +428,7 @@ public class MathKeyboard extends BaseKeyboard {
         for (Key key : input.getKeys()) {
             // Note: 只有 运算符 和 数字符 两种按键
             if (key instanceof MathOpKey) {
-                if (((MathOpKey) key).getType() != MathOpKey.Type.dot) {
+                if (((MathOpKey) key).getType() != MathOpKey.Type.Dot) {
                     return false;
                 }
             }
@@ -441,6 +441,6 @@ public class MathKeyboard extends BaseKeyboard {
         Key key = input.getFirstKey();
 
         return key instanceof MathOpKey //
-               && ((MathOpKey) key).getType() == MathOpKey.Type.brackets;
+               && ((MathOpKey) key).getType() == MathOpKey.Type.Brackets;
     }
 }

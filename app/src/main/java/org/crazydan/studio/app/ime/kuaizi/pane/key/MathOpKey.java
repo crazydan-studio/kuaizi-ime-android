@@ -51,9 +51,9 @@ public class MathOpKey extends Key {
     @Override
     public boolean isMathOp() {
         switch (this.type) {
-            case percent:
-            case permill:
-            case permyriad:
+            case Percent:
+            case Permill:
+            case Permyriad:
                 return false;
         }
         return true;
@@ -68,9 +68,9 @@ public class MathOpKey extends Key {
     @Override
     public boolean isAlphabet() {
         switch (this.type) {
-            case brackets:
+            case Brackets:
                 // 确保括号与数字和运算符之间都有空格
-            case dot:
+            case Dot:
                 return true;
         }
         return false;
@@ -95,26 +95,26 @@ public class MathOpKey extends Key {
 
     public enum Type {
         /** 数学 = */
-        equal,
+        Equal,
         /** 数学 + */
-        plus,
+        Plus,
         /** 数学 - */
-        minus,
+        Minus,
         /** 数学 × */
-        multiply,
+        Multiply,
         /** 数学 ÷ */
-        divide,
+        Divide,
 
         /** 数学 % */
-        percent,
+        Percent,
         /** 数学 ‰ */
-        permill,
+        Permill,
         /** 数学 ‱ */
-        permyriad,
+        Permyriad,
 
         /** 数学 () */
-        brackets,
+        Brackets,
         /** 数学 . */
-        dot,
+        Dot,
     }
 }

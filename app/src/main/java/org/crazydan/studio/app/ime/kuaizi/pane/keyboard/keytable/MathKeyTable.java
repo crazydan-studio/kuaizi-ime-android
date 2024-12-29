@@ -48,7 +48,7 @@ public class MathKeyTable extends KeyTable {
     }
 
     public static MathOpKey bracketKey(String text) {
-        return mathOpKey(MathOpKey.Type.brackets, text);
+        return mathOpKey(MathOpKey.Type.Brackets, text);
     }
 
     @Override
@@ -74,18 +74,18 @@ public class MathKeyTable extends KeyTable {
                 numberKey("8"),
                 numberKey("9"),
                 //
-                mathOpKey(MathOpKey.Type.dot),
-                mathOpKey(MathOpKey.Type.equal),
+                mathOpKey(MathOpKey.Type.Dot),
+                mathOpKey(MathOpKey.Type.Equal),
                 //
-                mathOpKey(MathOpKey.Type.plus),
-                mathOpKey(MathOpKey.Type.multiply),
-                mathOpKey(MathOpKey.Type.brackets),
-                mathOpKey(MathOpKey.Type.permill),
+                mathOpKey(MathOpKey.Type.Plus),
+                mathOpKey(MathOpKey.Type.Multiply),
+                mathOpKey(MathOpKey.Type.Brackets),
+                mathOpKey(MathOpKey.Type.Permill),
                 //
-                mathOpKey(MathOpKey.Type.minus),
-                mathOpKey(MathOpKey.Type.divide),
-                mathOpKey(MathOpKey.Type.percent),
-                mathOpKey(MathOpKey.Type.permyriad),
+                mathOpKey(MathOpKey.Type.Minus),
+                mathOpKey(MathOpKey.Type.Divide),
+                mathOpKey(MathOpKey.Type.Percent),
+                mathOpKey(MathOpKey.Type.Permyriad),
                 };
 
         Key[][] gridKeys = createEmptyGrid();
@@ -122,7 +122,7 @@ public class MathKeyTable extends KeyTable {
         return xPadKey(Keyboard.Type.Math, new Key[][][] {
                 new Key[][] {
                         new Key[] {
-                                null, mathOpKey(MathOpKey.Type.dot), mathOpKey(MathOpKey.Type.brackets),
+                                null, mathOpKey(MathOpKey.Type.Dot), mathOpKey(MathOpKey.Type.Brackets),
                                 }, //
                         new Key[] {
                                 null, ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
@@ -134,13 +134,13 @@ public class MathKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] {
-                                null, mathOpKey(MathOpKey.Type.equal), mathOpKey(MathOpKey.Type.permyriad),
+                                null, mathOpKey(MathOpKey.Type.Equal), mathOpKey(MathOpKey.Type.Permyriad),
                                 }, //
                         new Key[] { null, numberKey("1"), numberKey("2"), },
                         }, //
                 new Key[][] {
                         new Key[] {
-                                null, mathOpKey(MathOpKey.Type.percent), mathOpKey(MathOpKey.Type.permill),
+                                null, mathOpKey(MathOpKey.Type.Percent), mathOpKey(MathOpKey.Type.Permill),
                                 }, //
                         new Key[] {
                                 null, numberKey("3"), numberKey("4"),
@@ -148,7 +148,7 @@ public class MathKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] {
-                                null, mathOpKey(MathOpKey.Type.multiply), mathOpKey(MathOpKey.Type.divide),
+                                null, mathOpKey(MathOpKey.Type.Multiply), mathOpKey(MathOpKey.Type.Divide),
                                 }, //
                         new Key[] {
                                 null, numberKey("5"), numberKey("6"),
@@ -156,7 +156,7 @@ public class MathKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] {
-                                null, mathOpKey(MathOpKey.Type.plus), mathOpKey(MathOpKey.Type.minus),
+                                null, mathOpKey(MathOpKey.Type.Plus), mathOpKey(MathOpKey.Type.Minus),
                                 }, //
                         new Key[] {
                                 null, numberKey("7"), numberKey("8"),
@@ -206,34 +206,34 @@ public class MathKeyTable extends KeyTable {
 
         String text = null;
         switch (type) {
-            case equal:
+            case Equal:
                 text = "=";
                 break;
-            case dot:
+            case Dot:
                 text = ".";
                 break;
-            case multiply:
+            case Multiply:
                 text = "×";
                 break;
-            case divide:
+            case Divide:
                 text = "÷";
                 break;
-            case plus:
+            case Plus:
                 text = "+";
                 break;
-            case minus:
+            case Minus:
                 text = "-";
                 break;
-            case brackets:
+            case Brackets:
                 text = "( )";
                 break;
-            case percent:
+            case Percent:
                 text = "%";
                 break;
-            case permill:
+            case Permill:
                 text = "‰";
                 break;
-            case permyriad:
+            case Permyriad:
                 text = "‱";
                 break;
         }

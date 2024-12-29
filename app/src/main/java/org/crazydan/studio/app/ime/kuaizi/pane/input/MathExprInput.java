@@ -64,10 +64,10 @@ public class MathExprInput extends CharInput {
             } else {
                 switch (type) {
                     // 若有多余的小数点和等号，则为无效算式
-                    case equal:
-                    case dot:
+                    case Equal:
+                    case Dot:
                         break;
-                    case brackets: {
+                    case Brackets: {
                         int fromIndex = i;
                         int toIndex = CollectionUtils.indexOfRef(inputs, input.getPair(), fromIndex + 1);
                         if (toIndex < 0) {
@@ -174,7 +174,7 @@ public class MathExprInput extends CharInput {
     }
 
     private static boolean isEqualOp(CharInput input) {
-        return getOpType(input) == MathOpKey.Type.equal;
+        return getOpType(input) == MathOpKey.Type.Equal;
     }
 
     public InputList getInputList() {
@@ -343,7 +343,7 @@ public class MathExprInput extends CharInput {
                 Key postKey = i < keyCount - 1 ? keys.get(i + 1) : null;
 
                 // 第一个按键必须是 小数点 或 数字
-                boolean isDotKey = MathOpKey.isType(key, MathOpKey.Type.dot);
+                boolean isDotKey = MathOpKey.isType(key, MathOpKey.Type.Dot);
                 if (prevKey == null //
                     && !(isDotKey || key.isNumber())) {
                     return null;
@@ -401,18 +401,18 @@ public class MathExprInput extends CharInput {
             Associativity associativity = Associativity.left;
 
             switch (type) {
-                case plus:
-                case minus:
+                case Plus:
+                case Minus:
                     args = 2;
                     break;
-                case multiply:
-                case divide:
+                case Multiply:
+                case Divide:
                     args = 2;
                     priority = 20;
                     break;
-                case percent:
-                case permill:
-                case permyriad:
+                case Percent:
+                case Permill:
+                case Permyriad:
                     args = 1;
                     priority = 30;
                     break;
@@ -437,33 +437,33 @@ public class MathExprInput extends CharInput {
             Num first = numbers.get(0);
             Num second = numbers.size() > 1 ? numbers.get(1) : Num.create(0d);
             switch (this.type) {
-                case plus: {
+                case Plus: {
                     result = first.value + second.value;
                     break;
                 }
-                case minus: {
+                case Minus: {
                     result = first.value - second.value;
                     break;
                 }
-                case multiply: {
+                case Multiply: {
                     result = first.value * second.value;
                     break;
                 }
-                case divide: {
+                case Divide: {
                     if (second.value != 0) {
                         result = first.value / second.value;
                     }
                     break;
                 }
-                case percent: {
+                case Percent: {
                     result = first.value * 0.01;
                     break;
                 }
-                case permill: {
+                case Permill: {
                     result = first.value * 0.001;
                     break;
                 }
-                case permyriad: {
+                case Permyriad: {
                     result = first.value * 0.0001;
                     break;
                 }
