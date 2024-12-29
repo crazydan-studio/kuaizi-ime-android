@@ -50,7 +50,7 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
         this.fgView = itemView.findViewById(R.id.fg_view);
     }
 
-    public void bind(Key<?> key, HexagonOrientation orientation) {
+    public void bind(Key key, HexagonOrientation orientation) {
         if (key.isDisabled()) {
             disable();
         } else {
@@ -60,7 +60,7 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
         updateBgView(key, orientation);
     }
 
-    private void updateBgView(Key<?> key, HexagonOrientation orientation) {
+    private void updateBgView(Key key, HexagonOrientation orientation) {
         whenViewReady(this.bgView, (view) -> {
             if (key.getColor().bg == null) {
                 view.setImageDrawable(null);

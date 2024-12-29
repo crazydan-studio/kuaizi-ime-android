@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public class MathOpKey extends BaseCharKey<MathOpKey> {
+public class MathOpKey extends BaseCharKey {
     private final Type type;
 
     private MathOpKey(Type type, String text) {
@@ -40,7 +40,7 @@ public class MathOpKey extends BaseCharKey<MathOpKey> {
         return new MathOpKey(type, text);
     }
 
-    public static boolean isType(Key<?> key, Type type) {
+    public static boolean isType(Key key, Type type) {
         return key instanceof MathOpKey && ((MathOpKey) key).getType() == type;
     }
 

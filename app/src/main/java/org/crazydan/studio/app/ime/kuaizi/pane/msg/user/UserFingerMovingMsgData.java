@@ -32,7 +32,7 @@ public class UserFingerMovingMsgData extends UserKeyMsgData {
     /** 运动信息 */
     public final Motion motion;
 
-    public UserFingerMovingMsgData(Key<?> target, Motion motion) {
+    public UserFingerMovingMsgData(Key target, Motion motion) {
         super(target);
         this.motion = motion;
     }

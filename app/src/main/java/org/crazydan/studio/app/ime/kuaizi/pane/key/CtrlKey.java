@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CtrlKey extends BaseKey<CtrlKey> {
+public class CtrlKey extends BaseKey {
     private final Type type;
 
     private Option<?> option;
@@ -48,15 +48,15 @@ public class CtrlKey extends BaseKey<CtrlKey> {
         return new CtrlKey(type);
     }
 
-    public static boolean isNoOp(Key<?> key) {
+    public static boolean isNoOp(Key key) {
         return is(key, CtrlKey.Type.NoOp);
     }
 
-    public static boolean is(Key<?> key, Type type) {
+    public static boolean is(Key key, Type type) {
         return type != null && key instanceof CtrlKey && ((CtrlKey) key).getType() == type;
     }
 
-    public static boolean isAny(Key<?> key, Type... types) {
+    public static boolean isAny(Key key, Type... types) {
         for (Type type : types) {
             if (is(key, type)) {
                 return true;

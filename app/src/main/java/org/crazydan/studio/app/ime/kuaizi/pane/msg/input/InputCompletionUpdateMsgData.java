@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 public class InputCompletionUpdateMsgData extends InputMsgData {
     public final List<CompletionInput> completions;
 
-    public InputCompletionUpdateMsgData(Input<?> input, List<CompletionInput> completions) {
+    public InputCompletionUpdateMsgData(Input input, List<CompletionInput> completions) {
         super(input);
         this.completions = completions;
     }

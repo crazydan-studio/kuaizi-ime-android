@@ -33,33 +33,33 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
  * @date 2023-08-15
  */
 public class InputCharsSlipStateData implements State.Data {
-    private Key<?> level0Key;
-    private Key<?> level1Key;
-    private Key<?> level2Key;
+    private Key level0Key;
+    private Key level1Key;
+    private Key level2Key;
 
     private Map<Integer, List<String>> level2NextChars;
 
-    public Key<?> getLevel0Key() {
+    public Key getLevel0Key() {
         return this.level0Key;
     }
 
-    public void setLevel0Key(Key<?> level0Key) {
+    public void setLevel0Key(Key level0Key) {
         this.level0Key = level0Key;
     }
 
-    public Key<?> getLevel1Key() {
+    public Key getLevel1Key() {
         return this.level1Key;
     }
 
-    public void setLevel1Key(Key<?> level1Key) {
+    public void setLevel1Key(Key level1Key) {
         this.level1Key = level1Key;
     }
 
-    public Key<?> getLevel2Key() {
+    public Key getLevel2Key() {
         return this.level2Key;
     }
 
-    public void setLevel2Key(Key<?> level2Key) {
+    public void setLevel2Key(Key level2Key) {
         this.level2Key = level2Key;
     }
 

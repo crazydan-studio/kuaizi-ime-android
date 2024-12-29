@@ -89,7 +89,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
         }
 
         // 触发 UserKeyMsgListener
-        Key<?> key = getKey(keyViewHolder);
+        Key key = getKey(keyViewHolder);
         super.onGesture(key, type, data);
     }
 
@@ -117,7 +117,7 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
             holder.touchDown();
         }
 
-        Key<?> key = getKey(holder);
+        Key key = getKey(holder);
         super.onGesture(key, type, data);
     }
 
@@ -128,16 +128,16 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
             holder.touchUp();
         }
 
-        Key<?> key = getKey(holder);
+        Key key = getKey(holder);
         super.onGesture(key, type, data);
     }
 
-    private Key<?> getKey(KeyViewHolder<?> holder) {
+    private Key getKey(KeyViewHolder<?> holder) {
         return this.keyboardView.getAdapterItem(holder);
     }
 
     private boolean isAvailableKeyViewHolder(KeyViewHolder<?> holder) {
-        Key<?> key = getKey(holder);
+        Key key = getKey(holder);
 
         return key != null && !CtrlKey.isNoOp(key) && !key.isDisabled();
     }

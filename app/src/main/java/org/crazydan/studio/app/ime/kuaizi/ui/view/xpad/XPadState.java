@@ -46,9 +46,9 @@ public class XPadState {
     interface Data {}
 
     public static class KeyData implements Data {
-        public final Key<?> key;
+        public final Key key;
 
-        public KeyData(Key<?> key) {
+        public KeyData(Key key) {
             this.key = key;
         }
     }

@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class SymbolKey extends BaseKey<SymbolKey> {
+public class SymbolKey extends BaseKey {
     private final Symbol symbol;
 
     private SymbolKey(Symbol symbol) {

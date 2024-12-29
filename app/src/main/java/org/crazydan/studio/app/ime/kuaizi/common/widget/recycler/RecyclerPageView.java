@@ -41,13 +41,8 @@ public abstract class RecyclerPageView<A extends RecyclerViewAdapter<?, ?>> exte
     private final PagerSnapHelper pager;
     private final List<PageActiveListener> pageActiveListeners = new ArrayList<>();
 
-    public RecyclerPageView(
-            @NonNull Context context, @Nullable AttributeSet attrs, //
-            @NonNull LinearLayoutManager layoutManager
-    ) {
+    public RecyclerPageView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        setLayoutManager(layoutManager);
 
         // 以翻页形式切换项目至视图中心
         // - 用 RecyclerView 打造一个轮播图: https://juejin.cn/post/6844903512447385613

@@ -35,10 +35,16 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
 
         RecyclerViewAdapter<?, ?> adapter = createAdapter();
         setAdapter(adapter);
+
+        LayoutManager layoutManager = createLayoutManager(context);
+        setLayoutManager(layoutManager);
     }
 
-    /** 创建{@link RecyclerViewAdapter 适配器} */
+    /** 创建 {@link RecyclerViewAdapter} */
     abstract protected A createAdapter();
+
+    /** 创建 {@link LayoutManager} */
+    abstract protected LayoutManager createLayoutManager(Context context);
 
     @NonNull
     @Override
@@ -46,7 +52,13 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
         return (A) super.getAdapter();
     }
 
-    /** 获取与指定视图绑定的{@link RecyclerViewAdapter 适配器}数据项 */
+    @NonNull
+    @Override
+    public LayoutManager getLayoutManager() {
+        return super.getLayoutManager();
+    }
+
+    /** 获取与指定视图绑定的 {@link RecyclerViewAdapter} 数据项 */
     public <I> I getAdapterItem(View view) {
         if (view == null) {
             return null;
@@ -57,7 +69,7 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
         return getAdapterItem(holder);
     }
 
-    /** 获取与指定 {@link RecyclerViewHolder} 绑定的{@link RecyclerViewAdapter 适配器}数据项 */
+    /** 获取与指定 {@link RecyclerViewHolder} 绑定的 {@link RecyclerViewAdapter} 数据项 */
     public <I> I getAdapterItem(ViewHolder holder) {
         A adapter = getAdapter();
 

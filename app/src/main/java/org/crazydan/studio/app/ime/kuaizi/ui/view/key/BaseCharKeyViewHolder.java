@@ -33,7 +33,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public abstract class BaseCharKeyViewHolder<T extends BaseCharKey<?>> extends KeyViewHolder<TextView> {
+public abstract class BaseCharKeyViewHolder<T extends BaseCharKey> extends KeyViewHolder<TextView> {
 
     public BaseCharKeyViewHolder(@NonNull View itemView) {
         super(itemView);

@@ -32,7 +32,7 @@ public class KeyboardStateChangeMsgData extends InputMsgData {
     /** 更新后的状态 */
     public final State state;
 
-    public KeyboardStateChangeMsgData(Key<?> key, State state) {
+    public KeyboardStateChangeMsgData(Key key, State state) {
         super(key);
         this.state = state;
     }

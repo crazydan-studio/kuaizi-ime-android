@@ -31,6 +31,6 @@ public interface UserKeyMsgListener {
     void onMsg(UserKeyMsg msg);
 
     interface Trigger {
-        void onGesture(Key<?> key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);
+        void onGesture(Key key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);
     }
 }

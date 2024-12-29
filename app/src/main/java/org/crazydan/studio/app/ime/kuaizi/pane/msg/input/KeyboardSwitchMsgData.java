@@ -33,7 +33,7 @@ public class KeyboardSwitchMsgData extends InputMsgData {
     /** 所切换到的键盘类型，若为 null 则由上层处理键盘切换 */
     public final Keyboard.Type type;
 
-    public KeyboardSwitchMsgData(Key<?> key, Keyboard.Type type) {
+    public KeyboardSwitchMsgData(Key key, Keyboard.Type type) {
         super(key);
         this.type = type;
     }

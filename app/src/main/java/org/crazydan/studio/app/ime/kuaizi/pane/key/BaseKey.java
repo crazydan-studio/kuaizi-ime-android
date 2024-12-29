@@ -19,14 +19,13 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-02
  */
-public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
+public abstract class BaseKey implements Key {
     private String label;
     private Level level = Level.level_0;
     private Integer iconResId;
@@ -71,7 +70,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setDisabled(boolean disabled) {
+    public <K extends Key> K setDisabled(boolean disabled) {
         this.disabled = disabled;
         return (K) this;
     }
@@ -87,7 +86,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setLabel(String label) {
+    public <K extends Key> K setLabel(String label) {
         this.label = label;
         return (K) this;
     }
@@ -98,7 +97,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setLevel(Level level) {
+    public <K extends Key> K setLevel(Level level) {
         this.level = level;
         return (K) this;
     }
@@ -109,7 +108,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setIconResId(Integer iconResId) {
+    public <K extends Key> K setIconResId(Integer iconResId) {
         this.iconResId = iconResId;
         return (K) this;
     }
@@ -120,7 +119,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setLabelDimensionId(Integer labelDimensionId) {
+    public <K extends Key> K setLabelDimensionId(Integer labelDimensionId) {
         this.labelDimensionId = labelDimensionId;
         return (K) this;
     }
@@ -131,12 +130,11 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
     }
 
     @Override
-    public K setColor(Color color) {
+    public <K extends Key> K setColor(Color color) {
         this.color = color == null ? Color.none() : color;
         return (K) this;
     }
 
-    @NonNull
     @Override
     public String toString() {
         return this.label + "(" + getText() + ")";
@@ -151,7 +149,7 @@ public abstract class BaseKey<K extends BaseKey<?>> implements Key<K> {
             return false;
         }
 
-        BaseKey<?> that = (BaseKey<?>) o;
+        BaseKey that = (BaseKey) o;
         return Objects.equals(this.getIconResId(), that.getIconResId())
                && Objects.equals(this.getLabelDimensionId(),
                                  that.getLabelDimensionId())

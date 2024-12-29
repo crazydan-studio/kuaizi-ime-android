@@ -202,7 +202,7 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
     @Override
     public void onMsg(UserKeyMsg msg) {
         // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
-        Key<?> key = msg.data().key;
+        Key key = msg.data().key;
         KeyboardContext context = createKeyboardContext().newWithKey(key);
 
         this.keyboard.onMsg(context, msg);

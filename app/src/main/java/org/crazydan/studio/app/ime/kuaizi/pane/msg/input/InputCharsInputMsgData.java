@@ -33,11 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 public class InputCharsInputMsgData extends InputMsgData {
     public final InputMode inputMode;
 
-    public InputCharsInputMsgData(Key<?> key, Input<?> input) {
+    public InputCharsInputMsgData(Key key, Input input) {
         this(key, input, null);
     }
 
-    public InputCharsInputMsgData(Key<?> key, Input<?> input, InputMode inputMode) {
+    public InputCharsInputMsgData(Key key, Input input, InputMode inputMode) {
         super(key, input);
         this.inputMode = inputMode;
     }

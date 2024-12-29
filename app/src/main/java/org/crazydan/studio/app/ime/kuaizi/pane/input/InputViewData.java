@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
  * @date 2024-12-09
  */
 public class InputViewData {
-    public final Input<?> input;
+    public final Input input;
     public final CharInput pending;
     public final int position;
 
@@ -38,7 +38,7 @@ public class InputViewData {
     public final int gapSpaces;
 
     InputViewData(
-            Input<?> input, CharInput pending, int position, //
+            Input input, CharInput pending, int position, //
             Input.Option option, boolean selected, int gapSpaces
     ) {
         this.input = input;
@@ -51,8 +51,8 @@ public class InputViewData {
 
     /** 创建 {@link InputViewData} */
     public static InputViewData create(InputList inputList, Input.Option option, int position) {
-        Input<?> input = inputList.getInput(position);
-        Input<?> preInput = inputList.getInput(position - 1);
+        Input input = inputList.getInput(position);
+        Input preInput = inputList.getInput(position - 1);
 
         CharInput pending = inputList.getPendingOn(input);
         CharInput prePending = inputList.getPendingOn(preInput);
@@ -94,7 +94,7 @@ public class InputViewData {
         }
     }
 
-    private static MathExprInput tryGetMathExprInput(InputList inputList, Input<?> input) {
+    private static MathExprInput tryGetMathExprInput(InputList inputList, Input input) {
         CharInput pending = inputList.getPendingOn(input);
 
         return isMathExprInput(pending)
@@ -108,7 +108,7 @@ public class InputViewData {
                  ? (MathExprInput) input : null;
     }
 
-    private static boolean needToBeSelected(InputList inputList, Input<?> input) {
+    private static boolean needToBeSelected(InputList inputList, Input input) {
         boolean selected = inputList.isSelected(input);
 
         // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中
@@ -120,7 +120,7 @@ public class InputViewData {
         return selected;
     }
 
-    private static boolean isMathExprInput(Input<?> input) {
+    private static boolean isMathExprInput(Input input) {
         return input != null && input.isMathExpr();
     }
 }

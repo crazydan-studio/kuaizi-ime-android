@@ -53,7 +53,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     @Override
     public void start(KeyboardContext context) {
         InputList inputList = context.inputList;
-        Input<?> selected = inputList.getSelected();
+        Input selected = inputList.getSelected();
         boolean onlyPair = selected != null && !selected.isGap() && ((CharInput) selected).hasPair();
 
         start_Symbol_Choosing(context, onlyPair);
@@ -184,12 +184,12 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     }
 
     public static void prepare_for_PairKey_Inputting(
-            InputList inputList, Supplier<Key<?>> left, Supplier<Key<?>> right
+            InputList inputList, Supplier<Key> left, Supplier<Key> right
     ) {
-        Input<?> selected = inputList.getSelected();
+        Input selected = inputList.getSelected();
 
-        Key<?> leftKey = left.get();
-        Key<?> rightKey = right.get();
+        Key leftKey = left.get();
+        Key rightKey = right.get();
 
         // 用新的配对符号替换原配对符号
         if (!selected.isGap() && ((CharInput) selected).hasPair()) {

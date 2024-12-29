@@ -48,8 +48,6 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
     private final float gridItemMinRadius;
     private final float gridItemSpacing;
 
-    private final KeyboardViewLayoutManager layoutManager;
-
     private HexagonOrientation gridItemOrientation = HexagonOrientation.POINTY_TOP;
 
     public KeyboardViewBase(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -58,9 +56,6 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
         this.gridMaxPaddingRight = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_right_spacing);
         this.gridItemMinRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_bg_min_radius);
         this.gridItemSpacing = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_spacing);
-
-        this.layoutManager = new KeyboardViewLayoutManager();
-        setLayoutManager(this.layoutManager);
     }
 
     @Override
@@ -68,12 +63,17 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
         return new KeyboardViewAdapter();
     }
 
+    @Override
+    protected LayoutManager createLayoutManager(Context context) {
+        return new KeyboardViewLayoutManager();
+    }
+
     public void setGridItemOrientation(HexagonOrientation gridItemOrientation) {
         this.gridItemOrientation = gridItemOrientation;
     }
 
     /** 更新视图 */
-    protected void update(Key<?>[][] keys, boolean isLeftHandMode) {
+    protected void update(Key[][] keys, boolean isLeftHandMode) {
         int columns = keys[0].length;
         int rows = keys.length;
 
@@ -82,20 +82,17 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
 
     /** 更新视图 */
     protected void update(
-            Key<?>[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
+            Key[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
     ) {
         XPadKey xPadKey = getXPadKeyFrom(keys);
         boolean xPadEnabled = xPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation;
 
-        this.layoutManager.setReversed(isLeftHandMode);
-        this.layoutManager.enableXPad(xPadEnabled);
-        this.layoutManager.setGridItemOrientation(orientation);
-        this.layoutManager.configGrid(columns,
-                                      rows,
-                                      this.gridItemMinRadius,
-                                      this.gridItemSpacing,
-                                      this.gridMaxPaddingRight);
+        KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
+        layoutManager.setReversed(isLeftHandMode);
+        layoutManager.enableXPad(xPadEnabled);
+        layoutManager.setGridItemOrientation(orientation);
+        layoutManager.configGrid(columns, rows, this.gridItemMinRadius, this.gridItemSpacing, this.gridMaxPaddingRight);
 
         if (xPadEnabled) {
             // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
@@ -109,7 +106,8 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
     }
 
     public float getBottomSpacing() {
-        return this.layoutManager.getGridPaddingBottom();
+        KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
+        return layoutManager.getGridPaddingBottom();
     }
 
     public XPadKeyViewHolder getXPadKeyViewHolder() {
@@ -123,7 +121,8 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
 
     /** 找到指定坐标下可见的 {@link  KeyViewHolder} */
     public KeyViewHolder<?> findVisibleKeyViewHolderUnderLoose(float x, float y) {
-        View child = this.layoutManager.findChildViewUnderLoose(x, y);
+        KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
+        View child = layoutManager.findChildViewUnderLoose(x, y);
 
         return getVisibleKeyViewHolder(child);
     }
@@ -134,17 +133,19 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
         return holder != null && !holder.isHidden() ? holder : null;
     }
 
-    protected View getItemViewByKey(Key<?> key) {
+    protected View getItemViewByKey(Key key) {
         if (key == null) {
             return null;
         }
 
-        int total = this.layoutManager.getChildCount();
+        LayoutManager layoutManager = getLayoutManager();
+
+        int total = layoutManager.getChildCount();
         for (int i = 0; i < total; i++) {
-            View view = this.layoutManager.getChildAt(i);
+            View view = layoutManager.getChildAt(i);
             KeyViewHolder<?> holder = getVisibleKeyViewHolder(view);
 
-            Key<?> viewKey = getAdapterItem(holder);
+            Key viewKey = getAdapterItem(holder);
             if (Objects.equals(viewKey, key)) {
                 return view;
             }
@@ -152,9 +153,9 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter>
         return null;
     }
 
-    protected XPadKey getXPadKeyFrom(Key<?>[][] keys) {
-        for (Key<?>[] key : keys) {
-            for (Key<?> k : key) {
+    protected XPadKey getXPadKeyFrom(Key[][] keys) {
+        for (Key[] key : keys) {
+            for (Key k : key) {
                 if (k instanceof XPadKey) {
                     return (XPadKey) k;
                 }

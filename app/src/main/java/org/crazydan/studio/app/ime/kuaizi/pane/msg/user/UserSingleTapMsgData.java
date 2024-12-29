@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
  */
 public class UserSingleTapMsgData extends UserKeyTickMsgData {
 
-    public UserSingleTapMsgData(Key<?> target, int tick) {
+    public UserSingleTapMsgData(Key target, int tick) {
         super(target, tick);
     }
 }

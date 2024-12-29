@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class InputWordKey extends BaseKey<InputWordKey> {
+public class InputWordKey extends BaseKey {
     private final InputWord word;
 
     private InputWordKey(InputWord word) {

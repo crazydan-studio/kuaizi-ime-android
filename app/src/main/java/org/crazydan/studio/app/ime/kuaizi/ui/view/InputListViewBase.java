@@ -57,15 +57,10 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  */
 public class InputListViewBase extends RecyclerView<InputListViewAdapter>
         implements ViewGestureDetector.Listener, InputMsgListener {
-    private final InputListViewLayoutManager layoutManager;
-
     private UserInputMsgListener listener;
 
     public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        this.layoutManager = new InputListViewLayoutManager(context);
-        setLayoutManager(this.layoutManager);
 
         // Note：取消动画以确保输入能够直接显隐，不做淡化
         setItemAnimator(null);
@@ -77,6 +72,11 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter>
     @Override
     protected InputListViewAdapter createAdapter() {
         return new InputListViewAdapter();
+    }
+
+    @Override
+    protected LayoutManager createLayoutManager(Context context) {
+        return new InputListViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -95,9 +95,9 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter>
         }
 
         UserInputMsgData.Where where = UserInputMsgData.Where.inner;
-        Input<?> input = Optional.ofNullable((InputViewData) getAdapterItem(holder))
-                                 .map((item) -> item.input)
-                                 .orElse(null);
+        Input input = Optional.ofNullable((InputViewData) getAdapterItem(holder))
+                              .map((item) -> item.input)
+                              .orElse(null);
 
         if (input == null) {
             if (data.x < getPaddingStart()) {
@@ -246,8 +246,9 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter>
     }
 
     /** 获取选中输入的视图，若选中输入为算术输入，则获取其内部所选中的输入视图 */
-    private View getSelectedInputView(Input<?> selectedInput, int selectedIndex) {
-        View view = this.layoutManager.findViewByPosition(selectedIndex);
+    private View getSelectedInputView(Input selectedInput, int selectedIndex) {
+        LayoutManager layoutManager = getLayoutManager();
+        View view = layoutManager.findViewByPosition(selectedIndex);
 
         if (view == null || !selectedInput.isMathExpr()) {
             return view;

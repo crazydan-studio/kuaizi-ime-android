@@ -30,18 +30,18 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewDat
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public interface Input<T extends Input<?>> extends RecyclerViewData {
+public interface Input extends RecyclerViewData {
 
-    static boolean isEmpty(Input<?> input) {
+    static boolean isEmpty(Input input) {
         return input == null || input.isEmpty();
     }
 
-    static boolean isGap(Input<?> input) {
+    static boolean isGap(Input input) {
         return input != null && input.isGap();
     }
 
     /** 创建副本 */
-    T copy();
+    Input copy();
 
     /** 确认输入，一般用于包含 输入列表 的输入 */
     void confirm();
@@ -74,23 +74,23 @@ public interface Input<T extends Input<?>> extends RecyclerViewData {
     boolean isEmpty();
 
     /** 获取输入按键列表 */
-    List<Key<?>> getKeys();
+    List<Key> getKeys();
 
     /** 获取第一个按键 */
-    Key<?> getFirstKey();
+    Key getFirstKey();
 
     /** 获取最后一个按键 */
-    Key<?> getLastKey();
+    Key getLastKey();
 
     /**
      * 是否包含与指定按键相同的按键
      * <p/>
      * 通过 {@link #isSameWith} 判断按键是否相同
      */
-    boolean hasSameKey(Key<?> key);
+    boolean hasSameKey(Key key);
 
     /** 追加输入按键 */
-    void appendKey(Key<?> key);
+    void appendKey(Key key);
 
     /** 丢弃所有按键 */
     void dropKeys();
@@ -103,17 +103,17 @@ public interface Input<T extends Input<?>> extends RecyclerViewData {
      * <p/>
      * 先删除指定级别之后的按键，再追加新按键
      */
-    void replaceKeyAfterLevel(Key.Level level, Key<?> newKey);
+    void replaceKeyAfterLevel(Key.Level level, Key newKey);
 
     /** 替换指定按键的最近添加位置的按键 */
-    void replaceLatestKey(Key<?> oldKey, Key<?> newKey);
+    void replaceLatestKey(Key oldKey, Key newKey);
 
     /**
      * 替换最后一个按键
      * <p/>
      * 若其按键列表为空，则追加新按键
      */
-    void replaceLastKey(Key<?> newKey);
+    void replaceLastKey(Key newKey);
 
     /** 获取输入字符列表 */
     List<String> getChars();

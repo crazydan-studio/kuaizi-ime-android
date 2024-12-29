@@ -46,7 +46,7 @@ public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter>
     private ExerciseViewMsgListener listener;
 
     public ExerciseListView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, new ExerciseListViewLayoutManager(context));
+        super(context, attrs);
 
         addPageActiveListener(this::onPageActive);
     }
@@ -54,6 +54,11 @@ public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter>
     @Override
     protected ExerciseListViewAdapter createAdapter() {
         return new ExerciseListViewAdapter();
+    }
+
+    @Override
+    protected LayoutManager createLayoutManager(Context context) {
+        return new ExerciseListViewLayoutManager(context);
     }
 
     /** 更新视图 */

@@ -184,7 +184,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             return;
         }
 
-        Key<?>[][] keys = keyFactory.getKeys();
+        Key[][] keys = keyFactory.getKeys();
 
         boolean animationDisabled = keyFactory instanceof KeyFactory.NoAnimation;
         if (animationDisabled) {

@@ -52,9 +52,7 @@ public class CompletionInputListView extends RecyclerView<CompletionInputListVie
     public CompletionInputListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        CompletionInputListViewLayoutManager layoutManager = new CompletionInputListViewLayoutManager(context);
-        setLayoutManager(layoutManager);
-        getAdapter().setLayoutManager(layoutManager);
+        getAdapter().setLayoutManager((CompletionInputListViewLayoutManager) getLayoutManager());
 
         RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector(this);
         gesture.addListener(this);
@@ -63,6 +61,11 @@ public class CompletionInputListView extends RecyclerView<CompletionInputListVie
     @Override
     protected CompletionInputListViewAdapter createAdapter() {
         return new CompletionInputListViewAdapter();
+    }
+
+    @Override
+    protected LayoutManager createLayoutManager(Context context) {
+        return new CompletionInputListViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================

@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewDat
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key<K extends Key<?>> extends RecyclerViewData {
+public interface Key extends RecyclerViewData {
 
     /** 是否为空格 */
     boolean isSpace();
@@ -49,7 +49,7 @@ public interface Key<K extends Key<?>> extends RecyclerViewData {
     boolean isDisabled();
 
     /** 设置为禁用 */
-    K setDisabled(boolean disabled);
+    <K extends Key> K setDisabled(boolean disabled);
 
     /**
      * 获取按键对应的文本字符
@@ -62,31 +62,31 @@ public interface Key<K extends Key<?>> extends RecyclerViewData {
     String getLabel();
 
     /** 设置按键上显示的文字内容 */
-    K setLabel(String label);
+    <K extends Key> K setLabel(String label);
 
     /** 获取按键所处级别 */
     Level getLevel();
 
     /** 设置按键所处级别 */
-    K setLevel(Level level);
+    <K extends Key> K setLevel(Level level);
 
     /** 按键上显示的图标资源 id */
     Integer getIconResId();
 
     /** 设置按键上显示的图标资源 id */
-    K setIconResId(Integer iconResId);
+    <K extends Key> K setIconResId(Integer iconResId);
 
     /** 获取 {@link #getLabel()} 尺寸资源 id */
     Integer getLabelDimensionId();
 
     /** 设置 {@link #getLabel()} 尺寸资源 id */
-    K setLabelDimensionId(Integer labelDimensionId);
+    <K extends Key> K setLabelDimensionId(Integer labelDimensionId);
 
     /** 获取按键配色 */
     Color getColor();
 
     /** 设置按键配色 */
-    K setColor(Color color);
+    <K extends Key> K setColor(Color color);
 
     /** 按键级别 */
     enum Level {

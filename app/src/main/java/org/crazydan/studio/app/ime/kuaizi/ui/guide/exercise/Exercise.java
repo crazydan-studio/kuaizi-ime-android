@@ -118,7 +118,7 @@ public class Exercise implements InputMsgListener {
         if (args.length > 0) {
             content = String.format(content, Arrays.stream(args).map((arg) -> {
                 if (arg instanceof Key) {
-                    return "<img src=\"" + this.keyImageRender.withKey((Key<?>) arg) + "\"/>";
+                    return "<img src=\"" + this.keyImageRender.withKey((Key) arg) + "\"/>";
                 }
                 return arg;
             }).toArray());
@@ -214,7 +214,7 @@ public class Exercise implements InputMsgListener {
             return;
         }
 
-        Key<?> key = msg.data().key;
+        Key key = msg.data().key;
         this.log.debug("Got %s %s: key - %s", msg.getClass().getSimpleName(), msg.type, key);
 
         switch (msg.type) {

@@ -108,7 +108,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
             return false;
         }
 
-        Key<?> key = context.key();
+        Key key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
             // Note: 高级过滤的翻页与普通翻页共享逻辑代码
             on_InputCandidate_Choose_Doing_FingerFlipping_Msg(context, msg);
@@ -287,7 +287,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         fire_InputCandidate_Choose_Done(context, pending);
 
         // 继续选择下一个拼音输入的候选字
-        Input<?> selected = inputList.selectNextFirstMatched(Input::isPinyin);
+        Input selected = inputList.selectNextFirstMatched(Input::isPinyin);
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {

@@ -27,18 +27,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
  */
 public class UserInputMsgData {
     /** 消息目标输入 */
-    public final Input<?> target;
+    public final Input target;
     public final Where where;
 
     public UserInputMsgData() {
         this(null);
     }
 
-    public UserInputMsgData(Input<?> target) {
+    public UserInputMsgData(Input target) {
         this(target, null);
     }
 
-    public UserInputMsgData(Input<?> target, Where where) {
+    public UserInputMsgData(Input target, Where where) {
         this.target = target;
         this.where = where;
     }

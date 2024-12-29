@@ -34,14 +34,16 @@ public class ExerciseStepListView extends RecyclerView<ExerciseStepListViewAdapt
 
         // 禁用动画，以避免练习题在切换过程中出现残影
         setItemAnimator(null);
-
-        ExerciseStepListViewLayoutManager layoutManager = new ExerciseStepListViewLayoutManager(context);
-        setLayoutManager(layoutManager);
     }
 
     @Override
     protected ExerciseStepListViewAdapter createAdapter() {
         return new ExerciseStepListViewAdapter();
+    }
+
+    @Override
+    protected LayoutManager createLayoutManager(Context context) {
+        return new ExerciseStepListViewLayoutManager(context);
     }
 
     /** 更新视图 */

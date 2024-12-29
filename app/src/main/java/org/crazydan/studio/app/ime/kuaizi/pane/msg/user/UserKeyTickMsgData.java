@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
 public abstract class UserKeyTickMsgData extends UserKeyMsgData {
     public final int tick;
 
-    public UserKeyTickMsgData(Key<?> target, int tick) {
+    public UserKeyTickMsgData(Key target, int tick) {
         super(target);
         this.tick = tick;
     }

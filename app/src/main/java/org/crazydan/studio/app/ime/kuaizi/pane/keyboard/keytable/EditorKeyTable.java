@@ -40,13 +40,13 @@ public class EditorKeyTable extends KeyTable {
     }
 
     @Override
-    protected Key<?>[][] initGrid() {
+    protected Key[][] initGrid() {
         return new Key[6][8];
     }
 
     /** 创建定位按键 */
-    public Key<?>[][] createKeys() {
-        Key<?>[][] gridKeys = createEmptyGrid();
+    public Key[][] createKeys() {
+        Key[][] gridKeys = createEmptyGrid();
 
         int index_end = getGridLastColumnIndex();
 

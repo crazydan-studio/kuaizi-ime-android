@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Stack;
 
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -167,7 +168,7 @@ public class MathExprInput extends CharInput {
     }
 
     private static MathOpKey.Type getOpType(CharInput input) {
-        Key<?> key = input != null && input.getKeys().size() == 1 ? input.getFirstKey() : null;
+        Key key = input != null && input.getKeys().size() == 1 ? input.getFirstKey() : null;
 
         return key instanceof MathOpKey ? ((MathOpKey) key).getType() : null;
     }
@@ -222,7 +223,7 @@ public class MathExprInput extends CharInput {
     }
 
     @Override
-    public CharInput copy() {
+    public Input copy() {
         // Note：
         // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
         // - 只有新建 pending 时才会做复制操作，
@@ -255,28 +256,28 @@ public class MathExprInput extends CharInput {
     public boolean isEmoji() {return false;}
 
     @Override
-    public List<Key<?>> getKeys() {return new ArrayList<>();}
+    public List<Key> getKeys() {return new ArrayList<>();}
 
     @Override
-    public Key<?> getFirstKey() {return null;}
+    public Key getFirstKey() {return null;}
 
     @Override
-    public Key<?> getLastKey() {return null;}
+    public Key getLastKey() {return null;}
 
     @Override
-    public void appendKey(Key<?> key) {}
+    public void appendKey(Key key) {}
 
     @Override
     public void dropLastKey() {}
 
     @Override
-    public void replaceKeyAfterLevel(Key.Level level, Key<?> newKey) {}
+    public void replaceKeyAfterLevel(Key.Level level, Key newKey) {}
 
     @Override
-    public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {}
+    public void replaceLatestKey(Key oldKey, Key newKey) {}
 
     @Override
-    public void replaceLastKey(Key<?> newKey) {}
+    public void replaceLastKey(Key newKey) {}
     // >>>>>>>
 
     @Override
@@ -334,12 +335,12 @@ public class MathExprInput extends CharInput {
             StringBuilder sb = new StringBuilder();
 
             boolean hasDot = false;
-            List<Key<?>> keys = input.getKeys();
+            List<Key> keys = input.getKeys();
             int keyCount = keys.size();
             for (int i = 0; i < keyCount; i++) {
-                Key<?> prevKey = i > 0 ? keys.get(i - 1) : null;
-                Key<?> key = keys.get(i);
-                Key<?> postKey = i < keyCount - 1 ? keys.get(i + 1) : null;
+                Key prevKey = i > 0 ? keys.get(i - 1) : null;
+                Key key = keys.get(i);
+                Key postKey = i < keyCount - 1 ? keys.get(i + 1) : null;
 
                 // 第一个按键必须是 小数点 或 数字
                 boolean isDotKey = MathOpKey.isType(key, MathOpKey.Type.dot);

@@ -33,16 +33,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
-    private List<Key<?>> keys = new ArrayList<>();
+public abstract class BaseInput implements Input {
+    private List<Key> keys = new ArrayList<>();
 
     private ConfirmableWord word = new ConfirmableWord(null);
 
     @Override
-    public T copy() {
-        T copied;
+    public Input copy() {
+        BaseInput copied;
         try {
-            copied = (T) getClass().newInstance();
+            copied = getClass().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -106,23 +106,23 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public List<Key<?>> getKeys() {
+    public List<Key> getKeys() {
         return this.keys;
     }
 
     @Override
-    public Key<?> getFirstKey() {
+    public Key getFirstKey() {
         return this.keys.isEmpty() ? null : this.keys.get(0);
     }
 
     @Override
-    public Key<?> getLastKey() {
+    public Key getLastKey() {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }
 
     @Override
-    public boolean hasSameKey(Key<?> key) {
-        for (Key<?> k : this.keys) {
+    public boolean hasSameKey(Key key) {
+        for (Key k : this.keys) {
             if (k.isSameWith(key)) {
                 return true;
             }
@@ -131,7 +131,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public void appendKey(Key<?> key) {
+    public void appendKey(Key key) {
         this.keys.add(key);
     }
 
@@ -148,11 +148,11 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public void replaceKeyAfterLevel(Key.Level level, Key<?> newKey) {
+    public void replaceKeyAfterLevel(Key.Level level, Key newKey) {
         boolean removing = false;
-        Iterator<Key<?>> it = this.keys.iterator();
+        Iterator<Key> it = this.keys.iterator();
         while (it.hasNext()) {
-            Key<?> oldKey = it.next();
+            Key oldKey = it.next();
 
             if (removing) {
                 it.remove();
@@ -166,7 +166,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public void replaceLatestKey(Key<?> oldKey, Key<?> newKey) {
+    public void replaceLatestKey(Key oldKey, Key newKey) {
         if (oldKey == null || newKey == null) {
             return;
         }
@@ -178,7 +178,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
     }
 
     @Override
-    public void replaceLastKey(Key<?> newKey) {
+    public void replaceLastKey(Key newKey) {
         dropLastKey();
         appendKey(newKey);
     }
@@ -259,7 +259,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
         this.word = new ConfirmableWord(word);
     }
 
-    protected void replaceKeys(List<Key<?>> keys) {
+    protected void replaceKeys(List<Key> keys) {
         this.keys = new ArrayList<>(keys);
     }
 
@@ -277,7 +277,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             return true;
         }
 
-        BaseInput<?> that = (BaseInput<?>) o;
+        BaseInput that = (BaseInput) o;
         return this.keys.equals(that.keys);
     }
 
@@ -290,7 +290,7 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
             return false;
         }
 
-        BaseInput<?> that = (BaseInput<?>) o;
+        BaseInput that = (BaseInput) o;
         return this.keys.equals(that.keys) && Objects.equals(getWord(), that.getWord());
     }
 
@@ -299,8 +299,8 @@ public abstract class BaseInput<T extends BaseInput<?>> implements Input<T> {
         return Objects.hash(this.keys, getWord());
     }
 
-    private boolean test(Predicate<Key<?>> predicate) {
-        for (Key<?> key : this.keys) {
+    private boolean test(Predicate<Key> predicate) {
+        for (Key key : this.keys) {
             if (!predicate.test(key)) {
                 return false;
             }

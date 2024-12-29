@@ -28,23 +28,23 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  */
 public class InputMsgData {
     /** 触发消息的 {@link Key} */
-    public final Key<?> key;
+    public final Key key;
     /** 触发消息的 {@link Input} */
-    public final Input<?> input;
+    public final Input input;
 
     public InputMsgData() {
         this(null, null);
     }
 
-    public InputMsgData(Key<?> key) {
+    public InputMsgData(Key key) {
         this(key, null);
     }
 
-    public InputMsgData(Input<?> input) {
+    public InputMsgData(Input input) {
         this(null, input);
     }
 
-    public InputMsgData(Key<?> key, Input<?> input) {
+    public InputMsgData(Key key, Input input) {
         this.key = key;
         this.input = input;
     }

@@ -42,17 +42,17 @@ public class NumberKeyTable extends KeyTable {
     }
 
     @Override
-    protected Key<?>[][] initGrid() {
+    protected Key[][] initGrid() {
         return new Key[6][8];
     }
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
-    public Key<?>[][] createKeys(boolean showExitKey) {
+    public Key[][] createKeys(boolean showExitKey) {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
-        Key<?>[] keys = new Key[] {
+        Key[] keys = new Key[] {
                 numberKey("0"),
                 numberKey("1"),
                 numberKey("2"),
@@ -75,7 +75,7 @@ public class NumberKeyTable extends KeyTable {
                 symbolKey(":"),
                 };
 
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         int index_begin = getGridFirstColumnIndex();
         int index_mid = getGridMiddleColumnIndex();
@@ -101,7 +101,7 @@ public class NumberKeyTable extends KeyTable {
                 int column = keyCoord.column;
 
                 Key.Color color = key_char_color;
-                Key<?> key = keys[dataIndex++].setColor(color);
+                Key key = keys[dataIndex++].setColor(color);
 
                 gridKeys[row][column] = key;
             }

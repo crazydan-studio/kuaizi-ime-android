@@ -33,13 +33,13 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class CharInput extends BaseInput<CharInput> {
+public class CharInput extends BaseInput {
     private CharInput pair;
 
     /** 输入补全 */
     private List<CompletionInput> completions = new ArrayList<>();
 
-    public static CharInput from(List<Key<?>> keys) {
+    public static CharInput from(List<Key> keys) {
         CharInput input = new CharInput();
 
         input.replaceKeys(keys);
@@ -47,7 +47,7 @@ public class CharInput extends BaseInput<CharInput> {
         return input;
     }
 
-    public static CharInput from(Key<?>... keys) {
+    public static CharInput from(Key... keys) {
         return from(Arrays.asList(keys));
     }
 

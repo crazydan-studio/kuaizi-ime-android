@@ -56,7 +56,7 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
             return;
         }
 
-        Key<?> key = context.key();
+        Key key = context.key();
         if (msg.type == UserKeyMsgType.FingerFlipping) {
             on_InputCandidate_Choose_Doing_FingerFlipping_Msg(context, msg);
         } else {
@@ -94,7 +94,7 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
         switch (msg.type) {
             case LongPress_Key_Start:
             case LongPress_Key_Tick: {
-                Key<?> key = context.key();
+                Key key = context.key();
 
                 if (!(key instanceof CtrlKey)) {
                     String text = key.toString();

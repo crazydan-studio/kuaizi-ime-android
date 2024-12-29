@@ -52,17 +52,17 @@ public class MathKeyTable extends KeyTable {
     }
 
     @Override
-    protected Key<?>[][] initGrid() {
+    protected Key[][] initGrid() {
         return new Key[6][8];
     }
 
     /** 创建 {@link MathKeyboard} 按键 */
-    public Key<?>[][] createKeys() {
+    public Key[][] createKeys() {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
-        Key<?>[] keys = new Key[] {
+        Key[] keys = new Key[] {
                 numberKey("0"),
                 numberKey("1"),
                 numberKey("2"),
@@ -88,7 +88,7 @@ public class MathKeyTable extends KeyTable {
                 mathOpKey(MathOpKey.Type.permyriad),
                 };
 
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         int index_begin = getGridFirstColumnIndex();
         int index_end = getGridLastColumnIndex();
@@ -106,7 +106,7 @@ public class MathKeyTable extends KeyTable {
                 int row = keyCoord.row;
                 int column = keyCoord.column;
 
-                Key<?> key = keys[dataIndex++];
+                Key key = keys[dataIndex++];
                 Key.Color color = key.isNumber() ? key_char_color : key_char_special_color;
 
                 key.setColor(color);

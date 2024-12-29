@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
  * @date 2023-09-22
  */
 public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRender {
-    private final Map<String, Key<?>> keys = new LinkedHashMap<>();
+    private final Map<String, Key> keys = new LinkedHashMap<>();
 
     private final Map<String, Drawable> imageCache = new HashMap<>();
 
@@ -55,7 +55,7 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
     }
 
     @Override
-    public String withKey(Key<?> key) {
+    public String withKey(Key key) {
         if (key == null) {
             return "";
         }

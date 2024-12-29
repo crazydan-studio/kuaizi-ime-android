@@ -35,7 +35,7 @@ public class EditorCursorMsgData extends InputMsgData {
     /** 锚点信息 */
     public final Motion anchor;
 
-    public EditorCursorMsgData(Key<?> key, Motion motion) {
+    public EditorCursorMsgData(Key key, Motion motion) {
         super(key);
         this.anchor = createAnchor(motion);
     }

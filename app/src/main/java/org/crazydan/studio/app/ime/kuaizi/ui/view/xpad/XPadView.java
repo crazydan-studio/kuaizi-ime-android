@@ -313,7 +313,7 @@ public class XPadView extends View {
         }
     }
 
-    public void updateZoneKeys(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
+    public void updateZoneKeys(Key zone_0_key, Key[] zone_1_keys, Key[][][] zone_2_keys) {
 //        Log.d("updateZoneKeys", "Doing ...");
         invalidate();
 
@@ -321,7 +321,7 @@ public class XPadView extends View {
 
         this.zone_1_keys = new BlockKey[zone_1_keys.length];
         for (int i = 0; i < zone_1_keys.length; i++) {
-            Key<?> key = zone_1_keys[i];
+            Key key = zone_1_keys[i];
             this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
 
             if (key != null && key.isDisabled()) {
@@ -331,15 +331,15 @@ public class XPadView extends View {
 
         this.zone_2_keys = new BlockKey[zone_2_keys.length][][];
         for (int i = 0; i < zone_2_keys.length; i++) {
-            Key<?>[][] keys = zone_2_keys[i];
+            Key[][] keys = zone_2_keys[i];
 
             this.zone_2_keys[i] = new BlockKey[keys.length][];
             for (int j = 0; j < keys.length; j++) {
-                Key<?>[] array = keys[j];
+                Key[] array = keys[j];
 
                 this.zone_2_keys[i][j] = new BlockKey[array.length];
                 for (int k = 0; k < array.length; k++) {
-                    Key<?> key = array[k];
+                    Key key = array[k];
                     this.zone_2_keys[i][j][k] = new BlockKey(2, i, j, k, key);
                 }
             }
@@ -1086,7 +1086,7 @@ public class XPadView extends View {
             if (!BlockKey.isNull(blockKey) //
                 && blockKey.key instanceof CharKey //
                 && ((CharKey) blockKey.key).hasReplacement()) {
-                Key<?> key = ((CharKey) blockKey.key).createReplacementKey(replacementBlockKeyIndex);
+                Key key = ((CharKey) blockKey.key).createReplacementKey(replacementBlockKeyIndex);
 
                 blockKeys[i] = new BlockKey(blockKey, key);
                 changed = true;
@@ -1102,7 +1102,7 @@ public class XPadView extends View {
     ) {
         reset();
 
-        Key<?> key = CtrlKey.noop();
+        Key key = CtrlKey.noop();
         trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
 
         if (simulationTerminated) {
@@ -1230,13 +1230,13 @@ public class XPadView extends View {
             UserKeyMsgListener.Trigger trigger, BlockKey blockKey, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
-        Key<?> key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
+        Key key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
 
         trigger_UserKeyMsgListener(trigger, key, type, data);
     }
 
     private void trigger_UserKeyMsgListener(
-            UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureType type,
+            UserKeyMsgListener.Trigger trigger, Key key, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
         if (trigger != null) {
@@ -1246,7 +1246,7 @@ public class XPadView extends View {
     }
 
     private void fire_UserKey_Moving(
-            UserKeyMsgListener.Trigger trigger, Key<?> key, ViewGestureDetector.GestureData data
+            UserKeyMsgListener.Trigger trigger, Key key, ViewGestureDetector.GestureData data
     ) {
         trigger_UserKeyMsgListener(trigger,
                                    key,
@@ -1298,9 +1298,9 @@ public class XPadView extends View {
     private static class BlockKey extends BlockIndex {
         public final int x;
         public final int y;
-        public final Key<?> key;
+        public final Key key;
 
-        public BlockKey(int zone, int block, int x, int y, Key<?> key) {
+        public BlockKey(int zone, int block, int x, int y, Key key) {
             super(zone, block);
 
             this.x = x;
@@ -1308,7 +1308,7 @@ public class XPadView extends View {
             this.key = key;
         }
 
-        public BlockKey(BlockKey other, Key<?> key) {
+        public BlockKey(BlockKey other, Key key) {
             this(other.zone, other.block, other.x, other.y, key);
         }
 
@@ -1362,7 +1362,7 @@ public class XPadView extends View {
             return this.stopped;
         }
 
-        public void input(Key<?> start, Key<?> charKey, Runnable after) {
+        public void input(Key start, Key charKey, Runnable after) {
             this.stopped = false;
             XPadView.this.simulating = true;
 
@@ -1372,11 +1372,11 @@ public class XPadView extends View {
             });
         }
 
-        public void input(Key<?> charKey, Runnable after) {
+        public void input(Key charKey, Runnable after) {
             input(null, charKey, after);
         }
 
-        private void doInput(Key<?> start, Key<?> charKey, Runnable after) {
+        private void doInput(Key start, Key charKey, Runnable after) {
             PointF endPoint = get_center_coordinate();
 
             // ==================================================================
@@ -1444,7 +1444,7 @@ public class XPadView extends View {
             onGesture(null, type, data, offset, false);
         }
 
-        private List<Runnable> createCharKeyGesture(Key<?> charKey) {
+        private List<Runnable> createCharKeyGesture(Key charKey) {
             BlockKey charBlockKey = getMatchedBlockKey(charKey);
             int charBlockKeyAxis = charBlockKey.x;
             int charBlockKeyCross = charBlockKey.y + 2;
@@ -1483,7 +1483,7 @@ public class XPadView extends View {
             return block.links.center.center;
         }
 
-        private BlockKey getMatchedBlockKey(Key<?> key) {
+        private BlockKey getMatchedBlockKey(Key key) {
             for (BlockKey blockKey : get_zone_1_keys()) {
                 if (BlockKey.isNull(blockKey)) {
                     continue;

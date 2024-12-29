@@ -56,17 +56,17 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     @Override
-    protected Key<?>[][] initGrid() {
+    protected Key[][] initGrid() {
         return new Key[6][8];
     }
 
     /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
-    public Key<?>[][] createKeys() {
+    public Key[][] createKeys() {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
-        return (Key<?>[][]) new Key[][] {
+        return (Key[][]) new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
                         // 😂
@@ -171,7 +171,7 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
-    public Key<?>[][] createNextCharKeys(
+    public Key[][] createNextCharKeys(
             PinyinCharsTree charsTree, //
             String level0Char, String level1Char, String level2Char, //
             Map<Integer, List<String>> level2NextChars
@@ -182,12 +182,12 @@ public class PinyinKeyTable extends KeyTable {
         }
 
         // 在初始键盘上显隐按键
-        Key<?>[][] gridKeys = createKeys();
+        Key[][] gridKeys = createKeys();
 
         // Note: 第 1 级后继按键与键盘初始按键位置保持一致
         for (int i = 0; i < gridKeys.length; i++) {
             for (int j = 0; j < gridKeys[i].length; j++) {
-                Key<?> key = gridKeys[i][j];
+                Key key = gridKeys[i][j];
 
                 gridKeys[i][j] = noopCtrlKey();
                 if (!(key instanceof CharKey)) {
@@ -236,7 +236,7 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     private void fillNextCharGridKeys(
-            Key<?>[][] gridKeys, GridCoord[] keyCoords, List<String> keys, String level0Char, String level2Char
+            Key[][] gridKeys, GridCoord[] keyCoords, List<String> keys, String level0Char, String level2Char
     ) {
         int diff = keyCoords.length - keys.size();
 
@@ -255,8 +255,8 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 按韵母起始字母以此按行创建按键 */
-    public Key<?>[][] createFullCharKeys(PinyinCharsTree charsTree, String level0Char) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+    public Key[][] createFullCharKeys(PinyinCharsTree charsTree, String level0Char) {
+        Key[][] gridKeys = createEmptyGrid();
 
         String[] charOrders = new String[] { "m", "n", "g", "a", "o", "e", "i", "u", "ü" };
         GridCoord[] gridCoords = getFullCharKeyCoords();
@@ -297,14 +297,14 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建 X 型输入的拼音后继字母第 1/2 级按键 */
-    public Key<?>[][] createXPadNextCharKeys(
+    public Key[][] createXPadNextCharKeys(
             PinyinCharsTree charsTree, //
             String level0Char, String level1Char, //
             Map<Integer, List<String>> level2NextChars
     ) {
         XPadKey xPadKey = createXPadKey();
         // 在初始键盘上显隐按键
-        Key<?>[][] gridKeys = createKeysForXPad(xPadKey);
+        Key[][] gridKeys = createKeysForXPad(xPadKey);
 
         switch (level0Char) {
             case "a": {
@@ -358,13 +358,13 @@ public class PinyinKeyTable extends KeyTable {
             }
 
             for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
-                Key<?>[][] zone_2_key = xPadKey.zone_2_keys[i];
+                Key[][] zone_2_key = xPadKey.zone_2_keys[i];
 
                 for (int j = 0; j < zone_2_key.length; j++) {
-                    Key<?>[] keys = zone_2_key[j];
+                    Key[] keys = zone_2_key[j];
                     // Note: 第 1 级后继按键与键盘初始按键位置保持一致
                     for (int k = 0; k < keys.length; k++) {
-                        Key<?> key = keys[k];
+                        Key key = keys[k];
                         // 右下角的功能和符号按键保持不动
                         if (i + j == 1) {
                             continue;
@@ -406,14 +406,14 @@ public class PinyinKeyTable extends KeyTable {
             }
         } else {
             for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
-                Key<?>[][] zone_2_key = xPadKey.zone_2_keys[i];
+                Key[][] zone_2_key = xPadKey.zone_2_keys[i];
                 for (int j = 0; j < zone_2_key.length; j++) {
                     // 右下角的功能和符号按键保持不动
                     if (i + j == 1) {
                         continue;
                     }
 
-                    Key<?>[] keys = zone_2_key[j];
+                    Key[] keys = zone_2_key[j];
                     Arrays.fill(keys, null);
                 }
             }
@@ -447,12 +447,12 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建输入候选字按键 */
-    public Key<?>[][] createInputCandidateKeys(
+    public Key[][] createInputCandidateKeys(
             PinyinCharsTree charsTree, CharInput input,//
             List<PinyinWord.Spell> spells, List<InputWord> words, //
             int startIndex, PinyinWord.Filter wordFilter
     ) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         int dataSize = words.size();
         int pageSize = getInputCandidateKeysPageSize();
@@ -493,7 +493,7 @@ public class PinyinKeyTable extends KeyTable {
         }
 
         // 拼音变换按键
-        CharInput startingToggle = input.copy();
+        CharInput startingToggle = (CharInput) input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
             String s = input.getChars().get(0).substring(0, 1);
 
@@ -521,7 +521,7 @@ public class PinyinKeyTable extends KeyTable {
             gridKeys[0][index_end] = noopCtrlKey();
         }
 
-        CharInput endingToggle = input.copy();
+        CharInput endingToggle = (CharInput) input.copy();
         if (input.is_Pinyin_NG_Ending()) {
             String s = input.getChars().get(input.getChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
@@ -578,11 +578,11 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建输入候选字高级过滤按键 */
-    public Key<?>[][] createInputCandidateAdvanceFilterKeys(
+    public Key[][] createInputCandidateAdvanceFilterKeys(
             List<PinyinWord.Spell> spells, List<PinyinWord.Radical> radicals, //
             int startIndex, PinyinWord.Filter wordFilter
     ) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         int dataSize = radicals.size();
         int pageSize = getInputCandidateAdvanceFilterKeysPageSize();
@@ -638,10 +638,10 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建 输入列表 提交选项 按键 */
-    public Key<?>[][] createInputListCommittingOptionKeys(
+    public Key[][] createInputListCommittingOptionKeys(
             Input.Option currentOption, boolean hasSpell, boolean hasVariant
     ) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         boolean isOnlyPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.replacing;
         boolean isWithPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.following;

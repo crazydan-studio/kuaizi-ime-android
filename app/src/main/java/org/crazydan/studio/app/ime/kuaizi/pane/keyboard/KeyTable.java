@@ -200,10 +200,10 @@ public abstract class KeyTable {
         return new GridCoord(row, column, layer);
     }
 
-    protected abstract Key<?>[][] initGrid();
+    protected abstract Key[][] initGrid();
 
-    protected Key<?>[][] createEmptyGrid() {
-        Key<?>[][] gridKeys = initGrid();
+    protected Key[][] createEmptyGrid() {
+        Key[][] gridKeys = initGrid();
         Arrays.stream(gridKeys).forEach(row -> Arrays.fill(row, noopCtrlKey()));
 
         return gridKeys;
@@ -357,7 +357,7 @@ public abstract class KeyTable {
 
     /** 占位按键，且不触发事件 */
     public CtrlKey noopCtrlKey(String label) {
-        return ctrlKey(CtrlKey.noop().setLabel(label));
+        return ctrlKey((CtrlKey) CtrlKey.noop().setLabel(label));
     }
 
     public CharKey alphabetKey(String text) {
@@ -376,11 +376,11 @@ public abstract class KeyTable {
         return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
     }
 
-    protected Key<?>[][] createKeysForXPad() {
+    protected Key[][] createKeysForXPad() {
         return createKeysForXPad(createXPadKey());
     }
 
-    protected Key<?>[][] createKeysForXPad(XPadKey xPadKey) {
+    protected Key[][] createKeysForXPad(XPadKey xPadKey) {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
@@ -433,8 +433,8 @@ public abstract class KeyTable {
      *         <li>按键均往辐射轴线的外侧排列，以留下更多的视觉空间，从而降低手指遮挡概率；</li>
      *         </ul>
      */
-    protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key<?>[][][] zone_2_keys) {
-        Key<?>[] zone_1_keys = new Key[] {
+    protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key[][][] zone_2_keys) {
+        Key[] zone_1_keys = new Key[] {
                 switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
                 switcherCtrlKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin),
                 switcherCtrlKey(Keyboard.Type.Number).setIconResId(R.drawable.ic_number),
@@ -442,7 +442,7 @@ public abstract class KeyTable {
                 null,
                 switcherCtrlKey(Keyboard.Type.Math).setIconResId(R.drawable.ic_math),
                 };
-        for (Key<?> key : zone_1_keys) {
+        for (Key key : zone_1_keys) {
             if (key != null //
                 && ((CtrlKey.KeyboardSwitchOption) ((CtrlKey) key).getOption()).value() == activeKeyboard) {
                 key.setDisabled(true);

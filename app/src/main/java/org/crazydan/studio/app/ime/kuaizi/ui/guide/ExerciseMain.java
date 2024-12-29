@@ -323,22 +323,22 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        Key<?> key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.Switch_HandMode);
-        Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
-        Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin);
-        Key<?> key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin);
-        Key<?> key_ctrl_switch_emoji = keyTable.switcherCtrlKey(Keyboard.Type.Emoji);
-        Key<?> key_ctrl_switch_symbol = keyTable.switcherCtrlKey(Keyboard.Type.Symbol);
-        Key<?> key_ctrl_input_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
-        Key<?> key_ctrl_input_drop = keyTable.ctrlKey(CtrlKey.Type.DropInput);
-        Key<?> key_ctrl_input_confirm = keyTable.ctrlKey(CtrlKey.Type.ConfirmInput);
-        Key<?> key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
-        Key<?> key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
-        Key<?> key_ctrl_backspace = keyTable.ctrlKey(CtrlKey.Type.Backspace);
-        Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
-        Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
+        Key key_ctrl_hand_mode = keyTable.ctrlKey(CtrlKey.Type.Switch_HandMode);
+        Key key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
+        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin);
+        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin);
+        Key key_ctrl_switch_emoji = keyTable.switcherCtrlKey(Keyboard.Type.Emoji);
+        Key key_ctrl_switch_symbol = keyTable.switcherCtrlKey(Keyboard.Type.Symbol);
+        Key key_ctrl_input_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
+        Key key_ctrl_input_drop = keyTable.ctrlKey(CtrlKey.Type.DropInput);
+        Key key_ctrl_input_confirm = keyTable.ctrlKey(CtrlKey.Type.ConfirmInput);
+        Key key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
+        Key key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
+        Key key_ctrl_backspace = keyTable.ctrlKey(CtrlKey.Type.Backspace);
+        Key key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+        Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
 
         Object[][] steps = new Object[][] {
                 // 核心按键
@@ -405,12 +405,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         InputWord expected_auto_word = new InputWord(100, "块", "kuài");
         InputWord case_word = new InputWord(101, "筷", "kuài");
-        Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
+        Key key_case_word = keyTable.inputWordKey(case_word, 0);
 
-        Key<?> key_level_0 = keyTable.level0CharKey("k");
-        Key<?> key_level_1 = keyTable.level1CharKey("u");
-        Key<?> key_level_2 = keyTable.level2CharKey(key_level_0.getText(), "uai");
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_level_0 = keyTable.level0CharKey("k");
+        Key key_level_1 = keyTable.level1CharKey("u");
+        Key key_level_2 = keyTable.level2CharKey(key_level_0.getText(), "uai");
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>；",
                          case_word.getValue(),
@@ -432,12 +432,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         InputWord expected_auto_word = new InputWord(100, "术", "shù");
         InputWord case_word = new InputWord(101, "输", "shū");
-        Key<?> key_case_word = keyTable.inputWordKey(case_word, 1);
+        Key key_case_word = keyTable.inputWordKey(case_word, 1);
 
-        Key<?> key_level_0 = keyTable.level0CharKey("sh");
-        Key<?> key_level_1 = keyTable.level1CharKey("u");
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū", null);
+        Key key_level_0 = keyTable.level0CharKey("sh");
+        Key key_level_1 = keyTable.level1CharKey("u");
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū", null);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并通过拼音声调过滤筛选其候选字；",
                          case_word.getValue(),
@@ -461,15 +461,15 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         InputWord expected_auto_word = new InputWord(100, "自", "zì");
         InputWord case_word = new InputWord(101, "字", "zì");
-        Key<?> key_case_word = keyTable.inputWordKey(case_word, 0);
+        Key key_case_word = keyTable.inputWordKey(case_word, 0);
 
-        Key<?> key_level_0 = keyTable.level0CharKey("z");
-        Key<?> key_level_1 = keyTable.level1CharKey("i");
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_ctrl_commit_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
-        Key<?> key_ctrl_commit_opt_with_pinyin
+        Key key_level_0 = keyTable.level0CharKey("z");
+        Key key_level_1 = keyTable.level1CharKey("i");
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_ctrl_commit_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
+        Key key_ctrl_commit_opt_with_pinyin
                 = keyTable.commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin);
-        Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
+        Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；",
                          case_word.getValue(),
@@ -484,7 +484,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
                         KeyboardStateChangeMsgData data = msg.data();
-                        Key<?> key = data.key;
+                        Key key = data.key;
 
                         if (data.state.type == State.Type.InputList_Commit_Option_Choose_Doing //
                             && key_ctrl_commit.equals(key) //
@@ -500,7 +500,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_commit_opt_with_pinyin) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Done) {
-                        Key<?> key = msg.data().key;
+                        Key key = msg.data().key;
 
                         if (key_ctrl_commit_opt_with_pinyin.equals(key)) {
                             exercise.gotoNextStep();
@@ -533,11 +533,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         EditorKeyTable keyTable = EditorKeyTable.create(createKeyTableConfig());
 
-        Key<?> key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
-        Key<?> key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
-        Key<?> key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
-        Key<?> key_ctrl_edit_copy = keyTable.editCtrlKey(EditorEditAction.copy);
-        Key<?> key_ctrl_edit_paste = keyTable.editCtrlKey(EditorEditAction.paste);
+        Key key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
+        Key key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
+        Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
+        Key key_ctrl_edit_copy = keyTable.editCtrlKey(EditorEditAction.copy);
+        Key key_ctrl_edit_paste = keyTable.editCtrlKey(EditorEditAction.paste);
 
         exercise.setSampleText(getResources().getString(R.string.app_slogan));
 
@@ -547,7 +547,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Cursor_Move_Doing) {
-                        Key<?> key = msg.data().key;
+                        Key key = msg.data().key;
 
                         if (key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
@@ -562,7 +562,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
                         KeyboardSwitchMsgData data = msg.data();
-                        Key<?> key = data.key;
+                        Key key = data.key;
 
                         if (data.type == Keyboard.Type.Editor && key_ctrl_cursor_locator.equals(key)) {
                             exercise.gotoNextStep();
@@ -576,7 +576,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请在内容选择按键%s上快速滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Range_Select_Doing) {
-                        Key<?> key = msg.data().key;
+                        Key key = msg.data().key;
 
                         if (key_ctrl_range_selector.equals(key)) {
                             exercise.gotoNextStep();
@@ -613,9 +613,9 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        Key<?> key_symbol_tanhao = keyTable.symbolKey("！");
-        Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_symbol_tanhao = keyTable.symbolKey("！");
+        Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">Be Happy!</span>；");
         exercise.newStep("<b>提示</b>：在拼音键盘和拉丁文键盘中，"
@@ -629,7 +629,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 exercise.newStep("请点击按键%s以输入空格；", key_ctrl_space) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Done) {
-                                Key<?> key = msg.data().key;
+                                Key key = msg.data().key;
 
                                 if (key.getText().equals(key_ctrl_space.getText())) {
                                     exercise.gotoNextStep();
@@ -643,7 +643,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             }
 
             boolean useUpperCase = Character.isUpperCase(ch);
-            Key<?> key_char = keyTable.level0CharKey(String.valueOf(ch).toLowerCase());
+            Key key_char = keyTable.level0CharKey(String.valueOf(ch).toLowerCase());
 
             exercise.newStep(useUpperCase
                              ? "请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入大写字母"
@@ -660,7 +660,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             }
                             case InputChars_Input_Doing: {
                                 InputCharsInputMsgData data = msg.data();
-                                Key<?> key = data.key;
+                                Key key = data.key;
                                 boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
                                                   && key.getText().equals(String.valueOf(ch));
 
@@ -698,7 +698,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         case InputChars_Input_Done:
                         case InputChars_Input_Doing: {
                             InputCharsInputMsgData data = msg.data();
-                            Key<?> key = data.key;
+                            Key key = data.key;
                             boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
                                               && key.getText().equals(tanhao);
 
@@ -728,8 +728,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         MathKeyTable keyTable = MathKeyTable.create(createKeyTableConfig());
 
-        Key<?> key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_ctrl_switch_math = keyTable.switcherCtrlKey(Keyboard.Type.Math);
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">3 × (2 + 1) =</span>；");
         exercise.newStep("<b>提示</b>：若计算式以等号开头，则提交内容将仅包含计算结果。"
@@ -760,14 +760,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 };
         for (String ch : chars) {
             if (Character.isDigit(ch.charAt(0))) {
-                Key<?> key_number = keyTable.numberKey(ch);
+                Key key_number = keyTable.numberKey(ch);
 
                 exercise.newStep("请点击按键%s以输入数字 <span style=\"color:#ed4c67;\">%s</span>；",
                                  key_number,
                                  key_number.getText()) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key<?> key = msg.data().key;
+                                Key key = msg.data().key;
 
                                 if (key.getText().equals(key_number.getText())) {
                                     exercise.gotoNextStep();
@@ -779,14 +779,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                         key_number.getText());
                         });
             } else {
-                Key<?> key_op = keyTable.mathOpKey(MathOpKey.Type.valueOf(ch));
+                Key key_op = keyTable.mathOpKey(MathOpKey.Type.valueOf(ch));
 
                 exercise.newStep("请点击按键%s以输入运算符 <span style=\"color:#ed4c67;\">%s</span>；",
                                  key_op,
                                  key_op.getText()) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key<?> key = msg.data().key;
+                                Key key = msg.data().key;
 
                                 if (key.getText().equals(key_op.getText())) {
                                     exercise.gotoNextStep();
@@ -819,17 +819,16 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        Key<?> key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key<?> key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin);
-        Key<?> key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin)
-                                                .setIconResId(R.drawable.ic_pinyin);
-        Key<?> key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
-        Key<?> key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin);
+        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin);
+        Key key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
+        Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
 
         exercise.enableXInputPad();
         exercise.setSampleText("请换行输入练习内容：");
 
-        Key<?>[] latinSample = new Key<?>[] {
+        Key[] latinSample = new Key[] {
                 keyTable.alphabetKey("A"),
                 keyTable.alphabetKey("n"),
                 keyTable.alphabetKey("d"),
@@ -838,7 +837,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 keyTable.alphabetKey("i"),
                 keyTable.alphabetKey("d"),
                 };
-        Map<InputWord, Key<?>[]> pinyinWordsSample = new LinkedHashMap<>();
+        Map<InputWord, Key[]> pinyinWordsSample = new LinkedHashMap<>();
         pinyinWordsSample.put(new InputWord(100, "筷", "kuài"), new Key[] {
                 keyTable.level0CharKey("k"), keyTable.level1CharKey("u"), keyTable.level2CharKey("", "uai"),
                 });
@@ -879,7 +878,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 });
 
         for (int i = 0; i < latinSample.length; i++) {
-            Key<?> key = latinSample[i];
+            Key key = latinSample[i];
             boolean isFirstStep = i == 0;
 
             Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
@@ -971,15 +970,15 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 });
 
         int i = 0;
-        for (Map.Entry<InputWord, Key<?>[]> entry : pinyinWordsSample.entrySet()) {
+        for (Map.Entry<InputWord, Key[]> entry : pinyinWordsSample.entrySet()) {
             InputWord word = entry.getKey();
-            Key<?>[] keys = entry.getValue();
-            Key<?> lastKey = keys[keys.length - 1];
+            Key[] keys = entry.getValue();
+            Key lastKey = keys[keys.length - 1];
 
             i += 1;
             Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
             for (int j = 0; j < keys.length; j++) {
-                Key<?> key = keys[j];
+                Key key = keys[j];
                 boolean isFirstStep = i == 1 && j == 0;
 
                 String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.getId());
@@ -1035,7 +1034,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                                          + key.getLabel()
                                                          + "</span> ");
                 step.action((msg) -> {
-                    Key<?> msgKey = msg.data().key;
+                    Key msgKey = msg.data().key;
                     switch (msg.type) {
                         case InputChars_Input_Doing: {
                             if (key.getText().equals(msgKey.getText())) {
@@ -1085,12 +1084,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     private void add_Pinyin_Inputting_Steps(
             Exercise exercise, //
-            Key<?>[] level_keys, Key<?> key_case_word, InputWord expected_auto_word, //
+            Key[] level_keys, Key key_case_word, InputWord expected_auto_word, //
             Object[] word_choose_step_content
     ) {
-        Key<?> key_level_0 = level_keys[0];
-        Key<?> key_level_1 = level_keys[1];
-        Key<?> key_level_2 = level_keys[2];
+        Key key_level_0 = level_keys[0];
+        Key key_level_1 = level_keys[1];
+        Key key_level_2 = level_keys[2];
         InputWord case_word = ((InputWordKey) key_case_word).getWord();
 
         exercise.newStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
@@ -1111,7 +1110,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         }
                         case InputChars_Input_Doing: {
                             InputCharsInputMsgData data = msg.data();
-                            Key<?> key = data.key;
+                            Key key = data.key;
 
                             if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
                                 showWarning("请按当前步骤的指导要求从按键"
@@ -1137,7 +1136,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action((msg) -> {
                         switch (msg.type) {
                             case InputChars_Input_Doing: {
-                                Key<?> key = msg.data().key;
+                                Key key = msg.data().key;
 
                                 if (!key.getLabel().equals(key_level_1.getLabel())) {
                                     showWarning("请重新滑回到按键"
@@ -1148,7 +1147,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             }
                             case InputChars_Input_Done: {
                                 InputCharsInputMsgData data = msg.data();
-                                Key<?> key = data.input.getLastKey();
+                                Key key = data.input.getLastKey();
 
                                 if (key.getLabel().equals(key_level_1.getLabel())) {
                                     changePinyinWord(expected_auto_word);
@@ -1166,7 +1165,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .name("input_level_1") //
                     .action((msg) -> {
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                            Key<?> key = msg.data().key;
+                            Key key = msg.data().key;
 
                             if (key.getLabel().equals(key_level_1.getLabel())) {
                                 exercise.gotoNextStep();
@@ -1185,7 +1184,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action((msg) -> {
                         switch (msg.type) {
                             case InputChars_Input_Doing: {
-                                Key<?> key = msg.data().key;
+                                Key key = msg.data().key;
 
                                 if (!key.getLabel().startsWith(key_level_0.getLabel() + key_level_1.getLabel())) {
                                     showWarning("请重新滑回到按键"
@@ -1197,7 +1196,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             }
                             case InputChars_Input_Done: {
                                 InputCharsInputMsgData data = msg.data();
-                                Key<?> key = data.input.getLastKey();
+                                Key key = data.input.getLastKey();
 
                                 if (key.getLabel().equals(key_level_2.getLabel())) {
                                     changePinyinWord(expected_auto_word);
@@ -1274,7 +1273,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 });
     }
 
-    private void add_Common_Input_Committing_Step(Exercise exercise, Key<?> key_ctrl_commit) {
+    private void add_Common_Input_Committing_Step(Exercise exercise, Key key_ctrl_commit) {
         exercise.newStep("请点击输入提交按键%s将当前输入提交至目标编辑器；", key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {

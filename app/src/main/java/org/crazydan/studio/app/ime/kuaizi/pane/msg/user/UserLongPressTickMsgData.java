@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
 public class UserLongPressTickMsgData extends UserKeyTickMsgData {
     public final long duration;
 
-    public UserLongPressTickMsgData(Key<?> target, int tick, long duration) {
+    public UserLongPressTickMsgData(Key target, int tick, long duration) {
         super(target, tick);
         this.duration = duration;
     }

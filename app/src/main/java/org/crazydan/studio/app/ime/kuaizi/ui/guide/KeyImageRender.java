@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 public interface KeyImageRender {
 
     /** 添加待渲染的 {@link Key}，并返回按键唯一标识 */
-    String withKey(Key<?> key);
+    String withKey(Key key);
 
     /** 根据 {@link #withKey} 所生成的唯一标识，渲染该标识对应的 {@link Key} 的图像 */
     Drawable renderKey(String code, int width, int height);

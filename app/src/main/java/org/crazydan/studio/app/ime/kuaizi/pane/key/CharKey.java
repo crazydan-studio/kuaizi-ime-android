@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CharKey extends BaseCharKey<CharKey> {
+public class CharKey extends BaseCharKey {
     private final Type type;
     private List<String> replacements;
 
@@ -48,16 +48,16 @@ public class CharKey extends BaseCharKey<CharKey> {
         return new CharKey(type, text);
     }
 
-    public static boolean isAlphabet(Key<?> key) {
+    public static boolean isAlphabet(Key key) {
         return key instanceof CharKey && ((CharKey) key).isAlphabet();
     }
 
-    public static List<Key<?>> from(String text) {
+    public static List<Key> from(String text) {
         if (text == null) {
             return new ArrayList<>();
         }
 
-        List<Key<?>> keys = new ArrayList<>(text.length());
+        List<Key> keys = new ArrayList<>(text.length());
 
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
@@ -113,7 +113,7 @@ public class CharKey extends BaseCharKey<CharKey> {
     }
 
     /** 判断是否可替换指定的按键 */
-    public boolean canReplaceTheKey(Key<?> key) {
+    public boolean canReplaceTheKey(Key key) {
         if (!(key instanceof CharKey)
             // 只有自身，则不做替换
             || !hasReplacement()) {

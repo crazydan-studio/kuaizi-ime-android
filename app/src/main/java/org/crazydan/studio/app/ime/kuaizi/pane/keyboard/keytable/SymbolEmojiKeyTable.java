@@ -47,7 +47,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     @Override
-    protected Key<?>[][] initGrid() {
+    protected Key[][] initGrid() {
         return new Key[6][8];
     }
 
@@ -57,10 +57,10 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     /** 创建表情符号按键 */
-    public Key<?>[][] createEmojiKeys(
+    public Key[][] createEmojiKeys(
             List<String> groups, List<InputWord> words, String selectedGroup, int startIndex
     ) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+        Key[][] gridKeys = createEmptyGrid();
 
         int dataSize = words.size();
         int pageSize = getEmojiKeysPageSize();
@@ -131,8 +131,8 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     /** 创建标点符号按键 */
-    public Key<?>[][] createSymbolKeys(SymbolGroup symbolGroup, boolean onlyPair, int startIndex) {
-        Key<?>[][] gridKeys = createEmptyGrid();
+    public Key[][] createSymbolKeys(SymbolGroup symbolGroup, boolean onlyPair, int startIndex) {
+        Key[][] gridKeys = createEmptyGrid();
 
         Symbol[] symbols = onlyPair ? Arrays.stream(symbolGroup.symbols)
                                             .filter(symbol -> symbol instanceof Symbol.Pair)

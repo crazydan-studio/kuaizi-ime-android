@@ -31,16 +31,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04
  */
-public class XPadKey extends BaseKey<XPadKey> {
-    public final Key<?> zone_0_key;
-    public final Key<?>[] zone_1_keys;
-    public final Key<?>[][][] zone_2_keys;
+public class XPadKey extends BaseKey {
+    public final Key zone_0_key;
+    public final Key[] zone_1_keys;
+    public final Key[][][] zone_2_keys;
 
     public XPadKey() {
         this(null, null, null);
     }
 
-    public XPadKey(Key<?> zone_0_key, Key<?>[] zone_1_keys, Key<?>[][][] zone_2_keys) {
+    public XPadKey(Key zone_0_key, Key[] zone_1_keys, Key[][][] zone_2_keys) {
         this.zone_0_key = zone_0_key;
         this.zone_1_keys = zone_1_keys;
         this.zone_2_keys = zone_2_keys;

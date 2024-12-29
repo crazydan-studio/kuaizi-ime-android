@@ -28,7 +28,7 @@ public interface KeyFactory {
      * <p/>
      * 元素可为<code>null</code>，表示该位置不放置任何按键
      */
-    Key<?>[][] getKeys();
+    Key[][] getKeys();
 
     /** 无动效的生成器 */
     interface NoAnimation extends KeyFactory {}

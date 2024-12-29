@@ -104,7 +104,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     private void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {
-        Key<?> key = context.key();
+        Key key = context.key();
         InputMsgData data = new EditorCursorMsgData(key, motion);
 
         fire_InputMsg(context, InputMsgType.Editor_Range_Select_Doing, data);

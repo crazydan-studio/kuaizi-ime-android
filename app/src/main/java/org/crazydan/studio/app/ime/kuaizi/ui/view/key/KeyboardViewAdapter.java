@@ -46,7 +46,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHolder<?>> {
+public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<?>> {
     private static final int VIEW_TYPE_CHAR_KEY = 0;
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
@@ -64,18 +64,18 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateItems(Key<?>[][] keys, Integer themeResId, HexagonOrientation orientation) {
+    public void updateItems(Key[][] keys, Integer themeResId, HexagonOrientation orientation) {
         Integer oldThemeResId = this.themeResId;
         HexagonOrientation oldOrientation = this.orientation;
         this.themeResId = themeResId;
         this.orientation = orientation;
 
-        List<Key<?>> newItems = new ArrayList<>();
-        for (Key<?>[] key : keys) {
+        List<Key> newItems = new ArrayList<>();
+        for (Key[] key : keys) {
             newItems.addAll(Arrays.asList(key));
         }
 
-        List<Key<?>> oldItems = super.updateItems(newItems);
+        List<Key> oldItems = super.updateItems(newItems);
 
         if (!Objects.equals(oldThemeResId, this.themeResId) //
             || !Objects.equals(oldOrientation, this.orientation) //
@@ -89,14 +89,14 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
 
     @Override
     public void onBindViewHolder(@NonNull KeyViewHolder<?> holder, int position) {
-        Key<?> item = getItem(position);
+        Key item = getItem(position);
 
         bindKeyView(holder, item, this.orientation);
     }
 
     @Override
     public int getItemViewType(int position) {
-        Key<?> item = getItem(position);
+        Key item = getItem(position);
 
         return getKeyViewType(item);
     }
@@ -113,7 +113,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
     }
 
     public XPadKey getXPadKey() {
-        for (Key<?> key : this.items) {
+        for (Key key : this.items) {
             if (key instanceof XPadKey) {
                 return (XPadKey) key;
             }
@@ -121,7 +121,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
         return null;
     }
 
-    protected static int getKeyViewType(Key<?> key) {
+    protected static int getKeyViewType(Key key) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Toggle_Pinyin_spell:
@@ -181,7 +181,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key<?>, KeyViewHold
         }
     }
 
-    private static void bindKeyView(KeyViewHolder<?> holder, Key<?> key, HexagonOrientation orientation) {
+    private static void bindKeyView(KeyViewHolder<?> holder, Key key, HexagonOrientation orientation) {
         if (key instanceof CtrlKey) {
             switch (((CtrlKey) key).getType()) {
                 case Toggle_Pinyin_spell:

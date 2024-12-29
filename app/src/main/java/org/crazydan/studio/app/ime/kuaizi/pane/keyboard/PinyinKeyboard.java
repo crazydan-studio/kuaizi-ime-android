@@ -145,7 +145,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     public void onMsg(KeyboardContext context, UserKeyMsg msg) {
-        Key<?> key = context.key();
+        Key key = context.key();
         // Note: 在滑动结束时可能无关联按键，此时需继续由不同的状态处理该结束消息
         if (key != null && try_On_Common_UserKey_Msg(context, msg)) {
             return;
@@ -260,13 +260,13 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 进入 {@link State.Type#InputChars_Slip_Doing} 状态后的按键消息处理 */
     private void on_InputChars_Slip_Doing_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        Key<?> key = context.key();
+        Key key = context.key();
         InputList inputList = context.inputList;
 
         switch (msg.type) {
             case FingerMoving: {
                 CharInput pending = inputList.getPending();
-                Key<?> lastKey = pending.getLastKey();
+                Key lastKey = pending.getLastKey();
 
                 if (key instanceof CharKey //
                     && !key.isDisabled() //
@@ -305,7 +305,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 添加输入按键：播放提示音，显示输入按键 */
     private void do_InputChars_Slipping_Input_Key(KeyboardContext context, CharInput pending) {
-        Key<?> key = context.key();
+        Key key = context.key();
 
         play_DoubleTick_InputAudio(context);
         show_InputChars_Input_Popup(context, false);
@@ -371,7 +371,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     // ================== Start: 翻动输入，即，直接显示以输入按键开头的全部拼音 =====================
 
     private void start_InputChars_Flipping(KeyboardContext context) {
-        Key<?> key = context.key();
+        Key key = context.key();
         InputList inputList = context.inputList;
 
         String startChar = key.getText();
@@ -403,7 +403,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void stop_InputChars_Flipping(KeyboardContext context) {
-        Key<?> key = context.key();
+        Key key = context.key();
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
@@ -452,7 +452,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void do_InputChars_XPad_Inputting(KeyboardContext context, CharInput pending) {
-        Key<?> key = context.key();
+        Key key = context.key();
 
         play_SingleTick_InputAudio(context);
         show_InputChars_Input_Popup(context);
@@ -539,7 +539,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     private void on_InputChars_XPad_Input_Doing_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        Key<?> key = context.key();
+        Key key = context.key();
         InputList inputList = context.inputList;
 
         if (key instanceof CtrlKey && !CtrlKey.isNoOp(key)) {
@@ -696,7 +696,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void confirm_InputList_Input_Enter_or_Space(KeyboardContext context) {
-        Key<?> key = context.key();
+        Key key = context.key();
 
         // Note：在 X 型输入状态下输入空格，则先结束当前拼音输入再录入空格
         if (this.state.type == State.Type.InputChars_XPad_Input_Doing //

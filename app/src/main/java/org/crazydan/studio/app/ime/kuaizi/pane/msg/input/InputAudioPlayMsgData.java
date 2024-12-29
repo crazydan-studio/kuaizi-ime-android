@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 public class InputAudioPlayMsgData extends InputMsgData {
     public final AudioType audioType;
 
-    public InputAudioPlayMsgData(Key<?> key, AudioType audioType) {
+    public InputAudioPlayMsgData(Key key, AudioType audioType) {
         super(key);
         this.audioType = audioType;
     }

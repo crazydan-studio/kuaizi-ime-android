@@ -55,7 +55,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType.Input_Com
  * @date 2023-06-28
  */
 public class InputList implements UserInputMsgListener {
-    private final List<Input<?>> inputs = new ArrayList<>();
+    private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
 
     private InputListConfig config;
@@ -83,7 +83,7 @@ public class InputList implements UserInputMsgListener {
     public void onMsg(UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_Input: {
-                Input<?> input = msg.data().target;
+                Input input = msg.data().target;
                 switch (msg.data().where) {
                     case head:
                         input = getFirstInput();
@@ -119,7 +119,7 @@ public class InputList implements UserInputMsgListener {
             case SingleTap_Btn_Cancel_Clean_InputList: {
                 cancelDelete();
 
-                Input<?> input = getSelected();
+                Input input = getSelected();
                 fire_InputMsg(InputList_Cleaned_Cancel_Done, input);
                 break;
             }
@@ -127,7 +127,7 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 发送 {@link InputMsg} 消息 */
-    private void fire_InputMsg(InputMsgType type, Input<?> input) {
+    private void fire_InputMsg(InputMsgType type, Input input) {
         InputMsg msg = new InputMsg(type, new InputMsgData(input));
         this.listener.onMsg(msg);
     }
@@ -213,7 +213,7 @@ public class InputList implements UserInputMsgListener {
 
         clearPhraseCompletions();
 
-        Input<?> gap = new GapInput();
+        Input gap = new GapInput();
         this.inputs.add(gap);
         doSelect(gap);
 
@@ -375,12 +375,12 @@ public class InputList implements UserInputMsgListener {
             return;
         }
 
-        Input<?> newSelected = this.inputs.get(confirmedPendingIndex + offset);
+        Input newSelected = this.inputs.get(confirmedPendingIndex + offset);
         doSelect(newSelected);
     }
 
     /** {@link #confirmPending() 确认当前待输入}，并{@link #select(Input) 选中指定输入} */
-    public void confirmPendingAndSelect(Input<?> input) {
+    public void confirmPendingAndSelect(Input input) {
         confirmPendingAndSelect(input, false);
     }
 
@@ -390,7 +390,7 @@ public class InputList implements UserInputMsgListener {
      * @param force
      *         若为 true，则对于已选中的 input，将强制重新{@link #doSelect 选择}
      */
-    public void confirmPendingAndSelect(Input<?> input, boolean force) {
+    public void confirmPendingAndSelect(Input input, boolean force) {
         confirmPending();
 
         int index = indexOf(input);
@@ -439,7 +439,7 @@ public class InputList implements UserInputMsgListener {
             return -1;
         }
 
-        Input<?> selected = getSelected();
+        Input selected = getSelected();
         CharInput pending = getPending();
 
         if (Input.isEmpty(pending)) {
@@ -462,7 +462,7 @@ public class InputList implements UserInputMsgListener {
 
         if (selected.isGap()) {
             // Note: 新的 Gap 位置自动后移，故无需更新光标的选中对象
-            Input<?> gap = new GapInput();
+            Input gap = new GapInput();
 
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         } else {
@@ -478,7 +478,7 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** {@link #select(int) 选中指定的输入} */
-    public void select(Input<?> input) {
+    public void select(Input input) {
         int index = indexOf(input);
         select(index);
     }
@@ -492,7 +492,7 @@ public class InputList implements UserInputMsgListener {
      * </ul>
      */
     public void select(int index) {
-        Input<?> input = getInput(index);
+        Input input = getInput(index);
         if (input == null || isSelected(input)) {
             return;
         }
@@ -507,7 +507,7 @@ public class InputList implements UserInputMsgListener {
      * <p/>
      * 若未匹配到输入，则不做任何处理
      */
-    public Input<?> selectNextFirstMatched(Predicate<Input<?>> filter) {
+    public Input selectNextFirstMatched(Predicate<Input> filter) {
         int index = getSelectedIndex();
         int lastIndex = this.inputs.size() - 1;
         if (index >= lastIndex) {
@@ -515,7 +515,7 @@ public class InputList implements UserInputMsgListener {
         }
 
         for (int i = index + 1; i <= lastIndex; i++) {
-            Input<?> next = this.inputs.get(i);
+            Input next = this.inputs.get(i);
 
             if (filter.test(next)) {
                 doSelect(next);
@@ -533,8 +533,8 @@ public class InputList implements UserInputMsgListener {
      *
      * @return 返回选中的输入
      */
-    public Input<?> selectLast() {
-        Input<?> last = getLastInput();
+    public Input selectLast() {
+        Input last = getLastInput();
 
         if (!isSelected(last)) {
             doSelect(last);
@@ -549,12 +549,12 @@ public class InputList implements UserInputMsgListener {
 
     /** 获取已选中输入的位置 */
     public int getSelectedIndex() {
-        Input<?> selected = getSelected();
+        Input selected = getSelected();
         return indexOf(selected);
     }
 
     /** 获取指定位置的输入 */
-    public Input<?> getInput(int index) {
+    public Input getInput(int index) {
         return getInput(index, false);
     }
 
@@ -566,12 +566,12 @@ public class InputList implements UserInputMsgListener {
      *         即，当指定位置为{@link #getSelected() 已选中输入}时，
      *         返回待输入
      */
-    private Input<?> getInput(int index, boolean pendingFirst) {
+    private Input getInput(int index, boolean pendingFirst) {
         if (index < 0 || index >= this.inputs.size()) {
             return null;
         }
 
-        Input<?> input = this.inputs.get(index);
+        Input input = this.inputs.get(index);
         return pendingFirst && input == getSelected() ? getPending() : input;
     }
 
@@ -581,24 +581,24 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 获取指定输入上的待输入 */
-    public CharInput getPendingOn(Input<?> input) {
+    public CharInput getPendingOn(Input input) {
         return getSelected() == input ? getPending() : null;
     }
 
     /** 获取指定输入上的非空待输入 */
-    public CharInput getNoneEmptyPendingOn(Input<?> input) {
+    public CharInput getNoneEmptyPendingOn(Input input) {
         CharInput pending = getPendingOn(input);
 
         return Input.isEmpty(pending) ? null : pending;
     }
 
     /** 获取已选中的输入 */
-    public Input<?> getSelected() {
+    public Input getSelected() {
         return this.cursor.selected;
     }
 
     /** 指定输入是否已选中 */
-    public boolean isSelected(Input<?> input) {
+    public boolean isSelected(Input input) {
         return getSelected() == input;
     }
 
@@ -609,7 +609,7 @@ public class InputList implements UserInputMsgListener {
 
     /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
     public void clearPairOnSelected() {
-        Input<?> selected = getSelected();
+        Input selected = getSelected();
 
         if (!Input.isGap(selected)) {
             ((CharInput) selected).clearPair();
@@ -618,7 +618,7 @@ public class InputList implements UserInputMsgListener {
 
     /** 删除当前选中的输入：对于 Gap 位置，仅删除其正在输入的内容 */
     public void deleteSelected() {
-        Input<?> selected = getSelected();
+        Input selected = getSelected();
 
         if (!Input.isGap(selected)) {
             doDeleteBackward(false);
@@ -653,9 +653,9 @@ public class InputList implements UserInputMsgListener {
             return;
         }
 
-        Input<?> selected = getSelected();
-        Input<?> pending = getPending();
-        Input<?> current = !Input.isEmpty(pending) ? pending : selected;
+        Input selected = getSelected();
+        Input pending = getPending();
+        Input current = !Input.isEmpty(pending) ? pending : selected;
         // 逐字删除拉丁字符输入的最后一个字符
         if (byStep && current.isLatin() && current.getKeys().size() > 1) {
             current.dropLastKey();
@@ -666,7 +666,7 @@ public class InputList implements UserInputMsgListener {
         if (selected.isGap()) {
             if (selectedIndex > 0 && hasEmptyPending()) {
                 int prevIndex = selectedIndex - 1;
-                Input<?> prev = this.inputs.get(prevIndex);
+                Input prev = this.inputs.get(prevIndex);
 
                 if (prev.isLatin() && prev.getKeys().size() > 1) {
                     doSelect(prev);
@@ -696,7 +696,7 @@ public class InputList implements UserInputMsgListener {
             // 且该光标所在位置由 被删除的配对字符输入 的后继 Gap 填充，
             // 故而，新光标位置不变但对应的 Gap 引用需更新
             selectedIndex = getSelectedIndex();
-            Input<?> newSelected = this.inputs.get(selectedIndex + 1);
+            Input newSelected = this.inputs.get(selectedIndex + 1);
 
             removeCharInput(selected);
 
@@ -705,7 +705,7 @@ public class InputList implements UserInputMsgListener {
         }
     }
 
-    public List<Input<?>> getInputs() {
+    public List<Input> getInputs() {
         return this.inputs;
     }
 
@@ -720,7 +720,7 @@ public class InputList implements UserInputMsgListener {
     public List<InputWord> getEmojis() {
         return getInputs().stream().filter(Input::isEmoji).map((input) -> {
             InputWord word = input.getWord();
-            Key<?> key = input.getFirstKey();
+            Key key = input.getFirstKey();
 
             return word != null //
                    ? word : key instanceof InputWordKey //
@@ -744,7 +744,7 @@ public class InputList implements UserInputMsgListener {
 
         List<PinyinWord> phrase = new ArrayList<>();
         for (int i = 0; i < this.inputs.size(); i++) {
-            Input<?> input = getInput(i, true);
+            Input input = getInput(i, true);
 
             if (isPinyinPhraseEndAt(i)) {
                 if (!phrase.isEmpty()) {
@@ -764,7 +764,7 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 获取从指定输入开始及其之前的连续拼音字 */
-    public List<PinyinWord> getPinyinPhraseWordsFrom(Input<?> fromInput) {
+    public List<PinyinWord> getPinyinPhraseWordsFrom(Input fromInput) {
         int fromIndex = indexOf(fromInput, true);
         if (fromIndex < 0) {
             return List.of();
@@ -772,7 +772,7 @@ public class InputList implements UserInputMsgListener {
 
         List<PinyinWord> words = new ArrayList<>();
         for (int i = fromIndex; i >= 0; i--) {
-            Input<?> input = getInput(i, true);
+            Input input = getInput(i, true);
 
             if (!input.isPinyin()) {
                 break;
@@ -792,7 +792,7 @@ public class InputList implements UserInputMsgListener {
      *
      * @return 不返回 null
      */
-    public List<CharInput> getPinyinPhraseInputWhichContains(Input<?> fromInput) {
+    public List<CharInput> getPinyinPhraseInputWhichContains(Input fromInput) {
         int fromIndex = indexOf(fromInput, true);
         if (fromIndex < 0) {
             return List.of();
@@ -805,7 +805,7 @@ public class InputList implements UserInputMsgListener {
                 return false;
             }
 
-            Input<?> input = getInput(index, true);
+            Input input = getInput(index, true);
             if (!input.isGap()) {
                 phrase.add((CharInput) input);
             }
@@ -832,7 +832,7 @@ public class InputList implements UserInputMsgListener {
 
     /** 指定的输入是否代表段落结束 */
     private boolean isPinyinPhraseEndAt(int index) {
-        Input<?> input = getInput(index, true);
+        Input input = getInput(index, true);
         if (input == null || input.isSpace()) {
             return true;
         } else if (!input.isSymbol()) {
@@ -844,8 +844,8 @@ public class InputList implements UserInputMsgListener {
         if (List.of(new String[] {
                 ",", ".", ";", ":", "?", "!", //
         }).contains(chars)) {
-            Input<?> left = getInput(index - 1, true);
-            Input<?> right = getInput(index + 1, true);
+            Input left = getInput(index - 1, true);
+            Input right = getInput(index + 1, true);
 
             return (left == null || left.isPinyin()) && (right == null || right.isPinyin());
         }
@@ -857,12 +857,12 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 获取已选中输入之前的输入 */
-    public Input<?> getInputBeforeSelected() {
+    public Input getInputBeforeSelected() {
         return getInputBefore(getSelected());
     }
 
     /** 获取指定输入之前的输入 */
-    public Input<?> getInputBefore(Input<?> input) {
+    public Input getInputBefore(Input input) {
         int index = indexOf(input);
         if (index <= 0) {
             return null;
@@ -876,7 +876,7 @@ public class InputList implements UserInputMsgListener {
      * 包含有效的输入时，才不为空
      */
     public boolean isEmpty() {
-        for (Input<?> input : this.inputs) {
+        for (Input input : this.inputs) {
             if (!input.isGap() && !input.isEmpty()) {
                 return false;
             }
@@ -890,7 +890,7 @@ public class InputList implements UserInputMsgListener {
 
         int total = this.inputs.size();
         for (int i = 0; i < total; i++) {
-            Input<?> input = this.inputs.get(i);
+            Input input = this.inputs.get(i);
 
             sb.append(input.getText(getOption()));
 
@@ -908,9 +908,9 @@ public class InputList implements UserInputMsgListener {
             return false;
         }
 
-        Input<?> input = this.inputs.get(i);
-        Input<?> left = this.inputs.get(i - 1);
-        Input<?> right = null;
+        Input input = this.inputs.get(i);
+        Input left = this.inputs.get(i - 1);
+        Input right = null;
         if (!input.isGap()) {
             // Note：input 与其左侧的正在输入的 Gap 也需要检查空格（CharInput 左侧必然有一个 Gap）
             if (!isSelected(left) || Input.isEmpty(getPending())) {
@@ -923,7 +923,7 @@ public class InputList implements UserInputMsgListener {
         left = getNoneEmptyPendingOrSelf(left);
         if (right == null) {
             // Note：Gap 需判断其上的待输入
-            Input<?> pendingOnGap = getNoneEmptyPendingOn(input);
+            Input pendingOnGap = getNoneEmptyPendingOn(input);
             right = !Input.isEmpty(pendingOnGap) || i == total - 1
                     ? pendingOnGap
                     : getNoneEmptyPendingOrSelf(this.inputs.get(i + 1));
@@ -952,18 +952,18 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 是否需要添加 Gap 空格 */
-    public boolean needGapSpace(Input<?> input) {
+    public boolean needGapSpace(Input input) {
         int i = indexOf(input);
         return needGapSpace(i);
     }
 
     /** 是否包含指定的输入 */
-    public boolean contains(Input<?> input) {
+    public boolean contains(Input input) {
         return indexOf(input, true) >= 0;
     }
 
     /** 获取指定输入的位置 */
-    public int indexOf(Input<?> input) {
+    public int indexOf(Input input) {
         return indexOf(input, false);
     }
 
@@ -974,7 +974,7 @@ public class InputList implements UserInputMsgListener {
      *         在确定位置时，是否匹配{@link #getPending() 待输入}，
      *         即，若指定输入为待输入，则返回{@link #getSelected() 已选中的输入}的位置
      */
-    private int indexOf(Input<?> input, boolean matchPending) {
+    private int indexOf(Input input, boolean matchPending) {
         if (input == null) {
             return -1;
         } else if (matchPending && getPending() == input) {
@@ -985,11 +985,11 @@ public class InputList implements UserInputMsgListener {
         return CollectionUtils.indexOfRef(this.inputs, input);
     }
 
-    public Input<?> getFirstInput() {
+    public Input getFirstInput() {
         return CollectionUtils.first(this.inputs);
     }
 
-    public Input<?> getLastInput() {
+    public Input getLastInput() {
         return CollectionUtils.last(this.inputs);
     }
 
@@ -1002,24 +1002,24 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 选中指定的输入，并重建其待输入 */
-    private void doSelect(Input<?> input) {
+    private void doSelect(Input input) {
         this.cursor.select(input);
     }
 
     /** 选中指定的输入，并重建其待输入 */
     private void doSelect(int index) {
-        Input<?> input = this.inputs.get(index);
+        Input input = this.inputs.get(index);
         doSelect(input);
     }
 
     /** 若存在则获取非空待输入，否则，返回输入自身 */
-    private Input<?> getNoneEmptyPendingOrSelf(Input<?> input) {
-        Input<?> pending = getNoneEmptyPendingOn(input);
+    private Input getNoneEmptyPendingOrSelf(Input input) {
+        Input pending = getNoneEmptyPendingOn(input);
         return pending != null ? pending : input;
     }
 
     /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
-    private void removeCharInput(Input<?> input) {
+    private void removeCharInput(Input input) {
         int index = !Input.isGap(input) ? indexOf(input) : -1;
 
         removeCharInputAt(index);
@@ -1038,7 +1038,7 @@ public class InputList implements UserInputMsgListener {
     }
 
     /** 删除配对符号的另一侧输入 */
-    private void removeCharInputPair(Input<?> input) {
+    private void removeCharInputPair(Input input) {
         if (!Input.isGap(input)) {
             CharInput pairInput = ((CharInput) input).getPair();
 
@@ -1078,7 +1078,7 @@ public class InputList implements UserInputMsgListener {
 
     private static class Cursor {
         /** 光标位置已选中的输入 */
-        private Input<?> selected;
+        private Input selected;
         /** 光标位置待插入的输入 */
         private CharInput pending;
 
@@ -1102,8 +1102,8 @@ public class InputList implements UserInputMsgListener {
          * 选中指定输入，并将其复制一份作为其待输入，
          * 若输入为 Gap，则为其创建空的待输入
          */
-        public void select(Input<?> input) {
-            CharInput pending = Input.isGap(input) ? new CharInput() : ((CharInput) input).copy();
+        public void select(Input input) {
+            CharInput pending = Input.isGap(input) ? new CharInput() : (CharInput) input.copy();
 
             this.selected = input;
 
@@ -1136,10 +1136,10 @@ public class InputList implements UserInputMsgListener {
 
     private static class Staged {
         public final Type type;
-        public final List<Input<?>> inputs;
+        public final List<Input> inputs;
         public final Cursor cursor;
 
-        private Staged(Type type, List<Input<?>> inputs, Cursor cursor) {
+        private Staged(Type type, List<Input> inputs, Cursor cursor) {
             this.type = type;
             this.inputs = inputs;
             this.cursor = cursor;

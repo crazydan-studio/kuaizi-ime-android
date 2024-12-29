@@ -32,10 +32,10 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class GapInput extends BaseInput<GapInput> {
+public class GapInput extends BaseInput {
 
     @Override
-    public GapInput copy() {
+    public Input copy() {
         return new GapInput();
     }
 
@@ -45,7 +45,7 @@ public class GapInput extends BaseInput<GapInput> {
     }
 
     @Override
-    public void appendKey(Key<?> key) {}
+    public void appendKey(Key key) {}
 
     @Override
     public void dropLastKey() {}
