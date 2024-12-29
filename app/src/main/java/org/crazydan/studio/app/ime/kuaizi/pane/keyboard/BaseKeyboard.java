@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
@@ -35,7 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
@@ -349,14 +349,14 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 回删 目标编辑器 的内容 */
     protected void do_Editor_Backspacing(KeyboardContext context) {
-        do_Editor_Editing(context, EditorEditAction.backspace);
+        do_Editor_Editing(context, EditorAction.backspace);
     }
 
-    protected void do_Editor_Editing(KeyboardContext context, EditorEditAction action) {
+    protected void do_Editor_Editing(KeyboardContext context, EditorAction action) {
         InputList inputList = context.inputList;
 
         // 对编辑内容会造成修改的操作，需要清空待撤回输入数据
-        if (EditorEditAction.hasEffect(action)) {
+        if (EditorAction.hasEffect(action)) {
             inputList.clearCommitRevokes();
         }
 

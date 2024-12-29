@@ -28,12 +28,12 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputPane;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
@@ -268,7 +268,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
             case Editor_Edit_Doing: {
                 EditorEditMsgData d = msg.data();
 
-                if (EditorEditAction.hasEffect(d.action)) {
+                if (EditorAction.hasEffect(d.action)) {
                     this.editorChangeRevertion = null;
                 }
                 editText(d.action);
@@ -329,7 +329,7 @@ public class ImeService extends InputMethodService implements UserMsgListener, I
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editText(EditorEditAction action) {
+    private void editText(EditorAction action) {
         switch (action) {
             case backspace:
                 backspace();

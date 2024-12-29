@@ -24,8 +24,8 @@ import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import androidx.appcompat.widget.AppCompatEditText;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
@@ -89,7 +89,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
             case Editor_Edit_Doing: {
                 EditorEditMsgData d = msg.data();
 
-                if (EditorEditAction.hasEffect(d.action)) {
+                if (EditorAction.hasEffect(d.action)) {
                     this.editorChangeRevertion = null;
                 }
                 editText(d.action);
@@ -177,7 +177,7 @@ public class ExerciseEditText extends AppCompatEditText implements InputMsgListe
         sendKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT);
     }
 
-    private void editText(EditorEditAction action) {
+    private void editText(EditorAction action) {
         switch (action) {
             case backspace:
                 backspace();

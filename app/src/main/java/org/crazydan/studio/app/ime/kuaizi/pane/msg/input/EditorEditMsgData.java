@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 
@@ -28,9 +28,9 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
  * @date 2023-09-14
  */
 public class EditorEditMsgData extends InputMsgData {
-    public final EditorEditAction action;
+    public final EditorAction action;
 
-    public EditorEditMsgData(EditorEditAction action) {
+    public EditorEditMsgData(EditorAction action) {
         this.action = action;
     }
 }

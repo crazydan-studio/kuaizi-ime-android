@@ -20,10 +20,10 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 
 /**
  * 控制{@link Key 按键}
@@ -281,8 +281,8 @@ public class CtrlKey extends BaseKey {
         }
     }
 
-    public static class EditorEditOption extends Option<EditorEditAction> {
-        public EditorEditOption(EditorEditAction value) {
+    public static class EditorEditOption extends Option<EditorAction> {
+        public EditorEditOption(EditorAction value) {
             super(value);
         }
     }

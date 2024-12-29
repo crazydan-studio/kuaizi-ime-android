@@ -17,11 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 
 /**
  * 编辑按键布局
@@ -58,17 +58,17 @@ public class EditorKeyTable extends KeyTable {
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 
-        gridKeys[3][3] = editCtrlKey(EditorEditAction.cut);
-        gridKeys[4][2] = editCtrlKey(EditorEditAction.redo);
-        gridKeys[4][3] = editCtrlKey(EditorEditAction.undo);
-        gridKeys[4][4] = editCtrlKey(EditorEditAction.paste);
-        gridKeys[4][5] = editCtrlKey(EditorEditAction.copy);
-        gridKeys[5][3] = editCtrlKey(EditorEditAction.select_all);
+        gridKeys[3][3] = editCtrlKey(EditorAction.cut);
+        gridKeys[4][2] = editCtrlKey(EditorAction.redo);
+        gridKeys[4][3] = editCtrlKey(EditorAction.undo);
+        gridKeys[4][4] = editCtrlKey(EditorAction.paste);
+        gridKeys[4][5] = editCtrlKey(EditorAction.copy);
+        gridKeys[5][3] = editCtrlKey(EditorAction.select_all);
 
         return gridKeys;
     }
 
-    public CtrlKey editCtrlKey(EditorEditAction action) {
+    public CtrlKey editCtrlKey(EditorAction action) {
         CtrlKey.Type type = CtrlKey.Type.Edit_Editor;
         CtrlKey.Option<?> option = new CtrlKey.EditorEditOption(action);
 

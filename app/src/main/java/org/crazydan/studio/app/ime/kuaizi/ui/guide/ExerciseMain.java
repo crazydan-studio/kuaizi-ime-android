@@ -39,6 +39,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
@@ -54,7 +55,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.EditorEditAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
@@ -536,8 +536,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_ctrl_cursor_locator = keyTable.ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
         Key key_ctrl_range_selector = keyTable.ctrlKey(CtrlKey.Type.Editor_Range_Selector);
         Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
-        Key key_ctrl_edit_copy = keyTable.editCtrlKey(EditorEditAction.copy);
-        Key key_ctrl_edit_paste = keyTable.editCtrlKey(EditorEditAction.paste);
+        Key key_ctrl_edit_copy = keyTable.editCtrlKey(EditorAction.copy);
+        Key key_ctrl_edit_paste = keyTable.editCtrlKey(EditorAction.paste);
 
         exercise.setSampleText(getResources().getString(R.string.app_slogan));
 
@@ -623,6 +623,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                          + "连续点击按键则将循环输入字符的变换形式。"
                          + "形式变换包括字母的大小写切换、ü/v/V 转换和中英文标点切换；");
 
+        // TODO 构造输入目标内容与按键的映射
         char[] chars = new char[] { 'B', 'e', ' ', 'H', 'a', 'p', 'p', 'y' };
         for (char ch : chars) {
             if (ch == ' ') {
@@ -749,55 +750,35 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
                     showWarning("请按当前步骤的指导要求切换到算术键盘");
                 });
-        String[] chars = new String[] {
-                "3",
-                MathOpKey.Type.multiply.name(),
-                MathOpKey.Type.brackets.name(),
-                "2",
-                MathOpKey.Type.plus.name(),
-                "1",
-                MathOpKey.Type.equal.name(),
+
+        Key[] mathKeys = new Key[] {
+                keyTable.numberKey("3"),
+                keyTable.mathOpKey(MathOpKey.Type.multiply),
+                keyTable.mathOpKey(MathOpKey.Type.brackets),
+                keyTable.numberKey("2"),
+                keyTable.mathOpKey(MathOpKey.Type.plus),
+                keyTable.numberKey("1"),
+                keyTable.mathOpKey(MathOpKey.Type.equal),
                 };
-        for (String ch : chars) {
-            if (Character.isDigit(ch.charAt(0))) {
-                Key key_number = keyTable.numberKey(ch);
+        for (Key mathKey : mathKeys) {
+            exercise.newStep("请点击按键%s以输入%s <span style=\"color:#ed4c67;\">%s</span>；",
+                             mathKey instanceof MathOpKey ? "运算符" : "数字",
+                             mathKey,
+                             mathKey.getText()) //
+                    .action((msg) -> {
+                        if (msg.type == InputMsgType.InputChars_Input_Doing) {
+                            Key key = msg.data().key;
 
-                exercise.newStep("请点击按键%s以输入数字 <span style=\"color:#ed4c67;\">%s</span>；",
-                                 key_number,
-                                 key_number.getText()) //
-                        .action((msg) -> {
-                            if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key key = msg.data().key;
-
-                                if (key.getText().equals(key_number.getText())) {
-                                    exercise.gotoNextStep();
-                                    return;
-                                }
+                            if (key.getText().equals(mathKey.getText())) {
+                                exercise.gotoNextStep();
+                                return;
                             }
+                        }
 
-                            showWarning("请按当前步骤的指导要求输入数字 <span style=\"color:#ed4c67;\">%s</span>",
-                                        key_number.getText());
-                        });
-            } else {
-                Key key_op = keyTable.mathOpKey(MathOpKey.Type.valueOf(ch));
-
-                exercise.newStep("请点击按键%s以输入运算符 <span style=\"color:#ed4c67;\">%s</span>；",
-                                 key_op,
-                                 key_op.getText()) //
-                        .action((msg) -> {
-                            if (msg.type == InputMsgType.InputChars_Input_Doing) {
-                                Key key = msg.data().key;
-
-                                if (key.getText().equals(key_op.getText())) {
-                                    exercise.gotoNextStep();
-                                    return;
-                                }
-                            }
-
-                            showWarning("请按当前步骤的指导要求输入运算符 <span style=\"color:#ed4c67;\">%s</span>",
-                                        key_op.getText());
-                        });
-            }
+                        showWarning("请按当前步骤的指导要求输入%s <span style=\"color:#ed4c67;\">%s</span>",
+                                    mathKey instanceof MathOpKey ? "运算符" : "数字",
+                                    mathKey.getText());
+                    });
         }
 
         exercise.newStep("请点击输入提交按键%s将当前输入提交至目标编辑器，并观察输入的计算式中是否包含最终的运算结果；",
