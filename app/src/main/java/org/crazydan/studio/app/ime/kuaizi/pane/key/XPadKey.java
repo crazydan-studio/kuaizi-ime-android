@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04
  */
-public class XPadKey extends BaseKey {
+public class XPadKey extends Key {
     public final Key zone_0_key;
     public final Key[] zone_1_keys;
     public final Key[][][] zone_2_keys;

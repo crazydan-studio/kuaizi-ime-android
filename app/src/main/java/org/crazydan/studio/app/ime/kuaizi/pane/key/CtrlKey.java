@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CtrlKey extends BaseKey {
+public class CtrlKey extends Key {
     private final Type type;
 
     private Option<?> option;
@@ -82,11 +82,6 @@ public class CtrlKey extends BaseKey {
     @Override
     public boolean isSpace() {
         return is(this, CtrlKey.Type.Space);
-    }
-
-    @Override
-    public boolean isSymbol() {
-        return isSpace();
     }
 
     @Override

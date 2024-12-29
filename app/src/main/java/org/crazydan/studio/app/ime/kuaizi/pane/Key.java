@@ -17,79 +17,156 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
+import java.util.Objects;
+
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
- * {@link InputPane 键盘}按键
+ * {@link Keyboard} 上的按键
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public interface Key extends RecyclerViewData {
+public abstract class Key implements RecyclerViewData {
+    private String label;
+    private Level level = Level.level_0;
+    private Integer iconResId;
+
+    private boolean disabled;
+    private Color color = Color.none();
 
     /** 是否为空格 */
-    boolean isSpace();
+    public boolean isSpace() {
+        return false;
+    }
 
     /** 是否为英文或数字 */
-    boolean isLatin();
+    public boolean isLatin() {
+        return false;
+    }
 
     /** 是否为数字 */
-    boolean isNumber();
+    public boolean isNumber() {
+        return false;
+    }
 
     /** 是否为标点符号 */
-    boolean isSymbol();
+    public boolean isSymbol() {
+        return false;
+    }
 
     /** 是否为表情符号 */
-    boolean isEmoji();
+    public boolean isEmoji() {
+        return false;
+    }
 
     /** 是否为数学运算符 */
-    boolean isMathOp();
+    public boolean isMathOp() {
+        return false;
+    }
 
     /** 是否已禁用 */
-    boolean isDisabled();
+    public boolean isDisabled() {
+        return this.disabled;
+    }
 
     /** 设置为禁用 */
-    <K extends Key> K setDisabled(boolean disabled);
+    public <K extends Key> K setDisabled(boolean disabled) {
+        this.disabled = disabled;
+        return (K) this;
+    }
 
     /**
      * 获取按键对应的文本字符
      * <p/>
      * 若其不对应任何字符，则返回 <code>null</code>
      */
-    String getText();
+    public String getText() {
+        return null;
+    }
 
     /** 按键上显示的文字内容 */
-    String getLabel();
+    public String getLabel() {
+        return this.label;
+    }
 
     /** 设置按键上显示的文字内容 */
-    <K extends Key> K setLabel(String label);
+    public <K extends Key> K setLabel(String label) {
+        this.label = label;
+        return (K) this;
+    }
 
     /** 获取按键所处级别 */
-    Level getLevel();
+    public Level getLevel() {
+        return this.level;
+    }
 
     /** 设置按键所处级别 */
-    <K extends Key> K setLevel(Level level);
+    public <K extends Key> K setLevel(Level level) {
+        this.level = level;
+        return (K) this;
+    }
 
     /** 按键上显示的图标资源 id */
-    Integer getIconResId();
+    public Integer getIconResId() {
+        return this.iconResId;
+    }
 
     /** 设置按键上显示的图标资源 id */
-    <K extends Key> K setIconResId(Integer iconResId);
-
-    /** 获取 {@link #getLabel()} 尺寸资源 id */
-    Integer getLabelDimensionId();
-
-    /** 设置 {@link #getLabel()} 尺寸资源 id */
-    <K extends Key> K setLabelDimensionId(Integer labelDimensionId);
+    public <K extends Key> K setIconResId(Integer iconResId) {
+        this.iconResId = iconResId;
+        return (K) this;
+    }
 
     /** 获取按键配色 */
-    Color getColor();
+    public Color getColor() {
+        return this.color;
+    }
 
     /** 设置按键配色 */
-    <K extends Key> K setColor(Color color);
+    public <K extends Key> K setColor(Color color) {
+        this.color = color == null ? Color.none() : color;
+        return (K) this;
+    }
+
+    @Override
+    public String toString() {
+        return this.label + "(" + getText() + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Key that = (Key) o;
+        return Objects.equals(this.getIconResId(), that.getIconResId())
+               && Objects.equals(this.getLabel(),
+                                 that.getLabel())
+               && Objects.equals(this.getText(), that.getText())
+               && Objects.equals(this.getLevel(), that.getLevel())
+               && this.disabled == that.disabled
+               && Objects.equals(this.color.fg, that.color.fg)
+               && Objects.equals(this.color.bg, that.color.bg);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getIconResId(),
+                            this.getLabel(),
+                            this.getText(),
+                            this.getLevel(),
+                            this.disabled,
+                            this.color.fg,
+                            this.color.bg);
+    }
 
     /** 按键级别 */
-    enum Level {
+    public enum Level {
         /**
          * 第 0 级：初始布局的按键。
          * 一个拼音的首字母均处于该级别（ch、sh、zh 独立成为第 0 级），
@@ -116,7 +193,7 @@ public interface Key extends RecyclerViewData {
     }
 
     /** {@link Key} 配色 */
-    class Color {
+    public static class Color {
         /** 前景色资源 id */
         public final Integer fg;
         /** 背景色资源 id */

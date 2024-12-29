@@ -689,15 +689,7 @@ public class PinyinKeyTable extends KeyTable {
         String label = level0Char + text;
         Key.Color color = key_char_color;
 
-        int labelDimension = R.dimen.char_key_text_size_3d;
-        if (label.length() > 5) {
-            labelDimension = R.dimen.char_key_text_size_4d;
-        }
-
-        return alphabetKey(text).setLevel(Key.Level.level_2)
-                                .setLabel(label)
-                                .setColor(color)
-                                .setLabelDimensionId(labelDimension);
+        return alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
     }
 
     public InputWordKey inputWordKey(InputWord word, int level) {

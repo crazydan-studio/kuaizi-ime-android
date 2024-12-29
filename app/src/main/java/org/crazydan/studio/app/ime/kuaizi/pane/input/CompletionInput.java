@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInput extends BaseInput {
+public class CompletionInput extends Input {
     /** 补全开始的起始位置 */
     public final int startIndex;
     public final List<CharInput> inputs = new ArrayList<>();

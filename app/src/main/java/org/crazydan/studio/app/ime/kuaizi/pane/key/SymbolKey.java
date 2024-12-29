@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
  * {@link Symbol 标点符号}按键
@@ -28,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class SymbolKey extends BaseKey {
+public class SymbolKey extends Key {
     private final Symbol symbol;
 
     private SymbolKey(Symbol symbol) {

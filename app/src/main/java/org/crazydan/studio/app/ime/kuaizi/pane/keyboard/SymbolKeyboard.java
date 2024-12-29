@@ -208,7 +208,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
             leftInput.replaceLastKey(leftKey);
             rightInput.replaceLastKey(rightKey);
         } else {
-            // 对于输入修改，若为非空的待输入，则对其做配对符号包裹
+            // 对于输入修改，若为非空的待输入，也不是符号输入，则对其做配对符号包裹
             boolean wrapSelected = !selected.isGap() && !inputList.hasEmptyPending() && !selected.isSymbol();
             if (wrapSelected) {
                 // 选中被包裹输入的左侧 Gap

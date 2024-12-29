@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
  */
-public class CharInput extends BaseInput {
+public class CharInput extends Input {
     private CharInput pair;
 
     /** 输入补全 */

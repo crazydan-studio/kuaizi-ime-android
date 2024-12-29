@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
 
 /**
@@ -29,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-09
  */
-public class InputWordKey extends BaseKey {
+public class InputWordKey extends Key {
     private final InputWord word;
 
     private InputWordKey(InputWord word) {

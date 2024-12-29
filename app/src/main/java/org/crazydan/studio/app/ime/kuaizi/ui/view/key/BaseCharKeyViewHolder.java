@@ -48,8 +48,6 @@ public abstract class BaseCharKeyViewHolder<T extends BaseCharKey> extends KeyVi
             int textDimen;
             if (key.isSymbol()) {
                 textDimen = R.dimen.char_symbol_key_text_size;
-            } else if (key.getLabelDimensionId() != null) {
-                textDimen = key.getLabelDimensionId();
             } else {
                 switch (key.getLabel().length()) {
                     case 6:

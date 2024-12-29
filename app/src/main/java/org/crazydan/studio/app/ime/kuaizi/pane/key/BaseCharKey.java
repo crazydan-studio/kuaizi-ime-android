@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public abstract class BaseCharKey extends BaseKey {
+public abstract class BaseCharKey extends Key {
     private final String text;
 
     protected BaseCharKey(String text) {
