@@ -83,9 +83,9 @@ public abstract class Input implements RecyclerViewData {
         return test(Key::isSpace);
     }
 
-    /** 是否为英文、数字或二者的组合输入 */
+    /** 是否为英文字母、数字或二者的组合输入 */
     public boolean isLatin() {
-        return !isPinyin() && test(Key::isLatin);
+        return !isPinyin() && test((key) -> key.isNumber() || key.isAlphabet());
     }
 
     /** 是否为拼音输入 */

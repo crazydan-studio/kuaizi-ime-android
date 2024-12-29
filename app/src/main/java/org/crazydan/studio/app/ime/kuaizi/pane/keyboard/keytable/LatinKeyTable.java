@@ -119,7 +119,7 @@ public class LatinKeyTable extends KeyTable {
 
         for (Key[] value : keys) {
             for (Key key : value) {
-                if (key.isLatin() && !key.isNumber()) {
+                if (key.isAlphabet()) {
                     Key.Color color = key_char_color;
 
                     key.setColor(color);

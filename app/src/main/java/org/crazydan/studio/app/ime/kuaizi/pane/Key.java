@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewDat
  * @date 2023-07-01
  */
 public abstract class Key implements RecyclerViewData {
+    private final String text;
     private String label;
     private Level level = Level.level_0;
     private Integer iconResId;
@@ -35,13 +36,21 @@ public abstract class Key implements RecyclerViewData {
     private boolean disabled;
     private Color color = Color.none();
 
+    public Key() {
+        this(null);
+    }
+
+    protected Key(String text) {
+        this.text = text;
+    }
+
     /** 是否为空格 */
     public boolean isSpace() {
         return false;
     }
 
-    /** 是否为英文或数字 */
-    public boolean isLatin() {
+    /** 是否为英文字母 */
+    public boolean isAlphabet() {
         return false;
     }
 
@@ -82,7 +91,7 @@ public abstract class Key implements RecyclerViewData {
      * 若其不对应任何字符，则返回 <code>null</code>
      */
     public String getText() {
-        return null;
+        return this.text;
     }
 
     /** 按键上显示的文字内容 */

@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CharKey extends BaseCharKey {
+public class CharKey extends Key {
     private final Type type;
     private List<String> replacements;
 
@@ -49,7 +49,7 @@ public class CharKey extends BaseCharKey {
     }
 
     public static boolean isAlphabet(Key key) {
-        return key instanceof CharKey && ((CharKey) key).isAlphabet();
+        return key instanceof CharKey && key.isAlphabet();
     }
 
     public static List<Key> from(String text) {
@@ -162,6 +162,7 @@ public class CharKey extends BaseCharKey {
         return this.type == Type.Symbol;
     }
 
+    @Override
     public boolean isAlphabet() {
         return this.type == Type.Alphabet;
     }

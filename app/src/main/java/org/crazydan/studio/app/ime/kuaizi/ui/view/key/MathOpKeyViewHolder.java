@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public class MathOpKeyViewHolder extends BaseCharKeyViewHolder<MathOpKey> {
+public class MathOpKeyViewHolder extends CharKeyViewHolder {
 
     public MathOpKeyViewHolder(@NonNull View itemView) {
         super(itemView);

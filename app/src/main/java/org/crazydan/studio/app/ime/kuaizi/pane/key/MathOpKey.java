@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public class MathOpKey extends BaseCharKey {
+public class MathOpKey extends Key {
     private final Type type;
 
     private MathOpKey(Type type, String text) {
@@ -66,7 +66,7 @@ public class MathOpKey extends BaseCharKey {
     }
 
     @Override
-    public boolean isLatin() {
+    public boolean isAlphabet() {
         switch (this.type) {
             case brackets:
                 // 确保括号与数字和运算符之间都有空格

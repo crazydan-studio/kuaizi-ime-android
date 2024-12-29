@@ -357,7 +357,7 @@ public abstract class KeyTable {
 
     /** 占位按键，且不触发事件 */
     public CtrlKey noopCtrlKey(String label) {
-        return ctrlKey((CtrlKey) CtrlKey.noop().setLabel(label));
+        return ctrlKey(CtrlKey.noop().setLabel(label));
     }
 
     public CharKey alphabetKey(String text) {
