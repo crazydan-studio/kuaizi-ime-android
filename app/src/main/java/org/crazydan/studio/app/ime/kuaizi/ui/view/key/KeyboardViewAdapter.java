@@ -123,7 +123,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
 
     protected static int getKeyViewType(Key key) {
         if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).getType()) {
+            switch (((CtrlKey) key).type) {
                 case Toggle_Pinyin_spell:
                     return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
                 default:
@@ -183,7 +183,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
 
     private static void bindKeyView(KeyViewHolder<?> holder, Key key, HexagonOrientation orientation) {
         if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).getType()) {
+            switch (((CtrlKey) key).type) {
                 case Toggle_Pinyin_spell:
                     ((CtrlToggleInputSpellKeyViewHolder) holder).bind((CtrlKey) key, orientation);
                     break;

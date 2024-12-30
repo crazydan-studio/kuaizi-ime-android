@@ -60,7 +60,7 @@ public class InputWordKeyViewHolder extends KeyViewHolder<View> {
 
         String value = word != null ? word.getValue() : "";
         whenViewReady(this.wordView, (view) -> {
-            setTextColorByAttrId(view, key.getColor().fg);
+            setTextColorByAttrId(view, key.color.fg);
             view.setText(value);
         });
 
@@ -68,7 +68,7 @@ public class InputWordKeyViewHolder extends KeyViewHolder<View> {
         whenViewReady(this.spellView, (view) -> {
             boolean shown = !CharUtils.isBlank(spell);
             if (shown) {
-                setTextColorByAttrId(view, key.getColor().fg);
+                setTextColorByAttrId(view, key.color.fg);
                 view.setText(spell);
             }
             ViewUtils.visible(view, shown);

@@ -119,7 +119,7 @@ public class CharInput extends Input {
     /** 切换拼音输入的平翘舌 */
     public void toggle_Pinyin_SCZ_Starting() {
         CharKey key = (CharKey) getFirstKey();
-        String keyText = key.getText();
+        String keyText = key.value;
 
         if (keyText.startsWith("sh") || keyText.startsWith("ch") || keyText.startsWith("zh")) {
             keyText = keyText.charAt(0) + keyText.substring(2);
@@ -145,7 +145,7 @@ public class CharInput extends Input {
     /** 切换拼音输入的前/后鼻韵 */
     public void toggle_Pinyin_NG_Ending() {
         CharKey key = (CharKey) getLastKey();
-        String keyText = key.getText();
+        String keyText = key.value;
 
         if (keyText.endsWith("eng") || keyText.endsWith("ing") || keyText.endsWith("ang")) {
             keyText = keyText.substring(0, keyText.length() - 1);
@@ -170,19 +170,19 @@ public class CharInput extends Input {
     /** 切换拼音输入的 n/l */
     public void toggle_Pinyin_NL_Starting() {
         CharKey key = (CharKey) getFirstKey();
-        String keyText = key.getText();
+        String keyValue = key.value;
 
-        if (keyText.startsWith("n")) {
-            keyText = "l" + keyText.substring(1);
-        } else if (keyText.startsWith("l")) {
-            keyText = "n" + keyText.substring(1);
+        if (keyValue.startsWith("n")) {
+            keyValue = "l" + keyValue.substring(1);
+        } else if (keyValue.startsWith("l")) {
+            keyValue = "n" + keyValue.substring(1);
         }
 
-        replaceCharKeyText(key, 0, keyText);
+        replaceCharKeyText(key, 0, keyValue);
     }
 
-    protected void replaceCharKeyText(CharKey key, int keyIndex, String keyText) {
-        getKeys().remove(keyIndex);
-        getKeys().add(keyIndex, CharKey.create(key.getType(), keyText).setLabel(keyText));
+    protected void replaceCharKeyText(CharKey key, int keyIndex, String keyValue) {
+        key = CharKey.builder.from(key).value(keyValue).label(keyValue).build();
+        getKeys().set(keyIndex, key);
     }
 }

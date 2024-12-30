@@ -69,7 +69,6 @@ public class EditorKeyTable extends KeyTable {
     }
 
     public CtrlKey editCtrlKey(EditorAction action) {
-        CtrlKey.Type type = CtrlKey.Type.Edit_Editor;
         CtrlKey.Option<?> option = new CtrlKey.EditorEditOption(action);
 
         String label = null;
@@ -94,6 +93,6 @@ public class EditorKeyTable extends KeyTable {
                 break;
         }
 
-        return ctrlKey(type).setOption(option).setLabel(label);
+        return ctrlKeyBuilder(CtrlKey.Type.Edit_Editor).option(option).label(label).build();
     }
 }

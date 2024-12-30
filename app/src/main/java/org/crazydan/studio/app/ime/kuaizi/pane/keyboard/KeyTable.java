@@ -38,37 +38,29 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
  */
 public abstract class KeyTable {
     /** {@link CharKey} 按键的配色 */
-    protected static final Key.Color key_char_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_fg_color, R.attr.key_bg_color);
+    protected static final Key.Color key_char_color = Key.Color.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** 特殊的 {@link CharKey} 按键的配色 */
-    protected static final Key.Color key_char_special_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_highlight_fg_color,
-                                                                       R.attr.key_bg_color);
+    protected static final Key.Color key_char_special_color = Key.Color.create(R.attr.key_highlight_fg_color,
+                                                                               R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
-    protected static final Key.Color key_char_symbol_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_symbol_fg_color,
-                                                                       R.attr.key_char_symbol_bg_color);
+    protected static final Key.Color key_char_symbol_color = Key.Color.create(R.attr.key_char_symbol_fg_color,
+                                                                              R.attr.key_char_symbol_bg_color);
     /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
     protected static final Key.Color key_char_emoji_color = key_char_symbol_color;
     /** 字母按键调色板 */
     private static final Map<List<String>, Key.Color> char_key_color_palette = new HashMap<>();
     /** 控制按键样式：图标+背景色 */
     private static final Map<CtrlKey.Type, KeyStyle> ctrl_key_styles = new HashMap<>();
-    private static final Key.Color key_char_level_0_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_0_fg_color,
-                                                                       R.attr.key_char_level_0_bg_color);
-    private static final Key.Color key_char_level_1_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_1_fg_color,
-                                                                       R.attr.key_char_level_1_bg_color);
-    private static final Key.Color key_char_level_2_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_2_fg_color,
-                                                                       R.attr.key_char_level_2_bg_color);
-    private static final Key.Color key_char_level_3_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_3_fg_color,
-                                                                       R.attr.key_char_level_3_bg_color);
-    private static final Key.Color key_char_level_4_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_4_fg_color,
-                                                                       R.attr.key_char_level_4_bg_color);
+    private static final Key.Color key_char_level_0_color = Key.Color.create(R.attr.key_char_level_0_fg_color,
+                                                                             R.attr.key_char_level_0_bg_color);
+    private static final Key.Color key_char_level_1_color = Key.Color.create(R.attr.key_char_level_1_fg_color,
+                                                                             R.attr.key_char_level_1_bg_color);
+    private static final Key.Color key_char_level_2_color = Key.Color.create(R.attr.key_char_level_2_fg_color,
+                                                                             R.attr.key_char_level_2_bg_color);
+    private static final Key.Color key_char_level_3_color = Key.Color.create(R.attr.key_char_level_3_fg_color,
+                                                                             R.attr.key_char_level_3_bg_color);
+    private static final Key.Color key_char_level_4_color = Key.Color.create(R.attr.key_char_level_4_fg_color,
+                                                                             R.attr.key_char_level_4_bg_color);
     /** {@link InputWordKey 候选字}按键的配色 */
     protected static final Key.Color[] key_input_word_level_colors = new Key.Color[] {
             key_char_level_0_color,
@@ -77,9 +69,8 @@ public abstract class KeyTable {
             key_char_level_3_color,
             key_char_level_4_color,
             };
-    private static final Key.Color key_char_level_5_color
-            = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(R.attr.key_char_level_5_fg_color,
-                                                                       R.attr.key_char_level_5_bg_color);
+    private static final Key.Color key_char_level_5_color = Key.Color.create(R.attr.key_char_level_5_fg_color,
+                                                                             R.attr.key_char_level_5_bg_color);
     /** OK 按键的样式 */
     private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
                                                                         R.drawable.ic_left_hand_ok,
@@ -170,24 +161,6 @@ public abstract class KeyTable {
             size += row.length;
         }
         return size;
-    }
-
-    private static CharKey charKey(CharKey.Type type, String text) {
-        return charKey(CharKey.create(type, text).setLabel(text));
-    }
-
-    private static CharKey charKey(CharKey key) {
-        Key.Color color = null;
-
-        for (Map.Entry<List<String>, Key.Color> entry : char_key_color_palette.entrySet()) {
-            Key.Color keyColor = entry.getValue();
-            if (entry.getKey().contains(key.getText().toLowerCase())) {
-                color = keyColor;
-                break;
-            }
-        }
-
-        return key.setColor(color);
     }
 
     /** 创建{@link GridCoord 网格坐标} */
@@ -282,9 +255,9 @@ public abstract class KeyTable {
     }
 
     public CtrlKey enterCtrlKey() {
-        return this.config.keyboard.singleLineInput //
-               ? ctrlKey(CtrlKey.create(CtrlKey.Type.Enter), key_ctrl_ok_style) //
-               : ctrlKey(CtrlKey.Type.Enter);
+        KeyStyle style = this.config.keyboard.singleLineInput ? key_ctrl_ok_style : null;
+
+        return ctrlKeyBuilder(CtrlKey.Type.Enter, style).build();
     }
 
     /** 创建 键盘切换 控制按键 */
@@ -310,44 +283,7 @@ public abstract class KeyTable {
                 break;
         }
 
-        return ctrlKey(CtrlKey.Type.Switch_Keyboard, style).setOption(option);
-    }
-
-    public CtrlKey ctrlKey(CtrlKey.Type type) {
-        return ctrlKey(CtrlKey.create(type));
-    }
-
-    public CtrlKey ctrlKey(CtrlKey key) {
-        KeyStyle style = ctrl_key_styles.get(key.getType());
-
-        return ctrlKey(key, style);
-    }
-
-    private CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style) {
-        return ctrlKey(ctrlKey(type), style);
-    }
-
-    private CtrlKey ctrlKey(CtrlKey key, KeyStyle style) {
-        Integer icon = null;
-        Key.Color color = org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.none();
-
-        if (style != null) {
-            icon = style.icon.right;
-            if (this.config.keyboard.handMode == Keyboard.HandMode.left) {
-                icon = style.icon.left;
-            }
-
-            color = style.color;
-        }
-
-        switch (key.getType()) {
-            case NoOp:
-            case Editor_Cursor_Locator:
-            case Editor_Range_Selector:
-                break;
-        }
-
-        return key.setIconResId(icon).setColor(color);
+        return ctrlKeyBuilder(CtrlKey.Type.Switch_Keyboard, style).option(option).build();
     }
 
     /** 占位按键，且不触发事件 */
@@ -357,23 +293,86 @@ public abstract class KeyTable {
 
     /** 占位按键，且不触发事件 */
     public CtrlKey noopCtrlKey(String label) {
-        return ctrlKey(CtrlKey.noop().setLabel(label));
+        return ctrlKeyBuilder(CtrlKey.Type.NoOp).label(label).build();
     }
 
-    public CharKey alphabetKey(String text) {
-        return charKey(CharKey.Type.Alphabet, text);
+    public CtrlKey ctrlKey(CtrlKey.Type type) {
+        return ctrlKeyBuilder(type).build();
     }
 
-    public CharKey numberKey(String text) {
-        return charKey(CharKey.Type.Number, text);
+    public CharKey alphabetKey(String value, String... replacements) {
+        return alphabetKeyBuilder(value, replacements).build();
     }
 
-    public CharKey emojiKey(String text) {
-        return charKey(CharKey.Type.Emoji, text).setColor(key_char_emoji_color);
+    public CharKey.Builder alphabetKeyBuilder(String value, String... replacements) {
+        return charKeyBuilder(CharKey.Type.Alphabet, value).replacements(replacements);
     }
 
-    public CharKey symbolKey(String text) {
-        return charKey(CharKey.Type.Symbol, text).setColor(key_char_symbol_color);
+    public CharKey symbolKey(String value, String... replacements) {
+        return charKeyBuilder(CharKey.Type.Symbol, value).replacements(replacements).build();
+    }
+
+    public CharKey numberKey(String value) {
+        return charKeyBuilder(CharKey.Type.Number, value).build();
+    }
+
+    public CharKey emojiKey(String value) {
+        return charKeyBuilder(CharKey.Type.Emoji, value).build();
+    }
+
+    private static CharKey.Builder charKeyBuilder(CharKey.Type type, String value) {
+        Key.Color color = null;
+        switch (type) {
+            case Emoji: {
+                color = key_char_emoji_color;
+                break;
+            }
+            case Symbol: {
+                color = key_char_symbol_color;
+                break;
+            }
+            default: {
+                for (Map.Entry<List<String>, Key.Color> entry : char_key_color_palette.entrySet()) {
+                    Key.Color keyColor = entry.getValue();
+
+                    if (entry.getKey().contains(value)) {
+                        color = keyColor;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return CharKey.builder.type(type).value(value).label(value).color(color);
+    }
+
+    protected CtrlKey.Builder ctrlKeyBuilder(CtrlKey.Type type) {
+        return ctrlKeyBuilder(type, null);
+    }
+
+    private CtrlKey.Builder ctrlKeyBuilder(CtrlKey.Type type, KeyStyle style) {
+        Integer icon = null;
+        Key.Color color = null;
+
+        if (style == null) {
+            style = ctrl_key_styles.get(type);
+        }
+
+        if (style != null) {
+            color = style.color;
+            switch (this.config.keyboard.handMode) {
+                case left: {
+                    icon = style.icon.left;
+                    break;
+                }
+                case right: {
+                    icon = style.icon.right;
+                    break;
+                }
+            }
+        }
+
+        return CtrlKey.builder.type(type).icon(icon).color(color);
     }
 
     protected Key[][] createKeysForXPad() {
@@ -435,16 +434,16 @@ public abstract class KeyTable {
      */
     protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key[][][] zone_2_keys) {
         Key[] zone_1_keys = new Key[] {
-                switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin),
-                switcherCtrlKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin),
-                switcherCtrlKey(Keyboard.Type.Number).setIconResId(R.drawable.ic_number),
+                switcherCtrlKey(Keyboard.Type.Latin).setIcon(R.drawable.ic_latin),
+                switcherCtrlKey(Keyboard.Type.Pinyin).setIcon(R.drawable.ic_pinyin),
+                switcherCtrlKey(Keyboard.Type.Number).setIcon(R.drawable.ic_number),
                 null,
                 null,
-                switcherCtrlKey(Keyboard.Type.Math).setIconResId(R.drawable.ic_math),
+                switcherCtrlKey(Keyboard.Type.Math).setIcon(R.drawable.ic_math),
                 };
         for (Key key : zone_1_keys) {
             if (key != null //
-                && ((CtrlKey.KeyboardSwitchOption) ((CtrlKey) key).getOption()).value() == activeKeyboard) {
+                && ((CtrlKey.KeyboardSwitchOption) ((CtrlKey) key).option).value() == activeKeyboard) {
                 key.setDisabled(true);
             }
         }
@@ -467,7 +466,7 @@ public abstract class KeyTable {
         }
 
         public static KeyStyle withColor(int fg, int bg) {
-            return withColor(org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(fg, bg));
+            return withColor(Key.Color.create(fg, bg));
         }
 
         public static KeyStyle withColor(Key.Color color) {
@@ -475,12 +474,11 @@ public abstract class KeyTable {
         }
 
         public static KeyStyle withIcon(int right, int left, int bg) {
-            return new KeyStyle(new KeyIcon(right, left),
-                                org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(null, bg));
+            return new KeyStyle(new KeyIcon(right, left), Key.Color.create(null, bg));
         }
 
         public static KeyStyle withIcon(int resId, int bg) {
-            return new KeyStyle(new KeyIcon(resId), org.crazydan.studio.app.ime.kuaizi.pane.Key.Color.create(null, bg));
+            return new KeyStyle(new KeyIcon(resId), Key.Color.create(null, bg));
         }
     }
 

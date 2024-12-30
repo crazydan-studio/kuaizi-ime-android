@@ -26,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -45,13 +46,13 @@ public class CharKeyViewHolder extends KeyViewHolder<TextView> {
         super.bind(key, orientation);
 
         whenViewReady(this.fgView, (view) -> {
-            setTextColorByAttrId(view, key.getColor().fg);
+            setTextColorByAttrId(view, key.color.fg);
 
             int textDimen;
-            if (key.isSymbol()) {
+            if (CharKey.Type.Symbol.match(key) || MathOpKey.Type.isSymbol(key)) {
                 textDimen = R.dimen.char_symbol_key_text_size;
             } else {
-                switch (key.getLabel().length()) {
+                switch (key.label.length()) {
                     case 6:
                         textDimen = R.dimen.char_key_text_size_4d;
                         break;
@@ -73,7 +74,7 @@ public class CharKeyViewHolder extends KeyViewHolder<TextView> {
             float textSize = ScreenUtils.pxFromDimension(getContext(), textDimen);
             view.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
-            String label = key.getLabel();
+            String label = key.label;
             view.setText(label);
         });
     }

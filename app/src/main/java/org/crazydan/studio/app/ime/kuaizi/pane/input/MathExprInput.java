@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 
 /**
@@ -271,7 +272,7 @@ public class MathExprInput extends CharInput {
     public void dropLastKey() {}
 
     @Override
-    public void replaceKeyAfterLevel(Key.Level level, Key newKey) {}
+    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {}
 
     @Override
     public void replaceLatestKey(Key oldKey, Key newKey) {}
@@ -343,9 +344,9 @@ public class MathExprInput extends CharInput {
                 Key postKey = i < keyCount - 1 ? keys.get(i + 1) : null;
 
                 // 第一个按键必须是 小数点 或 数字
-                boolean isDotKey = MathOpKey.isType(key, MathOpKey.Type.Dot);
+                boolean isDotKey = MathOpKey.Type.Dot.match(key);
                 if (prevKey == null //
-                    && !(isDotKey || key.isNumber())) {
+                    && !(isDotKey || CharKey.Type.Number.match(key))) {
                     return null;
                 }
 
@@ -356,15 +357,15 @@ public class MathExprInput extends CharInput {
 
                     hasDot = true;
                     // 小数点 的后继必须为数字，否则，无需添加 小数点
-                    if (postKey != null && postKey.isNumber()) {
+                    if (CharKey.Type.Number.match(postKey)) {
                         if (prevKey == null) {
                             sb.append("0");
                         }
 
                         sb.append(".");
                     }
-                } else if (key.isNumber()) {
-                    sb.append(key.getText());
+                } else if (CharKey.Type.Number.match(key)) {
+                    sb.append(key.value);
                 } else {
                     return null;
                 }

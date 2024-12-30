@@ -409,7 +409,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         Key key_level_0 = keyTable.level0CharKey("k");
         Key key_level_1 = keyTable.level1CharKey("u");
-        Key key_level_2 = keyTable.level2CharKey(key_level_0.getText(), "uai");
+        Key key_level_2 = keyTable.level2CharKey(key_level_0.value, "uai");
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>；",
@@ -632,7 +632,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             if (msg.type == InputMsgType.InputChars_Input_Done) {
                                 Key key = msg.data().key;
 
-                                if (key.getText().equals(key_ctrl_space.getText())) {
+                                if (key.value.equals(key_ctrl_space.value)) {
                                     exercise.gotoNextStep();
                                     return;
                                 }
@@ -663,18 +663,18 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 InputCharsInputMsgData data = msg.data();
                                 Key key = data.key;
                                 boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
-                                                  && key.getText().equals(String.valueOf(ch));
+                                                  && key.value.equals(String.valueOf(ch));
 
                                 if (matched) {
                                     exercise.gotoNextStep();
                                 }
                                 // 若点击的不是预期按键，则显示提示信息
-                                else if (!key.getText().equalsIgnoreCase(key_char.getText())) {
+                                else if (!key.value.equalsIgnoreCase(key_char.value)) {
                                     showWarning(useUpperCase
                                                 ? "请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
                                                   + "按键 <span style=\"color:#ed4c67;\">%s</span>"
                                                 : "请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
-                                                key_char.getText());
+                                                key_char.value);
                                 }
                                 return;
                             }
@@ -701,16 +701,15 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             InputCharsInputMsgData data = msg.data();
                             Key key = data.key;
                             boolean matched = data.inputMode == InputCharsInputMsgData.InputMode.tap //
-                                              && key.getText().equals(tanhao);
+                                              && key.value.equals(tanhao);
 
                             if (matched) {
                                 exercise.gotoNextStep();
                             }
                             // 若点击的不是预期按键，则显示提示信息
-                            else if (!key.getText().equals(key_symbol_tanhao.getText())) {
+                            else if (!key.value.equals(key_symbol_tanhao.value)) {
                                 showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
-                                            + "按键 <span style=\"color:#ed4c67;\">%s</span>",
-                                            key_symbol_tanhao.getText());
+                                            + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.value);
                             }
                             return;
                         }
@@ -764,12 +763,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             exercise.newStep("请点击按键%s以输入%s <span style=\"color:#ed4c67;\">%s</span>；",
                              mathKey instanceof MathOpKey ? "运算符" : "数字",
                              mathKey,
-                             mathKey.getText()) //
+                             mathKey.value) //
                     .action((msg) -> {
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {
                             Key key = msg.data().key;
 
-                            if (key.getText().equals(mathKey.getText())) {
+                            if (key.value.equals(mathKey.value)) {
                                 exercise.gotoNextStep();
                                 return;
                             }
@@ -777,7 +776,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
                         showWarning("请按当前步骤的指导要求输入%s <span style=\"color:#ed4c67;\">%s</span>",
                                     mathKey instanceof MathOpKey ? "运算符" : "数字",
-                                    mathKey.getText());
+                                    mathKey.value);
                     });
         }
 
@@ -801,8 +800,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIconResId(R.drawable.ic_latin);
-        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin).setIconResId(R.drawable.ic_pinyin);
+        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIcon(R.drawable.ic_latin);
+        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin).setIcon(R.drawable.ic_pinyin);
         Key key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
         Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
 
@@ -835,8 +834,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 
-        String sample = Arrays.stream(latinSample).map(Key::getText).collect(Collectors.joining("")) //
-                        + key_ctrl_space.getText() //
+        String sample = Arrays.stream(latinSample).map((key) -> key.value).collect(Collectors.joining("")) //
+                        + key_ctrl_space.value //
                         + pinyinWordsSample.keySet().stream().map(InputWord::getValue).collect(Collectors.joining(""));
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s</span>；", sample);
@@ -850,7 +849,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         InputListCommitMsgData data = msg.data();
-                        if (key_ctrl_enter.getText().contentEquals(data.text)) {
+                        if (key_ctrl_enter.value.contentEquals(data.text)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -863,10 +862,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             boolean isFirstStep = i == 0;
 
             Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
-            String simulatorStepName = String.format(Locale.getDefault(),
-                                                     "latin-char-input-step:%d:%s",
-                                                     i,
-                                                     key.getText());
+            String simulatorStepName = String.format(Locale.getDefault(), "latin-char-input-step:%d:%s", i, key.value);
             Runnable restart = () -> {
                 showWarning("当前输入的字符与练习内容不符，请按演示动画重新输入");
 
@@ -874,7 +870,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 exercise.gotoStep(simulatorStepName);
             };
 
-            exercise.newStep("请注意观看 <span style=\"color:#ed4c67;\">%s</span> 的输入演示动画；", key.getLabel()) //
+            exercise.newStep("请注意观看 <span style=\"color:#ed4c67;\">%s</span> 的输入演示动画；", key.label) //
                     .name(simulatorStepName) //
                     .action(new ExerciseStep.AutoAction() {
                         @Override
@@ -900,17 +896,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
                                                    + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
                                                    key_ctrl_switch_latin,
-                                                   key.getLabel())
+                                                   key.label)
                                 : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入"
                                                    + " <span style=\"color:#ed4c67;\">%s</span>。"
                                                    + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
-                                                   key.getLabel());
+                                                   key.label);
             step.action((msg) -> {
                 switch (msg.type) {
                     // Note：拉丁文输入为直输
                     case InputList_Commit_Doing: {
                         InputListCommitMsgData data = msg.data();
-                        if (key.getText().contentEquals(data.text)) {
+                        if (key.value.contentEquals(data.text)) {
                             exercise.gotoNextStep();
                         } else {
                             restart.run();
@@ -919,7 +915,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     }
                     case Keyboard_State_Change_Done: {
                         // 忽略正常切换的情况
-                        if (CtrlKey.isNoOp(msg.data().key)) {
+                        if (CtrlKey.Type.NoOp.match(msg.data().key)) {
                             restart.run();
                             return;
                         }
@@ -932,7 +928,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     }
                 }
 
-                showWarning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.getLabel());
+                showWarning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.label);
             });
         }
 
@@ -942,7 +938,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         InputListCommitMsgData data = msg.data();
-                        if (key_ctrl_space.getText().contentEquals(data.text)) {
+                        if (key_ctrl_space.value.contentEquals(data.text)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -980,7 +976,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 exercise.newStep("请注意观看%s的输入演示动画；",
                                  key instanceof CtrlKey
                                  ? key
-                                 : " <span style=\"color:#ed4c67;\">" + key.getLabel() + "</span> ") //
+                                 : " <span style=\"color:#ed4c67;\">" + key.label + "</span> ") //
                         .name(simulatorStepName) //
                         .action(new ExerciseStep.AutoAction() {
                             @Override
@@ -1006,19 +1002,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                     ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
                                                        + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
                                                        key_ctrl_switch_pinyin,
-                                                       key.getLabel())
+                                                       key.label)
                                     : exercise.newStep("请继续沿演示动画所绘制的新的运动轨迹滑行，以输入%s。"
                                                        + "完成后，请<span style=\"color:#ed4c67;\">保持手指不动</span>；",
                                                        key instanceof CtrlKey
                                                        ? key
-                                                       : " <span style=\"color:#ed4c67;\">"
-                                                         + key.getLabel()
-                                                         + "</span> ");
+                                                       : " <span style=\"color:#ed4c67;\">" + key.label + "</span> ");
                 step.action((msg) -> {
                     Key msgKey = msg.data().key;
                     switch (msg.type) {
                         case InputChars_Input_Doing: {
-                            if (key.getText().equals(msgKey.getText())) {
+                            if (key.value.equals(msgKey.value)) {
                                 exercise.gotoNextStep();
                             } else {
                                 restart.run();
@@ -1026,7 +1020,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             return;
                         }
                         case InputChars_Input_Done: {
-                            if (lastKey.getText().equals(msgKey.getText())) {
+                            if (lastKey.value.equals(msgKey.value)) {
                                 changePinyinWord(word);
                             } else {
                                 restart.run();
@@ -1036,10 +1030,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         case Keyboard_State_Change_Done: {
                             // InputChars_Input_Done 触发后，键盘布局还未发生变化，
                             // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
-                            if (lastKey.getText().equals(msgKey.getText())) {
+                            if (lastKey.value.equals(msgKey.value)) {
                                 exercise.gotoNextStep();
                                 return;
-                            } else if (CtrlKey.isNoOp(msgKey)) {
+                            } else if (CtrlKey.Type.NoOp.match(msgKey)) {
                                 restart.run();
                                 return;
                             }
@@ -1053,7 +1047,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         }
                     }
 
-                    showWarning("请按演示动画输入 <span style=\"color:#ed4c67;\">%s</span>", key.getLabel());
+                    showWarning("请按演示动画输入 <span style=\"color:#ed4c67;\">%s</span>", key.label);
                 });
             }
         }
@@ -1096,13 +1090,13 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
                                 showWarning("请按当前步骤的指导要求从按键"
                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要做点击或翻页等动作", key_level_0.getLabel());
-                            } else if (key.getLabel().equals(key_level_0.getLabel())) {
+                                            + " 上滑出，不要做点击或翻页等动作", key_level_0.label);
+                            } else if (key.label.equals(key_level_0.label)) {
                                 exercise.gotoNextStep();
                             } else {
                                 showWarning("请按当前步骤的指导要求从按键"
                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要从其他按键上滑出", key_level_0.getLabel());
+                                            + " 上滑出，不要从其他按键上滑出", key_level_0.label);
                             }
                             return;
                         }
@@ -1119,10 +1113,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             case InputChars_Input_Doing: {
                                 Key key = msg.data().key;
 
-                                if (!key.getLabel().equals(key_level_1.getLabel())) {
+                                if (!key.label.equals(key_level_1.label)) {
                                     showWarning("请重新滑回到按键"
                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                + " 上，再就地释放手指", key_level_1.getLabel());
+                                                + " 上，再就地释放手指", key_level_1.label);
                                 }
                                 return;
                             }
@@ -1130,7 +1124,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 InputCharsInputMsgData data = msg.data();
                                 Key key = data.input.getLastKey();
 
-                                if (key.getLabel().equals(key_level_1.getLabel())) {
+                                if (key.label.equals(key_level_1.label)) {
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {
@@ -1148,12 +1142,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {
                             Key key = msg.data().key;
 
-                            if (key.getLabel().equals(key_level_1.getLabel())) {
+                            if (key.label.equals(key_level_1.label)) {
                                 exercise.gotoNextStep();
                             } else {
                                 showWarning("请按当前步骤的指导要求从按键"
                                             + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要从其他按键上滑出", key_level_1.getLabel());
+                                            + " 上滑出，不要从其他按键上滑出", key_level_1.label);
                             }
                         } else {
                             showWarning("当前操作不符合输入要求，请重新开始本练习");
@@ -1167,10 +1161,10 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             case InputChars_Input_Doing: {
                                 Key key = msg.data().key;
 
-                                if (!key.getLabel().startsWith(key_level_0.getLabel() + key_level_1.getLabel())) {
+                                if (!key.label.startsWith(key_level_0.label + key_level_1.label)) {
                                     showWarning("请重新滑回到按键"
                                                 + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                + " 上，再从其上滑出", key_level_1.getLabel());
+                                                + " 上，再从其上滑出", key_level_1.label);
                                     exercise.gotoStep("input_level_1");
                                 }
                                 return;
@@ -1179,7 +1173,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                 InputCharsInputMsgData data = msg.data();
                                 Key key = data.input.getLastKey();
 
-                                if (key.getLabel().equals(key_level_2.getLabel())) {
+                                if (key.label.equals(key_level_2.label)) {
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {

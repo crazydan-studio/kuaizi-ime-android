@@ -28,6 +28,11 @@ import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 
 /**
  * 输入对象
@@ -80,12 +85,16 @@ public abstract class Input implements RecyclerViewData {
 
     /** 是否为空格输入 */
     public boolean isSpace() {
-        return test(Key::isSpace);
+        return test(CtrlKey.Type.Space::match);
     }
 
     /** 是否为英文字母、数字或二者的组合输入 */
     public boolean isLatin() {
-        return !isPinyin() && test((key) -> key.isNumber() || key.isAlphabet());
+        return !isPinyin() && test((key) -> CharKey.Type.Number.match(key) //
+                                            || CharKey.Type.Alphabet.match(key) //
+                                            // 确保括号与数字和运算符之间都有空格
+                                            || MathOpKey.Type.Brackets.match(key) //
+                                            || MathOpKey.Type.Dot.match(key));
     }
 
     /** 是否为拼音输入 */
@@ -95,17 +104,26 @@ public abstract class Input implements RecyclerViewData {
 
     /** 是否为标点符号 */
     public boolean isSymbol() {
-        return test(Key::isSymbol) || isSpace();
+        return test((key) -> CharKey.Type.Symbol.match(key) //
+                             || key instanceof SymbolKey //
+                             || MathOpKey.Type.isSymbol(key)) //
+               || isSpace();
     }
 
     /** 是否为表情符号 */
     public boolean isEmoji() {
-        return getWord() instanceof EmojiWord || test(Key::isEmoji);
+        return getWord() instanceof EmojiWord //
+               || test((key) -> CharKey.Type.Emoji.match(key) //
+                                || InputWordKey.isEmoji(key));
     }
 
     /** 是否为数学运算符 */
     public boolean isMathOp() {
-        return test(Key::isMathOp);
+        // 确保数学运算符前后都有空格
+        return test((key) -> key instanceof MathOpKey //
+                             && !(MathOpKey.Type.Percent.match(key)
+                                  || MathOpKey.Type.Permill.match(key)
+                                  || MathOpKey.Type.Permyriad.match(key)));
     }
 
     /** 是否为数学计算式 */
@@ -165,12 +183,13 @@ public abstract class Input implements RecyclerViewData {
     }
 
     /**
-     * 替换指定{@link Key.Level 按键级别}之后的按键
+     * 替换指定{@link CharKey.Level 按键级别}之后的按键
      * <p/>
      * 先删除指定级别之后的按键，再追加新按键
      */
-    public void replaceKeyAfterLevel(Key.Level level, Key newKey) {
+    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {
         boolean removing = false;
+
         Iterator<Key> it = this.keys.iterator();
         while (it.hasNext()) {
             Key oldKey = it.next();
@@ -178,8 +197,11 @@ public abstract class Input implements RecyclerViewData {
             if (removing) {
                 it.remove();
             }
-            // 移除指定级别之后的按键
-            removing = removing || (level == oldKey.getLevel());
+            // 移除指定级别之后的按键：连续移除匹配之后的按键
+            else {
+                removing = oldKey instanceof CharKey //
+                           && level == ((CharKey) oldKey).level;
+            }
         }
 
         // 追加按键
@@ -210,7 +232,7 @@ public abstract class Input implements RecyclerViewData {
 
     /** 获取输入字符列表 */
     public List<String> getChars() {
-        return this.keys.stream().map(Key::getText).filter(Objects::nonNull).collect(Collectors.toList());
+        return this.keys.stream().map((key) -> key.value).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /** 获取合并后的输入字符的字符串 */

@@ -153,7 +153,7 @@ public class MathKeyboard extends BaseKeyboard {
         CtrlKey key = context.key();
         InputList parentInputList = getParentInputList(context);
 
-        switch (key.getType()) {
+        switch (key.type) {
             case Backspace: {
                 play_SingleTick_InputAudio(context);
                 show_InputChars_Input_Popup(context);

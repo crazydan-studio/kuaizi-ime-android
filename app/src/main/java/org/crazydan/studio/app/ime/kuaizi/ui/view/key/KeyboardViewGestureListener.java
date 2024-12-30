@@ -139,6 +139,6 @@ public class KeyboardViewGestureListener extends UserKeyMsgListenerTrigger imple
     private boolean isAvailableKeyViewHolder(KeyViewHolder<?> holder) {
         Key key = getKey(holder);
 
-        return key != null && !CtrlKey.isNoOp(key) && !key.isDisabled();
+        return key != null && !CtrlKey.Type.NoOp.match(key) && !Key.disabled(key);
     }
 }

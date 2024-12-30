@@ -57,7 +57,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
         CtrlKey key = context.key();
 
         // 在当前键盘内单独处理光标移动按键
-        if (CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
+        if (CtrlKey.Type.Editor_Cursor_Locator.match(key)) {
             return false;
         }
         return super.try_On_Common_CtrlKey_Msg(context, msg);
@@ -69,10 +69,10 @@ public class EditorKeyboard extends DirectInputKeyboard {
 
         switch (msg.type) {
             case SingleTap_Key: {
-                if (CtrlKey.is(key, CtrlKey.Type.Edit_Editor)) {
+                if (CtrlKey.Type.Edit_Editor.match(key)) {
                     play_SingleTick_InputAudio(context);
 
-                    CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.getOption();
+                    CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.option;
                     do_Editor_Editing(context, option.value());
                 }
                 break;
@@ -80,7 +80,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
             case FingerFlipping: {
                 UserFingerFlippingMsgData data = msg.data();
                 Motion motion = data.motion;
-                switch (key.getType()) {
+                switch (key.type) {
                     case Editor_Cursor_Locator:
                         play_SingleTick_InputAudio(context);
 

@@ -46,18 +46,18 @@ public class CtrlKeyViewHolder extends KeyViewHolder<ImageView> {
         super.bind(key, orientation);
 
         whenViewReady(this.fgView, (view) -> {
-            boolean shown = key.getIconResId() != null;
+            boolean shown = key.icon != null;
             if (shown) {
-                view.setImageResource(key.getIconResId());
+                view.setImageResource(key.icon);
             }
             ViewUtils.visible(view, shown);
         });
 
         whenViewReady(this.fgTextView, (view) -> {
-            boolean shown = key.getIconResId() == null && key.getLabel() != null;
+            boolean shown = key.icon == null && key.label != null;
             if (shown) {
-                setTextColorByAttrId(view, key.getColor().fg);
-                view.setText(key.getLabel());
+                setTextColorByAttrId(view, key.color.fg);
+                view.setText(key.label);
             }
             ViewUtils.visible(view, shown);
         });

@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
@@ -59,67 +60,67 @@ public class LatinKeyTable extends KeyTable {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
                         numberKey("5"),
                         numberKey("0"),
-                        alphabetKey("q").withReplacements("Q"),
-                        alphabetKey("d").withReplacements("D"),
-                        alphabetKey("e").withReplacements("E"),
-                        alphabetKey("b").withReplacements("B"),
-                        alphabetKey("a").withReplacements("A"),
+                        alphabetKey("q", "Q"),
+                        alphabetKey("d", "D"),
+                        alphabetKey("e", "E"),
+                        alphabetKey("b", "B"),
+                        alphabetKey("a", "A"),
                         } //
                 , new Key[] {
                 numberKey("6"),
                 numberKey("1"),
-                alphabetKey("j").withReplacements("J"),
-                alphabetKey("m").withReplacements("M"),
-                alphabetKey("u").withReplacements("U"),
-                alphabetKey("g").withReplacements("G"),
-                alphabetKey("f").withReplacements("F"),
+                alphabetKey("j", "J"),
+                alphabetKey("m", "M"),
+                alphabetKey("u", "U"),
+                alphabetKey("g", "G"),
+                alphabetKey("f", "F"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Pinyin),
                 numberKey("7"),
                 numberKey("2"),
-                alphabetKey("o").withReplacements("O"),
-                alphabetKey("n").withReplacements("N"),
-                alphabetKey("h").withReplacements("H"),
-                alphabetKey("l").withReplacements("L"),
-                alphabetKey("i").withReplacements("I"),
+                alphabetKey("o", "O"),
+                alphabetKey("n", "N"),
+                alphabetKey("h", "H"),
+                alphabetKey("l", "L"),
+                alphabetKey("i", "I"),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Emoji),
                 numberKey("8"),
                 numberKey("3"),
-                alphabetKey("c").withReplacements("C"),
+                alphabetKey("c", "C"),
                 ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
-                alphabetKey("w").withReplacements("W"),
-                alphabetKey("p").withReplacements("P"),
+                alphabetKey("w", "W"),
+                alphabetKey("p", "P"),
                 this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Symbol),
                 numberKey("9"),
                 numberKey("4"),
-                alphabetKey("v").withReplacements("V"),
-                alphabetKey("r").withReplacements("R"),
-                alphabetKey("x").withReplacements("X"),
-                alphabetKey("t").withReplacements("T"),
-                alphabetKey("s").withReplacements("S"),
+                alphabetKey("v", "V"),
+                alphabetKey("r", "R"),
+                alphabetKey("x", "X"),
+                alphabetKey("t", "T"),
+                alphabetKey("s", "S"),
                 } //
                 , new Key[] {
                 symbolKey("#"),
                 symbolKey("@"),
                 symbolKey(","),
                 symbolKey("."),
-                alphabetKey("z").withReplacements("Z"),
-                alphabetKey("k").withReplacements("K"),
-                alphabetKey("y").withReplacements("Y"),
+                alphabetKey("z", "Z"),
+                alphabetKey("k", "K"),
+                alphabetKey("y", "Y"),
                 ctrlKey(CtrlKey.Type.Space),
                 },
                 };
 
         for (Key[] value : keys) {
             for (Key key : value) {
-                if (key.isAlphabet()) {
+                if (CharKey.Type.Alphabet.match(key)) {
                     Key.Color color = key_char_color;
 
                     key.setColor(color);
@@ -135,9 +136,7 @@ public class LatinKeyTable extends KeyTable {
             return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("g").withReplacements("G"),
-                                    alphabetKey("f").withReplacements("F"),
-                                    alphabetKey("p").withReplacements("P"),
+                                    alphabetKey("g", "G"), alphabetKey("f", "F"), alphabetKey("p", "P"),
                                     }, //
                             new Key[] {
                                     symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
@@ -145,62 +144,44 @@ public class LatinKeyTable extends KeyTable {
                             }, //
                     new Key[][] {
                             new Key[] {
-                                    symbolKey(",").withReplacements(";"), //
-                                    symbolKey("?").withReplacements(":"), //
-                                    symbolKey("!").withReplacements("*"),
+                                    symbolKey(",", ";"), //
+                                    symbolKey("?", ":"), //
+                                    symbolKey("!", "*"),
                                     }, //
                             new Key[] {
-                                    alphabetKey("d").withReplacements("D"),
-                                    alphabetKey("b").withReplacements("B"),
-                                    alphabetKey("t").withReplacements("T"),
+                                    alphabetKey("d", "D"), alphabetKey("b", "B"), alphabetKey("t", "T"),
                                     }, //
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("y").withReplacements("Y"),
-                                    alphabetKey("h").withReplacements("H"),
-                                    alphabetKey("r").withReplacements("R"),
+                                    alphabetKey("y", "Y"), alphabetKey("h", "H"), alphabetKey("r", "R"),
                                     }, //
                             new Key[] {
-                                    alphabetKey("l").withReplacements("L"),
-                                    alphabetKey("m").withReplacements("M"),
-                                    alphabetKey("n").withReplacements("N"),
+                                    alphabetKey("l", "L"), alphabetKey("m", "M"), alphabetKey("n", "N"),
                                     }, //
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("z").withReplacements("Z"),
-                                    alphabetKey("s").withReplacements("S"),
-                                    alphabetKey("c").withReplacements("C"),
+                                    alphabetKey("z", "Z"), alphabetKey("s", "S"), alphabetKey("c", "C"),
                                     }, //
                             new Key[] {
-                                    symbolKey("@").withReplacements("&"),
-                                    symbolKey("-").withReplacements("_"),
-                                    symbolKey("/").withReplacements("\\"),
+                                    symbolKey("@", "&"), symbolKey("-", "_"), symbolKey("/", "\\"),
                                     }, //
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("e").withReplacements("E"),
-                                    alphabetKey("a").withReplacements("A"),
-                                    alphabetKey("o").withReplacements("O"),
+                                    alphabetKey("e", "E"), alphabetKey("a", "A"), alphabetKey("o", "O"),
                                     }, //
                             new Key[] {
-                                    alphabetKey("i").withReplacements("I"),
-                                    alphabetKey("u").withReplacements("U"),
-                                    alphabetKey("v").withReplacements("V"),
+                                    alphabetKey("i", "I"), alphabetKey("u", "U"), alphabetKey("v", "V"),
                                     }, //
                     }, //
                     new Key[][] {
                             new Key[] {
-                                    alphabetKey("j").withReplacements("J"),
-                                    alphabetKey("w").withReplacements("W"),
-                                    symbolKey("#").withReplacements("+"),
+                                    alphabetKey("j", "J"), alphabetKey("w", "W"), symbolKey("#", "+"),
                                     }, //
                             new Key[] {
-                                    alphabetKey("x").withReplacements("X"),
-                                    alphabetKey("q").withReplacements("Q"),
-                                    alphabetKey("k").withReplacements("K"),
+                                    alphabetKey("x", "X"), alphabetKey("q", "Q"), alphabetKey("k", "K"),
                                     }, //
                     }, //
             });
@@ -210,9 +191,9 @@ public class LatinKeyTable extends KeyTable {
                 // - 排序: echo "" | sort -n -r -k 2
                 new Key[][] {
                         new Key[] {
-                                symbolKey("@").withReplacements("&"), //
-                                symbolKey("-").withReplacements("_"), //
-                                symbolKey("#").withReplacements("+"), //
+                                symbolKey("@", "&"), //
+                                symbolKey("-", "_"), //
+                                symbolKey("#", "+"), //
                         }, //
                         new Key[] {
                                 symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
@@ -220,62 +201,46 @@ public class LatinKeyTable extends KeyTable {
                 },
                 new Key[][] {
                         new Key[] {
-                                symbolKey(",").withReplacements(";"), //
-                                symbolKey("?").withReplacements(":"), //
-                                symbolKey("!").withReplacements("*"),
+                                symbolKey(",", ";"), //
+                                symbolKey("?", ":"), //
+                                symbolKey("!", "*"),
                                 }, //
                         new Key[] {
-                                alphabetKey("t").withReplacements("T"),
-                                alphabetKey("f").withReplacements("F"),
-                                alphabetKey("y").withReplacements("Y"),
+                                alphabetKey("t", "T"), alphabetKey("f", "F"), alphabetKey("y", "Y"),
                                 }, //
                 },
                 new Key[][] {
                         new Key[] {
-                                alphabetKey("m").withReplacements("M"),
-                                alphabetKey("r").withReplacements("R"),
-                                alphabetKey("z").withReplacements("Z"),
+                                alphabetKey("m", "M"), alphabetKey("r", "R"), alphabetKey("z", "Z"),
                                 }, //
                         new Key[] {
-                                alphabetKey("a").withReplacements("A"),
-                                alphabetKey("c").withReplacements("C"),
-                                alphabetKey("u").withReplacements("U"),
+                                alphabetKey("a", "A"), alphabetKey("c", "C"), alphabetKey("u", "U"),
                                 }, //
                 },
                 new Key[][] {
                         new Key[] {
-                                alphabetKey("b").withReplacements("B"),
-                                alphabetKey("g").withReplacements("G"),
-                                alphabetKey("x").withReplacements("X"),
+                                alphabetKey("b", "B"), alphabetKey("g", "G"), alphabetKey("x", "X"),
                                 },//
                         new Key[] {
-                                alphabetKey("s").withReplacements("S"),
-                                alphabetKey("l").withReplacements("L"),
-                                alphabetKey("v").withReplacements("V"),
+                                alphabetKey("s", "S"), alphabetKey("l", "L"), alphabetKey("v", "V"),
                                 }, //
                 },
                 new Key[][] {
                         new Key[] {
-                                alphabetKey("o").withReplacements("O"),
-                                alphabetKey("e").withReplacements("E"),
-                                alphabetKey("q").withReplacements("Q"),
+                                alphabetKey("o", "O"), alphabetKey("e", "E"), alphabetKey("q", "Q"),
                                 }, //
                         new Key[] {
-                                alphabetKey("h").withReplacements("H"),
-                                alphabetKey("d").withReplacements("D"),
-                                alphabetKey("j").withReplacements("J"),
+                                alphabetKey("h", "H"), alphabetKey("d", "D"), alphabetKey("j", "J"),
                                 }, //
                 },
                 new Key[][] {
                         new Key[] {
-                                alphabetKey("i").withReplacements("I"),
-                                alphabetKey("n").withReplacements("N"),
-                                alphabetKey("k").withReplacements("K"),
+                                alphabetKey("i", "I"), alphabetKey("n", "N"), alphabetKey("k", "K"),
                                 }, //
                         new Key[] {
-                                alphabetKey("w").withReplacements("W"), //
-                                alphabetKey("p").withReplacements("P"), //
-                                symbolKey("/").withReplacements("\\"),
+                                alphabetKey("w", "W"), //
+                                alphabetKey("p", "P"), //
+                                symbolKey("/", "\\"),
                                 }, //
                 },
                 });

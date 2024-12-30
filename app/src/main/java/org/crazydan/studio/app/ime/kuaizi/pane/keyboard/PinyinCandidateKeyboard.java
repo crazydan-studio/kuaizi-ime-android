@@ -130,7 +130,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputWordKey key = context.key();
         InputList inputList = context.inputList;
 
-        if (key.isDisabled()) {
+        if (Key.disabled(key)) {
             return;
         }
 
@@ -161,7 +161,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         }
 
         CtrlKey key = context.key();
-        switch (key.getType()) {
+        switch (key.type) {
             case ConfirmInput: {
                 play_SingleTick_InputAudio(context);
 
@@ -174,7 +174,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 InputList inputList = context.inputList;
                 CharInput pending = inputList.getPending();
 
-                CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.getOption();
+                CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.option;
                 switch (option.value()) {
                     case ng:
                         pending.toggle_Pinyin_NG_Ending();
@@ -368,7 +368,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         CtrlKey key = context.key();
         PinyinCandidateAdvanceFilterStateData stateData = this.state.data();
-        switch (key.getType()) {
+        switch (key.type) {
             case Filter_PinyinCandidate_by_Spell:
             case Filter_PinyinCandidate_by_Radical: {
                 play_SingleTick_InputAudio(context);
@@ -395,7 +395,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     private void update_InputCandidate_Advance_Filter(PinyinCandidateAdvanceFilterStateData stateData, CtrlKey key) {
         PinyinWord.Filter filter = stateData.getFilter();
 
-        switch (key.getType()) {
+        switch (key.type) {
             case Filter_PinyinCandidate_by_Spell: {
                 filter.addSpellByKey(key);
                 break;

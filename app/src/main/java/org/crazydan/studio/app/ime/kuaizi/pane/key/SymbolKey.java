@@ -49,12 +49,7 @@ public class SymbolKey extends Key {
     }
 
     @Override
-    public boolean isSymbol() {
-        return true;
-    }
-
-    @Override
-    public String getText() {
+    public String getValue() {
         return this.symbol.text;
     }
 

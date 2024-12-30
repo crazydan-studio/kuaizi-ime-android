@@ -186,13 +186,13 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 尝试处理控制按键消息：已禁用的不做处理 */
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
-        if (key.isDisabled()) {
+        if (Key.disabled(key)) {
             return false;
         }
 
         switch (msg.type) {
             case LongPress_Key_Tick: {
-                switch (key.getType()) {
+                switch (key.type) {
                     case Backspace:
                     case Space:
                     case Enter:
@@ -203,7 +203,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 break;
             }
             case SingleTap_Key: {
-                switch (key.getType()) {
+                switch (key.type) {
                     // Note：在任意子键盘中提交输入，都需直接回到初始键盘
                     case Commit_InputList: {
                         play_SingleTick_InputAudio(context);
@@ -255,7 +255,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Switch_Keyboard: {
                         play_SingleTick_InputAudio(context);
 
-                        CtrlKey.KeyboardSwitchOption option = (CtrlKey.KeyboardSwitchOption) key.getOption();
+                        CtrlKey.KeyboardSwitchOption option = (CtrlKey.KeyboardSwitchOption) key.option;
                         switch_Keyboard_To(context, option.value());
                         return true;
                     }
@@ -265,7 +265,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         // 处理定位按钮
-        if (CtrlKey.is(key, CtrlKey.Type.Editor_Cursor_Locator)) {
+        if (CtrlKey.Type.Editor_Cursor_Locator.match(key)) {
             switch (msg.type) {
                 case SingleTap_Key: {
                     // 为双击提前播放音效
@@ -299,13 +299,13 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */
     private boolean try_On_UserKey_Msg_Over_XPad(KeyboardContext context, UserKeyMsg msg) {
         Key key = context.key();
-        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.isDisabled()) {
+        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || Key.disabled(key)) {
             return false;
         }
 
         switch (msg.type) {
             case Press_Key_Stop: {
-                if (CtrlKey.is(key, CtrlKey.Type.XPad_Simulation_Terminated)) {
+                if (CtrlKey.Type.XPad_Simulation_Terminated.match(key)) {
                     fire_InputMsg(context, Keyboard_XPad_Simulation_Terminated, new InputMsgData());
                     return true;
                 } else {
@@ -314,7 +314,7 @@ public abstract class BaseKeyboard implements Keyboard {
             }
             case FingerMoving: {
                 // 播放输入分区激活和待输入按键切换的提示音
-                switch (((CtrlKey) key).getType()) {
+                switch (((CtrlKey) key).type) {
                     case XPad_Active_Block: {
                         play_PingTick_InputAudio(context);
                         return true;
@@ -411,7 +411,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note: 此处不涉及配对符号的输入，故始终清空配对符号的绑定
         inputList.clearPairOnSelected();
 
-        switch (key.getType()) {
+        switch (key.type) {
             // 若为标点、表情符号，则直接确认输入，不支持连续输入其他字符
             case Emoji:
             case Symbol: {
@@ -449,7 +449,7 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = context.inputList;
 
         Input input = inputList.getPending();
-        if (key.isSymbol()) {
+        if (CharKey.Type.Symbol.match(key)) {
             // Note：标点符号是独立输入，故，需替换当前位置的前一个标点符号输入（当前输入必然为 Gap）
             input = inputList.getInputBeforeSelected();
 
@@ -469,7 +469,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         CharKey lastCharKey = (CharKey) lastKey;
         // Note: 在 Input 中的按键可能不携带 replacement 信息，只能通过当前按键做判断
-        String newKeyText = key.nextReplacement(lastCharKey.getText());
+        String newKeyText = key.nextReplacement(lastCharKey.value);
         CharKey newKey = key.createReplacementKey(newKeyText);
 
         input.replaceLatestKey(lastCharKey, newKey);
@@ -654,18 +654,18 @@ public abstract class BaseKeyboard implements Keyboard {
         boolean isDirectInputting = inputList.isEmpty();
 
         if (isDirectInputting) {
-            switch (key.getType()) {
+            switch (key.type) {
                 case Enter:
                 case Space:
                     // Note：直输回车和空格后，不再支持输入撤回
                     inputList.clearCommitRevokes();
 
-                    fire_InputList_Commit_Doing(context, key.getText(), null);
+                    fire_InputList_Commit_Doing(context, key.value, null);
                     break;
             }
         }
         // 输入列表不为空且按键为空格按键时，将其添加到输入列表中
-        else if (CtrlKey.is(key, CtrlKey.Type.Space)) {
+        else if (CtrlKey.Type.Space.match(key)) {
             // Note：空格不替换当前输入
             inputList.confirmPendingAndSelectNext();
 
@@ -746,7 +746,7 @@ public abstract class BaseKeyboard implements Keyboard {
                 CharInput input = inputList.getLastCharInput();
                 CharKey key = (CharKey) input.getLastKey();
 
-                replacements = key.getReplacements();
+                replacements = key.replacements;
             }
 
             StringBuilder text = inputList.commit(canBeRevoked);
@@ -889,7 +889,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 触发 {@link InputMsgType#InputAudio_Play_Doing} 消息 */
     private void fire_InputAudio_Play_Doing(KeyboardContext context, InputAudioPlayMsgData.AudioType audioType) {
         Key key = context.key();
-        if (CtrlKey.isNoOp(key) && audioType != InputAudioPlayMsgData.AudioType.PageFlip) {
+        if (CtrlKey.Type.NoOp.match(key) && audioType != InputAudioPlayMsgData.AudioType.PageFlip) {
             return;
         }
 
@@ -999,7 +999,7 @@ public abstract class BaseKeyboard implements Keyboard {
      */
     protected void show_InputChars_Input_Popup(KeyboardContext context, boolean hideDelayed) {
         Key key = context.key();
-        String text = key != null ? key.getLabel() : null;
+        String text = key != null ? key.label : null;
 
         show_InputChars_Input_Popup(context, text, hideDelayed);
     }

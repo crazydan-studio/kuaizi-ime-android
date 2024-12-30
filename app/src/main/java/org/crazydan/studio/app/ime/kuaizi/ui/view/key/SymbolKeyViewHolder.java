@@ -43,13 +43,13 @@ public class SymbolKeyViewHolder extends KeyViewHolder<TextView> {
         super.bind(key, orientation);
 
         whenViewReady(this.fgView, (view) -> {
-            setTextColorByAttrId(view, key.getColor().fg);
+            setTextColorByAttrId(view, key.color.fg);
 
             int textSizeDimen = R.dimen.char_symbol_key_text_size;
             float textSize = ScreenUtils.pxFromDimension(getContext(), textSizeDimen);
             view.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
-            String label = key.getLabel();
+            String label = key.label;
             view.setText(label);
         });
     }

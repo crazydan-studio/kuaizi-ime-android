@@ -71,63 +71,63 @@ public class PinyinKeyTable extends KeyTable {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
                         // 😂
                         emojiKey("\uD83D\uDE02"),
-                        symbolKey("！").withReplacements("!"),
-                        level0CharKey("ü").withReplacements("v", "V"),
-                        level0CharKey("i").withReplacements("I"),
-                        level0CharKey("u").withReplacements("U"),
-                        level0CharKey("o").withReplacements("O"),
-                        level0CharKey("j").withReplacements("J"),
+                        symbolKey("！", "!"),
+                        level0CharKey("ü", "v", "V"),
+                        level0CharKey("i", "I"),
+                        level0CharKey("u", "U"),
+                        level0CharKey("o", "O"),
+                        level0CharKey("j", "J"),
                         } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Math),
-                symbolKey("？").withReplacements("?"),
-                level0CharKey("d").withReplacements("D"),
-                level0CharKey("m").withReplacements("M"),
-                level0CharKey("x").withReplacements("X"),
-                level0CharKey("q").withReplacements("Q"),
-                level0CharKey("a").withReplacements("A"),
+                symbolKey("？", "?"),
+                level0CharKey("d", "D"),
+                level0CharKey("m", "M"),
+                level0CharKey("x", "X"),
+                level0CharKey("q", "Q"),
+                level0CharKey("a", "A"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Latin),
                 // 😄
                 emojiKey("\uD83D\uDE04"),
-                symbolKey("；").withReplacements(";"),
-                level0CharKey("b").withReplacements("B"),
-                level0CharKey("l").withReplacements("L"),
-                level0CharKey("y").withReplacements("Y"),
-                level0CharKey("p").withReplacements("P"),
-                level0CharKey("e").withReplacements("E"),
+                symbolKey("；", ";"),
+                level0CharKey("b", "B"),
+                level0CharKey("l", "L"),
+                level0CharKey("y", "Y"),
+                level0CharKey("p", "P"),
+                level0CharKey("e", "E"),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Emoji),
-                symbolKey("：").withReplacements(":"),
-                level0CharKey("s").withReplacements("S"),
-                level0CharKey("t").withReplacements("T"),
+                symbolKey("：", ":"),
+                level0CharKey("s", "S"),
+                level0CharKey("t", "T"),
                 ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
-                level0CharKey("r").withReplacements("R"),
-                level0CharKey("h").withReplacements("H"),
+                level0CharKey("r", "R"),
+                level0CharKey("h", "H"),
                 this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Symbol),
                 // 😉
                 emojiKey("\uD83D\uDE09"),
-                symbolKey("。").withReplacements("."),
-                level0CharKey("c").withReplacements("C"),
-                level0CharKey("z").withReplacements("Z"),
-                level0CharKey("f").withReplacements("F"),
-                level0CharKey("n").withReplacements("N"),
-                level0CharKey("k").withReplacements("K"),
+                symbolKey("。", "."),
+                level0CharKey("c", "C"),
+                level0CharKey("z", "Z"),
+                level0CharKey("f", "F"),
+                level0CharKey("n", "N"),
+                level0CharKey("k", "K"),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs),
-                symbolKey("，").withReplacements(","),
-                level0CharKey("sh").withReplacements("Sh", "SH"),
-                level0CharKey("ch").withReplacements("Ch", "CH"),
-                level0CharKey("zh").withReplacements("Zh", "ZH"),
-                level0CharKey("g").withReplacements("G"),
-                level0CharKey("w").withReplacements("W"),
+                symbolKey("，", ","),
+                level0CharKey("sh", "Sh", "SH"),
+                level0CharKey("ch", "Ch", "CH"),
+                level0CharKey("zh", "Zh", "ZH"),
+                level0CharKey("g", "G"),
+                level0CharKey("w", "W"),
                 ctrlKey(CtrlKey.Type.Space),
                 },
                 };
@@ -145,9 +145,7 @@ public class PinyinKeyTable extends KeyTable {
                         }, //
                 new Key[][] {
                         new Key[] {
-                                symbolKey("，").withReplacements("；"),
-                                symbolKey("？").withReplacements("："),
-                                symbolKey("！").withReplacements("、"),
+                                symbolKey("，", "；"), symbolKey("？", "："), symbolKey("！", "、"),
                                 }, //
                         new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t"), }, //
                 }, //
@@ -194,7 +192,7 @@ public class PinyinKeyTable extends KeyTable {
                     continue;
                 }
 
-                String nextChar = key.getText();
+                String nextChar = key.value;
                 PinyinCharsTree child = level0CharsTree.getChild(nextChar);
                 if (child == null) {
                     continue;
@@ -205,7 +203,7 @@ public class PinyinKeyTable extends KeyTable {
                 }
                 gridKeys[i][j] = key = level1CharKey(nextChar);
 
-                boolean disabled = key.getText() != null && key.getText().equals(level1Char);
+                boolean disabled = key.value != null && key.value.equals(level1Char);
                 key.setDisabled(disabled);
             }
         }
@@ -368,11 +366,11 @@ public class PinyinKeyTable extends KeyTable {
                         // 右下角的功能和符号按键保持不动
                         if (i + j == 1) {
                             continue;
-                        } else if (key.getLevel() != Key.Level.level_final) {
+                        } else if (((CharKey) key).level != CharKey.Level.level_final) {
                             keys[k] = null;
                         }
 
-                        String nextChar = key.getText();
+                        String nextChar = key.value;
                         PinyinCharsTree child = level0CharsTree.getChild(nextChar);
                         if (child == null) {
                             continue;
@@ -468,7 +466,7 @@ public class PinyinKeyTable extends KeyTable {
             gridKeys[2][0] = key;
 
             if (!wordFilter.isEmpty()) {
-                key.setIconResId(R.drawable.ic_filter_filled);
+                key.setIcon(R.drawable.ic_filter_filled);
             }
         }
 
@@ -502,7 +500,7 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Option<?> option
                     = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
 
-            gridKeys[0][index_end] = ctrlKey(type).setOption(option).setLabel(label);
+            gridKeys[0][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
 
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
@@ -511,7 +509,7 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
 
-            gridKeys[0][index_end] = ctrlKey(type).setOption(option).setLabel(label);
+            gridKeys[0][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
 
             startingToggle.toggle_Pinyin_NL_Starting();
         }
@@ -530,7 +528,7 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
 
-            gridKeys[1][index_end] = ctrlKey(type).setOption(option).setLabel(label);
+            gridKeys[1][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
 
             endingToggle.toggle_Pinyin_NG_Ending();
         }
@@ -668,28 +666,22 @@ public class PinyinKeyTable extends KeyTable {
         return gridKeys;
     }
 
-    public CharKey level0CharKey(String ch) {
-        return alphabetKey(ch);
+    public CharKey level0CharKey(String ch, String... replacements) {
+        return alphabetKey(ch, replacements);
     }
 
     public CharKey level1CharKey(String ch) {
-        Key.Color color = key_char_special_color;
-
-        return alphabetKey(ch).setLevel(Key.Level.level_1).setColor(color);
+        return alphabetKeyBuilder(ch).level(CharKey.Level.level_1).color(key_char_special_color).build();
     }
 
     public CharKey levelFinalCharKey(String ch) {
-        Key.Color color = key_char_special_color;
-
-        return alphabetKey(ch).setLevel(Key.Level.level_final).setColor(color);
+        return alphabetKeyBuilder(ch).level(CharKey.Level.level_final).color(key_char_special_color).build();
     }
 
     public CharKey level2CharKey(String level0Char, String level2Char) {
-        String text = level2Char;
-        String label = level0Char + text;
-        Key.Color color = key_char_color;
+        String label = level0Char + level2Char;
 
-        return alphabetKey(text).setLevel(Key.Level.level_2).setLabel(label).setColor(color);
+        return alphabetKeyBuilder(level2Char).level(CharKey.Level.level_2).label(label).color(key_char_color).build();
     }
 
     public InputWordKey inputWordKey(InputWord word, int level) {
@@ -701,7 +693,7 @@ public class PinyinKeyTable extends KeyTable {
     public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value) {
         CtrlKey.Option<?> option = new CtrlKey.ValueOption(value);
 
-        return ctrlKey(type).setOption(option).setLabel(label);
+        return ctrlKeyBuilder(type).option(option).label(label).build();
     }
 
     public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt) {
@@ -722,7 +714,7 @@ public class PinyinKeyTable extends KeyTable {
                 break;
         }
 
-        return ctrlKey(CtrlKey.Type.Commit_InputList_Option).setOption(option).setLabel(label);
+        return ctrlKeyBuilder(CtrlKey.Type.Commit_InputList_Option).option(option).label(label).build();
     }
 
     /** 获取候选字的笔画过滤按键坐标 */
@@ -736,7 +728,7 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
+    /** 获取拼音{@link CharKey.Level#level_2 第二级}按键坐标 */
     private GridCoord[] getLevel2KeyCoords(int keyLength) {
         if (keyLength <= 2) {
             // Note：特定韵母组成的 2 个字母的音节数不会超过 4 个
@@ -760,7 +752,7 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    /** 获取拼音{@link Key.Level#level_2 第二级}按键坐标 */
+    /** 获取拼音{@link CharKey.Level#level_2 第二级}按键坐标 */
     private GridCoord[] getLevel2KeyCoordsByKeyAmount(int keyAmount) {
         if (keyAmount <= 2) {
             return new GridCoord[] {
@@ -839,7 +831,7 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    /** 获取 X 型输入的拼音{@link Key.Level#level_2 第二级}按键坐标 */
+    /** 获取 X 型输入的拼音{@link CharKey.Level#level_2 第二级}按键坐标 */
     private GridCoord[] getXPadLevel2KeyCoords(int keyLength) {
         if (keyLength <= 2) {
             // Note：特定韵母组成的 2 个字母的音节数不会超过 4 个

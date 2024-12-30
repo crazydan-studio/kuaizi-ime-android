@@ -41,18 +41,15 @@ public class InputWordKey extends Key {
         return new InputWordKey(word);
     }
 
-    @Override
-    public boolean isEmoji() {
-        return getWord() instanceof EmojiWord;
+    public static boolean isEmoji(Key key) {
+        return key instanceof InputWordKey && ((InputWordKey) key).getWord() instanceof EmojiWord;
     }
 
-    @Override
     public String getLabel() {
-        return getText();
+        return getValue();
     }
 
-    @Override
-    public String getText() {
+    public String getValue() {
         return getWord().getValue();
     }
 

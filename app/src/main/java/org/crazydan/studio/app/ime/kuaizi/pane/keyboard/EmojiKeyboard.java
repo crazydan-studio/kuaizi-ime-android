@@ -92,10 +92,10 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         }
 
         CtrlKey key = context.key();
-        if (CtrlKey.is(key, CtrlKey.Type.Toggle_Emoji_Group)) {
+        if (CtrlKey.Type.Toggle_Emoji_Group.match(key)) {
             play_SingleTick_InputAudio(context);
 
-            CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.getOption();
+            CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.option;
             do_Emoji_Choosing(context, option.value());
         }
     }

@@ -51,7 +51,7 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
     }
 
     public void bind(Key key, HexagonOrientation orientation) {
-        if (key.isDisabled()) {
+        if (Key.disabled(key)) {
             disable();
         } else {
             enable();
@@ -62,20 +62,20 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
 
     private void updateBgView(Key key, HexagonOrientation orientation) {
         whenViewReady(this.bgView, (view) -> {
-            if (key.getColor().bg == null) {
+            if (key.color.bg == null) {
                 view.setImageDrawable(null);
                 return;
             }
             ViewUtils.enableHardwareAccelerated(view);
 
-            int bgColor = getColorByAttrId(key.getColor().bg);
+            int bgColor = getColorByAttrId(key.color.bg);
             float cornerRadius = ScreenUtils.pxFromDimension(getContext(), R.dimen.key_view_corner_radius);
 
             HexagonDrawable drawable = new HexagonDrawable(orientation);
             drawable.setCornerRadius(cornerRadius);
             drawable.setFillColor(bgColor);
 
-            if (!key.isDisabled()) {
+            if (!Key.disabled(key)) {
                 drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
                 drawable.setBorder(getStringByAttrId(R.attr.key_border_style));
             } else {

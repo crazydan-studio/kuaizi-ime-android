@@ -219,7 +219,7 @@ public class Exercise implements InputMsgListener {
 
         switch (msg.type) {
             case InputChars_Input_Doing:
-                if (key == null || key.getText() == null) {
+                if (key == null || key.value == null) {
                     return;
                 }
                 break;

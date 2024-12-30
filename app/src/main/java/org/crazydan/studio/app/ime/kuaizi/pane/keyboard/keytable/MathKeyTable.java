@@ -107,7 +107,7 @@ public class MathKeyTable extends KeyTable {
                 int column = keyCoord.column;
 
                 Key key = keys[dataIndex++];
-                Key.Color color = key.isNumber() ? key_char_color : key_char_special_color;
+                Key.Color color = CharKey.Type.Number.match(key) ? key_char_color : key_char_special_color;
 
                 key.setColor(color);
                 gridKeys[row][column] = key;

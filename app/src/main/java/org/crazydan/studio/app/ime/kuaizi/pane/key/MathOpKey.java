@@ -27,53 +27,18 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-18
  */
-public class MathOpKey extends Key {
-    private final Type type;
+public class MathOpKey extends TypedKey<MathOpKey.Type> {
 
     private MathOpKey(Type type, String text) {
-        super(text);
-
-        this.type = type;
+        super(type, text);
     }
 
     public static MathOpKey create(Type type, String text) {
         return new MathOpKey(type, text);
     }
 
-    public static boolean isType(Key key, Type type) {
-        return key instanceof MathOpKey && ((MathOpKey) key).getType() == type;
-    }
-
     public Type getType() {
         return this.type;
-    }
-
-    @Override
-    public boolean isMathOp() {
-        switch (this.type) {
-            case Percent:
-            case Permill:
-            case Permyriad:
-                return false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean isSymbol() {
-        // 确保数字和非运算符之间无空格
-        return !isMathOp();
-    }
-
-    @Override
-    public boolean isAlphabet() {
-        switch (this.type) {
-            case Brackets:
-                // 确保括号与数字和运算符之间都有空格
-            case Dot:
-                return true;
-        }
-        return false;
     }
 
     @Override
@@ -85,12 +50,12 @@ public class MathOpKey extends Key {
         }
 
         MathOpKey that = (MathOpKey) o;
-        return this.type == that.type && Objects.equals(this.getText(), that.getText());
+        return this.type == that.type && Objects.equals(this.value, that.value);
     }
 
     @Override
     public String toString() {
-        return this.type + "(" + getText() + ")";
+        return this.type + "(" + this.value + ")";
     }
 
     public enum Type {
@@ -116,5 +81,26 @@ public class MathOpKey extends Key {
         Brackets,
         /** 数学 . */
         Dot,
+        ;
+
+        /** 判断指定的 {@link Key} 是否为当前类型的 {@link MathOpKey} */
+        public boolean match(Key key) {
+            return key instanceof MathOpKey && ((MathOpKey) key).type == this;
+        }
+
+        public static boolean isSymbol(Key key) {
+            if (!(key instanceof MathOpKey)) {
+                return false;
+            }
+
+            // 确保数字和非运算符之间无空格
+            switch (((MathOpKey) key).type) {
+                case Percent:
+                case Permill:
+                case Permyriad:
+                    return true;
+            }
+            return false;
+        }
     }
 }

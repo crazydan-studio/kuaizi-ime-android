@@ -99,10 +99,10 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         }
 
         CtrlKey key = context.key();
-        if (CtrlKey.is(key, CtrlKey.Type.Toggle_Symbol_Group)) {
+        if (CtrlKey.Type.Toggle_Symbol_Group.match(key)) {
             play_SingleTick_InputAudio(context);
 
-            CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.getOption();
+            CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.option;
             do_Symbol_Choosing(context, option.value());
         }
     }

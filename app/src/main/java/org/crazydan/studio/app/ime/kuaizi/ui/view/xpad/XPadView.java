@@ -324,7 +324,7 @@ public class XPadView extends View {
             Key key = zone_1_keys[i];
             this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
 
-            if (key != null && key.isDisabled()) {
+            if (Key.disabled(key)) {
                 this.active_ctrl_block_key = this.zone_1_keys[i];
             }
         }
@@ -386,7 +386,7 @@ public class XPadView extends View {
         XZone zone_0 = zones[0];
 
         if (!isInputting) {
-            Drawable icon = drawable(this.zone_0_key.key.getIconResId());
+            Drawable icon = drawable(this.zone_0_key.key.icon);
             XDrawablePainter icon_painter = zone_0.newIconPainter(icon);
             icon_painter.setStart(this.center_coordinate);
             icon_painter.setAlign(XPainter.Align.Center);
@@ -408,17 +408,17 @@ public class XPadView extends View {
                 float rotate = orientation == HexagonOrientation.POINTY_TOP //
                                ? 30 * (2 * i - 1) : 60 * (i - 1);
 
-                Drawable icon = drawable(blockKey.key.getIconResId());
+                Drawable icon = drawable(blockKey.key.icon);
                 XDrawablePainter icon_painter = zone_1.newIconPainter(icon);
                 icon_painter.setStart(center);
                 icon_painter.setAlign(XPainter.Align.Center);
                 icon_painter.setRotate(rotate);
                 icon_painter.setSize(this.ctrl_icon_size);
-                icon_painter.setAlpha(blockKey.key.isDisabled() ? 0.4f : 1f);
+                icon_painter.setAlpha(Key.disabled(blockKey.key) ? 0.4f : 1f);
             }
         } else if (!BlockKey.isNull(this.active_ctrl_block_key)) {
             BlockKey blockKey = this.active_ctrl_block_key;
-            Drawable icon = drawable(blockKey.key.getIconResId());
+            Drawable icon = drawable(blockKey.key.icon);
             XDrawablePainter icon_painter = zone_1.newIconPainter(icon);
             icon_painter.setStart(this.center_coordinate);
             icon_painter.setAlign(XPainter.Align.Center);
@@ -427,7 +427,7 @@ public class XPadView extends View {
 
         // ==============================================
         BlockKey zone_2_active_key = getActiveBlockKey_In_Zone_2();
-        String zone_2_active_key_label = zone_2_active_key != null ? zone_2_active_key.key.getLabel() : null;
+        String zone_2_active_key_label = zone_2_active_key != null ? zone_2_active_key.key.label : null;
         if (zone_2_active_key_label == null) {
             this.active_label_zone.hide();
         } else {
@@ -520,11 +520,11 @@ public class XPadView extends View {
                 float size;
                 XAlignPainter painter;
                 if (blockKey.key instanceof CtrlKey) {
-                    Drawable icon = drawable(blockKey.key.getIconResId());
+                    Drawable icon = drawable(blockKey.key.icon);
                     painter = zone_2.newIconPainter(icon);
                     size = this.ctrl_icon_size;
                 } else {
-                    painter = zone_2.newTextPainter(blockKey.key.getLabel());
+                    painter = zone_2.newTextPainter(blockKey.key.label);
 
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
@@ -601,11 +601,11 @@ public class XPadView extends View {
                 float size;
                 XAlignPainter painter;
                 if (blockKey.key instanceof CtrlKey) {
-                    Drawable icon = drawable(blockKey.key.getIconResId());
+                    Drawable icon = drawable(blockKey.key.icon);
                     painter = zone_2.newIconPainter(icon);
                     size = this.ctrl_icon_size;
                 } else {
-                    painter = zone_2.newTextPainter(blockKey.key.getLabel());
+                    painter = zone_2.newTextPainter(blockKey.key.label);
 
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
@@ -1012,7 +1012,7 @@ public class XPadView extends View {
         XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
         BlockKey blockKey = getBlockKey(new BlockIndex(2, stateData.getStartBlock()), stateData.getBlockDiff());
 
-        return BlockKey.isNull(blockKey) || blockKey.key.isDisabled() ? null : blockKey;
+        return BlockKey.isNull(blockKey) || Key.disabled(blockKey.key) ? null : blockKey;
     }
 
     private boolean isActiveBlock_In_Zone_2(int index) {
@@ -1102,7 +1102,7 @@ public class XPadView extends View {
     ) {
         reset();
 
-        Key key = CtrlKey.noop();
+        Key key = CtrlKey.create(CtrlKey.Type.NoOp);
         trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
 
         if (simulationTerminated) {
@@ -1503,7 +1503,7 @@ public class XPadView extends View {
                     for (int i = 0; i < nonNullBlockKeys.length; i++) {
                         BlockKey blockKey = nonNullBlockKeys[i];
 
-                        if (key.getText().equals(blockKey.key.getText())) {
+                        if (key.value.equals(blockKey.key.value)) {
                             return new BlockKey(blockKey.zone, blockKey.block, blockKey.x, i, key);
                         } else if (blockKey.key instanceof CharKey //
                                    && ((CharKey) blockKey.key).canReplaceTheKey(key) //

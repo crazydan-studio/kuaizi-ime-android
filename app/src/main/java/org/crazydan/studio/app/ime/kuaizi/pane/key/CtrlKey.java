@@ -26,89 +26,24 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 
 /**
- * 控制{@link Key 按键}
+ * 控制按键
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class CtrlKey extends Key {
-    private final Type type;
+public class CtrlKey extends TypedKey<CtrlKey.Type> {
+    public final static Builder builder = new Builder();
 
-    private Option<?> option;
+    public final Option<?> option;
 
-    private CtrlKey(Type type) {
-        this.type = type;
-    }
+    protected CtrlKey(Builder builder) {
+        super(builder);
 
-    public static CtrlKey noop() {
-        return create(CtrlKey.Type.NoOp);
+        this.option = builder.option;
     }
 
     public static CtrlKey create(Type type) {
-        return new CtrlKey(type);
-    }
-
-    public static boolean isNoOp(Key key) {
-        return is(key, CtrlKey.Type.NoOp);
-    }
-
-    public static boolean is(Key key, Type type) {
-        return type != null && key instanceof CtrlKey && ((CtrlKey) key).getType() == type;
-    }
-
-    public static boolean isAny(Key key, Type... types) {
-        for (Type type : types) {
-            if (is(key, type)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** 按钮{@link Type 类型} */
-    public Type getType() {
-        return this.type;
-    }
-
-    public Option<?> getOption() {
-        return this.option;
-    }
-
-    public CtrlKey setOption(Option<?> option) {
-        this.option = option;
-        return this;
-    }
-
-    @Override
-    public boolean isSpace() {
-        return is(this, CtrlKey.Type.Space);
-    }
-
-    @Override
-    public String getText() {
-        switch (this.type) {
-            case Space:
-                return " ";
-            case Enter:
-                return "\n";
-            default:
-                return getLabel();
-        }
-    }
-
-    @Override
-    public String getLabel() {
-        switch (this.type) {
-            case Enter:
-                return "回车";
-            case Space:
-                return "空格";
-            case Backspace:
-                return "回删";
-            case Pinyin_End:
-                return "结束";
-        }
-        return super.getLabel();
+        return CtrlKey.builder.type(type).build();
     }
 
     @Override
@@ -120,15 +55,15 @@ public class CtrlKey extends Key {
         }
 
         CtrlKey that = (CtrlKey) o;
-        return this.type == that.type
-               && Objects.equals(this.getText(), that.getText())
-               && Objects.equals(this.getOption(), that.getOption());
+        return this.type == that.type //
+               && Objects.equals(this.value, that.value) //
+               && Objects.equals(this.option, that.option);
     }
 
     @NonNull
     @Override
     public String toString() {
-        return getType() + (getLabel() != null ? "(" + getLabel() + ")" : "");
+        return this.type + (this.label != null ? "(" + this.label + ")" : "");
     }
 
     public enum Type {
@@ -194,6 +129,12 @@ public class CtrlKey extends Key {
         XPad_Char_Key,
         /** X 型输入演示终止按键：仅用于发送演示终止消息 */
         XPad_Simulation_Terminated,
+        ;
+
+        /** 判断指定的 {@link Key} 是否为当前类型的 {@link CtrlKey} */
+        public boolean match(Key key) {
+            return key instanceof CtrlKey && ((CtrlKey) key).type == this;
+        }
     }
 
     public static abstract class Option<T> {
@@ -280,5 +221,83 @@ public class CtrlKey extends Key {
         public EditorEditOption(EditorAction value) {
             super(value);
         }
+    }
+
+    /** {@link CtrlKey} 的构建器 */
+    public static class Builder extends TypedKey.Builder<Builder, CtrlKey, CtrlKey.Type> {
+        private Option<?> option;
+
+        Builder() {
+            super(50);
+        }
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected CtrlKey doBuild() {
+            switch (type()) {
+                case Enter: {
+                    label("回车");
+                    break;
+                }
+                case Space: {
+                    label("空格");
+                    break;
+                }
+                case Backspace: {
+                    label("回删");
+                    break;
+                }
+                case Pinyin_End: {
+                    label("结束");
+                    break;
+                }
+            }
+
+            switch (type()) {
+                case Space: {
+                    value(" ");
+                    break;
+                }
+                case Enter: {
+                    value("\n");
+                    break;
+                }
+                default: {
+                    value(label());
+                }
+            }
+
+            return new CtrlKey(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), this.option);
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.option = null;
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 按键配置 ===================
+
+        @Override
+        public Builder from(CtrlKey key) {
+            return super.from(key).option(key.option);
+        }
+
+        /** @see CtrlKey#option */
+        public Builder option(Option<?> option) {
+            this.option = option;
+            return this;
+        }
+
+        // ===================== End: 按键配置 ===================
     }
 }

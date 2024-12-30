@@ -19,84 +19,49 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.Objects;
 
+import android.util.LruCache;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * {@link Keyboard} 上的按键
+ * <p/>
+ * 注意，其为只读模型，不可对其进行变更，从而确保其实例可被缓存
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
 public abstract class Key implements RecyclerViewData {
-    private final String text;
-    private String label;
-    private Level level = Level.level_0;
-    private Integer iconResId;
+    /** 按键的输入值，代表字符按键的实际输入字符，其与{@link #label 显示字符}可能并不相等 */
+    public final String value;
+    /** 按键上显示的文字内容 */
+    public final String label;
 
-    private boolean disabled;
-    private Color color = Color.none();
+    /** 按键上显示的图标资源 id */
+    public final Integer icon;
+    /** 按键的配色，始终不为 null */
+    public final Color color;
 
-    public Key() {
-        this(null);
+    protected Key(Builder<?, ?> builder) {
+        this.value = builder.value;
+        this.label = builder.label;
+
+        this.icon = builder.icon;
+        this.color = builder.color;
     }
 
-    protected Key(String text) {
-        this.text = text;
+    /** 禁用指定的 {@link Key} */
+    public static Key disable(Key key) {
+        return new Disabled(key);
     }
 
-    /** 是否为空格 */
-    public boolean isSpace() {
-        return false;
-    }
-
-    /** 是否为英文字母 */
-    public boolean isAlphabet() {
-        return false;
-    }
-
-    /** 是否为数字 */
-    public boolean isNumber() {
-        return false;
-    }
-
-    /** 是否为标点符号 */
-    public boolean isSymbol() {
-        return false;
-    }
-
-    /** 是否为表情符号 */
-    public boolean isEmoji() {
-        return false;
-    }
-
-    /** 是否为数学运算符 */
-    public boolean isMathOp() {
-        return false;
-    }
-
-    /** 是否已禁用 */
-    public boolean isDisabled() {
-        return this.disabled;
+    /** 判断指定的 {@link Key} 是否已被禁用 */
+    public static boolean disabled(Key key) {
+        return key instanceof Disabled;
     }
 
     /** 设置为禁用 */
     public <K extends Key> K setDisabled(boolean disabled) {
-        this.disabled = disabled;
         return (K) this;
-    }
-
-    /**
-     * 获取按键对应的文本字符
-     * <p/>
-     * 若其不对应任何字符，则返回 <code>null</code>
-     */
-    public String getText() {
-        return this.text;
-    }
-
-    /** 按键上显示的文字内容 */
-    public String getLabel() {
-        return this.label;
     }
 
     /** 设置按键上显示的文字内容 */
@@ -105,31 +70,10 @@ public abstract class Key implements RecyclerViewData {
         return (K) this;
     }
 
-    /** 获取按键所处级别 */
-    public Level getLevel() {
-        return this.level;
-    }
-
-    /** 设置按键所处级别 */
-    public <K extends Key> K setLevel(Level level) {
-        this.level = level;
-        return (K) this;
-    }
-
-    /** 按键上显示的图标资源 id */
-    public Integer getIconResId() {
-        return this.iconResId;
-    }
-
     /** 设置按键上显示的图标资源 id */
-    public <K extends Key> K setIconResId(Integer iconResId) {
-        this.iconResId = iconResId;
+    public <K extends Key> K setIcon(Integer icon) {
+        this.icon = icon;
         return (K) this;
-    }
-
-    /** 获取按键配色 */
-    public Color getColor() {
-        return this.color;
     }
 
     /** 设置按键配色 */
@@ -140,7 +84,7 @@ public abstract class Key implements RecyclerViewData {
 
     @Override
     public String toString() {
-        return this.label + "(" + getText() + ")";
+        return this.label + "(" + this.value + ")";
     }
 
     @Override
@@ -153,52 +97,16 @@ public abstract class Key implements RecyclerViewData {
         }
 
         Key that = (Key) o;
-        return Objects.equals(this.getIconResId(), that.getIconResId())
-               && Objects.equals(this.getLabel(),
-                                 that.getLabel())
-               && Objects.equals(this.getText(), that.getText())
-               && Objects.equals(this.getLevel(), that.getLevel())
-               && this.disabled == that.disabled
+        return Objects.equals(this.value, that.value)
+               && Objects.equals(this.label, that.label)
+               && Objects.equals(this.icon, that.icon)
                && Objects.equals(this.color.fg, that.color.fg)
                && Objects.equals(this.color.bg, that.color.bg);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getIconResId(),
-                            this.getLabel(),
-                            this.getText(),
-                            this.getLevel(),
-                            this.disabled,
-                            this.color.fg,
-                            this.color.bg);
-    }
-
-    /** 按键级别 */
-    public enum Level {
-        /**
-         * 第 0 级：初始布局的按键。
-         * 一个拼音的首字母均处于该级别（ch、sh、zh 独立成为第 0 级），
-         * 如，huang 中的 h 为第 0 级
-         */
-        level_0,
-        /**
-         * 第 1 级：拼音滑屏的第一级后继字母按键。
-         * 拼音第 0 级字母之后的第一个字母均处于该级别，
-         * 如，huang 中的 u 为第 1 级
-         */
-        level_1,
-        /**
-         * 第 2 级：拼音滑屏的第二级后继字母按键。
-         * 拼音第 0 级字母之后的剩余字母均处于该级别，
-         * 如，huang 中的 uang 为第 2 级
-         */
-        level_2,
-        /**
-         * 末级：完整且无后继字母的拼音。
-         * 如，ai, er, an, ang, m, n 等
-         */
-        level_final,
+        return Objects.hash(this.value, this.label, this.icon, this.color.fg, this.color.bg);
     }
 
     /** {@link Key} 配色 */
@@ -220,5 +128,138 @@ public abstract class Key implements RecyclerViewData {
         public static Color none() {
             return create(null, null);
         }
+    }
+
+    /**
+     * 已被禁用的 {@link Key}
+     * <p/>
+     * 被禁用的按键采用对象封装模式，从而确保原始按键能够被缓存
+     */
+    private static class Disabled extends Key {
+        private static final Builder<?, ?> builder = new Builder<Builder, Key>(0) {
+            @Override
+            protected Key doBuild() {
+                return null;
+            }
+        };
+
+        final Key source;
+
+        Disabled(Key source) {
+            super(builder);
+
+            this.source = source;
+        }
+
+        @Override
+        public boolean isSameWith(Object o) {
+            return false;
+        }
+    }
+
+    /**
+     * {@link Key} 构建器，用于以调用链形式配置按键属性，并支持缓存按键，从而避免反复创建相同的 {@link Key}
+     * <p/>
+     * 注意，构建器本身需采用单例模式，并且在 {@link #build()} 时，以其 {@link #hashCode()} 作为按键缓存的唯一索引，
+     * 因此，构建器不是线程安全的
+     */
+    protected static abstract class Builder<B extends Builder<B, K>, K extends Key> {
+        private final LruCache<Integer, K> cache;
+
+        protected String value;
+        private String label;
+
+        private Integer icon;
+        private Color color = Color.none();
+
+        /**
+         * @param cacheSize
+         *         可缓存的 {@link  Key} 数量
+         */
+        protected Builder(int cacheSize) {
+            this.cache = cacheSize > 0 ? new LruCache<>(cacheSize) : null;
+        }
+
+        // ===================== Start: 构建函数 ===================
+
+        abstract protected K doBuild();
+
+        /** 根据当前构建配置创建 {@link Key} 实例 */
+        public K build() {
+            int hash = hashCode();
+
+            K key = this.cache != null ? this.cache.get(hash) : null;
+            if (key == null) {
+                key = doBuild();
+
+                if (this.cache != null) {
+                    this.cache.put(hash, key);
+                }
+            }
+
+            reset();
+
+            return key;
+        }
+
+        /** 通过构建器的 hash 值作为按键缓存的索引 */
+        @Override
+        public int hashCode() {
+            // Note: 对于 disabled 的按键，仅缓存其原始按键，其对象本身为临时创建的
+            return Objects.hash(this.value, this.label, this.icon, //
+                                this.color.fg, this.color.bg);
+        }
+
+        /** 为便于构建器作为单例复用，必须在 {@link #build()} 返回之前，重置所有的按键配置 */
+        protected void reset() {
+            this.value = null;
+            this.label = null;
+
+            this.icon = null;
+            this.color = Color.none();
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 按键配置 ===================
+
+        /** 创建与指定 {@link Key} 相同的按键，并可继续按需修改其他配置 */
+        public B from(K key) {
+            return value(key.value).label(key.label).icon(key.icon).color(key.color);
+        }
+
+        /** @see Key#value */
+        public B value(String value) {
+            this.value = value;
+            return (B) this;
+        }
+
+        public String value() {return this.value;}
+
+        /** @see Key#label */
+        public B label(String label) {
+            this.label = label;
+            return (B) this;
+        }
+
+        public String label() {return this.label;}
+
+        /** @see Key#icon */
+        public B icon(Integer icon) {
+            this.icon = icon;
+            return (B) this;
+        }
+
+        /**
+         * @param color
+         *         若为 null，则赋值为 {@link Color#none()}
+         * @see Key#color
+         */
+        public B color(Color color) {
+            this.color = color != null ? color : Color.none();
+            return (B) this;
+        }
+
+        // ===================== End: 按键配置 ===================
     }
 }

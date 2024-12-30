@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 
 /**
@@ -136,18 +137,18 @@ public class PinyinWord extends InputWord {
             // Note: 拼音过滤为单选项，且需重置部首过滤
             clear();
 
-            CtrlKey.Option<?> option = key.getOption();
+            CtrlKey.Option<?> option = key.option;
             PinyinWord.Spell value = (PinyinWord.Spell) option.value();
-            if (!key.isDisabled()) {
+            if (!Key.disabled(key)) {
                 this.spells.add(value);
             }
         }
 
         public void addRadicalByKey(CtrlKey key) {
-            CtrlKey.Option<?> option = key.getOption();
+            CtrlKey.Option<?> option = key.option;
             PinyinWord.Radical value = (PinyinWord.Radical) option.value();
 
-            if (key.isDisabled()) {
+            if (Key.disabled(key)) {
                 this.radicals.remove(value);
             } else {
                 this.radicals.add(value);

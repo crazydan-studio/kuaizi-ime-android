@@ -90,9 +90,8 @@ public class SymbolEmojiKeyTable extends KeyTable {
             int column = keyCoord.column;
             CtrlKey.Option<?> option = new CtrlKey.CodeOption(group);
 
-            gridKeys[row][column] = ctrlKey(CtrlKey.Type.Toggle_Emoji_Group).setOption(option)
-                                                                            .setLabel(group)
-                                                                            .setDisabled(selected);
+            CtrlKey key = ctrlKeyBuilder(CtrlKey.Type.Toggle_Emoji_Group).option(option).label(group).build();
+            gridKeys[row][column] = selected ? Key.disable(key) : key;
         }
 
         int dataIndex = startIndex;
@@ -166,9 +165,8 @@ public class SymbolEmojiKeyTable extends KeyTable {
             int column = keyCoord.column;
             CtrlKey.Option<?> option = new CtrlKey.SymbolGroupToggleOption(SymbolGroup.values()[j]);
 
-            gridKeys[row][column] = ctrlKey(CtrlKey.Type.Toggle_Symbol_Group).setOption(option)
-                                                                             .setLabel(group)
-                                                                             .setDisabled(selected);
+            CtrlKey key = ctrlKeyBuilder(CtrlKey.Type.Toggle_Symbol_Group).option(option).label(group).build();
+            gridKeys[row][column] = selected ? Key.disable(key) : key;
         }
 
         int dataIndex = startIndex;
