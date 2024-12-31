@@ -46,7 +46,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;

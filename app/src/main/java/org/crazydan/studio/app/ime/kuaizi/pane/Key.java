@@ -18,9 +18,9 @@
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import android.util.LruCache;
+import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
@@ -119,7 +119,7 @@ public abstract class Key implements RecyclerViewData {
     protected static abstract class Builder< //
             B extends Builder<B, K>, //
             K extends Key //
-            > {
+            > extends ImmutableBuilder<B, K> {
         final LruCache<Integer, K> cache;
 
         private String value;
@@ -140,21 +140,27 @@ public abstract class Key implements RecyclerViewData {
 
         // ===================== Start: 构建函数 ===================
 
-        /** 在入参函数中添加构建配置，再根据其配置创建 {@link Key} 实例 */
-        public static <K extends Key, B extends Builder<B, K>> K build(B b, Consumer<B> c) {
-            // Note: 构建器为单例复用，在使用前必须重置
-            b.reset();
+        @Override
+        protected void reset() {
+            this.value = null;
+            this.label = null;
 
-            c.accept(b);
+            this.icon = null;
+            this.color = Color.none();
 
-            int hash = b.hashCode();
+            this.disabled = false;
+        }
 
-            K key = b.cache != null ? b.cache.get(hash) : null;
+        @Override
+        protected K build() {
+            int hash = hashCode();
+
+            K key = this.cache != null ? this.cache.get(hash) : null;
             if (key == null) {
-                key = b.doBuild();
+                key = doBuild();
 
-                if (b.cache != null) {
-                    b.cache.put(hash, key);
+                if (this.cache != null) {
+                    this.cache.put(hash, key);
                 }
             }
 
@@ -168,17 +174,6 @@ public abstract class Key implements RecyclerViewData {
          * 以使其构造函数内仅需直接引用构建器的属性值，确保二者的 {@link #hashCode()} 是相同的
          */
         protected abstract K doBuild();
-
-        /** 为便于构建器作为单例复用，必须在 {@link #build} 返回之前，重置所有的按键配置 */
-        protected void reset() {
-            this.value = null;
-            this.label = null;
-
-            this.icon = null;
-            this.color = Color.none();
-
-            this.disabled = false;
-        }
 
         /** 通过构建器的 hash 值作为按键缓存的索引 */
         @Override

@@ -27,7 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.junit.Assert;
 import org.junit.Test;

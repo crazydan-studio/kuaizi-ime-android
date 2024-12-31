@@ -24,11 +24,11 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
@@ -620,12 +620,12 @@ public class PinyinKeyboard extends BaseKeyboard {
             switch (option) {
                 case only_pinyin:
                 case with_pinyin: {
-                    InputWord.SpellUsedMode expected = //
+                    PinyinWord.SpellUsedMode expected = //
                             option == CtrlKey.InputListCommitOption.Option.only_pinyin
-                            ? InputWord.SpellUsedMode.replacing
-                            : InputWord.SpellUsedMode.following;
+                            ? PinyinWord.SpellUsedMode.replacing
+                            : PinyinWord.SpellUsedMode.following;
 
-                    InputWord.SpellUsedMode spellUsedMode = //
+                    PinyinWord.SpellUsedMode spellUsedMode = //
                             oldInputOption.wordSpellUsedMode == expected ? null : expected;
 
                     newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);

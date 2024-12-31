@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgData;

@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

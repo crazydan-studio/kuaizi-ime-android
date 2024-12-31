@@ -103,7 +103,7 @@ public class SymbolKey extends Key {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         /** @see SymbolKey#symbol */
         public Builder symbol(Symbol symbol) {
@@ -111,6 +111,6 @@ public class SymbolKey extends Key {
             return this;
         }
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }

@@ -20,7 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 /**
  * {@link Input 输入}对应的{@link Input#getWord() 字}
@@ -28,31 +30,29 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public class InputWord {
+public abstract class InputWord {
     /** 对象 id，一般对应持久化的主键值 */
     public final Integer id;
     /** 值 */
     public final String value;
-    /** 读音 */
-    public final Spell spell;
-
-    /** 字的变体 */
-    private String variant;
     /** 字的权重 */
-    private int weight;
+    public final int weight;
 
-    public InputWord(Integer id, String value) {
-        this(id, value, (String) null);
-    }
+    /**
+     * 当前对象实例的 Hash 值，其将作为 {@link #hashCode()} 的返回值，
+     * 并且用于判断对象是否{@link #equals(Object) 相等}
+     * <p/>
+     * 该值与其{@link Builder 构造器}的 {@link Builder#hashCode()} 相等，
+     * 因为二者的属性值是全部相等的
+     */
+    private final int objHash;
 
-    public InputWord(Integer id, String value, String spell) {
-        this(id, value, new Spell(spell != null ? spell : ""));
-    }
+    protected InputWord(Builder<?, ?> builder) {
+        this.id = builder.id;
+        this.value = builder.value;
+        this.weight = builder.weight;
 
-    public InputWord(Integer id, String value, Spell spell) {
-        this.id = id;
-        this.value = value;
-        this.spell = new Spell(spell);
+        this.objHash = builder.hashCode();
     }
 
     public Integer getId() {
@@ -63,7 +63,7 @@ public class InputWord {
         return this.value;
     }
 
-    public Spell getSpell() {
+    public PinyinWord.Spell getSpell() {
         return this.spell;
     }
 
@@ -94,10 +94,7 @@ public class InputWord {
     @NonNull
     @Override
     public String toString() {
-        if (!hasSpell()) {
-            return this.value;
-        }
-        return this.value + '(' + this.spell.value + ')';
+        return this.value + '(' + this.id + ')';
     }
 
     @Override
@@ -109,63 +106,57 @@ public class InputWord {
             return false;
         }
 
-        // Note: 不处理与视图更细相关的变更判断，如有必要则在视图对象中处理
         InputWord that = (InputWord) o;
-        return this.value.equals(that.value) && Objects.equals(this.spell, that.spell);
+        return this.objHash == that.objHash;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.value, this.spell);
+        return this.objHash;
     }
 
-    /** 读音 */
-    public static class Spell {
-        /** 值 */
-        public final String value;
-        /** 读音 id */
-        public final Integer id;
-        /** 字母组合 id */
-        public final Integer charsId;
+    /** {@link InputWord} 的构建器 */
+    public static abstract class Builder<B extends Builder<B, W>, W extends InputWord> extends ImmutableBuilder<B, W> {
+        private Integer id;
+        private String value;
+        private int weight;
 
-        public Spell(String value) {
-            this(value, null, null);
-        }
-
-        public Spell(Spell spell) {
-            this(spell.value, spell.id, spell.charsId);
-        }
-
-        public Spell(String value, Integer id, Integer charsId) {
-            this.value = value;
-            this.id = id;
-            this.charsId = charsId;
-        }
+        // ===================== Start: 构建函数 ===================
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Spell that = (Spell) o;
-            return Objects.equals(this.id, that.id) && this.value.equals(that.value);
+        protected void reset() {
+            this.id = null;
+            this.value = null;
+            this.weight = 0;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.id, this.value);
+            return Objects.hash(this.id, this.value, this.weight);
         }
-    }
 
-    /** 读音使用类型 */
-    public enum SpellUsedMode {
-        /** 替代 {@link InputWord} */
-        replacing,
-        /** 跟随 {@link InputWord} */
-        following,
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        /** @see InputWord#id */
+        public B id(Integer id) {
+            this.id = id;
+            return (B) this;
+        }
+
+        /** @see InputWord#value */
+        public B value(String value) {
+            this.value = value;
+            return (B) this;
+        }
+
+        /** @see InputWord#weight */
+        public B weight(int weight) {
+            this.weight = weight;
+            return (B) this;
+        }
+
+        // ===================== End: 构建配置 ===================
     }
 }

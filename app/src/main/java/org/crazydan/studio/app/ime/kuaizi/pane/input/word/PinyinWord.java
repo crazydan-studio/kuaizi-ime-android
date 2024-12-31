@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2024 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,42 +15,39 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.pane.input;
+package org.crazydan.studio.app.ime.kuaizi.pane.input.word;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 
 /**
- * 拼音的{@link InputWord 输入字}
+ * 拼音字
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
  */
 public class PinyinWord extends InputWord {
-    /** 字形 id */
-    private final Integer glyphId;
+    private final static Builder builder = new Builder();
+
+    /** 读音 */
+    public final Spell spell;
     /** 部首 */
-    private final Radical radical;
+    public final Radical radical;
+    /** 字的变体 */
+    public final String variant;
+    /** 字形 id */
+    public final Integer glyphId;
     /** 是否繁体 */
-    private final boolean traditional;
+    public final boolean traditional;
 
-    public PinyinWord(Integer id, String value, Spell spell) {
-        this(id, value, spell, null, null, false);
-    }
-
-    public PinyinWord(
-            Integer id, String value, Spell spell, //
-            Integer glyphId, Radical radical, boolean traditional
-    ) {
-        super(id, value, spell);
-
-        this.glyphId = glyphId;
-        this.radical = radical;
-        this.traditional = traditional;
+    /** 构建 {@link PinyinWord} */
+    public static PinyinWord build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
     public static PinyinWord none() {
@@ -71,6 +68,16 @@ public class PinyinWord extends InputWord {
         return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
     }
 
+    protected PinyinWord(Builder builder) {
+        super(builder);
+
+        this.spell = builder.spell;
+        this.radical = builder.radical;
+        this.variant = builder.variant;
+        this.glyphId = builder.glyphId;
+        this.traditional = builder.traditional;
+    }
+
     public Integer getGlyphId() {
         return this.glyphId;
     }
@@ -87,6 +94,15 @@ public class PinyinWord extends InputWord {
         return this.traditional;
     }
 
+    /** 读音使用类型 */
+    public enum SpellUsedMode {
+        /** 替代 {@link InputWord} */
+        replacing,
+        /** 跟随 {@link InputWord} */
+        following,
+    }
+
+    /** 拼音字的部首 */
     public static class Radical {
         public final String value;
         public final int strokeCount;
@@ -115,6 +131,7 @@ public class PinyinWord extends InputWord {
         }
     }
 
+    /** 拼音字的过滤器 */
     public static class Filter {
         public final List<Spell> spells;
         public final List<Radical> radicals;
@@ -192,5 +209,120 @@ public class PinyinWord extends InputWord {
         public int hashCode() {
             return Objects.hash(this.spells, this.radicals);
         }
+    }
+
+    /** 拼音字的读音 */
+    public static class Spell {
+        /** 值 */
+        public final String value;
+        /** 读音 id */
+        public final Integer id;
+        /** 字母组合 id */
+        public final Integer charsId;
+
+        public Spell(String value) {
+            this(value, null, null);
+        }
+
+        public Spell(Spell spell) {
+            this(spell.value, spell.id, spell.charsId);
+        }
+
+        public Spell(String value, Integer id, Integer charsId) {
+            this.value = value;
+            this.id = id;
+            this.charsId = charsId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Spell that = (Spell) o;
+            return Objects.equals(this.id, that.id) && Objects.equals(this.value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.id, this.value);
+        }
+    }
+
+    /** {@link PinyinWord} 的构建器 */
+    public static class Builder extends InputWord.Builder<Builder, PinyinWord> {
+        private Spell spell;
+        private Radical radical;
+        private String variant;
+        private Integer glyphId;
+        private boolean traditional;
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected PinyinWord build() {
+            return new PinyinWord(this);
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.spell = null;
+            this.radical = null;
+            this.variant = null;
+            this.glyphId = null;
+            this.traditional = false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(),
+                                this.spell,
+                                this.radical,
+                                this.variant,
+                                this.glyphId,
+                                this.traditional);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        /** @see PinyinWord#spell */
+        public Builder spell(Spell spell) {
+            this.spell = spell;
+            return this;
+        }
+
+        /** @see PinyinWord#radical */
+        public Builder radical(Radical radical) {
+            this.radical = radical;
+            return this;
+        }
+
+        /** @see PinyinWord#variant */
+        public Builder variant(String variant) {
+            this.variant = variant;
+            return this;
+        }
+
+        /** @see PinyinWord#glyphId */
+        public Builder glyphId(Integer glyphId) {
+            this.glyphId = glyphId;
+            return this;
+        }
+
+        /** @see PinyinWord#traditional */
+        public Builder traditional(boolean traditional) {
+            this.traditional = traditional;
+            return this;
+        }
+
+        // ===================== End: 构建配置 ===================
     }
 }

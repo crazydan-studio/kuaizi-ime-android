@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.state;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 /**
  * 支持过滤的拼音候选状态数据

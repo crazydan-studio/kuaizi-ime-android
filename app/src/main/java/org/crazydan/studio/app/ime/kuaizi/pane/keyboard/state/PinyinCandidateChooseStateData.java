@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**

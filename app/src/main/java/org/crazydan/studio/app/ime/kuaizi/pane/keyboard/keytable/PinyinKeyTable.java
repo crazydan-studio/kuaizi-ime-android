@@ -32,7 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
@@ -645,8 +645,8 @@ public class PinyinKeyTable extends KeyTable {
     ) {
         Key[][] gridKeys = createEmptyGrid();
 
-        boolean isOnlyPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.replacing;
-        boolean isWithPinyin = currentOption.wordSpellUsedMode == InputWord.SpellUsedMode.following;
+        boolean isOnlyPinyin = currentOption.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing;
+        boolean isWithPinyin = currentOption.wordSpellUsedMode == PinyinWord.SpellUsedMode.following;
         boolean isVariantUsed = currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 

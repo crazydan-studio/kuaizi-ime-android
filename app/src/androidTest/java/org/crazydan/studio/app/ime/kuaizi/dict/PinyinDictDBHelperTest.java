@@ -31,16 +31,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
@@ -57,7 +58,6 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getT
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getWordId;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedEmojis;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedLatins;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

@@ -300,7 +300,7 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         @Override
         public Builder from(CtrlKey key) {
@@ -313,6 +313,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
             return this;
         }
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }

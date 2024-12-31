@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
 
 /**
  * {@link InputWord 输入候选字}按键
@@ -106,7 +106,7 @@ public class InputWordKey extends Key {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         /** @see InputWordKey#word */
         public Builder word(InputWord word) {
@@ -114,6 +114,6 @@ public class InputWordKey extends Key {
             return this;
         }
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }

@@ -66,7 +66,7 @@ public abstract class TypedKey<T extends Enum<?>> extends Key {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         @Override
         public B from(K key) {
@@ -81,6 +81,6 @@ public abstract class TypedKey<T extends Enum<?>> extends Key {
 
         public T type() {return this.type;}
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }

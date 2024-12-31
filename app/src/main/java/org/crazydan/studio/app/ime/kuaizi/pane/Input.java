@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
@@ -280,7 +280,7 @@ public abstract class Input implements RecyclerViewData {
 
     /** 输入文本内容是否只有{@link InputWord#getSpell() 字的读音} */
     public boolean isTextOnlyWordSpell(Option option) {
-        return option.wordSpellUsedMode == InputWord.SpellUsedMode.replacing && hasWord() && getWord().hasSpell();
+        return option.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing && hasWord() && getWord().hasSpell();
     }
 
     /** 是否有可输入字 */
@@ -371,11 +371,11 @@ public abstract class Input implements RecyclerViewData {
 
     public static class Option {
         /** 采用何种读音使用模式 */
-        public final InputWord.SpellUsedMode wordSpellUsedMode;
+        public final PinyinWord.SpellUsedMode wordSpellUsedMode;
         /** 是否使用候选字变体 */
         public final boolean wordVariantUsed;
 
-        public Option(InputWord.SpellUsedMode wordSpellUsedMode, boolean wordVariantUsed) {
+        public Option(PinyinWord.SpellUsedMode wordSpellUsedMode, boolean wordVariantUsed) {
             this.wordSpellUsedMode = wordSpellUsedMode;
             this.wordVariantUsed = wordVariantUsed;
         }

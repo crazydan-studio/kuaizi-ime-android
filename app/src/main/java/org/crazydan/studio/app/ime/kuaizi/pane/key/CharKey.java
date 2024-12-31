@@ -220,7 +220,7 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         /** Note: {@link CharKey#replacements} 未复制，如有需要，可自行调用 {@link #replacements(String...)} 补充 */
         @Override
@@ -250,6 +250,6 @@ public class CharKey extends TypedKey<CharKey.Type> {
             return this;
         }
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }

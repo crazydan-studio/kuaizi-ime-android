@@ -114,7 +114,7 @@ public class XPadKey extends Key {
 
         // ===================== End: 构建函数 ===================
 
-        // ===================== Start: 按键配置 ===================
+        // ===================== Start: 构建配置 ===================
 
         /** @see XPadKey#zone_0_key */
         public Builder zone_0_key(Key zone_0_key) {
@@ -134,6 +134,6 @@ public class XPadKey extends Key {
             return this;
         }
 
-        // ===================== End: 按键配置 ===================
+        // ===================== End: 构建配置 ===================
     }
 }
