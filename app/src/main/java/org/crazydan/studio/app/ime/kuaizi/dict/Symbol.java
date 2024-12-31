@@ -28,14 +28,14 @@ import androidx.annotation.NonNull;
  * @date 2023-08-28
  */
 public class Symbol {
-    public final String text;
+    public final String value;
 
-    public Symbol(String text) {
-        this.text = text;
+    public Symbol(String value) {
+        this.value = value;
     }
 
-    public static Symbol single(String text) {
-        return new Symbol(text);
+    public static Symbol single(String value) {
+        return new Symbol(value);
     }
 
     public static Symbol pair(String left, String right) {
@@ -45,7 +45,7 @@ public class Symbol {
     @NonNull
     @Override
     public String toString() {
-        return this.text;
+        return this.value;
     }
 
     @Override
@@ -58,12 +58,12 @@ public class Symbol {
         }
 
         Symbol that = (Symbol) o;
-        return this.text.equals(that.text);
+        return this.value.equals(that.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.text);
+        return Objects.hash(this.value);
     }
 
     /** 配对的标点符号，含左右两个符号 */

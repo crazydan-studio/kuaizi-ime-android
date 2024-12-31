@@ -25,20 +25,30 @@ package org.crazydan.studio.app.ime.kuaizi.common.widget;
  */
 public enum EditorAction {
     /** 回删 */
-    backspace,
+    backspace("回删"),
     /** 全选 */
-    select_all,
+    select_all("全选"),
     /** 复制 */
-    copy,
+    copy("复制"),
     /** 粘贴 */
-    paste,
+    paste("粘贴"),
     /** 剪切 */
-    cut,
+    cut("剪切"),
     /** 撤销 */
-    undo,
+    undo("撤销"),
     /** 重做 */
-    redo,
+    redo("重做"),
     ;
+
+    private final String label;
+
+    EditorAction(String label) {
+        this.label = label;
+    }
+
+    public String label() {
+        return this.label;
+    }
 
     /** 检查指定的编辑动作是否会造成内容修改 */
     public static boolean hasEffect(EditorAction action) {

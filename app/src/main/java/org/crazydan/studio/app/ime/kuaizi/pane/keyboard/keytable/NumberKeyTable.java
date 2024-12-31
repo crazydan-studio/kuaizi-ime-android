@@ -17,8 +17,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
@@ -100,9 +103,7 @@ public class NumberKeyTable extends KeyTable {
                 int row = keyCoord.row;
                 int column = keyCoord.column;
 
-                Key.Color color = key_char_color;
-                Key key = keys[dataIndex++].setColor(color);
-
+                Key key = keys[dataIndex++];
                 gridKeys[row][column] = key;
             }
         }
@@ -183,5 +184,21 @@ public class NumberKeyTable extends KeyTable {
                         coord(1, 1), coord(1, 2),
                         },
                 };
+    }
+
+    @Override
+    public CharKey numberKey(String value, Consumer<CharKey.Builder> c) {
+        return super.numberKey(value, (b) -> {
+            b.color(key_char_color);
+            c.accept(b);
+        });
+    }
+
+    @Override
+    public CharKey symbolKey(String value, Consumer<CharKey.Builder> c) {
+        return super.symbolKey(value, (b) -> {
+            b.color(key_char_color);
+            c.accept(b);
+        });
     }
 }

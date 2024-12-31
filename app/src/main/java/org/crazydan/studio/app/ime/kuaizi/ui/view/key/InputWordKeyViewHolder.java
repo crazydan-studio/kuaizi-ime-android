@@ -51,7 +51,7 @@ public class InputWordKeyViewHolder extends KeyViewHolder<View> {
     public void bind(InputWordKey key, HexagonOrientation orientation) {
         super.bind(key, orientation);
 
-        InputWord word = key.getWord();
+        InputWord word = key.word;
 
         whenViewReady(this.traditionalMarkView, (view) -> {
             boolean shown = word instanceof PinyinWord && ((PinyinWord) word).isTraditional();

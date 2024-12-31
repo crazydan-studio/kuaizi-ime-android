@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 
@@ -90,8 +89,9 @@ public class SymbolEmojiKeyTable extends KeyTable {
             int column = keyCoord.column;
             CtrlKey.Option<?> option = new CtrlKey.CodeOption(group);
 
-            CtrlKey key = ctrlKeyBuilder(CtrlKey.Type.Toggle_Emoji_Group).option(option).label(group).build();
-            gridKeys[row][column] = selected ? Key.disable(key) : key;
+            CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Emoji_Group,
+                                  (b) -> b.option(option).label(group).disabled(selected));
+            gridKeys[row][column] = key;
         }
 
         int dataIndex = startIndex;
@@ -108,9 +108,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                     InputWord word = words.get(dataIndex);
 
                     if (word != null) {
-                        Key.Color color = key_input_word_level_colors[level];
-                        InputWordKey key = InputWordKey.create(word).setColor(color);
-
+                        InputWordKey key = inputWordKey(word, level);
                         gridKeys[row][column] = key;
                     }
                 } else {
@@ -165,8 +163,9 @@ public class SymbolEmojiKeyTable extends KeyTable {
             int column = keyCoord.column;
             CtrlKey.Option<?> option = new CtrlKey.SymbolGroupToggleOption(SymbolGroup.values()[j]);
 
-            CtrlKey key = ctrlKeyBuilder(CtrlKey.Type.Toggle_Symbol_Group).option(option).label(group).build();
-            gridKeys[row][column] = selected ? Key.disable(key) : key;
+            CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Symbol_Group,
+                                  (b) -> b.option(option).label(group).disabled(selected));
+            gridKeys[row][column] = key;
         }
 
         int dataIndex = startIndex;
@@ -183,10 +182,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                     Symbol data = symbols[dataIndex];
 
                     if (data != null) {
-                        Key.Color color = key_input_word_level_colors[level];
-
-                        SymbolKey key = SymbolKey.create(data).setLabel(data.text).setColor(color);
-                        gridKeys[row][column] = key;
+                        gridKeys[row][column] = symbolKey(data, level);
                     }
                 } else {
                     break;

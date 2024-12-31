@@ -30,11 +30,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
  */
 public class InputWord {
     /** 对象 id，一般对应持久化的主键值 */
-    private final Integer id;
+    public final Integer id;
     /** 值 */
-    private final String value;
+    public final String value;
     /** 读音 */
-    private final Spell spell;
+    public final Spell spell;
 
     /** 字的变体 */
     private String variant;

@@ -724,7 +724,7 @@ public class InputList implements UserInputMsgListener {
 
             return word != null //
                    ? word : key instanceof InputWordKey //
-                            ? ((InputWordKey) key).getWord() : null;
+                            ? ((InputWordKey) key).word : null;
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 

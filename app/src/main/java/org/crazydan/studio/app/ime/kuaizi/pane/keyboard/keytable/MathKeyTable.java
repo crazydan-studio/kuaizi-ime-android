@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable;
 
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
@@ -41,14 +43,6 @@ public class MathKeyTable extends KeyTable {
 
     public static MathKeyTable create(KeyTableConfig config) {
         return new MathKeyTable(config);
-    }
-
-    private static MathOpKey mathOpKey(MathOpKey.Type type, String text) {
-        return MathOpKey.create(type, text).setLabel(text);
-    }
-
-    public static MathOpKey bracketKey(String text) {
-        return mathOpKey(MathOpKey.Type.Brackets, text);
     }
 
     @Override
@@ -107,9 +101,6 @@ public class MathKeyTable extends KeyTable {
                 int column = keyCoord.column;
 
                 Key key = keys[dataIndex++];
-                Key.Color color = CharKey.Type.Number.match(key) ? key_char_color : key_char_special_color;
-
-                key.setColor(color);
                 gridKeys[row][column] = key;
             }
         }
@@ -195,49 +186,22 @@ public class MathKeyTable extends KeyTable {
     }
 
     @Override
-    public CharKey numberKey(String text) {
-        Key.Color color = key_char_color;
-
-        return super.numberKey(text).setColor(color);
+    public CharKey numberKey(String value) {
+        return numberKey(value, (b) -> b.color(key_char_color));
     }
 
     public MathOpKey mathOpKey(MathOpKey.Type type) {
-        Key.Color color = key_char_special_color;
+        return mathOpKey(type, MathOpKey.Builder.noop);
+    }
 
-        String text = null;
-        switch (type) {
-            case Equal:
-                text = "=";
-                break;
-            case Dot:
-                text = ".";
-                break;
-            case Multiply:
-                text = "×";
-                break;
-            case Divide:
-                text = "÷";
-                break;
-            case Plus:
-                text = "+";
-                break;
-            case Minus:
-                text = "-";
-                break;
-            case Brackets:
-                text = "( )";
-                break;
-            case Percent:
-                text = "%";
-                break;
-            case Permill:
-                text = "‰";
-                break;
-            case Permyriad:
-                text = "‱";
-                break;
-        }
+    public static MathOpKey bracketKey(String value) {
+        return mathOpKey(MathOpKey.Type.Brackets, (b) -> b.value(value).label(value));
+    }
 
-        return mathOpKey(type, text).setColor(color);
+    private static MathOpKey mathOpKey(MathOpKey.Type type, Consumer<MathOpKey.Builder> c) {
+        return MathOpKey.build((b) -> {
+            b.type(type).color(key_char_special_color);
+            c.accept(b);
+        });
     }
 }

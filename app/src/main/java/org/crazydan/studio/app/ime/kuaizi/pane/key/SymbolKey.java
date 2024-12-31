@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.key;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
@@ -30,27 +31,24 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @date 2023-08-29
  */
 public class SymbolKey extends Key {
-    private final Symbol symbol;
+    private final static Builder builder = new Builder();
 
-    private SymbolKey(Symbol symbol) {
-        this.symbol = symbol;
+    public final Symbol symbol;
+
+    /** 构建 {@link SymbolKey} */
+    public static SymbolKey build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
-    public static SymbolKey create(Symbol symbol) {
-        return new SymbolKey(symbol);
+    /** 构建携带指定 {@link Symbol} 的 {@link SymbolKey} */
+    public static SymbolKey build(Symbol symbol) {
+        return build((b) -> b.symbol(symbol));
     }
 
-    public Symbol getSymbol() {
-        return this.symbol;
-    }
+    protected SymbolKey(Builder builder) {
+        super(builder);
 
-    public boolean isPair() {
-        return this.symbol instanceof Symbol.Pair;
-    }
-
-    @Override
-    public String getValue() {
-        return this.symbol.text;
+        this.symbol = builder.symbol;
     }
 
     @Override
@@ -71,24 +69,48 @@ public class SymbolKey extends Key {
         return this.symbol.toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
+    /** {@link SymbolKey} 的构建器 */
+    public static class Builder extends Key.Builder<Builder, SymbolKey> {
+        public static final Consumer<Builder> noop = (b) -> {};
+
+        private Symbol symbol;
+
+        Builder() {
+            super(0);
         }
 
-        SymbolKey that = (SymbolKey) o;
-        return this.symbol.equals(that.symbol);
-    }
+        // ===================== Start: 构建函数 ===================
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.symbol);
+        @Override
+        protected SymbolKey doBuild() {
+            value(this.symbol.value);
+            label(value());
+
+            return new SymbolKey(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), this.symbol);
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.symbol = null;
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 按键配置 ===================
+
+        /** @see SymbolKey#symbol */
+        public Builder symbol(Symbol symbol) {
+            this.symbol = symbol;
+            return this;
+        }
+
+        // ===================== End: 按键配置 ===================
     }
 }

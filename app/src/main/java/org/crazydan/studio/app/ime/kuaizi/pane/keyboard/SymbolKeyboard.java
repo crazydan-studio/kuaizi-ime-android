@@ -138,11 +138,11 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
 
         boolean directInputting = inputList.isEmpty();
-        boolean isPairKey = key.isPair();
+        boolean isPairKey = key.symbol instanceof Symbol.Pair;
 
         if (!directInputting) {
             if (isPairKey) {
-                prepare_for_PairSymbol_Inputting(context, (Symbol.Pair) key.getSymbol());
+                prepare_for_PairSymbol_Inputting(context, (Symbol.Pair) key.symbol);
 
                 confirm_InputList_Pending(context);
 
@@ -156,7 +156,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
 
         CharInput pending = inputList.newPending();
         if (isPairKey) {
-            Symbol.Pair symbol = (Symbol.Pair) key.getSymbol();
+            Symbol.Pair symbol = (Symbol.Pair) key.symbol;
 
             prepare_for_PairSymbol_Inputting(context, symbol);
         } else {
@@ -179,8 +179,8 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         String right = symbol.right;
 
         prepare_for_PairKey_Inputting(inputList,
-                                      () -> SymbolKey.create(Symbol.single(left)),
-                                      () -> SymbolKey.create(Symbol.single(right)));
+                                      () -> SymbolKey.build(Symbol.single(left)),
+                                      () -> SymbolKey.build(Symbol.single(right)));
     }
 
     public static void prepare_for_PairKey_Inputting(

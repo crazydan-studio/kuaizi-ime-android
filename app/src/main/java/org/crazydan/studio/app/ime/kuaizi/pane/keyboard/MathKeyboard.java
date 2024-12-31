@@ -251,7 +251,7 @@ public class MathKeyboard extends BaseKeyboard {
 
     /** 处理运算符号的输入 */
     private void do_Single_MathOpKey_Inputting(InputList mathInputList, MathOpKey key) {
-        switch (key.getType()) {
+        switch (key.type) {
             // 针对以下输入，对当前的选中的数字输入做追加，而不是替换
             case Percent:
             case Permill:
@@ -263,7 +263,7 @@ public class MathKeyboard extends BaseKeyboard {
             }
         }
 
-        switch (key.getType()) {
+        switch (key.type) {
             case Dot: {
                 CharInput pending = mathInputList.getPending();
                 // 小数点只能出现在数字中，且只能出现一次
@@ -428,7 +428,7 @@ public class MathKeyboard extends BaseKeyboard {
         for (Key key : input.getKeys()) {
             // Note: 只有 运算符 和 数字符 两种按键
             if (key instanceof MathOpKey) {
-                if (((MathOpKey) key).getType() != MathOpKey.Type.Dot) {
+                if (!MathOpKey.Type.Dot.match(key)) {
                     return false;
                 }
             }
@@ -440,7 +440,6 @@ public class MathKeyboard extends BaseKeyboard {
     private boolean isBracketInput(Input input) {
         Key key = input.getFirstKey();
 
-        return key instanceof MathOpKey //
-               && ((MathOpKey) key).getType() == MathOpKey.Type.Brackets;
+        return MathOpKey.Type.Brackets.match(key);
     }
 }

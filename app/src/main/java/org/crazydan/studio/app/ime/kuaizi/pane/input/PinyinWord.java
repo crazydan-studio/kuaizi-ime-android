@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 
 /**
@@ -139,7 +138,7 @@ public class PinyinWord extends InputWord {
 
             CtrlKey.Option<?> option = key.option;
             PinyinWord.Spell value = (PinyinWord.Spell) option.value();
-            if (!Key.disabled(key)) {
+            if (!key.disabled) {
                 this.spells.add(value);
             }
         }
@@ -148,7 +147,7 @@ public class PinyinWord extends InputWord {
             CtrlKey.Option<?> option = key.option;
             PinyinWord.Radical value = (PinyinWord.Radical) option.value();
 
-            if (Key.disabled(key)) {
+            if (key.disabled) {
                 this.radicals.remove(value);
             } else {
                 this.radicals.add(value);

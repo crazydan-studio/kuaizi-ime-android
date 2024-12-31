@@ -153,7 +153,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         // Note：被禁用的部分控制按键也需要接受处理
         if (key instanceof CtrlKey //
-            && Key.disabled(key) //
+            && key.disabled //
             && !CtrlKey.Type.Commit_InputList_Option.match(key)) {
             return;
         }
@@ -190,7 +190,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     /** 响应 {@link CharKey} 的消息 */
     private void on_CharKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CharKey key = context.key();
-        if (Key.disabled(key)) {
+        if (key.disabled) {
             return;
         }
 
@@ -269,7 +269,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 Key lastKey = pending.getLastKey();
 
                 if (key instanceof CharKey //
-                    && !Key.disabled(key) //
+                    && !key.disabled //
                     // 拼音的后继不会是相同字母
                     && !key.isSameWith(lastKey) //
                 ) {
@@ -451,7 +451,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         // 添加拼音后继字母
         switch (msg.type) {
             case SingleTap_Key: {
-                if (key instanceof CharKey && !Key.disabled(key)) {
+                if (key instanceof CharKey && !key.disabled) {
                     CharInput pending = inputList.getPending();
 
                     do_InputChars_XPad_Input_CharKey(context, pending);
@@ -638,7 +638,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 case switch_trad_to_simple:
                 case switch_simple_to_trad: {
                     // 被禁用的繁简转换按钮不做响应
-                    if (!Key.disabled(key)) {
+                    if (!key.disabled) {
                         newInputOption = //
                                 new Input.Option(oldInputOption.wordSpellUsedMode, !oldInputOption.wordVariantUsed);
                     }

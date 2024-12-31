@@ -139,7 +139,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
             return;
         }
 
-        InputWord word = key.getWord();
+        InputWord word = key.word;
         CharInput pending = inputList.newPending();
 
         pending.appendKey(key);

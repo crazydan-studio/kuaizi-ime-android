@@ -182,7 +182,8 @@ public class CharInput extends Input {
     }
 
     protected void replaceCharKeyText(CharKey key, int keyIndex, String keyValue) {
-        key = CharKey.builder.from(key).value(keyValue).label(keyValue).build();
-        getKeys().set(keyIndex, key);
+        CharKey newKey = CharKey.build((b) -> b.from(key).value(keyValue).label(keyValue));
+
+        getKeys().set(keyIndex, newKey);
     }
 }

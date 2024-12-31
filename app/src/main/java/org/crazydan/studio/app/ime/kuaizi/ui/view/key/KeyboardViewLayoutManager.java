@@ -310,7 +310,8 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
 
     private void layoutRectHexagons(RecyclerView.Recycler recycler, List<RectHexagon> rectHexagons, int itemCount) {
         View xPadKeyView = null;
-        int xPadKeyViewType = KeyboardViewAdapter.getKeyViewType(new XPadKey());
+        XPadKey xPadKey = XPadKey.build(XPadKey.Builder.noop);
+        int xPadKeyViewType = KeyboardViewAdapter.getKeyViewType(xPadKey);
 
         for (RectHexagon rectHexagon : rectHexagons) {
             int index = rectHexagon.index;

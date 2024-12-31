@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.key;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
@@ -28,17 +29,15 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @date 2023-09-18
  */
 public class MathOpKey extends TypedKey<MathOpKey.Type> {
+    private final static Builder builder = new Builder();
 
-    private MathOpKey(Type type, String text) {
-        super(type, text);
+    /** 构建 {@link MathOpKey} */
+    public static MathOpKey build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
-    public static MathOpKey create(Type type, String text) {
-        return new MathOpKey(type, text);
-    }
-
-    public Type getType() {
-        return this.type;
+    protected MathOpKey(Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -60,28 +59,34 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
 
     public enum Type {
         /** 数学 = */
-        Equal,
+        Equal("="),
         /** 数学 + */
-        Plus,
+        Plus("+"),
         /** 数学 - */
-        Minus,
+        Minus("-"),
         /** 数学 × */
-        Multiply,
+        Multiply("×"),
         /** 数学 ÷ */
-        Divide,
+        Divide("÷"),
 
         /** 数学 % */
-        Percent,
+        Percent("%"),
         /** 数学 ‰ */
-        Permill,
+        Permill("‰"),
         /** 数学 ‱ */
-        Permyriad,
+        Permyriad("‱"),
 
         /** 数学 () */
-        Brackets,
+        Brackets("( )"),
         /** 数学 . */
-        Dot,
+        Dot("."),
         ;
+
+        private final String text;
+
+        Type(String text) {
+            this.text = text;
+        }
 
         /** 判断指定的 {@link Key} 是否为当前类型的 {@link MathOpKey} */
         public boolean match(Key key) {
@@ -102,5 +107,30 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
             }
             return false;
         }
+    }
+
+    /** {@link MathOpKey} 的构建器 */
+    public static class Builder extends TypedKey.Builder<Builder, MathOpKey, Type> {
+        public static final Consumer<Builder> noop = (b) -> {};
+
+        Builder() {
+            super(20);
+        }
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected MathOpKey doBuild() {
+            value(type().text);
+            label(value());
+
+            return new MathOpKey(this);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 按键配置 ===================
+
+        // ===================== End: 按键配置 ===================
     }
 }

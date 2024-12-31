@@ -130,20 +130,20 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputWordKey key = context.key();
         InputList inputList = context.inputList;
 
-        if (Key.disabled(key)) {
+        if (key.disabled) {
             return;
         }
 
         play_SingleTick_InputAudio(context);
         show_InputChars_Input_Popup(context);
 
-        InputWord word = key.getWord();
+        InputWord word = key.word;
         // 候选字列表中的表情作为新增插入，不对当前候选字做替换
         if (word instanceof EmojiWord) {
             inputList.confirmPendingAndSelectNext();
 
             // Note：补充输入按键，以避免待输入为空
-            InputWordKey wordKey = InputWordKey.create(word);
+            InputWordKey wordKey = InputWordKey.build(word);
             inputList.getPending().appendKey(wordKey);
         }
 

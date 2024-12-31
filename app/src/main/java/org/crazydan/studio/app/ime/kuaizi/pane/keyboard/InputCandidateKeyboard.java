@@ -62,7 +62,7 @@ public abstract class InputCandidateKeyboard extends BaseKeyboard {
         } else {
             if (key instanceof CtrlKey) {
                 on_InputCandidate_Choose_Doing_CtrlKey_Msg(context, msg);
-            } else if (!Key.disabled(key)) {
+            } else if (!key.disabled) {
                 on_InputCandidate_Choose_Doing_PagingKey_Msg(context, msg);
             }
         }

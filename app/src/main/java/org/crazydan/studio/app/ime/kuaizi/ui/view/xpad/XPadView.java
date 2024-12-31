@@ -300,14 +300,14 @@ public class XPadView extends View {
 
                 // 在左右任意轴线上有字符，均可触发提示音效
                 if (!BlockKey.isNull(blockKey)) {
-                    fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Active_Block), data);
+                    fire_UserKey_Moving(trigger, CtrlKey.build(CtrlKey.Type.XPad_Active_Block), data);
                 }
             }
             // 告知待输入字符发生了切换
             else if (isCharChanged) {
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {
-                    fire_UserKey_Moving(trigger, CtrlKey.create(CtrlKey.Type.XPad_Char_Key), data);
+                    fire_UserKey_Moving(trigger, CtrlKey.build(CtrlKey.Type.XPad_Char_Key), data);
                 }
             }
         }
@@ -324,7 +324,7 @@ public class XPadView extends View {
             Key key = zone_1_keys[i];
             this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
 
-            if (Key.disabled(key)) {
+            if (key.disabled) {
                 this.active_ctrl_block_key = this.zone_1_keys[i];
             }
         }
@@ -414,7 +414,7 @@ public class XPadView extends View {
                 icon_painter.setAlign(XPainter.Align.Center);
                 icon_painter.setRotate(rotate);
                 icon_painter.setSize(this.ctrl_icon_size);
-                icon_painter.setAlpha(Key.disabled(blockKey.key) ? 0.4f : 1f);
+                icon_painter.setAlpha(blockKey.key.disabled ? 0.4f : 1f);
             }
         } else if (!BlockKey.isNull(this.active_ctrl_block_key)) {
             BlockKey blockKey = this.active_ctrl_block_key;
@@ -1012,7 +1012,7 @@ public class XPadView extends View {
         XPadState.BlockData stateData = (XPadState.BlockData) this.state.data;
         BlockKey blockKey = getBlockKey(new BlockIndex(2, stateData.getStartBlock()), stateData.getBlockDiff());
 
-        return BlockKey.isNull(blockKey) || Key.disabled(blockKey.key) ? null : blockKey;
+        return BlockKey.isNull(blockKey) || blockKey.key.disabled ? null : blockKey;
     }
 
     private boolean isActiveBlock_In_Zone_2(int index) {
@@ -1102,11 +1102,11 @@ public class XPadView extends View {
     ) {
         reset();
 
-        Key key = CtrlKey.create(CtrlKey.Type.NoOp);
+        Key key = CtrlKey.build(CtrlKey.Type.NoOp);
         trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
 
         if (simulationTerminated) {
-            key = CtrlKey.create(CtrlKey.Type.XPad_Simulation_Terminated);
+            key = CtrlKey.build(CtrlKey.Type.XPad_Simulation_Terminated);
             trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
         }
     }

@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane.key;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
@@ -31,30 +32,28 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.EmojiWord;
  * @date 2023-07-09
  */
 public class InputWordKey extends Key {
-    private final InputWord word;
+    private final static Builder builder = new Builder();
 
-    private InputWordKey(InputWord word) {
-        this.word = word;
+    public final InputWord word;
+
+    /** 构建 {@link InputWordKey} */
+    public static InputWordKey build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
-    public static InputWordKey create(InputWord word) {
-        return new InputWordKey(word);
+    /** 构建携带指定 {@link InputWord} 的 {@link InputWordKey} */
+    public static InputWordKey build(InputWord word) {
+        return build((b) -> b.word(word));
     }
 
     public static boolean isEmoji(Key key) {
-        return key instanceof InputWordKey && ((InputWordKey) key).getWord() instanceof EmojiWord;
+        return key instanceof InputWordKey && ((InputWordKey) key).word instanceof EmojiWord;
     }
 
-    public String getLabel() {
-        return getValue();
-    }
+    protected InputWordKey(Builder builder) {
+        super(builder);
 
-    public String getValue() {
-        return getWord().getValue();
-    }
-
-    public InputWord getWord() {
-        return this.word;
+        this.word = builder.word;
     }
 
     @Override
@@ -73,23 +72,48 @@ public class InputWordKey extends Key {
         return this.word.toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        InputWordKey that = (InputWordKey) o;
-        return Objects.equals(this.word, that.word);
-    }
+    /** {@link InputWordKey} 的构建器 */
+    public static class Builder extends Key.Builder<Builder, InputWordKey> {
+        public static final Consumer<Builder> noop = (b) -> {};
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), this.word);
+        private InputWord word;
+
+        Builder() {
+            super(0);
+        }
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected InputWordKey doBuild() {
+            value(this.word.value);
+            label(value());
+
+            return new InputWordKey(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), this.word);
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.word = null;
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 按键配置 ===================
+
+        /** @see InputWordKey#word */
+        public Builder word(InputWord word) {
+            this.word = word;
+            return this;
+        }
+
+        // ===================== End: 按键配置 ===================
     }
 }

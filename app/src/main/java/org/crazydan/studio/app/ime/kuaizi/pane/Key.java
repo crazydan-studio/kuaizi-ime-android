@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import android.util.LruCache;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
@@ -41,45 +42,28 @@ public abstract class Key implements RecyclerViewData {
     /** 按键的配色，始终不为 null */
     public final Color color;
 
+    /** 按键是否已被禁用 */
+    public final boolean disabled;
+
+    /**
+     * 当前对象实例的 Hash 值，其将作为 {@link #hashCode()} 的返回值，
+     * 并且用于判断对象是否{@link #equals(Object) 相等}
+     * <p/>
+     * 该值与其{@link Builder 构造器}的 {@link Builder#hashCode()} 相等，
+     * 因为二者的属性值是全部相等的
+     */
+    private final int objHash;
+
     protected Key(Builder<?, ?> builder) {
         this.value = builder.value;
         this.label = builder.label;
 
         this.icon = builder.icon;
         this.color = builder.color;
-    }
 
-    /** 禁用指定的 {@link Key} */
-    public static Key disable(Key key) {
-        return new Disabled(key);
-    }
+        this.disabled = builder.disabled;
 
-    /** 判断指定的 {@link Key} 是否已被禁用 */
-    public static boolean disabled(Key key) {
-        return key instanceof Disabled;
-    }
-
-    /** 设置为禁用 */
-    public <K extends Key> K setDisabled(boolean disabled) {
-        return (K) this;
-    }
-
-    /** 设置按键上显示的文字内容 */
-    public <K extends Key> K setLabel(String label) {
-        this.label = label;
-        return (K) this;
-    }
-
-    /** 设置按键上显示的图标资源 id */
-    public <K extends Key> K setIcon(Integer icon) {
-        this.icon = icon;
-        return (K) this;
-    }
-
-    /** 设置按键配色 */
-    public <K extends Key> K setColor(Color color) {
-        this.color = color == null ? Color.none() : color;
-        return (K) this;
+        this.objHash = builder.hashCode();
     }
 
     @Override
@@ -97,16 +81,12 @@ public abstract class Key implements RecyclerViewData {
         }
 
         Key that = (Key) o;
-        return Objects.equals(this.value, that.value)
-               && Objects.equals(this.label, that.label)
-               && Objects.equals(this.icon, that.icon)
-               && Objects.equals(this.color.fg, that.color.fg)
-               && Objects.equals(this.color.bg, that.color.bg);
+        return this.objHash == that.objHash;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.value, this.label, this.icon, this.color.fg, this.color.bg);
+        return this.objHash;
     }
 
     /** {@link Key} 配色 */
@@ -131,46 +111,24 @@ public abstract class Key implements RecyclerViewData {
     }
 
     /**
-     * 已被禁用的 {@link Key}
+     * {@link Key} 构建器，用于以链式调用形式配置按键属性，并支持缓存按键，从而避免反复创建相同的 {@link Key}
      * <p/>
-     * 被禁用的按键采用对象封装模式，从而确保原始按键能够被缓存
-     */
-    private static class Disabled extends Key {
-        private static final Builder<?, ?> builder = new Builder<Builder, Key>(0) {
-            @Override
-            protected Key doBuild() {
-                return null;
-            }
-        };
-
-        final Key source;
-
-        Disabled(Key source) {
-            super(builder);
-
-            this.source = source;
-        }
-
-        @Override
-        public boolean isSameWith(Object o) {
-            return false;
-        }
-    }
-
-    /**
-     * {@link Key} 构建器，用于以调用链形式配置按键属性，并支持缓存按键，从而避免反复创建相同的 {@link Key}
-     * <p/>
-     * 注意，构建器本身需采用单例模式，并且在 {@link #build()} 时，以其 {@link #hashCode()} 作为按键缓存的唯一索引，
+     * 注意，构建器本身需采用单例模式，并且在 {@link #build} 时，以其 {@link #hashCode()} 作为按键缓存的唯一索引，
      * 因此，构建器不是线程安全的
      */
-    protected static abstract class Builder<B extends Builder<B, K>, K extends Key> {
-        private final LruCache<Integer, K> cache;
+    protected static abstract class Builder< //
+            B extends Builder<B, K>, //
+            K extends Key //
+            > {
+        final LruCache<Integer, K> cache;
 
-        protected String value;
+        private String value;
         private String label;
 
         private Integer icon;
         private Color color = Color.none();
+
+        private boolean disabled;
 
         /**
          * @param cacheSize
@@ -182,48 +140,61 @@ public abstract class Key implements RecyclerViewData {
 
         // ===================== Start: 构建函数 ===================
 
-        abstract protected K doBuild();
+        /** 在入参函数中添加构建配置，再根据其配置创建 {@link Key} 实例 */
+        public static <K extends Key, B extends Builder<B, K>> K build(B b, Consumer<B> c) {
+            // Note: 构建器为单例复用，在使用前必须重置
+            b.reset();
 
-        /** 根据当前构建配置创建 {@link Key} 实例 */
-        public K build() {
-            int hash = hashCode();
+            c.accept(b);
 
-            K key = this.cache != null ? this.cache.get(hash) : null;
+            int hash = b.hashCode();
+
+            K key = b.cache != null ? b.cache.get(hash) : null;
             if (key == null) {
-                key = doBuild();
+                key = b.doBuild();
 
-                if (this.cache != null) {
-                    this.cache.put(hash, key);
+                if (b.cache != null) {
+                    b.cache.put(hash, key);
                 }
             }
-
-            reset();
 
             return key;
         }
 
-        /** 通过构建器的 hash 值作为按键缓存的索引 */
-        @Override
-        public int hashCode() {
-            // Note: 对于 disabled 的按键，仅缓存其原始按键，其对象本身为临时创建的
-            return Objects.hash(this.value, this.label, this.icon, //
-                                this.color.fg, this.color.bg);
-        }
+        /**
+         * 在 {@link Key} 的构造函数中根据 {@link Builder} 为只读属性赋初始值
+         * <p/>
+         * 注意，相关属性的值转换和处理操作需在传给 {@link Key} 的构造函数之前完成，
+         * 以使其构造函数内仅需直接引用构建器的属性值，确保二者的 {@link #hashCode()} 是相同的
+         */
+        protected abstract K doBuild();
 
-        /** 为便于构建器作为单例复用，必须在 {@link #build()} 返回之前，重置所有的按键配置 */
+        /** 为便于构建器作为单例复用，必须在 {@link #build} 返回之前，重置所有的按键配置 */
         protected void reset() {
             this.value = null;
             this.label = null;
 
             this.icon = null;
             this.color = Color.none();
+
+            this.disabled = false;
+        }
+
+        /** 通过构建器的 hash 值作为按键缓存的索引 */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.value, this.label, this.disabled, this.icon, this.color.fg, this.color.bg);
         }
 
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 按键配置 ===================
 
-        /** 创建与指定 {@link Key} 相同的按键，并可继续按需修改其他配置 */
+        /**
+         * 创建与指定 {@link Key} 相同的按键，并可继续按需修改其他配置
+         * <p/>
+         * 注意，{@link Key#disabled} 状态不做复制，需按需单独处理
+         */
         public B from(K key) {
             return value(key.value).label(key.label).icon(key.icon).color(key.color);
         }
@@ -258,6 +229,17 @@ public abstract class Key implements RecyclerViewData {
         public B color(Color color) {
             this.color = color != null ? color : Color.none();
             return (B) this;
+        }
+
+        /** 设置按键是否被禁用 */
+        public B disabled(boolean disabled) {
+            this.disabled = disabled;
+            return (B) this;
+        }
+
+        /** 禁用按键 */
+        public B disable() {
+            return disabled(true);
         }
 
         // ===================== End: 按键配置 ===================

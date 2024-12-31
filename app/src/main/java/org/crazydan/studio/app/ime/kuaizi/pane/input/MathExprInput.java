@@ -171,7 +171,7 @@ public class MathExprInput extends CharInput {
     private static MathOpKey.Type getOpType(CharInput input) {
         Key key = input != null && input.getKeys().size() == 1 ? input.getFirstKey() : null;
 
-        return key instanceof MathOpKey ? ((MathOpKey) key).getType() : null;
+        return key instanceof MathOpKey ? ((MathOpKey) key).type : null;
     }
 
     private static boolean isEqualOp(CharInput input) {

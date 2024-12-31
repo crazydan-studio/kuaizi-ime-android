@@ -413,9 +413,10 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             String wordValue = tuple[1];
             String wordSpell = tuple[2];
 
-            InputWord word = new InputWord(100 + i, wordValue, wordSpell);
-            CharKey key = CharKey.builder.type(CharKey.Type.Alphabet).value(chars).build();
+            CharKey key = CharKey.build((b) -> b.type(CharKey.Type.Alphabet).value(chars));
             CharInput input = CharInput.from(key);
+
+            InputWord word = new InputWord(100 + i, wordValue, wordSpell);
             input.setWord(word);
 
             this.inputList.selectLast();

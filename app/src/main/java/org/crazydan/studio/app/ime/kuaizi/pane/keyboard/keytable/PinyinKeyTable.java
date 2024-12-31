@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
@@ -33,7 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
@@ -66,7 +67,7 @@ public class PinyinKeyTable extends KeyTable {
             return createKeysForXPad();
         }
 
-        return (Key[][]) new Key[][] {
+        return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
                         // 😂
@@ -121,7 +122,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("k", "K"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs),
+                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokingInputs)),
                 symbolKey("，", ","),
                 level0CharKey("sh", "Sh", "SH"),
                 level0CharKey("ch", "Ch", "CH"),
@@ -201,10 +202,9 @@ public class PinyinKeyTable extends KeyTable {
                 if (!child.isPinyin() && child.countChild() == 1) {
                     nextChar = child.getNextChars().get(0);
                 }
-                gridKeys[i][j] = key = level1CharKey(nextChar);
 
-                boolean disabled = key.value != null && key.value.equals(level1Char);
-                key.setDisabled(disabled);
+                boolean disabled = Objects.equals(level1Char, nextChar);
+                gridKeys[i][j] = level1CharKey(nextChar, (b) -> b.disabled(disabled));
             }
         }
 
@@ -245,10 +245,8 @@ public class PinyinKeyTable extends KeyTable {
             int row = keyCoord.row;
             int column = keyCoord.column;
 
-            gridKeys[row][column] = level2CharKey(level0Char, text);
-
-            boolean disabled = text != null && text.equals(level2Char);
-            gridKeys[row][column].setDisabled(disabled);
+            boolean disabled = Objects.equals(level2Char, text);
+            gridKeys[row][column] = level2CharKey(level0Char, text, (b) -> b.disabled(disabled));
         }
     }
 
@@ -462,12 +460,13 @@ public class PinyinKeyTable extends KeyTable {
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
         if (totalPage > 2 || !wordFilter.isEmpty()) {
-            CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinCandidate_advance);
-            gridKeys[2][0] = key;
+            CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinCandidate_advance, (b) -> {
+                if (!wordFilter.isEmpty()) {
+                    b.icon(R.drawable.ic_filter_filled);
+                }
+            });
 
-            if (!wordFilter.isEmpty()) {
-                key.setIcon(R.drawable.ic_filter_filled);
-            }
+            gridKeys[2][0] = key;
         }
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.DropInput);
@@ -487,7 +486,8 @@ public class PinyinKeyTable extends KeyTable {
             boolean disabled = wordFilter.spells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
-            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
+            CtrlKey key = advanceFilterKey(type, spell.value, spell, (b) -> b.disabled(disabled));
+            gridKeys[row][column] = key;
         }
 
         // 拼音变换按键
@@ -500,7 +500,8 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Option<?> option
                     = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
 
-            gridKeys[0][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
+            CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
+            gridKeys[0][index_end] = key;
 
             startingToggle.toggle_Pinyin_SCZ_Starting();
         } else if (input.is_Pinyin_NL_Starting()) {
@@ -509,7 +510,8 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
 
-            gridKeys[0][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
+            CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
+            gridKeys[0][index_end] = key;
 
             startingToggle.toggle_Pinyin_NL_Starting();
         }
@@ -528,7 +530,8 @@ public class PinyinKeyTable extends KeyTable {
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
             CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
 
-            gridKeys[1][index_end] = ctrlKeyBuilder(type).option(option).label(label).build();
+            CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
+            gridKeys[1][index_end] = key;
 
             endingToggle.toggle_Pinyin_NG_Ending();
         }
@@ -558,12 +561,12 @@ public class PinyinKeyTable extends KeyTable {
                     continue;
                 }
 
-                InputWordKey key = inputWordKey(word, level);
-                // 禁用已被选中的候选字按键
-                if (word.equals(input.getWord())) {
-                    key.setDisabled(true);
-                }
-                gridKeys[row][column] = key;
+                gridKeys[row][column] = inputWordKey(word, level, (b) -> {
+                    // 禁用已被选中的候选字按键
+                    if (word.equals(input.getWord())) {
+                        b.disabled(true);
+                    }
+                });
             }
         }
 
@@ -604,7 +607,7 @@ public class PinyinKeyTable extends KeyTable {
             boolean disabled = wordFilter.spells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
-            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell).setDisabled(disabled);
+            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell, (b) -> b.disabled(disabled));
         }
 
         // 部首过滤按键
@@ -627,8 +630,9 @@ public class PinyinKeyTable extends KeyTable {
                 Key.Color color = key_input_word_level_colors[level];
                 CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Radical;
 
-                gridKeys[row][column] = advanceFilterKey(type, radical.value, radical).setColor(color)
-                                                                                      .setDisabled(disabled);
+                CtrlKey key = advanceFilterKey(type, radical.value, radical, (b) -> b.color(color).disabled(disabled));
+                gridKeys[row][column] = key;
+
             }
         }
 
@@ -646,19 +650,16 @@ public class PinyinKeyTable extends KeyTable {
         boolean isVariantUsed = currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[1][index_end] = commitOptionKey( //
-                                                  CtrlKey.InputListCommitOption.Option.only_pinyin //
-        ).setDisabled(!hasSpell || isOnlyPinyin);
+        gridKeys[1][index_end] = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin,
+                                                 (b) -> b.disabled(!hasSpell || isOnlyPinyin));
 
-        gridKeys[2][index_end] = commitOptionKey( //
-                                                  CtrlKey.InputListCommitOption.Option.with_pinyin //
-        ).setDisabled(!hasSpell || isWithPinyin);
+        gridKeys[2][index_end] = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin,
+                                                 (b) -> b.disabled(!hasSpell || isWithPinyin));
 
-        gridKeys[4][index_end] = commitOptionKey( //
-                                                  isVariantUsed
-                                                  ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
-                                                  : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad //
-        ).setDisabled(!hasVariant || isOnlyPinyin);
+        gridKeys[4][index_end] = commitOptionKey(isVariantUsed
+                                                 ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
+                                                 : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad,
+                                                 (b) -> b.disabled(!hasVariant || isOnlyPinyin));
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
@@ -671,50 +672,58 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     public CharKey level1CharKey(String ch) {
-        return alphabetKeyBuilder(ch).level(CharKey.Level.level_1).color(key_char_special_color).build();
+        return level1CharKey(ch, CharKey.Builder.noop);
+    }
+
+    public CharKey level1CharKey(String ch, Consumer<CharKey.Builder> c) {
+        return alphabetKey(ch, (b) -> {
+            b.level(CharKey.Level.level_1).color(key_char_special_color);
+            c.accept(b);
+        });
     }
 
     public CharKey levelFinalCharKey(String ch) {
-        return alphabetKeyBuilder(ch).level(CharKey.Level.level_final).color(key_char_special_color).build();
+        return alphabetKey(ch, (b) -> b.level(CharKey.Level.level_final).color(key_char_special_color));
     }
 
     public CharKey level2CharKey(String level0Char, String level2Char) {
+        return level2CharKey(level0Char, level2Char, CharKey.Builder.noop);
+    }
+
+    public CharKey level2CharKey(String level0Char, String level2Char, Consumer<CharKey.Builder> c) {
         String label = level0Char + level2Char;
 
-        return alphabetKeyBuilder(level2Char).level(CharKey.Level.level_2).label(label).color(key_char_color).build();
+        return alphabetKey(level2Char, (b) -> {
+            b.level(CharKey.Level.level_2).label(label).color(key_char_color);
+            c.accept(b);
+        });
     }
 
-    public InputWordKey inputWordKey(InputWord word, int level) {
-        Key.Color color = key_input_word_level_colors[level];
-
-        return InputWordKey.create(word).setColor(color);
+    public CtrlKey advanceFilterKey(CtrlKey.Type type, String label) {
+        return advanceFilterKey(type, label, null, CtrlKey.Builder.noop);
     }
 
-    public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value) {
+    public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value, Consumer<CtrlKey.Builder> c) {
         CtrlKey.Option<?> option = new CtrlKey.ValueOption(value);
 
-        return ctrlKeyBuilder(type).option(option).label(label).build();
+        return ctrlKey(type, (b) -> {
+            b.option(option).label(label);
+            c.accept(b);
+        });
     }
 
     public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt) {
-        CtrlKey.Option<?> option = new CtrlKey.InputListCommitOption(opt);
-        String label = null;
-        switch (opt) {
-            case only_pinyin:
-                label = "仅拼音";
-                break;
-            case with_pinyin:
-                label = "带拼音";
-                break;
-            case switch_simple_to_trad:
-                label = "简➙繁";
-                break;
-            case switch_trad_to_simple:
-                label = "繁➙简";
-                break;
-        }
+        return commitOptionKey(opt, CtrlKey.Builder.noop);
+    }
 
-        return ctrlKeyBuilder(CtrlKey.Type.Commit_InputList_Option).option(option).label(label).build();
+    public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt, Consumer<CtrlKey.Builder> c) {
+        String label = opt.label();
+        CtrlKey.Option<?> option = new CtrlKey.InputListCommitOption(opt);
+
+        return ctrlKey(CtrlKey.Type.Commit_InputList_Option, (b) -> {
+            b.option(option).label(label);
+            c.accept(b);
+        });
     }
 
     /** 获取候选字的笔画过滤按键坐标 */

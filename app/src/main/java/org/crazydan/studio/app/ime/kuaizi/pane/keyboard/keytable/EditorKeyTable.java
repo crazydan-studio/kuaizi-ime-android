@@ -69,30 +69,9 @@ public class EditorKeyTable extends KeyTable {
     }
 
     public CtrlKey editCtrlKey(EditorAction action) {
+        String label = action.label();
         CtrlKey.Option<?> option = new CtrlKey.EditorEditOption(action);
 
-        String label = null;
-        switch (action) {
-            case select_all:
-                label = "全选";
-                break;
-            case copy:
-                label = "复制";
-                break;
-            case paste:
-                label = "粘贴";
-                break;
-            case cut:
-                label = "剪切";
-                break;
-            case undo:
-                label = "撤销";
-                break;
-            case redo:
-                label = "重做";
-                break;
-        }
-
-        return ctrlKeyBuilder(CtrlKey.Type.Edit_Editor).option(option).label(label).build();
+        return ctrlKey(CtrlKey.Type.Edit_Editor, (b) -> b.option(option).label(label));
     }
 }

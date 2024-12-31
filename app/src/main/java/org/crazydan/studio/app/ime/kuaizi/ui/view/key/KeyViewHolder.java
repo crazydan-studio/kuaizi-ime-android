@@ -51,7 +51,7 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
     }
 
     public void bind(Key key, HexagonOrientation orientation) {
-        if (Key.disabled(key)) {
+        if (key.disabled) {
             disable();
         } else {
             enable();
@@ -75,7 +75,7 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
             drawable.setCornerRadius(cornerRadius);
             drawable.setFillColor(bgColor);
 
-            if (!Key.disabled(key)) {
+            if (!key.disabled) {
                 drawable.setShadow(getStringByAttrId(R.attr.key_shadow_style));
                 drawable.setBorder(getStringByAttrId(R.attr.key_border_style));
             } else {

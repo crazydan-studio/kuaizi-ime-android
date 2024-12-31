@@ -437,7 +437,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_level_0 = keyTable.level0CharKey("sh");
         Key key_level_1 = keyTable.level1CharKey("u");
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū", null);
+        Key key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū");
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并通过拼音声调过滤筛选其候选字；",
                          case_word.getValue(),
@@ -800,8 +800,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin).setIcon(R.drawable.ic_latin);
-        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin).setIcon(R.drawable.ic_pinyin);
+        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin, R.drawable.ic_latin);
+        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin, R.drawable.ic_pinyin);
         Key key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
         Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
 
@@ -1065,7 +1065,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_level_0 = level_keys[0];
         Key key_level_1 = level_keys[1];
         Key key_level_2 = level_keys[2];
-        InputWord case_word = ((InputWordKey) key_case_word).getWord();
+        InputWord case_word = ((InputWordKey) key_case_word).word;
 
         exercise.newStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -32,19 +33,16 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
  * @date 2023-06-28
  */
 public class CharKey extends TypedKey<CharKey.Type> {
-    public final static Builder builder = new Builder();
+    private final static Builder builder = new Builder();
 
     /** 字符按键的{@link Level 等级} */
     public final Level level;
     /** 字符按键的可替换字符列表，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等：只读 */
     public final List<String> replacements;
 
-    protected CharKey(Builder builder) {
-        super(builder);
-
-        this.level = builder.level;
-        // Note: 若列表已经是只读的，则将会直接返回，不会被嵌套封装
-        this.replacements = Collections.unmodifiableList(builder.replacements);
+    /** 构建 {@link CharKey} */
+    public static CharKey build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
     /** 将指定的字符串中的字符挨个构造为 {@link CharKey} */
@@ -66,12 +64,21 @@ public class CharKey extends TypedKey<CharKey.Type> {
             } else {
                 continue;
             }
-            String s = String.valueOf(c);
-            CharKey key = CharKey.builder.type(type).value(s).build();
+
+            String val = String.valueOf(c);
+            CharKey key = CharKey.build((b) -> b.type(type).value(val));
 
             keys.add(key);
         }
         return keys;
+    }
+
+    protected CharKey(Builder builder) {
+        super(builder);
+
+        this.level = builder.level;
+        // Note: 若列表已经是只读的，则将会直接返回，不会被嵌套封装
+        this.replacements = Collections.unmodifiableList(builder.replacements);
     }
 
     /** 是否有替代字符 */
@@ -115,10 +122,9 @@ public class CharKey extends TypedKey<CharKey.Type> {
     public CharKey createReplacementKey(String replacement) {
         // Note：新 key 需附带替换列表（以共享方式减少内存消耗），
         // 以便于在替换 目标编辑器 内容时进行可替换性判断
-        return CharKey.builder.from(this) //
-                              .value(replacement).label(replacement) //
-                              .replacements(this.replacements) //
-                              .build();
+        return CharKey.build((b) -> b.from(this) //
+                                     .value(replacement).label(replacement) //
+                                     .replacements(this.replacements));
     }
 
     @Override
@@ -179,11 +185,13 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
     /** {@link CharKey} 的构建器 */
     public static class Builder extends TypedKey.Builder<Builder, CharKey, Type> {
+        public static final Consumer<Builder> noop = (b) -> {};
+
         private Level level = Level.level_0;
         private List<String> replacements = new ArrayList<>();
 
         Builder() {
-            super(100);
+            super(60);
         }
 
         // ===================== Start: 构建函数 ===================
@@ -192,7 +200,7 @@ public class CharKey extends TypedKey<CharKey.Type> {
         protected CharKey doBuild() {
             // Note: 当前的输入值也需加入替换列表，
             // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
-            replacements(this.value);
+            replacements(value());
 
             return new CharKey(this);
         }
@@ -238,7 +246,7 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
         /** 直接设置 {@link #replacements}，以便于复用集合列表实例 */
         protected Builder replacements(List<String> replacements) {
-            this.replacements = replacements;
+            this.replacements = replacements != null ? replacements : new ArrayList<>();
             return this;
         }
 

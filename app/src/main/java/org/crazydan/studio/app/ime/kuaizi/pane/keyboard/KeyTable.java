@@ -21,13 +21,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
+import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 
 /**
@@ -257,11 +261,27 @@ public abstract class KeyTable {
     public CtrlKey enterCtrlKey() {
         KeyStyle style = this.config.keyboard.singleLineInput ? key_ctrl_ok_style : null;
 
-        return ctrlKeyBuilder(CtrlKey.Type.Enter, style).build();
+        return ctrlKey(CtrlKey.Type.Enter, style, CtrlKey.Builder.noop);
     }
 
     /** 创建 键盘切换 控制按键 */
     public CtrlKey switcherCtrlKey(Keyboard.Type type) {
+        return switcherCtrlKey(type, CtrlKey.Builder.noop);
+    }
+
+    /** 创建 键盘切换 控制按键 */
+    public CtrlKey switcherCtrlKey(Keyboard.Type type, int icon) {
+        return switcherCtrlKey(type, icon, CtrlKey.Builder.noop);
+    }
+
+    public CtrlKey switcherCtrlKey(Keyboard.Type type, int icon, Consumer<CtrlKey.Builder> c) {
+        return switcherCtrlKey(type, (b) -> {
+            b.icon(icon);
+            c.accept(b);
+        });
+    }
+
+    private CtrlKey switcherCtrlKey(Keyboard.Type type, Consumer<CtrlKey.Builder> c) {
         CtrlKey.Option<?> option = new CtrlKey.KeyboardSwitchOption(type);
 
         KeyStyle style = null;
@@ -283,7 +303,10 @@ public abstract class KeyTable {
                 break;
         }
 
-        return ctrlKeyBuilder(CtrlKey.Type.Switch_Keyboard, style).option(option).build();
+        return ctrlKey(CtrlKey.Type.Switch_Keyboard, style, (b) -> {
+            b.option(option);
+            c.accept(b);
+        });
     }
 
     /** 占位按键，且不触发事件 */
@@ -293,34 +316,46 @@ public abstract class KeyTable {
 
     /** 占位按键，且不触发事件 */
     public CtrlKey noopCtrlKey(String label) {
-        return ctrlKeyBuilder(CtrlKey.Type.NoOp).label(label).build();
+        return ctrlKey(CtrlKey.Type.NoOp, (b) -> b.label(label));
     }
 
     public CtrlKey ctrlKey(CtrlKey.Type type) {
-        return ctrlKeyBuilder(type).build();
+        return ctrlKey(type, CtrlKey.Builder.noop);
+    }
+
+    public CtrlKey ctrlKey(CtrlKey.Type type, Consumer<CtrlKey.Builder> c) {
+        return ctrlKey(type, null, c);
     }
 
     public CharKey alphabetKey(String value, String... replacements) {
-        return alphabetKeyBuilder(value, replacements).build();
+        return alphabetKey(value, (b) -> b.replacements(replacements));
     }
 
-    public CharKey.Builder alphabetKeyBuilder(String value, String... replacements) {
-        return charKeyBuilder(CharKey.Type.Alphabet, value).replacements(replacements);
+    public CharKey alphabetKey(String value, Consumer<CharKey.Builder> c) {
+        return charKey(CharKey.Type.Alphabet, value, c);
     }
 
     public CharKey symbolKey(String value, String... replacements) {
-        return charKeyBuilder(CharKey.Type.Symbol, value).replacements(replacements).build();
+        return symbolKey(value, (b) -> b.replacements(replacements));
+    }
+
+    public CharKey symbolKey(String value, Consumer<CharKey.Builder> c) {
+        return charKey(CharKey.Type.Symbol, value, c);
     }
 
     public CharKey numberKey(String value) {
-        return charKeyBuilder(CharKey.Type.Number, value).build();
+        return numberKey(value, CharKey.Builder.noop);
+    }
+
+    public CharKey numberKey(String value, Consumer<CharKey.Builder> c) {
+        return charKey(CharKey.Type.Number, value, c);
     }
 
     public CharKey emojiKey(String value) {
-        return charKeyBuilder(CharKey.Type.Emoji, value).build();
+        return charKey(CharKey.Type.Emoji, value, CharKey.Builder.noop);
     }
 
-    private static CharKey.Builder charKeyBuilder(CharKey.Type type, String value) {
+    private static CharKey charKey(CharKey.Type type, String value, Consumer<CharKey.Builder> c) {
         Key.Color color = null;
         switch (type) {
             case Emoji: {
@@ -343,14 +378,14 @@ public abstract class KeyTable {
             }
         }
 
-        return CharKey.builder.type(type).value(value).label(value).color(color);
+        Key.Color finalColor = color;
+        return CharKey.build((b) -> {
+            b.type(type).value(value).label(value).color(finalColor);
+            c.accept(b);
+        });
     }
 
-    protected CtrlKey.Builder ctrlKeyBuilder(CtrlKey.Type type) {
-        return ctrlKeyBuilder(type, null);
-    }
-
-    private CtrlKey.Builder ctrlKeyBuilder(CtrlKey.Type type, KeyStyle style) {
+    private CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style, Consumer<CtrlKey.Builder> c) {
         Integer icon = null;
         Key.Color color = null;
 
@@ -372,7 +407,31 @@ public abstract class KeyTable {
             }
         }
 
-        return CtrlKey.builder.type(type).icon(icon).color(color);
+        Integer finalIcon = icon;
+        Key.Color finalColor = color;
+        return CtrlKey.build((b) -> {
+            b.type(type).icon(finalIcon).color(finalColor);
+            c.accept(b);
+        });
+    }
+
+    public InputWordKey inputWordKey(InputWord word, int level) {
+        return inputWordKey(word, level, InputWordKey.Builder.noop);
+    }
+
+    protected InputWordKey inputWordKey(InputWord word, int level, Consumer<InputWordKey.Builder> c) {
+        Key.Color color = key_input_word_level_colors[level];
+
+        return InputWordKey.build((b) -> {
+            b.word(word).color(color);
+            c.accept(b);
+        });
+    }
+
+    protected SymbolKey symbolKey(Symbol symbol, int level) {
+        Key.Color color = key_input_word_level_colors[level];
+
+        return SymbolKey.build((b) -> b.symbol(symbol).color(color));
     }
 
     protected Key[][] createKeysForXPad() {
@@ -410,7 +469,7 @@ public abstract class KeyTable {
                 this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput).setDisabled(!this.config.hasRevokingInputs),
+                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokingInputs)),
                 //
                 null, null, null, null, null, null,
                 //
@@ -434,22 +493,25 @@ public abstract class KeyTable {
      */
     protected XPadKey xPadKey(Keyboard.Type activeKeyboard, Key[][][] zone_2_keys) {
         Key[] zone_1_keys = new Key[] {
-                switcherCtrlKey(Keyboard.Type.Latin).setIcon(R.drawable.ic_latin),
-                switcherCtrlKey(Keyboard.Type.Pinyin).setIcon(R.drawable.ic_pinyin),
-                switcherCtrlKey(Keyboard.Type.Number).setIcon(R.drawable.ic_number),
+                switcherCtrlKey(Keyboard.Type.Latin,
+                                R.drawable.ic_latin,
+                                (b) -> b.disabled(activeKeyboard == Keyboard.Type.Latin)),
+                switcherCtrlKey(Keyboard.Type.Pinyin,
+                                R.drawable.ic_pinyin,
+                                (b) -> b.disabled(activeKeyboard == Keyboard.Type.Pinyin)),
+                switcherCtrlKey(Keyboard.Type.Number,
+                                R.drawable.ic_number,
+                                (b) -> b.disabled(activeKeyboard == Keyboard.Type.Number)),
                 null,
                 null,
-                switcherCtrlKey(Keyboard.Type.Math).setIcon(R.drawable.ic_math),
+                switcherCtrlKey(Keyboard.Type.Math,
+                                R.drawable.ic_math,
+                                (b) -> b.disabled(activeKeyboard == Keyboard.Type.Math)),
                 };
-        for (Key key : zone_1_keys) {
-            if (key != null //
-                && ((CtrlKey.KeyboardSwitchOption) ((CtrlKey) key).option).value() == activeKeyboard) {
-                key.setDisabled(true);
-            }
-        }
 
-        return new XPadKey(ctrlKey(CtrlKey.Type.Editor_Cursor_Locator), //
-                           zone_1_keys, zone_2_keys);
+        return XPadKey.build((b) -> b.zone_0_key(ctrlKey(CtrlKey.Type.Editor_Cursor_Locator))
+                                     .zone_1_keys(zone_1_keys)
+                                     .zone_2_keys(zone_2_keys));
     }
 
     private static class KeyStyle {

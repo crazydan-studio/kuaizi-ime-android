@@ -186,7 +186,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 尝试处理控制按键消息：已禁用的不做处理 */
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
-        if (Key.disabled(key)) {
+        if (key.disabled) {
             return false;
         }
 
@@ -299,7 +299,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */
     private boolean try_On_UserKey_Msg_Over_XPad(KeyboardContext context, UserKeyMsg msg) {
         Key key = context.key();
-        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || Key.disabled(key)) {
+        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.disabled) {
             return false;
         }
 
