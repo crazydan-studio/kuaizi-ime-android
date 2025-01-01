@@ -219,27 +219,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 响应 {@link CtrlKey} 的消息 */
     private void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
+        if (msg.type != UserKeyMsgType.LongPress_Key_Start) {
+            return;
+        }
+
         CtrlKey key = context.key();
+        if (CtrlKey.Type.Commit_InputList.match(key)) {
+            play_DoubleTick_InputAudio(context);
 
-        switch (msg.type) {
-            case LongPress_Key_Start: {
-                if (CtrlKey.Type.Commit_InputList.match(key)) {
-                    play_DoubleTick_InputAudio(context);
-
-                    start_InputList_Commit_Option_Choosing(context);
-                }
-                break;
-            }
-            case SingleTap_Key: {
-                // Note: 预留的 XPad 拼音提前结束输入的控制键
-                if (CtrlKey.Type.Pinyin_End.match(key)) {
-                    play_SingleTick_InputAudio(context);
-                    show_InputChars_Input_Popup(context);
-
-                    stop_InputChars_Inputting(context);
-                }
-                break;
-            }
+            start_InputList_Commit_Option_Choosing(context);
         }
     }
 

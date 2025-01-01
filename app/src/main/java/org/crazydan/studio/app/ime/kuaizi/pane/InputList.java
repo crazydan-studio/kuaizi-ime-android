@@ -64,7 +64,6 @@ public class InputList implements UserInputMsgListener {
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
     private Staged staged;
     private Input.Option option;
-    private List<CompletionInput> phraseCompletions;
 
     public InputList() {
         this.staged = doReset(Staged.Type.none);
@@ -92,8 +91,6 @@ public class InputList implements UserInputMsgListener {
                         input = getLastInput();
                         break;
                 }
-
-                clearPhraseCompletions();
 
                 // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
                 // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上
@@ -139,16 +136,12 @@ public class InputList implements UserInputMsgListener {
     /** 重置输入列表 */
     public void reset(boolean canBeCanceled) {
         this.staged = doReset(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
-
-        clearPhraseCompletions();
     }
 
     /** 清空输入列表 */
     public void clear() {
         clearCommitRevokes();
         clearDeleteCancels();
-
-        clearPhraseCompletions();
     }
 
     /**
@@ -192,8 +185,6 @@ public class InputList implements UserInputMsgListener {
     public void cancelDelete() {
         if (canCancelDelete()) {
             Staged.restore(this, this.staged);
-
-            clearPhraseCompletions();
         }
     }
 
@@ -210,8 +201,6 @@ public class InputList implements UserInputMsgListener {
 
         this.inputs.clear();
         this.cursor.reset();
-
-        clearPhraseCompletions();
 
         Input gap = new GapInput();
         this.inputs.add(gap);
@@ -278,30 +267,16 @@ public class InputList implements UserInputMsgListener {
         return Input.isEmpty(getPending());
     }
 
-    /** 设置短语输入补全 */
-    public void setPhraseCompletions(List<CompletionInput> phraseCompletions) {
-        this.phraseCompletions = phraseCompletions != null && !phraseCompletions.isEmpty() ? phraseCompletions : null;
-    }
-
     /** 清空输入补全 */
     public void clearCompletions() {
-        clearPhraseCompletions();
-
         if (getPending() != null) {
             getPending().clearCompletions();
         }
     }
 
-    /** 清空短语输入补全 */
-    public void clearPhraseCompletions() {
-        this.phraseCompletions = null;
-    }
-
     /** 获取输入补全 */
     public List<CompletionInput> getCompletions() {
-        if (this.phraseCompletions != null) {
-            return this.phraseCompletions;
-        } else if (getPending() != null && getPending().hasCompletions()) {
+        if (getPending() != null && getPending().hasCompletions()) {
             return getPending().getCompletions();
         }
         return List.of();
@@ -309,27 +284,8 @@ public class InputList implements UserInputMsgListener {
 
     /** 应用输入补全 */
     public void applyCompletion(CompletionInput completion) {
-        if (this.phraseCompletions != null) {
-            applyPhraseCompletion(completion);
-            clearPhraseCompletions();
-        } else if (getPending() != null && getPending().hasCompletions()) {
+        if (getPending() != null && getPending().hasCompletions()) {
             getPending().applyCompletion(completion);
-        }
-    }
-
-    /**
-     * 应用短语输入补全
-     * <p/>
-     * 在当前选中位置开始，逐个插入剩余部分
-     */
-    private void applyPhraseCompletion(CompletionInput completion) {
-        int startIndex = completion.startIndex;
-
-        // 从补全位置开始插入输入
-        for (int i = startIndex; i < completion.inputs.size(); i++) {
-            CharInput input = completion.inputs.get(i);
-            withPending(input);
-            confirmPendingAndSelectNext();
         }
     }
 

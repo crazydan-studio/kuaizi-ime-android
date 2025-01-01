@@ -343,8 +343,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputChars_Input_Doing_in_TapMode(context, null);
 
         do_InputList_Pending_Completion_Updating(context);
-
-        do_InputList_Current_Phrase_Completion_Updating(context);
     }
 
     /** 回删 目标编辑器 的内容 */
@@ -386,9 +384,6 @@ public abstract class BaseKeyboard implements Keyboard {
     ) {
         play_SingleTick_InputAudio(context);
         show_InputChars_Input_Popup(context);
-
-        InputList inputList = context.inputList;
-        inputList.clearPhraseCompletions();
 
         CharKey key = context.key();
         if (key.hasReplacement() && data.tick > 0) {
@@ -538,19 +533,6 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_Input_Completion_Update_Done(context, pending);
     }
 
-    /** 更新当前输入位置的短语输入补全 */
-    protected void do_InputList_Current_Phrase_Completion_Updating(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        inputList.clearPhraseCompletions();
-
-        Input input = inputList.getSelected();
-        do_InputList_Phrase_Completion_Updating(context, input);
-
-        fire_Input_Completion_Update_Done(context, input);
-    }
-
-    protected void do_InputList_Phrase_Completion_Updating(KeyboardContext context, Input input) {}
-
     // ======================== End: 输入补全 ========================
 
     // ======================== Start: 操作输入列表 ========================
@@ -567,8 +549,6 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void choose_InputList_Input(KeyboardContext context, Input input) {
         InputList inputList = context.inputList;
         inputList.select(input);
-
-        do_InputList_Current_Phrase_Completion_Updating(context);
 
         // Note：输入过程中操作和处理的都是 pending
         CharInput pending = inputList.getPending();
@@ -610,8 +590,6 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.confirmPendingAndSelectNext();
 
         fire_InputChars_Input_Done(context, pending);
-
-        do_InputList_Current_Phrase_Completion_Updating(context);
     }
 
     /**
@@ -680,8 +658,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         inputList.deleteSelected();
         fire_Common_InputMsg(context, Input_Selected_Delete_Done, input);
-
-        do_InputList_Current_Phrase_Completion_Updating(context);
     }
 
     /** 删除待输入 */
@@ -691,8 +667,6 @@ public abstract class BaseKeyboard implements Keyboard {
 
         inputList.dropPending();
         fire_Common_InputMsg(context, Input_Pending_Drop_Done, pending);
-
-        do_InputList_Current_Phrase_Completion_Updating(context);
     }
 
     /**

@@ -100,10 +100,6 @@ public abstract class KeyTable {
         ctrl_key_styles.put(CtrlKey.Type.Space, KeyStyle.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Enter,
                             KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Pinyin_End,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_end,
-                                              R.drawable.ic_left_hand_end,
-                                              R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList,
                             KeyStyle.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));

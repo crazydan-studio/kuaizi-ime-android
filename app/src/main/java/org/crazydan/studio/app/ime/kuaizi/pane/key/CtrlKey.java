@@ -263,10 +263,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
                     label("回删");
                     break;
                 }
-                case Pinyin_End: {
-                    label("结束");
-                    break;
-                }
             }
 
             switch (type()) {

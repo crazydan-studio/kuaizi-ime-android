@@ -219,9 +219,6 @@ public class MathKeyboard extends BaseKeyboard {
     private void do_Single_MathKey_Inputting(KeyboardContext context) {
         Key key = context.key();
 
-        InputList parentInputList = getParentInputList(context);
-        parentInputList.clearPhraseCompletions();
-
         InputList mathInputList = getMathInputList(context);
         if (key instanceof CharKey) {
             do_Single_MathCharKey_Inputting(mathInputList, (CharKey) key);
@@ -366,11 +363,6 @@ public class MathKeyboard extends BaseKeyboard {
 
     @Override
     protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
-        // Note: 无需输入补全处理
-    }
-
-    @Override
-    protected void do_InputList_Current_Phrase_Completion_Updating(KeyboardContext context) {
         // Note: 无需输入补全处理
     }
 
