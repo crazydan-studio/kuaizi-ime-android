@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.EmojiKeyboard;
@@ -416,7 +417,8 @@ public class InputPane implements InputMsgListener, UserMsgListener, ConfigChang
             CharKey key = CharKey.build((b) -> b.type(CharKey.Type.Alphabet).value(chars));
             CharInput input = CharInput.from(key);
 
-            InputWord word = new InputWord(100 + i, wordValue, wordSpell);
+            int wordId = 100 + i;
+            PinyinWord word = PinyinWord.build((b) -> b.id(wordId).value(wordValue).spell(wordSpell));
             input.setWord(word);
 
             this.inputList.selectLast();

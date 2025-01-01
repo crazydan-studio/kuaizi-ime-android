@@ -149,10 +149,10 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         PinyinWord shi = getPinyinWord(db, "世", "shì");
         PinyinWord da = getPinyinWord(db, "大", "dà");
         PinyinWord yu = getPinyinWord(db, "宇", "yǔ");
-        Map<Integer, Integer> confirmedPhraseWords = new HashMap() {{
-            put(0, shi.getId());
-            put(2, da.getId());
-            put(3, yu.getId());
+        Map<Integer, Integer> confirmedPhraseWords = new HashMap<Integer, Integer>() {{
+            put(0, shi.id);
+            put(2, da.id);
+            put(3, yu.id);
         }};
 
         phraseList = getTopPhrases(db, pinyinCharsStr, pinyinCharsIdList, 1, confirmedPhraseWords);
@@ -185,29 +185,29 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
             Integer pinyinCharsId = dict.getPinyinCharsTree().getCharsId(pinyinChars);
             Assert.assertNotNull(pinyinCharsId);
 
-            Map<Integer, PinyinWord> wordMap = getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
-                                                                                            .collect(Collectors.toMap(
-                                                                                                    InputWord::getId,
-                                                                                                    Function.identity(),
-                                                                                                    (a, b) -> a,
-                                                                                                    HashMap::new));
+            Map<Integer, PinyinWord> wordMap = //
+                    getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
+                                                                 .collect(Collectors.toMap((w) -> w.id,
+                                                                                           Function.identity(),
+                                                                                           (a, b) -> a,
+                                                                                           HashMap::new));
 
             int top = 10;
-            List<PinyinWord> wordList = getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, top).stream()
-                                                                                                             .map(wordMap::get)
-                                                                                                             .collect(
-                                                                                                                     Collectors.toList());
+            List<PinyinWord> wordList = //
+                    getTopBestPinyinWordIds(db, pinyinCharsId, userPhraseBaseWeight, top).stream()
+                                                                                         .map(wordMap::get)
+                                                                                         .collect(Collectors.toList());
             Assert.assertTrue(wordList.size() <= top && !wordList.isEmpty());
 
             String result = wordList.stream()
-                                    .map((word) -> word.getValue() + ":" + word.getSpell().value)
+                                    .map((w) -> w.value + ":" + w.spell.value)
                                     .collect(Collectors.joining(", "));
 
             Log.i(LOG_TAG, pinyinChars + " => " + result);
 
             PinyinWord first = getFirstBestPinyinWord(db, pinyinCharsId, userPhraseBaseWeight);
             Assert.assertNotNull(first);
-            Log.i(LOG_TAG, pinyinChars + " 的最佳拼音字：" + first.getValue() + ":" + first.getSpell().value);
+            Log.i(LOG_TAG, pinyinChars + " 的最佳拼音字：" + first.value + ":" + first.spell.value);
         }
     }
 
@@ -220,16 +220,12 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         Integer pinyinCharsId = dict.getPinyinCharsTree().getCharsId(pinyinChars);
         List<PinyinWord> wordList = getAllPinyinWordsByCharsId(db, pinyinCharsId);
 
-        wordList = wordList.stream().filter((word) -> word.getVariant() != null).collect(Collectors.toList());
+        wordList = wordList.stream().filter((w) -> w.variant != null).collect(Collectors.toList());
         Assert.assertNotEquals(0, wordList.size());
 
         Log.i(LOG_TAG,
               pinyinChars + " => " + wordList.stream()
-                                             .map((word) -> word.getValue()
-                                                            + ":"
-                                                            + word.getSpell().value
-                                                            + ":"
-                                                            + word.getVariant())
+                                             .map((w) -> w.value + ":" + w.spell.value + ":" + w.variant)
                                              .collect(Collectors.joining(", ")));
     }
 
@@ -243,7 +239,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         emojis.groups.forEach((group, emojiList) -> {
             Log.i(LOG_TAG,
                   group + ": " + emojiList.stream()
-                                          .map((emoji) -> emoji.getValue() + ":" + emoji.getId())
+                                          .map((emoji) -> emoji.value + ":" + emoji.id)
                                           .limit(top)
                                           .collect(Collectors.joining(", ")));
         });
@@ -260,7 +256,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
                 "\uD83C\uDF47", // 🍇
         };
         List<Integer> usedEmojiIdList = Arrays.stream(usedEmojis)
-                                              .map((emoji) -> getEmoji(db, emoji).getId())
+                                              .map((emoji) -> getEmoji(db, emoji).id)
                                               .collect(Collectors.toList());
         saveUsedEmojis(db, usedEmojiIdList, false);
 
@@ -270,14 +266,10 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         // Note: 直接调用 LinkedHashSet#toArray 将报方法不存在
         Assert.assertArrayEquals(new LinkedHashSet<>(usedEmojiIdList).stream().toArray(Integer[]::new),
-                                 generalEmojiList.stream().map(InputWord::getId).toArray(Integer[]::new));
+                                 generalEmojiList.stream().map((w) -> w.id).toArray(Integer[]::new));
         Log.i(LOG_TAG,
               Emojis.GROUP_GENERAL + ": " + generalEmojiList.stream()
-                                                            .map((emoji) -> emoji.getValue()
-                                                                            + ":"
-                                                                            + emoji.getId()
-                                                                            + ":"
-                                                                            + emoji.getWeight())
+                                                            .map((w) -> w.value + ":" + w.id + ":" + w.weight)
                                                             .collect(Collectors.joining(", ")));
         // >>>>>>>>>>>>>>>>>>>>>>>
 
@@ -297,14 +289,14 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         List<Integer[]> keywordIdsList = Stream.of("地球", "笑脸")
                                                .map((keyword) -> keyword.chars()
-                                                                        .mapToObj((word) -> getWordId(db,
-                                                                                                      String.valueOf((char) word)))
+                                                                        .mapToObj((w) -> getWordId(db,
+                                                                                                   String.valueOf((char) w)))
                                                                         .toArray(Integer[]::new))
                                                .collect(Collectors.toList());
         List<EmojiWord> emojiList = getEmojisByKeyword(db, keywordIdsList, 10);
 
         Assert.assertNotEquals(0, emojiList.size());
-        Log.i(LOG_TAG, emojiList.stream().map(EmojiWord::getValue).collect(Collectors.joining(", ")));
+        Log.i(LOG_TAG, emojiList.stream().map((w) -> w.value).collect(Collectors.joining(", ")));
     }
 
     @Test
@@ -335,7 +327,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
         emojis.groups.forEach((group, list) -> {
             list.forEach(emoji -> {
-                Assert.assertTrue(CharUtils.isPrintable(emoji.getValue()));
+                Assert.assertTrue(CharUtils.isPrintable(emoji.value));
             });
         });
     }
@@ -386,7 +378,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
                     return Arrays.stream(phrase)
                                  .map(wordMap::get)
-                                 .map((word) -> word != null ? word.getValue() + ":" + word.getSpell().value : "")
+                                 .map((w) -> w != null ? w.value + ":" + w.spell.value : "")
                                  .collect(Collectors.joining(","));
                 }).collect(Collectors.toList());
 

@@ -159,8 +159,8 @@ public class PinyinDict {
 
     // =================== Start: 数据查询 ==================
 
-    /** 通过字及其读音获取 {@link InputWord} 对象 */
-    public InputWord getPinyinWord(String word, String pinyin) {
+    /** 通过字及其读音获取 {@link PinyinWord} 对象 */
+    public PinyinWord getPinyinWord(String word, String pinyin) {
         SQLiteDatabase db = getDB();
 
         return PinyinDictDBHelper.getPinyinWord(db, word, pinyin);
@@ -173,7 +173,7 @@ public class PinyinDict {
         SQLiteDatabase db = getDB();
 
         return getAllPinyinWordsByCharsId(db, pinyinCharsId).stream()
-                                                            .collect(Collectors.toMap(InputWord::getId,
+                                                            .collect(Collectors.toMap((w) -> w.id,
                                                                                       Function.identity(),
                                                                                       (a, b) -> a,
                                                                                       // 保持候选字的顺序不变
@@ -185,7 +185,7 @@ public class PinyinDict {
      * <p/>
      * 优先选择使用权重最高的，否则，选择候选字列表中的第一个
      */
-    public InputWord getFirstBestCandidatePinyinWord(Integer pinyinCharsId) {
+    public PinyinWord getFirstBestCandidatePinyinWord(Integer pinyinCharsId) {
         SQLiteDatabase db = getDB();
 
         return getFirstBestPinyinWord(db, pinyinCharsId, this.userPhraseBaseWeight);
@@ -227,7 +227,7 @@ public class PinyinDict {
 
             int charsIndex = pinyinCharsIdList.size();
             if (input.isWordConfirmed()) {
-                confirmedPhraseWords.put(charsIndex, input.getWord().getId());
+                confirmedPhraseWords.put(charsIndex, input.getWord().id);
             }
             pinyinCharsPlaceholderMap.put(i, charsIndex);
 
@@ -289,7 +289,7 @@ public class PinyinDict {
             return List.of();
         }
 
-        List<Integer> wordGlyphIdList = phraseWords.stream().map(PinyinWord::getGlyphId).collect(Collectors.toList());
+        List<Integer> wordGlyphIdList = phraseWords.stream().map((w) -> w.glyphId).collect(Collectors.toList());
 
         int tries = 4;
         int total = wordGlyphIdList.size();
@@ -355,7 +355,7 @@ public class PinyinDict {
     private void doSaveUsedEmojis(List<InputWord> emojis, boolean reverse) {
         SQLiteDatabase db = getDB();
 
-        saveUsedEmojis(db, emojis.stream().map(InputWord::getId).collect(Collectors.toList()), reverse);
+        saveUsedEmojis(db, emojis.stream().map((w) -> w.id).collect(Collectors.toList()), reverse);
     }
 
     /** 保存拉丁文的使用频率等信息 */

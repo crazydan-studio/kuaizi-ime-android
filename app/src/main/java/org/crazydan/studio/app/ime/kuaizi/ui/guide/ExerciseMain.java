@@ -403,8 +403,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        InputWord expected_auto_word = new InputWord(100, "块", "kuài");
-        InputWord case_word = new InputWord(101, "筷", "kuài");
+        PinyinWord expected_auto_word = pinyinWord(100, "块", "kuài");
+        PinyinWord case_word = pinyinWord(101, "筷", "kuài");
         Key key_case_word = keyTable.inputWordKey(case_word, 0);
 
         Key key_level_0 = keyTable.level0CharKey("k");
@@ -413,8 +413,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>；",
-                         case_word.getValue(),
-                         case_word.getSpell().value);
+                         case_word.value,
+                         case_word.spell.value);
 
         add_Pinyin_Inputting_Steps(exercise, new Key[] {
                 key_level_0, key_level_1, key_level_2
@@ -430,8 +430,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        InputWord expected_auto_word = new InputWord(100, "术", "shù");
-        InputWord case_word = new InputWord(101, "输", "shū");
+        PinyinWord expected_auto_word = pinyinWord(100, "术", "shù");
+        PinyinWord case_word = pinyinWord(101, "输", "shū");
         Key key_case_word = keyTable.inputWordKey(case_word, 1);
 
         Key key_level_0 = keyTable.level0CharKey("sh");
@@ -440,8 +440,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_filter_tone_1 = keyTable.advanceFilterKey(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, "shū");
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并通过拼音声调过滤筛选其候选字；",
-                         case_word.getValue(),
-                         case_word.getSpell().value);
+                         case_word.value,
+                         case_word.spell.value);
 
         add_Pinyin_Inputting_Steps(exercise, new Key[] {
                 key_level_0, key_level_1, null
@@ -459,8 +459,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
         PinyinKeyTable keyTable = createPinyinKeyTable();
 
-        InputWord expected_auto_word = new InputWord(100, "自", "zì");
-        InputWord case_word = new InputWord(101, "字", "zì");
+        PinyinWord expected_auto_word = pinyinWord(100, "自", "zì");
+        PinyinWord case_word = pinyinWord(101, "字", "zì");
         Key key_case_word = keyTable.inputWordKey(case_word, 0);
 
         Key key_level_0 = keyTable.level0CharKey("z");
@@ -472,8 +472,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；",
-                         case_word.getValue(),
-                         case_word.getSpell().value);
+                         case_word.value,
+                         case_word.spell.value);
 
         add_Pinyin_Inputting_Steps(exercise, new Key[] {
                 key_level_0, key_level_1, null
@@ -817,26 +817,26 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 keyTable.alphabetKey("i"),
                 keyTable.alphabetKey("d"),
                 };
-        Map<InputWord, Key[]> pinyinWordsSample = new LinkedHashMap<>();
-        pinyinWordsSample.put(new InputWord(100, "筷", "kuài"), new Key[] {
+        Map<PinyinWord, Key[]> pinyinWordsSample = new LinkedHashMap<>();
+        pinyinWordsSample.put(pinyinWord(100, "筷", "kuài"), new Key[] {
                 keyTable.level0CharKey("k"), keyTable.level1CharKey("u"), keyTable.level2CharKey("", "uai"),
                 });
-        pinyinWordsSample.put(new InputWord(101, "字", "zì"), new Key[] {
+        pinyinWordsSample.put(pinyinWord(101, "字", "zì"), new Key[] {
                 keyTable.level0CharKey("z"), keyTable.levelFinalCharKey("zi"),
                 });
-        pinyinWordsSample.put(new InputWord(102, "输", "shū"), new Key[] {
+        pinyinWordsSample.put(pinyinWord(102, "输", "shū"), new Key[] {
                 keyTable.level0CharKey("sh"), keyTable.levelFinalCharKey("shu"),
                 });
-        pinyinWordsSample.put(new InputWord(103, "入", "rù"), new Key[] {
+        pinyinWordsSample.put(pinyinWord(103, "入", "rù"), new Key[] {
                 keyTable.level0CharKey("r"), keyTable.levelFinalCharKey("ru"),
                 });
-        pinyinWordsSample.put(new InputWord(104, "法", "fǎ"), new Key[] {
+        pinyinWordsSample.put(pinyinWord(104, "法", "fǎ"), new Key[] {
                 keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
                 });
 
         String sample = Arrays.stream(latinSample).map((key) -> key.value).collect(Collectors.joining("")) //
                         + key_ctrl_space.value //
-                        + pinyinWordsSample.keySet().stream().map(InputWord::getValue).collect(Collectors.joining(""));
+                        + pinyinWordsSample.keySet().stream().map((w) -> w.value).collect(Collectors.joining(""));
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s</span>；", sample);
 
@@ -947,8 +947,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 });
 
         int i = 0;
-        for (Map.Entry<InputWord, Key[]> entry : pinyinWordsSample.entrySet()) {
-            InputWord word = entry.getKey();
+        for (Map.Entry<PinyinWord, Key[]> entry : pinyinWordsSample.entrySet()) {
+            PinyinWord word = entry.getKey();
             Key[] keys = entry.getValue();
             Key lastKey = keys[keys.length - 1];
 
@@ -958,14 +958,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 Key key = keys[j];
                 boolean isFirstStep = i == 1 && j == 0;
 
-                String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.getId());
+                String firstSimulatorStepName = String.format("pinyin-input-step:first:%s", word.id);
                 String simulatorStepName = j == 0
                                            ? firstSimulatorStepName
                                            : String.format(Locale.getDefault(),
                                                            "pinyin-input-step:%d-%d:%s",
                                                            i,
                                                            j,
-                                                           word.getId());
+                                                           word.id);
                 Runnable restart = () -> {
                     showWarning("当前输入的字符与练习内容不符，请按演示动画重新输入");
 
@@ -1059,13 +1059,13 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     private void add_Pinyin_Inputting_Steps(
             Exercise exercise, //
-            Key[] level_keys, Key key_case_word, InputWord expected_auto_word, //
+            Key[] level_keys, Key key_case_word, PinyinWord expected_auto_word, //
             Object[] word_choose_step_content
     ) {
         Key key_level_0 = level_keys[0];
         Key key_level_1 = level_keys[1];
         Key key_level_2 = level_keys[2];
-        InputWord case_word = ((InputWordKey) key_case_word).word;
+        PinyinWord case_word = (PinyinWord) ((InputWordKey) key_case_word).word;
 
         exercise.newStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
 
@@ -1187,7 +1187,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         }
 
         exercise.newStep("请选中键盘上方 <span style=\"color:#ed4c67;\">输入列表</span> 中的拼音候选字"
-                         + " <span style=\"color:#ed4c67;\">%s</span>；", expected_auto_word.getValue()) //
+                         + " <span style=\"color:#ed4c67;\">%s</span>；", expected_auto_word.value) //
                 .name("select_auto_word") //
                 .action((msg) -> {
                     switch (msg.type) {
@@ -1199,7 +1199,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             CharInput input = (CharInput) msg.data().input;
                             InputWord word = input.getWord();
 
-                            if (word != null && expected_auto_word.getValue().equals(word.getValue())) {
+                            if (word != null && expected_auto_word.value.equals(word.value)) {
                                 exercise.gotoNextStep();
                                 return;
                             }
@@ -1207,7 +1207,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     }
 
                     showWarning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
                 });
 
         exercise.newStep(word_choose_step_content != null ? word_choose_step_content : new Object[] {
@@ -1224,11 +1224,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             CharInput input = (CharInput) msg.data().input;
                             InputWord word = input.getWord();
 
-                            if (word != null && case_word.getValue().equals(word.getValue())) {
+                            if (word != null && case_word.value.equals(word.value)) {
                                 exercise.gotoNextStep();
                             } else {
                                 showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+                                            + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
 
                                 // Note: 对于选中的非拼音候选字，则不做替换
                                 if (word instanceof PinyinWord) {
@@ -1241,7 +1241,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     }
 
                     showWarning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.getValue());
+                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
 
                     changePinyinWord(expected_auto_word);
                     exercise.gotoStep("select_auto_word");
@@ -1283,11 +1283,15 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         toast.show();
     }
 
-    private void changePinyinWord(InputWord word) {
+    private void changePinyinWord(PinyinWord word) {
         // Note: 仅在输入过程中调用，故而，字典已完成初始化
         PinyinDict dict = PinyinDict.instance();
-        word = dict.getPinyinWord(word.getValue(), word.getSpell().value);
+        word = dict.getPinyinWord(word.value, word.spell.value);
 
-        this.inputPane.changeLastInputWord(PinyinWord.from(word));
+        this.inputPane.changeLastInputWord(word);
+    }
+
+    private PinyinWord pinyinWord(int id, String value, String spell) {
+        return PinyinWord.build((b) -> b.id(id).value(value).spell(spell));
     }
 }

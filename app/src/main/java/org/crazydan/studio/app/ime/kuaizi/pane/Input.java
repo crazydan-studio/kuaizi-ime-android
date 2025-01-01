@@ -250,15 +250,20 @@ public abstract class Input implements RecyclerViewData {
         StringBuilder sb = new StringBuilder();
 
         InputWord word = getWord();
-        if (word != null) {
-            String value = word.getValue();
-            String spell = word.getSpell().value;
-            String variant = word.getVariant();
+        if (word == null) {
+            getChars().forEach(sb::append);
+            return sb;
+        }
 
-            if (option != null && option.wordVariantUsed && variant != null) {
+        String value = word.value;
+        if (word instanceof PinyinWord && option != null) {
+            String spell = ((PinyinWord) word).spell.value;
+            String variant = ((PinyinWord) word).variant;
+
+            if (option.wordVariantUsed && variant != null) {
                 value = variant;
             }
-            if (option != null && option.wordSpellUsedMode != null && spell != null) {
+            if (option.wordSpellUsedMode != null && spell != null) {
                 switch (option.wordSpellUsedMode) {
                     case following:
                         value = String.format("%s(%s)", value, spell);
@@ -268,19 +273,17 @@ public abstract class Input implements RecyclerViewData {
                         break;
                 }
             }
+        }
 
-            if (value != null) {
-                sb.append(value);
-            }
-        } else {
-            getChars().forEach(sb::append);
+        if (value != null) {
+            sb.append(value);
         }
         return sb;
     }
 
-    /** 输入文本内容是否只有{@link InputWord#getSpell() 字的读音} */
+    /** 输入文本内容是否只有{@link PinyinWord#spell 字的读音} */
     public boolean isTextOnlyWordSpell(Option option) {
-        return option.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing && hasWord() && getWord().hasSpell();
+        return option.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing && getWord() instanceof PinyinWord;
     }
 
     /** 是否有可输入字 */

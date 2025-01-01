@@ -456,11 +456,13 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         if (pinyinCharsId != null //
             && (!input.isWordConfirmed() //
                 || !input.hasWord() //
-                || !Objects.equals(input.getWord().getSpell().charsId, pinyinCharsId) //
+                || (input.getWord() instanceof PinyinWord
+                    && !Objects.equals(((PinyinWord) input.getWord()).spell.charsId, pinyinCharsId)) //
             ) //
         ) {
             word = dict.getFirstBestCandidatePinyinWord(pinyinCharsId);
         }
+
         input.setWord(word);
     }
 }

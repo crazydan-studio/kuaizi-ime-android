@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHol
 import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 /**
  * {@link Input} 视图的 {@link RecyclerView.ViewHolder}
@@ -67,8 +68,8 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
 
     protected void showWord(Input.Option option, CharInput input, boolean selected, boolean hideWordSpell) {
         InputWord word = input.getWord();
-        String value = word != null ? word.getValue() : input.getJoinedChars();
-        String spell = word != null && !hideWordSpell ? word.getSpell().value : null;
+        String value = word != null ? word.value : input.getJoinedChars();
+        String spell = word instanceof PinyinWord && !hideWordSpell ? ((PinyinWord) word).spell.value : null;
 
         if (option != null && word != null) {
             value = input.getText(option).toString();

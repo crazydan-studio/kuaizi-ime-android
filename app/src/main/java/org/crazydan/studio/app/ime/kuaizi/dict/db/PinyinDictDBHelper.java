@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.dict.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,7 +73,7 @@ public class PinyinDictDBHelper {
                                                                   .toArray(String[]::new),
                                                      null);
 
-        return wordList.stream().collect(Collectors.toMap(PinyinWord::getId, Function.identity()));
+        return wordList.stream().collect(Collectors.toMap((w) -> w.id, Function.identity()));
     }
 
     /**
@@ -205,7 +204,7 @@ public class PinyinDictDBHelper {
                 String group = row.getString("group_");
                 EmojiWord emoji = createEmojiWord(row);
 
-                if (emoji.getWeight() > 0) {
+                if (emoji.weight > 0) {
                     general.add(emoji);
                 }
                 groups.computeIfAbsent(group, (k) -> new ArrayList<>(listCapacity)).add(emoji);
@@ -213,7 +212,7 @@ public class PinyinDictDBHelper {
         }});
 
         // 按使用权重收集常用表情
-        general.sort(Comparator.comparingInt(InputWord::getWeight).reversed());
+        general.sort((a, b) -> b.weight - a.weight);
         groups.put(Emojis.GROUP_GENERAL, subList(general, 0, groupGeneralCount));
 
         return new Emojis(groups);
@@ -223,7 +222,7 @@ public class PinyinDictDBHelper {
      * 根据关键字的字 id 获取表情
      *
      * @param keywordIdsList
-     *         关键字的{@link PinyinWord#getGlyphId() 字形} id 列表
+     *         关键字的{@link PinyinWord#glyphId 字形} id 列表
      */
     public static List<EmojiWord> getEmojisByKeyword(SQLiteDatabase db, List<Integer[]> keywordIdsList, int top) {
         // 直接查出全部表情，再对其做关键字过滤，以避免模糊查询存在性能问题
@@ -392,10 +391,15 @@ public class PinyinDictDBHelper {
         int radicalStrokeCount = row.getInt("radical_stroke_count_");
         PinyinWord.Radical radical = new PinyinWord.Radical(radicalValue, radicalStrokeCount);
 
-        PinyinWord word = new PinyinWord(id, value, spell, glyphId, radical, traditional);
-        word.setVariant(variant);
-
-        return word;
+        return PinyinWord.build((b) -> //
+                                        b.id(id)
+                                         .value(value)
+                                         .spell(spell)
+                                         .glyphId(glyphId)
+                                         .radical(radical)
+                                         .traditional(traditional)
+                                         .variant(variant) //
+        );
     }
 
     private static EmojiWord createEmojiWord(SQLiteRow row) {
@@ -403,10 +407,7 @@ public class PinyinDictDBHelper {
         String value = row.getString("value_");
         int weight = row.getInt("weight_");
 
-        EmojiWord word = new EmojiWord(id, value);
-        word.setWeight(weight);
-
-        return word;
+        return EmojiWord.build((b) -> b.id(id).value(value).weight(weight));
     }
 
     /** 统计字符串列表中的字符串权重，并返回 SQLite 参数列表：<code>[[weight, source], [...], ...]</code> */

@@ -73,20 +73,20 @@ public class PinyinDictTest extends PinyinDictBaseTest {
             input.setWord(word);
         }
 
-        String phraseText = inputs.stream().map((input) -> input.hasWord()
-                                                           ? input.getWord().getValue() //
-                                                             + ":" + input.getWord().getSpell().value
-                                                           : input.getJoinedChars()).collect(Collectors.joining(" "));
+        String phraseText = inputs.stream()
+                                  .map((input) -> input.hasWord() ? input.getWord().toString() : input.getJoinedChars())
+                                  .collect(Collectors.joining(" "));
         Log.i(LOG_TAG, String.join(",", inputCharsArray) + ": " + phraseText);
-        Assert.assertEquals("这:zhè 是:shì Android 输:shū 入:rù 法:fǎ", phraseText);
+        Assert.assertEquals("这(zhè) 是(shì) Android 输(shū) 入(rù) 法(fǎ)", phraseText);
     }
 
     private List<CharInput> parseCharInputs(PinyinDict dict, String[] texts) {
         return Arrays.stream(texts).map((text) -> {
             CharInput input = CharInput.from(CharKey.from(text));
-            // Note: 这里仅用于标记输入为拼音输入
+
             if (dict.getPinyinCharsTree().isPinyinCharsInput(input)) {
-                input.setWord(PinyinWord.none());
+                // Note: 这里仅用于标记输入为拼音输入
+                input.setWord(PinyinWord.build(PinyinWord.Builder.noop));
             }
 
             return input;

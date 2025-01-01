@@ -19,10 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.pane;
 
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 /**
  * {@link Input 输入}对应的{@link Input#getWord() 字}
@@ -55,43 +52,6 @@ public abstract class InputWord {
         this.objHash = builder.hashCode();
     }
 
-    public Integer getId() {
-        return this.id;
-    }
-
-    public String getValue() {
-        return this.value;
-    }
-
-    public PinyinWord.Spell getSpell() {
-        return this.spell;
-    }
-
-    public boolean hasSpell() {
-        return !CharUtils.isBlank(this.spell.value);
-    }
-
-    public String getVariant() {
-        return this.variant;
-    }
-
-    public void setVariant(String variant) {
-        this.variant = variant;
-    }
-
-    public boolean hasVariant() {
-        return this.variant != null;
-    }
-
-    public int getWeight() {
-        return this.weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
-    @NonNull
     @Override
     public String toString() {
         return this.value + '(' + this.id + ')';

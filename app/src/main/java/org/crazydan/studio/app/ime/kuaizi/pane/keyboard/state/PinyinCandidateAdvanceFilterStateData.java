@@ -84,16 +84,12 @@ public class PinyinCandidateAdvanceFilterStateData extends PinyinCandidateFilter
     private Map<PinyinWord.Spell, List<WordRadical>> initSpellAndRadicalsMap(List<InputWord> candidates) {
         Map<PinyinWord.Spell, Map<PinyinWord.Radical, Integer>> map = new HashMap<>();
 
-        candidates.stream()
-                  .filter((word) -> word instanceof PinyinWord)
-                  .map((word) -> (PinyinWord) word)
-                  .forEach((word) -> {
-                      PinyinWord.Spell spell = word.getSpell();
-                      PinyinWord.Radical radical = word.getRadical();
+        candidates.stream().filter((w) -> w instanceof PinyinWord).map((w) -> (PinyinWord) w).forEach((w) -> {
+            PinyinWord.Spell spell = w.spell;
+            PinyinWord.Radical radical = w.radical;
 
-                      map.computeIfAbsent(spell, (k) -> new HashMap<>())
-                         .compute(radical, (k, v) -> (v == null ? 0 : v) + 1);
-                  });
+            map.computeIfAbsent(spell, (k) -> new HashMap<>()).compute(radical, (k, v) -> (v == null ? 0 : v) + 1);
+        });
 
         Map<PinyinWord.Spell, List<WordRadical>> result = new HashMap<>();
         map.forEach((spell, radicalMap) -> {

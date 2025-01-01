@@ -27,6 +27,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 
 /**
  * 拼音字
+ * <p/>
+ * Note: 若是要支持其他含读音的 {@link InputWord}，则可提取基类 <code>SpellableWord</code>
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-26
@@ -50,24 +52,6 @@ public class PinyinWord extends InputWord {
         return Builder.build(builder, c);
     }
 
-    public static PinyinWord none() {
-        return new PinyinWord(null, null, new Spell(null, null, null));
-    }
-
-    public static PinyinWord from(InputWord word) {
-        if (word instanceof PinyinWord) {
-            PinyinWord w = (PinyinWord) word;
-
-            PinyinWord copied = new PinyinWord(w.getId(), w.getValue(), w.getSpell(), //
-                                               w.getGlyphId(), w.getRadical(), w.isTraditional());
-            copied.setVariant(w.getVariant());
-            copied.setWeight(w.getWeight());
-
-            return copied;
-        }
-        return new PinyinWord(word.getId(), word.getValue(), word.getSpell());
-    }
-
     protected PinyinWord(Builder builder) {
         super(builder);
 
@@ -78,20 +62,9 @@ public class PinyinWord extends InputWord {
         this.traditional = builder.traditional;
     }
 
-    public Integer getGlyphId() {
-        return this.glyphId;
-    }
-
-    public Integer getCharsId() {
-        return getSpell().charsId;
-    }
-
-    public Radical getRadical() {
-        return this.radical;
-    }
-
-    public boolean isTraditional() {
-        return this.traditional;
+    @Override
+    public String toString() {
+        return this.value + '(' + this.spell.value + ')';
     }
 
     /** 读音使用类型 */
@@ -104,7 +77,9 @@ public class PinyinWord extends InputWord {
 
     /** 拼音字的部首 */
     public static class Radical {
+        /** 值 */
         public final String value;
+        /** 笔画数 */
         public final int strokeCount;
 
         public Radical(String value, int strokeCount) {
@@ -133,7 +108,9 @@ public class PinyinWord extends InputWord {
 
     /** 拼音字的过滤器 */
     public static class Filter {
+        /** 读音 */
         public final List<Spell> spells;
+        /** 部首 */
         public final List<Radical> radicals;
 
         public Filter() {
@@ -187,9 +164,9 @@ public class PinyinWord extends InputWord {
             }
 
             return (this.spells.isEmpty() //
-                    || this.spells.contains(word.getSpell())) //
+                    || this.spells.contains(((PinyinWord) word).spell)) //
                    && (this.radicals.isEmpty() //
-                       || this.radicals.contains(((PinyinWord) word).getRadical()));
+                       || this.radicals.contains(((PinyinWord) word).radical));
         }
 
         @Override
@@ -224,10 +201,6 @@ public class PinyinWord extends InputWord {
             this(value, null, null);
         }
 
-        public Spell(Spell spell) {
-            this(spell.value, spell.id, spell.charsId);
-        }
-
         public Spell(String value, Integer id, Integer charsId) {
             this.value = value;
             this.id = id;
@@ -255,6 +228,8 @@ public class PinyinWord extends InputWord {
 
     /** {@link PinyinWord} 的构建器 */
     public static class Builder extends InputWord.Builder<Builder, PinyinWord> {
+        public static final Consumer<Builder> noop = (b) -> {};
+
         private Spell spell;
         private Radical radical;
         private String variant;
@@ -296,6 +271,12 @@ public class PinyinWord extends InputWord {
         /** @see PinyinWord#spell */
         public Builder spell(Spell spell) {
             this.spell = spell;
+            return this;
+        }
+
+        /** @see PinyinWord.Spell#value */
+        public Builder spell(String spell) {
+            this.spell = new Spell(spell);
             return this;
         }
 

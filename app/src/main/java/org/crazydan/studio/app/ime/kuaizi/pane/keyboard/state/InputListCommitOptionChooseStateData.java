@@ -21,6 +21,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Input;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
 
 /**
@@ -41,14 +42,14 @@ public class InputListCommitOptionChooseStateData implements State.Data {
 
         for (CharInput input : inputList.getCharInputs()) {
             InputWord word = input.getWord();
-            if (word == null) {
+            if (!(word instanceof PinyinWord)) {
                 continue;
             }
 
-            if (word.hasSpell()) {
+            if (((PinyinWord) word).spell != null) {
                 this.hasSpell = true;
             }
-            if (word.hasVariant()) {
+            if (((PinyinWord) word).variant != null) {
                 this.hasVariant = true;
             }
         }

@@ -51,8 +51,8 @@ public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateDa
         this.cachedFilterCandidates = candidates;
 
         this.spells = candidates.stream()
-                                .filter((word) -> word instanceof PinyinWord)
-                                .map(InputWord::getSpell)
+                                .filter((w) -> w instanceof PinyinWord)
+                                .map((w) -> ((PinyinWord) w).spell)
                                 .filter((spell) -> spell.id != null)
                                 .sorted(Comparator.comparingInt(a -> a.id))
                                 .distinct()

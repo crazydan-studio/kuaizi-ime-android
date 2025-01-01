@@ -23,6 +23,9 @@ import java.util.function.Consumer;
  * 不可变对象的构建器
  * <p/>
  * 不可变对象的所有属性都需定义为 <code>public final</code>
+ * <p/>
+ * 该构建器以单例模式暂存不可变对象的属性值，并在 {@link #build()}
+ * 后重置以实现复用，因此，其不是线程安全的
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-31
