@@ -599,17 +599,18 @@ public class PinyinKeyboard extends BaseKeyboard {
         CtrlKey key = context.key();
         InputList inputList = context.inputList;
         InputListCommitOptionChooseStateData stateData = this.state.data();
-        CtrlKey.InputListCommitOption.Option option = ((CtrlKey.InputListCommitOption) key.option).value();
 
         Input.Option oldInputOption = inputList.getOption();
         Input.Option newInputOption = null;
 
+        CtrlKey.Option<CtrlKey.InputWordCommitMode> option = key.option();
+        CtrlKey.InputWordCommitMode mode = option.value;
         if (stateData.hasSpell()) {
-            switch (option) {
+            switch (mode) {
                 case only_pinyin:
                 case with_pinyin: {
                     PinyinWord.SpellUsedMode expected = //
-                            option == CtrlKey.InputListCommitOption.Option.only_pinyin
+                            mode == CtrlKey.InputWordCommitMode.only_pinyin
                             ? PinyinWord.SpellUsedMode.replacing
                             : PinyinWord.SpellUsedMode.following;
 
@@ -622,9 +623,9 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
         }
         if (stateData.hasVariant()) {
-            switch (option) {
-                case switch_trad_to_simple:
-                case switch_simple_to_trad: {
+            switch (mode) {
+                case trad_to_simple:
+                case simple_to_trad: {
                     // 被禁用的繁简转换按钮不做响应
                     if (!key.disabled) {
                         newInputOption = //

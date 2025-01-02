@@ -82,7 +82,7 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
         Dot("."),
         ;
 
-        private final String text;
+        public final String text;
 
         Type(String text) {
             this.text = text;

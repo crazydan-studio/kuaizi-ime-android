@@ -21,10 +21,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
-import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 
 /**
  * 控制按键
@@ -51,6 +48,10 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         super(builder);
 
         this.option = builder.option;
+    }
+
+    public <O extends Option<?>> O option() {
+        return (O) this.option;
     }
 
     @Override
@@ -93,8 +94,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         /** 撤回输入 */
         RevokeInput,
 
-        /** 拼音结束 */
-        Pinyin_End,
         /** 在候选字状态下切换当前输入的拼音拼写 */
         Toggle_Pinyin_spell,
         /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
@@ -144,12 +143,38 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         }
     }
 
-    public static abstract class Option<T> {
-        private final T value;
+    /** 拼音转换模式 */
+    public enum PinyinToggleMode {
+        /** z/c/s 与 zh/ch/sh 的转换 */
+        zcs_start,
+        /** n 与 l 的转换 */
+        nl_start,
+        /** ing/eng/ang 与 in/en/an 等的转换 */
+        ng_end,
+    }
 
-        protected Option(T value) {this.value = value;}
+    /** 输入候选字提交模式 */
+    public enum InputWordCommitMode {
+        /** 仅拼音 */
+        only_pinyin("仅拼音"),
+        /** 携带拼音 */
+        with_pinyin("带拼音"),
+        /** 简体 转换为 繁体 */
+        simple_to_trad("简➙繁"),
+        /** 繁体 转换为 简体 */
+        trad_to_simple("繁➙简"),
+        ;
 
-        public T value() {return this.value;}
+        public final String label;
+
+        InputWordCommitMode(String label) {this.label = label;}
+    }
+
+    /** 在控制按键上附加的选项信息 */
+    public static class Option<T> {
+        public final T value;
+
+        public Option(T value) {this.value = value;}
 
         @Override
         public boolean equals(Object o) {
@@ -167,72 +192,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         @Override
         public int hashCode() {
             return Objects.hash(this.value);
-        }
-    }
-
-    public static class CodeOption extends Option<String> {
-        public final String text;
-
-        public CodeOption(String value) {
-            this(value, null);
-        }
-
-        public CodeOption(String value, String text) {
-            super(value);
-            this.text = text;
-        }
-    }
-
-    public static class ValueOption extends Option<Object> {
-        public ValueOption(Object value) {super(value);}
-    }
-
-    public static class KeyboardSwitchOption extends Option<Keyboard.Type> {
-        public KeyboardSwitchOption(Keyboard.Type value) {
-            super(value);
-        }
-    }
-
-    public static class SymbolGroupToggleOption extends Option<SymbolGroup> {
-        public SymbolGroupToggleOption(SymbolGroup value) {super(value);}
-    }
-
-    public static class PinyinSpellToggleOption extends Option<PinyinSpellToggleOption.Toggle> {
-        public PinyinSpellToggleOption(Toggle value) {super(value);}
-
-        public enum Toggle {
-            zcs_h,
-            nl,
-            ng,
-        }
-    }
-
-    public static class InputListCommitOption extends Option<InputListCommitOption.Option> {
-        public InputListCommitOption(Option value) {
-            super(value);
-        }
-
-        public enum Option {
-            /** 仅拼音 */
-            only_pinyin("仅拼音"),
-            /** 携带拼音 */
-            with_pinyin("带拼音"),
-            /** 简体 转换为 繁体 */
-            switch_simple_to_trad("简➙繁"),
-            /** 繁体 转换为 简体 */
-            switch_trad_to_simple("繁➙简"),
-            ;
-            private final String label;
-
-            Option(String label) {this.label = label;}
-
-            public String label() {return this.label;}
-        }
-    }
-
-    public static class EditorEditOption extends Option<EditorAction> {
-        public EditorEditOption(EditorAction value) {
-            super(value);
         }
     }
 

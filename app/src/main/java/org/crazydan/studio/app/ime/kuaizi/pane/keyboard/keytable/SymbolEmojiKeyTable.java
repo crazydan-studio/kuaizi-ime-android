@@ -87,7 +87,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
 
             int row = keyCoord.row;
             int column = keyCoord.column;
-            CtrlKey.Option<?> option = new CtrlKey.CodeOption(group);
+            CtrlKey.Option<String> option = new CtrlKey.Option<>(group);
 
             CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Emoji_Group,
                                   (b) -> b.option(option).label(group).disabled(selected));
@@ -156,15 +156,15 @@ public class SymbolEmojiKeyTable extends KeyTable {
         GridCoord[] groupKeyCoords = getGroupKeyCoords();
         for (int i = 0, j = 0; i < groupKeyCoords.length && j < SymbolGroup.values().length; i++, j++) {
             GridCoord keyCoord = groupKeyCoords[i];
-            String group = SymbolGroup.values()[j].name;
-            boolean selected = group.equals(symbolGroup.name);
+            SymbolGroup group = SymbolGroup.values()[j];
+            boolean selected = group == symbolGroup;
 
             int row = keyCoord.row;
             int column = keyCoord.column;
-            CtrlKey.Option<?> option = new CtrlKey.SymbolGroupToggleOption(SymbolGroup.values()[j]);
+            CtrlKey.Option<SymbolGroup> option = new CtrlKey.Option<>(group);
 
             CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Symbol_Group,
-                                  (b) -> b.option(option).label(group).disabled(selected));
+                                  (b) -> b.option(option).label(group.name).disabled(selected));
             gridKeys[row][column] = key;
         }
 

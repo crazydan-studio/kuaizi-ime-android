@@ -69,8 +69,8 @@ public class EditorKeyTable extends KeyTable {
     }
 
     public CtrlKey editCtrlKey(EditorAction action) {
-        String label = action.label();
-        CtrlKey.Option<?> option = new CtrlKey.EditorEditOption(action);
+        String label = action.label;
+        CtrlKey.Option<EditorAction> option = new CtrlKey.Option<>(action);
 
         return ctrlKey(CtrlKey.Type.Edit_Editor, (b) -> b.option(option).label(label));
     }

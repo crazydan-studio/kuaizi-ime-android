@@ -255,8 +255,8 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Switch_Keyboard: {
                         play_SingleTick_InputAudio(context);
 
-                        CtrlKey.KeyboardSwitchOption option = (CtrlKey.KeyboardSwitchOption) key.option;
-                        switch_Keyboard_To(context, option.value());
+                        CtrlKey.Option<Keyboard.Type> option = key.option();
+                        switch_Keyboard_To(context, option.value);
                         return true;
                     }
                 }

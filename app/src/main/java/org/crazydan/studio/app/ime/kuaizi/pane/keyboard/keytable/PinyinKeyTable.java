@@ -497,8 +497,7 @@ public class PinyinKeyTable extends KeyTable {
 
             String label = s + "," + s + "h";
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
-            CtrlKey.Option<?> option
-                    = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.zcs_h);
+            CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.zcs_start);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
             gridKeys[0][index_end] = key;
@@ -508,7 +507,7 @@ public class PinyinKeyTable extends KeyTable {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             String label = "n,l  ";
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
-            CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.nl);
+            CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.nl_start);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
             gridKeys[0][index_end] = key;
@@ -528,7 +527,7 @@ public class PinyinKeyTable extends KeyTable {
 
             String label = tail + "," + tail + "g";
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
-            CtrlKey.Option<?> option = new CtrlKey.PinyinSpellToggleOption(CtrlKey.PinyinSpellToggleOption.Toggle.ng);
+            CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.ng_end);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
             gridKeys[1][index_end] = key;
@@ -650,16 +649,16 @@ public class PinyinKeyTable extends KeyTable {
         boolean isVariantUsed = currentOption.wordVariantUsed;
         int index_end = getGridLastColumnIndex();
 
-        gridKeys[1][index_end] = commitOptionKey(CtrlKey.InputListCommitOption.Option.only_pinyin,
-                                                 (b) -> b.disabled(!hasSpell || isOnlyPinyin));
+        gridKeys[1][index_end] = wordCommitModeKey(CtrlKey.InputWordCommitMode.only_pinyin,
+                                                   (b) -> b.disabled(!hasSpell || isOnlyPinyin));
 
-        gridKeys[2][index_end] = commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin,
-                                                 (b) -> b.disabled(!hasSpell || isWithPinyin));
+        gridKeys[2][index_end] = wordCommitModeKey(CtrlKey.InputWordCommitMode.with_pinyin,
+                                                   (b) -> b.disabled(!hasSpell || isWithPinyin));
 
-        gridKeys[4][index_end] = commitOptionKey(isVariantUsed
-                                                 ? CtrlKey.InputListCommitOption.Option.switch_trad_to_simple
-                                                 : CtrlKey.InputListCommitOption.Option.switch_simple_to_trad,
-                                                 (b) -> b.disabled(!hasVariant || isOnlyPinyin));
+        gridKeys[4][index_end] = wordCommitModeKey(isVariantUsed
+                                                   ? CtrlKey.InputWordCommitMode.trad_to_simple
+                                                   : CtrlKey.InputWordCommitMode.simple_to_trad,
+                                                   (b) -> b.disabled(!hasVariant || isOnlyPinyin));
 
         gridKeys[3][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
@@ -704,7 +703,7 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     public CtrlKey advanceFilterKey(CtrlKey.Type type, String label, Object value, Consumer<CtrlKey.Builder> c) {
-        CtrlKey.Option<?> option = new CtrlKey.ValueOption(value);
+        CtrlKey.Option<?> option = new CtrlKey.Option<>(value);
 
         return ctrlKey(type, (b) -> {
             b.option(option).label(label);
@@ -712,13 +711,13 @@ public class PinyinKeyTable extends KeyTable {
         });
     }
 
-    public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt) {
-        return commitOptionKey(opt, CtrlKey.Builder.noop);
+    public CtrlKey wordCommitModeKey(CtrlKey.InputWordCommitMode mode) {
+        return wordCommitModeKey(mode, CtrlKey.Builder.noop);
     }
 
-    public CtrlKey commitOptionKey(CtrlKey.InputListCommitOption.Option opt, Consumer<CtrlKey.Builder> c) {
-        String label = opt.label();
-        CtrlKey.Option<?> option = new CtrlKey.InputListCommitOption(opt);
+    public CtrlKey wordCommitModeKey(CtrlKey.InputWordCommitMode mode, Consumer<CtrlKey.Builder> c) {
+        String label = mode.label;
+        CtrlKey.Option<CtrlKey.InputWordCommitMode> option = new CtrlKey.Option<>(mode);
 
         return ctrlKey(CtrlKey.Type.Commit_InputList_Option, (b) -> {
             b.option(option).label(label);

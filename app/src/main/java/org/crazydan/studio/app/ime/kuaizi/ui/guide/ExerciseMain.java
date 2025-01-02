@@ -467,8 +467,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         Key key_level_1 = keyTable.level1CharKey("i");
         Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
         Key key_ctrl_commit_revoke = keyTable.ctrlKey(CtrlKey.Type.RevokeInput);
-        Key key_ctrl_commit_opt_with_pinyin
-                = keyTable.commitOptionKey(CtrlKey.InputListCommitOption.Option.with_pinyin);
+        Key key_ctrl_commit_mode_with_pinyin = keyTable.wordCommitModeKey(CtrlKey.InputWordCommitMode.with_pinyin);
         Key key_ctrl_exit = keyTable.ctrlKey(CtrlKey.Type.Exit);
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s(%s)</span>，并进行<b>带拼音</b>提交和<b>撤回</b>已提交输入；",
@@ -497,12 +496,12 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
                 });
         exercise.newStep("请点击按键%s以设置待提交的输入需携带拼音。<b>注</b>：可多次点击做形式切换；",
-                         key_ctrl_commit_opt_with_pinyin) //
+                         key_ctrl_commit_mode_with_pinyin) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Done) {
                         Key key = msg.data().key;
 
-                        if (key_ctrl_commit_opt_with_pinyin.equals(key)) {
+                        if (key_ctrl_commit_mode_with_pinyin.equals(key)) {
                             exercise.gotoNextStep();
                         }
                     }

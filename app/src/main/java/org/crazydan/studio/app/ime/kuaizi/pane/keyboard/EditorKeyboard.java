@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyboardContext;
@@ -72,8 +73,8 @@ public class EditorKeyboard extends DirectInputKeyboard {
                 if (CtrlKey.Type.Edit_Editor.match(key)) {
                     play_SingleTick_InputAudio(context);
 
-                    CtrlKey.EditorEditOption option = (CtrlKey.EditorEditOption) key.option;
-                    do_Editor_Editing(context, option.value());
+                    CtrlKey.Option<EditorAction> option = key.option();
+                    do_Editor_Editing(context, option.value);
                 }
                 break;
             }

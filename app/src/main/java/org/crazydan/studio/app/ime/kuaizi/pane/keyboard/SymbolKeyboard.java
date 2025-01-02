@@ -102,8 +102,8 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         if (CtrlKey.Type.Toggle_Symbol_Group.match(key)) {
             play_SingleTick_InputAudio(context);
 
-            CtrlKey.SymbolGroupToggleOption option = (CtrlKey.SymbolGroupToggleOption) key.option;
-            do_Symbol_Choosing(context, option.value());
+            CtrlKey.Option<SymbolGroup> option = key.option();
+            do_Symbol_Choosing(context, option.value);
         }
     }
 

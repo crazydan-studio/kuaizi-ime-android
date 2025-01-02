@@ -106,6 +106,44 @@ public class PinyinWord extends InputWord {
         }
     }
 
+    /** 拼音字的读音 */
+    public static class Spell {
+        /** 值 */
+        public final String value;
+        /** 读音 id */
+        public final Integer id;
+        /** 字母组合 id */
+        public final Integer charsId;
+
+        public Spell(String value) {
+            this(value, null, null);
+        }
+
+        public Spell(String value, Integer id, Integer charsId) {
+            this.value = value;
+            this.id = id;
+            this.charsId = charsId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Spell that = (Spell) o;
+            return Objects.equals(this.id, that.id) && Objects.equals(this.value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.id, this.value);
+        }
+    }
+
     /** 拼音字的过滤器 */
     public static class Filter {
         /** 读音 */
@@ -130,16 +168,16 @@ public class PinyinWord extends InputWord {
             // Note: 拼音过滤为单选项，且需重置部首过滤
             clear();
 
-            CtrlKey.Option<?> option = key.option;
-            PinyinWord.Spell value = (PinyinWord.Spell) option.value();
+            CtrlKey.Option<PinyinWord.Spell> option = key.option();
+            PinyinWord.Spell value = option.value;
             if (!key.disabled) {
                 this.spells.add(value);
             }
         }
 
         public void addRadicalByKey(CtrlKey key) {
-            CtrlKey.Option<?> option = key.option;
-            PinyinWord.Radical value = (PinyinWord.Radical) option.value();
+            CtrlKey.Option<PinyinWord.Radical> option = key.option();
+            PinyinWord.Radical value = option.value;
 
             if (key.disabled) {
                 this.radicals.remove(value);
@@ -185,44 +223,6 @@ public class PinyinWord extends InputWord {
         @Override
         public int hashCode() {
             return Objects.hash(this.spells, this.radicals);
-        }
-    }
-
-    /** 拼音字的读音 */
-    public static class Spell {
-        /** 值 */
-        public final String value;
-        /** 读音 id */
-        public final Integer id;
-        /** 字母组合 id */
-        public final Integer charsId;
-
-        public Spell(String value) {
-            this(value, null, null);
-        }
-
-        public Spell(String value, Integer id, Integer charsId) {
-            this.value = value;
-            this.id = id;
-            this.charsId = charsId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Spell that = (Spell) o;
-            return Objects.equals(this.id, that.id) && Objects.equals(this.value, that.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.id, this.value);
         }
     }
 

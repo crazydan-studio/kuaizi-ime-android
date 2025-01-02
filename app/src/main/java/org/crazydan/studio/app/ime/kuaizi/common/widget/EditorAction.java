@@ -40,14 +40,10 @@ public enum EditorAction {
     redo("重做"),
     ;
 
-    private final String label;
+    public final String label;
 
     EditorAction(String label) {
         this.label = label;
-    }
-
-    public String label() {
-        return this.label;
     }
 
     /** 检查指定的编辑动作是否会造成内容修改 */

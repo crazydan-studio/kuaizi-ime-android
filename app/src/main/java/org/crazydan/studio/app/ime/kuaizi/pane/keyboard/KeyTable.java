@@ -278,7 +278,7 @@ public abstract class KeyTable {
     }
 
     private CtrlKey switcherCtrlKey(Keyboard.Type type, Consumer<CtrlKey.Builder> c) {
-        CtrlKey.Option<?> option = new CtrlKey.KeyboardSwitchOption(type);
+        CtrlKey.Option<Keyboard.Type> option = new CtrlKey.Option<>(type);
 
         KeyStyle style = null;
         switch (type) {

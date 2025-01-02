@@ -174,15 +174,15 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 InputList inputList = context.inputList;
                 CharInput pending = inputList.getPending();
 
-                CtrlKey.PinyinSpellToggleOption option = (CtrlKey.PinyinSpellToggleOption) key.option;
-                switch (option.value()) {
-                    case ng:
+                CtrlKey.Option<CtrlKey.PinyinToggleMode> option = key.option();
+                switch (option.value) {
+                    case ng_end:
                         pending.toggle_Pinyin_NG_Ending();
                         break;
-                    case nl:
+                    case nl_start:
                         pending.toggle_Pinyin_NL_Starting();
                         break;
-                    case zcs_h:
+                    case zcs_start:
                         pending.toggle_Pinyin_SCZ_Starting();
                         break;
                 }

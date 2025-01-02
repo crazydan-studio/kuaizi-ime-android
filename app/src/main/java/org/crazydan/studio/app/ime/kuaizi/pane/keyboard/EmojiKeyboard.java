@@ -95,8 +95,8 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         if (CtrlKey.Type.Toggle_Emoji_Group.match(key)) {
             play_SingleTick_InputAudio(context);
 
-            CtrlKey.CodeOption option = (CtrlKey.CodeOption) key.option;
-            do_Emoji_Choosing(context, option.value());
+            CtrlKey.Option<String> option = key.option();
+            do_Emoji_Choosing(context, option.value);
         }
     }
 
