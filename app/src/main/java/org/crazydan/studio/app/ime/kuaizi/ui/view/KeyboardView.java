@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
@@ -39,7 +40,6 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewGestureListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewKeyAnimator;
 
 /**
@@ -60,27 +60,34 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     private Config config;
     private UserKeyMsgListener listener;
 
+    /** 与 {@link Key} 相关的手势消息监听器 */
+    public interface GestureListener {
+        void onGesture(Key key, ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data);
+    }
+
     public KeyboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.input_trail_color);
-        RecyclerViewGestureTrailer trailer = this.gestureTrailer = new RecyclerViewGestureTrailer(this, true);
-        this.gestureTrailer.setColor(trailColor);
-        addItemDecoration(new ItemDecoration() {
-            @Override
-            public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull State state) {
-                trailer.draw(canvas);
-            }
-        });
 
         this.animator = new KeyboardViewKeyAnimator();
         setItemAnimator(this.animator);
 
+        RecyclerViewGestureTrailer gestureTrailer = new RecyclerViewGestureTrailer(this, true);
+        addItemDecoration(new ItemDecoration() {
+            @Override
+            public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull State state) {
+                gestureTrailer.draw(canvas);
+            }
+        });
+
+        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.input_trail_color);
+        this.gestureTrailer = gestureTrailer;
+        this.gestureTrailer.setColor(trailColor);
+
+        KeyboardViewGestureListener gestureListener = new KeyboardViewGestureListener(this);
         this.gesture = new RecyclerViewGestureDetector(this);
-        this.gesture
-                // Note：以下监听的执行顺序与注册顺序一致
-                .addListener(new KeyboardViewGestureListener(this)) //
-                .addListener(this.gestureTrailer);
+        // Note：确保先处理视图消息，再处理轨迹消息，因为前者会对轨迹做禁用处理
+        this.gesture.addListener(gestureListener) //
+                    .addListener(gestureTrailer);
     }
 
     public void setConfig(Config config) {
@@ -90,6 +97,39 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     public boolean isGestureTrailerDisabled() {
         return this.config.bool(ConfigKey.disable_gesture_slipping_trail);
     }
+
+    // =============================== Start: 视图更新 ===================================
+
+    private void reset() {
+        this.gesture.reset();
+        this.animator.reset();
+
+        // Note：不清空按键，以避免子键盘切换过程中出现闪动
+        //updateKeys(new Key[][] {});
+    }
+
+    private void update(KeyFactory keyFactory) {
+        if (keyFactory == null) {
+            return;
+        }
+
+        Key[][] keys = keyFactory.getKeys();
+
+        boolean animationDisabled = keyFactory instanceof KeyFactory.NoAnimation;
+        if (animationDisabled) {
+            setItemAnimator(null);
+
+            // Note：post 的参数是在当前渲染线程执行完毕后再调用的，
+            // 因此，在无动效的按键渲染完毕后可以恢复原动画设置，
+            // 确保其他需要动画的按键能够正常显示动画效果
+            post(() -> setItemAnimator(this.animator));
+        }
+
+        boolean leftHandMode = keyFactory instanceof KeyFactory.LeftHandMode;
+        super.update(keys, leftHandMode);
+    }
+
+    // =============================== End: 视图更新 ===================================
 
     // =============================== Start: 消息处理 ===================================
 
@@ -102,7 +142,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     public void onMsg(UserKeyMsg msg) {
         switch (msg.type) {
             case FingerMoving_Start: {
-                // 对光标移动和文本选择按键启用轨迹
+                // 对光标移动和文本选择按键禁用轨迹
                 if ((CtrlKey.Type.Editor_Cursor_Locator.match(msg.data().key) //
                      || CtrlKey.Type.Editor_Range_Selector.match(msg.data().key)) //
                     && !isGestureTrailerDisabled() //
@@ -169,33 +209,4 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     }
 
     // =============================== End: 消息处理 ===================================
-
-    private void reset() {
-        this.gesture.reset();
-        this.animator.reset();
-
-        // Note：不清空按键，以避免子键盘切换过程中出现闪动
-        //updateKeys(new Key[][] {});
-    }
-
-    private void update(KeyFactory keyFactory) {
-        if (keyFactory == null) {
-            return;
-        }
-
-        Key[][] keys = keyFactory.getKeys();
-
-        boolean animationDisabled = keyFactory instanceof KeyFactory.NoAnimation;
-        if (animationDisabled) {
-            setItemAnimator(null);
-
-            // Note：post 的参数是在当前渲染线程执行完毕后再调用的，
-            // 因此，在无动效的按键渲染完毕后可以恢复原动画设置，
-            // 确保其他需要动画的按键能够正常显示动画效果
-            post(() -> setItemAnimator(this.animator));
-        }
-
-        boolean leftHandMode = keyFactory instanceof KeyFactory.LeftHandMode;
-        super.update(keys, leftHandMode);
-    }
 }

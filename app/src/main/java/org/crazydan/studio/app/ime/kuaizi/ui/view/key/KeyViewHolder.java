@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -27,6 +28,9 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.HexagonDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -84,5 +88,41 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
 
             view.setImageDrawable(drawable);
         });
+    }
+
+    /** 更新 {@link Key} 的 {@link TextView} */
+    protected void updateKeyTextView(Key key, TextView view, String text) {
+        view.setText(text);
+        setTextColorByAttrId(view, key.color.fg);
+    }
+
+    /** 获取 {@link Key#label} 的字体大小 */
+    protected int getKeyLabelSizeDimenId(Key key) {
+        if (key instanceof SymbolKey //
+            || CharKey.Type.Symbol.match(key) //
+            || (key instanceof MathOpKey && !MathOpKey.Type.isOperator(key)) //
+        ) {
+            return R.dimen.char_symbol_key_text_size;
+        }
+
+        int dimen;
+        switch (key.label.length()) {
+            case 6:
+                dimen = R.dimen.char_key_text_size_4d;
+                break;
+            case 5:
+            case 4:
+                dimen = R.dimen.char_key_text_size_3d;
+                break;
+            case 3:
+                dimen = R.dimen.char_key_text_size_2d;
+                break;
+            case 2:
+                dimen = R.dimen.char_key_text_size_1d;
+                break;
+            default:
+                dimen = R.dimen.char_key_text_size;
+        }
+        return dimen;
     }
 }

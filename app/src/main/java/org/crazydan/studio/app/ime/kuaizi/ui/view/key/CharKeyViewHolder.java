@@ -17,16 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
@@ -46,36 +42,11 @@ public class CharKeyViewHolder extends KeyViewHolder<TextView> {
         super.bind(key, orientation);
 
         whenViewReady(this.fgView, (view) -> {
-            setTextColorByAttrId(view, key.color.fg);
-
-            int textDimen;
-            if (CharKey.Type.Symbol.match(key) || MathOpKey.Type.isSymbol(key)) {
-                textDimen = R.dimen.char_symbol_key_text_size;
-            } else {
-                switch (key.label.length()) {
-                    case 6:
-                        textDimen = R.dimen.char_key_text_size_4d;
-                        break;
-                    case 5:
-                    case 4:
-                        textDimen = R.dimen.char_key_text_size_3d;
-                        break;
-                    case 3:
-                        textDimen = R.dimen.char_key_text_size_2d;
-                        break;
-                    case 2:
-                        textDimen = R.dimen.char_key_text_size_1d;
-                        break;
-                    default:
-                        textDimen = R.dimen.char_key_text_size;
-                }
-            }
-
-            float textSize = ScreenUtils.pxFromDimension(getContext(), textDimen);
-            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+            int dimenId = getKeyLabelSizeDimenId(key);
+            setTextSizeByDimenId(view, dimenId);
 
             String label = key.label;
-            view.setText(label);
+            updateKeyTextView(key, view, label);
         });
     }
 }

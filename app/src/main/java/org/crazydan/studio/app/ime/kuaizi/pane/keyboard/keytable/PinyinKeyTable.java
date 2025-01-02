@@ -496,7 +496,7 @@ public class PinyinKeyTable extends KeyTable {
             String s = input.getChars().get(0).substring(0, 1);
 
             String label = s + "," + s + "h";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_Spell;
             CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.zcs_start);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
@@ -506,7 +506,7 @@ public class PinyinKeyTable extends KeyTable {
         } else if (input.is_Pinyin_NL_Starting()) {
             // Note: 第二个右侧添加占位空格，以让字母能够对齐切换箭头
             String label = "n,l  ";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_Spell;
             CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.nl_start);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));
@@ -526,7 +526,7 @@ public class PinyinKeyTable extends KeyTable {
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
             String label = tail + "," + tail + "g";
-            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_spell;
+            CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_Spell;
             CtrlKey.Option<CtrlKey.PinyinToggleMode> option = new CtrlKey.Option<>(CtrlKey.PinyinToggleMode.ng_end);
 
             CtrlKey key = ctrlKey(type, (b) -> b.option(option).label(label));

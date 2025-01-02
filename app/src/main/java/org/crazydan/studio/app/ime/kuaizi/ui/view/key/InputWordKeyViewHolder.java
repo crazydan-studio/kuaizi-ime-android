@@ -55,21 +55,21 @@ public class InputWordKeyViewHolder extends KeyViewHolder<View> {
 
         whenViewReady(this.traditionalMarkView, (view) -> {
             boolean shown = word instanceof PinyinWord && ((PinyinWord) word).traditional;
+
             ViewUtils.visible(view, shown);
         });
 
         String value = word != null ? word.value : "";
         whenViewReady(this.wordView, (view) -> {
-            setTextColorByAttrId(view, key.color.fg);
-            view.setText(value);
+            updateKeyTextView(key, view, value);
         });
 
         String spell = word instanceof PinyinWord ? ((PinyinWord) word).spell.value : null;
         whenViewReady(this.spellView, (view) -> {
             boolean shown = !CharUtils.isBlank(spell);
+
             if (shown) {
-                setTextColorByAttrId(view, key.color.fg);
-                view.setText(spell);
+                updateKeyTextView(key, view, spell);
             }
             ViewUtils.visible(view, shown);
         });

@@ -57,6 +57,7 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
         return this.type + "(" + this.value + ")";
     }
 
+    /** 算术运算按键类型，包括运算符和百分号等 */
     public enum Type {
         /** 数学 = */
         Equal("="),
@@ -93,7 +94,8 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
             return key instanceof MathOpKey && ((MathOpKey) key).type == this;
         }
 
-        public static boolean isSymbol(Key key) {
+        /** 判断指定的 {@link Key} 是否为 {@link MathOpKey} 的运算符 */
+        public static boolean isOperator(Key key) {
             if (!(key instanceof MathOpKey)) {
                 return false;
             }
@@ -103,9 +105,9 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
                 case Percent:
                 case Permill:
                 case Permyriad:
-                    return true;
+                    return false;
             }
-            return false;
+            return true;
         }
     }
 

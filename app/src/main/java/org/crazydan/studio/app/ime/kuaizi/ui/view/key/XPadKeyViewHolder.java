@@ -35,17 +35,18 @@ public class XPadKeyViewHolder extends KeyViewHolder<XPadView> {
         super(itemView);
     }
 
-    public XPadView getXPad() {
-        return this.fgView;
-    }
-
     public void bind(XPadKey key) {
         super.bind(key, null);
 
         getXPad().updateZoneKeys(key.zone_0_key, key.zone_1_keys, key.zone_2_keys);
     }
 
-    // <<<<<<<<<<<<<<<< Start 重载无效的功能接口
+    public XPadView getXPad() {
+        return this.fgView;
+    }
+
+    // =================== Start: 重载无效的功能接口 ===================
+
     @Override
     public void disable() {
     }
@@ -61,5 +62,6 @@ public class XPadKeyViewHolder extends KeyViewHolder<XPadView> {
     @Override
     public void touchUp() {
     }
-    // >>>>>>>>>>>>>>>>> End
+
+    // =================== End: 重载无效的功能接口 ===================
 }

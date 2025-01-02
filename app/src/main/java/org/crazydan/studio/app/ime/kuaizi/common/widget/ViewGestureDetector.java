@@ -59,6 +59,10 @@ public class ViewGestureDetector {
     private GestureData latestPressStart;
     private SingleTapGestureData latestSingleTap;
 
+    public interface Listener {
+        void onGesture(GestureType type, GestureData data);
+    }
+
     public ViewGestureDetector addListener(Listener listener) {
         this.listeners.add(listener);
         return this;
@@ -358,11 +362,6 @@ public class ViewGestureDetector {
         MovingEnd,
         /** 翻动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
         Flipping,
-    }
-
-    public interface Listener {
-
-        void onGesture(GestureType type, GestureData data);
     }
 
     public static class GestureData {

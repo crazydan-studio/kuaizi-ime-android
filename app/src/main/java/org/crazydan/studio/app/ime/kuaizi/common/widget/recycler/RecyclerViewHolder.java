@@ -22,11 +22,13 @@ import java.util.function.Consumer;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
@@ -61,10 +63,17 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
         setAlpha(1.0f);
     }
 
-    public void setTextColorByAttrId(TextView text, Integer attrId) {
+    public void setTextColorByAttrId(TextView view, Integer attrId) {
         if (attrId != null) {
             int color = getColorByAttrId(attrId);
-            text.setTextColor(color);
+            view.setTextColor(color);
+        }
+    }
+
+    public void setTextSizeByDimenId(TextView view, Integer dimenId) {
+        if (dimenId != null) {
+            float textSize = ScreenUtils.pxFromDimension(getContext(), dimenId);
+            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         }
     }
 

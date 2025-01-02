@@ -26,16 +26,17 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
- * 切换 输入拼写 的{@link CtrlKey} 视图的 {@link RecyclerView.ViewHolder}
+ * {@link CtrlKey.PinyinToggleMode 拼音转换}类型的
+ * {@link CtrlKey} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-11
  */
-public class CtrlToggleInputSpellKeyViewHolder extends KeyViewHolder<View> {
+public class CtrlKeyPinyinToggleViewHolder extends KeyViewHolder<View> {
     private final TextView sourceView;
     private final TextView targetView;
 
-    public CtrlToggleInputSpellKeyViewHolder(@NonNull View itemView) {
+    public CtrlKeyPinyinToggleViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.sourceView = itemView.findViewById(R.id.source_view);

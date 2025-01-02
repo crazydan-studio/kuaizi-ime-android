@@ -106,7 +106,7 @@ public abstract class Input implements RecyclerViewData {
     public boolean isSymbol() {
         return test((key) -> CharKey.Type.Symbol.match(key) //
                              || key instanceof SymbolKey //
-                             || MathOpKey.Type.isSymbol(key)) //
+                             || !MathOpKey.Type.isOperator(key)) //
                || isSpace();
     }
 

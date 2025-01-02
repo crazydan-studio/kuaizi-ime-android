@@ -47,6 +47,7 @@ public class CtrlKeyViewHolder extends KeyViewHolder<ImageView> {
 
         whenViewReady(this.fgView, (view) -> {
             boolean shown = key.icon != null;
+
             if (shown) {
                 view.setImageResource(key.icon);
             }
@@ -55,9 +56,9 @@ public class CtrlKeyViewHolder extends KeyViewHolder<ImageView> {
 
         whenViewReady(this.fgTextView, (view) -> {
             boolean shown = key.icon == null && key.label != null;
+
             if (shown) {
-                setTextColorByAttrId(view, key.color.fg);
-                view.setText(key.label);
+                updateKeyTextView(key, view, key.label);
             }
             ViewUtils.visible(view, shown);
         });

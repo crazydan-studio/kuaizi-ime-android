@@ -17,15 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
-import android.util.TypedValue;
 import android.view.View;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
-import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * {@link SymbolKey} 视图的 {@link RecyclerView.ViewHolder}
@@ -33,24 +28,9 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-29
  */
-public class SymbolKeyViewHolder extends KeyViewHolder<TextView> {
+public class SymbolKeyViewHolder extends CharKeyViewHolder {
 
     public SymbolKeyViewHolder(@NonNull View itemView) {
         super(itemView);
-    }
-
-    public void bind(SymbolKey key, HexagonOrientation orientation) {
-        super.bind(key, orientation);
-
-        whenViewReady(this.fgView, (view) -> {
-            setTextColorByAttrId(view, key.color.fg);
-
-            int textSizeDimen = R.dimen.char_symbol_key_text_size;
-            float textSize = ScreenUtils.pxFromDimension(getContext(), textSizeDimen);
-            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-
-            String label = key.label;
-            view.setText(label);
-        });
     }
 }

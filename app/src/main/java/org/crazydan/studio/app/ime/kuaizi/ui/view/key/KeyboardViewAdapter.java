@@ -18,7 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,7 +31,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
@@ -51,7 +50,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     private static final int VIEW_TYPE_CTRL_KEY = 1;
     private static final int VIEW_TYPE_NULL_KEY = 2;
     private static final int VIEW_TYPE_INPUT_WORD_KEY = 3;
-    private static final int VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY = 4;
+    private static final int VIEW_TYPE_TOGGLE_PINYIN_SPELL_KEY = 4;
     private static final int VIEW_TYPE_SYMBOL_KEY = 6;
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
     private static final int VIEW_TYPE_XPAD_KEY = 8;
@@ -72,7 +71,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
 
         List<Key> newItems = new ArrayList<>();
         for (Key[] key : keys) {
-            newItems.addAll(Arrays.asList(key));
+            Collections.addAll(newItems, key);
         }
 
         List<Key> oldItems = super.updateItems(newItems);
@@ -122,13 +121,13 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     }
 
     protected static int getKeyViewType(Key key) {
-        if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).type) {
-                case Toggle_Pinyin_spell:
-                    return VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY;
-                default:
-                    return VIEW_TYPE_CTRL_KEY;
+        if (key == null) {
+            return VIEW_TYPE_NULL_KEY;
+        } else if (key instanceof CtrlKey) {
+            if (((CtrlKey) key).type == CtrlKey.Type.Toggle_Pinyin_Spell) {
+                return VIEW_TYPE_TOGGLE_PINYIN_SPELL_KEY;
             }
+            return VIEW_TYPE_CTRL_KEY;
         } else if (key instanceof InputWordKey) {
             return VIEW_TYPE_INPUT_WORD_KEY;
         } else if (key instanceof SymbolKey) {
@@ -137,8 +136,6 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
             return VIEW_TYPE_MATH_OP_KEY;
         } else if (key instanceof XPadKey) {
             return VIEW_TYPE_XPAD_KEY;
-        } else if (key == null) {
-            return VIEW_TYPE_NULL_KEY;
         }
         return VIEW_TYPE_CHAR_KEY;
     }
@@ -150,9 +147,9 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
                 View view = inflateItemView(context, root, R.layout.key_ctrl_view);
                 return new CtrlKeyViewHolder(view);
             }
-            case VIEW_TYPE_TOGGLE_INPUT_SPELL_KEY: {
-                View view = inflateItemView(context, root, R.layout.key_ctrl_toggle_input_spell_view);
-                return new CtrlToggleInputSpellKeyViewHolder(view);
+            case VIEW_TYPE_TOGGLE_PINYIN_SPELL_KEY: {
+                View view = inflateItemView(context, root, R.layout.key_ctrl_toggle_pinyin_spell_view);
+                return new CtrlKeyPinyinToggleViewHolder(view);
             }
             case VIEW_TYPE_INPUT_WORD_KEY: {
                 View view = inflateItemView(context, root, R.layout.key_char_input_word_view);
@@ -182,26 +179,26 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     }
 
     private static void bindKeyView(KeyViewHolder<?> holder, Key key, HexagonOrientation orientation) {
-        if (key instanceof CtrlKey) {
-            switch (((CtrlKey) key).type) {
-                case Toggle_Pinyin_spell:
-                    ((CtrlToggleInputSpellKeyViewHolder) holder).bind((CtrlKey) key, orientation);
-                    break;
-                default:
-                    ((CtrlKeyViewHolder) holder).bind((CtrlKey) key, orientation);
+        if (key == null) {
+            ((NullKeyViewHolder) holder).bind();
+        } else if (key instanceof CtrlKey) {
+            if (((CtrlKey) key).type == CtrlKey.Type.Toggle_Pinyin_Spell) {
+                ((CtrlKeyPinyinToggleViewHolder) holder).bind((CtrlKey) key, orientation);
+            } else {
+                ((CtrlKeyViewHolder) holder).bind((CtrlKey) key, orientation);
             }
         } else if (key instanceof InputWordKey) {
             ((InputWordKeyViewHolder) holder).bind((InputWordKey) key, orientation);
-        } else if (key instanceof SymbolKey) {
-            ((SymbolKeyViewHolder) holder).bind((SymbolKey) key, orientation);
-        } else if (key instanceof MathOpKey) {
-            ((MathOpKeyViewHolder) holder).bind((MathOpKey) key, orientation);
         } else if (key instanceof XPadKey) {
             ((XPadKeyViewHolder) holder).bind((XPadKey) key);
-        } else if (key == null) {
-            ((NullKeyViewHolder) holder).bind();
+        }
+        //
+        else if (key instanceof MathOpKey) {
+            holder.bind(key, orientation);
+        } else if (key instanceof SymbolKey) {
+            holder.bind(key, orientation);
         } else {
-            ((CharKeyViewHolder) holder).bind((CharKey) key, orientation);
+            holder.bind(key, orientation);
         }
     }
 }

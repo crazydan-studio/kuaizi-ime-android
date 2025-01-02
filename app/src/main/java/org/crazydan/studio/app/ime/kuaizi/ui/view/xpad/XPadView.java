@@ -50,7 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.Constants.cos_30;
@@ -182,7 +182,7 @@ public class XPadView extends View {
     }
 
     public void onGesture(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data, PointF offset, boolean disableTrailer
     ) {
         // 忽略长按的 tick 事件，目前没有对该事件的处理需求
@@ -192,7 +192,7 @@ public class XPadView extends View {
 
         boolean simulationTerminated = false;
         if (this.simulating) {
-            if (trigger != null) {
+            if (listener != null) {
                 if (type == ViewGestureDetector.GestureType.PressEnd) {
                     // 连续输入的模拟过程中，手指已离开屏幕，
                     // 则终止模拟，并继续后续逻辑以复原键盘
@@ -203,7 +203,7 @@ public class XPadView extends View {
                     return;
                 }
             }
-        } else if (trigger == null) {
+        } else if (listener == null) {
             // 演示模拟已提前终止
             return;
         }
@@ -243,14 +243,14 @@ public class XPadView extends View {
                 start_zone_1_animator(0, this.zone_1_HexagonRadius, new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        onGesture_End(trigger, data, finalSimulationTerminated);
+                        onGesture_End(listener, data, finalSimulationTerminated);
                         invalidate();
                     }
                 });
                 return;
             }
 
-            onGesture_End(trigger, data, simulationTerminated);
+            onGesture_End(listener, data, simulationTerminated);
             return;
         }
 
@@ -263,15 +263,15 @@ public class XPadView extends View {
 
         switch (new_active_block.zone) {
             case 0: {
-                onGesture_Over_Zone_0(trigger, type, data);
+                onGesture_Over_Zone_0(listener, type, data);
                 break;
             }
             case 1: {
-                onGesture_Over_Zone_1(trigger, type, data);
+                onGesture_Over_Zone_1(listener, type, data);
                 break;
             }
             case 2: {
-                onGesture_Over_Zone_2(trigger, type, data);
+                onGesture_Over_Zone_2(listener, type, data);
                 break;
             }
         }
@@ -300,14 +300,14 @@ public class XPadView extends View {
 
                 // 在左右任意轴线上有字符，均可触发提示音效
                 if (!BlockKey.isNull(blockKey)) {
-                    fire_UserKey_Moving(trigger, CtrlKey.build(CtrlKey.Type.XPad_Active_Block), data);
+                    trigger_Moving_Gesture(listener, CtrlKey.build(CtrlKey.Type.XPad_Active_Block), data);
                 }
             }
             // 告知待输入字符发生了切换
             else if (isCharChanged) {
                 BlockKey blockKey = getActiveBlockKey_In_Zone_2();
                 if (!BlockKey.isNull(blockKey)) {
-                    fire_UserKey_Moving(trigger, CtrlKey.build(CtrlKey.Type.XPad_Char_Key), data);
+                    trigger_Moving_Gesture(listener, CtrlKey.build(CtrlKey.Type.XPad_Char_Key), data);
                 }
             }
         }
@@ -1097,22 +1097,22 @@ public class XPadView extends View {
     }
 
     private void onGesture_End(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureData data, //
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureData data, //
             boolean simulationTerminated
     ) {
         reset();
 
         Key key = CtrlKey.build(CtrlKey.Type.NoOp);
-        trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
+        trigger_Gesture(listener, key, ViewGestureDetector.GestureType.PressEnd, data);
 
         if (simulationTerminated) {
             key = CtrlKey.build(CtrlKey.Type.XPad_Simulation_Terminated);
-            trigger_UserKeyMsgListener(trigger, key, ViewGestureDetector.GestureType.PressEnd, data);
+            trigger_Gesture(listener, key, ViewGestureDetector.GestureType.PressEnd, data);
         }
     }
 
     private void onGesture_Over_Zone_0(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
         if (this.state.type != XPadState.Type.Init) {
@@ -1130,12 +1130,12 @@ public class XPadView extends View {
             }
             case SingleTap: // 用于播放双击提示音：两次单击音效
             case Flipping: {
-                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
+                trigger_Gesture(listener, blockKey, type, data);
                 break;
             }
             case DoubleTap:
             case LongPressStart: {
-                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
+                trigger_Gesture(listener, blockKey, type, data);
 
                 // Note：进入编辑器编辑状态会发生键盘切换，故而，需显式重置状态
                 reset();
@@ -1145,7 +1145,7 @@ public class XPadView extends View {
     }
 
     private void onGesture_Over_Zone_1(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
         switch (type) {
@@ -1155,7 +1155,7 @@ public class XPadView extends View {
                     return;
                 }
 
-                trigger_UserKeyMsgListener(trigger, blockKey, type, data);
+                trigger_Gesture(listener, blockKey, type, data);
                 break;
             }
             case MovingStart: {
@@ -1170,9 +1170,7 @@ public class XPadView extends View {
                 }
 
                 // 发送点击事件以触发通用的子键盘切换
-                ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
-                                                                                                                0);
-                trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.SingleTap, tapData);
+                trigger_SingleTap_Gesture(listener, blockKey, data);
                 break;
             }
             case Moving: {
@@ -1191,16 +1189,14 @@ public class XPadView extends View {
                     return;
                 }
 
-                ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data,
-                                                                                                                0);
-                trigger_UserKeyMsgListener(trigger, blockKey, ViewGestureDetector.GestureType.SingleTap, tapData);
+                trigger_SingleTap_Gesture(listener, blockKey, data);
                 break;
             }
         }
     }
 
     private void onGesture_Over_Zone_2(
-            UserKeyMsgListener.Trigger trigger, ViewGestureDetector.GestureType type,
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
         if (type != ViewGestureDetector.GestureType.Moving) {
@@ -1226,32 +1222,39 @@ public class XPadView extends View {
         }
     }
 
-    private void trigger_UserKeyMsgListener(
-            UserKeyMsgListener.Trigger trigger, BlockKey blockKey, ViewGestureDetector.GestureType type,
+    private void trigger_Moving_Gesture(
+            KeyboardView.GestureListener listener, Key key, ViewGestureDetector.GestureData data
+    ) {
+        ViewGestureDetector.MovingGestureData movingData = new ViewGestureDetector.MovingGestureData(data,
+                                                                                                     new Motion());
+        trigger_Gesture(listener, key, ViewGestureDetector.GestureType.Moving, movingData);
+    }
+
+    private void trigger_SingleTap_Gesture(
+            KeyboardView.GestureListener listener, BlockKey blockKey, ViewGestureDetector.GestureData data
+    ) {
+        ViewGestureDetector.SingleTapGestureData tapData = new ViewGestureDetector.SingleTapGestureData(data, 0);
+
+        trigger_Gesture(listener, blockKey, ViewGestureDetector.GestureType.SingleTap, tapData);
+    }
+
+    private void trigger_Gesture(
+            KeyboardView.GestureListener listener, BlockKey blockKey, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
         Key key = !BlockKey.isNull(blockKey) ? blockKey.key : null;
 
-        trigger_UserKeyMsgListener(trigger, key, type, data);
+        trigger_Gesture(listener, key, type, data);
     }
 
-    private void trigger_UserKeyMsgListener(
-            UserKeyMsgListener.Trigger trigger, Key key, ViewGestureDetector.GestureType type,
+    private void trigger_Gesture(
+            KeyboardView.GestureListener listener, Key key, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
-        if (trigger != null) {
+        if (listener != null) {
             // Note：向外部传递的 GestureData 不需要做坐标转换
-            trigger.onGesture(key, type, data);
+            listener.onGesture(key, type, data);
         }
-    }
-
-    private void fire_UserKey_Moving(
-            UserKeyMsgListener.Trigger trigger, Key key, ViewGestureDetector.GestureData data
-    ) {
-        trigger_UserKeyMsgListener(trigger,
-                                   key,
-                                   ViewGestureDetector.GestureType.Moving,
-                                   new ViewGestureDetector.MovingGestureData(data, new Motion()));
     }
 
     // ====================================================================

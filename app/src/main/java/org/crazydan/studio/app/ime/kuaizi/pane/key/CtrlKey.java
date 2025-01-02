@@ -95,7 +95,7 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         RevokeInput,
 
         /** 在候选字状态下切换当前输入的拼音拼写 */
-        Toggle_Pinyin_spell,
+        Toggle_Pinyin_Spell,
         /** 在候选字状态下的候选字高级过滤（根据部首、声调等过滤） */
         Filter_PinyinCandidate_advance,
         /** 在候选字状态下根据读音过滤候选字 */

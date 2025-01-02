@@ -168,7 +168,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 confirm_InputList_Pending_InputCandidate(context);
                 break;
             }
-            case Toggle_Pinyin_spell: {
+            case Toggle_Pinyin_Spell: {
                 play_SingleTick_InputAudio(context);
 
                 InputList inputList = context.inputList;
