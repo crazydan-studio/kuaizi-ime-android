@@ -41,7 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseThe
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter>
+public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter, Exercise.ViewData>
         implements InputMsgListener, ExerciseMsgListener {
     private ExerciseViewMsgListener listener;
 

@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.pane.key;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
@@ -38,18 +37,6 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
 
     protected MathOpKey(Builder builder) {
         super(builder);
-    }
-
-    @Override
-    public boolean isSameWith(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        } else if (this == o) {
-            return true;
-        }
-
-        MathOpKey that = (MathOpKey) o;
-        return this.type == that.type && Objects.equals(this.value, that.value);
     }
 
     @Override

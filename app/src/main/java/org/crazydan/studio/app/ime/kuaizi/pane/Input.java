@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
@@ -43,7 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public abstract class Input implements RecyclerViewData {
+public abstract class Input {
     private List<Key> keys = new ArrayList<>();
 
     private ConfirmableWord word = new ConfirmableWord(null);
@@ -151,14 +151,10 @@ public abstract class Input implements RecyclerViewData {
         return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
     }
 
-    /**
-     * 是否包含与指定按键相同的按键
-     * <p/>
-     * 通过 {@link #isSameWith} 判断按键是否相同
-     */
-    public boolean hasSameKey(Key key) {
+    /** 是否包含指定条件的按键 */
+    public boolean hasKey(Function<Key, Boolean> filter) {
         for (Key k : this.keys) {
-            if (k.isSameWith(key)) {
+            if (filter.apply(k)) {
                 return true;
             }
         }
@@ -321,18 +317,6 @@ public abstract class Input implements RecyclerViewData {
     @Override
     public String toString() {
         return getText().toString();
-    }
-
-    @Override
-    public boolean isSameWith(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        } else if (this == o) {
-            return true;
-        }
-
-        Input that = (Input) o;
-        return this.keys.equals(that.keys);
     }
 
     @Override

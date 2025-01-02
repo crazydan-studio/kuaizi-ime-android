@@ -45,7 +45,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class CompletionInputListView extends RecyclerView<CompletionInputListViewAdapter>
+public class CompletionInputListView extends RecyclerView<CompletionInputListViewAdapter, CompletionInput>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
@@ -54,7 +54,7 @@ public class CompletionInputListView extends RecyclerView<CompletionInputListVie
 
         getAdapter().setLayoutManager((CompletionInputListViewLayoutManager) getLayoutManager());
 
-        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector(this);
+        RecyclerViewGestureDetector<CompletionInput> gesture = new RecyclerViewGestureDetector<>(this);
         gesture.addListener(this);
     }
 

@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 
@@ -118,7 +117,7 @@ public class ExerciseStep implements InputMsgListener {
         }
     }
 
-    public static class ViewData implements RecyclerViewData {
+    public static class ViewData {
         public final String name;
         public final String content;
         /** 主题样式信息，主要用于触发视图更新 */
@@ -141,11 +140,6 @@ public class ExerciseStep implements InputMsgListener {
             this.last = step instanceof Last;
             this.restartCallback = this.last ? ((Last) step).restartCallback : null;
             this.continueCallback = this.last ? ((Last) step).continueCallback : null;
-        }
-
-        @Override
-        public boolean isSameWith(Object o) {
-            return false;
         }
 
         @Override

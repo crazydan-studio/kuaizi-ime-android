@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.input.word.EmojiWord;
@@ -56,17 +55,6 @@ public class InputWordKey extends Key {
         this.word = builder.word;
     }
 
-    @Override
-    public boolean isSameWith(Object key) {
-        if (!(key instanceof InputWordKey)) {
-            return false;
-        }
-
-        InputWordKey that = (InputWordKey) key;
-        return Objects.equals(this.word, that.word);
-    }
-
-    @NonNull
     @Override
     public String toString() {
         return this.word.toString();

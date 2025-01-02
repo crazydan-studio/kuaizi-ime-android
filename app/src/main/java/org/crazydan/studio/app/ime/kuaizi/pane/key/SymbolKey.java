@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
@@ -51,19 +50,6 @@ public class SymbolKey extends Key {
         this.symbol = builder.symbol;
     }
 
-    @Override
-    public boolean isSameWith(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        } else if (this == o) {
-            return true;
-        }
-
-        SymbolKey that = (SymbolKey) o;
-        return this.symbol.equals(that.symbol);
-    }
-
-    @NonNull
     @Override
     public String toString() {
         return this.symbol.toString();

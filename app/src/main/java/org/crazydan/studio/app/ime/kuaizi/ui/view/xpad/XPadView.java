@@ -1493,7 +1493,9 @@ public class XPadView extends View {
                 }
 
                 if (key instanceof CtrlKey //
-                    && key.isSameWith(blockKey.key)) {
+                    && ((CtrlKey) key).type.match(blockKey.key) //
+                    && Objects.equals(((CtrlKey) key).option, ((CtrlKey) blockKey.key).option) //
+                ) {
                     return blockKey;
                 }
             }

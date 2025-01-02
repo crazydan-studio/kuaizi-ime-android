@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import android.util.LruCache;
 import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 
 /**
  * {@link Keyboard} 上的按键
@@ -31,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewDat
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class Key implements RecyclerViewData {
+public abstract class Key {
     /** 按键的输入值，代表字符按键的实际输入字符，其与{@link #label 显示字符}可能并不相等 */
     public final String value;
     /** 按键上显示的文字内容 */

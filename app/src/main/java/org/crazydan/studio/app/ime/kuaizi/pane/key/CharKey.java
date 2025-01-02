@@ -127,18 +127,6 @@ public class CharKey extends TypedKey<CharKey.Type> {
                                      .replacements(this.replacements));
     }
 
-    @Override
-    public boolean isSameWith(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        } else if (this == o) {
-            return true;
-        }
-
-        CharKey that = (CharKey) o;
-        return this.type == that.type && Objects.equals(this.value, that.value);
-    }
-
     public enum Type {
         /** 字母按键 */
         Alphabet,

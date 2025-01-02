@@ -259,7 +259,8 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (key instanceof CharKey //
                     && !key.disabled //
                     // 拼音的后继不会是相同字母
-                    && !key.isSameWith(lastKey) //
+                    && !(key.value.equals(lastKey.value) //
+                         && ((CharKey) key).type.match(lastKey)) //
                 ) {
                     do_InputChars_Slipping_Input_CharKey(context, pending);
                 }

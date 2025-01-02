@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-19
  */
-public class ExerciseStepListView extends RecyclerView<ExerciseStepListViewAdapter> {
+public class ExerciseStepListView extends RecyclerView<ExerciseStepListViewAdapter, ExerciseStep.ViewData> {
 
     public ExerciseStepListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);

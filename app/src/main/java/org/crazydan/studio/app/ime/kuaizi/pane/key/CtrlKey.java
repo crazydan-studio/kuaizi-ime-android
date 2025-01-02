@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.pane.key;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
@@ -54,21 +53,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         return (O) this.option;
     }
 
-    @Override
-    public boolean isSameWith(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        } else if (this == o) {
-            return true;
-        }
-
-        CtrlKey that = (CtrlKey) o;
-        return this.type == that.type //
-               && Objects.equals(this.value, that.value) //
-               && Objects.equals(this.option, that.option);
-    }
-
-    @NonNull
     @Override
     public String toString() {
         return this.type + (this.label != null ? "(" + this.label + ")" : "");

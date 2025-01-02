@@ -264,7 +264,7 @@ public class MathKeyboard extends BaseKeyboard {
             case Dot: {
                 CharInput pending = mathInputList.getPending();
                 // 小数点只能出现在数字中，且只能出现一次
-                if (isNumberInput(pending) && !pending.hasSameKey(key)) {
+                if (isNumberInput(pending) && !pending.hasKey(key::equals)) {
                     pending.appendKey(key);
                 }
                 break;

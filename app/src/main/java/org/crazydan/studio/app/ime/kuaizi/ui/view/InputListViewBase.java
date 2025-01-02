@@ -55,7 +55,7 @@ import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListViewBase extends RecyclerView<InputListViewAdapter>
+public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
     private UserInputMsgListener listener;
 
@@ -65,7 +65,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter>
         // Note：取消动画以确保输入能够直接显隐，不做淡化
         setItemAnimator(null);
 
-        RecyclerViewGestureDetector gesture = new RecyclerViewGestureDetector(this);
+        RecyclerViewGestureDetector<InputViewData> gesture = new RecyclerViewGestureDetector<>(this);
         gesture.addListener(this);
     }
 

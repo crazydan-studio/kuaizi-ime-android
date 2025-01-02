@@ -297,12 +297,6 @@ public class MathExprInput extends CharInput {
     @Override
     public void setWord(InputWord word) {}
 
-    // <<<<<<<<< 相同性检查
-    @Override
-    public boolean isSameWith(Object o) {
-        return equals(o);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

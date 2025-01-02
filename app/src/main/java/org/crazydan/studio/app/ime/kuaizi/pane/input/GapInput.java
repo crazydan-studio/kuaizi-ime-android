@@ -53,9 +53,6 @@ public class GapInput extends Input {
     @Override
     public List<String> getChars() {return new ArrayList<>();}
 
-    @Override
-    public boolean isSameWith(Object o) {return equals(o);}
-
     @NonNull
     @Override
     public String toString() {

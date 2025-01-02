@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
+import java.util.Objects;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -27,7 +29,7 @@ import androidx.annotation.Nullable;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-29
  */
-public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
+public abstract class RecyclerView<A extends RecyclerViewAdapter<I, ?>, I>
         extends androidx.recyclerview.widget.RecyclerView {
 
     public RecyclerView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -46,20 +48,26 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
     /** 创建 {@link LayoutManager} */
     abstract protected LayoutManager createLayoutManager(Context context);
 
-    @NonNull
-    @Override
-    public A getAdapter() {
-        return (A) super.getAdapter();
+    /**
+     * 在 {@link RecyclerViewGestureDetector} 中用于检查视图更新前后的
+     * {@link RecyclerViewAdapter} 数据项是否相同
+     * <p/>
+     * 仅在启用了 {@link RecyclerViewGestureDetector} 的情况下才需要重载该接口
+     */
+    protected boolean isSameAdapterItem(I item1, I item2) {
+        return Objects.equals(item1, item2);
     }
 
     @NonNull
     @Override
-    public LayoutManager getLayoutManager() {
-        return super.getLayoutManager();
-    }
+    public A getAdapter() {return (A) super.getAdapter();}
+
+    @NonNull
+    @Override
+    public LayoutManager getLayoutManager() {return super.getLayoutManager();}
 
     /** 获取与指定视图绑定的 {@link RecyclerViewAdapter} 数据项 */
-    public <I> I getAdapterItem(View view) {
+    public I getAdapterItem(View view) {
         if (view == null) {
             return null;
         }
@@ -70,7 +78,7 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<?, ?>>
     }
 
     /** 获取与指定 {@link RecyclerViewHolder} 绑定的 {@link RecyclerViewAdapter} 数据项 */
-    public <I> I getAdapterItem(ViewHolder holder) {
+    public I getAdapterItem(ViewHolder holder) {
         A adapter = getAdapter();
 
         return (I) adapter.getItem(holder);

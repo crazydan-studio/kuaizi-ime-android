@@ -17,6 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -34,6 +37,8 @@ import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.TypedKey;
+import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
@@ -53,7 +58,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewKeyAnimator;
  * @date 2023-06-30
  */
 public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener, InputMsgListener {
-    private final RecyclerViewGestureDetector gesture;
+    private final RecyclerViewGestureDetector<Key> gesture;
     private final RecyclerViewGestureTrailer gestureTrailer;
     private final KeyboardViewKeyAnimator animator;
 
@@ -84,7 +89,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         this.gestureTrailer.setColor(trailColor);
 
         KeyboardViewGestureListener gestureListener = new KeyboardViewGestureListener(this);
-        this.gesture = new RecyclerViewGestureDetector(this);
+        this.gesture = new RecyclerViewGestureDetector<>(this);
         // Note：确保先处理视图消息，再处理轨迹消息，因为前者会对轨迹做禁用处理
         this.gesture.addListener(gestureListener) //
                     .addListener(gestureTrailer);
@@ -96,6 +101,36 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
 
     public boolean isGestureTrailerDisabled() {
         return this.config.bool(ConfigKey.disable_gesture_slipping_trail);
+    }
+
+    @Override
+    protected boolean isSameAdapterItem(Key key1, Key key2) {
+        if (key1 == null || key2 == null //
+            || key1.getClass() != key2.getClass() //
+            || !Objects.equals(key1.value, key2.value) //
+        ) {
+            return false;
+        }
+
+        if (key1 instanceof TypedKey) {
+            if (key1 instanceof CtrlKey //
+                && !Objects.equals(((CtrlKey) key1).option, ((CtrlKey) key2).option) //
+            ) {
+                return false;
+            }
+            return Objects.equals(((TypedKey<?>) key1).type, ((TypedKey<?>) key2).type);
+        } else if (key1 instanceof XPadKey) {
+            XPadKey k1 = (XPadKey) key1;
+            XPadKey k2 = (XPadKey) key2;
+
+            return Objects.equals(k1.zone_0_key, k2.zone_0_key)
+                   && Arrays.equals(k1.zone_1_keys, k2.zone_1_keys)
+                   && Arrays.deepEquals(k1.zone_2_keys, k2.zone_2_keys);
+        }
+
+        // Note: SymbolKey/InputWordKey 可以根据其 value 值确定数据相同性，
+        // 具体见其 Builder 处理 value 的逻辑
+        return true;
     }
 
     // =============================== Start: 视图更新 ===================================

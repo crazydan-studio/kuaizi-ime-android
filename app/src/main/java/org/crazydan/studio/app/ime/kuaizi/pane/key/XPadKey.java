@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 
 /**
@@ -53,24 +52,6 @@ public class XPadKey extends Key {
         this.zone_2_keys = builder.zone_2_keys;
     }
 
-    /**
-     * 确保仅在按键布局发生变化时才触发
-     * RecyclerViewGestureDetector#hasChangedViewData
-     * 中的事件视图的重置
-     */
-    @Override
-    public boolean isSameWith(Object o) {
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        XPadKey that = (XPadKey) o;
-        return Objects.equals(this.zone_0_key, that.zone_0_key)
-               && Arrays.equals(this.zone_1_keys, that.zone_1_keys)
-               && Arrays.deepEquals(this.zone_2_keys, that.zone_2_keys);
-    }
-
-    @NonNull
     @Override
     public String toString() {
         return getClass().getSimpleName();

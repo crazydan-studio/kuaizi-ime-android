@@ -28,26 +28,26 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-13
  */
-public class RecyclerViewGestureDetector extends ViewGestureDetector {
-    private RecyclerViewData prevViewData;
+public class RecyclerViewGestureDetector<I> extends ViewGestureDetector {
+    private I prevAdapterItem;
 
-    public RecyclerViewGestureDetector(RecyclerView<? extends RecyclerViewAdapter<?, ?>> rv) {
+    public RecyclerViewGestureDetector(RecyclerView<?, I> rv) {
         rv.addOnItemTouchListener(new ItemTouchListener());
     }
 
-    private boolean hasChangedViewData(RecyclerView<? extends RecyclerViewAdapter<?, ?>> rv, MotionEvent e) {
+    private boolean hasChangedViewData(RecyclerView<?, I> rv, MotionEvent e) {
         // 当某个数据的视图更新后，其 view 实例可能会重建，
-        // 使得在双击、长按 tick 等事件周期内发送了视图更新的数据不能接收这类事件，
+        // 使得在双击、长按 tick 等事件周期内 发生了视图更新 的数据不能接收这类事件，
         // 因为监测状态被重置了，所以，只能根据数据自身是否变化做监测重置判断
         View view = rv.findChildViewUnder(e.getX(), e.getY());
-        RecyclerViewData newViewData = rv.getAdapterItem(view);
+        I newAdapterItem = rv.getAdapterItem(view);
 
-        RecyclerViewData oldViewData = this.prevViewData;
-        this.prevViewData = newViewData;
+        I oldAdapterItem = this.prevAdapterItem;
+        this.prevAdapterItem = newAdapterItem;
 
-        return (oldViewData != null //
-                && !oldViewData.isSameWith(newViewData)) //
-               || oldViewData != newViewData;
+        return (oldAdapterItem != null //
+                && !rv.isSameAdapterItem(oldAdapterItem, newAdapterItem)) //
+               || oldAdapterItem != newAdapterItem;
     }
 
     private class ItemTouchListener implements androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {

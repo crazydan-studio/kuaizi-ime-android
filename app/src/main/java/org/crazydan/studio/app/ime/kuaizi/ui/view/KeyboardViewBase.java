@@ -43,7 +43,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter> {
+public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter, Key> {
     private final float gridMaxPaddingRight;
     private final float gridItemMinRadius;
     private final float gridItemSpacing;

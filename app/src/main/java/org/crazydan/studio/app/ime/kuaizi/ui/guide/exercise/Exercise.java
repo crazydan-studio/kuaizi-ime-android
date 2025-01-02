@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewData;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
@@ -262,7 +261,7 @@ public class Exercise implements InputMsgListener {
 
     // ================ End: 消息处理 =================
 
-    public static class ViewData implements RecyclerViewData {
+    public static class ViewData {
         public final KeyImageRender keyImageRender;
 
         public final Mode mode;
@@ -278,11 +277,6 @@ public class Exercise implements InputMsgListener {
             this.title = exercise.title;
             this.sampleText = exercise.sampleText;
             this.steps = exercise.steps.stream().map(ExerciseStep::createViewData).collect(Collectors.toList());
-        }
-
-        @Override
-        public boolean isSameWith(Object o) {
-            return false;
         }
     }
 }
