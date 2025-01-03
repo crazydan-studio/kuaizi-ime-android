@@ -66,6 +66,7 @@ public class NumberKeyTable extends KeyTable {
                 numberKey("7"),
                 numberKey("8"),
                 numberKey("9"),
+                //
                 symbolKey("."),
                 symbolKey("+"),
                 symbolKey("-"),
@@ -96,17 +97,8 @@ public class NumberKeyTable extends KeyTable {
             gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
         }
 
-        int dataIndex = 0;
-        GridCoord[][] levelKeyCoords = getKeyCoords();
-        for (GridCoord[] keyCoords : levelKeyCoords) {
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                Key key = keys[dataIndex++];
-                gridKeys[row][column] = key;
-            }
-        }
+        GridCoord[][] keyCoords = getKeyCoords();
+        fillGridKeysByCoord(gridKeys, keyCoords, keys);
 
         return gridKeys;
     }

@@ -49,7 +49,7 @@ public class LatinKeyTable extends KeyTable {
         return new Key[6][8];
     }
 
-    /** 创建{@link LatinKeyboard 拉丁文键盘}按键 */
+    /** 创建 {@link LatinKeyboard} 按键 */
     public Key[][] createKeys() {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
@@ -124,59 +124,9 @@ public class LatinKeyTable extends KeyTable {
     @Override
     protected XPadKey createXPadKey() {
         if (this.config.keyboard.latinUsePinyinKeysInXInputPadEnabled) {
-            return xPadKey(Keyboard.Type.Latin, new Key[][][] {
-                    new Key[][] {
-                            new Key[] {
-                                    alphabetKey("g", "G"), alphabetKey("f", "F"), alphabetKey("p", "P"),
-                                    }, //
-                            new Key[] {
-                                    symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
-                                    },
-                            }, //
-                    new Key[][] {
-                            new Key[] {
-                                    symbolKey(",", ";"), //
-                                    symbolKey("?", ":"), //
-                                    symbolKey("!", "*"),
-                                    }, //
-                            new Key[] {
-                                    alphabetKey("d", "D"), alphabetKey("b", "B"), alphabetKey("t", "T"),
-                                    }, //
-                    }, //
-                    new Key[][] {
-                            new Key[] {
-                                    alphabetKey("y", "Y"), alphabetKey("h", "H"), alphabetKey("r", "R"),
-                                    }, //
-                            new Key[] {
-                                    alphabetKey("l", "L"), alphabetKey("m", "M"), alphabetKey("n", "N"),
-                                    }, //
-                    }, //
-                    new Key[][] {
-                            new Key[] {
-                                    alphabetKey("z", "Z"), alphabetKey("s", "S"), alphabetKey("c", "C"),
-                                    }, //
-                            new Key[] {
-                                    symbolKey("@", "&"), symbolKey("-", "_"), symbolKey("/", "\\"),
-                                    }, //
-                    }, //
-                    new Key[][] {
-                            new Key[] {
-                                    alphabetKey("e", "E"), alphabetKey("a", "A"), alphabetKey("o", "O"),
-                                    }, //
-                            new Key[] {
-                                    alphabetKey("i", "I"), alphabetKey("u", "U"), alphabetKey("v", "V"),
-                                    }, //
-                    }, //
-                    new Key[][] {
-                            new Key[] {
-                                    alphabetKey("j", "J"), alphabetKey("w", "W"), symbolKey("#", "+"),
-                                    }, //
-                            new Key[] {
-                                    alphabetKey("x", "X"), alphabetKey("q", "Q"), alphabetKey("k", "K"),
-                                    }, //
-                    }, //
-            });
+            return createPinyinLatinXPadKey();
         }
+
         return xPadKey(Keyboard.Type.Latin, new Key[][][] {
                 // 英语单词中首字母的频率: https://zh.wikipedia.org/zh-cn/%E5%AD%97%E6%AF%8D%E9%A2%91%E7%8E%87#.E8.8B.B1.E8.AF.AD.E5.8D.95.E8.AF.8D.E4.B8.AD.E9.A6.96.E5.AD.97.E6.AF.8D.E7.9A.84.E9.A2.91.E7.8E.87
                 // - 排序: echo "" | sort -n -r -k 2
@@ -242,6 +192,61 @@ public class LatinKeyTable extends KeyTable {
         return super.alphabetKey(value, (b) -> {
             b.color(key_char_color);
             c.accept(b);
+        });
+    }
+
+    private XPadKey createPinyinLatinXPadKey() {
+        return xPadKey(Keyboard.Type.Latin, new Key[][][] {
+                new Key[][] {
+                        new Key[] {
+                                alphabetKey("g", "G"), alphabetKey("f", "F"), alphabetKey("p", "P"),
+                                }, //
+                        new Key[] {
+                                symbolKey("."), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] {
+                                symbolKey(",", ";"), //
+                                symbolKey("?", ":"), //
+                                symbolKey("!", "*"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("d", "D"), alphabetKey("b", "B"), alphabetKey("t", "T"),
+                                }, //
+                }, //
+                new Key[][] {
+                        new Key[] {
+                                alphabetKey("y", "Y"), alphabetKey("h", "H"), alphabetKey("r", "R"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("l", "L"), alphabetKey("m", "M"), alphabetKey("n", "N"),
+                                }, //
+                }, //
+                new Key[][] {
+                        new Key[] {
+                                alphabetKey("z", "Z"), alphabetKey("s", "S"), alphabetKey("c", "C"),
+                                }, //
+                        new Key[] {
+                                symbolKey("@", "&"), symbolKey("-", "_"), symbolKey("/", "\\"),
+                                }, //
+                }, //
+                new Key[][] {
+                        new Key[] {
+                                alphabetKey("e", "E"), alphabetKey("a", "A"), alphabetKey("o", "O"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("i", "I"), alphabetKey("u", "U"), alphabetKey("v", "V"),
+                                }, //
+                }, //
+                new Key[][] {
+                        new Key[] {
+                                alphabetKey("j", "J"), alphabetKey("w", "W"), symbolKey("#", "+"),
+                                }, //
+                        new Key[] {
+                                alphabetKey("x", "X"), alphabetKey("q", "Q"), alphabetKey("k", "K"),
+                                }, //
+                }, //
         });
     }
 }

@@ -93,17 +93,8 @@ public class MathKeyTable extends KeyTable {
         gridKeys[3][index_end] = this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
 
-        int dataIndex = 0;
-        GridCoord[][] levelKeyCoords = getKeyCoords();
-        for (GridCoord[] keyCoords : levelKeyCoords) {
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                Key key = keys[dataIndex++];
-                gridKeys[row][column] = key;
-            }
-        }
+        GridCoord[][] keyCoords = getKeyCoords();
+        fillGridKeysByCoord(gridKeys, keyCoords, keys);
 
         return gridKeys;
     }

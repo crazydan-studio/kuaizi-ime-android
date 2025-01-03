@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -46,15 +47,12 @@ public abstract class KeyTable {
     /** 特殊的 {@link CharKey} 按键的配色 */
     protected static final Key.Color key_char_special_color = Key.Color.create(R.attr.key_highlight_fg_color,
                                                                                R.attr.key_bg_color);
-    /** {@link CharKey.Type#Symbol 标点符号}按键的配色 */
+    /** {@link CharKey.Type#Symbol} 按键的配色 */
     protected static final Key.Color key_char_symbol_color = Key.Color.create(R.attr.key_char_symbol_fg_color,
                                                                               R.attr.key_char_symbol_bg_color);
-    /** {@link CharKey.Type#Emoji 表情符号}按键的配色 */
+    /** {@link CharKey.Type#Emoji} 按键的配色 */
     protected static final Key.Color key_char_emoji_color = key_char_symbol_color;
-    /** 字母按键调色板 */
-    private static final Map<List<String>, Key.Color> char_key_color_palette = new HashMap<>();
-    /** 控制按键样式：图标+背景色 */
-    private static final Map<CtrlKey.Type, KeyStyle> ctrl_key_styles = new HashMap<>();
+
     private static final Key.Color key_char_level_0_color = Key.Color.create(R.attr.key_char_level_0_fg_color,
                                                                              R.attr.key_char_level_0_bg_color);
     private static final Key.Color key_char_level_1_color = Key.Color.create(R.attr.key_char_level_1_fg_color,
@@ -65,7 +63,19 @@ public abstract class KeyTable {
                                                                              R.attr.key_char_level_3_bg_color);
     private static final Key.Color key_char_level_4_color = Key.Color.create(R.attr.key_char_level_4_fg_color,
                                                                              R.attr.key_char_level_4_bg_color);
-    /** {@link InputWordKey 候选字}按键的配色 */
+    private static final Key.Color key_char_level_5_color = Key.Color.create(R.attr.key_char_level_5_fg_color,
+                                                                             R.attr.key_char_level_5_bg_color);
+    /** OK 按键的样式 */
+    private static final Key.Style key_ctrl_ok_style = Key.Style.withIcon(R.drawable.ic_right_hand_ok,
+                                                                          R.drawable.ic_left_hand_ok,
+                                                                          R.attr.key_ctrl_ok_bg_color);
+    /** 文本类控制按键的样式 */
+    private static final Key.Style key_ctrl_label_style = Key.Style.withColor(R.attr.key_ctrl_label_color,
+                                                                              R.attr.key_bg_color);
+    private static final Key.Style key_ctrl_noop_style = Key.Style.withColor(R.attr.key_ctrl_noop_fg_color,
+                                                                             R.attr.key_ctrl_noop_bg_color);
+
+    /** {@link InputWordKey} 按键的配色 */
     protected static final Key.Color[] key_input_word_level_colors = new Key.Color[] {
             key_char_level_0_color,
             key_char_level_1_color,
@@ -73,17 +83,11 @@ public abstract class KeyTable {
             key_char_level_3_color,
             key_char_level_4_color,
             };
-    private static final Key.Color key_char_level_5_color = Key.Color.create(R.attr.key_char_level_5_fg_color,
-                                                                             R.attr.key_char_level_5_bg_color);
-    /** OK 按键的样式 */
-    private static final KeyStyle key_ctrl_ok_style = KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
-                                                                        R.drawable.ic_left_hand_ok,
-                                                                        R.attr.key_ctrl_ok_bg_color);
-    /** 文本类控制按键的样式 */
-    private static final KeyStyle key_ctrl_label_style = KeyStyle.withColor(R.attr.key_ctrl_label_color,
-                                                                            R.attr.key_bg_color);
-    private static final KeyStyle key_ctrl_noop_style = KeyStyle.withColor(R.attr.key_ctrl_noop_fg_color,
-                                                                           R.attr.key_ctrl_noop_bg_color);
+
+    /** 字母按键调色板 */
+    private static final Map<List<String>, Key.Color> char_key_color_palette = new HashMap<>();
+    /** 控制按键样式：图标+背景色 */
+    private static final Map<CtrlKey.Type, Key.Style> ctrl_key_styles = new HashMap<>();
 
     static {
         char_key_color_palette.put(Arrays.asList("i", "a", "e", "o", "u", "ü", "v"), key_char_special_color);
@@ -96,53 +100,54 @@ public abstract class KeyTable {
                                    key_char_special_color);
 
         ctrl_key_styles.put(CtrlKey.Type.Backspace,
-                            KeyStyle.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Space, KeyStyle.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Space,
+                            Key.Style.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Enter,
-                            KeyStyle.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList,
-                            KeyStyle.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList_Option, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.Switch_IME,
-                            KeyStyle.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Switch_HandMode,
-                            KeyStyle.withIcon(R.drawable.ic_switch_to_left_hand,
-                                              R.drawable.ic_switch_to_right_hand,
-                                              R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_switch_to_left_hand,
+                                               R.drawable.ic_switch_to_right_hand,
+                                               R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.Editor_Cursor_Locator,
-                            KeyStyle.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Editor_Range_Selector,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_selection,
-                                              R.drawable.ic_left_hand_selection,
-                                              R.attr.key_ctrl_locator_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_right_hand_selection,
+                                               R.drawable.ic_left_hand_selection,
+                                               R.attr.key_ctrl_locator_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Exit,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_exit,
-                                              R.drawable.ic_left_hand_exit,
-                                              R.attr.key_ctrl_exit_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_right_hand_exit,
+                                               R.drawable.ic_left_hand_exit,
+                                               R.attr.key_ctrl_exit_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.DropInput,
-                            KeyStyle.withIcon(R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
-                                              R.drawable.ic_left_hand_ok,
-                                              R.attr.key_ctrl_confirm_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_right_hand_ok,
+                                               R.drawable.ic_left_hand_ok,
+                                               R.attr.key_ctrl_confirm_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
-                            KeyStyle.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Pinyin_Spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinCandidate_advance,
-                            KeyStyle.withIcon(R.drawable.ic_filter_empty, R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_filter_empty, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Confirm_PinyinCandidate_Filter,
-                            KeyStyle.withIcon(R.drawable.ic_right_hand_ok,
-                                              R.drawable.ic_left_hand_ok,
-                                              R.attr.key_ctrl_confirm_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_right_hand_ok,
+                                               R.drawable.ic_left_hand_ok,
+                                               R.attr.key_ctrl_confirm_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
         ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);
@@ -154,6 +159,9 @@ public abstract class KeyTable {
         this.config = config;
     }
 
+    // ======================= Start: 网格 =======================
+
+    /** 统计网格的大小 */
     protected static <T> int countGridSize(T[][] grid) {
         int size = 0;
 
@@ -161,16 +169,6 @@ public abstract class KeyTable {
             size += row.length;
         }
         return size;
-    }
-
-    /** 创建{@link GridCoord 网格坐标} */
-    public GridCoord coord(int row, int column) {
-        return coord(row, column, 0);
-    }
-
-    /** 创建{@link GridCoord 网格坐标} */
-    public GridCoord coord(int row, int column, int layer) {
-        return new GridCoord(row, column, layer);
     }
 
     protected abstract Key[][] initGrid();
@@ -197,6 +195,67 @@ public abstract class KeyTable {
             return length / 2;
         }
         return length / 2 + 1;
+    }
+
+    protected void fillGridKeyByCoord(Key[][] gridKeys, GridCoord coord, Key key) {
+        int row = coord.row;
+        int column = coord.column;
+
+        gridKeys[row][column] = key;
+    }
+
+    /** 根据网格坐标向网格填充按键 */
+    protected void fillGridKeysByCoord(Key[][] gridKeys, GridCoord[][] keyCoords, Key[] keys) {
+        int dataIndex = 0;
+        for (GridCoord[] coords : keyCoords) {
+            for (GridCoord coord : coords) {
+                if (dataIndex >= keys.length) {
+                    break;
+                }
+
+                Key key = keys[dataIndex++];
+                fillGridKeyByCoord(gridKeys, coord, key);
+            }
+        }
+    }
+
+    /** 根据网格坐标向网格填充等级按键 */
+    protected <T> void fillGridLevelKeysByCoord(
+            Key[][] gridKeys, GridCoord[][] levelKeyCoords, //
+            List<T> dataList, int startIndex, //
+            BiFunction<T, Integer, Key> keyCreator
+    ) {
+        int dataSize = dataList.size();
+        int dataIndex = startIndex;
+
+        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
+            GridCoord[] keyCoords = levelKeyCoords[level];
+            for (GridCoord keyCoord : keyCoords) {
+                if (dataIndex >= dataSize) {
+                    break;
+                }
+
+                T data = dataList.get(dataIndex++);
+                if (data != null) {
+                    Key key = keyCreator.apply(data, level);
+                    fillGridKeyByCoord(gridKeys, keyCoord, key);
+                }
+            }
+        }
+    }
+
+    // ======================= End: 网格 =======================
+
+    // ======================= Start: 坐标 =======================
+
+    /** 创建{@link GridCoord 网格坐标} */
+    public GridCoord coord(int row, int column) {
+        return coord(row, column, 0);
+    }
+
+    /** 创建{@link GridCoord 网格坐标} */
+    public GridCoord coord(int row, int column, int layer) {
+        return new GridCoord(row, column, layer);
     }
 
     protected GridCoord[][] getLevelKeyCoords() {
@@ -254,8 +313,12 @@ public abstract class KeyTable {
                 };
     }
 
+    // ======================= End: 坐标 =======================
+
+    // ======================= Start: 按键 =======================
+
     public CtrlKey enterCtrlKey() {
-        KeyStyle style = this.config.keyboard.singleLineInput ? key_ctrl_ok_style : null;
+        Key.Style style = this.config.keyboard.singleLineInput ? key_ctrl_ok_style : null;
 
         return ctrlKey(CtrlKey.Type.Enter, style, CtrlKey.Builder.noop);
     }
@@ -280,22 +343,22 @@ public abstract class KeyTable {
     private CtrlKey switcherCtrlKey(Keyboard.Type type, Consumer<CtrlKey.Builder> c) {
         CtrlKey.Option<Keyboard.Type> option = new CtrlKey.Option<>(type);
 
-        KeyStyle style = null;
+        Key.Style style = null;
         switch (type) {
             case Math:
-                style = KeyStyle.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Latin:
-                style = KeyStyle.withIcon(R.drawable.ic_switch_to_latin, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_switch_to_latin, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Pinyin:
-                style = KeyStyle.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Emoji:
-                style = KeyStyle.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color);
                 break;
             case Symbol:
-                style = KeyStyle.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color);
                 break;
         }
 
@@ -381,7 +444,7 @@ public abstract class KeyTable {
         });
     }
 
-    private CtrlKey ctrlKey(CtrlKey.Type type, KeyStyle style, Consumer<CtrlKey.Builder> c) {
+    private CtrlKey ctrlKey(CtrlKey.Type type, Key.Style style, Consumer<CtrlKey.Builder> c) {
         Integer icon = null;
         Key.Color color = null;
 
@@ -429,6 +492,10 @@ public abstract class KeyTable {
 
         return SymbolKey.build((b) -> b.symbol(symbol).color(color));
     }
+
+    // ======================= Start: 按键 =======================
+
+    // ======================= Start: X Pad 按键 =======================
 
     protected Key[][] createKeysForXPad() {
         return createKeysForXPad(createXPadKey());
@@ -510,61 +577,12 @@ public abstract class KeyTable {
                                      .zone_2_keys(zone_2_keys));
     }
 
-    private static class KeyStyle {
-        private final KeyIcon icon;
-        private final Key.Color color;
-
-        public KeyStyle(Key.Color color) {
-            this(new KeyIcon(null, null), color);
-        }
-
-        public KeyStyle(KeyIcon icon, Key.Color color) {
-            this.icon = icon;
-            this.color = color;
-        }
-
-        public static KeyStyle withColor(int fg, int bg) {
-            return withColor(Key.Color.create(fg, bg));
-        }
-
-        public static KeyStyle withColor(Key.Color color) {
-            return new KeyStyle(color);
-        }
-
-        public static KeyStyle withIcon(int right, int left, int bg) {
-            return new KeyStyle(new KeyIcon(right, left), Key.Color.create(null, bg));
-        }
-
-        public static KeyStyle withIcon(int resId, int bg) {
-            return new KeyStyle(new KeyIcon(resId), Key.Color.create(null, bg));
-        }
-    }
-
-    private static class KeyIcon {
-        /** 右手模式的图标资源 id */
-        public final Integer right;
-        /** 左手模式的图标资源 id */
-        public final Integer left;
-
-        public KeyIcon(Integer resId) {
-            this.right = resId;
-            this.left = resId;
-        }
-
-        public KeyIcon(Integer right, Integer left) {
-            this.right = right;
-            this.left = left;
-        }
-    }
+    // ======================= End: X Pad 按键 =======================
 
     public static class GridCoord {
         public final int row;
         public final int column;
         public final int layer;
-
-        public GridCoord(int row, int column) {
-            this(row, column, 0);
-        }
 
         public GridCoord(int row, int column, int layer) {
             this.row = row;

@@ -25,7 +25,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.pane.Key;
 import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.KeyTableConfig;
 
@@ -85,39 +84,15 @@ public class SymbolEmojiKeyTable extends KeyTable {
             String group = groups.get(j);
             boolean selected = group.equals(selectedGroup);
 
-            int row = keyCoord.row;
-            int column = keyCoord.column;
             CtrlKey.Option<String> option = new CtrlKey.Option<>(group);
 
             CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Emoji_Group,
                                   (b) -> b.option(option).label(group).disabled(selected));
-            gridKeys[row][column] = key;
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
 
-        int dataIndex = startIndex;
         GridCoord[][] levelKeyCoords = getLevelKeyCoords();
-
-        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
-            GridCoord[] keyCoords = levelKeyCoords[level];
-
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                if (dataIndex < dataSize) {
-                    InputWord word = words.get(dataIndex);
-
-                    if (word != null) {
-                        InputWordKey key = inputWordKey(word, level);
-                        gridKeys[row][column] = key;
-                    }
-                } else {
-                    break;
-                }
-
-                dataIndex += 1;
-            }
-        }
+        fillGridLevelKeysByCoord(gridKeys, levelKeyCoords, words, startIndex, this::inputWordKey);
 
         return gridKeys;
     }
@@ -159,38 +134,15 @@ public class SymbolEmojiKeyTable extends KeyTable {
             SymbolGroup group = SymbolGroup.values()[j];
             boolean selected = group == symbolGroup;
 
-            int row = keyCoord.row;
-            int column = keyCoord.column;
             CtrlKey.Option<SymbolGroup> option = new CtrlKey.Option<>(group);
 
             CtrlKey key = ctrlKey(CtrlKey.Type.Toggle_Symbol_Group,
                                   (b) -> b.option(option).label(group.name).disabled(selected));
-            gridKeys[row][column] = key;
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
 
-        int dataIndex = startIndex;
         GridCoord[][] levelKeyCoords = getLevelKeyCoords();
-
-        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
-            GridCoord[] keyCoords = levelKeyCoords[level];
-
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                if (dataIndex < dataSize) {
-                    Symbol data = symbols[dataIndex];
-
-                    if (data != null) {
-                        gridKeys[row][column] = symbolKey(data, level);
-                    }
-                } else {
-                    break;
-                }
-
-                dataIndex += 1;
-            }
-        }
+        fillGridLevelKeysByCoord(gridKeys, levelKeyCoords, List.of(symbols), startIndex, this::symbolKey);
 
         return gridKeys;
     }

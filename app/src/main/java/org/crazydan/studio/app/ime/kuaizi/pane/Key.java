@@ -88,27 +88,6 @@ public abstract class Key {
         return this.objHash;
     }
 
-    /** {@link Key} 配色 */
-    public static class Color {
-        /** 前景色资源 id */
-        public final Integer fg;
-        /** 背景色资源 id */
-        public final Integer bg;
-
-        private Color(Integer fg, Integer bg) {
-            this.fg = fg;
-            this.bg = bg;
-        }
-
-        public static Color create(Integer fg, Integer bg) {
-            return new Color(fg, bg);
-        }
-
-        public static Color none() {
-            return create(null, null);
-        }
-    }
-
     /**
      * {@link Key} 构建器，用于以链式调用形式配置按键属性，并支持缓存按键，从而避免反复创建相同的 {@link Key}
      * <p/>
@@ -231,11 +210,76 @@ public abstract class Key {
             return (B) this;
         }
 
-        /** 禁用按键 */
-        public B disable() {
-            return disabled(true);
+        // ===================== End: 按键配置 ===================
+    }
+
+    /** {@link Key} 配色 */
+    public static class Color {
+        /** 前景色资源 id */
+        public final Integer fg;
+        /** 背景色资源 id */
+        public final Integer bg;
+
+        Color(Integer fg, Integer bg) {
+            this.fg = fg;
+            this.bg = bg;
         }
 
-        // ===================== End: 按键配置 ===================
+        public static Color create(Integer fg, Integer bg) {
+            return new Color(fg, bg);
+        }
+
+        public static Color none() {
+            return create(null, null);
+        }
+    }
+
+    /** {@link Key} 图标 */
+    public static class Icon {
+        /** 右手模式的图标资源 id */
+        public final Integer right;
+        /** 左手模式的图标资源 id */
+        public final Integer left;
+
+        Icon(Integer resId) {
+            this.right = resId;
+            this.left = resId;
+        }
+
+        Icon(Integer right, Integer left) {
+            this.right = right;
+            this.left = left;
+        }
+    }
+
+    /** {@link Key} 样式 */
+    public static class Style {
+        public final Icon icon;
+        public final Color color;
+
+        Style(Color color) {
+            this(new Icon(null, null), color);
+        }
+
+        Style(Icon icon, Color color) {
+            this.icon = icon;
+            this.color = color;
+        }
+
+        public static Style withColor(int fg, int bg) {
+            return withColor(Color.create(fg, bg));
+        }
+
+        public static Style withColor(Color color) {
+            return new Style(color);
+        }
+
+        public static Style withIcon(int right, int left, int bg) {
+            return new Style(new Icon(right, left), Color.create(null, bg));
+        }
+
+        public static Style withIcon(int resId, int bg) {
+            return new Style(new Icon(resId), Color.create(null, bg));
+        }
     }
 }

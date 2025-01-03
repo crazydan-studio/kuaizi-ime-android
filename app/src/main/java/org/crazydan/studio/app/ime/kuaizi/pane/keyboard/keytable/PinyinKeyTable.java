@@ -61,7 +61,7 @@ public class PinyinKeyTable extends KeyTable {
         return new Key[6][8];
     }
 
-    /** 创建{@link PinyinKeyboard 拼音键盘}按键 */
+    /** 创建 {@link PinyinKeyboard} 按键 */
     public Key[][] createKeys() {
         if (this.config.keyboard.xInputPadEnabled) {
             return createKeysForXPad();
@@ -242,11 +242,11 @@ public class PinyinKeyTable extends KeyTable {
             String text = keys.get(i);
             // 确保按键靠底部进行放置
             GridCoord keyCoord = keyCoords[i + diff];
-            int row = keyCoord.row;
-            int column = keyCoord.column;
 
             boolean disabled = Objects.equals(level2Char, text);
-            gridKeys[row][column] = level2CharKey(level0Char, text, (b) -> b.disabled(disabled));
+            Key key = level2CharKey(level0Char, text, (b) -> b.disabled(disabled));
+
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
     }
 
@@ -255,7 +255,6 @@ public class PinyinKeyTable extends KeyTable {
         Key[][] gridKeys = createEmptyGrid();
 
         String[] charOrders = new String[] { "m", "n", "g", "a", "o", "e", "i", "u", "ü" };
-        GridCoord[] gridCoords = getFullCharKeyCoords();
 
         PinyinCharsTree level0CharsTree = charsTree.getChild(level0Char);
         if (level0CharsTree == null) {
@@ -279,14 +278,13 @@ public class PinyinKeyTable extends KeyTable {
         // 再按字符长度升序排列
         restCharList.sort(Comparator.comparing(String::length));
 
+        GridCoord[] gridCoords = getFullCharKeyCoords();
         for (int i = 0; i < restCharList.size(); i++) {
             String restChar = restCharList.get(i);
             GridCoord keyCoord = gridCoords[i];
 
-            int row = keyCoord.row;
-            int column = keyCoord.column;
-
-            gridKeys[row][column] = level2CharKey(level0Char, restChar);
+            Key key = level2CharKey(level0Char, restChar);
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
 
         return gridKeys;
@@ -420,11 +418,10 @@ public class PinyinKeyTable extends KeyTable {
                 for (int i = 0; i < keys.size(); i++) {
                     String text = keys.get(i);
                     GridCoord keyCoord = keyCoords[i];
-                    int row = keyCoord.row;
-                    int column = keyCoord.column;
                     int layer = keyCoord.layer;
 
-                    xPadKey.zone_2_keys[layer][row][column] = level2CharKey("", text);
+                    Key key = level2CharKey("", text);
+                    fillGridKeyByCoord(xPadKey.zone_2_keys[layer], keyCoord, key);
                 }
             });
         }
@@ -480,14 +477,11 @@ public class PinyinKeyTable extends KeyTable {
             GridCoord keyCoord = spellKeyCorrds[i];
             PinyinWord.Spell spell = spells.get(j);
 
-            int row = keyCoord.row;
-            int column = keyCoord.column;
-
             boolean disabled = wordFilter.spells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
             CtrlKey key = advanceFilterKey(type, spell.value, spell, (b) -> b.disabled(disabled));
-            gridKeys[row][column] = key;
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
 
         // 拼音变换按键
@@ -541,33 +535,15 @@ public class PinyinKeyTable extends KeyTable {
         }
 
         // 候选字按键
-        int dataIndex = startIndex;
         GridCoord[][] levelKeyCoords = getLevelKeyCoords();
-
-        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
-            GridCoord[] keyCoords = levelKeyCoords[level];
-
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                if (dataIndex >= dataSize) {
-                    break;
-                }
-
-                InputWord word = words.get(dataIndex++);
-                if (word == null) {
-                    continue;
-                }
-
-                gridKeys[row][column] = inputWordKey(word, level, (b) -> {
-                    // 禁用已被选中的候选字按键
-                    if (word.equals(input.getWord())) {
-                        b.disabled(true);
-                    }
-                });
-            }
-        }
+        fillGridLevelKeysByCoord(gridKeys,
+                                 levelKeyCoords,
+                                 words,
+                                 startIndex,
+                                 (word, level) -> inputWordKey(word, level, (b) -> {
+                                     // 禁用已被选中的候选字按键
+                                     b.disabled(word.equals(input.getWord()));
+                                 }));
 
         return gridKeys;
     }
@@ -600,40 +576,22 @@ public class PinyinKeyTable extends KeyTable {
             GridCoord keyCoord = spellKeyCorrds[i];
             PinyinWord.Spell spell = spells.get(j);
 
-            int row = keyCoord.row;
-            int column = keyCoord.column;
-
             boolean disabled = wordFilter.spells.contains(spell);
             CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Spell;
 
-            gridKeys[row][column] = advanceFilterKey(type, spell.value, spell, (b) -> b.disabled(disabled));
+            CtrlKey key = advanceFilterKey(type, spell.value, spell, (b) -> b.disabled(disabled));
+            fillGridKeyByCoord(gridKeys, keyCoord, key);
         }
 
         // 部首过滤按键
-        int dataIndex = startIndex;
         GridCoord[][] levelKeyCoords = getLevelKeyCoords(true);
+        fillGridLevelKeysByCoord(gridKeys, levelKeyCoords, radicals, startIndex, (radical, level) -> {
+            Key.Color color = key_input_word_level_colors[level];
+            CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Radical;
 
-        for (int level = 0; level < levelKeyCoords.length && dataSize > 0; level++) {
-            GridCoord[] keyCoords = levelKeyCoords[level];
-
-            for (GridCoord keyCoord : keyCoords) {
-                int row = keyCoord.row;
-                int column = keyCoord.column;
-
-                if (dataIndex >= dataSize) {
-                    break;
-                }
-
-                PinyinWord.Radical radical = radicals.get(dataIndex++);
-                boolean disabled = wordFilter.radicals.contains(radical);
-                Key.Color color = key_input_word_level_colors[level];
-                CtrlKey.Type type = CtrlKey.Type.Filter_PinyinCandidate_by_Radical;
-
-                CtrlKey key = advanceFilterKey(type, radical.value, radical, (b) -> b.color(color).disabled(disabled));
-                gridKeys[row][column] = key;
-
-            }
-        }
+            boolean disabled = wordFilter.radicals.contains(radical);
+            return advanceFilterKey(type, radical.value, radical, (b) -> b.color(color).disabled(disabled));
+        });
 
         return gridKeys;
     }
