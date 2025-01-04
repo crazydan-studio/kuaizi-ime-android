@@ -20,11 +20,11 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 import java.util.function.Supplier;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.SymbolKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.SymbolEmojiKeyTable;

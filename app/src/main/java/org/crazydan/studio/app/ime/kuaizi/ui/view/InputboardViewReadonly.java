@@ -25,14 +25,14 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
- * 只读的 {@link InputListView}
+ * 只读的 {@link InputboardView}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-12-04
  */
-public class InputListViewReadonly extends InputListViewBase {
+public class InputboardViewReadonly extends InputboardViewBase {
 
-    public InputListViewReadonly(Context context, @Nullable AttributeSet attrs) {
+    public InputboardViewReadonly(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 

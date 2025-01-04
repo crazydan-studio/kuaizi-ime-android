@@ -50,16 +50,16 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
 
 /**
- * {@link InputListView} 的基类
+ * {@link InputboardView} 的基类
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
+public class InputboardViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
     private UserInputMsgListener listener;
 
-    public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
+    public InputboardViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         // Note：取消动画以确保输入能够直接显隐，不做淡化
@@ -95,9 +95,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         }
 
         UserInputMsgData.Where where = UserInputMsgData.Where.inner;
-        Input input = Optional.ofNullable((InputViewData) getAdapterItem(holder))
-                              .map((item) -> item.input)
-                              .orElse(null);
+        Input input = Optional.ofNullable(getAdapterItem(holder)).map((item) -> item.input).orElse(null);
 
         if (input == null) {
             if (data.x < getPaddingStart()) {
@@ -141,8 +139,8 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         // Note: 此类视图存在嵌套的情况，故而，需将消息交给最上层的视图转发
         ViewParent parent = this;
         while ((parent = parent.getParent()) != null) {
-            if (parent instanceof InputListViewBase) {
-                ((InputListViewBase) parent).fire_UserInputMsg(msg);
+            if (parent instanceof InputboardViewBase) {
+                ((InputboardViewBase) parent).fire_UserInputMsg(msg);
                 break;
             }
         }
@@ -257,8 +255,8 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
             View child = ((ViewGroup) view).getChildAt(i);
 
-            if (child instanceof InputListViewReadonly) {
-                InputListViewReadonly ro = (InputListViewReadonly) child;
+            if (child instanceof InputboardViewReadonly) {
+                InputboardViewReadonly ro = (InputboardViewReadonly) child;
                 int position = ((MathExprInput) selectedInput).getInputList().getSelectedIndex();
 
                 return ro.getLayoutManager().findViewByPosition(position);

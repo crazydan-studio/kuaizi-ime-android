@@ -17,6 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 

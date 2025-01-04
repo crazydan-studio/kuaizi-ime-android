@@ -51,7 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 
@@ -67,7 +67,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private final AudioPlayer audioPlayer;
 
     private KeyboardView keyboardView;
-    private InputListView inputListView;
+    private InputboardView inputboardView;
     private TextView keyboardWarningView;
 
     private PopupWindow inputKeyPopupWindow;
@@ -179,7 +179,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
         // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
         this.keyboardView.onMsg(msg);
-        this.inputListView.onMsg(msg);
+        this.inputboardView.onMsg(msg);
     }
 
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
@@ -249,8 +249,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.keyboardView.setConfig(this.config);
         this.keyboardView.setListener(this);
 
-        this.inputListView = rootView.findViewById(R.id.input_list);
-        this.inputListView.setListener(this);
+        this.inputboardView = rootView.findViewById(R.id.inputboard);
+        this.inputboardView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.completionInputListView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);

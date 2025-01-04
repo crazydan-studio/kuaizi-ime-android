@@ -22,10 +22,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardViewReadonly;
 
 /**
  * {@link MathExprInput} 视图的 {@link RecyclerView.ViewHolder}
@@ -34,13 +34,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
  * @date 2023-09-15
  */
 public class MathExprInputViewHolder extends InputViewHolder {
-    private final InputListViewReadonly inputListView;
+    private final InputboardViewReadonly inputListView;
     private final View markerView;
 
     public MathExprInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.inputListView = itemView.findViewById(R.id.input_list);
+        this.inputListView = itemView.findViewById(R.id.inputboard);
         this.markerView = itemView.findViewById(R.id.marker);
     }
 

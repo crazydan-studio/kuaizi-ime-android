@@ -26,10 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 
 /**
- * {@link InputListView} 的 {@link RecyclerView} 适配器
+ * {@link InputboardView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07

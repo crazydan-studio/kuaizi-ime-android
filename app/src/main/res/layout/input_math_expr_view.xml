@@ -23,8 +23,8 @@
         android:orientation="vertical">
 
     <!-- 算术输入是内嵌的输入列表 -->
-    <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly
-            android:id="@+id/input_list"
+    <org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardViewReadonly
+            android:id="@+id/inputboard"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1" />

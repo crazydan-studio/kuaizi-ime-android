@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 
 /** {@link InputMsg} 消息的类型 */
 public enum InputMsgType {

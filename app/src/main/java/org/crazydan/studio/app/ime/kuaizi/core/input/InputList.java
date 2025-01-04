@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2023 Crazydan Studio
+ * Copyright (C) 2025 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core;
+package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +28,8 @@ import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 

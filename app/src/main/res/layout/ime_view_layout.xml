@@ -67,10 +67,10 @@
                     android:textSize="@dimen/char_input_word_text_size" />
 
             <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
-            <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView
+            <org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:id="@+id/input_list"
+                    android:id="@+id/inputboard"
                     android:clipToPadding="false"
                     android:paddingStart="8dp"
                     android:paddingEnd="16dp" />

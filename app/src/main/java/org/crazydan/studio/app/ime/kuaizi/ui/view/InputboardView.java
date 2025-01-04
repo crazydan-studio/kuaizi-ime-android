@@ -21,20 +21,20 @@ import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 
 /**
- * {@link InputList} 的视图
+ * {@link Inputboard} 的视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListView extends InputListViewBase implements InputMsgListener {
+public class InputboardView extends InputboardViewBase implements InputMsgListener {
 
-    public InputListView(Context context, @Nullable AttributeSet attrs) {
+    public InputboardView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 

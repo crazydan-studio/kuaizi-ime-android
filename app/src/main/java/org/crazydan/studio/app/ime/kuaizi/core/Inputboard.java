@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
@@ -57,13 +58,46 @@ public class Inputboard implements UserInputMsgListener {
         resetWithNewStaged(Staged.Type.none);
     }
 
+    /**
+     * 更新配置
+     *
+     * @return 若存在更新，则返回 true，否则，返回 false
+     */
+    public boolean updateConfig(InputboardConfig config) {
+        boolean changed = !Objects.equals(this.config, config);
+        this.config = config;
+
+        if (config != null) {
+            Input.Option inputOption = this.inputList.getInputOption();
+
+            if (inputOption == null) {
+                inputOption = new Input.Option(null, this.config.useCandidateVariantFirst);
+            } else {
+                inputOption = new Input.Option(inputOption.wordSpellUsedMode, this.config.useCandidateVariantFirst);
+            }
+            this.inputList.setInputOption(inputOption);
+        }
+        return changed;
+    }
+
+    public InputFactory getInputFactory() {
+        return () -> {
+            List<InputViewData> dataList = new ArrayList<>();
+
+            for (int i = 0; i < this.inputs.size(); i++) {
+                InputViewData data = InputViewData.create(this, getOption(), i);
+
+                dataList.add(data);
+            }
+            return dataList;
+        };
+    }
+
     // =============================== Start: 消息处理 ===================================
 
     public void setListener(InputMsgListener listener) {
         this.listener = listener;
     }
-
-    // -----------------------------
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
     @Override
@@ -179,7 +213,8 @@ public class Inputboard implements UserInputMsgListener {
 
     /** 暂存 {@link InputList}，并对其进行{@link InputList#reset() 重置} */
     private void resetWithNewStaged(Staged.Type stagedType) {
-        this.staged = Staged.create(stagedType, this.inputList);
+        // Note: 在 Staged 中暂存 InputList 的副本
+        this.staged = Staged.create(stagedType, this.inputList.copy());
 
         this.inputList.reset();
 
@@ -190,48 +225,16 @@ public class Inputboard implements UserInputMsgListener {
     // =============================== End: 生命周期 ===================================
 
     /**
-     * 更新配置
-     *
-     * @return 若存在更新，则返回 true，否则，返回 false
-     */
-    public boolean updateConfig(InputboardConfig config) {
-        boolean changed = !Objects.equals(this.config, config);
-        this.config = config;
-
-        if (config != null) {
-            Input.Option inputOption = this.inputList.getInputOption();
-
-            if (inputOption == null) {
-                inputOption = new Input.Option(null, this.config.useCandidateVariantFirst);
-            } else {
-                inputOption = new Input.Option(inputOption.wordSpellUsedMode, this.config.useCandidateVariantFirst);
-            }
-            this.inputList.setInputOption(inputOption);
-        }
-        return changed;
-    }
-
-    public InputFactory getInputFactory() {
-        return () -> {
-            List<InputViewData> dataList = new ArrayList<>();
-
-            for (int i = 0; i < this.inputs.size(); i++) {
-                InputViewData data = InputViewData.create(this, getOption(), i);
-
-                dataList.add(data);
-            }
-            return dataList;
-        };
-    }
-
-    /**
      * {@link InputList} 暂存器，
      * 用于存储{@link #commit 提交}或{@link #reset 重置}之前的 {@link InputList} 数据
      */
     static class Staged {
         public enum Type {
+            /** 不暂存数据 */
             none,
+            /** 暂存已删除数据 */
             deleted,
+            /** 暂存已提交数据 */
             committed,
         }
 
@@ -256,7 +259,7 @@ public class Inputboard implements UserInputMsgListener {
                 return none();
             }
 
-            return new Staged(type, inputList.copy());
+            return new Staged(type, inputList);
         }
 
         /** 还原指定 {@link Staged} 所暂存的数据到指定的 {@link InputList}，并返回 {@link #none()} */

@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 
 /**
  * {@link Input} 的视图数据，仅用于构造视图
