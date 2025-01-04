@@ -34,6 +34,11 @@ public class KeyboardContext {
 
     private final Key key;
 
+    /** 是否可撤回对输入的提交 */
+    private boolean canRevokeCommit;
+    /** 是否可取消对输入的清空 */
+    private boolean canCancelClean;
+
     public KeyboardContext(KeyboardConfig config, InputList inputList, InputMsgListener listener) {
         this(config, inputList, listener, null);
     }
@@ -47,16 +52,36 @@ public class KeyboardContext {
 
     /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
     public KeyboardContext newWithKey(Key key) {
-        return new KeyboardContext(this.config, this.inputList, this.listener, key);
+        KeyboardContext context = new KeyboardContext(this.config, this.inputList, this.listener, key);
+        return context.canRevokeCommit(this.canRevokeCommit).canCancelClean(this.canCancelClean);
     }
 
     /** 根据 {@link InputList} 新建实例，以使其携带新的 {@link InputList} */
     public KeyboardContext newWithInputList(InputList inputList) {
-        return new KeyboardContext(this.config, inputList, this.listener, this.key);
+        KeyboardContext context = new KeyboardContext(this.config, inputList, this.listener, this.key);
+        return context.canRevokeCommit(this.canRevokeCommit).canCancelClean(this.canCancelClean);
     }
 
     /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
     public <T extends Key> T key() {
         return (T) this.key;
+    }
+
+    public KeyboardContext canRevokeCommit(boolean canRestoreCommit) {
+        this.canRevokeCommit = canRestoreCommit;
+        return this;
+    }
+
+    public boolean canRevokeCommit() {
+        return this.canRevokeCommit;
+    }
+
+    public KeyboardContext canCancelClean(boolean canCancelClean) {
+        this.canCancelClean = canCancelClean;
+        return this;
+    }
+
+    public boolean canCancelClean() {
+        return this.canCancelClean;
     }
 }

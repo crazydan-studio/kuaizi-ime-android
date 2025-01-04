@@ -210,7 +210,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
         boolean disableCleanBtn = msg.inputList.empty;
-        boolean disableCleanCancelBtn = !msg.inputList.deletedCancelable;
+        boolean disableCleanCancelBtn = !msg.inputList.canCancelClean;
 
         if (this.needToDisableInputListCleanBtn != disableCleanBtn
             || this.needToDisableInputListCleanCancelBtn != disableCleanCancelBtn //

@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardConfig;
+import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 
 /**
@@ -37,19 +38,17 @@ public class KeyTableConfig {
     /** 键盘配置 */
     public final KeyboardConfig keyboard;
 
-    public static KeyTableConfig from(KeyboardConfig keyboard) {
-        return from(keyboard, null);
+    public static KeyTableConfig from(KeyboardContext context) {
+        return new KeyTableConfig(context);
     }
 
-    public static KeyTableConfig from(KeyboardConfig keyboard, InputList inputList) {
-        return new KeyTableConfig(keyboard, inputList);
-    }
+    KeyTableConfig(KeyboardContext context) {
+        InputList inputList = context.inputList;
 
-    KeyTableConfig(KeyboardConfig keyboard, InputList inputList) {
         this.hasInputs = inputList != null && !inputList.isEmpty();
-        this.hasRevokingInputs = inputList != null && inputList.canRevokeCommit();
+        this.hasRevokingInputs = inputList != null && context.canRevokeCommit();
         this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
-        this.keyboard = keyboard;
+        this.keyboard = context.config;
     }
 }

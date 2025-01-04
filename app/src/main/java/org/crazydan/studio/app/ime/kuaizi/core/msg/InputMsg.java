@@ -19,6 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
+import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -47,24 +48,26 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
 
     public InputMsg(
             InputMsgType type, InputMsgData data, //
-            InputList inputList, KeyFactory keyFactory
+            Inputboard inputboard, KeyFactory keyFactory
     ) {
         super(type, data);
 
         this.keyFactory = keyFactory;
-        this.inputFactory = inputList != null ? inputList.getInputFactory() : null;
-        this.inputList = new InputListState(inputList);
+        this.inputFactory = inputboard != null ? inputboard.getInputFactory() : null;
+
+        this.inputList = new InputListState(inputboard == null || inputboard.inputList.isEmpty(),
+                                            inputboard != null && inputboard.canRestoreCleaned());
     }
 
     public static class InputListState {
         /** 输入列表是否为空 */
         public final boolean empty;
-        /** 输入列表的 已删除 是否可取消 */
-        public final boolean deletedCancelable;
+        /** 是否可取消对输入列表的清空 */
+        public final boolean canCancelClean;
 
-        private InputListState(InputList inputList) {
-            this.empty = inputList == null || inputList.isEmpty();
-            this.deletedCancelable = inputList != null && inputList.canCancelDelete();
+        public InputListState(boolean empty, boolean canCancelClean) {
+            this.empty = empty;
+            this.canCancelClean = canCancelClean;
         }
     }
 }

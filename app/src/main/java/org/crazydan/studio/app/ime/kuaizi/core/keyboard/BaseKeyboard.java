@@ -127,7 +127,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected KeyTableConfig createKeyTableConfig(KeyboardContext context) {
-        return KeyTableConfig.from(context.config, context.inputList);
+        return KeyTableConfig.from(context);
     }
 
     // ====================== Start: 对 InputMsg 的处理 ======================
@@ -351,13 +351,6 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void do_Editor_Editing(KeyboardContext context, EditorAction action) {
-        InputList inputList = context.inputList;
-
-        // 对编辑内容会造成修改的操作，需要清空待撤回输入数据
-        if (EditorAction.hasEffect(action)) {
-            inputList.clearCommitRevokes();
-        }
-
         InputMsgData data = new EditorEditMsgData(action);
 
         fire_InputMsg(context, Editor_Edit_Doing, data);
@@ -635,10 +628,8 @@ public abstract class BaseKeyboard implements Keyboard {
             switch (key.type) {
                 case Enter:
                 case Space:
-                    // Note：直输回车和空格后，不再支持输入撤回
-                    inputList.clearCommitRevokes();
-
-                    fire_InputList_Commit_Doing(context, key.value, null);
+                    // Note：对于直输的回车和空格，不支持输入撤回
+                    fire_InputList_Commit_Doing(context, key.value, null, false);
                     break;
             }
         }
@@ -711,8 +702,6 @@ public abstract class BaseKeyboard implements Keyboard {
             CharInput left = inputList.getFirstCharInput();
             CharInput right = inputList.getLastCharInput();
 
-            inputList.commit(false);
-
             fire_InputList_PairSymbol_Commit_Doing(context, left.getText(), right.getText());
         } else {
             List<String> replacements = null;
@@ -723,23 +712,21 @@ public abstract class BaseKeyboard implements Keyboard {
                 replacements = key.replacements;
             }
 
-            StringBuilder text = inputList.commit(canBeRevoked);
+            StringBuilder text = inputList.getText();
 
-            fire_InputList_Commit_Doing(context, text, replacements);
+            fire_InputList_Commit_Doing(context, text, replacements, canBeRevoked);
         }
     }
 
     /** 撤回输入列表，且状态保持不变 */
     protected void revoke_Committed_InputList(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        if (!inputList.canRevokeCommit()) {
+        if (!context.canRevokeCommit()) {
             return;
         }
 
-        inputList.revokeCommit();
-        after_Revoke_Committed_InputList(context);
-
         fire_Common_InputMsg(context, InputList_Committed_Revoke_Doing);
+
+        after_Revoke_Committed_InputList(context);
 
         choose_InputList_Selected_Input(context);
     }
@@ -751,7 +738,6 @@ public abstract class BaseKeyboard implements Keyboard {
      */
     protected void backspace_InputList_or_Editor(KeyboardContext context) {
         InputList inputList = context.inputList;
-        inputList.clearCommitRevokes();
 
         if (!inputList.isEmpty()) {
             do_InputList_Backspacing(context);
@@ -845,8 +831,10 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */
-    protected void fire_InputList_Commit_Doing(KeyboardContext context, CharSequence text, List<String> replacements) {
-        InputMsgData data = new InputListCommitMsgData(text, replacements);
+    protected void fire_InputList_Commit_Doing(
+            KeyboardContext context, CharSequence text, List<String> replacements, boolean canBeRevoked
+    ) {
+        InputMsgData data = new InputListCommitMsgData(text, replacements, canBeRevoked);
 
         fire_InputMsg(context, InputList_Commit_Doing, data);
     }

@@ -32,9 +32,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 public class InputListCommitMsgData extends InputMsgData {
     public final CharSequence text;
     public final List<String> replacements;
+    public final boolean canBeRevoked;
 
-    public InputListCommitMsgData(CharSequence text, List<String> replacements) {
+    public InputListCommitMsgData(CharSequence text, List<String> replacements, boolean canBeRevoked) {
         this.text = text;
         this.replacements = replacements != null ? replacements : new ArrayList<>();
+        this.canBeRevoked = canBeRevoked;
     }
 }

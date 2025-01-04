@@ -40,7 +40,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
  * 输入面板
  * <p/>
  * 负责处理 {@link UserInputMsg} 消息，以及对
- * {@link InputList} 的整体性处理（如，提交输入列表、撤销输入列表提交等）
+ * {@link InputList} 的整体性处理（如，提交/清空输入列表、撤销提交/清空等）
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-04
@@ -48,14 +48,13 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
 public class Inputboard implements UserInputMsgListener {
     public final InputList inputList = new InputList();
 
-    /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
-    private Staged staged;
+    private Stage stage;
 
     private InputboardConfig config;
     private InputMsgListener listener;
 
     public Inputboard() {
-        resetWithNewStaged(Staged.Type.none);
+        resetWithStage(Stage.Type.none);
     }
 
     /**
@@ -130,13 +129,13 @@ public class Inputboard implements UserInputMsgListener {
                 break;
             }
             case SingleTap_Btn_Clean_InputList: {
-                reset(true);
+                storeCleaned(true);
 
                 fire_InputMsg(InputList_Clean_Done, null);
                 break;
             }
             case SingleTap_Btn_Cancel_Clean_InputList: {
-                cancelDelete();
+                restoreCleaned();
 
                 Input input = this.inputList.getSelected();
                 fire_InputMsg(InputList_Cleaned_Cancel_Done, input);
@@ -155,66 +154,63 @@ public class Inputboard implements UserInputMsgListener {
 
     // =============================== Start: 生命周期 ===================================
 
-    /** 重置 */
-    public void reset(boolean canBeCanceled) {
-        resetWithNewStaged(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
+    /** 重置：{@link InputList#reset() 重置} {@link InputList}，并清空 {@link #stage} */
+    public void reset() {
+        storeCleaned(false);
     }
 
-    /**
-     * 提交输入列表
-     * <p/>
-     * 返回{@link InputList#getText() 输入文本}，并{@link #reset 重置}
-     */
-    public StringBuilder commit(boolean canBeRevoked) {
-        StringBuilder text = this.inputList.getText();
-
-        resetWithNewStaged(canBeRevoked ? Staged.Type.committed : Staged.Type.none);
-
-        return text;
+    /** 是否可恢复 已提交 */
+    public boolean canRestoreCommitted() {
+        return this.stage.type == Stage.Type.committed;
     }
 
-    /** 是否可撤回已提交输入 */
-    public boolean canRevokeCommit() {
-        return this.staged.type == Staged.Type.committed;
+    /** 保存 已提交：{@link #inputList} 将会被{@link InputList#reset() 重置} */
+    public void storeCommitted(boolean canBeRestored) {
+        resetWithStage(canBeRestored ? Stage.Type.committed : Stage.Type.none);
     }
 
-    /** 撤回已提交的输入 */
-    public void revokeCommit() {
-        if (canRevokeCommit()) {
-            this.staged = Staged.restore(this.inputList, this.staged);
+    /** 恢复 已提交 */
+    public void restoreCommitted() {
+        if (canRestoreCommitted()) {
+            this.stage = Stage.restore(this.inputList, this.stage);
         }
     }
 
-    /** 清除 提交撤回数据 */
-    public void clearCommitRevokes() {
-        if (canRevokeCommit()) {
-            this.staged = Staged.none();
+    /** 清除 已提交 */
+    public void clearCommitted() {
+        if (canRestoreCommitted()) {
+            this.stage = Stage.none();
         }
     }
 
-    /** 是否可撤销已删除输入 */
-    public boolean canCancelDelete() {
-        return this.staged.type == Staged.Type.deleted;
+    /** 是否可恢复 已清空 */
+    public boolean canRestoreCleaned() {
+        return this.stage.type == Stage.Type.cleaned;
     }
 
-    /** 撤销已删除输入 */
-    public void cancelDelete() {
-        if (canCancelDelete()) {
-            this.staged = Staged.restore(this.inputList, this.staged);
+    /** 保存 已清空：{@link #inputList} 将会被{@link InputList#reset() 重置} */
+    public void storeCleaned(boolean canBeRestored) {
+        resetWithStage(canBeRestored ? Stage.Type.cleaned : Stage.Type.none);
+    }
+
+    /** 恢复 已清空 */
+    public void restoreCleaned() {
+        if (canRestoreCleaned()) {
+            this.stage = Stage.restore(this.inputList, this.stage);
         }
     }
 
-    /** 清除 删除撤销数据 */
-    public void clearDeleteCancels() {
-        if (canCancelDelete()) {
-            this.staged = Staged.none();
+    /** 清除 已清空 */
+    public void clearCleaned() {
+        if (canRestoreCleaned()) {
+            this.stage = Stage.none();
         }
     }
 
     /** 暂存 {@link InputList}，并对其进行{@link InputList#reset() 重置} */
-    private void resetWithNewStaged(Staged.Type stagedType) {
+    private void resetWithStage(Stage.Type stageType) {
         // Note: 在 Staged 中暂存 InputList 的副本
-        this.staged = Staged.create(stagedType, this.inputList.copy());
+        this.stage = Stage.create(stageType, this.inputList.copy());
 
         this.inputList.reset();
 
@@ -224,16 +220,13 @@ public class Inputboard implements UserInputMsgListener {
 
     // =============================== End: 生命周期 ===================================
 
-    /**
-     * {@link InputList} 暂存器，
-     * 用于存储{@link #commit 提交}或{@link #reset 重置}之前的 {@link InputList} 数据
-     */
-    static class Staged {
+    /** 用于支持撤销对输入列表的清空和提交 */
+    static class Stage {
         public enum Type {
             /** 不暂存数据 */
             none,
-            /** 暂存已删除数据 */
-            deleted,
+            /** 暂存已清空数据 */
+            cleaned,
             /** 暂存已提交数据 */
             committed,
         }
@@ -242,30 +235,30 @@ public class Inputboard implements UserInputMsgListener {
 
         private final InputList inputList;
 
-        Staged(Type type, InputList inputList) {
+        Stage(Type type, InputList inputList) {
             this.type = type;
             this.inputList = inputList;
         }
 
-        /** 创建 {@link Type#none} 类型的暂存器，即，不存储任何 {@link InputList} 数据 */
-        public static Staged none() {
-            return new Staged(Type.none, null);
+        /** 创建 {@link Type#none} 类型的 {@link Stage}，即，不存储任何 {@link InputList} 数据 */
+        public static Stage none() {
+            return new Stage(Type.none, null);
         }
 
-        /** 创建指定 {@link Type} 的暂存器 */
-        public static Staged create(Type type, InputList inputList) {
+        /** 创建指定 {@link Type} 的 {@link Stage} */
+        public static Stage create(Type type, InputList inputList) {
             // 为空的输入列表的无需暂存
             if (type == Type.none || inputList.isEmpty()) {
                 return none();
             }
 
-            return new Staged(type, inputList);
+            return new Stage(type, inputList);
         }
 
-        /** 还原指定 {@link Staged} 所暂存的数据到指定的 {@link InputList}，并返回 {@link #none()} */
-        public static Staged restore(InputList inputList, Staged staged) {
-            if (staged.type != Type.none) {
-                inputList.replaceBy(staged.inputList);
+        /** 还原 {@link Stage} 中的数据到指定的 {@link InputList}，并返回 {@link #none()} */
+        public static Stage restore(InputList inputList, Stage stage) {
+            if (stage.type != Type.none) {
+                inputList.replaceBy(stage.inputList);
             }
 
             return none();

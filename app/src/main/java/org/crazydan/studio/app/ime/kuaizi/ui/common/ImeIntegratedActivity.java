@@ -124,7 +124,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     protected KeyTableConfig createKeyTableConfig() {
-        return KeyTableConfig.from(this.ime.createKeyboardConfig());
+        return KeyTableConfig.from(this.ime.createKeyboardContext());
     }
 
     protected PinyinKeyTable createPinyinKeyTable() {
