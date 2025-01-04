@@ -20,10 +20,10 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgListener;

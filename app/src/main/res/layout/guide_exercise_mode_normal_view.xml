@@ -41,8 +41,8 @@
             android:paddingHorizontal="12dp"
             android:scrollbars="vertical" />
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseEditText
-            android:id="@+id/text_view"
+    <org.crazydan.studio.app.ime.kuaizi.ui.common.ImeSupportEditText
+            android:id="@+id/editor_view"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_marginHorizontal="6dp"

@@ -35,7 +35,7 @@ public class ExerciseFreeViewHolder extends ExerciseViewHolder {
     @Override
     public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
         // Note: 自由模式仅包含输入框
-        resetTextView(data);
+        resetEditorView(data);
         focusOnEditor();
     }
 }

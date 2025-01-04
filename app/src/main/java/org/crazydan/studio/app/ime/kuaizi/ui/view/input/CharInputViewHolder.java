@@ -20,9 +20,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
  * {@link CharInput} 视图的 {@link RecyclerView.ViewHolder}

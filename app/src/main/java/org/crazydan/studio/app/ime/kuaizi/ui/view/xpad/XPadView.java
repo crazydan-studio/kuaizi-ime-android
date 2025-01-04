@@ -46,10 +46,10 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureTrailer;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 

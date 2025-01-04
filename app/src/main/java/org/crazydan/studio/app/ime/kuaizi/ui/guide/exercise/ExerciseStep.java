@@ -19,8 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 
 /**
  * {@link Exercise} 的步骤

@@ -27,10 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.HexagonDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.SymbolKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

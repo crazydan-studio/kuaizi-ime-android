@@ -19,16 +19,16 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.graphics.PointF;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerFlippingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserFingerMovingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserLongPressTickMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.user.UserSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerMovingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserLongPressTickMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 

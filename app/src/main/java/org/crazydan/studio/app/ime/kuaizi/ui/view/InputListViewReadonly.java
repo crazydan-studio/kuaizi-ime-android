@@ -22,7 +22,7 @@ import java.util.List;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
  * 只读的 {@link InputListView}

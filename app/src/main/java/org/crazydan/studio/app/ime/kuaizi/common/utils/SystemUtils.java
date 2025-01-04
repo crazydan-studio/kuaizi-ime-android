@@ -27,7 +27,7 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
-import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
+import org.crazydan.studio.app.ime.kuaizi.IMESubtype;
 import org.crazydan.studio.app.ime.kuaizi.ui.Preferences;
 
 /**
@@ -117,20 +117,20 @@ public class SystemUtils {
         return false;
     }
 
-    public static ImeSubtype getImeSubtype(Context context) {
+    public static IMESubtype getImeSubtype(Context context) {
         InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
 
         InputMethodSubtype subtype = manager.getCurrentInputMethodSubtype();
         return parseImeSubtype(subtype);
     }
 
-    public static ImeSubtype parseImeSubtype(InputMethodSubtype subtype) {
+    public static IMESubtype parseImeSubtype(InputMethodSubtype subtype) {
         if (subtype != null //
             && ("en_US".equals(subtype.getLocale()) //
                 || "en_US".equals(subtype.getLanguageTag()))) {
-            return ImeSubtype.latin;
+            return IMESubtype.latin;
         } else {
-            return ImeSubtype.hans;
+            return IMESubtype.hans;
         }
     }
 

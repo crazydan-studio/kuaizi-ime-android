@@ -33,21 +33,21 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_Input;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
 
 /**
  * {@link InputListView} 的基类

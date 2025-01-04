@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
 
 /**
  * {@link MathOpKey} 视图的 {@link RecyclerView.ViewHolder}

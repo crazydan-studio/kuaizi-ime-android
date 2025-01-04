@@ -22,9 +22,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputList;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.MathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
 
 /**

@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
 
 import android.view.View;
 import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 
 /**
  * 题型为 {@link Exercise.Mode#introduce} 的练习题视图

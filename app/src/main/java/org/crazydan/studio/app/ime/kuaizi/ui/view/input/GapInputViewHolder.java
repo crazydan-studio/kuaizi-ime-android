@@ -26,10 +26,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.Input;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
  * {@link GapInput} 视图的 {@link RecyclerView.ViewHolder}

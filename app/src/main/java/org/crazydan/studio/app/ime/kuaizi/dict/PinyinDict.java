@@ -41,12 +41,12 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;

@@ -22,8 +22,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.ui.common.ImeSupportEditText;
 
 /**
  * {@link Exercise} 视图
@@ -33,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
  */
 public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgListener {
     protected final TextView titleView;
-    protected final ExerciseEditText textView;
+    protected final ImeSupportEditText editorView;
 
     protected final ExerciseStepListView stepListView;
 
@@ -41,14 +42,14 @@ public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgLi
         super(itemView);
 
         this.titleView = itemView.findViewById(R.id.title_view);
-        this.textView = itemView.findViewById(R.id.text_view);
+        this.editorView = itemView.findViewById(R.id.editor_view);
 
         this.stepListView = itemView.findViewById(R.id.step_list_view);
     }
 
     @Override
     public void onMsg(InputMsg msg) {
-        this.textView.onMsg(msg);
+        this.editorView.onMsg(msg);
     }
 
     /** 视图与数据的初始绑定 */
@@ -58,14 +59,14 @@ public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgLi
             view.setText(title);
         });
 
-        resetTextView(data);
+        resetEditorView(data);
         updateSteps(data);
     }
 
     /** 激活指定位置的步骤 */
     public void activateStep(Exercise.ViewData data, int stepIndex, boolean needToReset) {
         if (needToReset) {
-            resetTextView(data);
+            resetEditorView(data);
         }
         updateSteps(data);
 
@@ -84,11 +85,11 @@ public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgLi
     }
 
     protected void focusOnEditor() {
-        whenViewReady(this.textView, View::requestFocus);
+        whenViewReady(this.editorView, View::requestFocus);
     }
 
-    protected void resetTextView(Exercise.ViewData data) {
-        whenViewReady(this.textView, (view) -> {
+    protected void resetEditorView(Exercise.ViewData data) {
+        whenViewReady(this.editorView, (view) -> {
             String text = data.sampleText;
             view.setText(text);
             // 将光标移到内容尾部

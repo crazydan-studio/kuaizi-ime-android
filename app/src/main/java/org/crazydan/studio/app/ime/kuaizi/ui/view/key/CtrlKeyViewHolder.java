@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**

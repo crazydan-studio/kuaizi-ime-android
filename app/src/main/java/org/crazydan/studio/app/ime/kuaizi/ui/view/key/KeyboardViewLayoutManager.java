@@ -30,7 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.Hexagon;

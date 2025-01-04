@@ -30,12 +30,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.SymbolKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.SymbolKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 

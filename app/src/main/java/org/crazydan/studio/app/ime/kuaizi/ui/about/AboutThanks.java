@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.about;
 
 import android.os.Bundle;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.ui.HtmlSupportActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
 
 /**
  * 感谢

@@ -27,15 +27,15 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewHolder;
 
-import static org.crazydan.studio.app.ime.kuaizi.pane.msg.UserInputMsgType.SingleTap_CompletionInput;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_CompletionInput;
 
 /**
  * 输入补全列表视图

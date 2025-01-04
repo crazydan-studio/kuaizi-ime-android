@@ -17,14 +17,14 @@
 
 package org.crazydan.studio.app.ime.kuaizi.conf;
 
-import org.crazydan.studio.app.ime.kuaizi.ImeSubtype;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.IMESubtype;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 
 /** 配置项 */
 public enum ConfigKey {
     // ====================== Start: 临时性配置 =====================
     /** IME 子类型 */
-    ime_subtype(ImeSubtype.class, ImeSubtype.hans),
+    ime_subtype(IMESubtype.class, IMESubtype.hans),
     /** 键盘布局方向 */
     orientation(Keyboard.Orientation.class, Keyboard.Orientation.portrait),
     /** 是否为单行输入 */

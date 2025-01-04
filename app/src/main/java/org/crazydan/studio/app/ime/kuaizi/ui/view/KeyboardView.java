@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
@@ -33,18 +34,18 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGes
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureTrailer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.KeyFactory;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.TypedKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.UserKeyMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.ConfigUpdateMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.TypedKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewKeyAnimator;
 
 /**
@@ -52,7 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.key.KeyboardViewKeyAnimator;
  * <p/>
  * 负责显示各类键盘的按键布局，并提供事件监听等处理
  * <p/>
- * 注：在 {@link InputPaneView} 中统一分发 {@link InputMsg} 消息
+ * 注：在 {@link IMEditorView} 中统一分发 {@link InputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30

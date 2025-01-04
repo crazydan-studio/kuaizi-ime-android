@@ -29,7 +29,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.Motion;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 
 /**
  * 手势检测器

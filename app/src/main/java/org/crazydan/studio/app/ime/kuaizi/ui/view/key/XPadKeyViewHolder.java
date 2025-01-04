@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.key;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.XPadKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.XPadKey;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**

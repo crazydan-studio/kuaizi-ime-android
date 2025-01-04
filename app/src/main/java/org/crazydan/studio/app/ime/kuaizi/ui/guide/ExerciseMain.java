@@ -42,26 +42,26 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
+import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
+import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.MathKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.pane.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.pane.input.word.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.State;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.EditorKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.MathKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputCharsInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.InputListCommitMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardStateChangeMsgData;
-import org.crazydan.studio.app.ime.kuaizi.pane.msg.input.KeyboardSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.ImeIntegratedActivity;
+import org.crazydan.studio.app.ime.kuaizi.ui.common.ImeIntegratedActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseList;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView;
@@ -133,7 +133,9 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
     private int getDrawerGravity() {
-        return this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left ? GravityCompat.START : GravityCompat.END;
+        return this.imeConfig.get(ConfigKey.hand_mode) == Keyboard.HandMode.left
+               ? GravityCompat.START
+               : GravityCompat.END;
     }
 
     /** @return 若调用前已关闭，则返回 false，否则，执行关闭，并返回 true */
@@ -192,7 +194,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     }
 
     private void updateSandboxView() {
-        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
+        Keyboard.Theme theme = this.imeConfig.get(ConfigKey.theme);
         int themeResId = theme.getResId(getApplicationContext());
 
         this.sandboxView.update(themeResId);
@@ -257,17 +259,17 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 freeMode = true;
             case introduce: {
                 // Note: 置为 null 的配置项将被移除而采用系统配置
-                this.config.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
-                this.config.set(ConfigKey.disable_user_input_data, freeMode ? null : true);
+                this.imeConfig.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
+                this.imeConfig.set(ConfigKey.disable_user_input_data, freeMode ? null : true);
 
-                this.inputPaneView.disableSettingsBtn(false);
+                this.imeView.disableSettingsBtn(false);
                 break;
             }
             case normal: {
-                this.config.set(ConfigKey.enable_x_input_pad, exercise.isXInputPadEnabled());
-                this.config.set(ConfigKey.disable_user_input_data, true);
+                this.imeConfig.set(ConfigKey.enable_x_input_pad, exercise.isXInputPadEnabled());
+                this.imeConfig.set(ConfigKey.disable_user_input_data, true);
 
-                this.inputPaneView.disableSettingsBtn(true);
+                this.imeView.disableSettingsBtn(true);
                 break;
             }
         }
@@ -1265,7 +1267,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         AtomicReference<XPadView.GestureSimulator> simulator = new AtomicReference<>();
         return () -> {
             if (simulator.get() == null) {
-                simulator.set(this.inputPaneView.getXPadKeyView().getXPad().createSimulator());
+                simulator.set(this.imeView.getXPadKeyView().getXPad().createSimulator());
             }
             return simulator.get();
         };
@@ -1287,7 +1289,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         PinyinDict dict = PinyinDict.instance();
         word = dict.getPinyinWord(word.value, word.spell.value);
 
-        this.inputPane.changeLastInputWord(word);
+        this.ime.changeLastInputWord(word);
     }
 
     private PinyinWord pinyinWord(int id, String value, String spell) {

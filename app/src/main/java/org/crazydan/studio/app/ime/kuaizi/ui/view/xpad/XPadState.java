@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.xpad;
 
-import org.crazydan.studio.app.ime.kuaizi.pane.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

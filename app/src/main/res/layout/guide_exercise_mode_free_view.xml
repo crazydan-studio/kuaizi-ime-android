@@ -31,8 +31,8 @@
             android:textColor="?attr/key_highlight_fg_color"
             android:layout_marginBottom="12dp" />
 
-    <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseEditText
-            android:id="@+id/text_view"
+    <org.crazydan.studio.app.ime.kuaizi.ui.common.ImeSupportEditText
+            android:id="@+id/editor_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"

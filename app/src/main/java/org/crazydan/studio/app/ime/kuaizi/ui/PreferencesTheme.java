@@ -25,7 +25,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.pane.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.ui.common.ImeIntegratedActivity;
 
 /**
  * 主题配置窗口
@@ -49,7 +50,7 @@ public class PreferencesTheme extends ImeIntegratedActivity {
         }
 
         // 禁用字典：仅做视图展示，无需实际操作
-        this.config.set(ConfigKey.disable_dict_db, true);
+        this.imeConfig.set(ConfigKey.disable_dict_db, true);
 
         // Note: 在 SettingsFragment 中将自动触发键盘类型切换，故而，无需提前切换键盘
         prepareInputs(new String[] { "kuai", "筷", "kuài" },

@@ -28,12 +28,13 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
-import org.crazydan.studio.app.ime.kuaizi.ImeService;
+import org.crazydan.studio.app.ime.kuaizi.IMEService;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.SoftwareServiceAgreement;
+import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
 
 /**
@@ -101,12 +102,12 @@ public class Guide extends FollowSystemThemeActivity {
 
     private boolean isImeEnabled() {
         Context context = getApplicationContext();
-        return SystemUtils.isEnabledIme(context, ImeService.class);
+        return SystemUtils.isEnabledIme(context, IMEService.class);
     }
 
     private boolean isImeDefault() {
         Context context = getApplicationContext();
-        return SystemUtils.isDefaultIme(context, ImeService.class);
+        return SystemUtils.isDefaultIme(context, IMEService.class);
     }
 
     private void updateSwitcher() {
