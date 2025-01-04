@@ -354,7 +354,7 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         InputList mathInputList = getMathInputList(context);
-        mathInputList.updateOption(parentInputList.getOption());
+        mathInputList.setInputOption(parentInputList.getInputOption());
     }
 
     // ===================== End: 准备算术输入 ======================

@@ -21,21 +21,21 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 
 /**
- * {@link InputList} 的配置
+ * {@link Inputboard} 的配置
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-15
  */
-public class InputListConfig {
+public class InputboardConfig {
     /** 是否优先使用候选字的变体：主要针对拼音输入的候选字 */
     public final boolean useCandidateVariantFirst;
 
-    /** 通过 {@link Config} 构造 {@link InputListConfig} */
-    public static InputListConfig from(Config config) {
-        return new InputListConfig(config);
+    /** 通过 {@link Config} 构造 {@link InputboardConfig} */
+    public static InputboardConfig from(Config config) {
+        return new InputboardConfig(config);
     }
 
-    InputListConfig(Config config) {
+    InputboardConfig(Config config) {
         this.useCandidateVariantFirst = config.bool(ConfigKey.enable_candidate_variant_first);
     }
 
@@ -48,7 +48,7 @@ public class InputListConfig {
             return false;
         }
 
-        InputListConfig that = (InputListConfig) o;
+        InputboardConfig that = (InputboardConfig) o;
         return this.useCandidateVariantFirst == that.useCandidateVariantFirst;
     }
 }

@@ -134,8 +134,9 @@ public class PinyinKeyboard extends BaseKeyboard {
     protected void change_State_to_Previous(KeyboardContext context) {
         // Note: 从输入选项状态退出前，需做状态清理
         if (this.state.type == State.Type.InputList_Commit_Option_Choose_Doing) {
+            // TODO 在状态数据中记录进入该状态前的 Input.Option 设置
             InputList inputList = context.inputList;
-            inputList.resetOption();
+            inputList.resetInputOption();
         }
 
         super.change_State_to_Previous(context);
@@ -601,7 +602,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputList inputList = context.inputList;
         InputListCommitOptionChooseStateData stateData = this.state.data();
 
-        Input.Option oldInputOption = inputList.getOption();
+        Input.Option oldInputOption = inputList.getInputOption();
         Input.Option newInputOption = null;
 
         CtrlKey.Option<CtrlKey.InputWordCommitMode> option = key.option();
@@ -638,7 +639,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
 
         if (newInputOption != null) {
-            inputList.updateOption(newInputOption);
+            inputList.setInputOption(newInputOption);
 
             stateData.update(inputList);
 

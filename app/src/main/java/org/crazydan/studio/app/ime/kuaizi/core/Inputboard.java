@@ -19,9 +19,9 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
@@ -47,15 +47,14 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
 public class Inputboard implements UserInputMsgListener {
     public final InputList inputList = new InputList();
 
-    private InputListConfig config;
-    private InputMsgListener listener;
-
     /** 暂存器，用于临时记录已删除、已提交输入，以支持撤销删除和提交操作 */
     private Staged staged;
-    private Input.Option option;
+
+    private InputboardConfig config;
+    private InputMsgListener listener;
 
     public Inputboard() {
-        this.staged = doReset(Inputboard.Staged.Type.none);
+        resetWithNewStaged(Staged.Type.none);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -74,10 +73,10 @@ public class Inputboard implements UserInputMsgListener {
                 Input input = msg.data().target;
                 switch (msg.data().where) {
                     case head:
-                        input = getFirstInput();
+                        input = this.inputList.getFirstInput();
                         break;
                     case tail:
-                        input = getLastInput();
+                        input = this.inputList.getLastInput();
                         break;
                 }
 
@@ -89,9 +88,9 @@ public class Inputboard implements UserInputMsgListener {
             case SingleTap_CompletionInput: {
                 CompletionInput completion = (CompletionInput) msg.data().target;
 
-                applyCompletion(completion);
+                this.inputList.applyCompletion(completion);
                 // Note：待输入的补全数据将在 confirm 时清除
-                confirmPendingAndSelectNext();
+                this.inputList.confirmPendingAndSelectNext();
 
                 fire_InputMsg(Input_Completion_Apply_Done, null);
                 break;
@@ -105,7 +104,7 @@ public class Inputboard implements UserInputMsgListener {
             case SingleTap_Btn_Cancel_Clean_InputList: {
                 cancelDelete();
 
-                Input input = getSelected();
+                Input input = this.inputList.getSelected();
                 fire_InputMsg(InputList_Cleaned_Cancel_Done, input);
                 break;
             }
@@ -122,86 +121,95 @@ public class Inputboard implements UserInputMsgListener {
 
     // =============================== Start: 生命周期 ===================================
 
-    /** 重置输入列表 */
+    /** 重置 */
     public void reset(boolean canBeCanceled) {
-        this.staged = doReset(canBeCanceled ? Inputboard.Staged.Type.deleted : Inputboard.Staged.Type.none);
-    }
-
-    /** 清空输入列表 */
-    public void clear() {
-        clearCommitRevokes();
-        clearDeleteCancels();
+        resetWithNewStaged(canBeCanceled ? Staged.Type.deleted : Staged.Type.none);
     }
 
     /**
      * 提交输入列表
      * <p/>
-     * 返回{@link #getText() 输入文本}，并{@link #reset 重置}
+     * 返回{@link InputList#getText() 输入文本}，并{@link #reset 重置}
      */
     public StringBuilder commit(boolean canBeRevoked) {
-        StringBuilder text = getText();
+        StringBuilder text = this.inputList.getText();
 
-        this.staged = doReset(canBeRevoked ? Inputboard.Staged.Type.committed : Inputboard.Staged.Type.none);
+        resetWithNewStaged(canBeRevoked ? Staged.Type.committed : Staged.Type.none);
 
         return text;
     }
 
     /** 是否可撤回已提交输入 */
     public boolean canRevokeCommit() {
-        return this.staged.type == Inputboard.Staged.Type.committed;
+        return this.staged.type == Staged.Type.committed;
     }
 
     /** 撤回已提交的输入 */
     public void revokeCommit() {
         if (canRevokeCommit()) {
-            Inputboard.Staged.restore(this, this.staged);
+            this.staged = Staged.restore(this.inputList, this.staged);
         }
     }
 
     /** 清除 提交撤回数据 */
     public void clearCommitRevokes() {
         if (canRevokeCommit()) {
-            this.staged = Inputboard.Staged.none();
+            this.staged = Staged.none();
         }
     }
 
     /** 是否可撤销已删除输入 */
     public boolean canCancelDelete() {
-        return this.staged.type == Inputboard.Staged.Type.deleted;
+        return this.staged.type == Staged.Type.deleted;
     }
 
     /** 撤销已删除输入 */
     public void cancelDelete() {
         if (canCancelDelete()) {
-            Inputboard.Staged.restore(this, this.staged);
+            this.staged = Staged.restore(this.inputList, this.staged);
         }
     }
 
     /** 清除 删除撤销数据 */
     public void clearDeleteCancels() {
         if (canCancelDelete()) {
-            this.staged = Inputboard.Staged.none();
+            this.staged = Staged.none();
         }
     }
 
-    /** 重置列表，并返回指定类型的暂存器（存储重置前的输入数据） */
-    private Inputboard.Staged doReset(Inputboard.Staged.Type stagedType) {
-        Inputboard.Staged staged = Inputboard.Staged.store(stagedType, this);
+    /** 暂存 {@link InputList}，并对其进行{@link InputList#reset() 重置} */
+    private void resetWithNewStaged(Staged.Type stagedType) {
+        this.staged = Staged.create(stagedType, this.inputList);
 
-        this.inputs.clear();
-        this.cursor.reset();
+        this.inputList.reset();
 
-        Input gap = new GapInput();
-        this.inputs.add(gap);
-        doSelect(gap);
-
-        resetOption();
-        this.staged = Inputboard.Staged.none();
-
-        return staged;
+        // 确保 InputList 的输入选项配置恢复为初始状态
+        updateConfig(this.config);
     }
 
     // =============================== End: 生命周期 ===================================
+
+    /**
+     * 更新配置
+     *
+     * @return 若存在更新，则返回 true，否则，返回 false
+     */
+    public boolean updateConfig(InputboardConfig config) {
+        boolean changed = !Objects.equals(this.config, config);
+        this.config = config;
+
+        if (config != null) {
+            Input.Option inputOption = this.inputList.getInputOption();
+
+            if (inputOption == null) {
+                inputOption = new Input.Option(null, this.config.useCandidateVariantFirst);
+            } else {
+                inputOption = new Input.Option(inputOption.wordSpellUsedMode, this.config.useCandidateVariantFirst);
+            }
+            this.inputList.setInputOption(inputOption);
+        }
+        return changed;
+    }
 
     public InputFactory getInputFactory() {
         return () -> {
@@ -216,47 +224,48 @@ public class Inputboard implements UserInputMsgListener {
         };
     }
 
+    /**
+     * {@link InputList} 暂存器，
+     * 用于存储{@link #commit 提交}或{@link #reset 重置}之前的 {@link InputList} 数据
+     */
     static class Staged {
+        public enum Type {
+            none,
+            deleted,
+            committed,
+        }
+
         public final Type type;
-        public final List<Input> inputs;
-        public final InputList.Cursor cursor;
 
-        private Staged(Type type, List<Input> inputs, InputList.Cursor cursor) {
+        private final InputList inputList;
+
+        Staged(Type type, InputList inputList) {
             this.type = type;
-            this.inputs = inputs;
-            this.cursor = cursor;
+            this.inputList = inputList;
         }
 
+        /** 创建 {@link Type#none} 类型的暂存器，即，不存储任何 {@link InputList} 数据 */
         public static Staged none() {
-            return new Staged(Type.none, null, null);
+            return new Staged(Type.none, null);
         }
 
-        public static Staged store(Type type, InputList inputList) {
+        /** 创建指定 {@link Type} 的暂存器 */
+        public static Staged create(Type type, InputList inputList) {
             // 为空的输入列表的无需暂存
             if (type == Type.none || inputList.isEmpty()) {
                 return none();
             }
 
-            return new Staged(type, new ArrayList<>(inputList.inputs), inputList.cursor.copy());
+            return new Staged(type, inputList.copy());
         }
 
-        public static void restore(InputList inputList, Staged staged) {
-            if (staged.type == Type.none) {
-                return;
+        /** 还原指定 {@link Staged} 所暂存的数据到指定的 {@link InputList}，并返回 {@link #none()} */
+        public static Staged restore(InputList inputList, Staged staged) {
+            if (staged.type != Type.none) {
+                inputList.replaceBy(staged.inputList);
             }
 
-            inputList.doReset(Type.none);
-
-            inputList.inputs.clear();
-            inputList.inputs.addAll(staged.inputs);
-
-            staged.cursor.copyTo(inputList.cursor);
-        }
-
-        public enum Type {
-            none,
-            deleted,
-            committed,
+            return none();
         }
     }
 }

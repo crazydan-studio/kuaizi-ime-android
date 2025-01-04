@@ -36,7 +36,7 @@ public class InputListCommitOptionChooseStateData implements State.Data {
     private boolean hasVariant;
 
     public void update(InputList inputList) {
-        this.option = inputList.getOption();
+        this.option = inputList.getInputOption();
         this.hasSpell = false;
         this.hasVariant = false;
 
