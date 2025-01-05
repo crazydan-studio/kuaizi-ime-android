@@ -35,7 +35,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 public class KeyboardContext extends Immutable {
     private final static Builder builder = new Builder();
 
+    /** 当前的 {@link Keyboard} 配置信息 */
     public final KeyboardConfig config;
+
     /** 与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
     public final Key key;
     /** 当前正在处理的 {@link InputList}，可在 {@link Keyboard} 内直接修改其输入 */
@@ -43,40 +45,23 @@ public class KeyboardContext extends Immutable {
     /** 接收 {@link Keyboard} 所发送的 {@link InputMsg} 消息的监听器 */
     public final InputMsgListener listener;
 
-    /** 是否可撤回对输入的提交 */
-    public final boolean canRevokeInputsCommit;
-    /** 是否可取消对输入的清空 */
-    public final boolean canCancelInputsClean;
-
     /** 构建 {@link KeyboardContext} */
     public static KeyboardContext build(Consumer<Builder> c) {
-        return KeyboardContext.Builder.build(builder, c);
+        return Builder.build(builder, c);
     }
 
     KeyboardContext(Builder builder) {
         super(builder);
 
-        this.config = config;
+        this.config = builder.config;
         this.key = builder.key;
         this.inputList = builder.inputList;
         this.listener = builder.listener;
-
-        this.canRevokeInputsCommit = builder.canRevokeInputsCommit;
-        this.canCancelInputsClean = builder.canCancelInputsClean;
     }
 
-    /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
-    public KeyboardContext newWithKey(Key key) {
-        KeyboardContext context = new KeyboardContext(this.config, this.inputList, this.listener, key);
-        return context.canRevokeInputsCommit(this.canRevokeInputsCommit)
-                      .canCancelInputsClean(this.canCancelInputsClean);
-    }
-
-    /** 根据 {@link InputList} 新建实例，以使其携带新的 {@link InputList} */
-    public KeyboardContext newWithInputList(InputList inputList) {
-        KeyboardContext context = new KeyboardContext(this.config, inputList, this.listener, this.key);
-        return context.canRevokeInputsCommit(this.canRevokeInputsCommit)
-                      .canCancelInputsClean(this.canCancelInputsClean);
+    /** 创建副本 */
+    public KeyboardContext copy(Consumer<Builder> c) {
+        return Builder.copy(builder, this, c);
     }
 
     /** {@link #key} 的泛型转换接口，避免编写显式的类型转换代码 */
@@ -86,12 +71,10 @@ public class KeyboardContext extends Immutable {
 
     /** {@link KeyboardContext} 的构建器 */
     public static class Builder extends Immutable.CachableBuilder<KeyboardContext> {
+        private KeyboardConfig config;
         private Key key;
         private InputList inputList;
         private InputMsgListener listener;
-
-        private boolean canRevokeInputsCommit;
-        private boolean canCancelInputsClean;
 
         protected Builder() {
             super(2);
@@ -105,29 +88,36 @@ public class KeyboardContext extends Immutable {
         }
 
         @Override
+        protected void doCopy(KeyboardContext context) {
+            config(context.config).key(context.key).inputList(context.inputList).listener(context.listener);
+        }
+
+        @Override
         protected void reset() {
+            this.config = null;
             this.key = null;
             this.inputList = null;
             this.listener = null;
-
-            this.canRevokeInputsCommit = false;
-            this.canCancelInputsClean = false;
         }
 
         @Override
         public int hashCode() {
             // Note: InputList 与 InputMsgListener 采用其引用值，
             // 因为，在上下文使用过程中，二者的实例不会发生变化，可以更好地复用
-            return Objects.hash();
+            return Objects.hash(this.config,
+                                this.key,
+                                System.identityHashCode(this.inputList),
+                                System.identityHashCode(this.listener));
         }
 
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 构建配置 ===================
 
-        /** 创建与指定 {@link KeyboardContext} 相同的上下文对象，并可继续按需修改其他配置 */
-        public Builder from(KeyboardContext context) {
-            return;
+        /** @see KeyboardContext#config */
+        public Builder config(KeyboardConfig config) {
+            this.config = config;
+            return this;
         }
 
         /** @see KeyboardContext#key */
@@ -145,18 +135,6 @@ public class KeyboardContext extends Immutable {
         /** @see KeyboardContext#listener */
         public Builder listener(InputMsgListener listener) {
             this.listener = listener;
-            return this;
-        }
-
-        /** @see KeyboardContext#canRevokeInputsCommit */
-        public Builder canRevokeInputsCommit(boolean canRevokeInputsCommit) {
-            this.canRevokeInputsCommit = canRevokeInputsCommit;
-            return this;
-        }
-
-        /** @see KeyboardContext#canCancelInputsClean */
-        public Builder canCancelInputsClean(boolean canCancelInputsClean) {
-            this.canCancelInputsClean = canCancelInputsClean;
             return this;
         }
 

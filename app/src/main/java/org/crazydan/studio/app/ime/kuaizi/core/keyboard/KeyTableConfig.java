@@ -30,23 +30,16 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 public class KeyTableConfig {
     /** 是否存在输入 */
     public final boolean hasInputs;
-    /** 是否有待撤回输入 */
-    public final boolean hasRevokingInputs;
     /** 是否已选中字符输入 */
     public final boolean charInputSelected;
 
     /** 键盘配置 */
     public final KeyboardConfig keyboard;
 
-    public static KeyTableConfig from(KeyboardContext context) {
-        return new KeyTableConfig(context);
-    }
-
-    KeyTableConfig(KeyboardContext context) {
+    public KeyTableConfig(KeyboardContext context) {
         InputList inputList = context.inputList;
 
         this.hasInputs = inputList != null && !inputList.isEmpty();
-        this.hasRevokingInputs = inputList != null && context.canRevokeInputsCommit;
         this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
         this.keyboard = context.config;

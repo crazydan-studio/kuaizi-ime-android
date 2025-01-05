@@ -122,7 +122,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("k", "K"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokingInputs)),
+                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.keyboard.hasRevokableInputsCommit)),
                 symbolKey("，", ","),
                 level0CharKey("sh", "Sh", "SH"),
                 level0CharKey("ch", "Ch", "CH"),

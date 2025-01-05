@@ -379,7 +379,7 @@ public class MathKeyboard extends BaseKeyboard {
             prepare_for_Pending_Append_Inputting(mathInputList);
 
             // Note: 该上下文仅用于做前向删除，不能覆盖 context 变量
-            KeyboardContext mathContext = context.newWithInputList(mathInputList);
+            KeyboardContext mathContext = context.copy((b) -> b.inputList(mathInputList));
             super.do_InputList_Backspacing(mathContext);
 
             // 当前算术输入已清空，且该输入在上层中不是 Gap 的待输入，则从父输入中移除该输入

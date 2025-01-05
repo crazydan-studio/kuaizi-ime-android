@@ -18,6 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
@@ -145,8 +147,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         // 重置键盘
         if (this.keyboard != null) {
-            KeyboardContext context = createKeyboardContext();
-            this.keyboard.reset(context);
+            withKeyboardContext(this.keyboard::reset);
         }
 
         fire_InputMsg(Keyboard_Exit_Done);
@@ -218,7 +219,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void onMsg(UserKeyMsg msg) {
         // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
         Key key = msg.data().key;
-        KeyboardContext context = createKeyboardContext().newWithKey(key);
+        KeyboardContext context = createKeyboardContext(key);
 
         this.keyboard.onMsg(context, msg);
     }
@@ -250,8 +251,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             case Input_Choose_Doing:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done: {
-                KeyboardContext context = createKeyboardContext();
-                this.keyboard.onMsg(context, msg);
+                withKeyboardContext((context) -> {
+                    this.keyboard.onMsg(context, msg);
+                });
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
@@ -341,8 +343,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 || newType == Keyboard.Type.Keep_Current //
             ) //
         ) {
-            KeyboardContext context = createKeyboardContext();
-            current.reset(context);
+            withKeyboardContext(current::reset);
 
             return null;
         }
@@ -366,14 +367,12 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         // 确保前序键盘完成退出清理工作
         if (current != null) {
-            KeyboardContext context = createKeyboardContext();
-            current.stop(context);
+            withKeyboardContext(current::stop);
         }
         this.config.set(ConfigKey.prev_keyboard_type, currentType);
 
-        KeyboardContext context = createKeyboardContext();
         this.keyboard = createKeyboard(newType);
-        this.keyboard.start(context);
+        withKeyboardContext(this.keyboard::start);
 
         return currentType;
     }
@@ -399,10 +398,25 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
     }
 
-    public KeyboardContext createKeyboardContext() {
-        KeyboardConfig config = KeyboardConfig.from(this.config);
+    public void withKeyboardContext(Consumer<KeyboardContext> c) {
+        withKeyboardContext((context) -> {
+            c.accept(context);
+            return null;
+        });
+    }
 
-        return new KeyboardContext(config, this.inputboard.inputList, this);
+    public <T> T withKeyboardContext(Function<KeyboardContext, T> c) {
+        KeyboardContext context = createKeyboardContext(null);
+        return c.apply(context);
+    }
+
+    private KeyboardContext createKeyboardContext(Key key) {
+        KeyboardConfig config = new KeyboardConfig(this.config, this.inputboard);
+
+        return KeyboardContext.build((b) -> b.config(config)
+                                             .key(key)
+                                             .inputList(this.inputboard.inputList)
+                                             .listener(this));
     }
 
     private InputboardConfig createInputboardConfig() {
@@ -411,8 +425,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
     private KeyFactory createKeyboardKeyFactory(Keyboard keyboard) {
-        KeyboardContext context = createKeyboardContext();
-        KeyFactory factory = keyboard != null ? keyboard.getKeyFactory(context) : null;
+        KeyFactory factory = keyboard != null ? withKeyboardContext(keyboard::getKeyFactory) : null;
 
         boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
         if (!leftHandMode || factory == null) {

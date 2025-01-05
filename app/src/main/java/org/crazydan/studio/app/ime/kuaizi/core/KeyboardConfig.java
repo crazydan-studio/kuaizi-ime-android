@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import java.util.Objects;
+
 import org.crazydan.studio.app.ime.kuaizi.IMESubtype;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -30,36 +32,48 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 public class KeyboardConfig {
     /** 原键盘类型 */
     public final Keyboard.Type prevType;
-
     /** 左右手使用模式 */
     public final Keyboard.HandMode handMode;
-    /** 是否为单行输入 */
-    public final boolean singleLineInput;
+    /** 是否采用单行输入模式 */
+    public final boolean useSingleLineInputMode;
 
     /** 是否已启用 X 输入面板 */
     public final boolean xInputPadEnabled;
     /** 是否已启用在 X 输入面板中让拉丁文输入共用拼音输入的按键布局 */
     public final boolean latinUsePinyinKeysInXInputPadEnabled;
-
     /** 是否已禁用对用户输入数据的保存 */
     public final boolean userInputDataDisabled;
 
-    /** 通过 {@link Config} 构造 {@link KeyboardConfig} */
-    public static KeyboardConfig from(Config config) {
-        return new KeyboardConfig(config);
-    }
+    /** 是否有可撤回的输入提交 */
+    public final boolean hasRevokableInputsCommit;
+    /** 是否有可取消的输入清空 */
+    public final boolean hasCancellableInputsClean;
 
-    KeyboardConfig(Config config) {
+    public KeyboardConfig(Config config, Inputboard inputboard) {
         this.prevType = config.get(ConfigKey.prev_keyboard_type);
 
         this.handMode = config.get(ConfigKey.hand_mode);
-        this.singleLineInput = config.bool(ConfigKey.single_line_input);
+        this.useSingleLineInputMode = config.bool(ConfigKey.single_line_input);
 
         this.xInputPadEnabled = config.bool(ConfigKey.enable_x_input_pad);
         this.latinUsePinyinKeysInXInputPadEnabled = config.bool(ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad)
                                                     // Note: 仅汉字输入环境才支持将拉丁文键盘与拼音键盘的按键布局设置为相同的
                                                     && config.get(ConfigKey.ime_subtype) == IMESubtype.hans;
-
         this.userInputDataDisabled = config.bool(ConfigKey.disable_user_input_data);
+
+        this.hasRevokableInputsCommit = inputboard.canRestoreCommitted();
+        this.hasCancellableInputsClean = inputboard.canRestoreCleaned();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.prevType,
+                            this.handMode,
+                            this.useSingleLineInputMode,
+                            this.xInputPadEnabled,
+                            this.latinUsePinyinKeysInXInputPadEnabled,
+                            this.userInputDataDisabled,
+                            this.hasRevokableInputsCommit,
+                            this.hasCancellableInputsClean);
     }
 }

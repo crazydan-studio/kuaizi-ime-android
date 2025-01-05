@@ -67,16 +67,28 @@ public abstract class Immutable {
      * 该构建器以单例模式暂存不可变对象的属性值，并在 {@link #build()}
      * 后重置以实现复用，因此，其不是线程安全的
      */
-    public abstract static class Builder<O> {
+    public abstract static class Builder<O extends Immutable> {
 
         /** 在入参函数中添加构建配置，再根据其配置创建不可变对象 */
-        public static <O, B extends Builder<O>> O build(B b, Consumer<B> c) {
+        public static <O extends Immutable, B extends Builder<O>> O build(B b, Consumer<B> c) {
             // Note: 构建器为单例复用，在使用前必须重置
             b.reset();
 
             c.accept(b);
 
             return b.build();
+        }
+
+        /**
+         * 创建指定 {@link Immutable} 的副本
+         * <p/>
+         * 注意，在 {@link Builder} 中需实现 {@link Builder#doCopy}
+         */
+        public static <O extends Immutable, B extends Builder<O>> O copy(B b, O o, Consumer<B> c) {
+            return build(b, (_b) -> {
+                b.doCopy(o);
+                c.accept(b);
+            });
         }
 
         /** 为便于构建器作为单例复用，必须在 {@link #build} 返回之前，重置所有的构建配置 */
@@ -89,6 +101,9 @@ public abstract class Immutable {
          * 以使其构造函数内仅需直接引用构建器的属性值，确保二者的 {@link #hashCode()} 是相同的
          */
         protected abstract O build();
+
+        /** 从指定 {@link Immutable} 中复制初始的构建配置 */
+        protected void doCopy(O obj) {}
     }
 
     /**
@@ -96,7 +111,7 @@ public abstract class Immutable {
      * <p/>
      * 注意，构建器在 {@link #build} 时，将以其 {@link #hashCode()} 作为按键缓存的唯一索引
      */
-    public abstract static class CachableBuilder<O> extends Builder<O> {
+    public abstract static class CachableBuilder<O extends Immutable> extends Builder<O> {
         final LruCache<Integer, O> cache;
 
         /**

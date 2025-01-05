@@ -127,7 +127,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected KeyTableConfig createKeyTableConfig(KeyboardContext context) {
-        return KeyTableConfig.from(context);
+        return new KeyTableConfig(context);
     }
 
     // ====================== Start: 对 InputMsg 的处理 ======================
@@ -462,7 +462,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         input.replaceLatestKey(lastCharKey, newKey);
 
-        context = context.newWithKey(newKey);
+        context = context.copy((b) -> b.key(newKey));
 
         show_InputChars_Input_Popup(context);
         fire_InputChars_Input_Doing_in_TapMode(context, input);
@@ -473,7 +473,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharKey key = context.key();
         CharKey newKey = key.createReplacementKey(replacementIndex);
 
-        context = context.newWithKey(newKey);
+        context = context.copy((b) -> b.key(newKey));
 
         show_InputChars_Input_Popup(context);
         commit_InputList_with_SingleKey_Only(context, true);
@@ -720,7 +720,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 撤回输入列表，且状态保持不变 */
     protected void revoke_Committed_InputList(KeyboardContext context) {
-        if (!context.canRevokeInputsCommit) {
+        if (!context.config.hasRevokableInputsCommit) {
             return;
         }
 

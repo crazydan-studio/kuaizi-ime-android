@@ -283,7 +283,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 if (pending.getKeys().size() == 1) {
                     CharKey firstKey = (CharKey) pending.getFirstKey();
 
-                    context = context.newWithKey(firstKey);
+                    context = context.copy((b) -> b.key(firstKey));
 
                     show_InputChars_Input_Popup(context);
                     start_InputChars_Flipping(context);
