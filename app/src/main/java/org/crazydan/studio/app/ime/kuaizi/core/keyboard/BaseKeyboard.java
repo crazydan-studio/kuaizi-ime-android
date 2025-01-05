@@ -25,7 +25,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
@@ -299,7 +298,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */
     private boolean try_On_UserKey_Msg_Over_XPad(KeyboardContext context, UserKeyMsg msg) {
         Key key = context.key();
-        if (!context.config.xInputPadEnabled || !(key instanceof CtrlKey) || key.disabled) {
+        if (!context.xInputPadEnabled || !(key instanceof CtrlKey) || key.disabled) {
             return false;
         }
 
@@ -547,7 +546,7 @@ public abstract class BaseKeyboard implements Keyboard {
         CharInput pending = inputList.getPending();
 
         // 处理选中的输入需要切换到原键盘的情况
-        if (context.config.xInputPadEnabled) {
+        if (context.xInputPadEnabled) {
             // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
             // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
             if (pending.isPinyin() && getType() != Type.Pinyin) {
@@ -720,7 +719,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 撤回输入列表，且状态保持不变 */
     protected void revoke_Committed_InputList(KeyboardContext context) {
-        if (!context.config.hasRevokableInputsCommit) {
+        if (!context.hasRevokableInputsCommit) {
             return;
         }
 
@@ -761,11 +760,11 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /**
-     * 在未{@link KeyboardConfig#userInputDataDisabled 禁用}对用户输入数据的保存的情况下，
+     * 在未{@link KeyboardContext#userInputDataDisabled 禁用}对用户输入数据的保存的情况下，
      * 调用 <code>consumer</code> 对{@link UserInputData 用户输入数据}做处理
      */
     protected void handle_UserInput_Data(KeyboardContext context, Consumer<UserInputData> consumer) {
-        if (context.config.userInputDataDisabled) {
+        if (context.userInputDataDisabled) {
             return;
         }
 
@@ -925,7 +924,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 切换键盘的左右手模式 */
     protected void switch_HandMode(KeyboardContext context) {
-        HandMode mode = context.config.handMode;
+        HandMode mode = context.keyboardHandMode;
         switch (mode) {
             case left:
                 mode = Keyboard.HandMode.right;

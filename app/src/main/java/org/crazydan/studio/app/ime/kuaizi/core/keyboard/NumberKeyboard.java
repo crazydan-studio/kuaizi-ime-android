@@ -43,7 +43,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
     @Override
     public void start(KeyboardContext context) {
         // 若是在 X 型输入中切换过来的，则需要在禁用 X 型输入后，提供退出按钮以回到原键盘
-        this.needToShowExit = context.config.xInputPadEnabled;
+        this.needToShowExit = context.xInputPadEnabled;
 
         super.start(context);
     }

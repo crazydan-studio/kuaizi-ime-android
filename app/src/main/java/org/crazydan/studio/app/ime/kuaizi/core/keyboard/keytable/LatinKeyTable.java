@@ -51,7 +51,7 @@ public class LatinKeyTable extends KeyTable {
 
     /** 创建 {@link LatinKeyboard} 按键 */
     public Key[][] createKeys() {
-        if (this.config.keyboard.xInputPadEnabled) {
+        if (this.config.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
@@ -123,7 +123,7 @@ public class LatinKeyTable extends KeyTable {
 
     @Override
     protected XPadKey createXPadKey() {
-        if (this.config.keyboard.latinUsePinyinKeysInXInputPadEnabled) {
+        if (this.config.latinUsePinyinKeysInXInputPadEnabled) {
             return createPinyinLatinXPadKey();
         }
 

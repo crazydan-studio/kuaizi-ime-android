@@ -195,7 +195,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             return;
         }
 
-        if (context.config.xInputPadEnabled) {
+        if (context.xInputPadEnabled) {
             on_CharKey_Msg_Over_XPad(context, msg);
             return;
         }

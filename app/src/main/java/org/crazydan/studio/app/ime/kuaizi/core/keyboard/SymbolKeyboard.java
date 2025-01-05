@@ -119,7 +119,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);
 
         SymbolGroup group = SymbolGroup.latin;
-        if (context.config.prevType == Type.Pinyin) {
+        if (context.keyboardPrevType == Type.Pinyin) {
             group = SymbolGroup.han;
         }
 

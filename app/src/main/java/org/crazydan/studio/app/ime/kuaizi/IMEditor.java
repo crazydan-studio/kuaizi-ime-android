@@ -32,7 +32,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.KeyboardConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
@@ -411,9 +410,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     private KeyboardContext createKeyboardContext(Key key) {
-        KeyboardConfig config = new KeyboardConfig(this.config, this.inputboard);
-
-        return KeyboardContext.build((b) -> b.config(config)
+        return KeyboardContext.build((b) -> b.config(this.config, this.inputboard)
                                              .key(key)
                                              .inputList(this.inputboard.inputList)
                                              .listener(this));

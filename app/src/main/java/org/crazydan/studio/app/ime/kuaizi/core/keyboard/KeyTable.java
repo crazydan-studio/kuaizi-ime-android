@@ -318,7 +318,7 @@ public abstract class KeyTable {
     // ======================= Start: 按键 =======================
 
     public CtrlKey enterCtrlKey() {
-        Key.Style style = this.config.keyboard.useSingleLineInputMode ? key_ctrl_ok_style : null;
+        Key.Style style = this.config.useSingleLineInputMode ? key_ctrl_ok_style : null;
 
         return ctrlKey(CtrlKey.Type.Enter, style, CtrlKey.Builder.noop);
     }
@@ -454,7 +454,7 @@ public abstract class KeyTable {
 
         if (style != null) {
             color = style.color;
-            switch (this.config.keyboard.handMode) {
+            switch (this.config.keyboardHandMode) {
                 case left: {
                     icon = style.icon.left;
                     break;
@@ -532,7 +532,7 @@ public abstract class KeyTable {
                 this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.keyboard.hasRevokableInputsCommit)),
+                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokableInputsCommit)),
                 //
                 null, null, null, null, null, null,
                 //

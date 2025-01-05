@@ -17,7 +17,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
-import org.crazydan.studio.app.ime.kuaizi.core.KeyboardConfig;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 
@@ -33,8 +33,18 @@ public class KeyTableConfig {
     /** 是否已选中字符输入 */
     public final boolean charInputSelected;
 
-    /** 键盘配置 */
-    public final KeyboardConfig keyboard;
+    /** 左右手使用模式 */
+    public final Keyboard.HandMode keyboardHandMode;
+    /** 是否采用单行输入模式 */
+    public final boolean useSingleLineInputMode;
+
+    /** 是否已启用 X 输入面板 */
+    public final boolean xInputPadEnabled;
+    /** 是否已启用在 X 输入面板中让拉丁文输入共用拼音输入的按键布局 */
+    public final boolean latinUsePinyinKeysInXInputPadEnabled;
+
+    /** 是否有可撤回的输入提交 */
+    public final boolean hasRevokableInputsCommit;
 
     public KeyTableConfig(KeyboardContext context) {
         InputList inputList = context.inputList;
@@ -42,6 +52,12 @@ public class KeyTableConfig {
         this.hasInputs = inputList != null && !inputList.isEmpty();
         this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
-        this.keyboard = context.config;
+        this.keyboardHandMode = context.keyboardHandMode;
+        this.useSingleLineInputMode = context.useSingleLineInputMode;
+
+        this.xInputPadEnabled = context.xInputPadEnabled;
+        this.latinUsePinyinKeysInXInputPadEnabled = context.latinUsePinyinKeysInXInputPadEnabled;
+
+        this.hasRevokableInputsCommit = context.hasRevokableInputsCommit;
     }
 }

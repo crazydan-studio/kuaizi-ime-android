@@ -101,7 +101,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
     @Override
     protected void switch_Keyboard_to_Previous(KeyboardContext context) {
         // Note: 编辑键盘均直接回到其切换前的键盘，而不管切换前的是否为主键盘
-        switch_Keyboard_To(context, context.config.prevType);
+        switch_Keyboard_To(context, context.keyboardPrevType);
     }
 
     private void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {

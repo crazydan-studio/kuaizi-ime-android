@@ -63,7 +63,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建 {@link PinyinKeyboard} 按键 */
     public Key[][] createKeys() {
-        if (this.config.keyboard.xInputPadEnabled) {
+        if (this.config.xInputPadEnabled) {
             return createKeysForXPad();
         }
 
@@ -122,7 +122,7 @@ public class PinyinKeyTable extends KeyTable {
                 level0CharKey("k", "K"),
                 } //
                 , new Key[] {
-                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.keyboard.hasRevokableInputsCommit)),
+                ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokableInputsCommit)),
                 symbolKey("，", ","),
                 level0CharKey("sh", "Sh", "SH"),
                 level0CharKey("ch", "Ch", "CH"),
