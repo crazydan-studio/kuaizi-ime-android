@@ -47,6 +47,11 @@ public class InputList {
 
     private Input.Option inputOption;
 
+    public InputList() {
+        // 确保始终至少有一个 GapInput
+        reset();
+    }
+
     // =================== Start: 数据初始化 ====================
 
     public Input.Option getInputOption() {

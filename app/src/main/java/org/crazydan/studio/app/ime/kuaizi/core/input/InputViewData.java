@@ -120,7 +120,7 @@ public class InputViewData extends Immutable {
 
         MathExprInput mathExprInput = tryGetMathExprInput(inputList, input);
 
-        boolean selected = needToBeSelected(inputList, input);
+        boolean shouldBeSelected = needToBeSelected(inputList, input);
         boolean needGapSpace = inputList.needGapSpace(input);
 
         // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
@@ -156,8 +156,7 @@ public class InputViewData extends Immutable {
             b.type(Type.Char);
         }
 
-        boolean currInputHasPending = !Input.isEmpty(pending);
-        Input currInput = !currInputHasPending ? input : pending;
+        Input currInput = Input.isEmpty(pending) ? input : pending;
         InputWord currInputWord = currInput.getWord();
 
         String text;
@@ -173,13 +172,13 @@ public class InputViewData extends Immutable {
         }
 
         b.position(position)
-         .pending(currInputHasPending)
-         .selected(selected)
+         .pending(pending != null)
+         .selected(shouldBeSelected)
          .gapSpaces(gapSpaces)
          .text(text)
          .spell(spell);
-        // Note: 不缓存正在输入的 Input
-        if (currInputHasPending) {
+        // Note: 不缓存正在输入的 Input，其变动频率更高
+        if (pending != null) {
             b.notCache();
         }
     }
