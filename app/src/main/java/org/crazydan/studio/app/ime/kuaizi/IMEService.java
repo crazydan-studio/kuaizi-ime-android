@@ -96,15 +96,13 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        this.ime = IMEditor.create();
+        this.ime = IMEditor.create(this.imeConfig.mutable());
         this.imeView = (IMEditorView) getLayoutInflater().inflate(R.layout.ime_view, null);
-
-        this.ime.setConfig(this.imeConfig.mutable());
-        this.imeView.setConfig(this.imeConfig.immutable());
 
         // 通过当前层向逻辑层和视图层分别转发用户消息和输入消息
         this.ime.setListener(this);
         this.imeView.setListener(this);
+        this.imeView.setConfig(this.imeConfig.immutable());
 
         return this.imeView;
     }

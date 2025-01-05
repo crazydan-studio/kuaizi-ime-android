@@ -65,15 +65,14 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
         Context context = getApplicationContext();
         this.imeConfig = IMEConfig.create(context);
-        this.ime = IMEditor.create();
+        this.imeConfig.setListener(this);
+
+        this.ime = IMEditor.create(this.imeConfig.mutable());
         this.imeView = findViewById(R.id.input_pane_view);
 
-        this.ime.setConfig(this.imeConfig.mutable());
-        this.imeView.setConfig(this.imeConfig.immutable());
-
-        this.imeConfig.setListener(this);
         this.ime.setListener(this);
         this.imeView.setListener(this);
+        this.imeView.setConfig(this.imeConfig.immutable());
     }
 
     @Override

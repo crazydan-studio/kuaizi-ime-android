@@ -28,9 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -122,6 +120,9 @@ public class PinyinDict {
 
     /**
      * 在使用前开启字典：由开启方负责 {@link #close 关闭}
+     * <p/>
+     * 开启为异步操作，并且，仅在首次开启时才调用监听器的 {@link Listener#beforeOpen}，
+     * 但会始终调用 {@link Listener#afterOpen}
      *
      * @param listener
      *         仅用于监听实际的开启过程，若字典已开启，则不会调用该监听
@@ -129,17 +130,21 @@ public class PinyinDict {
     public synchronized void open(Context context, Listener listener) {
         this.openedRefs += 1;
         if (isOpened()) {
+            listener.afterOpen(this);
             return;
         }
 
         listener.beforeOpen(this);
 
-        doUpgrade(context);
-        doOpen(context);
+        this.executor = Async.createExecutor(1, 4);
+        this.executor.execute(() -> {
+            doUpgrade(context);
+            doOpen(context);
 
-        listener.afterOpen(this);
+            this.opened = true;
 
-        this.opened = true;
+            listener.afterOpen(this);
+        });
     }
 
     /** 在资源回收前关闭字典：由 {@link #open 开启} 方负责关闭 */
@@ -396,8 +401,6 @@ public class PinyinDict {
 
             this.pinyinCharsTree = PinyinCharsTree.create(pinyinCharsAndIdMap);
         }
-
-        this.executor = new ThreadPoolExecutor(1, 4, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
     }
 
     private void doClose() {

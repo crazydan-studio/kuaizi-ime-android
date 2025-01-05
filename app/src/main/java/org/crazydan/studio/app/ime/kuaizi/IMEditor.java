@@ -66,7 +66,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Start_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Switch_Done;
 
@@ -81,8 +80,11 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
 public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChangeListener, PinyinDict.Listener {
     protected final Logger log = Logger.getLogger(getClass());
 
-    private PinyinDict dict;
+    /** 是否正在开启 {@link PinyinDict} */
+    private boolean dictOpening;
+
     private Config.Mutable config;
+    private PinyinDict dict;
 
     private InputList inputList;
 
@@ -93,7 +95,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     private InputMsgListener listener;
 
-    IMEditor(PinyinDict dict) {
+    IMEditor(Config.Mutable config, PinyinDict dict) {
+        this.config = config;
         this.dict = dict;
 
         this.inputList = new InputList();
@@ -101,13 +104,18 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.inputboard = new Inputboard();
     }
 
+    /** 获取键盘类型 */
+    public Keyboard.Type getKeyboardType() {
+        return this.keyboard != null ? this.keyboard.getType() : null;
+    }
+
     // =============================== Start: 生命周期 ===================================
 
     /** 创建 {@link IMEditor} */
-    public static IMEditor create() {
+    public static IMEditor create(Config.Mutable config) {
         PinyinDict dict = PinyinDict.instance();
 
-        return new IMEditor(dict);
+        return new IMEditor(config, dict);
     }
 
     /**
@@ -118,7 +126,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
      */
     public void start(Context context, Keyboard.Type keyboardType, boolean resetInputting) {
         if (!this.config.bool(ConfigKey.disable_dict_db)) {
-            // 同步开启字典库，以确保字典处于就绪状态，并且监听其开启过程
+            this.dictOpening = true;
+            // Note: 字典库是异步开启的，不会阻塞键盘视图的渲染
             this.dict.open(context, this);
         }
 
@@ -163,8 +172,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.dict.close();
         }
 
-        this.dict = null;
         this.config = null;
+        this.dict = null;
 
         this.inputList = null;
 
@@ -177,19 +186,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     // =============================== End: 生命周期 ===================================
 
-    // =============================== Start: 内部状态 ===================================
-
-    public void setConfig(Config.Mutable config) {
-        this.config = config;
-    }
-
-    /** 获取键盘类型 */
-    public Keyboard.Type getKeyboardType() {
-        return this.keyboard != null ? this.keyboard.getType() : null;
-    }
-
-    // =============================== End: 内部状态 ===================================
-
     // =============================== Start: 消息处理 ===================================
 
     public void setListener(InputMsgListener listener) {
@@ -201,7 +197,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** {@link PinyinDict} 开启前 */
     @Override
     public void beforeOpen(PinyinDict dict) {
-        fire_InputMsg(Keyboard_Start_Doing);
+        // Note: 字典库异步开启，不会阻塞视图渲染，故而，无需显示提示信息
+        //fire_InputMsg(Keyboard_Start_Doing);
+    }
+
+    /** {@link PinyinDict} 开启后 */
+    @Override
+    public void afterOpen(PinyinDict dict) {
+        this.dictOpening = false;
     }
 
     // --------------------------------------
@@ -222,6 +225,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应视图的 {@link UserKeyMsg} 消息：向下传递消息给 {@link Keyboard} */
     @Override
     public void onMsg(UserKeyMsg msg) {
+        // 字典还在开启中，不响应用户消息
+        if (this.dictOpening) {
+            return;
+        }
+
         // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
         Key key = msg.data().key;
         KeyboardContext context = createKeyboardContext(key);
@@ -232,6 +240,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
     @Override
     public void onMsg(UserInputMsg msg) {
+        // 字典还在开启中，不响应用户消息
+        if (this.dictOpening) {
+            return;
+        }
+
         withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
     }
 

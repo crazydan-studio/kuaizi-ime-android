@@ -19,6 +19,8 @@ package org.crazydan.studio.app.ime.kuaizi.common.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +28,14 @@ import java.util.concurrent.TimeUnit;
  * @date 2023-12-09
  */
 public class Async {
+
+    public static ThreadPoolExecutor createExecutor(int corePoolSize, int maximumPoolSize) {
+        return new ThreadPoolExecutor(corePoolSize,
+                                      maximumPoolSize,
+                                      0L,
+                                      TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<>());
+    }
 
     public static void waitAndShutdown(ExecutorService executor, long ms) {
         try {
