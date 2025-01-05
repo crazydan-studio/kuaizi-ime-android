@@ -47,14 +47,9 @@ public class Inputboard {
     /** 构建 {@link InputFactory} */
     public InputFactory buildInputFactory(InputboardContext context) {
         InputList inputList = context.inputList;
-
         Input.Option inputOption = inputList.getInputOption();
-        if (inputOption == null) {
-            inputOption = new Input.Option(null, context.useCandidateVariantFirst);
-        }
 
-        Input.Option option = inputOption;
-        return () -> InputViewData.build(inputList, option);
+        return () -> InputViewData.build(inputList, inputOption);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -110,6 +105,13 @@ public class Inputboard {
     // =============================== End: 消息处理 ===================================
 
     // =============================== Start: 生命周期 ===================================
+
+    public void start(InputboardContext context) {
+        InputList inputList = context.inputList;
+        Input.Option inputOption = context.createInputOption();
+
+        inputList.setInputOption(inputOption);
+    }
 
     /** 重置：{@link InputList#reset() 重置} {@link InputList}，并清空 {@link #stage} */
     public void reset(InputboardContext context) {
@@ -178,6 +180,8 @@ public class Inputboard {
         this.stage = Stage.create(stageType, inputList.copy());
 
         inputList.reset();
+
+        start(context);
     }
 
     // =============================== End: 生命周期 ===================================

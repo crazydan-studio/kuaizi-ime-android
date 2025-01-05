@@ -135,7 +135,9 @@ public class PinyinKeyboard extends BaseKeyboard {
         // Note: 从输入选项状态退出前，需做状态清理
         if (this.state.type == State.Type.InputList_Commit_Option_Choose_Doing) {
             InputList inputList = context.inputList;
-            inputList.setInputOption(null);
+            InputListCommitOptionChooseStateData stateData = this.state.data();
+
+            inputList.setInputOption(stateData.oldOption);
         }
 
         super.change_State_to_Previous(context);
@@ -568,7 +570,9 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     private void start_InputList_Commit_Option_Choosing(KeyboardContext context) {
         InputList inputList = context.inputList;
-        InputListCommitOptionChooseStateData stateData = new InputListCommitOptionChooseStateData();
+        Input.Option inputOption = inputList.getInputOption();
+
+        InputListCommitOptionChooseStateData stateData = new InputListCommitOptionChooseStateData(inputOption);
         stateData.update(inputList);
 
         State state = new State(State.Type.InputList_Commit_Option_Choose_Doing, stateData, createInitState());

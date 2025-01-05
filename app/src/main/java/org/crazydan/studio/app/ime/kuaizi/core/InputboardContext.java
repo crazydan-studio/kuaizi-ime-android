@@ -60,6 +60,11 @@ public class InputboardContext extends Immutable {
         this.useCandidateVariantFirst = builder.useCandidateVariantFirst;
     }
 
+    /** 创建默认的 {@link Input.Option} */
+    public Input.Option createInputOption() {
+        return new Input.Option(null, this.useCandidateVariantFirst);
+    }
+
     /** {@link InputboardContext} 的构建器 */
     public static class Builder extends Immutable.CachableBuilder<InputboardContext> {
         private InputList inputList;

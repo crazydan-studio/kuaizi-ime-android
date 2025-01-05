@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.InputboardContext;
@@ -134,9 +135,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         // 先切换键盘
         switchKeyboardTo(keyboardType);
 
-        // 再重置输入列表
+        // 再重置输入面板
         if (resetInputting) {
             withInputboardContext(this.inputboard::reset);
+        } else {
+            withInputboardContext(this.inputboard::start);
         }
 
         fire_InputMsg(Keyboard_Start_Done);
@@ -212,6 +215,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应 {@link Config} 变更消息 */
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
+        withInputboardContext(this.inputboard::start);
+
         ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
         fire_InputMsg(Config_Update_Done, data);
     }
@@ -437,11 +442,20 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                                              .listener(this));
     }
 
+    protected void updateInputList() {
+        InputboardContext context = createInputboardContext();
+        Input.Option inputOption = context.createInputOption();
+
+        this.inputList.setInputOption(inputOption);
+    }
+
     protected void withInputboardContext(Consumer<InputboardContext> c) {
-        InputboardContext context = InputboardContext.build((b) -> b.config(this.config)
-                                                                    .inputList(this.inputList)
-                                                                    .listener(this));
+        InputboardContext context = createInputboardContext();
         c.accept(context);
+    }
+
+    private InputboardContext createInputboardContext() {
+        return InputboardContext.build((b) -> b.config(this.config).inputList(this.inputList).listener(this));
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
@@ -462,7 +476,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 创建 {@link InputFactory} */
     private InputFactory createInputFactory() {
-        InputboardContext context = InputboardContext.build((b) -> b.config(this.config).inputList(this.inputList));
+        InputboardContext context = createInputboardContext();
         return this.inputboard.buildInputFactory(context);
     }
 

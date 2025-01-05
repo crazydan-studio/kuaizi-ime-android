@@ -521,13 +521,19 @@ public class InputList {
 
     /** 获取输入文本内容 */
     public StringBuilder getText() {
+        Input.Option option = getInputOption();
+        return getText(option);
+    }
+
+    /** 获取输入文本内容 */
+    public StringBuilder getText(Input.Option option) {
         StringBuilder sb = new StringBuilder();
 
         int total = this.inputs.size();
         for (int i = 0; i < total; i++) {
             Input input = this.inputs.get(i);
 
-            sb.append(input.getText(getInputOption()));
+            sb.append(input.getText(option));
 
             if (needGapSpace(i)) {
                 sb.append(" ");

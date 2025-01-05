@@ -45,8 +45,9 @@ public class InputboardView extends InputboardViewBase implements InputMsgListen
         switch (msg.type) {
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
-                // Note: 若非主题更新，则无需更新视图
-                if (data.key != ConfigKey.theme) {
+                // Note: 仅关注与视图相关的配置更新
+                if (data.key != ConfigKey.theme //
+                    && data.key != ConfigKey.enable_candidate_variant_first) {
                     break;
                 }
             }

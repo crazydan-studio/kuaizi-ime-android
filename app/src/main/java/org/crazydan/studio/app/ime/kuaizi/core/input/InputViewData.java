@@ -97,12 +97,13 @@ public class InputViewData extends Immutable {
     }
 
     /** 构建 {@link InputViewData} 列表 */
-    private static List<InputViewData> doBuild(Builder builder, InputList inputList, Input.Option option) {
-        List<InputViewData> dataList = new ArrayList<>(inputList.getInputs().size());
+    private static List<InputViewData> doBuild(Builder b, InputList inputList, Input.Option option) {
+        int total = inputList.getInputs().size();
+        List<InputViewData> dataList = new ArrayList<>(total);
 
-        for (int i = 0; i < inputList.getInputs().size(); i++) {
+        for (int i = 0; i < total; i++) {
             int position = i;
-            InputViewData data = Builder.build(builder, (b) -> doBuild(b, inputList, option, position));
+            InputViewData data = Builder.build(b, (bld) -> doBuild(bld, inputList, option, position));
 
             dataList.add(data);
         }

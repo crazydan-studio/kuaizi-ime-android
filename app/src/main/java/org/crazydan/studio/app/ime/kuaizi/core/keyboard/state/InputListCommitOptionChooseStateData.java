@@ -31,9 +31,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
  * @date 2024-12-10
  */
 public class InputListCommitOptionChooseStateData implements State.Data {
+    public final Input.Option oldOption;
+
     private Input.Option option;
     private boolean hasSpell;
     private boolean hasVariant;
+
+    public InputListCommitOptionChooseStateData(Input.Option oldOption) {
+        this.oldOption = oldOption;
+    }
 
     public void update(InputList inputList) {
         this.option = inputList.getInputOption();

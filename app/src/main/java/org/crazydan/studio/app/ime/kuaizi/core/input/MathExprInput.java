@@ -49,6 +49,143 @@ public class MathExprInput extends CharInput {
         this.inputList = inputList;
     }
 
+    public InputList getInputList() {
+        return this.inputList;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.inputList.isEmpty();
+    }
+
+    @Override
+    public StringBuilder getText(Option option) {
+        List<CharInput> inputs = this.inputList.getCharInputs();
+        boolean hasFirstEqual = isEqualOp(CollectionUtils.first(inputs));
+        boolean hasLastEqual = isEqualOp(CollectionUtils.last(inputs));
+
+        Double result = null;
+        if (hasFirstEqual || hasLastEqual) {
+            if (hasFirstEqual) {
+                inputs.remove(0);
+            } else {
+                inputs.remove(inputs.size() - 1);
+            }
+
+            result = calculate(inputs);
+        }
+
+        if (result == null) {
+            return this.inputList.getText(option);
+        }
+
+        String text = String.format(Locale.getDefault(), "%.3f", result);
+        text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
+
+        StringBuilder sb;
+        if (hasLastEqual) {
+            sb = this.inputList.getText(option);
+            sb.append(" ");
+        } else {
+            sb = new StringBuilder();
+        }
+        sb.append(text);
+
+        return sb;
+    }
+
+    @Override
+    public Input copy() {
+        // Note：
+        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
+        // - 只有新建 pending 时才会做复制操作，
+        //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
+        //   不需要通过副本规避
+        return new MathExprInput(getInputList());
+    }
+
+    @Override
+    public void confirm() {
+        this.inputList.confirmPending();
+    }
+
+    @Override
+    public boolean isMathExpr() {
+        return true;
+    }
+
+    // <<<<<<<<< CharInput 接口覆盖
+    @Override
+    public boolean isLatin() {return false;}
+
+    @Override
+    public boolean isPinyin() {return false;}
+
+    @Override
+    public boolean isSymbol() {return false;}
+
+    @Override
+    public boolean isEmoji() {return false;}
+
+    @Override
+    public List<Key> getKeys() {return new ArrayList<>();}
+
+    @Override
+    public Key getFirstKey() {return null;}
+
+    @Override
+    public Key getLastKey() {return null;}
+
+    @Override
+    public void appendKey(Key key) {}
+
+    @Override
+    public void dropLastKey() {}
+
+    @Override
+    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {}
+
+    @Override
+    public void replaceLatestKey(Key oldKey, Key newKey) {}
+
+    @Override
+    public void replaceLastKey(Key newKey) {}
+    // >>>>>>>
+
+    @Override
+    public List<String> getChars() {return new ArrayList<>();}
+
+    @Override
+    public boolean isTextOnlyWordSpell(Option option) {return false;}
+
+    @Override
+    public boolean hasWord() {return false;}
+    // >>>>>>>>
+
+    @Override
+    public InputWord getWord() {return null;}
+
+    @Override
+    public void setWord(InputWord word) {}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MathExprInput that = (MathExprInput) o;
+        return this.inputList.equals(that.inputList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.inputList);
+    }
+
     /** @return 若计算式有效，则返回计算结果，否则，返回 null */
     private static Double calculate(List<CharInput> inputs) {
         List<Expr> exprs = new ArrayList<>(inputs.size());
@@ -174,143 +311,6 @@ public class MathExprInput extends CharInput {
 
     private static boolean isEqualOp(CharInput input) {
         return getOpType(input) == MathOpKey.Type.Equal;
-    }
-
-    public InputList getInputList() {
-        return this.inputList;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this.inputList.isEmpty();
-    }
-
-    @Override
-    public StringBuilder getText(Option option) {
-        List<CharInput> inputs = this.inputList.getCharInputs();
-        boolean hasFirstEqual = isEqualOp(CollectionUtils.first(inputs));
-        boolean hasLastEqual = isEqualOp(CollectionUtils.last(inputs));
-
-        Double result = null;
-        if (hasFirstEqual || hasLastEqual) {
-            if (hasFirstEqual) {
-                inputs.remove(0);
-            } else {
-                inputs.remove(inputs.size() - 1);
-            }
-
-            result = calculate(inputs);
-        }
-
-        if (result == null) {
-            return this.inputList.getText();
-        }
-
-        String text = String.format(Locale.getDefault(), "%.3f", result);
-        text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
-
-        StringBuilder sb;
-        if (hasLastEqual) {
-            sb = this.inputList.getText();
-            sb.append(" ");
-        } else {
-            sb = new StringBuilder();
-        }
-        sb.append(text);
-
-        return sb;
-    }
-
-    @Override
-    public Input copy() {
-        // Note：
-        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
-        // - 只有新建 pending 时才会做复制操作，
-        //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
-        //   不需要通过副本规避
-        return new MathExprInput(getInputList());
-    }
-
-    @Override
-    public void confirm() {
-        this.inputList.confirmPending();
-    }
-
-    @Override
-    public boolean isMathExpr() {
-        return true;
-    }
-
-    // <<<<<<<<< CharInput 接口覆盖
-    @Override
-    public boolean isLatin() {return false;}
-
-    @Override
-    public boolean isPinyin() {return false;}
-
-    @Override
-    public boolean isSymbol() {return false;}
-
-    @Override
-    public boolean isEmoji() {return false;}
-
-    @Override
-    public List<Key> getKeys() {return new ArrayList<>();}
-
-    @Override
-    public Key getFirstKey() {return null;}
-
-    @Override
-    public Key getLastKey() {return null;}
-
-    @Override
-    public void appendKey(Key key) {}
-
-    @Override
-    public void dropLastKey() {}
-
-    @Override
-    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {}
-
-    @Override
-    public void replaceLatestKey(Key oldKey, Key newKey) {}
-
-    @Override
-    public void replaceLastKey(Key newKey) {}
-    // >>>>>>>
-
-    @Override
-    public List<String> getChars() {return new ArrayList<>();}
-
-    @Override
-    public boolean isTextOnlyWordSpell(Option option) {return false;}
-
-    @Override
-    public boolean hasWord() {return false;}
-    // >>>>>>>>
-
-    @Override
-    public InputWord getWord() {return null;}
-
-    @Override
-    public void setWord(InputWord word) {}
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        MathExprInput that = (MathExprInput) o;
-        return this.inputList.equals(that.inputList);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.inputList);
     }
 
     private interface Expr {}
