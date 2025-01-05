@@ -88,8 +88,8 @@ public class CompletionInputListView extends RecyclerView<CompletionInputListVie
 
         CompletionInput completion = getAdapterItem(holder);
 
-        UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
-        this.listener.onMsg(msg);
+//        UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
+//        this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================

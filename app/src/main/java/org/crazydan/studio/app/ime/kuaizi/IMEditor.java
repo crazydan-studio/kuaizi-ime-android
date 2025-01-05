@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.InputboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
@@ -61,7 +62,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
@@ -212,10 +212,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应 {@link Config} 变更消息 */
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
-        if (this.inputboard.updateConfig(createInputboardConfig())) {
-            fire_InputMsg(InputList_Config_Update_Done);
-        }
-
         ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
         fire_InputMsg(Config_Update_Done, data);
     }
@@ -315,9 +311,15 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        KeyFactory keyFactory = createKeyboardKeyFactory(this.keyboard);
+        KeyFactory keyFactory = createKeyFactory();
+        InputFactory inputFactory = createInputFactory();
 
-        InputMsg msg = new InputMsg(type, data, this.inputboard, keyFactory);
+        InputMsg msg = new InputMsg(type,
+                                    data,
+                                    keyFactory,
+                                    inputFactory,
+                                    this.inputList.isEmpty(),
+                                    this.inputboard.canRestoreCleaned());
         this.listener.onMsg(msg);
     }
 
@@ -443,8 +445,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
-    private KeyFactory createKeyboardKeyFactory(Keyboard keyboard) {
-        KeyFactory factory = keyboard != null ? withKeyboardContext(keyboard::buildKeyFactory) : null;
+    private KeyFactory createKeyFactory() {
+        KeyFactory factory = this.keyboard != null ? withKeyboardContext(this.keyboard::buildKeyFactory) : null;
 
         boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
         if (!leftHandMode || factory == null) {
@@ -456,6 +458,12 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         } else {
             return (KeyFactory.LeftHandMode) factory::getKeys;
         }
+    }
+
+    /** 创建 {@link InputFactory} */
+    private InputFactory createInputFactory() {
+        InputboardContext context = InputboardContext.build((b) -> b.config(this.config).inputList(this.inputList));
+        return this.inputboard.buildInputFactory(context);
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================

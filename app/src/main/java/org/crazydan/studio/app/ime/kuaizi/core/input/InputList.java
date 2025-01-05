@@ -88,6 +88,10 @@ public class InputList {
 
     // =================== End: 数据初始化 ====================
 
+    public List<Input> getInputs() {
+        return this.inputs;
+    }
+
     /** 当前的待输入是否为空 */
     public boolean hasEmptyPending() {
         return Input.isEmpty(getPending());

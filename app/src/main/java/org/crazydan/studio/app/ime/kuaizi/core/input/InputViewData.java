@@ -17,9 +17,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 
 /**
  * {@link Input} 的视图数据，仅用于构造视图
@@ -27,7 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-09
  */
-public class InputViewData {
+public class InputViewData extends Immutable {
+    public final static Builder builder = new Builder();
+
     public enum Type {
         /** 默认均为 {@link CharInput} */
         Char,
@@ -64,31 +70,47 @@ public class InputViewData {
     /** 嵌套的输入列表：只有{@link MathExprInput 算术输入}才存在输入列表嵌套 */
     public final List<InputViewData> inputs;
 
-    /** 当前输入的候选字 */
-    public final String word;
-    /** 当前输入的候选字读音 */
+    /** 当前输入的显示文本 */
+    public final String text;
+    /** 当前输入的读音（主要针对候选字） */
     public final String spell;
-    /*
-    word = data.word != null ? data.word.value : input.getJoinedChars();
-    spell = data.word instanceof PinyinWord ? ((PinyinWord) data.word).spell.value : null;
-    if (option != null && data.word != null) {
-            value = input.getText(option).toString();
 
-            if (spell != null && value.contains(spell)) {
-                spell = null;
-            }
-        }
-    * */
+    InputViewData(Builder builder) {
+        super(builder);
 
-    InputViewData(
-            Input input, CharInput pending, int position, //
-            Input.Option option, boolean chosen, int gapSpaces
-    ) {
+        this.position = builder.position;
+        this.type = builder.type;
+
+        this.pending = builder.pending;
+        this.selected = builder.selected;
+
+        this.gapSpaces = builder.gapSpaces;
+        this.inputs = builder.inputs;
+
+        this.text = builder.text;
+        this.spell = builder.spell;
     }
 
-    /** 创建 {@link InputViewData} */
-    public static InputViewData create(InputList inputList, Input.Option option, int position) {
-        // TODO 被 selected 的输入，使用其 pending 输入填充输入信息
+    /** 构建 {@link InputViewData} 列表 */
+    public static List<InputViewData> build(InputList inputList, Input.Option option) {
+        return doBuild(builder, inputList, option);
+    }
+
+    /** 构建 {@link InputViewData} 列表 */
+    private static List<InputViewData> doBuild(Builder builder, InputList inputList, Input.Option option) {
+        List<InputViewData> dataList = new ArrayList<>(inputList.getInputs().size());
+
+        for (int i = 0; i < inputList.getInputs().size(); i++) {
+            int position = i;
+            InputViewData data = Builder.build(builder, (b) -> doBuild(b, inputList, option, position));
+
+            dataList.add(data);
+        }
+        return dataList;
+    }
+
+    /** 构建 {@link InputViewData} */
+    private static void doBuild(Builder b, InputList inputList, Input.Option option, int position) {
         Input input = inputList.getInput(position);
         Input preInput = inputList.getInput(position - 1);
 
@@ -118,17 +140,46 @@ public class InputViewData {
                 gapSpaces = 2;
             }
 
-            // Note：视图始终与待输入的算术输入绑定，
-            // 以确保在 MathKeyboard#onTopUserInputMsg 中能够选中正在输入的算术表达式中的字符
-            return new InputViewData(mathExprInput, pending, position, option, selected, gapSpaces);
+            // Note: 构建嵌套的 InputList 时，不需要缓存，由最上层缓存整体即可
+            List<InputViewData> inputs = doBuild(new Builder(true), mathExprInput.getInputList(), option);
+            b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
             if (!Input.isEmpty(pending)) {
                 gapSpaces = needGapSpace ? 2 : 1;
             }
 
-            return new InputViewData(input, pending, position, option, selected, gapSpaces);
+            b.type(Type.Gap);
+        } else if (input.isSpace()) {
+            b.type(Type.Space);
         } else {
-            return new InputViewData(input, pending, position, option, selected, gapSpaces);
+            b.type(Type.Char);
+        }
+
+        boolean currInputHasPending = !Input.isEmpty(pending);
+        Input currInput = !currInputHasPending ? input : pending;
+        InputWord currInputWord = currInput.getWord();
+
+        String text;
+        String spell = currInputWord instanceof PinyinWord ? ((PinyinWord) currInputWord).spell.value : null;
+        if (option != null && currInputWord != null) {
+            text = currInput.getText(option).toString();
+            // 若已携带读音，不再单独显示读音
+            if (spell != null && text.contains(spell)) {
+                spell = null;
+            }
+        } else {
+            text = currInputWord != null ? currInputWord.value : currInput.getJoinedChars();
+        }
+
+        b.position(position)
+         .pending(currInputHasPending)
+         .selected(selected)
+         .gapSpaces(gapSpaces)
+         .text(text)
+         .spell(spell);
+        // Note: 不缓存正在输入的 Input
+        if (currInputHasPending) {
+            b.notCache();
         }
     }
 
@@ -160,5 +211,116 @@ public class InputViewData {
 
     private static boolean isMathExprInput(Input input) {
         return input != null && input.isMathExpr();
+    }
+
+    /** {@link InputViewData} 的构建器 */
+    public static class Builder extends Immutable.CachableBuilder<InputViewData> {
+        private int position;
+        private Type type;
+
+        private boolean pending;
+        private boolean selected;
+
+        private int gapSpaces;
+        private List<InputViewData> inputs;
+
+        private String text;
+        private String spell;
+
+        protected Builder() {
+            this(false);
+        }
+
+        protected Builder(boolean disableCache) {
+            super(disableCache ? 0 : 20);
+        }
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected InputViewData doBuild() {
+            return new InputViewData(this);
+        }
+
+        @Override
+        protected void reset() {
+            this.position = 0;
+            this.type = null;
+
+            this.pending = false;
+            this.selected = false;
+
+            this.gapSpaces = 0;
+            this.inputs = null;
+
+            this.text = null;
+            this.spell = null;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.position,
+                                this.type,
+                                this.pending,
+                                this.selected,
+                                this.gapSpaces,
+                                this.inputs,
+                                this.text,
+                                this.spell);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        /** @see InputViewData#position */
+        public Builder position(int position) {
+            this.position = position;
+            return this;
+        }
+
+        /** @see InputViewData#type */
+        public Builder type(Type type) {
+            this.type = type;
+            return this;
+        }
+
+        /** @see InputViewData#pending */
+        public Builder pending(boolean pending) {
+            this.pending = pending;
+            return this;
+        }
+
+        /** @see InputViewData#selected */
+        public Builder selected(boolean selected) {
+            this.selected = selected;
+            return this;
+        }
+
+        /** @see InputViewData#gapSpaces */
+        public Builder gapSpaces(int gapSpaces) {
+            this.gapSpaces = gapSpaces;
+            return this;
+        }
+
+        /** @see InputViewData#inputs */
+        public Builder inputs(List<InputViewData> inputs) {
+            this.inputs = inputs;
+            return this;
+        }
+
+        /** @see InputViewData#text */
+        public Builder text(String text) {
+            this.text = text;
+            return this;
+        }
+
+        /** @see InputViewData#spell */
+        public Builder spell(String spell) {
+            this.spell = spell;
+            return this;
+        }
+
+        // ===================== End: 构建配置 ===================
     }
 }

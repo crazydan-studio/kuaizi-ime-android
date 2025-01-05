@@ -53,7 +53,6 @@ public class InputboardView extends InputboardViewBase implements InputMsgListen
             case Input_Selected_Delete_Done:
             case Input_Pending_Drop_Done:
             case Input_Completion_Apply_Done:
-            case InputList_Config_Update_Done:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done:
             case Keyboard_Switch_Done:

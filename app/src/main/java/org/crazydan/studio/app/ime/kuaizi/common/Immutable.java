@@ -114,6 +114,8 @@ public abstract class Immutable {
     public abstract static class CachableBuilder<O extends Immutable> extends Builder<O> {
         final LruCache<Integer, O> cache;
 
+        private boolean _notCache_;
+
         /**
          * @param cacheSize
          *         可缓存的 {@link  Immutable} 对象的数量。若小于或等于 0，则表示禁用缓存
@@ -132,11 +134,14 @@ public abstract class Immutable {
         protected O build() {
             int hash = hashCode();
 
-            O obj = this.cache != null ? this.cache.get(hash) : null;
+            boolean cachable = this.cache != null && !this._notCache_;
+            this._notCache_ = false;
+
+            O obj = cachable ? this.cache.get(hash) : null;
             if (obj == null) {
                 obj = doBuild();
 
-                if (this.cache != null) {
+                if (cachable) {
                     this.cache.put(hash, obj);
                 }
             }
@@ -150,5 +155,17 @@ public abstract class Immutable {
          * 以使其构造函数内仅需直接引用构建器的属性值，确保二者的 {@link #hashCode()} 是相同的
          */
         protected abstract O doBuild();
+
+        /** 清空缓存 */
+        public void clear() {
+            if (this.cache != null) {
+                this.cache.evictAll();
+            }
+        }
+
+        /** 禁用对当前构建对象的缓存：放在调用链的尾部 */
+        public void notCache() {
+            this._notCache_ = true;
+        }
     }
 }

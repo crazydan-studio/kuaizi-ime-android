@@ -134,9 +134,8 @@ public class PinyinKeyboard extends BaseKeyboard {
     protected void change_State_to_Previous(KeyboardContext context) {
         // Note: 从输入选项状态退出前，需做状态清理
         if (this.state.type == State.Type.InputList_Commit_Option_Choose_Doing) {
-            // TODO 在状态数据中记录进入该状态前的 Input.Option 设置
             InputList inputList = context.inputList;
-            inputList.resetInputOption();
+            inputList.setInputOption(null);
         }
 
         super.change_State_to_Previous(context);

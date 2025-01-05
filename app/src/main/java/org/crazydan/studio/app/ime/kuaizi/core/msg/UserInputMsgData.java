@@ -17,15 +17,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
-
 /**
  * {@link UserInputMsg} 所携带的数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-07
  */
-public class UserInputMsgData {
-    /** 消息目标输入 */
-    public final Input target;
-}
+public class UserInputMsgData {}

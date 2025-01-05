@@ -17,10 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -32,7 +28,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgDat
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Apply_Done;
 
 /**
  * 输入面板
@@ -49,37 +44,17 @@ public class Inputboard {
         this.stage = Stage.none();
     }
 
-    /**
-     * 更新配置
-     *
-     * @return 若存在更新，则返回 true，否则，返回 false
-     */
-    public boolean updateConfig(InputboardContext config) {
-        if (config != null) {
-            Input.Option inputOption = this.inputList.getInputOption();
-
-            if (inputOption == null) {
-                inputOption = new Input.Option(null, this.config.useCandidateVariantFirst);
-            } else {
-                inputOption = new Input.Option(inputOption.wordSpellUsedMode, this.config.useCandidateVariantFirst);
-            }
-            this.inputList.setInputOption(inputOption);
-        }
-        return changed;
-    }
-
     /** 构建 {@link InputFactory} */
     public InputFactory buildInputFactory(InputboardContext context) {
-        return () -> {
-            List<InputViewData> dataList = new ArrayList<>();
+        InputList inputList = context.inputList;
 
-            for (int i = 0; i < this.inputs.size(); i++) {
-                InputViewData data = InputViewData.create(this, getOption(), i);
+        Input.Option inputOption = inputList.getInputOption();
+        if (inputOption == null) {
+            inputOption = new Input.Option(null, context.useCandidateVariantFirst);
+        }
 
-                dataList.add(data);
-            }
-            return dataList;
-        };
+        Input.Option option = inputOption;
+        return () -> InputViewData.build(inputList, option);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -101,13 +76,13 @@ public class Inputboard {
                 break;
             }
             case SingleTap_CompletionInput: {
-                CompletionInput completion = (CompletionInput) msg.data().target;
-
-                inputList.applyCompletion(completion);
-                // Note：待输入的补全数据将在 confirm 时清除
-                inputList.confirmPendingAndSelectNext();
-
-                fire_InputMsg(context, Input_Completion_Apply_Done, null);
+//                CompletionInput completion = (CompletionInput) msg.data().target;
+//
+//                inputList.applyCompletion(completion);
+//                // Note：待输入的补全数据将在 confirm 时清除
+//                inputList.confirmPendingAndSelectNext();
+//
+//                fire_InputMsg(context, Input_Completion_Apply_Done, null);
                 break;
             }
             case SingleTap_Btn_Clean_InputList: {
@@ -149,6 +124,9 @@ public class Inputboard {
     /** 保存 已提交：{@link InputboardContext#inputList} 将会被{@link InputList#reset() 重置} */
     public void storeCommitted(InputboardContext context, boolean canBeRestored) {
         resetWithStage(context, canBeRestored ? Stage.Type.committed : Stage.Type.none);
+
+        // 提交输入后，需清空只读数据构建器的缓存，以减低内存占用
+        InputViewData.builder.clear();
     }
 
     /** 恢复 已提交 */
@@ -173,6 +151,9 @@ public class Inputboard {
     /** 保存 已清空：{@link InputboardContext#inputList} 将会被{@link InputList#reset() 重置} */
     public void storeCleaned(InputboardContext context, boolean canBeRestored) {
         resetWithStage(context, canBeRestored ? Stage.Type.cleaned : Stage.Type.none);
+
+        // 清空输入后，需清空只读数据构建器的缓存，以减低内存占用
+        InputViewData.builder.clear();
     }
 
     /** 恢复 已清空 */

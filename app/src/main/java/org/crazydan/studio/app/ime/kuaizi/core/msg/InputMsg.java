@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
-import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -43,20 +42,20 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     public final InputListState inputList;
 
     public InputMsg(InputMsgType type, InputMsgData data) {
-        this(type, data, null, null);
+        this(type, data, null, null, false, false);
     }
 
     public InputMsg(
             InputMsgType type, InputMsgData data, //
-            Inputboard inputboard, KeyFactory keyFactory
+            KeyFactory keyFactory, InputFactory inputFactory, //
+            boolean isEmptyInputList, boolean canCancelCleanInputList
     ) {
         super(type, data);
 
         this.keyFactory = keyFactory;
-        this.inputFactory = inputboard != null ? inputboard.buildInputFactory() : null;
+        this.inputFactory = inputFactory;
 
-        this.inputList = new InputListState(inputboard == null || inputboard.inputList.isEmpty(),
-                                            inputboard != null && inputboard.canRestoreCleaned());
+        this.inputList = new InputListState(isEmptyInputList, canCancelCleanInputList);
     }
 
     public static class InputListState {

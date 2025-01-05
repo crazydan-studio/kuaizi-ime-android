@@ -75,7 +75,7 @@ public class CompletionInputViewHolder extends RecyclerViewHolder {
                                                    ViewGroup.LayoutParams.MATCH_PARENT);
         childView.setLayoutParams(layoutParams);
 
-        new CharInputViewHolder(childView).bind(input);
+        //new CharInputViewHolder(childView).bind(input);
 
         // 采用 itemView 的背景
         childView.setBackgroundColor(Color.TRANSPARENT);
