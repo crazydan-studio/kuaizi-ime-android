@@ -431,7 +431,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
     private KeyFactory createKeyboardKeyFactory(Keyboard keyboard) {
-        KeyFactory factory = keyboard != null ? withKeyboardContext(keyboard::getKeyFactory) : null;
+        KeyFactory factory = keyboard != null ? withKeyboardContext(keyboard::buildKeyFactory) : null;
 
         boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
         if (!leftHandMode || factory == null) {

@@ -49,7 +49,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    public KeyFactory getKeyFactory(KeyboardContext context) {
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         NumberKeyTable keyTable = NumberKeyTable.create(keyTableConf);
 

@@ -70,7 +70,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     }
 
     @Override
-    public KeyFactory getKeyFactory(KeyboardContext context) {
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
         PinyinKeyTable keyTable = createKeyTable(context);
 
         switch (this.state.type) {

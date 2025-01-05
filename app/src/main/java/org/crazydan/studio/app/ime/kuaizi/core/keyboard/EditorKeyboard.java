@@ -46,7 +46,7 @@ public class EditorKeyboard extends DirectInputKeyboard {
     public Type getType() {return Type.Editor;}
 
     @Override
-    public KeyFactory getKeyFactory(KeyboardContext context) {
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConfig = createKeyTableConfig(context);
         EditorKeyTable keyTable = EditorKeyTable.create(keyTableConfig);
 

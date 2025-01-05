@@ -66,7 +66,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     }
 
     @Override
-    public KeyFactory getKeyFactory(KeyboardContext context) {
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
 
         SymbolChooseStateData stateData = this.state.data();

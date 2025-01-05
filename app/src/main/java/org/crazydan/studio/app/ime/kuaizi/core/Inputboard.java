@@ -67,7 +67,8 @@ public class Inputboard {
         return changed;
     }
 
-    public InputFactory getInputFactory() {
+    /** 构建 {@link InputFactory} */
+    public InputFactory buildInputFactory(InputboardContext context) {
         return () -> {
             List<InputViewData> dataList = new ArrayList<>();
 

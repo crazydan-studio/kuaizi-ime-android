@@ -53,7 +53,7 @@ public class MathKeyboard extends BaseKeyboard {
     public Type getType() {return Type.Math;}
 
     @Override
-    public KeyFactory getKeyFactory(KeyboardContext context) {
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         MathKeyTable keyTable = MathKeyTable.create(keyTableConf);
 

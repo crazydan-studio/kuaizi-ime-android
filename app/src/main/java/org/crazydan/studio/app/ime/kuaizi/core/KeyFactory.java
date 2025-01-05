@@ -18,6 +18,8 @@
 package org.crazydan.studio.app.ime.kuaizi.core;
 
 /**
+ * {@link Key} 生成器
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */

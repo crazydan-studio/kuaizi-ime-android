@@ -38,8 +38,8 @@ public interface Keyboard {
     /** 当前键盘是否为主键盘，即，常驻性键盘，其余类型的键盘均为临时性切换，其在退出后均需要回到切换前所在的主键盘上 */
     default boolean isMaster() {return false;}
 
-    /** 获取当前的按键布局 */
-    KeyFactory getKeyFactory(KeyboardContext context);
+    /** 构建 {@link KeyFactory} */
+    KeyFactory buildKeyFactory(KeyboardContext context);
 
     // ==========================================================
 

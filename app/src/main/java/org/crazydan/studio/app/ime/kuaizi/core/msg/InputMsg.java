@@ -53,7 +53,7 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         super(type, data);
 
         this.keyFactory = keyFactory;
-        this.inputFactory = inputboard != null ? inputboard.getInputFactory() : null;
+        this.inputFactory = inputboard != null ? inputboard.buildInputFactory() : null;
 
         this.inputList = new InputListState(inputboard == null || inputboard.inputList.isEmpty(),
                                             inputboard != null && inputboard.canRestoreCleaned());
