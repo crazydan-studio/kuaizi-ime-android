@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
-import org.crazydan.studio.app.ime.kuaizi.core.InputboardConfig;
+import org.crazydan.studio.app.ime.kuaizi.core.InputboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -84,6 +84,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private PinyinDict dict;
     private Config.Mutable config;
 
+    private InputList inputList;
+
     private Keyboard keyboard;
     private Inputboard inputboard;
     /** 切换前的主键盘类型 */
@@ -94,8 +96,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     IMEditor(PinyinDict dict) {
         this.dict = dict;
 
+        this.inputList = new InputList();
+
         this.inputboard = new Inputboard();
-        this.inputboard.setListener(this);
     }
 
     // =============================== Start: 生命周期 ===================================
@@ -123,9 +126,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         switchKeyboardTo(keyboardType);
 
         // 再重置输入列表
-        this.inputboard.updateConfig(createInputboardConfig());
         if (resetInputting) {
-            this.inputboard.reset();
+            withInputboardContext(this.inputboard::reset);
         }
 
         fire_InputMsg(Keyboard_Start_Done);
@@ -133,7 +135,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
-        this.inputboard.inputList.clearCompletions();
+        this.inputList.clearCompletions();
         fire_InputMsg(Input_Completion_Clean_Done);
 
         fire_InputMsg(Keyboard_Hide_Done);
@@ -142,7 +144,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 退出 {@link IMEditor}，即，重置输入状态 */
     public void exit() {
         // 重置输入面板
-        this.inputboard.reset();
+        withInputboardContext(this.inputboard::reset);
 
         // 重置键盘
         if (this.keyboard != null) {
@@ -163,9 +165,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         this.dict = null;
         this.config = null;
+
+        this.inputList = null;
+
         this.keyboard = null;
         this.inputboard = null;
         this.prevMasterKeyboardType = null;
+
         this.listener = null;
     }
 
@@ -226,7 +232,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.inputboard.onMsg(msg);
+        withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
     }
 
     // --------------------------------------
@@ -257,16 +263,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             case InputList_PairSymbol_Commit_Doing: {
                 // 对于单独的配对符号提交，不保存已提交
-                this.inputboard.reset();
+                withInputboardContext(this.inputboard::reset);
                 break;
             }
             case InputList_Commit_Doing: {
                 InputListCommitMsgData data = msg.data();
-                this.inputboard.storeCommitted(data.canBeRevoked);
+                withInputboardContext((context) -> this.inputboard.storeCommitted(context, data.canBeRevoked));
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
-                this.inputboard.restoreCommitted();
+                withInputboardContext(this.inputboard::restoreCommitted);
                 break;
             }
             case Editor_Edit_Doing: {
@@ -279,7 +285,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             default: {
                 // 若产生新的输入，则需要清除 已删除/已提交 的恢复数据
-                if (!this.inputboard.inputList.isEmpty()) {
+                if (!this.inputList.isEmpty()) {
                     this.inputboard.clearCommitted();
                     this.inputboard.clearCleaned();
                 }
@@ -412,12 +418,15 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private KeyboardContext createKeyboardContext(Key key) {
         return KeyboardContext.build((b) -> b.config(this.config, this.inputboard)
                                              .key(key)
-                                             .inputList(this.inputboard.inputList)
+                                             .inputList(this.inputList)
                                              .listener(this));
     }
 
-    private InputboardConfig createInputboardConfig() {
-        return InputboardConfig.from(this.config);
+    protected void withInputboardContext(Consumer<InputboardContext> c) {
+        InputboardContext context = InputboardContext.build((b) -> b.config(this.config)
+                                                                    .inputList(this.inputList)
+                                                                    .listener(this));
+        c.accept(context);
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
@@ -440,7 +449,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 更改最后一个输入的候选字 */
     public void changeLastInputWord(InputWord word) {
-        this.inputboard.inputList.getLastCharInput().setWord(word);
+        this.inputList.getLastCharInput().setWord(word);
     }
 
     /**
@@ -450,7 +459,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
      *         其元素为 <code>["chars", "word value", "word spell"]</code> 三元数组
      */
     public void prepareInputs(List<String[]> tuples) {
-        this.inputboard.reset();
+        withInputboardContext(this.inputboard::reset);
 
         for (int i = 0; i < tuples.size(); i++) {
             String[] tuple = tuples.get(i);
@@ -465,9 +474,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             PinyinWord word = PinyinWord.build((b) -> b.id(wordId).value(wordValue).spell(wordSpell));
             input.setWord(word);
 
-            this.inputboard.inputList.selectLast();
-            this.inputboard.inputList.withPending(input);
-            this.inputboard.inputList.confirmPending();
+            this.inputList.selectLast();
+            this.inputList.withPending(input);
+            this.inputList.confirmPending();
         }
     }
 

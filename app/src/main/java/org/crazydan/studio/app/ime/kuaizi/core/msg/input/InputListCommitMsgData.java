@@ -32,6 +32,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 public class InputListCommitMsgData extends InputMsgData {
     public final CharSequence text;
     public final List<String> replacements;
+
+    /** 提交是否可被撤销 */
     public final boolean canBeRevoked;
 
     public InputListCommitMsgData(CharSequence text, List<String> replacements, boolean canBeRevoked) {

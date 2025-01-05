@@ -19,17 +19,14 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
@@ -39,22 +36,16 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
 /**
  * 输入面板
  * <p/>
- * 负责处理 {@link UserInputMsg} 消息，以及对
- * {@link InputList} 的整体性处理（如，提交/清空输入列表、撤销提交/清空等）
+ * 负责处理与 {@link Input} 相关的 {@link UserInputMsg} 消息
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-04
  */
-public class Inputboard implements UserInputMsgListener {
-    public final InputList inputList = new InputList();
-
+public class Inputboard {
     private Stage stage;
 
-    private InputboardConfig config;
-    private InputMsgListener listener;
-
     public Inputboard() {
-        resetWithStage(Stage.Type.none);
+        this.stage = Stage.none();
     }
 
     /**
@@ -62,10 +53,7 @@ public class Inputboard implements UserInputMsgListener {
      *
      * @return 若存在更新，则返回 true，否则，返回 false
      */
-    public boolean updateConfig(InputboardConfig config) {
-        boolean changed = !Objects.equals(this.config, config);
-        this.config = config;
-
+    public boolean updateConfig(InputboardContext config) {
         if (config != null) {
             Input.Option inputOption = this.inputList.getInputOption();
 
@@ -94,60 +82,57 @@ public class Inputboard implements UserInputMsgListener {
 
     // =============================== Start: 消息处理 ===================================
 
-    public void setListener(InputMsgListener listener) {
-        this.listener = listener;
-    }
-
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
-    @Override
-    public void onMsg(UserInputMsg msg) {
+    public void onMsg(InputboardContext context, UserInputMsg msg) {
+        InputList inputList = context.inputList;
+
         switch (msg.type) {
             case SingleTap_Input: {
                 Input input = msg.data().target;
                 switch (msg.data().where) {
                     case head:
-                        input = this.inputList.getFirstInput();
+                        input = inputList.getFirstInput();
                         break;
                     case tail:
-                        input = this.inputList.getLastInput();
+                        input = inputList.getLastInput();
                         break;
                 }
 
                 // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
                 // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上
-                fire_InputMsg(Input_Choose_Doing, input);
+                fire_InputMsg(context, Input_Choose_Doing, input);
                 break;
             }
             case SingleTap_CompletionInput: {
                 CompletionInput completion = (CompletionInput) msg.data().target;
 
-                this.inputList.applyCompletion(completion);
+                inputList.applyCompletion(completion);
                 // Note：待输入的补全数据将在 confirm 时清除
-                this.inputList.confirmPendingAndSelectNext();
+                inputList.confirmPendingAndSelectNext();
 
-                fire_InputMsg(Input_Completion_Apply_Done, null);
+                fire_InputMsg(context, Input_Completion_Apply_Done, null);
                 break;
             }
             case SingleTap_Btn_Clean_InputList: {
-                storeCleaned(true);
+                storeCleaned(context, true);
 
-                fire_InputMsg(InputList_Clean_Done, null);
+                fire_InputMsg(context, InputList_Clean_Done, null);
                 break;
             }
             case SingleTap_Btn_Cancel_Clean_InputList: {
-                restoreCleaned();
+                restoreCleaned(context);
 
-                Input input = this.inputList.getSelected();
-                fire_InputMsg(InputList_Cleaned_Cancel_Done, input);
+                Input input = inputList.getSelected();
+                fire_InputMsg(context, InputList_Cleaned_Cancel_Done, input);
                 break;
             }
         }
     }
 
     /** 发送 {@link InputMsg} 消息 */
-    private void fire_InputMsg(InputMsgType type, Input input) {
+    private void fire_InputMsg(InputboardContext context, InputMsgType type, Input input) {
         InputMsg msg = new InputMsg(type, new InputMsgData(input));
-        this.listener.onMsg(msg);
+        context.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -155,8 +140,8 @@ public class Inputboard implements UserInputMsgListener {
     // =============================== Start: 生命周期 ===================================
 
     /** 重置：{@link InputList#reset() 重置} {@link InputList}，并清空 {@link #stage} */
-    public void reset() {
-        storeCleaned(false);
+    public void reset(InputboardContext context) {
+        storeCleaned(context, false);
     }
 
     /** 是否可恢复 已提交 */
@@ -164,15 +149,15 @@ public class Inputboard implements UserInputMsgListener {
         return this.stage.type == Stage.Type.committed;
     }
 
-    /** 保存 已提交：{@link #inputList} 将会被{@link InputList#reset() 重置} */
-    public void storeCommitted(boolean canBeRestored) {
-        resetWithStage(canBeRestored ? Stage.Type.committed : Stage.Type.none);
+    /** 保存 已提交：{@link InputboardContext#inputList} 将会被{@link InputList#reset() 重置} */
+    public void storeCommitted(InputboardContext context, boolean canBeRestored) {
+        resetWithStage(context, canBeRestored ? Stage.Type.committed : Stage.Type.none);
     }
 
     /** 恢复 已提交 */
-    public void restoreCommitted() {
+    public void restoreCommitted(InputboardContext context) {
         if (canRestoreCommitted()) {
-            this.stage = Stage.restore(this.inputList, this.stage);
+            this.stage = Stage.restore(context.inputList, this.stage);
         }
     }
 
@@ -188,15 +173,15 @@ public class Inputboard implements UserInputMsgListener {
         return this.stage.type == Stage.Type.cleaned;
     }
 
-    /** 保存 已清空：{@link #inputList} 将会被{@link InputList#reset() 重置} */
-    public void storeCleaned(boolean canBeRestored) {
-        resetWithStage(canBeRestored ? Stage.Type.cleaned : Stage.Type.none);
+    /** 保存 已清空：{@link InputboardContext#inputList} 将会被{@link InputList#reset() 重置} */
+    public void storeCleaned(InputboardContext context, boolean canBeRestored) {
+        resetWithStage(context, canBeRestored ? Stage.Type.cleaned : Stage.Type.none);
     }
 
     /** 恢复 已清空 */
-    public void restoreCleaned() {
+    public void restoreCleaned(InputboardContext context) {
         if (canRestoreCleaned()) {
-            this.stage = Stage.restore(this.inputList, this.stage);
+            this.stage = Stage.restore(context.inputList, this.stage);
         }
     }
 
@@ -208,14 +193,13 @@ public class Inputboard implements UserInputMsgListener {
     }
 
     /** 暂存 {@link InputList}，并对其进行{@link InputList#reset() 重置} */
-    private void resetWithStage(Stage.Type stageType) {
+    private void resetWithStage(InputboardContext context, Stage.Type stageType) {
+        InputList inputList = context.inputList;
+
         // Note: 在 Staged 中暂存 InputList 的副本
-        this.stage = Stage.create(stageType, this.inputList.copy());
+        this.stage = Stage.create(stageType, inputList.copy());
 
-        this.inputList.reset();
-
-        // 确保 InputList 的输入选项配置恢复为初始状态
-        updateConfig(this.config);
+        inputList.reset();
     }
 
     // =============================== End: 生命周期 ===================================
