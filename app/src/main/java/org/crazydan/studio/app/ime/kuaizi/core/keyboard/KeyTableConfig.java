@@ -46,7 +46,7 @@ public class KeyTableConfig {
         InputList inputList = context.inputList;
 
         this.hasInputs = inputList != null && !inputList.isEmpty();
-        this.hasRevokingInputs = inputList != null && context.canRevokeCommit();
+        this.hasRevokingInputs = inputList != null && context.canRevokeInputsCommit;
         this.charInputSelected = inputList != null && !inputList.isGapSelected();
 
         this.keyboard = context.config;

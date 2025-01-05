@@ -20,7 +20,7 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 import java.util.Objects;
 
 import android.util.LruCache;
-import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
+import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 
 /**
  * {@link Keyboard} 上的按键
@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public abstract class Key {
+public abstract class Key extends Immutable {
     /** 按键的输入值，代表字符按键的实际输入字符，其与{@link #label 显示字符}可能并不相等 */
     public final String value;
     /** 按键上显示的文字内容 */
@@ -44,16 +44,9 @@ public abstract class Key {
     /** 按键是否已被禁用 */
     public final boolean disabled;
 
-    /**
-     * 当前对象实例的 Hash 值，其将作为 {@link #hashCode()} 的返回值，
-     * 并且用于判断对象是否{@link #equals(Object) 相等}
-     * <p/>
-     * 该值与其{@link Builder 构造器}的 {@link Builder#hashCode()} 相等，
-     * 因为二者的属性值是全部相等的
-     */
-    private final int objHash;
-
     protected Key(Builder<?, ?> builder) {
+        super(builder);
+
         this.value = builder.value;
         this.label = builder.label;
 
@@ -61,31 +54,11 @@ public abstract class Key {
         this.color = builder.color;
 
         this.disabled = builder.disabled;
-
-        this.objHash = builder.hashCode();
     }
 
     @Override
     public String toString() {
         return this.label + "(" + this.value + ")";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Key that = (Key) o;
-        return this.objHash == that.objHash;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.objHash;
     }
 
     /**
@@ -97,7 +70,7 @@ public abstract class Key {
     protected static abstract class Builder< //
             B extends Builder<B, K>, //
             K extends Key //
-            > extends ImmutableBuilder<B, K> {
+            > extends Immutable.Builder<K> {
         final LruCache<Integer, K> cache;
 
         private String value;

@@ -19,7 +19,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import java.util.Objects;
 
-import org.crazydan.studio.app.ime.kuaizi.common.ImmutableBuilder;
+import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 
 /**
@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08
  */
-public abstract class InputWord {
+public abstract class InputWord extends Immutable {
     /** 对象 id，一般对应持久化的主键值 */
     public final Integer id;
     /** 值 */
@@ -36,21 +36,12 @@ public abstract class InputWord {
     /** 字的权重 */
     public final int weight;
 
-    /**
-     * 当前对象实例的 Hash 值，其将作为 {@link #hashCode()} 的返回值，
-     * 并且用于判断对象是否{@link #equals(Object) 相等}
-     * <p/>
-     * 该值与其{@link Builder 构造器}的 {@link Builder#hashCode()} 相等，
-     * 因为二者的属性值是全部相等的
-     */
-    private final int objHash;
-
     protected InputWord(Builder<?, ?> builder) {
+        super(builder);
+
         this.id = builder.id;
         this.value = builder.value;
         this.weight = builder.weight;
-
-        this.objHash = builder.hashCode();
     }
 
     @Override
@@ -58,26 +49,8 @@ public abstract class InputWord {
         return this.value + '(' + this.id + ')';
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        InputWord that = (InputWord) o;
-        return this.objHash == that.objHash;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.objHash;
-    }
-
     /** {@link InputWord} 的构建器 */
-    public static abstract class Builder<B extends Builder<B, W>, W extends InputWord> extends ImmutableBuilder<B, W> {
+    public static abstract class Builder<B extends Builder<B, W>, W extends InputWord> extends Immutable.Builder<W> {
         private Integer id;
         private String value;
         private int weight;

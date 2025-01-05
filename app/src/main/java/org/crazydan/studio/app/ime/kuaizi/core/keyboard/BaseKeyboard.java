@@ -720,7 +720,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 撤回输入列表，且状态保持不变 */
     protected void revoke_Committed_InputList(KeyboardContext context) {
-        if (!context.canRevokeCommit()) {
+        if (!context.canRevokeInputsCommit) {
             return;
         }
 

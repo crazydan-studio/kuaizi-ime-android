@@ -17,7 +17,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+
+import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 
@@ -27,23 +32,30 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-23
  */
-public class KeyboardContext {
+public class KeyboardContext extends Immutable {
+    private final static Builder builder = new Builder();
+
     public final KeyboardConfig config;
+    /** 与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
+    public final Key key;
+    /** 当前正在处理的 {@link InputList}，可在 {@link Keyboard} 内直接修改其输入 */
     public final InputList inputList;
+    /** 接收 {@link Keyboard} 所发送的 {@link InputMsg} 消息的监听器 */
     public final InputMsgListener listener;
 
-    private final Key key;
-
     /** 是否可撤回对输入的提交 */
-    private boolean canRevokeCommit;
+    public final boolean canRevokeInputsCommit;
     /** 是否可取消对输入的清空 */
-    private boolean canCancelClean;
+    public final boolean canCancelInputsClean;
 
-    public KeyboardContext(KeyboardConfig config, InputList inputList, InputMsgListener listener) {
-        this(config, inputList, listener, null);
+    /** 构建 {@link KeyboardContext} */
+    public static KeyboardContext build(Consumer<Builder> c) {
+        return KeyboardContext.Builder.build(builder, c);
     }
 
-    KeyboardContext(KeyboardConfig config, InputList inputList, InputMsgListener listener, Key key) {
+    KeyboardContext(Builder builder) {
+        super(builder);
+
         this.config = config;
         this.inputList = inputList;
         this.listener = listener;
@@ -53,35 +65,75 @@ public class KeyboardContext {
     /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
     public KeyboardContext newWithKey(Key key) {
         KeyboardContext context = new KeyboardContext(this.config, this.inputList, this.listener, key);
-        return context.canRevokeCommit(this.canRevokeCommit).canCancelClean(this.canCancelClean);
+        return context.canRevokeInputsCommit(this.canRevokeInputsCommit)
+                      .canCancelInputsClean(this.canCancelInputsClean);
     }
 
     /** 根据 {@link InputList} 新建实例，以使其携带新的 {@link InputList} */
     public KeyboardContext newWithInputList(InputList inputList) {
         KeyboardContext context = new KeyboardContext(this.config, inputList, this.listener, this.key);
-        return context.canRevokeCommit(this.canRevokeCommit).canCancelClean(this.canCancelClean);
+        return context.canRevokeInputsCommit(this.canRevokeInputsCommit)
+                      .canCancelInputsClean(this.canCancelInputsClean);
     }
 
-    /** 获取与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
+    /** {@link #key} 的泛型转换接口，避免编写显式的类型转换代码 */
     public <T extends Key> T key() {
         return (T) this.key;
     }
 
-    public KeyboardContext canRevokeCommit(boolean canRestoreCommit) {
-        this.canRevokeCommit = canRestoreCommit;
-        return this;
-    }
+    /** {@link KeyboardContext} 的构建器 */
+    public static class Builder extends Immutable.Builder<KeyboardContext> {
+        private Key key;
+        private InputList inputList;
+        private InputMsgListener listener;
 
-    public boolean canRevokeCommit() {
-        return this.canRevokeCommit;
-    }
+        private boolean canRevokeInputsCommit;
+        private boolean canCancelInputsClean;
 
-    public KeyboardContext canCancelClean(boolean canCancelClean) {
-        this.canCancelClean = canCancelClean;
-        return this;
-    }
+        // ===================== Start: 构建函数 ===================
 
-    public boolean canCancelClean() {
-        return this.canCancelClean;
+        @Override
+        protected KeyboardContext build() {
+            return new KeyboardContext(this);
+        }
+
+        @Override
+        protected void reset() {
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash();
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        /** @see KeyboardContext#key */
+        public Builder key(Key key) {
+            this.key = key;
+            return this;
+        }
+
+        /** @see KeyboardContext#inputList */
+        public Builder inputList(InputList inputList) {
+            this.inputList = inputList;
+            return this;
+        }
+
+        /** @see KeyboardContext#canRevokeInputsCommit */
+        public Builder canRevokeInputsCommit(boolean canRevokeInputsCommit) {
+            this.canRevokeInputsCommit = canRevokeInputsCommit;
+            return this;
+        }
+
+        /** @see KeyboardContext#canCancelInputsClean */
+        public Builder canCancelInputsClean(boolean canCancelInputsClean) {
+            this.canCancelInputsClean = canCancelInputsClean;
+            return this;
+        }
+
+        // ===================== End: 构建配置 ===================
     }
 }
