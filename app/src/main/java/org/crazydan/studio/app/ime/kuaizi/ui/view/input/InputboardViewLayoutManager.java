@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.msg;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import android.content.Context;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 
 /**
- * {@link UserInputMsg} 所携带的数据
+ * {@link InputboardView} 的 {@link RecyclerView} 布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-07
+ * @date 2023-07-07
  */
-public class UserInputMsgData {
-    /** 消息目标输入 */
-    public final Input target;
+public class InputboardViewLayoutManager extends LinearLayoutManager {
+
+    public InputboardViewLayoutManager(Context context) {
+        super(context, RecyclerView.HORIZONTAL, false);
+    }
 }

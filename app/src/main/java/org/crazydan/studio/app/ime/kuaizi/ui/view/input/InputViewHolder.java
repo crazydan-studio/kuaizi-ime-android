@@ -19,19 +19,13 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 
 /**
  * {@link Input} 视图的 {@link RecyclerView.ViewHolder}
@@ -40,16 +34,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
  * @date 2023-07-07
  */
 public abstract class InputViewHolder extends RecyclerViewHolder {
-    private final TextView spellView;
-    private final TextView wordView;
-    private final ImageView spaceView;
 
     public InputViewHolder(@NonNull View itemView) {
         super(itemView);
-
-        this.spellView = itemView.findViewById(R.id.spell_view);
-        this.wordView = itemView.findViewById(R.id.word_view);
-        this.spaceView = itemView.findViewById(R.id.space_view);
     }
 
     protected void setSelectedBgColor(View view, boolean selected) {
@@ -60,47 +47,6 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
     protected void setSelectedTextColor(TextView view, boolean selected) {
         int fgColor = selected ? R.attr.input_selection_fg_color : R.attr.input_fg_color;
         setTextColorByAttrId(view, fgColor);
-    }
-
-    protected void showWord(Input.Option option, CharInput input, boolean selected) {
-        showWord(option, input, selected, false);
-    }
-
-    protected void showWord(Input.Option option, CharInput input, boolean selected, boolean hideWordSpell) {
-        InputWord word = input.getWord();
-        String value = word != null ? word.value : input.getJoinedChars();
-        String spell = word instanceof PinyinWord && !hideWordSpell ? ((PinyinWord) word).spell.value : null;
-
-        if (option != null && word != null) {
-            value = input.getText(option).toString();
-
-            if (spell != null && value.contains(spell)) {
-                spell = null;
-            }
-        }
-
-        String wordValue = value;
-        whenViewReady(this.wordView, (view) -> {
-            setSelectedTextColor(view, selected);
-
-            boolean shown = !input.isSpace();
-            view.setText(shown ? wordValue : null);
-
-            ViewUtils.visible(view, shown);
-        });
-        whenViewReady(this.spaceView, (view) -> {
-            ViewUtils.visible(view, input.isSpace());
-        });
-
-        String spellText = spell;
-        whenViewReady(this.spellView, (view) -> {
-            boolean shown = !CharUtils.isBlank(spellText);
-            if (shown) {
-                setSelectedTextColor(view, selected);
-                view.setText(spellText);
-            }
-            ViewUtils.visible(view, shown);
-        });
     }
 
     protected void addLeftSpaceMargin(View view, int times) {

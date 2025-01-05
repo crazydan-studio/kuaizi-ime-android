@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import java.util.List;
-import java.util.Optional;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -33,20 +32,19 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputboardViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputboardViewLayoutManager;
 
+import static org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData.Type.MathExpr;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
 
 /**
@@ -55,7 +53,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputboardViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
+public class InputboardViewBase extends RecyclerView<InputboardViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
     private UserInputMsgListener listener;
 
@@ -70,13 +68,13 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
     }
 
     @Override
-    protected InputListViewAdapter createAdapter() {
-        return new InputListViewAdapter();
+    protected InputboardViewAdapter createAdapter() {
+        return new InputboardViewAdapter();
     }
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new InputListViewLayoutManager(context);
+        return new InputboardViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -88,24 +86,24 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        InputViewHolder holder = findVisibleInputViewUnder(data.x, data.y);
-
         if (type != ViewGestureDetector.GestureType.SingleTap) {
             return;
         }
 
-        UserInputMsgData.Where where = UserInputMsgData.Where.inner;
-        Input input = Optional.ofNullable(getAdapterItem(holder)).map((item) -> item.input).orElse(null);
-
-        if (input == null) {
+        int position;
+        InputViewHolder holder = findVisibleInputViewUnder(data.x, data.y);
+        if (holder == null) {
             if (data.x < getPaddingStart()) {
-                where = UserInputMsgData.Where.head;
+                position = 0;
             } else {
-                where = UserInputMsgData.Where.tail;
+                position = -1;
             }
+        } else {
+            position = holder.getAdapterPosition();
         }
 
-        UserInputMsg msg = new UserInputMsg(SingleTap_Input, new UserInputMsgData(input, where));
+        UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(position);
+        UserInputMsg msg = new UserInputMsg(SingleTap_Input, msgData);
         fire_UserInputMsg(msg);
     }
 
@@ -156,6 +154,10 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
 
     public void update(InputFactory inputFactory, boolean canBeSelected, boolean needToLockScrolling) {
         List<InputViewData> dataList = inputFactory.getInputs();
+        update(dataList, canBeSelected, needToLockScrolling);
+    }
+
+    public void update(List<InputViewData> dataList, boolean canBeSelected, boolean needToLockScrolling) {
         getAdapter().updateItems(dataList, canBeSelected);
 
         if (!needToLockScrolling) {
@@ -167,14 +169,8 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
 
     /** 滚动到选中输入的位置，确保其处于可见区域 */
     protected void scrollToSelectedInput(List<InputViewData> dataList) {
-        // Note: 因为配对符号均会被选中，故而，只有含有 pending input 的才是正在输入的 input
-        InputViewData selectedData = dataList.stream().filter(d -> d.pending != null).findFirst().orElse(null);
-        if (selectedData == null) {
-            return;
-        }
-
-        int position = selectedData.position;
-        View view = getSelectedInputView(selectedData.input, position);
+        InputViewData selectedData = dataList.stream().filter(d -> d.pending).findFirst().get();
+        View view = getSelectedInputView(selectedData);
 
         int offset = 0;
         if (view != null) {
@@ -209,6 +205,7 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
             }
         }
 
+        int position = selectedData.position;
         if (offset == 0) {
             scrollToPosition(position);
         } else {
@@ -244,11 +241,11 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
     }
 
     /** 获取选中输入的视图，若选中输入为算术输入，则获取其内部所选中的输入视图 */
-    private View getSelectedInputView(Input selectedInput, int selectedIndex) {
+    private View getSelectedInputView(InputViewData selectedData) {
         LayoutManager layoutManager = getLayoutManager();
-        View view = layoutManager.findViewByPosition(selectedIndex);
+        View view = layoutManager.findViewByPosition(selectedData.position);
 
-        if (view == null || !selectedInput.isMathExpr()) {
+        if (view == null || selectedData.type != MathExpr) {
             return view;
         }
 
@@ -257,9 +254,9 @@ public class InputboardViewBase extends RecyclerView<InputListViewAdapter, Input
 
             if (child instanceof InputboardViewReadonly) {
                 InputboardViewReadonly ro = (InputboardViewReadonly) child;
-                int position = ((MathExprInput) selectedInput).getInputList().getSelectedIndex();
+                InputViewData selected = selectedData.inputs.stream().filter(d -> d.pending).findFirst().get();
 
-                return ro.getLayoutManager().findViewByPosition(position);
+                return ro.getLayoutManager().findViewByPosition(selected.position);
             }
         }
         return null;

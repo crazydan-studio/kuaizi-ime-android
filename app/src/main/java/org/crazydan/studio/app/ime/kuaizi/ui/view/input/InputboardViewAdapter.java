@@ -34,14 +34,15 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, InputViewHolder> {
+public class InputboardViewAdapter extends RecyclerViewAdapter<InputViewData, InputViewHolder> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
-    private static final int VIEW_TYPE_CHAR_MATH_EXPR_INPUT = 2;
+    private static final int VIEW_TYPE_SPACE_INPUT = 2;
+    private static final int VIEW_TYPE_MATH_EXPR_INPUT = 3;
 
     private boolean canBeSelected;
 
-    public InputListViewAdapter() {
+    public InputboardViewAdapter() {
         // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
         // 其判断逻辑较复杂且容易遗漏更新，故而，始终对列表视图做全量更新
         super(ItemUpdatePolicy.full);
@@ -58,12 +59,22 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
         InputViewData item = getItem(position);
         boolean selected = this.canBeSelected && item.selected;
 
-        if (item.input.isMathExpr()) {
-            ((MathExprInputViewHolder) holder).bind(item, selected);
-        } else if (item.input.isGap()) {
-            ((GapInputViewHolder) holder).bind(item, selected);
-        } else {
-            ((CharInputViewHolder) holder).bind(item, selected);
+        switch (item.type) {
+            case Gap: {
+                ((GapInputViewHolder) holder).bind(item, selected);
+                break;
+            }
+            case Space: {
+                ((SpaceInputViewHolder) holder).bind(item);
+                break;
+            }
+            case MathExpr: {
+                ((MathExprInputViewHolder) holder).bind(item, selected);
+                break;
+            }
+            default: {
+                ((CharInputViewHolder) holder).bind(item, selected);
+            }
         }
     }
 
@@ -71,10 +82,16 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
     public int getItemViewType(int position) {
         InputViewData item = getItem(position);
 
-        if (item.input.isMathExpr()) {
-            return VIEW_TYPE_CHAR_MATH_EXPR_INPUT;
-        } else if (item.input.isGap()) {
-            return VIEW_TYPE_GAP_INPUT;
+        switch (item.type) {
+            case Gap: {
+                return VIEW_TYPE_GAP_INPUT;
+            }
+            case Space: {
+                return VIEW_TYPE_SPACE_INPUT;
+            }
+            case MathExpr: {
+                return VIEW_TYPE_MATH_EXPR_INPUT;
+            }
         }
         return VIEW_TYPE_CHAR_INPUT;
     }
@@ -87,7 +104,11 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
                 View view = inflateItemView(parent, R.layout.input_char_view);
                 return new CharInputViewHolder(view);
             }
-            case VIEW_TYPE_CHAR_MATH_EXPR_INPUT: {
+            case VIEW_TYPE_SPACE_INPUT: {
+                View view = inflateItemView(parent, R.layout.input_space_view);
+                return new SpaceInputViewHolder(view);
+            }
+            case VIEW_TYPE_MATH_EXPR_INPUT: {
                 View view = inflateItemView(parent, R.layout.input_math_expr_view);
                 return new MathExprInputViewHolder(view);
             }

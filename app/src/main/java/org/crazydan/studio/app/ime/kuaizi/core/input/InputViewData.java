@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 
 /**
@@ -26,30 +28,67 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
  * @date 2024-12-09
  */
 public class InputViewData {
-    public final Input input;
-    public final CharInput pending;
-    public final int position;
+    public enum Type {
+        /** 默认均为 {@link CharInput} */
+        Char,
+        /** 占位输入：{@link Input#isGap()} */
+        Gap,
+        /** 空格输入：{@link Input#isSpace()} */
+        Space,
+        /** 算术输入：{@link Input#isMathExpr()} */
+        MathExpr
+    }
 
-    public final Input.Option option;
-    /** 输入是否已被选中 */
+    /** 当前输入在 {@link InputList} 中的位置（序号） */
+    public final int position;
+    /** 当前输入的类型 */
+    public final Type type;
+
+    /**
+     * 当前输入是否为待输入
+     * <p/>
+     * 只有含有{@link InputList#getPending() 待输入}的才是待输入，
+     * 并且，在 {@link InputList} 中必然存在唯一的待输入
+     */
+    public final boolean pending;
+    /**
+     * 当前输入是否已被选中
+     * <p/>
+     * 在配对符号中，若其中一个为{@link #pending 待输入}，
+     * 则另一个也会被选中，否则，只有待输入才会被选中
+     */
     public final boolean selected;
-    /** 间隔间的空白数 */
+
+    /** 当前输入所需的空白数 */
     public final int gapSpaces;
+    /** 嵌套的输入列表：只有{@link MathExprInput 算术输入}才存在输入列表嵌套 */
+    public final List<InputViewData> inputs;
+
+    /** 当前输入的候选字 */
+    public final String word;
+    /** 当前输入的候选字读音 */
+    public final String spell;
+    /*
+    word = data.word != null ? data.word.value : input.getJoinedChars();
+    spell = data.word instanceof PinyinWord ? ((PinyinWord) data.word).spell.value : null;
+    if (option != null && data.word != null) {
+            value = input.getText(option).toString();
+
+            if (spell != null && value.contains(spell)) {
+                spell = null;
+            }
+        }
+    * */
 
     InputViewData(
             Input input, CharInput pending, int position, //
-            Input.Option option, boolean selected, int gapSpaces
+            Input.Option option, boolean chosen, int gapSpaces
     ) {
-        this.input = input;
-        this.pending = pending;
-        this.position = position;
-        this.option = option;
-        this.selected = selected;
-        this.gapSpaces = gapSpaces;
     }
 
     /** 创建 {@link InputViewData} */
     public static InputViewData create(InputList inputList, Input.Option option, int position) {
+        // TODO 被 selected 的输入，使用其 pending 输入填充输入信息
         Input input = inputList.getInput(position);
         Input preInput = inputList.getInput(position - 1);
 

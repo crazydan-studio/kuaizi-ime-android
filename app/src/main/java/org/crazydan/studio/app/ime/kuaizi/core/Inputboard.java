@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
@@ -89,15 +90,10 @@ public class Inputboard {
 
         switch (msg.type) {
             case SingleTap_Input: {
-                Input input = msg.data().target;
-                switch (msg.data().where) {
-                    case head:
-                        input = inputList.getFirstInput();
-                        break;
-                    case tail:
-                        input = inputList.getLastInput();
-                        break;
-                }
+                UserInputSingleTapMsgData data = msg.data();
+                Input input = data.position < 0 //
+                              ? inputList.getLastInput() //
+                              : inputList.getInput(data.position);
 
                 // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
                 // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上

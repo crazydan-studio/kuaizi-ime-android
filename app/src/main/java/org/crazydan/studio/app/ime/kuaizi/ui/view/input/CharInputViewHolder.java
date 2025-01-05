@@ -18,9 +18,12 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import android.view.View;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
@@ -31,25 +34,46 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
  * @date 2023-07-07
  */
 public class CharInputViewHolder extends InputViewHolder {
+    private final TextView spellView;
+    private final TextView wordView;
 
     public CharInputViewHolder(@NonNull View itemView) {
         super(itemView);
+
+        this.spellView = itemView.findViewById(R.id.spell_view);
+        this.wordView = itemView.findViewById(R.id.word_view);
     }
 
     public void bind(InputViewData data, boolean selected) {
-        CharInput input = (CharInput) data.input;
-        CharInput pending = data.pending;
-
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
         setSelectedBgColor(this.itemView, selected);
 
-        showWord(data.option, Input.isEmpty(pending) ? input : pending, selected, false);
+        showWord(data, selected, false);
     }
 
     public void bind(CharInput input) {
         addLeftSpaceMargin(this.itemView, 0);
         setSelectedBgColor(this.itemView, false);
 
-        showWord(null, input, false, true);
+        showWord(input, false, true);
+    }
+
+    private void showWord(InputViewData data, boolean selected, boolean hideWordSpell) {
+        String word = data.word;
+        String spell = !hideWordSpell ? data.spell : null;
+
+        whenViewReady(this.wordView, (view) -> {
+            setSelectedTextColor(view, selected);
+            view.setText(word);
+        });
+
+        whenViewReady(this.spellView, (view) -> {
+            boolean shown = !CharUtils.isBlank(spell);
+            if (shown) {
+                setSelectedTextColor(view, selected);
+                view.setText(spell);
+            }
+            ViewUtils.visible(view, shown);
+        });
     }
 }

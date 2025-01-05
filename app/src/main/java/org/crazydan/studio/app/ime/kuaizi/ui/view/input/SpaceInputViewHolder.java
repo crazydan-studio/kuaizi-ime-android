@@ -17,20 +17,33 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
-import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import android.view.View;
+import android.widget.ImageView;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
- * {@link InputboardView} 的 {@link RecyclerView} 布局器
+ * 空格类型 {@link Input} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputListViewLayoutManager extends LinearLayoutManager {
+public class SpaceInputViewHolder extends InputViewHolder {
+    private final ImageView spaceView;
 
-    public InputListViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public SpaceInputViewHolder(@NonNull View itemView) {
+        super(itemView);
+
+        this.spaceView = itemView.findViewById(R.id.space_view);
+    }
+
+    public void bind(InputViewData data) {
+        whenViewReady(this.spaceView, (view) -> {
+            ViewUtils.visible(view, true);
+        });
     }
 }

@@ -26,8 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
@@ -39,42 +37,25 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
  */
 public class GapInputViewHolder extends InputViewHolder {
     private final View cursorView;
-    private final View pendingView;
     private final View blinkView;
 
     public GapInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.cursorView = itemView.findViewById(R.id.cursor_view);
-        this.pendingView = itemView.findViewById(R.id.pending_view);
         this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
     public void bind(InputViewData data, boolean selected) {
-        CharInput pending = data.pending;
-        boolean hasPending = !Input.isEmpty(pending);
-        whenViewReady(this.pendingView, (view) -> {
-            if (hasPending) {
-                addLeftSpaceMargin(view, data.gapSpaces);
-                setSelectedBgColor(view, selected);
-
-                showWord(data.option, pending, selected);
-            }
-            ViewUtils.visible(view, hasPending);
-        });
-
         whenViewReady(this.cursorView, (view) -> {
-            if (!hasPending) {
-                addLeftSpaceMargin(view, data.gapSpaces);
-            }
-            ViewUtils.visible(view, !hasPending);
+            addLeftSpaceMargin(view, data.gapSpaces);
+            ViewUtils.visible(view, true);
         });
 
         whenViewReady(this.blinkView, (view) -> {
-            boolean shown = selected && !hasPending;
-            ViewUtils.visible(view, shown);
+            ViewUtils.visible(view, selected);
 
-            if (shown) {
+            if (selected) {
                 startCursorBlink(view);
             } else {
                 stopCursorBlink(view);
