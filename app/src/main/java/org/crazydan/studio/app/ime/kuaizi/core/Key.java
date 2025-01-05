@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.Objects;
 
-import android.util.LruCache;
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 
 /**
@@ -61,18 +60,11 @@ public abstract class Key extends Immutable {
         return this.label + "(" + this.value + ")";
     }
 
-    /**
-     * {@link Key} 构建器，用于以链式调用形式配置按键属性，并支持缓存按键，从而避免反复创建相同的 {@link Key}
-     * <p/>
-     * 注意，构建器本身需采用单例模式，并且在 {@link #build} 时，以其 {@link #hashCode()} 作为按键缓存的唯一索引，
-     * 因此，构建器不是线程安全的
-     */
+    /** {@link Key} 构建器，可缓存已构建的 {@link Key}，以避免反复创建相同的 {@link Key} */
     protected static abstract class Builder< //
             B extends Builder<B, K>, //
             K extends Key //
-            > extends Immutable.Builder<K> {
-        final LruCache<Integer, K> cache;
-
+            > extends Immutable.CachableBuilder<K> {
         private String value;
         private String label;
 
@@ -81,12 +73,8 @@ public abstract class Key extends Immutable {
 
         private boolean disabled;
 
-        /**
-         * @param cacheSize
-         *         可缓存的 {@link  Key} 数量
-         */
         protected Builder(int cacheSize) {
-            this.cache = cacheSize > 0 ? new LruCache<>(cacheSize) : null;
+            super(cacheSize);
         }
 
         // ===================== Start: 构建函数 ===================
@@ -101,30 +89,6 @@ public abstract class Key extends Immutable {
 
             this.disabled = false;
         }
-
-        @Override
-        protected K build() {
-            int hash = hashCode();
-
-            K key = this.cache != null ? this.cache.get(hash) : null;
-            if (key == null) {
-                key = doBuild();
-
-                if (this.cache != null) {
-                    this.cache.put(hash, key);
-                }
-            }
-
-            return key;
-        }
-
-        /**
-         * 在 {@link Key} 的构造函数中根据 {@link Builder} 为只读属性赋初始值
-         * <p/>
-         * 注意，相关属性的值转换和处理操作需在传给 {@link Key} 的构造函数之前完成，
-         * 以使其构造函数内仅需直接引用构建器的属性值，确保二者的 {@link #hashCode()} 是相同的
-         */
-        protected abstract K doBuild();
 
         /** 通过构建器的 hash 值作为按键缓存的索引 */
         @Override

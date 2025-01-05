@@ -57,9 +57,12 @@ public class KeyboardContext extends Immutable {
         super(builder);
 
         this.config = config;
-        this.inputList = inputList;
-        this.listener = listener;
-        this.key = key;
+        this.key = builder.key;
+        this.inputList = builder.inputList;
+        this.listener = builder.listener;
+
+        this.canRevokeInputsCommit = builder.canRevokeInputsCommit;
+        this.canCancelInputsClean = builder.canCancelInputsClean;
     }
 
     /** 根据 {@link Key} 新建实例，以使其携带该 {@link #key()} */
@@ -82,7 +85,7 @@ public class KeyboardContext extends Immutable {
     }
 
     /** {@link KeyboardContext} 的构建器 */
-    public static class Builder extends Immutable.Builder<KeyboardContext> {
+    public static class Builder extends Immutable.CachableBuilder<KeyboardContext> {
         private Key key;
         private InputList inputList;
         private InputMsgListener listener;
@@ -90,25 +93,42 @@ public class KeyboardContext extends Immutable {
         private boolean canRevokeInputsCommit;
         private boolean canCancelInputsClean;
 
+        protected Builder() {
+            super(2);
+        }
+
         // ===================== Start: 构建函数 ===================
 
         @Override
-        protected KeyboardContext build() {
+        protected KeyboardContext doBuild() {
             return new KeyboardContext(this);
         }
 
         @Override
         protected void reset() {
+            this.key = null;
+            this.inputList = null;
+            this.listener = null;
+
+            this.canRevokeInputsCommit = false;
+            this.canCancelInputsClean = false;
         }
 
         @Override
         public int hashCode() {
+            // Note: InputList 与 InputMsgListener 采用其引用值，
+            // 因为，在上下文使用过程中，二者的实例不会发生变化，可以更好地复用
             return Objects.hash();
         }
 
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 构建配置 ===================
+
+        /** 创建与指定 {@link KeyboardContext} 相同的上下文对象，并可继续按需修改其他配置 */
+        public Builder from(KeyboardContext context) {
+            return;
+        }
 
         /** @see KeyboardContext#key */
         public Builder key(Key key) {
@@ -119,6 +139,12 @@ public class KeyboardContext extends Immutable {
         /** @see KeyboardContext#inputList */
         public Builder inputList(InputList inputList) {
             this.inputList = inputList;
+            return this;
+        }
+
+        /** @see KeyboardContext#listener */
+        public Builder listener(InputMsgListener listener) {
+            this.listener = listener;
             return this;
         }
 
