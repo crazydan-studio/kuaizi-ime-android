@@ -116,7 +116,12 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
     }
 
     private XPadKeyViewHolder getXPadKeyViewHolder(XPadKey xPadKey) {
-        return ((XPadKeyViewHolder) getVisibleKeyViewHolder(getItemViewByKey(xPadKey)));
+        View view = getItemViewByKey(xPadKey);
+        // Note: 视图更新与数据绑定不是同步的，在不同键盘发生切换时，
+        // 获取的视图类型与预期的会不一致，所以，需要对其做类型检查
+        KeyViewHolder<?> holder = getVisibleKeyViewHolder(view);
+
+        return holder instanceof XPadKeyViewHolder ? (XPadKeyViewHolder) holder : null;
     }
 
     /** 找到指定坐标下可见的 {@link  KeyViewHolder} */

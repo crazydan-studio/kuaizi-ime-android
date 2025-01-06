@@ -324,7 +324,7 @@ public class XPadView extends View {
             Key key = zone_1_keys[i];
             this.zone_1_keys[i] = new BlockKey(1, i, 0, 0, key);
 
-            if (key.disabled) {
+            if (key != null && key.disabled) {
                 this.active_ctrl_block_key = this.zone_1_keys[i];
             }
         }

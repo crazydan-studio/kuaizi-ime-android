@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
@@ -207,10 +208,20 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         KeyFactory keyFactory = msg.keyFactory;
 
         switch (msg.type) {
+            // 不影响布局的消息直接忽略
+            case InputAudio_Play_Doing: {
+                return;
+            }
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
-                // Note: 若非主题更新，则无需更新视图
-                if (data.key != ConfigKey.theme) {
+                // Note: 仅关注与键盘布局相关的配置更新
+                ConfigKey[] effects = new ConfigKey[] {
+                        ConfigKey.theme,
+                        ConfigKey.hand_mode,
+                        ConfigKey.enable_x_input_pad,
+                        ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad
+                };
+                if (!CollectionUtils.contains(effects, data.key)) {
                     return;
                 }
             }
@@ -234,10 +245,6 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     this.gestureTrailer.setDisabled(false);
                 }
                 break;
-            }
-            // 不影响布局的消息直接忽略
-            case InputAudio_Play_Doing: {
-                return;
             }
         }
 
