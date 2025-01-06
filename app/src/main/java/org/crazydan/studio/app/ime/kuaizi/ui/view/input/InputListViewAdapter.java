@@ -26,15 +26,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
 
 /**
- * {@link InputboardView} 的 {@link RecyclerView} 适配器
+ * {@link InputListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-07
  */
-public class InputboardViewAdapter extends RecyclerViewAdapter<InputViewData, InputViewHolder> {
+public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, InputViewHolder> {
     private static final int VIEW_TYPE_CHAR_INPUT = 0;
     private static final int VIEW_TYPE_GAP_INPUT = 1;
     private static final int VIEW_TYPE_SPACE_INPUT = 2;
@@ -42,7 +42,7 @@ public class InputboardViewAdapter extends RecyclerViewAdapter<InputViewData, In
 
     private boolean canBeSelected;
 
-    public InputboardViewAdapter() {
+    public InputListViewAdapter() {
         // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
         // 其判断逻辑较复杂且容易遗漏更新，故而，始终对列表视图做全量更新
         super(ItemUpdatePolicy.full);

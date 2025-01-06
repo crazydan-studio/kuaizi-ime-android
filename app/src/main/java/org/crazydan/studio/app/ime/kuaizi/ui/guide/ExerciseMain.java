@@ -261,15 +261,13 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 // Note: 置为 null 的配置项将被移除而采用系统配置
                 this.imeConfig.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
                 this.imeConfig.set(ConfigKey.disable_user_input_data, freeMode ? null : true);
-
-                this.imeView.disableSettingsBtn(false);
+                this.imeConfig.set(ConfigKey.disable_settings_btn, false);
                 break;
             }
             case normal: {
                 this.imeConfig.set(ConfigKey.enable_x_input_pad, exercise.isXInputPadEnabled());
                 this.imeConfig.set(ConfigKey.disable_user_input_data, true);
-
-                this.imeView.disableSettingsBtn(true);
+                this.imeConfig.set(ConfigKey.disable_settings_btn, true);
                 break;
             }
         }

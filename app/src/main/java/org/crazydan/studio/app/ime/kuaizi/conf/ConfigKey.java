@@ -33,6 +33,8 @@ public enum ConfigKey {
     prev_keyboard_type(Keyboard.Type.class, null),
     /** 是否禁用字典库 */
     disable_dict_db(Boolean.class, false),
+    /** 是否禁用配置按钮 */
+    disable_settings_btn(Boolean.class, false),
     // ====================== End: 临时性配置 =====================
 
     /** 主题样式 */

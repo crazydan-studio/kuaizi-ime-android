@@ -35,7 +35,7 @@
             android:gravity="center"
             android:textColor="?attr/input_fg_color" />
 
-    <FrameLayout
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             app:layout_flexGrow="1">
@@ -49,6 +49,6 @@
                 android:gravity="center"
                 android:textSize="@dimen/char_input_word_text_size"
                 android:textColor="?attr/input_fg_color" />
-    </FrameLayout>
+    </LinearLayout>
 
 </com.google.android.flexbox.FlexboxLayout>

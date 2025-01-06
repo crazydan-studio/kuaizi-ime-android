@@ -32,7 +32,6 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
@@ -43,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
@@ -74,14 +72,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private PopupWindow completionInputListPopupWindow;
     private CompletionInputListView completionInputListView;
 
-    private View settingsBtnView;
-    private View inputListCleanBtnView;
-    private View inputListCleanCancelBtnView;
-
     private boolean needToAddBottomSpacing;
-    private boolean needToDisableSettingsBtn;
-    private boolean needToDisableInputListCleanBtn = true;
-    private boolean needToDisableInputListCleanCancelBtn = true;
 
     private Config config;
     private UserMsgListener listener;
@@ -105,11 +96,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     public XPadKeyViewHolder getXPadKeyView() {
         return this.keyboardView.getXPadKeyViewHolder();
-    }
-
-    public void disableSettingsBtn(boolean disabled) {
-        this.needToDisableSettingsBtn = disabled;
-        toggleEnableSettingsBtn();
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -175,8 +161,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
         }
 
-        toggleEnableInputListCleanBtnByMsg(msg);
-
         // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
         this.keyboardView.onMsg(msg);
         this.inputboardView.onMsg(msg);
@@ -208,20 +192,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.audioPlayer.play(data.audioType.resId);
     }
 
-    private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
-        boolean disableCleanBtn = msg.inputList.empty;
-        boolean disableCleanCancelBtn = !msg.inputList.canCancelClean;
-
-        if (this.needToDisableInputListCleanBtn != disableCleanBtn
-            || this.needToDisableInputListCleanCancelBtn != disableCleanCancelBtn //
-        ) {
-            this.needToDisableInputListCleanBtn = disableCleanBtn;
-            this.needToDisableInputListCleanCancelBtn = disableCleanCancelBtn;
-
-            toggleEnableInputListCleanBtn();
-        }
-    }
-
     // =============================== End: 消息处理 ===================================
 
     // =============================== Start: 视图更新 ===================================
@@ -237,19 +207,13 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
         View rootView = inflateWithTheme(R.layout.ime_view_layout, themeResId, true);
 
-        this.settingsBtnView = rootView.findViewById(R.id.settings);
-        toggleEnableSettingsBtn();
-
-        this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
-        this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
-        toggleEnableInputListCleanBtn();
-
         this.keyboardWarningView = rootView.findViewById(R.id.keyboard_warning);
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.keyboardView.setConfig(this.config);
         this.keyboardView.setListener(this);
 
         this.inputboardView = rootView.findViewById(R.id.inputboard);
+        this.inputboardView.setConfig(this.config);
         this.inputboardView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
@@ -280,37 +244,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             ViewUtils.setHeight(bottomSpacingView, (int) height);
         } else {
             ViewUtils.hide(bottomSpacingView);
-        }
-    }
-
-    private void toggleEnableSettingsBtn() {
-        if (this.needToDisableSettingsBtn) {
-            this.settingsBtnView.setAlpha(0.4f);
-            this.settingsBtnView.setOnClickListener(null);
-        } else {
-            this.settingsBtnView.setAlpha(1.0f);
-            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
-        }
-    }
-
-    private void toggleEnableInputListCleanBtn() {
-        if (this.needToDisableInputListCleanBtn) {
-            if (!this.needToDisableInputListCleanCancelBtn) {
-                ViewUtils.hide(this.inputListCleanBtnView);
-                ViewUtils.show(this.inputListCleanCancelBtnView);
-            } else {
-                ViewUtils.show(this.inputListCleanBtnView).setAlpha(0);
-                ViewUtils.hide(this.inputListCleanCancelBtnView);
-            }
-
-            this.inputListCleanBtnView.setOnClickListener(null);
-            this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
-        } else {
-            ViewUtils.show(this.inputListCleanBtnView).setAlpha(1);
-            ViewUtils.hide(this.inputListCleanCancelBtnView);
-
-            this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
-            this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
     }
 
@@ -425,22 +358,4 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     // ==================== End: 气泡提示 ==================
-
-    // ==================== Start: 按键事件处理 ==================
-
-    private void onShowPreferences(View v) {
-        SystemUtils.showAppPreferences(getContext());
-    }
-
-    private void onCleanInputList(View v) {
-        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Clean_InputList);
-        onMsg(msg);
-    }
-
-    private void onCancelCleanInputList(View v) {
-        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList);
-        onMsg(msg);
-    }
-
-    // ==================== End: 按键事件处理 ==================
 }

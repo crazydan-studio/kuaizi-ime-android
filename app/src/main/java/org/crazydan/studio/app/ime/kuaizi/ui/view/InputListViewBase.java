@@ -40,24 +40,24 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputboardViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputboardViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData.Type.MathExpr;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
 
 /**
- * {@link InputboardView} 的基类
+ * {@link InputListView} 的基类
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputboardViewBase extends RecyclerView<InputboardViewAdapter, InputViewData>
+public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
     private UserInputMsgListener listener;
 
-    public InputboardViewBase(Context context, @Nullable AttributeSet attrs) {
+    public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         // Note：取消动画以确保输入能够直接显隐，不做淡化
@@ -68,13 +68,13 @@ public class InputboardViewBase extends RecyclerView<InputboardViewAdapter, Inpu
     }
 
     @Override
-    protected InputboardViewAdapter createAdapter() {
-        return new InputboardViewAdapter();
+    protected InputListViewAdapter createAdapter() {
+        return new InputListViewAdapter();
     }
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new InputboardViewLayoutManager(context);
+        return new InputListViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -137,8 +137,8 @@ public class InputboardViewBase extends RecyclerView<InputboardViewAdapter, Inpu
         // Note: 此类视图存在嵌套的情况，故而，需将消息交给最上层的视图转发
         ViewParent parent = this;
         while ((parent = parent.getParent()) != null) {
-            if (parent instanceof InputboardViewBase) {
-                ((InputboardViewBase) parent).fire_UserInputMsg(msg);
+            if (parent instanceof InputListViewBase) {
+                ((InputListViewBase) parent).fire_UserInputMsg(msg);
                 break;
             }
         }
@@ -252,8 +252,8 @@ public class InputboardViewBase extends RecyclerView<InputboardViewAdapter, Inpu
         for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
             View child = ((ViewGroup) view).getChildAt(i);
 
-            if (child instanceof InputboardViewReadonly) {
-                InputboardViewReadonly ro = (InputboardViewReadonly) child;
+            if (child instanceof InputListViewReadonly) {
+                InputListViewReadonly ro = (InputListViewReadonly) child;
                 InputViewData selected = selectedData.inputs.stream().filter(d -> d.pending).findFirst().get();
 
                 return ro.getLayoutManager().findViewByPosition(selected.position);

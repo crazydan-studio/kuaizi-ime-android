@@ -15,29 +15,22 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view;
-
-import java.util.List;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import android.content.Context;
-import android.util.AttributeSet;
-import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
 
 /**
- * 只读的 {@link InputboardView}
+ * {@link InputListView} 的 {@link RecyclerView} 布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-12-04
+ * @date 2023-07-07
  */
-public class InputboardViewReadonly extends InputboardViewBase {
+public class InputListViewLayoutManager extends LinearLayoutManager {
 
-    public InputboardViewReadonly(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    @Override
-    protected void scrollToSelectedInput(List<InputViewData> dataList) {
-        // 由父 InputList 处理定位
+    public InputListViewLayoutManager(Context context) {
+        super(context, RecyclerView.HORIZONTAL, false);
     }
 }

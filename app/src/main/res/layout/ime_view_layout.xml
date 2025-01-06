@@ -28,79 +28,10 @@
             android:layout_height="1dp"
             android:background="?attr/keyboard_border_color" />
 
-    <LinearLayout
+    <org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-        <ImageButton
-                android:layout_width="@dimen/input_list_button_icon_size"
-                android:layout_height="@dimen/input_list_button_icon_size"
-                android:layout_gravity="center"
-                android:layout_marginStart="@dimen/input_list_button_spacing"
-                android:id="@+id/settings"
-                android:src="@drawable/ic_settings"
-                android:background="?attr/input_bg_color" />
-
-        <View
-                android:layout_width="1dp"
-                android:layout_height="@dimen/input_list_divider_height"
-                android:layout_gravity="center"
-                android:layout_marginStart="8dp"
-                android:background="?attr/keyboard_divider_color" />
-
-        <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/input_list_view_height"
-                android:layout_weight="1"
-                android:layout_marginHorizontal="1dp"
-                android:layout_marginVertical="4dp">
-
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="@string/text_alpha_using_warning"
-                    android:alpha=".1"
-                    android:textColor="?attr/input_fg_color"
-                    android:textSize="@dimen/char_input_word_text_size" />
-
-            <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
-            <org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/inputboard"
-                    android:clipToPadding="false"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="16dp" />
-        </FrameLayout>
-
-        <View
-                android:layout_width="1dp"
-                android:layout_height="@dimen/input_list_divider_height"
-                android:layout_gravity="center"
-                android:layout_marginEnd="8dp"
-                android:background="?attr/keyboard_divider_color" />
-
-        <ImageButton
-                android:layout_width="@dimen/input_list_button_icon_size"
-                android:layout_height="@dimen/input_list_button_icon_size"
-                android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/input_list_button_spacing"
-                android:id="@+id/clean_input_list"
-                android:src="@drawable/ic_clean"
-                android:background="?attr/input_bg_color" />
-
-        <ImageButton
-                android:layout_width="@dimen/input_list_button_icon_size"
-                android:layout_height="@dimen/input_list_button_icon_size"
-                android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/input_list_button_spacing"
-                android:id="@+id/cancel_clean_input_list"
-                android:src="@drawable/ic_restore"
-                android:background="?attr/input_bg_color" />
-    </LinearLayout>
+            android:id="@+id/inputboard" />
 
     <View
             android:layout_width="match_parent"

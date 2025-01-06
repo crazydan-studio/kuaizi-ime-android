@@ -17,9 +17,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 
 /**
  * {@link KeyTable} 的配置

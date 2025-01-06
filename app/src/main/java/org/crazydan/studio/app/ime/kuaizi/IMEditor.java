@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.InputboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
@@ -36,7 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
@@ -235,7 +235,15 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         Key key = msg.data().key;
         KeyboardContext context = createKeyboardContext(key);
 
+        this.log.debug("====================== User Key Message ======================");
+        this.log.debug(">> Message Type: %s", msg.type);
+        this.log.debug(">> Message Key: %s", key);
+        this.log.debug("\n");
+
         this.keyboard.onMsg(context, msg);
+
+        this.log.debug("==============================================================");
+        this.log.debug("\n");
     }
 
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
@@ -255,6 +263,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     @Override
     public void onMsg(InputMsg msg) {
         // Note: 涉及消息的嵌套处理，可能会发生键盘切换，因此，不能定义 keyboard 的本地变量
+
+        this.log.debug("<< Input Message Type: %s", msg.type);
+        this.log.debug("<< Input Message Key: %s", msg.data().key);
+        this.log.debug("<< Input Message Input: %s", msg.data().input);
+        this.log.debug("\n");
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {

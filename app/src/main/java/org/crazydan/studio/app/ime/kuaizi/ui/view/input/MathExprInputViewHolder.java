@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardViewReadonly;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
 
 /**
  * {@link MathExprInput} 视图的 {@link RecyclerView.ViewHolder}
@@ -35,13 +35,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardViewReadonly;
  * @date 2023-09-15
  */
 public class MathExprInputViewHolder extends InputViewHolder {
-    private final InputboardViewReadonly inputboardView;
+    private final InputListViewReadonly inputboardView;
     private final View markerView;
 
     public MathExprInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.inputboardView = itemView.findViewById(R.id.inputboard);
+        this.inputboardView = itemView.findViewById(R.id.input_list);
         this.markerView = itemView.findViewById(R.id.marker);
     }
 

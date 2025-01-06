@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2023 Crazydan Studio
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+    <!-- 配置按钮 -->
+    <ImageButton
+            android:layout_width="@dimen/input_list_button_icon_size"
+            android:layout_height="@dimen/input_list_button_icon_size"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/input_list_button_spacing"
+            android:id="@+id/settings"
+            android:src="@drawable/ic_settings"
+            android:background="?attr/input_bg_color" />
+
+    <View
+            android:layout_width="1dp"
+            android:layout_height="@dimen/input_list_divider_height"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:background="?attr/keyboard_divider_color" />
+
+    <!-- 输入列表 -->
+    <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="@dimen/input_list_view_height"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="1dp"
+            android:layout_marginVertical="4dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/text_alpha_using_warning"
+                android:alpha=".1"
+                android:textColor="?attr/input_fg_color"
+                android:textSize="@dimen/char_input_word_text_size" />
+
+        <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
+        <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/input_list"
+                android:clipToPadding="false"
+                android:paddingStart="8dp"
+                android:paddingEnd="16dp" />
+    </FrameLayout>
+
+    <View
+            android:layout_width="1dp"
+            android:layout_height="@dimen/input_list_divider_height"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/keyboard_divider_color" />
+
+    <!-- 删除与撤销按钮 -->
+    <FrameLayout
+            android:layout_width="@dimen/input_list_button_icon_size"
+            android:layout_height="@dimen/input_list_button_icon_size"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/input_list_button_spacing">
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/clean_input_list"
+                android:src="@drawable/ic_clean"
+                android:background="?attr/input_bg_color" />
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/cancel_clean_input_list"
+                android:src="@drawable/ic_restore"
+                android:background="?attr/input_bg_color" />
+    </FrameLayout>
+
+</LinearLayout>

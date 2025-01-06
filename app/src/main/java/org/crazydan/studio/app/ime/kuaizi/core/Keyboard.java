@@ -20,7 +20,6 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.IMESubtype;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 

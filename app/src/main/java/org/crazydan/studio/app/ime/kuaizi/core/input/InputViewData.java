@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 
 /**
@@ -141,15 +142,18 @@ public class InputViewData extends Immutable {
                 gapSpaces = 2;
             }
 
-            // Note: 构建嵌套的 InputList 时，不需要缓存，由最上层缓存整体即可
+            // Note: 由于 Builder 是单例的，故而，不能嵌套复用其实例，否则，在外层设置的数据会被下层覆盖。
+            // 并且，在构建嵌套的 InputList 时，不需要缓存，由最上层缓存整体即可
             List<InputViewData> inputs = doBuild(new Builder(true), mathExprInput.getInputList(), option);
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
             if (!Input.isEmpty(pending)) {
                 gapSpaces = needGapSpace ? 2 : 1;
-            }
 
-            b.type(Type.Gap);
+                b.type(Type.Char);
+            } else {
+                b.type(Type.Gap);
+            }
         } else if (input.isSpace()) {
             b.type(Type.Space);
         } else {
