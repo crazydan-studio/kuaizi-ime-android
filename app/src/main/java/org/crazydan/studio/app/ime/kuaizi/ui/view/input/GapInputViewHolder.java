@@ -52,8 +52,6 @@ public class GapInputViewHolder extends InputViewHolder {
             float space = data.gapSpaces / 2.0f;
             addLeftSpaceMargin(view, space);
             addRightSpaceMargin(view, space);
-
-            ViewUtils.visible(view, true);
         });
 
         whenViewReady(this.blinkView, (view) -> {

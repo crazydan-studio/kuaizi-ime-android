@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -33,6 +34,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
  * @date 2024-12-09
  */
 public class InputViewData extends Immutable {
+    private final static Logger log = Logger.getLogger(InputViewData.class);
+
     public final static Builder builder = new Builder();
 
     public enum Type {
@@ -162,6 +165,8 @@ public class InputViewData extends Immutable {
 
         Input currInput = Input.isEmpty(pending) ? input : pending;
         String[] textAndSpell = getInputTextAndSpell(currInput, option);
+
+        log.debug("%s needs %d spaces", currInput, gapSpaces);
 
         b.position(position)
          .pending(pending != null)
