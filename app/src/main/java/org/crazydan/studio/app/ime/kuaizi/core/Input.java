@@ -107,8 +107,9 @@ public abstract class Input {
     public boolean isSymbol() {
         return test((key) -> CharKey.Type.Symbol.match(key) //
                              || key instanceof SymbolKey //
-                             || !MathOpKey.Type.isOperator(key)) //
-               || isSpace();
+                             || (key instanceof MathOpKey //
+                                 && !MathOpKey.Type.isOperator(key)) //
+        ) || isSpace();
     }
 
     /** 是否为表情符号 */
@@ -120,11 +121,7 @@ public abstract class Input {
 
     /** 是否为数学运算符 */
     public boolean isMathOp() {
-        // 确保数学运算符前后都有空格
-        return test((key) -> key instanceof MathOpKey //
-                             && !(MathOpKey.Type.Percent.match(key)
-                                  || MathOpKey.Type.Permill.match(key)
-                                  || MathOpKey.Type.Permyriad.match(key)));
+        return test(MathOpKey.Type::isOperator);
     }
 
     /** 是否为数学计算式 */
