@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
@@ -502,27 +502,31 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 更新待输入的输入补全 */
     protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
         InputList inputList = context.inputList;
+        inputList.clearCompletions();
 
         CharInput pending = inputList.getPending();
         if (Input.isEmpty(pending) || !pending.isLatin()) {
             return;
         }
-        pending.clearCompletions();
 
+        int startPosition = inputList.getSelectedIndex();
         String text = pending.getText().toString();
         getTopBestMatchedLatins(text).forEach((latin) -> {
+            // Note: 对于拉丁文输入的补全，采用逐个字符构建，
+            // 以支持在应用补全后，仍然可以从输入中逐个删除
             List<Key> keys = CharKey.from(latin);
-
-            if (!keys.isEmpty()) {
-                CharInput input = CharInput.from(keys);
-                CompletionInput completion = new CompletionInput(text.length());
-                completion.add(input);
-
-                pending.addCompletion(completion);
+            if (keys.isEmpty()) {
+                return;
             }
+
+            CharInput input = CharInput.from(keys);
+            InputCompletion completion = new InputCompletion(startPosition);
+            completion.add(input);
+
+            inputList.addCompletion(completion);
         });
 
-        fire_Input_Completion_Update_Done(context, pending);
+        fire_Input_Completion_Update_Done(context);
     }
 
     // ======================== End: 输入补全 ========================
@@ -822,9 +826,13 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 触发 {@link InputMsgType#Input_Completion_Update_Done} 消息 */
-    protected void fire_Input_Completion_Update_Done(KeyboardContext context, Input input) {
+    protected void fire_Input_Completion_Update_Done(KeyboardContext context) {
         InputList inputList = context.inputList;
-        InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(input, inputList.getCompletions());
+        if (!inputList.hasCompletions()) {
+            return;
+        }
+
+        InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(inputList.getCompletionViewDataList());
 
         fire_InputMsg(context, Input_Completion_Update_Done, data);
     }

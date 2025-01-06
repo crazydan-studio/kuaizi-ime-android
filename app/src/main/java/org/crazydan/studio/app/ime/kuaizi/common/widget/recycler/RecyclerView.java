@@ -83,4 +83,16 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<I, ?>, I>
 
         return (I) adapter.getItem(holder);
     }
+
+    /** 获取与指定坐标下的视图所绑定的 {@link RecyclerViewAdapter} 数据项 */
+    public I getAdapterItemUnder(float x, float y) {
+        View view = findChildViewUnder(x, y);
+        return getAdapterItem(view);
+    }
+
+    /** 获取与指定坐标下的视图所绑定的 {@link RecyclerViewAdapter} */
+    public <V extends RecyclerViewHolder> V getViewHolderUnder(float x, float y) {
+        View view = findChildViewUnder(x, y);
+        return view != null ? (V) getChildViewHolder(view) : null;
+    }
 }

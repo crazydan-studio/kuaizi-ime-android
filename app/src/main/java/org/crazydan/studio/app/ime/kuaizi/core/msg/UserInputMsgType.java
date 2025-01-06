@@ -18,7 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 
 /**
  * 用户对 {@link Input} 操作的消息
@@ -30,8 +30,8 @@ public enum UserInputMsgType {
     /** 单击 {@link Input} */
     SingleTap_Input,
 
-    /** 单击 {@link CompletionInput} */
-    SingleTap_CompletionInput,
+    /** 单击 {@link InputCompletion} */
+    SingleTap_InputCompletion,
 
     /** 单击 输入列表清空 的按钮 */
     SingleTap_Btn_Clean_InputList,

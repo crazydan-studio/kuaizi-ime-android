@@ -22,11 +22,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Apply_Done;
 
 /**
  * 输入面板
@@ -69,14 +71,12 @@ public class Inputboard {
                 fire_InputMsg(context, Input_Choose_Doing, input);
                 break;
             }
-            case SingleTap_CompletionInput: {
-//                CompletionInput completion = (CompletionInput) msg.data().target;
-//
-//                inputList.applyCompletion(completion);
-//                // Note：待输入的补全数据将在 confirm 时清除
-//                inputList.confirmPendingAndSelectNext();
-//
-//                fire_InputMsg(context, Input_Completion_Apply_Done, null);
+            case SingleTap_InputCompletion: {
+                UserInputCompletionSingleTapMsgData data = msg.data();
+
+                inputList.applyCompletion(data.position);
+
+                fire_InputMsg(context, Input_Completion_Apply_Done, null);
                 break;
             }
             case SingleTap_Btn_Clean_InputList: {

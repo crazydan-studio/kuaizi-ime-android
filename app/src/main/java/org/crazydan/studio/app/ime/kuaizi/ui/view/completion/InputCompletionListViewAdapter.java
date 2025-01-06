@@ -24,41 +24,30 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
 
 /**
- * {@link CompletionInputListView} 的 {@link RecyclerView} 适配器
+ * {@link InputCompletionListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputListViewAdapter extends RecyclerViewAdapter<CompletionInput, CompletionInputViewHolder> {
-    private CompletionInputListViewLayoutManager layoutManager;
+public class InputCompletionListViewAdapter
+        extends RecyclerViewAdapter<InputCompletion.ViewData, InputCompletionViewHolder> {
+    private InputCompletionListViewLayoutManager layoutManager;
 
-    public CompletionInputListViewAdapter() {
+    public InputCompletionListViewAdapter() {
         super(ItemUpdatePolicy.differ);
     }
 
-    public void setLayoutManager(CompletionInputListViewLayoutManager layoutManager) {
+    public void setLayoutManager(InputCompletionListViewLayoutManager layoutManager) {
         this.layoutManager = layoutManager;
     }
 
-    public void updateViewHolder(CompletionInputViewHolder holder) {
-        CompletionInput item = getItem(holder);
-
-        int index = this.items.indexOf(item);
-        CompletionInput newItem = getItem(index);
-
-        // 更新 变更了补全位置 的数据，以确保在应用补全时能够对应到正确的补全位置
-        if (newItem != item) {
-            holder.bind(newItem);
-        }
-    }
-
     @Override
-    public void onBindViewHolder(@NonNull CompletionInputViewHolder holder, int position) {
-        CompletionInput item = getItem(position);
+    public void onBindViewHolder(@NonNull InputCompletionViewHolder holder, int position) {
+        InputCompletion.ViewData item = getItem(position);
 
         holder.bind(item);
 
@@ -67,9 +56,9 @@ public class CompletionInputListViewAdapter extends RecyclerViewAdapter<Completi
 
     @NonNull
     @Override
-    public CompletionInputViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public InputCompletionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = inflateItemView(parent, R.layout.input_completion_view);
-        return new CompletionInputViewHolder(view);
+        return new InputCompletionViewHolder(view);
     }
 
     private boolean handleScrollViewEvent(View view, MotionEvent event) {

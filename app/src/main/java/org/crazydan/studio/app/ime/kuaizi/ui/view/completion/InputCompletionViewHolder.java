@@ -27,20 +27,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
 
 /**
- * {@link CompletionInput} 视图的 {@link RecyclerView.ViewHolder}
+ * {@link InputCompletion} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputViewHolder extends RecyclerViewHolder {
+public class InputCompletionViewHolder extends RecyclerViewHolder {
     private final HorizontalScrollView scrollView;
     private final ViewGroup inputsView;
 
-    public CompletionInputViewHolder(@NonNull View itemView) {
+    public InputCompletionViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.inputsView = itemView.findViewById(R.id.inputs_view);
@@ -55,7 +55,7 @@ public class CompletionInputViewHolder extends RecyclerViewHolder {
         return this.scrollView;
     }
 
-    public void bind(CompletionInput data) {
+    public void bind(InputCompletion.ViewData data) {
         whenViewReady(this.inputsView, (view) -> {
             view.removeAllViews();
 
@@ -63,7 +63,7 @@ public class CompletionInputViewHolder extends RecyclerViewHolder {
         });
     }
 
-    private void createChildView(ViewGroup view, CharInput input) {
+    private void createChildView(ViewGroup view, InputCompletion.CharInputViewData input) {
         // Note：若设置了 root，则返回值也为该 root，
         // 这里需直接处理 R.layout.char_input_view 视图，故设置为 null
         View childView = LayoutInflater.from(getContext()).inflate(R.layout.input_char_view, null);
@@ -74,7 +74,7 @@ public class CompletionInputViewHolder extends RecyclerViewHolder {
                                                    ViewGroup.LayoutParams.MATCH_PARENT);
         childView.setLayoutParams(layoutParams);
 
-        //new CharInputViewHolder(childView).bind(input);
+        new CharInputViewHolder(childView).bind(input.text, input.spell, false);
 
         // 采用 itemView 的背景
         childView.setBackgroundColor(Color.TRANSPARENT);

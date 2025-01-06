@@ -21,18 +21,19 @@ import java.util.List;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputListViewLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionListViewLayoutManager;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputCompletion;
 
 /**
  * 输入补全列表视图
@@ -42,27 +43,27 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.CompletionInputView
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class CompletionInputListView extends RecyclerView<CompletionInputListViewAdapter, CompletionInput>
+public class InputCompletionListView extends RecyclerView<InputCompletionListViewAdapter, InputCompletion.ViewData>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public CompletionInputListView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public InputCompletionListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        getAdapter().setLayoutManager((CompletionInputListViewLayoutManager) getLayoutManager());
+        getAdapter().setLayoutManager((InputCompletionListViewLayoutManager) getLayoutManager());
 
-        RecyclerViewGestureDetector<CompletionInput> gesture = new RecyclerViewGestureDetector<>(this);
+        RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(this);
         gesture.addListener(this);
     }
 
     @Override
-    protected CompletionInputListViewAdapter createAdapter() {
-        return new CompletionInputListViewAdapter();
+    protected InputCompletionListViewAdapter createAdapter() {
+        return new InputCompletionListViewAdapter();
     }
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new CompletionInputListViewLayoutManager(context);
+        return new InputCompletionListViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -78,32 +79,21 @@ public class CompletionInputListView extends RecyclerView<CompletionInputListVie
             return;
         }
 
-        CompletionInputViewHolder holder = findCompletionViewHolderUnder(data.x, data.y);
+        ViewHolder holder = getViewHolderUnder(data.x, data.y);
         if (holder == null) {
             return;
         }
 
-        CompletionInput completion = getAdapterItem(holder);
+        int position = holder.getAdapterPosition();
+        UserInputCompletionSingleTapMsgData msgData = new UserInputCompletionSingleTapMsgData(position);
+        UserInputMsg msg = new UserInputMsg(SingleTap_InputCompletion, msgData);
 
-//        UserInputMsg msg = new UserInputMsg(SingleTap_CompletionInput, new UserInputMsgData(completion));
-//        this.listener.onMsg(msg);
+        this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
 
-    public void update(List<CompletionInput> completions) {
+    public void update(List<InputCompletion.ViewData> completions) {
         getAdapter().updateItems(completions);
-    }
-
-    private CompletionInputViewHolder findCompletionViewHolderUnder(float x, float y) {
-        View view = findChildViewUnder(x, y);
-        if (view == null) {
-            return null;
-        }
-
-        CompletionInputViewHolder holder = (CompletionInputViewHolder) getChildViewHolder(view);
-        getAdapter().updateViewHolder(holder);
-
-        return holder;
     }
 }

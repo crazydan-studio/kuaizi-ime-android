@@ -1,6 +1,6 @@
 /*
  * 筷字输入法 - 高效编辑需要又好又快的输入法
- * Copyright (C) 2024 Crazydan Studio
+ * Copyright (C) 2025 Crazydan Studio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
-
-import java.util.List;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link InputMsgType#Input_Completion_Update_Done} 的消息数据
+ * 在 {@link InputCompletion} 上触发的 {@link UserInputMsgType#SingleTap_Input} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-16
+ * @date 2025-01-06
  */
-public class InputCompletionUpdateMsgData extends InputMsgData {
-    public final List<InputCompletion.ViewData> completions;
+public class UserInputCompletionSingleTapMsgData extends UserInputMsgData {
+    /** 与消息相关的 {@link InputCompletion} 所在的位置 */
+    public final int position;
 
-    public InputCompletionUpdateMsgData(List<InputCompletion.ViewData> completions) {
-        this.completions = completions;
+    public UserInputCompletionSingleTapMsgData(int position) {
+        this.position = position;
     }
 }

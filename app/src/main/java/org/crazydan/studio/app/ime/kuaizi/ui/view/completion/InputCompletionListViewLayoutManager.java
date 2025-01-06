@@ -20,18 +20,18 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.completion;
 import android.content.Context;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
 
 /**
- * {@link CompletionInputListView} 的{@link RecyclerView}布局器
+ * {@link InputCompletionListView} 的{@link RecyclerView}布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class CompletionInputListViewLayoutManager extends LinearLayoutManager {
+public class InputCompletionListViewLayoutManager extends LinearLayoutManager {
     private boolean scrollEnabled = true;
 
-    public CompletionInputListViewLayoutManager(Context context) {
+    public InputCompletionListViewLayoutManager(Context context) {
         super(context, RecyclerView.HORIZONTAL, false);
     }
 

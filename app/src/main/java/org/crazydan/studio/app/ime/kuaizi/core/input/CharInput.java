@@ -17,7 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,9 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 public class CharInput extends Input {
     private CharInput pair;
 
-    /** 输入补全 */
-    private List<CompletionInput> completions = new ArrayList<>();
-
     public static CharInput from(List<Key> keys) {
         CharInput input = new CharInput();
 
@@ -50,6 +46,8 @@ public class CharInput extends Input {
     public static CharInput from(Key... keys) {
         return from(Arrays.asList(keys));
     }
+
+    // ======================= Start: 配对符号输入 ======================
 
     public CharInput getPair() {
         return this.pair;
@@ -77,33 +75,9 @@ public class CharInput extends Input {
         return this.pair != null;
     }
 
-    public List<CompletionInput> getCompletions() {
-        return this.completions;
-    }
+    // ======================= End: 配对符号输入 ======================
 
-    public void addCompletion(CompletionInput completion) {
-        this.completions.add(completion);
-    }
-
-    public boolean hasCompletions() {
-        return !this.completions.isEmpty();
-    }
-
-    public void clearCompletions() {
-        this.completions = new ArrayList<>();
-    }
-
-    public void applyCompletion(CompletionInput completion) {
-        CharInput input = completion.inputs.get(0);
-
-        replaceKeys(input.getKeys());
-        setWord(input.getWord());
-    }
-
-    @Override
-    public void confirm() {
-        clearCompletions();
-    }
+    // ======================= Start: 拼音输入转换 ======================
 
     /** 是否为拼音 平/翘舌 开头 */
     public boolean is_Pinyin_SCZ_Starting() {
@@ -186,4 +160,6 @@ public class CharInput extends Input {
 
         getKeys().set(keyIndex, newKey);
     }
+
+    // ======================= End: 拼音输入转换 ======================
 }

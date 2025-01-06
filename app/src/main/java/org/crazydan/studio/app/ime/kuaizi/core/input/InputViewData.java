@@ -161,30 +161,37 @@ public class InputViewData extends Immutable {
         }
 
         Input currInput = Input.isEmpty(pending) ? input : pending;
-        InputWord currInputWord = currInput.getWord();
-
-        String text;
-        String spell = currInputWord instanceof PinyinWord ? ((PinyinWord) currInputWord).spell.value : null;
-        if (option != null && currInputWord != null) {
-            text = currInput.getText(option).toString();
-            // 若已携带读音，不再单独显示读音
-            if (spell != null && text.contains(spell)) {
-                spell = null;
-            }
-        } else {
-            text = currInputWord != null ? currInputWord.value : currInput.getJoinedChars();
-        }
+        String[] textAndSpell = getInputTextAndSpell(currInput, option);
 
         b.position(position)
          .pending(pending != null)
          .selected(shouldBeSelected)
          .gapSpaces(gapSpaces)
-         .text(text)
-         .spell(spell);
+         .text(textAndSpell[0])
+         .spell(textAndSpell[1]);
         // Note: 不缓存正在输入的 Input，其变动频率更高
         if (pending != null) {
             b.notCache();
         }
+    }
+
+    public static String[] getInputTextAndSpell(Input input, Input.Option option) {
+        InputWord inputWord = input.getWord();
+
+        String text;
+        String spell = inputWord instanceof PinyinWord ? ((PinyinWord) inputWord).spell.value : null;
+        if (option != null && inputWord != null) {
+            text = input.getText(option).toString();
+
+            // 若已携带读音，不再单独显示读音
+            if (spell != null && text.contains(spell)) {
+                spell = null;
+            }
+        } else {
+            text = inputWord != null ? inputWord.value : input.getJoinedChars();
+        }
+
+        return new String[] { text, spell };
     }
 
     private static MathExprInput tryGetMathExprInput(InputList inputList, Input input) {

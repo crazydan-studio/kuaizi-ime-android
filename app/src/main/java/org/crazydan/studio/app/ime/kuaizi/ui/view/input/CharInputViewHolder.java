@@ -48,20 +48,10 @@ public class CharInputViewHolder extends InputViewHolder {
         addLeftSpaceMargin(this.itemView, data.gapSpaces);
         setSelectedBgColor(this.itemView, selected);
 
-        showWord(data, selected, false);
+        bind(data.text, data.spell, selected);
     }
 
-    public void bind(CharInput input) {
-        addLeftSpaceMargin(this.itemView, 0);
-        setSelectedBgColor(this.itemView, false);
-
-        //showWord(input, false, true);
-    }
-
-    private void showWord(InputViewData data, boolean selected, boolean hideWordSpell) {
-        String text = data.text;
-        String spell = !hideWordSpell ? data.spell : null;
-
+    public void bind(String text, String spell, boolean selected) {
         whenViewReady(this.wordView, (view) -> {
             setSelectedTextColor(view, selected);
             view.setText(text);

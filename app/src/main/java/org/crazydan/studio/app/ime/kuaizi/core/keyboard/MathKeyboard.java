@@ -324,7 +324,7 @@ public class MathKeyboard extends BaseKeyboard {
     /** 结束算术输入 */
     private void stop_Math_Inputting(KeyboardContext context) {
         InputList parentInputList = getParentInputList(context);
-        parentInputList.getPending().clearCompletions();
+        parentInputList.clearCompletions();
 
         // 在切换前，确保当前的算术输入列表已被确认
         // Note：新位置的待输入将被设置为普通输入，可接受非算术输入，故，不需要处理

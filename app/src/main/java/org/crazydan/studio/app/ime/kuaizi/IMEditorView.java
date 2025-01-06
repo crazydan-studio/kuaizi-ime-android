@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -48,7 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionUpdateMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.CompletionInputListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
@@ -69,8 +69,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private TextView keyboardWarningView;
 
     private PopupWindow inputKeyPopupWindow;
-    private PopupWindow completionInputListPopupWindow;
-    private CompletionInputListView completionInputListView;
+    private PopupWindow inputCompletionListPopupWindow;
+    private InputCompletionListView inputCompletionListView;
 
     private boolean needToAddBottomSpacing;
 
@@ -217,9 +217,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.inputboardView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
-        this.completionInputListView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
-        this.completionInputListView.setListener(this);
-        preparePopupWindows(this.completionInputListView, inputKeyView);
+        this.inputCompletionListView = inflateWithTheme(R.layout.input_completion_list_view, themeResId, false);
+        this.inputCompletionListView.setListener(this);
+
+        preparePopupWindows(this.inputCompletionListView, inputKeyView);
 
         updateBottomSpacing(true);
     }
@@ -262,14 +263,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     // ==================== Start: 气泡提示 ==================
 
-    private void showInputCompletionListPopupWindow(List<CompletionInput> completions) {
-        PopupWindow window = this.completionInputListPopupWindow;
+    private void showInputCompletionListPopupWindow(List<InputCompletion.ViewData> completions) {
+        PopupWindow window = this.inputCompletionListPopupWindow;
         if (CollectionUtils.isEmpty(completions)) {
             window.dismiss();
             return;
         }
 
-        this.completionInputListView.update(completions);
+        this.inputCompletionListView.update(completions);
         if (window.isShowing()) {
             return;
         }
@@ -311,10 +312,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
     }
 
-    private void preparePopupWindows(CompletionInputListView completionsView, View keyView) {
+    private void preparePopupWindows(InputCompletionListView completionsView, View keyView) {
         resetPopupWindows();
 
-        initPopupWindow(this.completionInputListPopupWindow, completionsView);
+        initPopupWindow(this.inputCompletionListPopupWindow, completionsView);
         initPopupWindow(this.inputKeyPopupWindow, keyView);
     }
 
@@ -329,10 +330,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private void resetPopupWindows() {
-        if (this.completionInputListPopupWindow != null) {
-            this.completionInputListPopupWindow.dismiss();
+        if (this.inputCompletionListPopupWindow != null) {
+            this.inputCompletionListPopupWindow.dismiss();
         } else {
-            this.completionInputListPopupWindow = new PopupWindow();
+            this.inputCompletionListPopupWindow = new PopupWindow();
         }
 
         if (this.inputKeyPopupWindow != null) {

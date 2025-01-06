@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
@@ -47,6 +47,8 @@ public class InputList {
     private final Cursor cursor = new Cursor();
 
     private Input.Option inputOption;
+    /** 输入补全 */
+    private List<InputCompletion> completions = new ArrayList<>();
 
     public InputList() {
         // 确保始终至少有一个 GapInput
@@ -110,26 +112,49 @@ public class InputList {
 
     // ======================== Start: 处理输入补全 ==========================
 
+    /** 获取输入补全的视图数据 */
+    public List<InputCompletion.ViewData> getCompletionViewDataList() {
+        return this.completions.stream().map((completion) -> {
+            // Note: 使用输入选项，以确保汉字的繁/简转换符合应用的配置要求
+            return InputCompletion.ViewData.create(completion, getInputOption());
+        }).collect(Collectors.toList());
+    }
+
+    /** 添加输入补全 */
+    public void addCompletion(InputCompletion completion) {
+        this.completions.add(completion);
+    }
+
     /** 清空输入补全 */
     public void clearCompletions() {
-        if (getPending() != null) {
-            getPending().clearCompletions();
-        }
+        this.completions.clear();
     }
 
-    /** 获取输入补全 */
-    public List<CompletionInput> getCompletions() {
-        if (getPending() != null && getPending().hasCompletions()) {
-            return getPending().getCompletions();
-        }
-        return List.of();
+    /** 是否存在输入补全 */
+    public boolean hasCompletions() {
+        return !this.completions.isEmpty();
     }
 
-    /** 应用输入补全 */
-    public void applyCompletion(CompletionInput completion) {
-        if (getPending() != null && getPending().hasCompletions()) {
-            getPending().applyCompletion(completion);
+    /** 应用指定位置的输入补全。应用后，当前的输入补全将被清空，并将光标移到补全内容的尾部 */
+    public void applyCompletion(int position) {
+        InputCompletion completion = this.completions.get(position);
+        int replaceEndIndex = getSelectedIndex();
+
+        int total = completion.inputs.size();
+        for (int i = 0; i < total; i++) {
+            confirmPending();
+
+            CharInput input = completion.inputs.get(i);
+            // Note: 从补全开始位置到当前选中位置执行替换，之后的执行插入
+            int index = completion.startPosition + i;
+            if (index <= replaceEndIndex) {
+                select(index);
+            }
+            withPending(input);
         }
+        confirmPendingAndSelectNext();
+
+        clearCompletions();
     }
 
     // ======================== End: 处理输入补全 ==========================
