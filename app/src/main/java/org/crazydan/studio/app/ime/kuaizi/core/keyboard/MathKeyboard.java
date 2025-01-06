@@ -93,7 +93,7 @@ public class MathKeyboard extends BaseKeyboard {
 
                 Input input = msg.data().input;
                 // 若所选中的输入属于上层输入列表，则由基类逻辑处理
-                if (parentInputList.contains(input)) {
+                if (parentInputList.hasInput(input)) {
                     super.onMsg(context, msg);
                     return;
                 }

@@ -205,7 +205,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         Keyboard.Theme theme = this.config.get(ConfigKey.theme);
         int themeResId = theme.getResId(getContext());
 
-        View rootView = inflateWithTheme(R.layout.ime_view_layout, themeResId, true);
+        View rootView = inflateWithTheme(R.layout.ime_root_view, themeResId, true);
 
         this.keyboardWarningView = rootView.findViewById(R.id.keyboard_warning);
         this.keyboardView = rootView.findViewById(R.id.keyboard);

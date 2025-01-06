@@ -26,7 +26,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CompletionInput;
@@ -52,6 +51,20 @@ public class InputList {
     public InputList() {
         // 确保始终至少有一个 GapInput
         reset();
+    }
+
+    /**
+     * 输入列表是否为空
+     * <p/>
+     * 包含有效的输入时，才不为空
+     */
+    public boolean isEmpty() {
+        for (Input input : this.inputs) {
+            if (!input.isGap() && !input.isEmpty()) {
+                return false;
+            }
+        }
+        return hasEmptyPending();
     }
 
     // =================== Start: 数据初始化 ====================
@@ -95,14 +108,7 @@ public class InputList {
 
     // =================== End: 数据初始化 ====================
 
-    public List<Input> getInputs() {
-        return this.inputs;
-    }
-
-    /** 当前的待输入是否为空 */
-    public boolean hasEmptyPending() {
-        return Input.isEmpty(getPending());
-    }
+    // ======================== Start: 处理输入补全 ==========================
 
     /** 清空输入补全 */
     public void clearCompletions() {
@@ -126,6 +132,38 @@ public class InputList {
         }
     }
 
+    // ======================== End: 处理输入补全 ==========================
+
+    // ======================== Start: 处理待输入 ==========================
+
+    /** 获取待输入 */
+    public CharInput getPending() {
+        return this.cursor.pending;
+    }
+
+    /** 获取指定输入上的待输入 */
+    public CharInput getPendingOn(Input input) {
+        return getSelected() == input ? getPending() : null;
+    }
+
+    /** 获取指定输入上的非空待输入 */
+    public CharInput getNoneEmptyPendingOn(Input input) {
+        CharInput pending = getPendingOn(input);
+
+        return Input.isEmpty(pending) ? null : pending;
+    }
+
+    /** 若存在则获取非空待输入，否则，返回输入自身 */
+    private Input getNoneEmptyPendingOrSelf(Input input) {
+        Input pending = getNoneEmptyPendingOn(input);
+        return pending != null ? pending : input;
+    }
+
+    /** 当前的待输入是否为空 */
+    public boolean hasEmptyPending() {
+        return Input.isEmpty(getPending());
+    }
+
     /** 重新创建当前输入的待输入（不确认已有的待输入） */
     public CharInput newPending() {
         CharInput input = new CharInput();
@@ -138,6 +176,24 @@ public class InputList {
         this.cursor.withPending(input);
 
         return input;
+    }
+
+    /** 丢弃当前的待输入 */
+    public void dropPending() {
+        newPending();
+    }
+
+    /**
+     * 确认当前待输入
+     * <p/>
+     * <ul>
+     * <li>待输入为空时，不做处理；</li>
+     * <li>原位置为 Gap 时，插入待输入；</li>
+     * <li>原位置为字符输入时，将其替换为待输入；</li>
+     * </ul>
+     */
+    public void confirmPending() {
+        doConfirmPending();
     }
 
     /**
@@ -186,7 +242,7 @@ public class InputList {
     public void confirmPendingAndSelect(Input input, boolean force) {
         confirmPending();
 
-        int index = indexOf(input);
+        int index = getInputIndex(input);
         if (index < 0) {
             return;
         }
@@ -200,19 +256,6 @@ public class InputList {
     public void confirmPendingAndSelectLast() {
         confirmPending();
         selectLast();
-    }
-
-    /**
-     * 确认当前待输入
-     * <p/>
-     * <ul>
-     * <li>待输入为空时，不做处理；</li>
-     * <li>原位置为 Gap 时，插入待输入；</li>
-     * <li>原位置为字符输入时，将其替换为待输入；</li>
-     * </ul>
-     */
-    public void confirmPending() {
-        doConfirmPending();
     }
 
     /**
@@ -270,9 +313,34 @@ public class InputList {
         return getSelectedIndex();
     }
 
+    // ======================== End: 处理待输入 ==========================
+
+    // ======================== Start: 处理当前选中输入 ==========================
+
+    /** 获取已选中的输入 */
+    public Input getSelected() {
+        return this.cursor.selected;
+    }
+
+    /** 获取已选中输入的位置 */
+    public int getSelectedIndex() {
+        Input selected = getSelected();
+        return getInputIndex(selected);
+    }
+
+    /** 指定输入是否已选中 */
+    public boolean isSelected(Input input) {
+        return getSelected() == input;
+    }
+
+    /** 当前选中的是否为光标位 */
+    public boolean isGapSelected() {
+        return Input.isGap(getSelected());
+    }
+
     /** {@link #select(int) 选中指定的输入} */
     public void select(Input input) {
-        int index = indexOf(input);
+        int index = getInputIndex(input);
         select(index);
     }
 
@@ -335,15 +403,80 @@ public class InputList {
         return last;
     }
 
-    /** 丢弃当前的待输入 */
-    public void dropPending() {
-        newPending();
+    /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
+    public void clearPairOnSelected() {
+        Input selected = getSelected();
+
+        if (!Input.isGap(selected)) {
+            ((CharInput) selected).clearPair();
+        }
     }
 
-    /** 获取已选中输入的位置 */
-    public int getSelectedIndex() {
+    /** 删除当前选中的输入：对于 Gap 位置，仅删除其正在输入的内容 */
+    public void deleteSelected() {
         Input selected = getSelected();
-        return indexOf(selected);
+
+        if (!Input.isGap(selected)) {
+            doDeleteBackward(false);
+        }
+
+        dropPending();
+    }
+
+    /** 选中指定的输入，并重建其待输入 */
+    private void doSelect(Input input) {
+        this.cursor.select(input);
+    }
+
+    /** 选中指定的输入，并重建其待输入 */
+    private void doSelect(int index) {
+        Input input = this.inputs.get(index);
+        doSelect(input);
+    }
+
+    // ======================== End: 处理当前选中输入 ==========================
+
+    // ======================== Start: 处理普通输入 ==========================
+
+    /** 是否包含指定的输入 */
+    public boolean hasInput(Input input) {
+        return getInputIndex(input, true) >= 0;
+    }
+
+    /** 获取全部 {@link Input}，用于遍历列表中的输入 */
+    public List<Input> getInputs() {
+        return Collections.unmodifiableList(this.inputs);
+    }
+
+    /** 获取全部 {@link CharInput} */
+    public List<CharInput> getCharInputs() {
+        return this.inputs.stream()
+                          .filter(input -> !input.isGap())
+                          .map(input -> ((CharInput) input))
+                          .collect(Collectors.toList());
+    }
+
+    /** 获取指定输入的位置 */
+    public int getInputIndex(Input input) {
+        return getInputIndex(input, false);
+    }
+
+    /**
+     * 获取指定输入所在的位置
+     *
+     * @param matchPending
+     *         在确定位置时，是否匹配{@link #getPending() 待输入}，
+     *         即，若指定输入为待输入，则返回{@link #getSelected() 已选中的输入}的位置
+     */
+    private int getInputIndex(Input input, boolean matchPending) {
+        if (input == null) {
+            return -1;
+        } else if (matchPending && getPending() == input) {
+            input = getSelected();
+        }
+
+        // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
+        return CollectionUtils.indexOfRef(this.inputs, input);
     }
 
     /** 获取指定位置的输入 */
@@ -368,56 +501,34 @@ public class InputList {
         return pendingFirst && input == getSelected() ? getPending() : input;
     }
 
-    /** 获取待输入 */
-    public CharInput getPending() {
-        return this.cursor.pending;
+    public Input getFirstInput() {
+        return CollectionUtils.first(this.inputs);
     }
 
-    /** 获取指定输入上的待输入 */
-    public CharInput getPendingOn(Input input) {
-        return getSelected() == input ? getPending() : null;
+    public Input getLastInput() {
+        return CollectionUtils.last(this.inputs);
     }
 
-    /** 获取指定输入上的非空待输入 */
-    public CharInput getNoneEmptyPendingOn(Input input) {
-        CharInput pending = getPendingOn(input);
-
-        return Input.isEmpty(pending) ? null : pending;
+    public CharInput getFirstCharInput() {
+        return CollectionUtils.first(getCharInputs());
     }
 
-    /** 获取已选中的输入 */
-    public Input getSelected() {
-        return this.cursor.selected;
+    public CharInput getLastCharInput() {
+        return CollectionUtils.last(getCharInputs());
     }
 
-    /** 指定输入是否已选中 */
-    public boolean isSelected(Input input) {
-        return getSelected() == input;
-    }
-
-    /** 当前选中的是否为光标位 */
-    public boolean isGapSelected() {
-        return Input.isGap(getSelected());
-    }
-
-    /** 清除在当前输入上的{@link CharInput#getPair() 配对符号输入} */
-    public void clearPairOnSelected() {
-        Input selected = getSelected();
-
-        if (!Input.isGap(selected)) {
-            ((CharInput) selected).clearPair();
+    /** 获取指定输入之前的输入 */
+    public Input getInputBefore(Input input) {
+        int index = getInputIndex(input);
+        if (index <= 0) {
+            return null;
         }
+        return this.inputs.get(index - 1);
     }
 
-    /** 删除当前选中的输入：对于 Gap 位置，仅删除其正在输入的内容 */
-    public void deleteSelected() {
-        Input selected = getSelected();
-
-        if (!Input.isGap(selected)) {
-            doDeleteBackward(false);
-        }
-
-        dropPending();
+    /** 获取已选中输入之前的输入 */
+    public Input getInputBeforeSelected() {
+        return getInputBefore(getSelected());
     }
 
     /**
@@ -498,56 +609,43 @@ public class InputList {
         }
     }
 
-    /** 获取已选中输入之前的输入 */
-    public Input getInputBeforeSelected() {
-        return getInputBefore(getSelected());
+    /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
+    private void removeCharInput(Input input) {
+        int index = !Input.isGap(input) ? getInputIndex(input) : -1;
+
+        removeCharInputAt(index);
     }
 
-    /** 获取指定输入之前的输入 */
-    public Input getInputBefore(Input input) {
-        int index = indexOf(input);
+    /** 删除指定位置的字符输入（包括与其配对的前序 Gap 位） */
+    private void removeCharInputAt(int index) {
         if (index <= 0) {
-            return null;
+            return;
         }
-        return this.inputs.get(index - 1);
+
+        // 输入位
+        this.inputs.remove(index);
+        // Gap 位
+        this.inputs.remove(index - 1);
     }
 
-    /**
-     * 输入列表是否为空
-     * <p/>
-     * 包含有效的输入时，才不为空
-     */
-    public boolean isEmpty() {
-        for (Input input : this.inputs) {
-            if (!input.isGap() && !input.isEmpty()) {
-                return false;
+    /** 删除配对符号的另一侧输入 */
+    private void removeCharInputPair(Input input) {
+        if (!Input.isGap(input)) {
+            CharInput pairInput = ((CharInput) input).getPair();
+
+            int pairInputIndex = getInputIndex(pairInput);
+            if (pairInputIndex < 0) {
+                return;
             }
+
+            pairInput.clearPair();
+            removeCharInputAt(pairInputIndex);
         }
-        return hasEmptyPending();
     }
 
-    /** 获取输入文本内容 */
-    public StringBuilder getText() {
-        Input.Option option = getInputOption();
-        return getText(option);
-    }
+    // ======================== End: 处理普通输入 ==========================
 
-    /** 获取输入文本内容 */
-    public StringBuilder getText(Input.Option option) {
-        StringBuilder sb = new StringBuilder();
-
-        int total = this.inputs.size();
-        for (int i = 0; i < total; i++) {
-            Input input = this.inputs.get(i);
-
-            sb.append(input.getText(option));
-
-            if (needGapSpace(i)) {
-                sb.append(" ");
-            }
-        }
-        return sb;
-    }
+    // ======================== Start: 处理输入间的空格 ==========================
 
     /** 是否需要添加 Gap 空格 */
     public boolean needGapSpace(int i) {
@@ -601,112 +699,35 @@ public class InputList {
 
     /** 是否需要添加 Gap 空格 */
     public boolean needGapSpace(Input input) {
-        int i = indexOf(input);
+        int i = getInputIndex(input);
         return needGapSpace(i);
     }
 
-    /** 是否包含指定的输入 */
-    public boolean contains(Input input) {
-        return indexOf(input, true) >= 0;
+    // ======================== End: 处理输入间的空格 ==========================
+
+    // ====================== Start: 处理输入结果 ======================
+
+    /** 获取输入文本内容 */
+    public StringBuilder getText() {
+        Input.Option option = getInputOption();
+        return getText(option);
     }
 
-    /** 获取指定输入的位置 */
-    public int indexOf(Input input) {
-        return indexOf(input, false);
-    }
+    /** 获取输入文本内容 */
+    public StringBuilder getText(Input.Option option) {
+        StringBuilder sb = new StringBuilder();
 
-    /**
-     * 获取指定输入所在的位置
-     *
-     * @param matchPending
-     *         在确定位置时，是否匹配{@link #getPending() 待输入}，
-     *         即，若指定输入为待输入，则返回{@link #getSelected() 已选中的输入}的位置
-     */
-    private int indexOf(Input input, boolean matchPending) {
-        if (input == null) {
-            return -1;
-        } else if (matchPending && getPending() == input) {
-            input = getSelected();
-        }
+        int total = this.inputs.size();
+        for (int i = 0; i < total; i++) {
+            Input input = this.inputs.get(i);
 
-        // Note: 这里需要做对象引用的判断，以避免内容相同的输入被判定为已选择
-        return CollectionUtils.indexOfRef(this.inputs, input);
-    }
+            sb.append(input.getText(option));
 
-    public Input getFirstInput() {
-        return CollectionUtils.first(this.inputs);
-    }
-
-    public Input getLastInput() {
-        return CollectionUtils.last(this.inputs);
-    }
-
-    public CharInput getFirstCharInput() {
-        return CollectionUtils.first(getCharInputs());
-    }
-
-    public CharInput getLastCharInput() {
-        return CollectionUtils.last(getCharInputs());
-    }
-
-    /** 选中指定的输入，并重建其待输入 */
-    private void doSelect(Input input) {
-        this.cursor.select(input);
-    }
-
-    /** 选中指定的输入，并重建其待输入 */
-    private void doSelect(int index) {
-        Input input = this.inputs.get(index);
-        doSelect(input);
-    }
-
-    /** 若存在则获取非空待输入，否则，返回输入自身 */
-    private Input getNoneEmptyPendingOrSelf(Input input) {
-        Input pending = getNoneEmptyPendingOn(input);
-        return pending != null ? pending : input;
-    }
-
-    /** 删除指定的字符输入（包括与其配对的前序 Gap 位） */
-    private void removeCharInput(Input input) {
-        int index = !Input.isGap(input) ? indexOf(input) : -1;
-
-        removeCharInputAt(index);
-    }
-
-    /** 删除指定位置的字符输入（包括与其配对的前序 Gap 位） */
-    private void removeCharInputAt(int index) {
-        if (index <= 0) {
-            return;
-        }
-
-        // 输入位
-        this.inputs.remove(index);
-        // Gap 位
-        this.inputs.remove(index - 1);
-    }
-
-    /** 删除配对符号的另一侧输入 */
-    private void removeCharInputPair(Input input) {
-        if (!Input.isGap(input)) {
-            CharInput pairInput = ((CharInput) input).getPair();
-
-            int pairInputIndex = indexOf(pairInput);
-            if (pairInputIndex < 0) {
-                return;
+            if (needGapSpace(i)) {
+                sb.append(" ");
             }
-
-            pairInput.clearPair();
-            removeCharInputAt(pairInputIndex);
         }
-    }
-
-    // ====================== Start: ======================
-
-    public List<CharInput> getCharInputs() {
-        return this.inputs.stream()
-                          .filter(input -> !input.isGap())
-                          .map(input -> ((CharInput) input))
-                          .collect(Collectors.toList());
+        return sb;
     }
 
     /** 获取全部的表情符号 */
@@ -758,7 +779,7 @@ public class InputList {
 
     /** 获取从指定输入开始及其之前的连续拼音字 */
     public List<PinyinWord> getPinyinPhraseWordsFrom(Input fromInput) {
-        int fromIndex = indexOf(fromInput, true);
+        int fromIndex = getInputIndex(fromInput, true);
         if (fromIndex < 0) {
             return List.of();
         }
@@ -786,7 +807,7 @@ public class InputList {
      * @return 不返回 null
      */
     public List<CharInput> getPinyinPhraseInputWhichContains(Input fromInput) {
-        int fromIndex = indexOf(fromInput, true);
+        int fromIndex = getInputIndex(fromInput, true);
         if (fromIndex < 0) {
             return List.of();
         }
@@ -849,13 +870,14 @@ public class InputList {
         }).contains(chars);
     }
 
-    // ====================== End: ======================
-
-    @NonNull
     @Override
     public String toString() {
         return getText().toString();
     }
+
+    // ====================== End: 处理输入结果 ======================
+
+    // ========================= Start: 嵌套使用 =======================
 
     @Override
     public boolean equals(Object o) {
@@ -874,6 +896,8 @@ public class InputList {
     public int hashCode() {
         return Objects.hash(this.inputs, this.cursor);
     }
+
+    // ========================= End: 嵌套使用 =======================
 
     private static class Cursor {
         /** 光标位置已选中的输入 */

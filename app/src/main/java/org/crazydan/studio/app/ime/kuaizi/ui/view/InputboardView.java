@@ -33,10 +33,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 
 /**
  * {@link Inputboard} 的视图
@@ -85,24 +85,15 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
-        switch (msg.type) {
-            case Keyboard_Start_Done: {
-                toggleEnableSettingsBtn();
-                break;
-            }
-            case Config_Update_Done: {
-                ConfigUpdateMsgData data = msg.data();
-                if (data.key == ConfigKey.theme) {
-                    doLayout();
-                }
-                break;
-            }
-        }
+        // Note: 本视图为上层视图的子视图，在主题样式更新时，上层视图会自动重建本视图，
+        // 因此，不需要重复处理本视图的布局更新等问题
 
-        toggleEnableInputListCleanBtnByMsg(msg);
-
-        // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
         this.inputListView.onMsg(msg);
+
+        if (msg.type == InputMsgType.Keyboard_Start_Done) {
+            toggleEnableSettingsBtn();
+        }
+        toggleEnableInputListCleanBtnByMsg(msg);
     }
 
     private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
@@ -125,13 +116,10 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     /** 布局视图 */
     private void doLayout() {
-        // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
-        removeAllViews();
-
         Keyboard.Theme theme = this.config.get(ConfigKey.theme);
         int themeResId = theme.getResId(getContext());
 
-        View rootView = inflateWithTheme(R.layout.inputboard_view_layout, themeResId);
+        View rootView = inflateWithTheme(R.layout.inputboard_root_view, themeResId);
 
         this.settingsBtnView = rootView.findViewById(R.id.settings);
         toggleEnableSettingsBtn();
@@ -156,27 +144,27 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     private void toggleEnableInputListCleanBtn() {
         if (this.needToDisableInputListCleanBtn) {
-            if (!this.needToDisableInputListCleanCancelBtn) {
-                ViewUtils.hide(this.inputListCleanBtnView);
-                ViewUtils.show(this.inputListCleanCancelBtnView);
-            } else {
-                ViewUtils.show(this.inputListCleanBtnView).setAlpha(0);
-                ViewUtils.hide(this.inputListCleanCancelBtnView);
-            }
-
+            ViewUtils.hide(this.inputListCleanBtnView);
             this.inputListCleanBtnView.setOnClickListener(null);
-            this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
-        } else {
-            ViewUtils.show(this.inputListCleanBtnView).setAlpha(1);
-            ViewUtils.hide(this.inputListCleanCancelBtnView);
 
+            if (this.needToDisableInputListCleanCancelBtn) {
+                ViewUtils.hide(this.inputListCleanCancelBtnView);
+                this.inputListCleanCancelBtnView.setOnClickListener(null);
+            } else {
+                ViewUtils.show(this.inputListCleanCancelBtnView);
+                this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
+            }
+        } else {
+            ViewUtils.show(this.inputListCleanBtnView);
             this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
+
+            ViewUtils.hide(this.inputListCleanCancelBtnView);
             this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
-        // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
+        // 通过 Context Theme 仅对面板自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         return ThemeUtils.inflate(this, resId, themeResId, true);
     }

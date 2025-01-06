@@ -43,9 +43,7 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
     private boolean canBeSelected;
 
     public InputListViewAdapter() {
-        // Note：在 Gap 添加空格后，涉及对与其相邻的输入视图的更新，
-        // 其判断逻辑较复杂且容易遗漏更新，故而，始终对列表视图做全量更新
-        super(ItemUpdatePolicy.full);
+        super(ItemUpdatePolicy.differ);
     }
 
     public void updateItems(List<InputViewData> newItems, boolean canBeSelected) {
@@ -100,9 +98,9 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
     @Override
     public InputViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
-            case VIEW_TYPE_CHAR_INPUT: {
-                View view = inflateItemView(parent, R.layout.input_char_view);
-                return new CharInputViewHolder(view);
+            case VIEW_TYPE_GAP_INPUT: {
+                View view = inflateItemView(parent, R.layout.input_gap_view);
+                return new GapInputViewHolder(view);
             }
             case VIEW_TYPE_SPACE_INPUT: {
                 View view = inflateItemView(parent, R.layout.input_space_view);
@@ -113,8 +111,8 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
                 return new MathExprInputViewHolder(view);
             }
             default: {
-                View view = inflateItemView(parent, R.layout.input_gap_view);
-                return new GapInputViewHolder(view);
+                View view = inflateItemView(parent, R.layout.input_char_view);
+                return new CharInputViewHolder(view);
             }
         }
     }

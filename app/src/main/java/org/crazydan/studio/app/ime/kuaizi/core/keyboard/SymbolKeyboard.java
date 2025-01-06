@@ -198,7 +198,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
             CharInput leftInput = pending;
             CharInput rightInput = ((CharInput) selected).getPair();
 
-            int rightInputIndex = inputList.indexOf(rightInput);
+            int rightInputIndex = inputList.getInputIndex(rightInput);
             // 交换左右顺序
             if (inputList.getSelectedIndex() > rightInputIndex) {
                 leftInput = rightInput;
