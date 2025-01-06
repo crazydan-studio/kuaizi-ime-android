@@ -828,10 +828,6 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 触发 {@link InputMsgType#Input_Completion_Update_Done} 消息 */
     protected void fire_Input_Completion_Update_Done(KeyboardContext context) {
         InputList inputList = context.inputList;
-        if (!inputList.hasCompletions()) {
-            return;
-        }
-
         InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(inputList.getCompletionViewDataList());
 
         fire_InputMsg(context, Input_Completion_Update_Done, data);

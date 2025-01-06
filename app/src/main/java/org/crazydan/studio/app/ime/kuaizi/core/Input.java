@@ -108,8 +108,7 @@ public abstract class Input {
         return test((key) -> CharKey.Type.Symbol.match(key) //
                              || key instanceof SymbolKey //
                              || (key instanceof MathOpKey //
-                                 && !MathOpKey.Type.isOperator(key)) //
-        ) || isSpace();
+                                 && !MathOpKey.Type.isOperator(key)));
     }
 
     /** 是否为表情符号 */

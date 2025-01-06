@@ -56,24 +56,6 @@ public class InputCompletion {
         return this.startPosition + ": " + this.inputs.stream().map(Objects::toString).collect(Collectors.joining(" "));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        InputCompletion that = (InputCompletion) o;
-        return this.startPosition == that.startPosition && Objects.equals(this.inputs, that.inputs);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.startPosition, this.inputs);
-    }
-
     /** 输入补全的视图数据 */
     public static class ViewData {
         public final List<CharInputViewData> inputs;
@@ -89,6 +71,24 @@ public class InputCompletion {
 
             return new ViewData(inputs);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            ViewData that = (ViewData) o;
+            return Objects.equals(this.inputs, that.inputs);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(this.inputs);
+        }
     }
 
     /** 输入补全的 输入视图数据 */
@@ -99,6 +99,24 @@ public class InputCompletion {
         CharInputViewData(String text, String spell) {
             this.text = text;
             this.spell = spell;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            CharInputViewData that = (CharInputViewData) o;
+            return Objects.equals(this.text, that.text) && Objects.equals(this.spell, that.spell);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.text, this.spell);
         }
     }
 }

@@ -63,7 +63,7 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
                 break;
             }
             case Space: {
-                ((SpaceInputViewHolder) holder).bind(item);
+                ((SpaceInputViewHolder) holder).bind(item, selected);
                 break;
             }
             case MathExpr: {

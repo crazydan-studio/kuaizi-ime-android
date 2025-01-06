@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
+import java.util.function.BiConsumer;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -49,10 +51,19 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
         setTextColorByAttrId(view, fgColor);
     }
 
-    protected void addLeftSpaceMargin(View view, int times) {
-        int margin = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
-        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+    protected void addLeftSpaceMargin(View view, float times) {
+        withSpaceMargin(view, times, (layout, margin) -> layout.leftMargin = margin);
+    }
 
-        layout.leftMargin = margin * times;
+    protected void addRightSpaceMargin(View view, float times) {
+        withSpaceMargin(view, times, (layout, margin) -> layout.rightMargin = margin);
+    }
+
+    private void withSpaceMargin(View view, float times, BiConsumer<ViewGroup.MarginLayoutParams, Integer> c) {
+        int margin = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
+        margin = Math.round(margin * times);
+
+        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        c.accept(layout, margin);
     }
 }

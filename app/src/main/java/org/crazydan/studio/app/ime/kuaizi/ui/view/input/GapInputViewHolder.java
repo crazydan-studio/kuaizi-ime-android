@@ -48,7 +48,11 @@ public class GapInputViewHolder extends InputViewHolder {
 
     public void bind(InputViewData data, boolean selected) {
         whenViewReady(this.cursorView, (view) -> {
-            addLeftSpaceMargin(view, data.gapSpaces);
+            // Note: 添加的空白需保证光标居中显示
+            float space = data.gapSpaces / 2.0f;
+            addLeftSpaceMargin(view, space);
+            addRightSpaceMargin(view, space);
+
             ViewUtils.visible(view, true);
         });
 

@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
  * @date 2023-06-28
  */
 public class CharKey extends TypedKey<CharKey.Type> {
-    private final static Builder builder = new Builder();
+    private final static Builder builder = new Builder(false);
 
     /** 字符按键的{@link Level 等级} */
     public final Level level;
@@ -53,6 +53,8 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
         List<Key> keys = new ArrayList<>(value.length());
 
+        // Note: 临时性构建，不要占用全局的构建器，以避免挤占其缓存空间
+        Builder builder = new Builder(true);
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
 
@@ -66,7 +68,7 @@ public class CharKey extends TypedKey<CharKey.Type> {
             }
 
             String val = String.valueOf(c);
-            CharKey key = CharKey.build((b) -> b.type(type).value(val));
+            CharKey key = Builder.build(builder, (b) -> b.type(type).value(val));
 
             keys.add(key);
         }
@@ -178,8 +180,8 @@ public class CharKey extends TypedKey<CharKey.Type> {
         private Level level = Level.level_0;
         private List<String> replacements = new ArrayList<>();
 
-        Builder() {
-            super(60);
+        Builder(boolean disableCache) {
+            super(disableCache ? 0 : 60);
         }
 
         // ===================== Start: 构建函数 ===================

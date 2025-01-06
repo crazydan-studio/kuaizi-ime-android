@@ -130,11 +130,6 @@ public class InputList {
         this.completions.clear();
     }
 
-    /** 是否存在输入补全 */
-    public boolean hasCompletions() {
-        return !this.completions.isEmpty();
-    }
-
     /** 应用指定位置的输入补全。应用后，当前的输入补全将被清空，并将光标移到补全内容的尾部 */
     public void applyCompletion(int position) {
         InputCompletion completion = this.completions.get(position);
@@ -142,15 +137,15 @@ public class InputList {
 
         int total = completion.inputs.size();
         for (int i = 0; i < total; i++) {
-            confirmPending();
-
             CharInput input = completion.inputs.get(i);
-            // Note: 从补全开始位置到当前选中位置执行替换，之后的执行插入
+            // Note: 从补全开始位置到当前选中位置的输入执行替换，之后的输入则执行插入
             int index = completion.startPosition + i;
             if (index <= replaceEndIndex) {
                 select(index);
             }
+
             withPending(input);
+            confirmPending();
         }
         confirmPendingAndSelectNext();
 

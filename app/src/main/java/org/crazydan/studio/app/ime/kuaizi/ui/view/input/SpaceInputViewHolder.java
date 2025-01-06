@@ -22,7 +22,6 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
@@ -41,9 +40,10 @@ public class SpaceInputViewHolder extends InputViewHolder {
         this.spaceView = itemView.findViewById(R.id.space_view);
     }
 
-    public void bind(InputViewData data) {
+    public void bind(InputViewData data, boolean selected) {
         whenViewReady(this.spaceView, (view) -> {
-            ViewUtils.visible(view, true);
+            addLeftSpaceMargin(this.itemView, data.gapSpaces);
+            setSelectedBgColor(this.itemView, selected);
         });
     }
 }
