@@ -18,11 +18,11 @@
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
-import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -34,8 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
  * @date 2024-12-09
  */
 public class InputViewData extends Immutable {
-    private final static Logger log = Logger.getLogger(InputViewData.class);
-
     public final static Builder builder = new Builder();
 
     public enum Type {
@@ -69,8 +67,8 @@ public class InputViewData extends Immutable {
      */
     public final boolean selected;
 
-    /** 当前输入所需的空白数 */
-    public final int gapSpaces;
+    /** 当前输入左右两侧所需的 Gap 空格数，二元数组，为 null 时，表示不需要添加空格 */
+    public final float[] gapSpaces;
     /** 嵌套的输入列表：只有{@link MathExprInput 算术输入}才存在输入列表嵌套 */
     public final List<InputViewData> inputs;
 
@@ -122,51 +120,53 @@ public class InputViewData extends Immutable {
         CharInput pending = inputList.getPendingOn(input);
         CharInput prePending = inputList.getPendingOn(preInput);
 
-        MathExprInput mathExprInput = tryGetMathExprInput(inputList, input);
-
-        boolean shouldBeSelected = needToBeSelected(inputList, input);
-        boolean needGapSpace = inputList.needGapSpace(input);
-
         // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
-        boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
-        int gapSpaces = needGapSpace ? preGapIsMathExprInput ? 2 : 1 : 0;
+//        boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
+//        int gapSpaces = needGapSpace ? preGapIsMathExprInput ? 2 : 1 : 0;
 
+        MathExprInput mathExprInput = tryGetMathExprInput(inputList, input);
         if (mathExprInput != null) {
-            // 第一个普通输入不需要添加空白，
-            // 但是对于第一个不为空的算术待输入则需要提前添加，
-            // 因为，在输入过程中，算术待输入的前面没有 Gap 占位，
-            // 输入完毕后才会添加 Gap 占位
-            if (position == 0) {
-                gapSpaces = !Input.isEmpty(mathExprInput) ? 1 : 0;
-            }
-            // 算术输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
-            // 为避免视觉干扰，故在该算术的待输入之前先多附加一个空白
-            else if (needGapSpace && input.isGap() && !Input.isEmpty(mathExprInput)) {
-                gapSpaces = 2;
-            }
+//            // 第一个普通输入不需要添加空白，
+//            // 但是对于第一个不为空的算术待输入则需要提前添加，
+//            // 因为，在输入过程中，算术待输入的前面没有 Gap 占位，
+//            // 输入完毕后才会添加 Gap 占位
+//            if (position == 0) {
+//                gapSpaces = !Input.isEmpty(mathExprInput) ? 1 : 0;
+//            }
+//            // 算术输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
+//            // 为避免视觉干扰，故在该算术的待输入之前先多附加一个空白
+//            else if (needGapSpace && input.isGap() && !Input.isEmpty(mathExprInput)) {
+//                gapSpaces = 2;
+//            }
 
             // Note: 由于 Builder 是单例的，故而，不能嵌套复用其实例，否则，在外层设置的数据会被下层覆盖。
             // 并且，在构建嵌套的 InputList 时，不需要缓存，由最上层缓存整体即可
             List<InputViewData> inputs = doBuild(new Builder(true), mathExprInput.getInputList(), option);
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
-            if (!Input.isEmpty(pending)) {
-                gapSpaces = needGapSpace ? 2 : 1;
-
-                b.type(Type.Char);
-            } else {
-                b.type(Type.Gap);
-            }
+            b.type(Input.isEmpty(pending) ? Type.Gap : Type.Char);
         } else if (input.isSpace()) {
             b.type(Type.Space);
         } else {
             b.type(Type.Char);
         }
 
+        // Note: 在视图中，需确保 Gap 空格的单位宽度与 GapInput 的宽度相同，
+        // 而针对 GapInput 所添加的 Gap 空格数需要均分至左右两侧
+        float[] gapSpaces = inputList.needGapSpace(position) ? new float[] { 0.5f, 0.5f } : null;
+        if (input.isGap() && !Input.isEmpty(pending)) {
+            // 正在输入的 GapInput，需判断其待输入的左右两侧的空格数：至少需一个光标占位
+            Input left = inputList.getInput(position - 1);
+            Input right = inputList.getInput(position + 1);
+            gapSpaces = new float[] {
+                    inputList.needGapSpace(left, pending) ? 2f : 1f, //
+                    inputList.needGapSpace(pending, right) ? 2f : 1f
+            };
+        }
+
+        boolean shouldBeSelected = needToBeSelected(inputList, input);
         Input currInput = Input.isEmpty(pending) ? input : pending;
         String[] textAndSpell = getInputTextAndSpell(currInput, option);
-
-        log.debug("%s needs %d spaces", currInput, gapSpaces);
 
         b.position(position)
          .pending(pending != null)
@@ -237,7 +237,7 @@ public class InputViewData extends Immutable {
         private boolean pending;
         private boolean selected;
 
-        private int gapSpaces;
+        private float[] gapSpaces;
         private List<InputViewData> inputs;
 
         private String text;
@@ -266,7 +266,7 @@ public class InputViewData extends Immutable {
             this.pending = false;
             this.selected = false;
 
-            this.gapSpaces = 0;
+            this.gapSpaces = null;
             this.inputs = null;
 
             this.text = null;
@@ -279,7 +279,7 @@ public class InputViewData extends Immutable {
                                 this.type,
                                 this.pending,
                                 this.selected,
-                                this.gapSpaces,
+                                Arrays.hashCode(this.gapSpaces),
                                 this.inputs,
                                 this.text,
                                 this.spell);
@@ -314,7 +314,7 @@ public class InputViewData extends Immutable {
         }
 
         /** @see InputViewData#gapSpaces */
-        public Builder gapSpaces(int gapSpaces) {
+        public Builder gapSpaces(float[] gapSpaces) {
             this.gapSpaces = gapSpaces;
             return this;
         }

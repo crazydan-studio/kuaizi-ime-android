@@ -45,7 +45,8 @@ public class CharInputViewHolder extends InputViewHolder {
     }
 
     public void bind(InputViewData data, boolean selected) {
-        addLeftSpaceMargin(this.itemView, data.gapSpaces);
+        super.bind(data);
+
         setSelectedBgColor(this.itemView, selected);
 
         bind(data.text, data.spell, selected);

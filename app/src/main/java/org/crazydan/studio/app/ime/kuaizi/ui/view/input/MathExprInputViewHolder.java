@@ -46,7 +46,7 @@ public class MathExprInputViewHolder extends InputViewHolder {
     }
 
     public void bind(InputViewData data, boolean selected) {
-        addLeftSpaceMargin(this.itemView, data.gapSpaces);
+        super.bind(data);
 
         List<InputViewData> inputs = data.inputs;
         whenViewReady(this.inputboardView, (view) -> {

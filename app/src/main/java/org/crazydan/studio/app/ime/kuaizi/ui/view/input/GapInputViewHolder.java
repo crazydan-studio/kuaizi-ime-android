@@ -36,23 +36,17 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
  * @date 2023-07-07
  */
 public class GapInputViewHolder extends InputViewHolder {
-    private final View cursorView;
     private final View blinkView;
 
     public GapInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.cursorView = itemView.findViewById(R.id.cursor_view);
         this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
     public void bind(InputViewData data, boolean selected) {
-        whenViewReady(this.cursorView, (view) -> {
-            // Note: 添加的空白需保证光标居中显示
-            float space = data.gapSpaces / 2.0f;
-            addLeftSpaceMargin(view, space);
-            addRightSpaceMargin(view, space);
-        });
+        // Note: 空白只能加在根视图上，否则，会不能立即生效
+        super.bind(data);
 
         whenViewReady(this.blinkView, (view) -> {
             ViewUtils.visible(view, selected);

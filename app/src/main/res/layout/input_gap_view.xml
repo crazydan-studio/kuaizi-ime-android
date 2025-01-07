@@ -19,29 +19,22 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="?attr/input_bg_color"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
     <!-- 光标位置 -->
     <LinearLayout
             android:id="@+id/cursor_view"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_width="@dimen/gap_input_width"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
 
-        <LinearLayout
-                android:layout_width="@dimen/gap_input_width"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center">
-
-            <View
-                    android:id="@+id/blink_view"
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
-                    android:background="?attr/input_fg_color" />
-        </LinearLayout>
-
+        <View
+                android:id="@+id/blink_view"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:background="?attr/input_fg_color" />
     </LinearLayout>
 
 </LinearLayout>

@@ -38,6 +38,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
  * 输入列表
  * <p/>
  * 输入列表由零个或多个 {@link Input} 组成，代表用户当前已输入和正在输入的内容
+ * <p/>
+ * {@link GapInput} 为两个可见输入之间的间隔，代表输入的一个插入位，也是一个光标位，
+ * 其与可见输入成对添加和删除
+ * <p/>
+ * 通过 {@link #cursor} 指示当前的输入位置，其中，{@link Cursor#selected}
+ * 引用的是 {@link #inputs} 列表中的输入对象（使用引用可消除位置变动所产生的位置同步需求），
+ * 其引用的可以是 Gap，也可以是可见输入，但正在输入的内容是记录在 {@link Cursor#pending}
+ * 中的，只有在输入完成并 {@link #confirmPending()} 后才会替换 {@link Cursor#selected}
+ * 所引用的输入
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
@@ -45,10 +54,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 public class InputList {
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
+    /** 输入补全 */
+    private final List<InputCompletion> completions = new ArrayList<>();
 
     private Input.Option inputOption;
-    /** 输入补全 */
-    private List<InputCompletion> completions = new ArrayList<>();
 
     public InputList() {
         // 确保始终至少有一个 GapInput
@@ -667,34 +676,45 @@ public class InputList {
 
     // ======================== Start: 处理输入间的空格 ==========================
 
-    /** 是否需要添加 Gap 空格 */
+    /**
+     * 判断指定位置是否需要添加 Gap 空格
+     * <p/>
+     * 需要添加 Gap 空格的输入，在最终输出 {@link #getText() 文本内容} 时，
+     * 会在其所在位置添加一个空格，用以表示两个输入的内容是不相连的
+     * <p/>
+     * 由于 Gap 空格是出现在两个可见输入之间的，因此，只需要为 {@link GapInput}
+     * 添加空格，进而只需要判断在 {@link GapInput} 左右两侧的输入是否需要间隔即可
+     * <p/>
+     * 注意，该接口只针对已经确认输入后的 {@link #inputs} 列表，
+     * 若存在待确认输入，则需要通过 {@link #needGapSpace(Input, Input)}
+     * 确定待输入左右两侧是否需要添加空格
+     */
     public boolean needGapSpace(int i) {
         int total = this.inputs.size();
-        if (i <= 0 || i >= total) {
+        // 在首/尾位置均不需要空格
+        if (i <= 0 || i >= total - 1) {
             return false;
         }
 
         Input input = this.inputs.get(i);
-        Input left = this.inputs.get(i - 1);
-        Input right = null;
         if (!input.isGap()) {
-            // Note：input 与其左侧的正在输入的 Gap 也需要检查空格（CharInput 左侧必然有一个 Gap）
-            if (!isSelected(left) || Input.isEmpty(getPending())) {
-                return false;
-            } else {
-                right = input;
-            }
+            return false;
         }
 
+        Input left = this.inputs.get(i - 1);
+        Input right = this.inputs.get(i + 1);
+
+        return needGapSpace(left, right);
+    }
+
+    /** 判断指定的左右两个输入之间是否需要 Gap 空格 */
+    public boolean needGapSpace(Input left, Input right) {
         left = getNoneEmptyPendingOrSelf(left);
-        if (right == null) {
-            // Note：Gap 需判断其上的待输入
-            Input pendingOnGap = getNoneEmptyPendingOn(input);
-            right = !Input.isEmpty(pendingOnGap) || i == total - 1
-                    ? pendingOnGap
-                    : getNoneEmptyPendingOrSelf(this.inputs.get(i + 1));
-        }
-        if (right == null) {
+        right = getNoneEmptyPendingOrSelf(right);
+
+        // 已经有显式的空格，则不需要再添加空格
+        if (left == null || right == null //
+            || left.isSpace() || right.isSpace()) {
             return false;
         }
 
@@ -717,23 +737,17 @@ public class InputList {
         return false;
     }
 
-    /** 是否需要添加 Gap 空格 */
-    public boolean needGapSpace(Input input) {
-        int i = getInputIndex(input);
-        return needGapSpace(i);
-    }
-
     // ======================== End: 处理输入间的空格 ==========================
 
     // ====================== Start: 处理输入结果 ======================
 
-    /** 获取输入文本内容 */
+    /** 获取输入文本内容：必须先确认当前输入，否则，会出现不能正确添加输入间的空格的问题 */
     public StringBuilder getText() {
         Input.Option option = getInputOption();
         return getText(option);
     }
 
-    /** 获取输入文本内容 */
+    /** 获取输入文本内容：必须先确认当前输入，否则，会出现不能正确添加输入间的空格的问题 */
     public StringBuilder getText(Input.Option option) {
         StringBuilder sb = new StringBuilder();
 

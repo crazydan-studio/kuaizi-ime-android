@@ -41,8 +41,9 @@ public class SpaceInputViewHolder extends InputViewHolder {
     }
 
     public void bind(InputViewData data, boolean selected) {
+        super.bind(data);
+
         whenViewReady(this.spaceView, (view) -> {
-            addLeftSpaceMargin(this.itemView, data.gapSpaces);
             setSelectedBgColor(this.itemView, selected);
         });
     }

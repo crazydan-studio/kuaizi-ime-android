@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
-import java.util.function.BiConsumer;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -28,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 
 /**
  * {@link Input} 视图的 {@link RecyclerView.ViewHolder}
@@ -41,6 +40,10 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
         super(itemView);
     }
 
+    public void bind(InputViewData data) {
+        addGapSpace(this.itemView, data.gapSpaces);
+    }
+
     protected void setSelectedBgColor(View view, boolean selected) {
         int bgColor = selected ? R.attr.input_selection_bg_color : R.attr.input_bg_color;
         setBackgroundColorByAttrId(view, bgColor);
@@ -51,19 +54,15 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
         setTextColorByAttrId(view, fgColor);
     }
 
-    protected void addLeftSpaceMargin(View view, float times) {
-        withSpaceMargin(view, times, (layout, margin) -> layout.leftMargin = margin);
-    }
+    protected void addGapSpace(View view, float[] gapSpaces) {
+        if (gapSpaces == null) {
+            return;
+        }
 
-    protected void addRightSpaceMargin(View view, float times) {
-        withSpaceMargin(view, times, (layout, margin) -> layout.rightMargin = margin);
-    }
-
-    private void withSpaceMargin(View view, float times, BiConsumer<ViewGroup.MarginLayoutParams, Integer> c) {
-        int margin = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
-        margin = Math.round(margin * times);
-
+        float margin = ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
         ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        c.accept(layout, margin);
+
+        layout.leftMargin = Math.round(margin * gapSpaces[0]);
+        layout.rightMargin = Math.round(margin * gapSpaces[1]);
     }
 }
