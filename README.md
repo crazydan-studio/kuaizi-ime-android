@@ -44,52 +44,64 @@ EOF
 
 ## 架构
 
-### 核心类
+### 核心模型
 
-![核心类](./docs/img/class-diagram.png)
+![核心模型](./docs/img/class-diagram.png)
 
 <details><summary>PlantUML 代码</summary>
 
 ```plantuml
 @startuml
 class "InputMethodService" as sys_ime_svc
-class "ImeService" as ime_svc #pink
-class "ImeConfig" as ime_conf
+class "IMEService" as ime_svc #pink
+class "IMEConfig" as ime_conf
 
-class "InputPane" as input_pane #pink
 class "PinyinDict" as dict
-class "InputList" as input_list
-class "Keyboard" as keyboard
-class "PinyinKeyboard" as pinyin_kb
-class "NumberKeyboard" as number_kb
-class "LatinKeyboard" as latin_kb
-class "SymbolKeyboard" as symbol_kb
-class "EmojiKeyboard" as emoji_kb
-class "MathKeyboard" as math_kb
 
-class "InputPaneView" as input_pane_view #pink
+class "IMEditor" as ime_editor #pink
+class "Keyboard" as keyboard
+class "Inputboard" as inputboard
+class "KeyboardContext" as keyboard_ctx {
+  +inputList: InputList
+  +listener: InputMsgListener
+}
+class "InputboardContext" as inputboard_ctx {
+  +inputList: InputList
+  +listener: InputMsgListener
+}
+
+class "InputList" as input_list #pink
+class "Input" as input
+class "Key" as key
+
+class "IMEditorView" as ime_editor_view #pink
 class "KeyboardView" as keyboard_view
+class "InputboardView" as inputboard_view
 class "InputListView" as input_list_view
 
 sys_ime_svc <|-down- ime_svc: extends
 
 ime_svc *-right- ime_conf: contains >
-ime_svc *-down- input_pane: contains >
-ime_svc *-down- input_pane_view: contains >
+ime_svc *-down- ime_editor: contains >
+ime_svc *-down- ime_editor_view: contains >
 
-input_pane_view *-right- input_list_view: contains >
-input_pane_view *-down- keyboard_view: contains >
+ime_editor_view *-down- inputboard_view: contains >
+inputboard_view *-down- input_list_view: contains >
+ime_editor_view *-down- keyboard_view: contains >
 
-input_pane *-left- input_list: contains >
-input_pane *-down- keyboard: contains >
-input_pane *-right- dict: contains >
+ime_editor *-up- dict: contains >
+ime_editor *-down- inputboard: contains >
+ime_editor *-down- keyboard: contains >
+ime_editor *-down- input_list: contains >
 
-keyboard <|-down- pinyin_kb: extends
-keyboard <|-down- number_kb: extends
-keyboard <|-down- latin_kb: extends
-keyboard <|-down- symbol_kb: extends
-keyboard <|-down- emoji_kb: extends
-keyboard <|-down- math_kb: extends
+inputboard *-down- inputboard_ctx: use >
+keyboard *-down- keyboard_ctx: use >
+
+inputboard_ctx *-up- input_list: refs >
+keyboard_ctx *-up- input_list: refs >
+
+input_list "1" *-down- "1..n" input: contains >
+keyboard "1" *-down- "1..n" key: layouts >
 
 @enduml
 ```
@@ -98,11 +110,23 @@ keyboard <|-down- math_kb: extends
 
 设计要点：
 
-- 模型与视图分离，二者不做直接关联，模型的变更通过消息（`InputMsg`）机制触发相关视图的更新
-- 将输入面板 `InputPaneView` 分为 `InputListView`（输入列表）和 `KeyboardView`（键盘）上下两部分，
-  前者显示输入内容，并做候选字调整，后者则显示输入按键，并与用户做按键交互
-- 与以上视图相对应的逻辑模型则分别为 `InputPane`、`InputList` 和 `Keyboard`，
-  其负责对输入过程中的状态变更进行处理，实现完整的输入逻辑
+- 模型与视图分离，二者不做直接关联，模型的变更通过消息（`InputMsg`）机制触发对相关视图的更新
+- 输入法主视图 `IMEditorView` 由 `InputboardView`（输入面板）和
+  `KeyboardView`（键盘）上下两部分组成，前者实时显示当前正在输入和已输入的内容，
+  后者则显示拼音、拉丁文（英文）等类型键盘的输入按键
+- 与以上视图相对应的模型则分别为 `IMEditor`、`Inputboard` 和 `Keyboard`，
+  其负责根据用户的交互消息（`UserKeyMsg` 和 `UserInputMsg`）生成并管理输入数据 `Input`
+- 输入数据 `Input` 将最终通过输入列表 `InputList` 进行维护，并通过视图 `InputListView`
+  显示拼音、拉丁文、表情等类型的 `Input`
+- 在模型 `Inputboard` 和 `Keyboard` 的内部不持有 `InputList` 及其内部消息的监听器，
+  在处理来自视图的用户交互消息时，均通过各自的上下文对象 `InputboardContext`
+  和 `KeyboardContext` 调用 `InputList` 的接口构造 `Input`，再通过上下文中指定的
+  `listener` 将内部消息向外发送出去
+- 拼音输入（`PinyinKeyboard`）、拉丁文输入（`LatinKeyboard`）、
+  表情输入（`EmojiKeyboard`）、算术输入（`MathKeyboard`）等键盘均为
+  `Keyboard` 的具体实现，并由 `IMEditor` 负责各类键盘的切换
+
+![](./docs/img/layout-introduce.png)
 
 ### 消息流转
 
@@ -112,29 +136,35 @@ keyboard <|-down- math_kb: extends
 
 ```plantuml
 @startuml
-component [ImeService] as ime_svc #pink
+component [IMEService] as ime_svc #pink
 
-component [InputPaneView] as input_pane_view #pink
-component [KeyboardView] as keyboard_view
-component [InputListView] as input_list_view
-
-component [InputPane] as input_pane #pink
-component [InputList] as input_list
+component [IMEditor] as ime_editor #pink
+component [Inputboard] as inputboard
 component [Keyboard] as keyboard
 
-keyboard_view ..> input_pane_view: send\n<<UserKeyMsg>>
-input_list_view ..> input_pane_view: send\n<<UserInputMsg>>
-input_pane_view ..> ime_svc: transfer\n<<UserKeyMsg>>\nor <<UserInputMsg>>
-ime_svc ..> input_pane: dispatch\n<<UserKeyMsg>>\nor <<UserInputMsg>>
-input_pane ..> keyboard: dispatch\n<<UserKeyMsg>>
-input_pane ..> input_list: dispatch\n<<UserInputMsg>>
+component [IMEditorView] as ime_editor_view #pink
+component [KeyboardView] as keyboard_view
+component [InputboardView] as inputboard_view
+component [InputListView] as input_list_view
 
-keyboard ..> input_pane: send\n<<InputMsg>>
-input_list ..> input_pane: send\n<<InputMsg>>
-input_pane ..> ime_svc: transfer\n<<InputMsg>>
-ime_svc ..> input_pane_view: dispatch\n<<InputMsg>>
-input_pane_view ..> keyboard_view: dispatch\n<<InputMsg>>
-input_pane_view ..> input_list_view: dispatch\n<<InputMsg>>
+input_list_view ..> inputboard_view: send\n<<UserInputMsg>>
+inputboard_view ..> ime_editor_view: transfer\n<<UserInputMsg>>
+keyboard_view ..> ime_editor_view: send\n<<UserKeyMsg>>
+ime_editor_view ..> ime_svc: transfer\n<<UserKeyMsg>>\nor <<UserInputMsg>>
+
+ime_svc ..> ime_editor: dispatch\n<<UserKeyMsg>>\nor <<UserInputMsg>>
+ime_editor ..> keyboard: dispatch\n<<UserKeyMsg>>
+ime_editor ..> inputboard: dispatch\n<<UserInputMsg>>
+
+
+keyboard ..> ime_editor: send\n<<InputMsg>>
+inputboard ..> ime_editor: send\n<<InputMsg>>
+ime_editor ..> ime_svc: transfer\n<<InputMsg>>
+
+ime_svc ..> ime_editor_view: dispatch\n<<InputMsg>>
+ime_editor_view ..> keyboard_view: dispatch\n<<InputMsg>>
+ime_editor_view ..> inputboard_view: dispatch\n<<InputMsg>>
+inputboard_view ..> input_list_view: dispatch\n<<InputMsg>>
 
 @enduml
 ```
@@ -144,13 +174,17 @@ input_pane_view ..> input_list_view: dispatch\n<<InputMsg>>
 设计要点：
 
 - 消息始终保持单向流动，模型层或视图层发送的消息均由上一层进行转发，
-  再由最顶层（`ImeService`）将消息向下分别派发至视图层或模型层。
-  模型层与视图层之间不直接传递消息，从而确保二者的独立性
-- 模型层中的 `Keyboard` 和 `InputList` 均触发 `InputMsg`（输入消息），
+  再由最顶层（`IMEService`）将消息向下分别派发至视图层或模型层。
+  模型层与视图层之间不直接传递消息，从而消除模型与视图间的耦合性
+- 模型层中的 `Keyboard` 和 `Inputboard` 均触发 `InputMsg`（输入消息），
   再由相应的视图根据消息携带的数据 `InputMsgData` 做视图更新
+  - `Keyboard` 一般触发与按键 `Key` 相关的消息，而 `Inputboard`
+    则仅触发与输入 `Input` 相关的处理消息，如，选中输入、插入输入等
 - 视图层中的 `KeyboardView` 将触发 `UserKeyMsg`（用户操作按键的消息），
   其最终由模型层中的 `Keyboard` 处理，而 `InputListView` 则触发
-  `UserInputMsg`（用户操作输入的消息），并由 `InputList` 进行处理
+  `UserInputMsg`（用户操作输入的消息），并由 `Inputboard` 进行处理
+  - `InputboardView` 也会触发 `UserInputMsg` 消息，
+    如，清空输入列表、应用输入补全等处理 `InputList` 的消息
 
 ## 参考资料
 
