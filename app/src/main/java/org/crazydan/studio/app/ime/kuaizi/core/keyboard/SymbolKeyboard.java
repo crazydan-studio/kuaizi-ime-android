@@ -140,36 +140,28 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         boolean directInputting = inputList.isEmpty();
         boolean isPairKey = key.symbol instanceof Symbol.Pair;
 
-        if (!directInputting) {
-            if (isPairKey) {
-                prepare_for_PairSymbol_Inputting(context, (Symbol.Pair) key.symbol);
-
-                confirm_InputList_Pending(context);
-
-                // Note：配对符号输入后不再做连续输入，退出当前键盘
-                exit_Keyboard(context);
-            } else {
-                do_Single_CharKey_Replace_or_NewPending_Inputting(context);
-            }
-            return;
-        }
-
-        CharInput pending = inputList.newPending();
         if (isPairKey) {
             Symbol.Pair symbol = (Symbol.Pair) key.symbol;
-
             prepare_for_PairSymbol_Inputting(context, symbol);
-        } else {
+
+            confirm_InputList_Pending(context);
+
+            // Note：非连续输入的情况下，配对符号输入后不再做连续输入，退出当前键盘
+            if (!continuousInput) {
+                exit_Keyboard(context);
+            }
+        }
+        // 非直输，做替换输入
+        else if (!directInputting) {
+            do_Single_CharKey_Replace_or_NewPending_Inputting(context);
+        }
+        // 直输
+        else {
+            CharInput pending = inputList.newPending();
             pending.appendKey(key);
             pending.clearPair();
-        }
 
-        // 直接提交输入
-        commit_InputList(context, false, false, isPairKey);
-
-        // Note：非连续输入的情况下，配对符号输入后不再做连续输入，退出当前键盘
-        if (isPairKey && !continuousInput) {
-            exit_Keyboard(context);
+            commit_InputList(context, false, false, false);
         }
     }
 
@@ -208,8 +200,9 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
             leftInput.replaceLastKey(leftKey);
             rightInput.replaceLastKey(rightKey);
         } else {
-            // 对于输入修改，若为非空的待输入，也不是符号输入，则对其做配对符号包裹
-            boolean wrapSelected = !selected.isGap() && !inputList.hasEmptyPending() && !selected.isSymbol();
+            // 若待输入非空，且不是符号输入，则对其做配对符号包裹
+            CharInput pending = inputList.getPending();
+            boolean wrapSelected = !Input.isEmpty(pending) && !pending.isSymbol();
             if (wrapSelected) {
                 // 选中被包裹输入的左侧 Gap
                 inputList.confirmPendingAndSelectPrevious();

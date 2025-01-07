@@ -56,7 +56,7 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
 
     protected void addGapSpace(View view, float[] gapSpaces) {
         if (gapSpaces == null) {
-            return;
+            gapSpaces = new float[] { 0f, 0f };
         }
 
         float margin = ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);

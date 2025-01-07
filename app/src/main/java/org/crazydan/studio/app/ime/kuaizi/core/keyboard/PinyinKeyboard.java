@@ -212,8 +212,18 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case SingleTap_Key: {
+                InputList inputList = context.inputList;
+                boolean directInputting = false;
+                switch (key.type) {
+                    case Emoji:
+                    case Symbol: {
+                        directInputting = inputList.isEmpty();
+                        break;
+                    }
+                }
+
                 // 单字符输入
-                start_Single_CharKey_Inputting(context, msg.data(), false);
+                start_Single_CharKey_Inputting(context, msg.data(), directInputting);
                 break;
             }
         }

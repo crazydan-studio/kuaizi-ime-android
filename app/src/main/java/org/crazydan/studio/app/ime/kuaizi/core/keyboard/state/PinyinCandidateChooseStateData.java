@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -54,7 +53,7 @@ public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateDa
                                 .filter((w) -> w instanceof PinyinWord)
                                 .map((w) -> ((PinyinWord) w).spell)
                                 .filter((spell) -> spell.id != null)
-                                .sorted(Comparator.comparingInt(a -> a.id))
+                                .sorted(this::compareSpell)
                                 .distinct()
                                 .collect(Collectors.toList());
     }
@@ -131,5 +130,37 @@ public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateDa
         }
 
         return this.filter.matched(word);
+    }
+
+    private int compareSpell(PinyinWord.Spell a, PinyinWord.Spell b) {
+        return getSpellToneOrder(a) - getSpellToneOrder(b);
+    }
+
+    private int getSpellToneOrder(PinyinWord.Spell spell) {
+        String[][] tonesArray = new String[][] {
+                // Note: 按声调升序排列，轻声的忽略
+                new String[] { "ā", "á", "ǎ", "à" },
+                new String[] { "ō", "ó", "ǒ", "ò" },
+                new String[] { "ē", "é", "ě", "è" },
+                new String[] { "ê̄", "ế", "ê̌", "ề", "ê" },
+                new String[] { "ī", "í", "ǐ", "ì" },
+                new String[] { "ū", "ú", "ǔ", "ù" },
+                new String[] { "ǖ", "ǘ", "ǚ", "ǜ" },
+                new String[] { "ń", "ň", "ǹ" },
+                new String[] { "m̄", "ḿ", "m̀" }
+        };
+
+        for (int i = 0; i < tonesArray.length; i++) {
+            String[] tones = tonesArray[i];
+            for (int j = 0; j < tones.length; j++) {
+                String tone = tones[j];
+                // 一个拼音内只存在一个带声调的字符
+                if (spell.value.contains(tone)) {
+                    return i * 10 + j;
+                }
+            }
+        }
+        // Note: 轻声放最后
+        return 1000;
     }
 }

@@ -39,6 +39,11 @@ public class EmojiWord extends InputWord {
         super(builder);
     }
 
+    @Override
+    public String toString() {
+        return this.value;
+    }
+
     /** {@link EmojiWord} 的构建器 */
     public static class Builder extends InputWord.Builder<Builder, EmojiWord> {
 

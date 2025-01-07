@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTable;
@@ -69,6 +70,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[4][0] = switcherCtrlKey(Keyboard.Type.Symbol);
 
         gridKeys[2][index_end] = this.config.charInputSelected
                                  ? ctrlKey(CtrlKey.Type.DropInput)
@@ -119,6 +121,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
         int index_end = getGridLastColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
+        gridKeys[4][0] = switcherCtrlKey(Keyboard.Type.Emoji);
 
         gridKeys[2][index_end] = this.config.charInputSelected
                                  ? ctrlKey(CtrlKey.Type.DropInput)

@@ -188,9 +188,9 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
         @Override
         protected CharKey doBuild() {
-            // Note: 当前的输入值也需加入替换列表，
+            // Note: 当前的输入值加入替换列表的最开始位置（将根据按键连续点击次数循环确定替换字符，第一次点击为 0），
             // 以保证在按键被替换后（按键字符被修改），也能进行可替换性检查
-            replacements(value());
+            replacements(0, value());
 
             return new CharKey(this);
         }
@@ -226,9 +226,17 @@ public class CharKey extends TypedKey<CharKey.Type> {
 
         /** @see CharKey#replacements */
         public Builder replacements(String... replacements) {
+            return replacements(-1, replacements);
+        }
+
+        protected Builder replacements(int index, String... replacements) {
             for (String s : replacements) {
                 if (!CharUtils.isBlank(s) && !this.replacements.contains(s)) {
-                    this.replacements.add(s);
+                    if (index < 0) {
+                        this.replacements.add(s);
+                    } else {
+                        this.replacements.add(index, s);
+                    }
                 }
             }
             return this;
