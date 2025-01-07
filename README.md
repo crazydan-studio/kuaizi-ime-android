@@ -178,13 +178,13 @@ inputboard_view ..> input_list_view: dispatch\n<<InputMsg>>
   模型层与视图层之间不直接传递消息，从而消除模型与视图间的耦合性
 - 模型层中的 `Keyboard` 和 `Inputboard` 均触发 `InputMsg`（输入消息），
   再由相应的视图根据消息携带的数据 `InputMsgData` 做视图更新
-  - `Keyboard` 一般触发与按键 `Key` 相关的消息，而 `Inputboard`
-    则仅触发与输入 `Input` 相关的处理消息，如，选中输入、插入输入等
+  - `Keyboard` 仅触发与 `Input` 构造相关的消息，如，正在输入、输入已结束、输入已删除等，而
+    `Inputboard` 则仅触发与 `InputList` 处理相关的消息，如，输入已选中、输入列表已清空等
 - 视图层中的 `KeyboardView` 将触发 `UserKeyMsg`（用户操作按键的消息），
   其最终由模型层中的 `Keyboard` 处理，而 `InputListView` 则触发
   `UserInputMsg`（用户操作输入的消息），并由 `Inputboard` 进行处理
   - `InputboardView` 也会触发 `UserInputMsg` 消息，
-    如，清空输入列表、应用输入补全等处理 `InputList` 的消息
+    如，点击输入列表清空按钮、选中输入补全等
 
 ## 参考资料
 
