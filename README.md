@@ -44,6 +44,8 @@ EOF
 
 ## 架构
 
+![](./docs/img/layout-introduce.png)
+
 ### 核心模型
 
 ![核心模型](./docs/img/class-diagram.png)
@@ -125,8 +127,6 @@ keyboard "1" *-down- "1..n" key: layouts >
 - 拼音输入（`PinyinKeyboard`）、拉丁文输入（`LatinKeyboard`）、
   表情输入（`EmojiKeyboard`）、算术输入（`MathKeyboard`）等键盘均为
   `Keyboard` 的具体实现，并由 `IMEditor` 负责各类键盘的切换
-
-![](./docs/img/layout-introduce.png)
 
 ### 消息流转
 
