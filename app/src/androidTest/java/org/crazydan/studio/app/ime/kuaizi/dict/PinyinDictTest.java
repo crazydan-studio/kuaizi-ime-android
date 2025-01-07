@@ -61,7 +61,7 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         String[] inputCharsArray = new String[] { "zhe", "shi", "Android", "shu", "ru", "fa" };
         List<CharInput> inputs = parseCharInputs(dict, inputCharsArray);
 
-        List<List<InputWord>> phrases = dict.findTopBestMatchedPhrase(inputs, 1);
+        List<List<InputWord>> phrases = dict.findTopBestMatchedPhrase(inputs, null, 1);
         Assert.assertEquals(1, phrases.size());
 
         List<InputWord> phrase = phrases.get(0);

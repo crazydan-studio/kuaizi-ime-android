@@ -667,7 +667,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (!this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
             drop_InputList_Pending(context);
         } else {
-            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending);
+            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending, true);
 
             confirm_InputList_Pending(context);
         }

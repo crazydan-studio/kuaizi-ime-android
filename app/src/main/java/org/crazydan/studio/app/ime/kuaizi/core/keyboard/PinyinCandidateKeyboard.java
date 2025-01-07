@@ -291,7 +291,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
-            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, (CharInput) selected);
+            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, (CharInput) selected, false);
         } else {
             selected = inputList.getSelected();
         }
@@ -419,10 +419,12 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
      * <code>input</code> 也将根据预测的短语结果而进行调整
      */
     protected static void predict_NotConfirmed_Phrase_InputWords(
-            PinyinDict dict, InputList inputList, CharInput input
+            PinyinDict dict, InputList inputList, CharInput currentInput, boolean forInputting
     ) {
-        List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(input);
-        List<List<InputWord>> bestPhrases = dict.findTopBestMatchedPhrase(inputs, 1);
+        List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(currentInput);
+        List<List<InputWord>> bestPhrases = dict.findTopBestMatchedPhrase(inputs,
+                                                                          forInputting ? null : currentInput,
+                                                                          1);
 
         List<InputWord> bestPhrase = CollectionUtils.first(bestPhrases);
         if (bestPhrase == null) {

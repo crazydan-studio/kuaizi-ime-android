@@ -207,17 +207,23 @@ public class PinyinDict {
 
     /**
      * 根据输入的拼音，查找最靠前的 <code>top</code> 个拼音短语
+     *
+     * @param currentInput
+     *         当前输入。若不为 null，则在该输入之前的输入候选字均视为已确认，
+     *         不会被预测结果替换，而在其之后的输入，仅已确认的候选字才不会被替换
      */
-    public List<List<InputWord>> findTopBestMatchedPhrase(List<CharInput> inputs, int top) {
-        if (inputs.size() < 2) {
+    public List<List<InputWord>> findTopBestMatchedPhrase(List<CharInput> inputs, CharInput currentInput, int top) {
+        int total = inputs.size();
+        if (total < 2) {
             return List.of();
         }
 
-        Map<Integer, Integer> pinyinCharsPlaceholderMap = new HashMap<>(inputs.size());
+        int lastAutoConfirmedUntilIndex = inputs.indexOf(currentInput);
+        Map<Integer, Integer> pinyinCharsPlaceholderMap = new HashMap<>(total);
 
-        List<Integer> pinyinCharsIdList = new ArrayList<>(inputs.size());
-        Map<Integer, Integer> confirmedPhraseWords = new HashMap<>(inputs.size());
-        for (int i = 0; i < inputs.size(); i++) {
+        List<Integer> pinyinCharsIdList = new ArrayList<>(total);
+        Map<Integer, Integer> confirmedPhraseWords = new HashMap<>(total);
+        for (int i = 0; i < total; i++) {
             CharInput input = inputs.get(i);
             // Note: 英文字符也可能组成有效拼音，故而，需仅针对拼音键盘的输入
             if (!input.isPinyin()) {
@@ -231,11 +237,11 @@ public class PinyinDict {
             }
 
             int charsIndex = pinyinCharsIdList.size();
-            if (input.isWordConfirmed()) {
+            if (i < lastAutoConfirmedUntilIndex || input.isWordConfirmed()) {
                 confirmedPhraseWords.put(charsIndex, input.getWord().id);
             }
-            pinyinCharsPlaceholderMap.put(i, charsIndex);
 
+            pinyinCharsPlaceholderMap.put(i, charsIndex);
             pinyinCharsIdList.add(charsId);
         }
 
