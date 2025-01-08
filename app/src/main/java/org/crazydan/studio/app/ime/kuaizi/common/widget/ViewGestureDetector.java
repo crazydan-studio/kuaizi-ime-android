@@ -69,12 +69,10 @@ public class ViewGestureDetector {
     }
 
     public void reset() {
-        this.longPressing.set(false);
-        this.moving = false;
-        this.latestSingleTap = null;
+        this.log.debug("@@ Gesture Reset");
+        this.log.debug("\n");
 
-        this.gestureHandler.clear();
-        this.movingTracker.clear();
+        onGestureEnd(this.latestPressStart);
     }
 
     public void onTouchEvent(@NonNull MotionEvent e) {
@@ -134,8 +132,11 @@ public class ViewGestureDetector {
 
     private void onPressEnd(GestureData data) {
         this.latestPressStart = null;
+        this.latestSingleTap = null;
 
-        triggerListeners(GestureType.PressEnd, data);
+        if (data != null) {
+            triggerListeners(GestureType.PressEnd, data);
+        }
     }
 
     private void startLongPress(GestureData data) {
@@ -198,7 +199,7 @@ public class ViewGestureDetector {
         boolean hasLongPressing = this.longPressing.get();
         stopLongPress();
 
-        if (hasLongPressing) {
+        if (hasLongPressing && data != null) {
             triggerListeners(GestureType.LongPressEnd, data);
         }
     }
@@ -227,6 +228,11 @@ public class ViewGestureDetector {
     private void onMoving(GestureData data) {
         // Note: PressStart、MovingStart、Flipping 均须发生在相同的位置上
         if (!this.moving) {
+            // Note: 在一次完整的 按下 到 释放 的过程中，可能发生 #reset() 重置的情况，
+            // 这时，需忽略对移动手势的处理
+            if (this.latestPressStart == null) {
+                return;
+            }
             data = this.latestPressStart;
         }
 
@@ -252,7 +258,7 @@ public class ViewGestureDetector {
         this.moving = false;
         this.movingTracker.clear();
 
-        if (hasMoving) {
+        if (hasMoving && data != null) {
             triggerListeners(GestureType.MovingEnd, data);
         }
     }
@@ -287,9 +293,16 @@ public class ViewGestureDetector {
     }
 
     private void triggerListeners(GestureType type, GestureData data) {
+        this.log.debug("######################### Gesture Event ######################");
+        this.log.debug("@@ Gesture Type: %s", type);
+        this.log.debug("\n");
+
         for (Listener listener : this.listeners) {
             listener.onGesture(type, data);
         }
+
+        this.log.debug("##############################################################");
+        this.log.debug("\n");
     }
 
     private Motion createMotion(GestureData newData, GestureData oldData) {
