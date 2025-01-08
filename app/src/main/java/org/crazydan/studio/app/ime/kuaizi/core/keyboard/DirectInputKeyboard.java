@@ -60,9 +60,10 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
         }
 
         Key key = context.key();
+        // Note: 被禁用的按键也可能需要处理
         if (key instanceof CharKey) {
             on_CharKey_Msg(context, msg);
-        } else if (!key.disabled && key instanceof CtrlKey) {
+        } else if (key instanceof CtrlKey) {
             on_CtrlKey_Msg(context, msg);
         }
     }

@@ -20,19 +20,16 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputCharsFlipStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputCharsSlipStateData;
-import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputListCommitOptionChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
@@ -104,13 +101,6 @@ public class PinyinKeyboard extends BaseKeyboard {
                                                              level1Char,
                                                              stateData.getLevel2NextChars());
             }
-            case InputList_Commit_Option_Choose_Doing: {
-                InputListCommitOptionChooseStateData stateData = this.state.data();
-
-                return () -> keyTable.createInputListCommittingOptionKeys(stateData.getOption(),
-                                                                          stateData.hasSpell(),
-                                                                          stateData.hasVariant());
-            }
             default: {
                 State previous = this.state.previous;
 
@@ -130,19 +120,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         }
     }
 
-    @Override
-    protected void change_State_to_Previous(KeyboardContext context) {
-        // Note: 从输入选项状态退出前，需做状态清理
-        if (this.state.type == State.Type.InputList_Commit_Option_Choose_Doing) {
-            InputList inputList = context.inputList;
-            InputListCommitOptionChooseStateData stateData = this.state.data();
-
-            inputList.setInputOption(stateData.oldOption);
-        }
-
-        super.change_State_to_Previous(context);
-    }
-
     // ====================== Start: 消息处理 ======================
 
     @Override
@@ -150,13 +127,6 @@ public class PinyinKeyboard extends BaseKeyboard {
         Key key = context.key();
         // Note: 在滑动结束时可能无关联按键，此时需继续由不同的状态处理该结束消息
         if (key != null && try_On_Common_UserKey_Msg(context, msg)) {
-            return;
-        }
-
-        // Note：被禁用的部分控制按键也需要接受处理
-        if (key instanceof CtrlKey //
-            && key.disabled //
-            && !CtrlKey.Type.Commit_InputList_Option.match(key)) {
             return;
         }
 
@@ -171,12 +141,6 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case InputChars_XPad_Input_Doing: {
                 on_InputChars_XPad_Input_Doing_UserKey_Msg(context, msg);
-                break;
-            }
-            case InputList_Commit_Option_Choose_Doing: {
-                if (key instanceof CtrlKey) {
-                    on_InputList_Commit_Option_Choose_Doing_CtrlKey_Msg(context, msg);
-                }
                 break;
             }
             default: {
@@ -231,16 +195,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     /** 响应 {@link CtrlKey} 的消息 */
     private void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        if (msg.type != UserKeyMsgType.LongPress_Key_Start) {
-            return;
-        }
-
-        CtrlKey key = context.key();
-        if (CtrlKey.Type.Commit_InputList.match(key)) {
-            play_DoubleTick_InputAudio(context);
-
-            start_InputList_Commit_Option_Choosing(context);
-        }
+        // Note: 无单独的控制按键处理逻辑
     }
 
     // ====================== End: 消息处理 ======================
@@ -575,93 +530,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     // ======================== End: 输入补全 ========================
-
-    // ================== Start: 对输入列表 提交选项 的操作 =====================
-
-    private void start_InputList_Commit_Option_Choosing(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        Input.Option inputOption = inputList.getInputOption();
-
-        InputListCommitOptionChooseStateData stateData = new InputListCommitOptionChooseStateData(inputOption);
-        stateData.update(inputList);
-
-        State state = new State(State.Type.InputList_Commit_Option_Choose_Doing, stateData, createInitState());
-        change_State_To(context, state);
-    }
-
-    private void on_InputList_Commit_Option_Choose_Doing_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        if (msg.type != UserKeyMsgType.SingleTap_Key) {
-            return;
-        }
-
-        CtrlKey key = context.key();
-        if (!CtrlKey.Type.Commit_InputList_Option.match(key)) {
-            return;
-        }
-
-        if (update_InputList_Commit_Option(context)) {
-            play_SingleTick_InputAudio(context);
-        }
-        fire_InputChars_Input_Done(context, null);
-    }
-
-    /**
-     * 更新输入列表提交选项
-     *
-     * @return 若存在变更，则返回 true，否则，返回 false
-     */
-    private boolean update_InputList_Commit_Option(KeyboardContext context) {
-        CtrlKey key = context.key();
-        InputList inputList = context.inputList;
-        InputListCommitOptionChooseStateData stateData = this.state.data();
-
-        Input.Option oldInputOption = inputList.getInputOption();
-        Input.Option newInputOption = null;
-
-        CtrlKey.Option<CtrlKey.InputWordCommitMode> option = key.option();
-        CtrlKey.InputWordCommitMode mode = option.value;
-        if (stateData.hasSpell()) {
-            switch (mode) {
-                case only_pinyin:
-                case with_pinyin: {
-                    PinyinWord.SpellUsedMode expected = //
-                            mode == CtrlKey.InputWordCommitMode.only_pinyin
-                            ? PinyinWord.SpellUsedMode.replacing
-                            : PinyinWord.SpellUsedMode.following;
-
-                    PinyinWord.SpellUsedMode spellUsedMode = //
-                            oldInputOption.wordSpellUsedMode == expected ? null : expected;
-
-                    newInputOption = new Input.Option(spellUsedMode, oldInputOption.wordVariantUsed);
-                    break;
-                }
-            }
-        }
-        if (stateData.hasVariant()) {
-            switch (mode) {
-                case trad_to_simple:
-                case simple_to_trad: {
-                    // 被禁用的繁简转换按钮不做响应
-                    if (!key.disabled) {
-                        newInputOption = //
-                                new Input.Option(oldInputOption.wordSpellUsedMode, !oldInputOption.wordVariantUsed);
-                    }
-                    break;
-                }
-            }
-        }
-
-        if (newInputOption != null) {
-            inputList.setInputOption(newInputOption);
-
-            stateData.update(inputList);
-
-            return true;
-        }
-        return false;
-    }
-
-    // ================== End: 对输入列表 提交选项 的操作 =====================
 
     /** 结束输入：始终针对 {@link InputList#getPending() 待输入}，并做状态复位 */
     private void stop_InputChars_Inputting(KeyboardContext context) {

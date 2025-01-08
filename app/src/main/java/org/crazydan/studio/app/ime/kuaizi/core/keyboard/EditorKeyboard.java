@@ -55,6 +55,12 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
+    protected void switch_Keyboard_to_Previous(KeyboardContext context) {
+        // Note: 直接回到其切换前的键盘，而不管切换前的是否为主键盘
+        switch_Keyboard_To(context, context.keyboardPrevType);
+    }
+
+    @Override
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
 
@@ -68,6 +74,9 @@ public class EditorKeyboard extends DirectInputKeyboard {
     @Override
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
+        if (key.disabled) {
+            return;
+        }
 
         switch (msg.type) {
             case SingleTap_Key: {
@@ -97,12 +106,6 @@ public class EditorKeyboard extends DirectInputKeyboard {
                 break;
             }
         }
-    }
-
-    @Override
-    protected void switch_Keyboard_to_Previous(KeyboardContext context) {
-        // Note: 编辑键盘均直接回到其切换前的键盘，而不管切换前的是否为主键盘
-        switch_Keyboard_To(context, context.keyboardPrevType);
     }
 
     private void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {

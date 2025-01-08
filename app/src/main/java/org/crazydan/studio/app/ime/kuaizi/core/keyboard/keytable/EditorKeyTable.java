@@ -19,12 +19,13 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable;
 
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTableConfig;
 
 /**
- * 编辑按键布局
+ * {@link Keyboard.Type#Editor} 的按键布局
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31

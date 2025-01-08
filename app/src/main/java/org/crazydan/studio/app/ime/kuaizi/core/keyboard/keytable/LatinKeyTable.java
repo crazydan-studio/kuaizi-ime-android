@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.LatinKeyboard;
 
 /**
- * {@link LatinKeyboard 拉丁文键盘}按键表
+ * {@link Keyboard.Type#Latin} 的按键布局
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-30

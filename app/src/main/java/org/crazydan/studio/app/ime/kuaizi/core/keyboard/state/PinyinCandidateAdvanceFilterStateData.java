@@ -18,7 +18,6 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,10 +52,7 @@ public class PinyinCandidateAdvanceFilterStateData extends PinyinCandidateFilter
     }
 
     public List<PinyinWord.Spell> getSpells() {
-        return this.spellAndRadicalsMap.keySet()
-                                       .stream()
-                                       .sorted(Comparator.comparing(s -> s.id))
-                                       .collect(Collectors.toList());
+        return this.spellAndRadicalsMap.keySet().stream().sorted(this::compareSpell).collect(Collectors.toList());
     }
 
     public List<PinyinWord.Radical> getRadicals() {

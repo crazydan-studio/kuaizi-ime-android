@@ -201,6 +201,18 @@ public abstract class BaseKeyboard implements Keyboard {
                 }
                 break;
             }
+            case LongPress_Key_Start: {
+                switch (key.type) {
+                    // 长按提交按键，均进入提交选项键盘
+                    case Commit_InputList: {
+                        play_DoubleTick_InputAudio(context);
+
+                        switch_Keyboard_To(context, Type.InputList_Commit_Option);
+                        return true;
+                    }
+                }
+                break;
+            }
             case SingleTap_Key: {
                 switch (key.type) {
                     // Note：在任意子键盘中提交输入，都需直接回到初始键盘

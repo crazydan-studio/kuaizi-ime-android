@@ -28,7 +28,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
@@ -43,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.EditorKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.EmojiKeyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.InputListCommitOptionKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.LatinKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.MathKeyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.NumberKeyboard;
@@ -429,6 +429,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 return new NumberKeyboard();
             case Editor:
                 return new EditorKeyboard();
+            case InputList_Commit_Option:
+                return new InputListCommitOptionKeyboard();
             case Math:
                 return new MathKeyboard(this.dict);
             case Symbol:
@@ -461,13 +463,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                                              .key(key)
                                              .inputList(this.inputList)
                                              .listener(this));
-    }
-
-    protected void updateInputList() {
-        InputboardContext context = createInputboardContext();
-        Input.Option inputOption = context.createInputOption();
-
-        this.inputList.setInputOption(inputOption);
     }
 
     protected void withInputboardContext(Consumer<InputboardContext> c) {

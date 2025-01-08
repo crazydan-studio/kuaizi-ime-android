@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 
 /**
- * 表情、标点符号按键表
+ * {@link Keyboard.Type#Symbol} 和 {@link Keyboard.Type#Emoji} 的按键布局
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-31

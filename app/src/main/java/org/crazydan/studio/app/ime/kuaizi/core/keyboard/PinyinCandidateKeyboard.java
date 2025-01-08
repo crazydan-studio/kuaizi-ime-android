@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinCandidateKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.PinyinCandidateAdvanceFilterStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.PinyinCandidateChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
@@ -63,35 +63,35 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         start_InputCandidate_Choosing(context, false);
     }
 
-    private PinyinKeyTable createKeyTable(KeyboardContext context) {
+    private PinyinCandidateKeyTable createKeyTable(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
 
-        return PinyinKeyTable.create(keyTableConf);
+        return PinyinCandidateKeyTable.create(keyTableConf);
     }
 
     @Override
     public KeyFactory buildKeyFactory(KeyboardContext context) {
-        PinyinKeyTable keyTable = createKeyTable(context);
+        PinyinCandidateKeyTable keyTable = createKeyTable(context);
 
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
                 PinyinCandidateChooseStateData stateData = this.state.data();
                 PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
 
-                return () -> keyTable.createInputCandidateKeys(charsTree,
-                                                               stateData.input,
-                                                               stateData.getSpells(),
-                                                               stateData.getPagingData(),
-                                                               stateData.getPageStart(),
-                                                               stateData.getFilter());
+                return () -> keyTable.createKeys(charsTree,
+                                                 stateData.input,
+                                                 stateData.getSpells(),
+                                                 stateData.getPagingData(),
+                                                 stateData.getPageStart(),
+                                                 stateData.getFilter());
             }
             case InputCandidate_Advance_Filter_Doing: {
                 PinyinCandidateAdvanceFilterStateData stateData = this.state.data();
 
-                return () -> keyTable.createInputCandidateAdvanceFilterKeys(stateData.getSpells(),
-                                                                            stateData.getPagingData(),
-                                                                            stateData.getPageStart(),
-                                                                            stateData.getFilter());
+                return () -> keyTable.createAdvanceFilterKeys(stateData.getSpells(),
+                                                              stateData.getPagingData(),
+                                                              stateData.getPageStart(),
+                                                              stateData.getFilter());
             }
         }
         return null;
@@ -220,8 +220,8 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getPending();
 
-        PinyinKeyTable keyTable = createKeyTable(context);
-        int pageSize = keyTable.getInputCandidateKeysPageSize();
+        PinyinCandidateKeyTable keyTable = createKeyTable(context);
+        int pageSize = keyTable.getKeysPageSize();
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
@@ -346,8 +346,8 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         PinyinCandidateChooseStateData prevStateData = this.state.data();
         PinyinWord.Filter filter = prevStateData.getFilter();
 
-        PinyinKeyTable keyTable = createKeyTable(context);
-        int pageSize = keyTable.getInputCandidateAdvanceFilterKeysPageSize();
+        PinyinCandidateKeyTable keyTable = createKeyTable(context);
+        int pageSize = keyTable.getAdvanceFilterKeysPageSize();
 
         PinyinCandidateAdvanceFilterStateData stateData = new PinyinCandidateAdvanceFilterStateData(pending,
                                                                                                     prevStateData.getCandidates(),
