@@ -182,11 +182,24 @@ public abstract class BaseKeyboard implements Keyboard {
         return try_On_UserKey_Msg_Over_XPad(context, msg);
     }
 
+    /**
+     * 是否禁用在 {@link CtrlKey.Type#Commit_InputList} 按键上的消息
+     * <p/>
+     * 一般用于禁止切换到 {@link Type#InputList_Commit_Option} 键盘上，
+     * 忽略 {@link UserKeyMsgType#LongPress_Key_Start} 消息即可
+     */
+    protected boolean disable_Msg_On_CtrlKey_Commit_InputList(UserKeyMsg msg) {return false;}
+
     /** 尝试处理控制按键消息：已禁用的不做处理 */
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
         if (key.disabled) {
             return false;
+        }
+
+        if (key.type == CtrlKey.Type.Commit_InputList //
+            && disable_Msg_On_CtrlKey_Commit_InputList(msg)) {
+            return true;
         }
 
         switch (msg.type) {

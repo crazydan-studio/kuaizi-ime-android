@@ -26,6 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
 
@@ -61,13 +62,21 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
+    protected boolean disable_Msg_On_CtrlKey_Commit_InputList(UserKeyMsg msg) {
+        // Note: 在当前键盘内仅处理 Commit_InputList 按键的单击消息，
+        // 忽略其余消息，从而避免切换到输入提交选项键盘
+        return msg.type != UserKeyMsgType.SingleTap_Key;
+    }
+
+    @Override
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         CtrlKey key = context.key();
 
-        // 在当前键盘内单独处理光标移动按键
+        // 在当前键盘内需单独处理光标移动按键，不采用公共处理逻辑
         if (CtrlKey.Type.Editor_Cursor_Locator.match(key)) {
             return false;
         }
+
         return super.try_On_Common_CtrlKey_Msg(context, msg);
     }
 

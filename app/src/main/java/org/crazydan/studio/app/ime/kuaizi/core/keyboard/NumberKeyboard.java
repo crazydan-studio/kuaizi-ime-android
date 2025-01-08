@@ -20,6 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.NumberKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 
 /**
  * {@link Type#Number 纯数字键盘}
@@ -61,5 +63,12 @@ public class NumberKeyboard extends DirectInputKeyboard {
         this.needToShowExit = false;
 
         super.exit_Keyboard(context);
+    }
+
+    @Override
+    protected boolean disable_Msg_On_CtrlKey_Commit_InputList(UserKeyMsg msg) {
+        // Note: 在当前键盘内仅处理 Commit_InputList 按键的单击消息，
+        // 忽略其余消息，从而避免切换到输入提交选项键盘
+        return msg.type != UserKeyMsgType.SingleTap_Key;
     }
 }

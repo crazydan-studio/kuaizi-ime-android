@@ -50,10 +50,6 @@ public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
 
     @Override
     public KeyFactory buildKeyFactory(KeyboardContext context) {
-        if (this.state.type != State.Type.InputList_Commit_Option_Choose_Doing) {
-            return null;
-        }
-
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         InputListCommitOptionKeyTable keyTable = InputListCommitOptionKeyTable.create(keyTableConf);
 
@@ -69,21 +65,26 @@ public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
         // 恢复输入列表的 Input.Option 至切换前的状态
         inputList.setInputOption(stateData.oldOption);
 
-        // Note: 直接回到其切换前的键盘，而不管切换前的是否为主键盘
-        switch_Keyboard_To(context, context.keyboardPrevType);
+        CtrlKey key = context.key();
+        switch (key.type) {
+            case Commit_InputList: {
+                // 若已提交输入，则直接回到主键盘
+                super.switch_Keyboard_to_Previous(context);
+                break;
+            }
+            case Exit: {
+                // 若为退出，则直接回到其切换前的键盘，而不管切换前的是否为主键盘
+                switch_Keyboard_To(context, context.keyboardPrevType);
+                break;
+            }
+        }
     }
 
     @Override
-    protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        CtrlKey key = context.key();
-
-        // Note: 仅处理 Commit_InputList 按键的单击消息，忽略其余消息
-        if (key.type == CtrlKey.Type.Commit_InputList //
-            && msg.type != UserKeyMsgType.SingleTap_Key) {
-            return true;
-        }
-
-        return super.try_On_Common_CtrlKey_Msg(context, msg);
+    protected boolean disable_Msg_On_CtrlKey_Commit_InputList(UserKeyMsg msg) {
+        // Note: 在当前键盘内仅处理 Commit_InputList 按键的单击消息，
+        // 忽略其余消息，从而避免切换到输入提交选项键盘
+        return msg.type != UserKeyMsgType.SingleTap_Key;
     }
 
     @Override
@@ -110,7 +111,7 @@ public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
         InputListCommitOptionChooseStateData stateData = new InputListCommitOptionChooseStateData(inputOption);
         stateData.update(inputList);
 
-        this.state = new State(State.Type.InputList_Commit_Option_Choose_Doing, stateData, createInitState());
+        this.state = new State(State.Type.InputList_Commit_Option_Choose_Doing, stateData);
     }
 
     /**
