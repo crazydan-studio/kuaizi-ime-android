@@ -134,35 +134,17 @@ public class InputViewData extends Immutable {
             int position, boolean canBeSelected
     ) {
         Input input = inputList.getInput(position);
-        Input preInput = inputList.getInput(position - 1);
-
         CharInput pending = inputList.getPendingOn(input);
+
         boolean hasPending = pending != null;
         boolean hasEmptyPending = Input.isEmpty(pending);
         boolean shouldBeSelected = canBeSelected && needToBeSelected(inputList, input);
-        CharInput prePending = inputList.getPendingOn(preInput);
-
-        // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
-//        boolean preGapIsMathExprInput = Input.isGap(preInput) && !Input.isEmpty(prePending) && prePending.isMathExpr();
-//        int gapSpaces = needGapSpace ? preGapIsMathExprInput ? 2 : 1 : 0;
 
         MathExprInput mathExprInput = tryGetMathExprInput(inputList, input);
         if (mathExprInput != null) {
-//            // 第一个普通输入不需要添加空白，
-//            // 但是对于第一个不为空的算术待输入则需要提前添加，
-//            // 因为，在输入过程中，算术待输入的前面没有 Gap 占位，
-//            // 输入完毕后才会添加 Gap 占位
-//            if (position == 0) {
-//                gapSpaces = !Input.isEmpty(mathExprInput) ? 1 : 0;
-//            }
-//            // 算术输入 在输入完毕后会在其内部的开头位置添加一个 Gap 占位，从而导致该输入发生后移，
-//            // 为避免视觉干扰，故在该算术的待输入之前先多附加一个空白
-//            else if (needGapSpace && input.isGap() && !Input.isEmpty(mathExprInput)) {
-//                gapSpaces = 2;
-//            }
-
             // Note: 只有上层输入整体被选中时，下层的输入才能被独立选中
             List<InputViewData> inputs = doBuild(mathBuilder, mathExprInput.getInputList(), option, shouldBeSelected);
+
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
             b.type(hasEmptyPending ? Type.Gap : Type.Char);
@@ -194,6 +176,7 @@ public class InputViewData extends Immutable {
          .gapSpaces(gapSpaces)
          .text(textAndSpell[0])
          .spell(textAndSpell[1]);
+
         // Note: 不缓存正在输入的 Input，其变动频率更高
         if (hasPending) {
             b.notCache();

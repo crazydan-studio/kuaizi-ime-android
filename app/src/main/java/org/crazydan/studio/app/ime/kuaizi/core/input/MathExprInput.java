@@ -115,7 +115,11 @@ public class MathExprInput extends CharInput {
         return true;
     }
 
-    // <<<<<<<<< CharInput 接口覆盖
+    // ========================= Start: 覆盖父类接口 ========================
+
+    @Override
+    public boolean isSpace() {return false;}
+
     @Override
     public boolean isLatin() {return false;}
 
@@ -151,7 +155,6 @@ public class MathExprInput extends CharInput {
 
     @Override
     public void replaceLastKey(Key newKey) {}
-    // >>>>>>>
 
     @Override
     public List<String> getChars() {return new ArrayList<>();}
@@ -161,13 +164,14 @@ public class MathExprInput extends CharInput {
 
     @Override
     public boolean hasWord() {return false;}
-    // >>>>>>>>
 
     @Override
     public InputWord getWord() {return null;}
 
     @Override
     public void setWord(InputWord word) {}
+
+    // ========================= End: 覆盖父类接口 ========================
 
     @Override
     public boolean equals(Object o) {

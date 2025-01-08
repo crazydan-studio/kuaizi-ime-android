@@ -46,8 +46,8 @@ public class GapInputViewHolder extends InputViewHolder {
 
     @Override
     public void bind(InputViewData data) {
-        // Note: 空白只能加在根视图上，否则，会不能立即生效
-        super.bind(data);
+        // Note: 空白只能加在根视图上，否则不会立即生效
+        addGapSpacePadding(this.itemView, data.gapSpaces);
 
         whenViewReady(this.blinkView, (view) -> {
             ViewUtils.visible(view, data.selected);

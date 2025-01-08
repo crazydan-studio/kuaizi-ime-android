@@ -17,6 +17,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
+import java.util.function.BiConsumer;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -41,7 +43,7 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
     }
 
     public void bind(InputViewData data) {
-        addGapSpace(this.itemView, data.gapSpaces);
+        addGapSpaceMargin(this.itemView, data.gapSpaces);
     }
 
     protected void setSelectedBgColor(View view, boolean selected) {
@@ -54,15 +56,28 @@ public abstract class InputViewHolder extends RecyclerViewHolder {
         setTextColorByAttrId(view, fgColor);
     }
 
-    protected void addGapSpace(View view, float[] gapSpaces) {
+    protected void addGapSpaceMargin(View view, float[] gapSpaces) {
+        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+
+        withGapSpaces(gapSpaces, (left, right) -> {
+            layout.leftMargin = left;
+            layout.rightMargin = right;
+        });
+    }
+
+    protected void addGapSpacePadding(View view, float[] gapSpaces) {
+        withGapSpaces(gapSpaces, (left, right) -> view.setPadding(left, 0, right, 0));
+    }
+
+    private void withGapSpaces(float[] gapSpaces, BiConsumer<Integer, Integer> c) {
         if (gapSpaces == null) {
             gapSpaces = new float[] { 0f, 0f };
         }
 
         float margin = ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
-        ViewGroup.MarginLayoutParams layout = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        int left = Math.round(margin * gapSpaces[0]);
+        int right = Math.round(margin * gapSpaces[1]);
 
-        layout.leftMargin = Math.round(margin * gapSpaces[0]);
-        layout.rightMargin = Math.round(margin * gapSpaces[1]);
+        c.accept(left, right);
     }
 }

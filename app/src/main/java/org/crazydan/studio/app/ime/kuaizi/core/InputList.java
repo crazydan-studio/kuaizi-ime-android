@@ -712,24 +712,30 @@ public class InputList {
         left = getNoneEmptyPendingOrSelf(left);
         right = getNoneEmptyPendingOrSelf(right);
 
+        if (left == null || right == null) {
+            return false;
+        }
         // 已经有显式的空格，则不需要再添加空格
-        if (left == null || right == null //
-            || left.isSpace() || right.isSpace()) {
+        else if (left.isSpace() || right.isSpace()) {
             return false;
         }
 
-        Input.Option option = getInputOption();
+        // Note: 算术输入的结构更复杂，优先检查该类型
         if ((left.isMathExpr() && !left.isEmpty()) //
             || (right.isMathExpr() && !right.isEmpty())) {
+            return true;
+        }
+        // 数学运算符左右都需有空格
+        else if (left.isMathOp() || right.isMathOp()) {
             return true;
         } else if (left.isLatin()) {
             return !right.isSymbol();
         } else if (right.isLatin()) {
             return !left.isSymbol();
-        } else if (left.isMathOp() || right.isMathOp()) {
-            // 数学运算符前后都有空格
-            return true;
-        } else if (left.isTextOnlyWordSpell(option)) {
+        }
+
+        Input.Option option = getInputOption();
+        if (left.isTextOnlyWordSpell(option)) {
             return !right.isSymbol();
         } else if (right.isTextOnlyWordSpell(option)) {
             return !left.isSymbol();
