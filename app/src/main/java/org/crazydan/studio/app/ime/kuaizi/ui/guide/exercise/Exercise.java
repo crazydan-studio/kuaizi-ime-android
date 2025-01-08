@@ -76,7 +76,7 @@ public class Exercise implements InputMsgListener {
     }
 
     public static String createViewTitle(String title, int index) {
-        return (index + 1) + ". " + title;
+        return (index < 9 ? "0" : "") + (index + 1) + ". " + title;
     }
 
     Exercise(Mode mode, String title, KeyImageRender keyImageRender) {

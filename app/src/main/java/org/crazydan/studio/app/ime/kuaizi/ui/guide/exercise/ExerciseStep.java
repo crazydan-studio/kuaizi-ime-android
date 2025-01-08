@@ -37,7 +37,7 @@ public class ExerciseStep implements InputMsgListener {
     private boolean active;
 
     public static String createViewContent(ViewData data, int index) {
-        String content = (index + 1) + ". " + data.content;
+        String content = (index < 9 ? "0" : "") + (index + 1) + ". " + data.content;
 
         return data.active ? "<b>" + content + "</b>" : content;
     }
