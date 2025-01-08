@@ -788,8 +788,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsg} 消息 */
     protected void fire_InputMsg(KeyboardContext context, InputMsgType msgType, InputMsgData msgData) {
-        InputMsg msg = new InputMsg(msgType, msgData);
-        context.listener.onMsg(msg);
+        context.fireInputMsg(msgType, msgData);
     }
 
     protected void fire_Common_InputMsg(KeyboardContext context, InputMsgType msgType) {
@@ -798,8 +797,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     protected void fire_Common_InputMsg(KeyboardContext context, InputMsgType msgType, Input input) {
         Key key = context.key();
-        InputMsgData data = new InputMsgData(key, input);
-        fire_InputMsg(context, msgType, data);
+        context.fireInputMsg(msgType, key, input);
     }
 
     /** 触发 {@link InputMsgType#InputChars_Input_Doing} 消息 */

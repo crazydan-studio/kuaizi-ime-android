@@ -21,11 +21,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.IMESubtype;
-import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 
 /**
@@ -34,15 +31,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-23
  */
-public class KeyboardContext extends Immutable {
+public class KeyboardContext extends BaseInputContext {
     private final static Builder builder = new Builder();
 
     /** 与当前上下文直接关联的 {@link Key}，一般为触发 {@link UserKeyMsg} 消息所对应的按键，可能为 null */
     public final Key key;
-    /** 当前正在处理的 {@link InputList}，可在 {@link Keyboard} 内直接修改其输入 */
-    public final InputList inputList;
-    /** 接收 {@link Keyboard} 所发送的 {@link InputMsg} 消息的监听器 */
-    public final InputMsgListener listener;
 
     // <<<<<<<<<<<<<<<<<<<<<<<<< 配置信息
     /** 原键盘类型 */
@@ -74,8 +67,6 @@ public class KeyboardContext extends Immutable {
         super(builder);
 
         this.key = builder.key;
-        this.inputList = builder.inputList;
-        this.listener = builder.listener;
 
         this.keyboardPrevType = builder.keyboardPrevType;
         this.keyboardHandMode = builder.keyboardHandMode;
@@ -100,10 +91,8 @@ public class KeyboardContext extends Immutable {
     }
 
     /** {@link KeyboardContext} 的构建器 */
-    public static class Builder extends Immutable.CachableBuilder<KeyboardContext> {
+    public static class Builder extends BaseInputContext.Builder<Builder, KeyboardContext> {
         private Key key;
-        private InputList inputList;
-        private InputMsgListener listener;
 
         private Keyboard.Type keyboardPrevType;
         private Keyboard.HandMode keyboardHandMode;
@@ -129,7 +118,9 @@ public class KeyboardContext extends Immutable {
 
         @Override
         protected void doCopy(KeyboardContext source) {
-            key(source.key).inputList(source.inputList).listener(source.listener);
+            super.doCopy(source);
+
+            key(source.key);
 
             this.keyboardPrevType = source.keyboardPrevType;
             this.keyboardHandMode = source.keyboardHandMode;
@@ -145,9 +136,9 @@ public class KeyboardContext extends Immutable {
 
         @Override
         protected void reset() {
+            super.reset();
+
             this.key = null;
-            this.inputList = null;
-            this.listener = null;
 
             this.keyboardPrevType = null;
             this.keyboardHandMode = null;
@@ -163,11 +154,8 @@ public class KeyboardContext extends Immutable {
 
         @Override
         public int hashCode() {
-            // Note: InputList 与 InputMsgListener 采用其引用值，
-            // 因为，在上下文使用过程中，二者的实例不会发生变化，可以更好地复用
-            return Objects.hash(this.key,
-                                System.identityHashCode(this.inputList),
-                                System.identityHashCode(this.listener),
+            return Objects.hash(super.hashCode(),
+                                this.key,
                                 this.keyboardPrevType,
                                 this.keyboardHandMode,
                                 this.useSingleLineInputMode,
@@ -205,18 +193,6 @@ public class KeyboardContext extends Immutable {
         /** @see KeyboardContext#key */
         public Builder key(Key key) {
             this.key = key;
-            return this;
-        }
-
-        /** @see KeyboardContext#inputList */
-        public Builder inputList(InputList inputList) {
-            this.inputList = inputList;
-            return this;
-        }
-
-        /** @see KeyboardContext#listener */
-        public Builder listener(InputMsgListener listener) {
-            this.listener = listener;
             return this;
         }
 

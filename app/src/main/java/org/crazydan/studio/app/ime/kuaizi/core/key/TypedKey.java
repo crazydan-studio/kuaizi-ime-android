@@ -38,7 +38,7 @@ public abstract class TypedKey<T extends Enum<?>> extends Key {
     }
 
     /** {@link TypedKey} 的构建器 */
-    public static abstract class Builder< //
+    protected static abstract class Builder< //
             B extends Builder<B, K, T>, //
             K extends TypedKey<T>, //
             T extends Enum<?> //

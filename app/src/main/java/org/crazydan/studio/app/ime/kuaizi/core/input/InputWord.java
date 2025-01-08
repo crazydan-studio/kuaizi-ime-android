@@ -50,7 +50,10 @@ public abstract class InputWord extends Immutable {
     }
 
     /** {@link InputWord} 的构建器 */
-    public static abstract class Builder<B extends Builder<B, W>, W extends InputWord> extends Immutable.Builder<W> {
+    protected static abstract class Builder< //
+            B extends Builder<B, W>, //
+            W extends InputWord //
+            > extends Immutable.Builder<W> {
         private Integer id;
         private String value;
         private int weight;

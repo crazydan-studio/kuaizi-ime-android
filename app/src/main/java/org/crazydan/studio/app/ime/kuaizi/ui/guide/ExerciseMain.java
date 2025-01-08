@@ -760,8 +760,8 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 };
         for (Key mathKey : mathKeys) {
             exercise.newStep("请点击按键%s以输入%s <span style=\"color:#ed4c67;\">%s</span>；",
-                             mathKey instanceof MathOpKey ? "运算符" : "数字",
                              mathKey,
+                             mathKey instanceof MathOpKey ? "运算符" : "数字",
                              mathKey.value) //
                     .action((msg) -> {
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {

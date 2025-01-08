@@ -34,7 +34,14 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
  * @date 2024-12-09
  */
 public class InputViewData extends Immutable {
-    public final static Builder builder = new Builder();
+    private final static Builder builder = new Builder();
+    /**
+     * 由于 Builder 是单例的，故而，不能对嵌套 {@link InputList} 复用其实例，否则，在外层配置的数据会被下层覆盖。
+     * 并且，在构建嵌套的 {@link InputList} 时，不需要缓存，由最上层构建器缓存其整体即可
+     * <p/>
+     * 注意，每层嵌套均需单独实例化构建器，当前只有一层嵌套
+     */
+    private final static Builder mathBuilder = new Builder(true);
 
     public enum Type {
         /** 默认均为 {@link CharInput} */
@@ -93,6 +100,12 @@ public class InputViewData extends Immutable {
         this.spell = builder.spell;
     }
 
+    /** 清空已构建 {@link InputViewData} */
+    public static void clearCachedBuilds() {
+        builder.clear();
+        mathBuilder.clear();
+    }
+
     /** 构建 {@link InputViewData} 列表 */
     public static List<InputViewData> build(InputList inputList, Input.Option option) {
         return doBuild(builder, inputList, option);
@@ -118,6 +131,8 @@ public class InputViewData extends Immutable {
         Input preInput = inputList.getInput(position - 1);
 
         CharInput pending = inputList.getPendingOn(input);
+        boolean hasPending = pending != null;
+        boolean hasEmptyPending = Input.isEmpty(pending);
         CharInput prePending = inputList.getPendingOn(preInput);
 
         // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
@@ -139,12 +154,10 @@ public class InputViewData extends Immutable {
 //                gapSpaces = 2;
 //            }
 
-            // Note: 由于 Builder 是单例的，故而，不能嵌套复用其实例，否则，在外层设置的数据会被下层覆盖。
-            // 并且，在构建嵌套的 InputList 时，不需要缓存，由最上层缓存整体即可
-            List<InputViewData> inputs = doBuild(new Builder(true), mathExprInput.getInputList(), option);
+            List<InputViewData> inputs = doBuild(mathBuilder, mathExprInput.getInputList(), option);
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
-            b.type(Input.isEmpty(pending) ? Type.Gap : Type.Char);
+            b.type(hasEmptyPending ? Type.Gap : Type.Char);
         } else if (input.isSpace()) {
             b.type(Type.Space);
         } else {
@@ -154,7 +167,7 @@ public class InputViewData extends Immutable {
         // Note: 在视图中，需确保 Gap 空格的单位宽度与 GapInput 的宽度相同，
         // 而针对 GapInput 所添加的 Gap 空格数需要均分至左右两侧
         float[] gapSpaces = inputList.needGapSpace(position) ? new float[] { 0.5f, 0.5f } : null;
-        if (input.isGap() && !Input.isEmpty(pending)) {
+        if (input.isGap() && !hasEmptyPending) {
             // 正在输入的 GapInput，需判断其待输入的左右两侧的空格数：至少需一个光标占位
             Input left = inputList.getInput(position - 1);
             Input right = inputList.getInput(position + 1);
@@ -165,17 +178,17 @@ public class InputViewData extends Immutable {
         }
 
         boolean shouldBeSelected = needToBeSelected(inputList, input);
-        Input currInput = Input.isEmpty(pending) ? input : pending;
+        Input currInput = hasEmptyPending ? input : pending;
         String[] textAndSpell = getInputTextAndSpell(currInput, option);
 
         b.position(position)
-         .pending(pending != null)
+         .pending(hasPending)
          .selected(shouldBeSelected)
          .gapSpaces(gapSpaces)
          .text(textAndSpell[0])
          .spell(textAndSpell[1]);
         // Note: 不缓存正在输入的 Input，其变动频率更高
-        if (pending != null) {
+        if (hasPending) {
             b.notCache();
         }
     }

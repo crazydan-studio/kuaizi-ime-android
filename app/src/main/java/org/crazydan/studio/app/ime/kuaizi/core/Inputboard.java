@@ -19,7 +19,6 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
@@ -97,8 +96,7 @@ public class Inputboard {
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputboardContext context, InputMsgType type, Input input) {
-        InputMsg msg = new InputMsg(type, new InputMsgData(input));
-        context.listener.onMsg(msg);
+        context.fireInputMsg(type, input);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -126,8 +124,8 @@ public class Inputboard {
     public void storeCommitted(InputboardContext context, boolean canBeRestored) {
         resetWithStage(context, canBeRestored ? Stage.Type.committed : Stage.Type.none);
 
-        // 提交输入后，需清空只读数据构建器的缓存，以减低内存占用
-        InputViewData.builder.clear();
+        // 提交输入后，需清空只读数据构建器的缓存，以降低内存占用
+        InputViewData.clearCachedBuilds();
     }
 
     /** 恢复 已提交 */
@@ -153,8 +151,8 @@ public class Inputboard {
     public void storeCleaned(InputboardContext context, boolean canBeRestored) {
         resetWithStage(context, canBeRestored ? Stage.Type.cleaned : Stage.Type.none);
 
-        // 清空输入后，需清空只读数据构建器的缓存，以减低内存占用
-        InputViewData.builder.clear();
+        // 清空输入后，需清空只读数据构建器的缓存，以降低内存占用
+        InputViewData.clearCachedBuilds();
     }
 
     /** 恢复 已清空 */

@@ -20,11 +20,8 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 
 /**
  * {@link Inputboard} 的上下文
@@ -32,13 +29,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-15
  */
-public class InputboardContext extends Immutable {
+public class InputboardContext extends BaseInputContext {
     private final static Builder builder = new Builder();
-
-    /** 当前正在处理的 {@link InputList}，可在 {@link Inputboard} 内直接修改其输入 */
-    public final InputList inputList;
-    /** 接收 {@link Inputboard} 所发送的 {@link InputMsg} 消息的监听器 */
-    public final InputMsgListener listener;
 
     // <<<<<<<<<<<<<<<<<<<<<<<<< 配置信息
     /** 是否优先使用候选字的变体：主要针对拼音输入的候选字 */
@@ -53,9 +45,6 @@ public class InputboardContext extends Immutable {
     InputboardContext(Builder builder) {
         super(builder);
 
-        this.inputList = builder.inputList;
-        this.listener = builder.listener;
-
         this.useCandidateVariantFirst = builder.useCandidateVariantFirst;
     }
 
@@ -65,10 +54,7 @@ public class InputboardContext extends Immutable {
     }
 
     /** {@link InputboardContext} 的构建器 */
-    public static class Builder extends Immutable.CachableBuilder<InputboardContext> {
-        private InputList inputList;
-        private InputMsgListener listener;
-
+    public static class Builder extends BaseInputContext.Builder<Builder, InputboardContext> {
         private boolean useCandidateVariantFirst;
 
         protected Builder() {
@@ -84,19 +70,14 @@ public class InputboardContext extends Immutable {
 
         @Override
         protected void reset() {
-            this.inputList = null;
-            this.listener = null;
+            super.reset();
 
             this.useCandidateVariantFirst = false;
         }
 
         @Override
         public int hashCode() {
-            // Note: InputList 与 InputMsgListener 采用其引用值，
-            // 因为，在上下文使用过程中，二者的实例不会发生变化，可以更好地复用
-            return Objects.hash(System.identityHashCode(this.inputList),
-                                System.identityHashCode(this.listener),
-                                this.useCandidateVariantFirst);
+            return Objects.hash(super.hashCode(), this.useCandidateVariantFirst);
         }
 
         // ===================== End: 构建函数 ===================
@@ -107,18 +88,6 @@ public class InputboardContext extends Immutable {
         public Builder config(Config config) {
             this.useCandidateVariantFirst = config.bool(ConfigKey.enable_candidate_variant_first);
 
-            return this;
-        }
-
-        /** @see InputboardContext#inputList */
-        public Builder inputList(InputList inputList) {
-            this.inputList = inputList;
-            return this;
-        }
-
-        /** @see InputboardContext#listener */
-        public Builder listener(InputMsgListener listener) {
-            this.listener = listener;
             return this;
         }
 

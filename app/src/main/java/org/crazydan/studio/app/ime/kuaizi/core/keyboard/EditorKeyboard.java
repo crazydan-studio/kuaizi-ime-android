@@ -24,11 +24,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Range_Select_Doing;
 
 /**
  * {@link Type#Editor 文本编辑键盘}
@@ -108,6 +109,6 @@ public class EditorKeyboard extends DirectInputKeyboard {
         Key key = context.key();
         InputMsgData data = new EditorCursorMsgData(key, motion);
 
-        fire_InputMsg(context, InputMsgType.Editor_Range_Select_Doing, data);
+        fire_InputMsg(context, Editor_Range_Select_Doing, data);
     }
 }
