@@ -80,9 +80,11 @@ public interface Keyboard {
         Emoji,
         /** 文本编辑键盘：提供复制、粘贴等文本操作 */
         Editor,
+        /** 输入列表提交选项键盘：控制提交至目标输入组件的内容形式等 */
+        InputList_Commit_Option,
 
         // 临时控制键盘切换
-        /** 由 {@link IMESubtype} 确定 */
+        /** 由 {@link IMESubtype} 确定键盘类型 */
         By_ImeSubtype,
         /** 保持当前类型的键盘不变 */
         Keep_Current,

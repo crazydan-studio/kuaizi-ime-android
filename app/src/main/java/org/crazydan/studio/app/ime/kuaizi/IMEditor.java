@@ -23,6 +23,7 @@ import java.util.function.Function;
 
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
@@ -251,6 +252,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void onMsg(UserInputMsg msg) {
         // 字典还在开启中，不响应用户消息
         if (this.dictOpening) {
+            return;
+        }
+
+        Keyboard.Type type = getKeyboardType();
+        // Note: 对特定的键盘需冻结对输入列表的操作，以避免打断当前的键盘处理
+        Keyboard.Type[] frozen = new Keyboard.Type[] { Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option };
+        if (CollectionUtils.contains(frozen, type)) {
             return;
         }
 
