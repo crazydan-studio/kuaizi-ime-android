@@ -42,9 +42,9 @@ EOF
 
 > 在[《参考资料》](#参考资料)章节可阅读签名证书的生成相关的资料。
 
-## 架构
+## 架构设计
 
-![](./docs/img/layout-introduce.png)
+<img src="./docs/img/layout-introduce.png" height="350px"/>
 
 ### 核心模型
 
