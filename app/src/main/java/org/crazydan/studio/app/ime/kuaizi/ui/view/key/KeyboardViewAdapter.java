@@ -191,12 +191,6 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
             ((InputWordKeyViewHolder) holder).bind((InputWordKey) key, orientation);
         } else if (key instanceof XPadKey) {
             ((XPadKeyViewHolder) holder).bind((XPadKey) key);
-        }
-        //
-        else if (key instanceof MathOpKey) {
-            holder.bind(key, orientation);
-        } else if (key instanceof SymbolKey) {
-            holder.bind(key, orientation);
         } else {
             holder.bind(key, orientation);
         }

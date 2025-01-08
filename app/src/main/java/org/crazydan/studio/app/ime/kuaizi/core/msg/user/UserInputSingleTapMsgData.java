@@ -29,6 +29,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
  */
 public class UserInputSingleTapMsgData extends UserInputMsgData {
     /**
+     * 在 {@link InputList} 嵌套时，当前输入所在的输入列表在上层输入列表中的位置
+     * <p/>
+     * 若为 <code>-1</code>，则表示当前输入所在的输入列表未被嵌套
+     */
+    public final int positionInParent;
+    /**
      * 目标输入所在的位置：<ul>
      * <li>- <code>-1</code>: 在 {@link InputList} 列表中的末尾；</li>
      * <li>- 其他: 在 {@link InputList} 列表中的实际序号；</li>
@@ -36,7 +42,8 @@ public class UserInputSingleTapMsgData extends UserInputMsgData {
      */
     public final int position;
 
-    public UserInputSingleTapMsgData(int position) {
+    public UserInputSingleTapMsgData(int positionInParent, int position) {
+        this.positionInParent = positionInParent;
         this.position = position;
     }
 }

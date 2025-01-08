@@ -17,8 +17,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
-import java.util.List;
-
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -40,40 +38,14 @@ public class InputListViewAdapter extends RecyclerViewAdapter<InputViewData, Inp
     private static final int VIEW_TYPE_SPACE_INPUT = 2;
     private static final int VIEW_TYPE_MATH_EXPR_INPUT = 3;
 
-    private boolean canBeSelected;
-
     public InputListViewAdapter() {
         super(ItemUpdatePolicy.differ);
-    }
-
-    public void updateItems(List<InputViewData> newItems, boolean canBeSelected) {
-        this.canBeSelected = canBeSelected;
-
-        super.updateItems(newItems);
     }
 
     @Override
     public void onBindViewHolder(@NonNull InputViewHolder holder, int position) {
         InputViewData item = getItem(position);
-        boolean selected = this.canBeSelected && item.selected;
-
-        switch (item.type) {
-            case Gap: {
-                ((GapInputViewHolder) holder).bind(item, selected);
-                break;
-            }
-            case Space: {
-                ((SpaceInputViewHolder) holder).bind(item, selected);
-                break;
-            }
-            case MathExpr: {
-                ((MathExprInputViewHolder) holder).bind(item, selected);
-                break;
-            }
-            default: {
-                ((CharInputViewHolder) holder).bind(item, selected);
-            }
-        }
+        holder.bind(item);
     }
 
     @Override

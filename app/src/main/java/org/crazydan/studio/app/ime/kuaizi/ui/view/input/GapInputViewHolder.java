@@ -44,14 +44,15 @@ public class GapInputViewHolder extends InputViewHolder {
         this.blinkView = itemView.findViewById(R.id.blink_view);
     }
 
-    public void bind(InputViewData data, boolean selected) {
+    @Override
+    public void bind(InputViewData data) {
         // Note: 空白只能加在根视图上，否则，会不能立即生效
         super.bind(data);
 
         whenViewReady(this.blinkView, (view) -> {
-            ViewUtils.visible(view, selected);
+            ViewUtils.visible(view, data.selected);
 
-            if (selected) {
+            if (data.selected) {
                 startCursorBlink(view);
             } else {
                 stopCursorBlink(view);

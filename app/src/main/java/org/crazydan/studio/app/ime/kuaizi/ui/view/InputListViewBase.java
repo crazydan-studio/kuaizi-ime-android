@@ -55,6 +55,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  */
 public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
+    private int positionInParent = -1;
+
     private UserInputMsgListener listener;
 
     public InputListViewBase(Context context, @Nullable AttributeSet attrs) {
@@ -102,7 +104,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             position = holder.getAdapterPosition();
         }
 
-        UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(position);
+        UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(this.positionInParent, position);
         UserInputMsg msg = new UserInputMsg(SingleTap_Input, msgData);
         fire_UserInputMsg(msg);
     }
@@ -121,7 +123,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
                 // 所以，无法优先处理子 InputList 的事件
                 boolean needToLockScrolling = msg.data().input.isMathExpr();
 
-                update(msg.inputFactory, true, needToLockScrolling);
+                update(msg.inputFactory, needToLockScrolling);
                 break;
             }
         }
@@ -134,7 +136,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             return;
         }
 
-        // Note: 此类视图存在嵌套的情况，故而，需将消息交给最上层的视图转发
+        // Note: 被嵌套的视图不绑定监听器，需通过其上层视图转发
         ViewParent parent = this;
         while ((parent = parent.getParent()) != null) {
             if (parent instanceof InputListViewBase) {
@@ -148,17 +150,22 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
     // =============================== Start: 更新视图 ===================================
 
+    /** 设置当前视图对应的输入在上层输入列表中的位置 */
+    public void setPositionInParent(int positionInParent) {
+        this.positionInParent = positionInParent;
+    }
+
     public void update(InputFactory inputFactory) {
-        update(inputFactory, true, false);
+        update(inputFactory, false);
     }
 
-    public void update(InputFactory inputFactory, boolean canBeSelected, boolean needToLockScrolling) {
+    public void update(InputFactory inputFactory, boolean needToLockScrolling) {
         List<InputViewData> dataList = inputFactory.getInputs();
-        update(dataList, canBeSelected, needToLockScrolling);
+        update(dataList, needToLockScrolling);
     }
 
-    public void update(List<InputViewData> dataList, boolean canBeSelected, boolean needToLockScrolling) {
-        getAdapter().updateItems(dataList, canBeSelected);
+    public void update(List<InputViewData> dataList, boolean needToLockScrolling) {
+        getAdapter().updateItems(dataList);
 
         if (!needToLockScrolling) {
             scrollToSelectedInput(dataList);
@@ -249,6 +256,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             return view;
         }
 
+        // 查找算术输入的内部视图：嵌套唯一的 InputListView
         for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
             View child = ((ViewGroup) view).getChildAt(i);
 

@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.SymbolKeyboard.prepare_for_PairKey_Inputting;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Done;
 
 /**
  * {@link Type#Math 算术键盘}
@@ -108,6 +109,8 @@ public class MathKeyboard extends BaseKeyboard {
                 }
 
                 resetMathInputList(context);
+
+                fire_Common_InputMsg(context, Input_Choose_Done, input);
                 break;
             }
             case InputList_Clean_Done:

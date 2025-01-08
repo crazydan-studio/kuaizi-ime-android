@@ -43,9 +43,12 @@ public class RecyclerViewGestureDetector<I> extends ViewGestureDetector {
         I oldAdapterItem = this.prevAdapterItem;
         this.prevAdapterItem = newAdapterItem;
 
-        return (oldAdapterItem != null //
-                && !rv.isSameAdapterItem(oldAdapterItem, newAdapterItem)) //
-               || oldAdapterItem != newAdapterItem;
+        this.log.debug("@@ Gesture Items: %s, %s", oldAdapterItem, newAdapterItem);
+
+        if (oldAdapterItem != null && newAdapterItem != null) {
+            return !rv.isSameAdapterItem(oldAdapterItem, newAdapterItem);
+        }
+        return oldAdapterItem != newAdapterItem;
     }
 
     private class ItemTouchListener implements androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {

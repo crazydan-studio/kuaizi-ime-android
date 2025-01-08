@@ -69,10 +69,13 @@ public class ViewGestureDetector {
     }
 
     public void reset() {
-        this.log.debug("@@ Gesture Reset");
+        this.log.debug("************************* Gesture Reset **********************");
         this.log.debug("\n");
 
         onGestureEnd(this.latestPressStart);
+
+        this.log.debug("**************************************************************");
+        this.log.debug("\n");
     }
 
     public void onTouchEvent(@NonNull MotionEvent e) {

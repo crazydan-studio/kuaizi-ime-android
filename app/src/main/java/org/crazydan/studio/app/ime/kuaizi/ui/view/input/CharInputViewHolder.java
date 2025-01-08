@@ -44,12 +44,13 @@ public class CharInputViewHolder extends InputViewHolder {
         this.wordView = itemView.findViewById(R.id.word_view);
     }
 
-    public void bind(InputViewData data, boolean selected) {
+    @Override
+    public void bind(InputViewData data) {
         super.bind(data);
 
-        setSelectedBgColor(this.itemView, selected);
+        setSelectedBgColor(this.itemView, data.selected);
 
-        bind(data.text, data.spell, selected);
+        bind(data.text, data.spell, data.selected);
     }
 
     public void bind(String text, String spell, boolean selected) {

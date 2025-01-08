@@ -110,8 +110,13 @@ public class MathOpKey extends TypedKey<MathOpKey.Type> {
 
         @Override
         protected MathOpKey doBuild() {
-            value(type().text);
-            label(value());
+            // Note: 对于括号，会在输入时拆分并为 value/label 赋值
+            if (value() == null) {
+                value(type().text);
+            }
+            if (label() == null) {
+                label(value());
+            }
 
             return new MathOpKey(this);
         }

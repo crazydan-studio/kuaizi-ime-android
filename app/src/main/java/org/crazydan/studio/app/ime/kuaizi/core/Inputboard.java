@@ -18,6 +18,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core;
 
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -61,9 +62,20 @@ public class Inputboard {
         switch (msg.type) {
             case SingleTap_Input: {
                 UserInputSingleTapMsgData data = msg.data();
-                Input input = data.position < 0 //
-                              ? inputList.getLastInput() //
-                              : inputList.getInput(data.position);
+
+                Input input;
+                if (data.positionInParent < 0) {
+                    input = getInputAt(inputList, data.position);
+                }
+                // 处理输入列表被嵌套的情况
+                else {
+                    input = getInputAt(inputList, data.positionInParent);
+
+                    if (input instanceof MathExprInput) {
+                        InputList subInputList = ((MathExprInput) input).getInputList();
+                        input = getInputAt(subInputList, data.position);
+                    }
+                }
 
                 // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
                 // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上
@@ -97,6 +109,12 @@ public class Inputboard {
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputboardContext context, InputMsgType type, Input input) {
         context.fireInputMsg(type, input);
+    }
+
+    private Input getInputAt(InputList inputList, int position) {
+        return position < 0 //
+               ? inputList.getLastInput() //
+               : inputList.getInput(position);
     }
 
     // =============================== End: 消息处理 ===================================

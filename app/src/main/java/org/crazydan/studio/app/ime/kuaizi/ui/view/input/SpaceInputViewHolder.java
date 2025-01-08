@@ -40,11 +40,12 @@ public class SpaceInputViewHolder extends InputViewHolder {
         this.spaceView = itemView.findViewById(R.id.space_view);
     }
 
-    public void bind(InputViewData data, boolean selected) {
+    @Override
+    public void bind(InputViewData data) {
         super.bind(data);
 
         whenViewReady(this.spaceView, (view) -> {
-            setSelectedBgColor(this.itemView, selected);
+            setSelectedBgColor(this.itemView, data.selected);
         });
     }
 }

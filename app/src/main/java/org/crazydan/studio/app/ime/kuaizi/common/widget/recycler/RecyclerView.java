@@ -52,6 +52,8 @@ public abstract class RecyclerView<A extends RecyclerViewAdapter<I, ?>, I>
      * 在 {@link RecyclerViewGestureDetector} 中用于检查视图更新前后的
      * {@link RecyclerViewAdapter} 数据项是否相同
      * <p/>
+     * 默认通过 {@link Objects#equals} 判断，且两个数据项均不为 null
+     * <p/>
      * 仅在启用了 {@link RecyclerViewGestureDetector} 的情况下才需要重载该接口
      */
     protected boolean isSameAdapterItem(I item1, I item2) {

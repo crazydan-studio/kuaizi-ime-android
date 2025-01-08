@@ -108,17 +108,19 @@ public class InputViewData extends Immutable {
 
     /** 构建 {@link InputViewData} 列表 */
     public static List<InputViewData> build(InputList inputList, Input.Option option) {
-        return doBuild(builder, inputList, option);
+        return doBuild(builder, inputList, option, true);
     }
 
     /** 构建 {@link InputViewData} 列表 */
-    private static List<InputViewData> doBuild(Builder b, InputList inputList, Input.Option option) {
+    private static List<InputViewData> doBuild(
+            Builder b, InputList inputList, Input.Option option, boolean canBeSelected
+    ) {
         int total = inputList.getInputs().size();
         List<InputViewData> dataList = new ArrayList<>(total);
 
         for (int i = 0; i < total; i++) {
             int position = i;
-            InputViewData data = Builder.build(b, (bld) -> doBuild(bld, inputList, option, position));
+            InputViewData data = Builder.build(b, (bld) -> doBuild(bld, inputList, option, position, canBeSelected));
 
             dataList.add(data);
         }
@@ -126,13 +128,18 @@ public class InputViewData extends Immutable {
     }
 
     /** 构建 {@link InputViewData} */
-    private static void doBuild(Builder b, InputList inputList, Input.Option option, int position) {
+    private static void doBuild(
+            Builder b, //
+            InputList inputList, Input.Option option, //
+            int position, boolean canBeSelected
+    ) {
         Input input = inputList.getInput(position);
         Input preInput = inputList.getInput(position - 1);
 
         CharInput pending = inputList.getPendingOn(input);
         boolean hasPending = pending != null;
         boolean hasEmptyPending = Input.isEmpty(pending);
+        boolean shouldBeSelected = canBeSelected && needToBeSelected(inputList, input);
         CharInput prePending = inputList.getPendingOn(preInput);
 
         // 前序正在输入的 Gap 位为算术待输入，则当前位置需多加一个空白位
@@ -154,7 +161,8 @@ public class InputViewData extends Immutable {
 //                gapSpaces = 2;
 //            }
 
-            List<InputViewData> inputs = doBuild(mathBuilder, mathExprInput.getInputList(), option);
+            // Note: 只有上层输入整体被选中时，下层的输入才能被独立选中
+            List<InputViewData> inputs = doBuild(mathBuilder, mathExprInput.getInputList(), option, shouldBeSelected);
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input.isGap()) {
             b.type(hasEmptyPending ? Type.Gap : Type.Char);
@@ -177,7 +185,6 @@ public class InputViewData extends Immutable {
             };
         }
 
-        boolean shouldBeSelected = needToBeSelected(inputList, input);
         Input currInput = hasEmptyPending ? input : pending;
         String[] textAndSpell = getInputTextAndSpell(currInput, option);
 

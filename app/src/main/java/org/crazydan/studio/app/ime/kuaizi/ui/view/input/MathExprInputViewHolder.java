@@ -45,17 +45,19 @@ public class MathExprInputViewHolder extends InputViewHolder {
         this.markerView = itemView.findViewById(R.id.marker);
     }
 
-    public void bind(InputViewData data, boolean selected) {
+    @Override
+    public void bind(InputViewData data) {
         super.bind(data);
 
         List<InputViewData> inputs = data.inputs;
         whenViewReady(this.inputboardView, (view) -> {
-            view.update(inputs, selected, false);
+            view.setPositionInParent(data.position);
+            view.update(inputs, false);
         });
 
         whenViewReady(this.markerView, (view) -> {
             setBackgroundColorByAttrId(view,
-                                       selected
+                                       data.selected
                                        ? R.attr.input_char_math_expr_border_highlight_color
                                        : R.attr.input_char_math_expr_border_color);
             ViewUtils.visible(view, !inputs.isEmpty());
