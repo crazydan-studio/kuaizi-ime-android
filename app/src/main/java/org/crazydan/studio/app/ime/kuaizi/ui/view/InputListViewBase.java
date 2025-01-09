@@ -41,13 +41,16 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.CharInputViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData.Type.MathExpr;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_START_IN_INPUT_LIST;
 
 /**
  * {@link InputListView} 的基类
@@ -94,17 +97,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             return;
         }
 
-        int position;
-        InputViewHolder holder = findVisibleInputViewUnder(data.x, data.y);
-        if (holder == null) {
-            if (data.x < getPaddingStart()) {
-                position = 0;
-            } else {
-                position = -1;
-            }
-        } else {
-            position = holder.getAdapterPosition();
-        }
+        int position = findInputPositionUnder(data.x, data.y);
 
         UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(this.positionInParent, position);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Input).data(msgData));
@@ -222,31 +215,42 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         }
     }
 
-    /** 找到指定坐标下可见的 {@link  InputViewHolder} */
-    private InputViewHolder findVisibleInputViewUnder(float x, float y) {
+    /** 找到指定坐标下的输入位置 */
+    private int findInputPositionUnder(float x, float y) {
         View view = findChildViewUnder(x, y);
         InputViewHolder holder = view != null ? (InputViewHolder) getChildViewHolder(view) : null;
 
-        // 若点击位置更靠近输入之间的 Gap 位置，则返回该 Gap
-        if (holder instanceof CharInputViewHolder) {
-            int gap = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
-            int position = getChildAdapterPosition(view);
-            float left = view.getLeft();
-            float right = view.getRight();
+        // Note: 当前的 Gap 空格通过 Gap 视图的内边距实现，其他输入的宽度均为其实际显示宽度，
+        // Gap 与其他视图之间不存在透明区域，故而，在指定位置下得到的输入视图即为实际的目标视图
 
-            // 取当前输入左边的 Gap
-            // Note：不能通过 getChildAt(position) 方式获取 ViewHolder 对应位置的视图，
-            // 因为子视图的位置不一定与 ViewHolder 的视图位置等同
-            if (x < left - gap) {
-                holder = (InputViewHolder) findViewHolderForAdapterPosition(position - 1);
-            }
-            // 取当前输入右边的 Gap
-            else if (x > right - gap) {
-                holder = (InputViewHolder) findViewHolderForAdapterPosition(position + 1);
+        // 当 Gap 上正在输入时，其输入采用的是 CharInputViewHolder，
+        // 并在其根视图的左右加上 margin 作为左右两侧的 Gap 间隔，但此时其左右并没有 Gap，
+        // 也就没有相应的视图，此时点击其左右两侧的间隔区域，将找不到预期的 Gap 视图，
+        // 因此，需要扩大查找范围，以确保能够找到 Gap 的输入视图
+        if (holder == null) {
+            float gap = ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width);
+            InputViewData leftInput = findInputUnderByRange(x, y, -2 * gap);
+            InputViewData rightInput = findInputUnderByRange(x, y, 2 * gap);
+
+            // Note: 同一时刻只有一个输入为待输入状态
+            if (leftInput != null && leftInput.pending) {
+                // 当前位置在 Gap 输入视图的右侧
+                return POSITION_RIGHT_IN_GAP_INPUT_PENDING;
+            } else if (rightInput != null && rightInput.pending) {
+                // 当前位置在 Gap 输入视图的左侧
+                return POSITION_LEFT_IN_GAP_INPUT_PENDING;
             }
         }
 
-        return holder;
+        if (holder == null) {
+            if (x < getPaddingStart()) {
+                return POSITION_START_IN_INPUT_LIST;
+            } else {
+                return POSITION_END_IN_INPUT_LIST;
+            }
+        } else {
+            return holder.getAdapterPosition();
+        }
     }
 
     /** 获取选中输入的视图，若选中输入为算术输入，则获取其内部所选中的输入视图 */
@@ -268,6 +272,26 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
                 return ro.getLayoutManager().findViewByPosition(selected.position);
             }
+        }
+        return null;
+    }
+
+    /** 从某一点开始，在指定的位置范围内查找输入 */
+    private InputViewData findInputUnderByRange(float x, float y, float range) {
+        // 按 1dp 的间隔逼近查找
+        float delta = ScreenUtils.dpToPx(1);
+        if (range < 0) {
+            delta = -delta;
+        }
+
+        float dx = delta;
+        while (range < 0 ? dx > range : dx < range) {
+            InputViewData input = findAdapterItemUnder(x + dx, y);
+
+            if (input != null) {
+                return input;
+            }
+            dx += delta;
         }
         return null;
     }

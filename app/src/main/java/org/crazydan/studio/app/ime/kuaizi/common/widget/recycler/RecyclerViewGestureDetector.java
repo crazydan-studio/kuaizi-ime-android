@@ -40,7 +40,7 @@ public class RecyclerViewGestureDetector<I> extends ViewGestureDetector {
         // 当某个数据的视图更新后，其 view 实例可能会重建，
         // 使得在双击、长按 tick 等事件周期内 发生了视图更新 的数据不能接收这类事件，
         // 因为监测状态被重置了，所以，只能根据数据自身是否变化做监测重置判断
-        I newAdapterItem = rv.getAdapterItemUnder(e.getX(), e.getY());
+        I newAdapterItem = rv.findAdapterItemUnder(e.getX(), e.getY());
 
         I oldAdapterItem = this.prevAdapterItem;
         this.prevAdapterItem = newAdapterItem;

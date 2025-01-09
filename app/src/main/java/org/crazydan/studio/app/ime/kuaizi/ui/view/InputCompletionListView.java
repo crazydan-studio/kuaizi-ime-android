@@ -81,7 +81,7 @@ public class InputCompletionListView extends RecyclerView<InputCompletionListVie
             return;
         }
 
-        ViewHolder holder = getViewHolderUnder(data.x, data.y);
+        ViewHolder holder = findViewHolderUnder(data.x, data.y);
         if (holder == null) {
             return;
         }

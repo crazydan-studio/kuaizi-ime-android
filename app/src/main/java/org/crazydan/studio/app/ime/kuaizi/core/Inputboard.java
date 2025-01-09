@@ -33,6 +33,10 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Apply_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_START_IN_INPUT_LIST;
 
 /**
  * 输入面板
@@ -84,8 +88,9 @@ public class Inputboard {
                     }
                 }
 
-                // Note: 在选择算术输入时，需先触发上层输入列表的选择消息，
-                // 再触发算术输入列表的选择消息，从而确保先切换到算术键盘上
+                // Note: 在算术输入嵌套时，点击算术输入列表中的输入会先触发上层视图的选择消息，
+                // 再触发算术输入列表视图中的选择消息，故而，可以保证算术输入列表先被整体选中，
+                // 再选中算术输入列表内的输入
                 fire_InputMsg(context, Input_Choose_Doing, input);
                 break;
             }
@@ -119,9 +124,30 @@ public class Inputboard {
     }
 
     private Input getInputAt(InputList inputList, int position) {
-        return position < 0 //
-               ? inputList.getLastInput() //
-               : inputList.getInput(position);
+        if (position == POSITION_END_IN_INPUT_LIST) {
+            return inputList.getLastInput();
+        } else if (position >= POSITION_START_IN_INPUT_LIST) {
+            // 若当前的选中输入在开始位置，则表示当前为 Gap 输入，
+            // 需要先确认当前待输入后，再选中开始位置
+            if (inputList.getSelectedIndex() == POSITION_START_IN_INPUT_LIST) {
+                inputList.confirmPending();
+            }
+
+            return inputList.getInput(position);
+        }
+
+        if (inputList.isGapSelected()) {
+            int gapIndex = inputList.getSelectedIndex();
+            // Note: 必须确认待输入后，才会在当前输入的左右两侧补充上 Gap
+            inputList.confirmPending();
+
+            if (position == POSITION_LEFT_IN_GAP_INPUT_PENDING) {
+                return inputList.getInput(gapIndex);
+            } else if (position == POSITION_RIGHT_IN_GAP_INPUT_PENDING) {
+                return inputList.getInput(gapIndex + 2);
+            }
+        }
+        return null;
     }
 
     // =============================== End: 消息处理 ===================================

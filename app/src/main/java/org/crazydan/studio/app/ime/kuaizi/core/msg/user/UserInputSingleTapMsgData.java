@@ -30,6 +30,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
  * @date 2025-01-05
  */
 public class UserInputSingleTapMsgData extends UserInputMsgData {
+    /** 在输入列表的开头位置 */
+    public static final int POSITION_START_IN_INPUT_LIST = 0;
+    /** 在输入列表的尾部位置 */
+    public static final int POSITION_END_IN_INPUT_LIST = -1;
+    /** 在 Gap 待输入的左侧位置 */
+    public static final int POSITION_LEFT_IN_GAP_INPUT_PENDING = -2;
+    /** 在 Gap 待输入的右侧位置 */
+    public static final int POSITION_RIGHT_IN_GAP_INPUT_PENDING = -3;
+
     /**
      * 在 {@link InputList} 嵌套时，当前输入所在的输入列表在上层输入列表中的位置
      * <p/>
@@ -38,7 +47,10 @@ public class UserInputSingleTapMsgData extends UserInputMsgData {
     public final int positionInParent;
     /**
      * 目标输入所在的位置：<ul>
-     * <li>- <code>-1</code>: 在 {@link InputList} 列表中的末尾；</li>
+     * <li>- {@link #POSITION_START_IN_INPUT_LIST}: 在 {@link InputList} 列表的开头；</li>
+     * <li>- {@link #POSITION_END_IN_INPUT_LIST}: 在 {@link InputList} 列表的尾部；</li>
+     * <li>- {@link #POSITION_LEFT_IN_GAP_INPUT_PENDING}: 在 Gap 待输入的左侧位置；</li>
+     * <li>- {@link #POSITION_RIGHT_IN_GAP_INPUT_PENDING}: 在 Gap 待输入的右侧位置；</li>
      * <li>- 其他: 在 {@link InputList} 列表中的实际序号；</li>
      * </ul>
      */
