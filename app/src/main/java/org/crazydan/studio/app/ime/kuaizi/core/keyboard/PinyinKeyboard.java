@@ -569,6 +569,15 @@ public class PinyinKeyboard extends BaseKeyboard {
     }
 
     @Override
+    protected void after_InputList_Backspacing(KeyboardContext context) {
+        InputList inputList = context.inputList;
+        CharInput pending = inputList.getPending();
+
+        // 在回删输入列表后，也做输入预测
+        predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending, true);
+    }
+
+    @Override
     protected void confirm_InputList_Input_Enter_or_Space(KeyboardContext context) {
         Key key = context.key();
 

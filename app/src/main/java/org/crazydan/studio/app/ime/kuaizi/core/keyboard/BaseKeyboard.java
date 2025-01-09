@@ -367,9 +367,20 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = context.inputList;
         inputList.deleteBackward();
 
+        after_InputList_Backspacing(context);
+
         fire_InputChars_Input_Doing_in_TapMode(context, null);
 
         do_InputList_Pending_Completion_Updating(context);
+    }
+
+    /**
+     * 回删输入列表的输入内容之后的操作
+     * <p/>
+     * 可在该接口内做输入预测等，且不需要触发 {@link InputMsg} 消息，
+     * 在该接口之后会触发 {@link #fire_InputChars_Input_Doing_in_TapMode 输入消息}
+     */
+    protected void after_InputList_Backspacing(KeyboardContext context) {
     }
 
     /** 回删 目标编辑器 的内容 */
