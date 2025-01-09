@@ -109,8 +109,8 @@ public class InputViewData extends Immutable {
     }
 
     /** 构建 {@link InputViewData} 列表 */
-    public static List<InputViewData> build(InputList inputList, Input.Option option) {
-        return doBuild(builder, inputList, option, true);
+    public static List<InputViewData> build(InputList inputList, Input.Option option, boolean canBeSelected) {
+        return doBuild(builder, inputList, option, canBeSelected);
     }
 
     /** 构建 {@link InputViewData} 列表 */

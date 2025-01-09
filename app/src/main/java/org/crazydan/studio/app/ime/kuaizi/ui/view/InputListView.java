@@ -56,18 +56,22 @@ public class InputListView extends InputListViewBase implements InputMsgListener
                     break;
                 }
             }
-            case Input_Selected_Delete_Done:
-            case Input_Pending_Drop_Done:
-            case Input_Completion_Apply_Done:
-            case InputList_Clean_Done:
-            case InputList_Cleaned_Cancel_Done:
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
             case Keyboard_State_Change_Done:
+                //
             case InputChars_Input_Doing:
             case InputChars_Input_Done:
             case InputCandidate_Choose_Doing:
             case InputCandidate_Choose_Done:
+                //
+            case Input_Selected_Delete_Done:
+            case Input_Pending_Drop_Done:
+            case Input_Completion_Apply_Done:
+                //
+            case InputList_Frozen_Done:
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done:
             case InputList_Commit_Doing:
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Committed_Revoke_Doing:

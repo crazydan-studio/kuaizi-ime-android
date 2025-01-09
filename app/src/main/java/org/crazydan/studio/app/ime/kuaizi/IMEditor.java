@@ -257,13 +257,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        Keyboard.Type type = getKeyboardType();
-        // Note: 对特定的键盘需冻结对输入列表的操作，以避免打断当前的键盘处理
-        Keyboard.Type[] frozen = new Keyboard.Type[] { Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option };
-        if (CollectionUtils.contains(frozen, type)) {
-            return;
-        }
-
         withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
     }
 
@@ -364,6 +357,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         data = new KeyboardSwitchMsgData(data.key, newType);
         fire_InputMsg(Keyboard_Switch_Done, data);
+
+        // Note: 对特定的键盘需冻结对输入列表的操作，以避免打断当前的键盘处理
+        Keyboard.Type[] frozenTypes = new Keyboard.Type[] {
+                Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option
+        };
+        boolean frozen = CollectionUtils.contains(frozenTypes, newType);
+        withInputboardContext((context) -> this.inputboard.freeze(context, frozen));
     }
 
     /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */
