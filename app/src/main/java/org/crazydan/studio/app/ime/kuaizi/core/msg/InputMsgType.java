@@ -56,8 +56,6 @@ public enum InputMsgType {
     /** 输入补全已应用 */
     Input_Completion_Apply_Done,
 
-    /** 输入列表已冻结 */
-    InputList_Frozen_Done,
     /** 输入已清空 */
     InputList_Clean_Done,
     /** 已撤销对输入的清空操作 */

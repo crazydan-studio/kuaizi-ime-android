@@ -69,7 +69,6 @@ public class InputListView extends InputListViewBase implements InputMsgListener
             case Input_Pending_Drop_Done:
             case Input_Completion_Apply_Done:
                 //
-            case InputList_Frozen_Done:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done:
             case InputList_Commit_Doing:

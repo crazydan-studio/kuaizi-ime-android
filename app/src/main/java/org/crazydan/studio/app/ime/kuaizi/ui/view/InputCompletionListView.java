@@ -88,7 +88,7 @@ public class InputCompletionListView extends RecyclerView<InputCompletionListVie
 
         int position = holder.getAdapterPosition();
         UserInputCompletionSingleTapMsgData msgData = new UserInputCompletionSingleTapMsgData(position);
-        UserInputMsg msg = new UserInputMsg(SingleTap_InputCompletion, msgData);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_InputCompletion).data(msgData));
 
         this.listener.onMsg(msg);
     }

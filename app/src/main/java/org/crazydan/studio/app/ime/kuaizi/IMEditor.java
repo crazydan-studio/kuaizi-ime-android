@@ -335,12 +335,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         KeyFactory keyFactory = createKeyFactory();
         InputFactory inputFactory = createInputFactory();
 
-        InputMsg msg = new InputMsg(type,
-                                    data,
-                                    keyFactory,
-                                    inputFactory,
-                                    this.inputList.isEmpty(),
-                                    this.inputboard.canRestoreCleaned());
+        InputMsg msg = InputMsg.build((b) -> b.type(type)
+                                              .data(data)
+                                              .keyFactory(keyFactory)
+                                              .inputFactory(inputFactory)
+                                              .inputList(this.inputList, this.inputboard.canRestoreCleaned()));
         this.listener.onMsg(msg);
     }
 
@@ -355,15 +354,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.prevMasterKeyboardType = prevType;
         }
 
+        // Note: 对特定的键盘需冻结输入列表，以避免打断当前的键盘操作
+        boolean frozen = CollectionUtils.contains(new Keyboard.Type[] {
+                Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option
+        }, newType);
+        this.inputList.freeze(frozen);
+
         data = new KeyboardSwitchMsgData(data.key, newType);
         fire_InputMsg(Keyboard_Switch_Done, data);
-
-        // Note: 对特定的键盘需冻结对输入列表的操作，以避免打断当前的键盘处理
-        Keyboard.Type[] frozenTypes = new Keyboard.Type[] {
-                Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option
-        };
-        boolean frozen = CollectionUtils.contains(frozenTypes, newType);
-        withInputboardContext((context) -> this.inputboard.freeze(context, frozen));
     }
 
     /** 处理 {@link InputMsgType#Keyboard_HandMode_Switch_Doing} 消息 */

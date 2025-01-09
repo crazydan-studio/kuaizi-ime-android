@@ -210,9 +210,10 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Backspace:
                     case Space:
                     case Enter:
+                        UserKeyMsg newMsg = UserKeyMsg.build((b) -> b.type(UserKeyMsgType.SingleTap_Key)
+                                                                     .data(msg.data()));
                         // 长按 tick 视为连续单击
-                        return try_On_Common_CtrlKey_Msg(context,
-                                                         new UserKeyMsg(UserKeyMsgType.SingleTap_Key, msg.data()));
+                        return try_On_Common_CtrlKey_Msg(context, newMsg);
                 }
                 break;
             }
@@ -645,14 +646,13 @@ public abstract class BaseKeyboard implements Keyboard {
     /**
      * 确认回车或空格的控制按键输入
      * <p/>
-     * 为回车时，直接提交当前输入或在 目标编辑器 中输入换行；
-     * 为空格时，当输入列表为空时，直接向 目标编辑器 输入空格，
-     * 否则，将空格附加到输入列表中
+     * 若输入列表为空或{@link InputList#isFrozen() 已被冻结}，
+     * 则换行和空格均直接输入，否则，仅将空格附加到输入列表中
      */
     protected void confirm_InputList_Input_Enter_or_Space(KeyboardContext context) {
         CtrlKey key = context.key();
         InputList inputList = context.inputList;
-        boolean isDirectInputting = inputList.isEmpty();
+        boolean isDirectInputting = inputList.isFrozen() || inputList.isEmpty();
 
         if (isDirectInputting) {
             switch (key.type) {
@@ -696,8 +696,10 @@ public abstract class BaseKeyboard implements Keyboard {
      */
     protected void commit_InputList_and_Goto_Init_State(KeyboardContext context) {
         InputList inputList = context.inputList;
+        // Note: 输入列表提交前，强制解除冻结，以确保输入列表可被重置并记录撤回状态数据
+        inputList.freeze(false);
 
-        // 在仅有唯一的配对输入时，采用配对输入方式提交，且不可被撤销
+        // 在仅有唯一的配对输入时，采用配对输入方式提交，且不可被撤回
         if (inputList.hasOnlyOnePairInputs()) {
             commit_InputList(context, false, false, true);
         } else {
@@ -771,12 +773,13 @@ public abstract class BaseKeyboard implements Keyboard {
     /**
      * 回删输入列表中的输入或 目标编辑器 的内容
      * <p/>
-     * 输入列表不为空时，在输入列表中做删除，否则，在 目标编辑器 做删除
+     * 输入列表不为空且{@link InputList#isFrozen() 未被冻结}时，
+     * 在输入列表中做删除，否则，在 目标编辑器 做删除
      */
     protected void backspace_InputList_or_Editor(KeyboardContext context) {
         InputList inputList = context.inputList;
 
-        if (!inputList.isEmpty()) {
+        if (!inputList.isFrozen() && !inputList.isEmpty()) {
             do_InputList_Backspacing(context);
         } else {
             do_Editor_Backspacing(context);

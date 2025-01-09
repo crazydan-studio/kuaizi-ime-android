@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import java.util.function.Supplier;
+
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -29,7 +31,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgDat
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Frozen_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Apply_Done;
 
@@ -44,9 +45,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Com
 public class Inputboard {
     private Stage stage;
 
-    /** 是否已被冻结 */
-    private boolean frozen;
-
     public Inputboard() {
         this.stage = Stage.none();
     }
@@ -56,18 +54,18 @@ public class Inputboard {
         InputList inputList = context.inputList;
         Input.Option inputOption = inputList.getInputOption();
 
-        return () -> InputViewData.build(inputList, inputOption, !this.frozen);
+        return () -> InputViewData.build(inputList, inputOption);
     }
 
     // =============================== Start: 消息处理 ===================================
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
     public void onMsg(InputboardContext context, UserInputMsg msg) {
-        if (this.frozen) {
+        InputList inputList = context.inputList;
+        if (inputList.isFrozen()) {
             return;
         }
 
-        InputList inputList = context.inputList;
         switch (msg.type) {
             case SingleTap_Input: {
                 UserInputSingleTapMsgData data = msg.data();
@@ -137,16 +135,6 @@ public class Inputboard {
         inputList.setInputOption(inputOption);
     }
 
-    /** 是否冻结输入面板？ */
-    public void freeze(InputboardContext context, boolean frozen) {
-        boolean oldFrozen = this.frozen;
-        this.frozen = frozen;
-
-        if (oldFrozen != frozen) {
-            fire_InputMsg(context, InputList_Frozen_Done, null);
-        }
-    }
-
     /** 重置：{@link InputList#reset() 重置} {@link InputList}，并清空 {@link #stage} */
     public void reset(InputboardContext context) {
         storeCleaned(context, false);
@@ -209,9 +197,12 @@ public class Inputboard {
     /** 暂存 {@link InputList}，并对其进行{@link InputList#reset() 重置} */
     private void resetWithStage(InputboardContext context, Stage.Type stageType) {
         InputList inputList = context.inputList;
+        if (inputList.isFrozen()) {
+            return;
+        }
 
         // Note: 在 Staged 中暂存 InputList 的副本
-        this.stage = Stage.create(stageType, inputList.copy());
+        this.stage = Stage.create(stageType, inputList::copy);
 
         inputList.reset();
 
@@ -246,13 +237,17 @@ public class Inputboard {
         }
 
         /** 创建指定 {@link Type} 的 {@link Stage} */
-        public static Stage create(Type type, InputList inputList) {
-            // 为空的输入列表的无需暂存
-            if (type == Type.none || inputList.isEmpty()) {
-                return none();
+        public static Stage create(Type type, Supplier<InputList> s) {
+            switch (type) {
+                case none: {
+                    return none();
+                }
+                default: {
+                    InputList inputList = s.get();
+                    // 为空的输入列表的无需暂存
+                    return inputList.isEmpty() ? none() : new Stage(type, inputList);
+                }
             }
-
-            return new Stage(type, inputList);
         }
 
         /** 还原 {@link Stage} 中的数据到指定的 {@link InputList}，并返回 {@link #none()} */

@@ -59,11 +59,17 @@ public class InputList {
     /** 输入补全 */
     private final List<InputCompletion> completions = new ArrayList<>();
 
+    private boolean frozen;
     private Input.Option inputOption;
 
     public InputList() {
         // 确保始终至少有一个 GapInput
         reset();
+    }
+
+    /** 是否已被冻结 */
+    public boolean isFrozen() {
+        return this.frozen;
     }
 
     /**
@@ -80,8 +86,6 @@ public class InputList {
         return hasEmptyPending();
     }
 
-    // =================== Start: 数据初始化 ====================
-
     public Input.Option getInputOption() {
         return this.inputOption;
     }
@@ -89,6 +93,8 @@ public class InputList {
     public void setInputOption(Input.Option option) {
         this.inputOption = option;
     }
+
+    // =================== Start: 整体性处理 ====================
 
     /** 创建副本，对副本的第一层属性做变更不影响原始对象 */
     public InputList copy() {
@@ -119,7 +125,12 @@ public class InputList {
         doSelect(gap);
     }
 
-    // =================== End: 数据初始化 ====================
+    /** 是否冻结输入列表？ */
+    public void freeze(boolean frozen) {
+        this.frozen = frozen;
+    }
+
+    // =================== End: 整体性处理 ====================
 
     // ======================== Start: 处理输入补全 ==========================
 

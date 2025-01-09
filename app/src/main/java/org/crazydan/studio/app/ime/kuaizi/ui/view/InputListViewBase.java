@@ -107,7 +107,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         }
 
         UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(this.positionInParent, position);
-        UserInputMsg msg = new UserInputMsg(SingleTap_Input, msgData);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Input).data(msgData));
         fire_UserInputMsg(msg);
     }
 

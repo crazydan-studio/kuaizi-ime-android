@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 
 /**
@@ -28,8 +30,31 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
  * @date 2024-12-11
  */
 public class UserKeyMsg extends BaseMsg<UserKeyMsgType, UserKeyMsgData> {
+    private final static Builder builder = new Builder();
 
-    public UserKeyMsg(UserKeyMsgType type, UserKeyMsgData data) {
-        super(type, data);
+    /** 构建 {@link UserKeyMsg} */
+    public static UserKeyMsg build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
+    }
+
+    UserKeyMsg(Builder builder) {
+        super(builder);
+    }
+
+    /** {@link UserKeyMsg} 的构建器 */
+    public static class Builder extends BaseMsg.Builder<Builder, UserKeyMsg, UserKeyMsgType, UserKeyMsgData> {
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected UserKeyMsg build() {
+            return new UserKeyMsg(this);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        // ===================== End: 构建配置 ===================
     }
 }

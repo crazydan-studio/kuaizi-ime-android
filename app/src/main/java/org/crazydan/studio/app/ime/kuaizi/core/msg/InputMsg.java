@@ -19,6 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
@@ -35,6 +38,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
  * @date 2024-12-11
  */
 public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
+    private final static Builder builder = new Builder();
+
     /** 用于重新布局 {@link Key} */
     public final KeyFactory keyFactory;
     /** 用于重新布局 {@link Input} */
@@ -43,32 +48,90 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     /** 输入列表状态 */
     public final InputListState inputList;
 
-    public InputMsg(InputMsgType type, InputMsgData data) {
-        this(type, data, null, null, false, false);
+    /** 构建 {@link InputMsg} */
+    public static InputMsg build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
-    public InputMsg(
-            InputMsgType type, InputMsgData data, //
-            KeyFactory keyFactory, InputFactory inputFactory, //
-            boolean isEmptyInputList, boolean canCancelCleanInputList
-    ) {
-        super(type, data);
+    InputMsg(Builder builder) {
+        super(builder);
 
-        this.keyFactory = keyFactory;
-        this.inputFactory = inputFactory;
+        this.keyFactory = builder.keyFactory;
+        this.inputFactory = builder.inputFactory;
 
-        this.inputList = new InputListState(isEmptyInputList, canCancelCleanInputList);
+        this.inputList = builder.inputList;
     }
 
     public static class InputListState {
+        /** 输入列表是否已冻结 */
+        public final boolean frozen;
         /** 输入列表是否为空 */
         public final boolean empty;
         /** 是否可取消对输入列表的清空 */
         public final boolean canCancelClean;
 
-        public InputListState(boolean empty, boolean canCancelClean) {
+        InputListState(boolean frozen, boolean empty, boolean canCancelClean) {
+            this.frozen = frozen;
             this.empty = empty;
             this.canCancelClean = canCancelClean;
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.frozen, this.empty, this.canCancelClean);
+        }
+    }
+
+    /** {@link InputMsg} 的构建器 */
+    public static class Builder extends BaseMsg.Builder<Builder, InputMsg, InputMsgType, InputMsgData> {
+        private KeyFactory keyFactory;
+        private InputFactory inputFactory;
+
+        private InputListState inputList;
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected InputMsg build() {
+            return new InputMsg(this);
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.keyFactory = null;
+            this.inputFactory = null;
+            this.inputList = null;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), this.keyFactory, this.inputFactory, this.inputList);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        /** @see InputMsg#keyFactory */
+        public Builder keyFactory(KeyFactory keyFactory) {
+            this.keyFactory = keyFactory;
+            return this;
+        }
+
+        /** @see InputMsg#inputFactory */
+        public Builder inputFactory(InputFactory inputFactory) {
+            this.inputFactory = inputFactory;
+            return this;
+        }
+
+        /** @see InputMsg#inputList */
+        public Builder inputList(InputList inputList, boolean canCancelCleanInputList) {
+            this.inputList = new InputListState(inputList.isFrozen(), inputList.isEmpty(), canCancelCleanInputList);
+            return this;
+        }
+
+        // ===================== End: 构建配置 ===================
     }
 }

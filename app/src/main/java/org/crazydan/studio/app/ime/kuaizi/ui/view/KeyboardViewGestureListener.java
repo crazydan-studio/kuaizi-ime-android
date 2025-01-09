@@ -140,7 +140,8 @@ public class KeyboardViewGestureListener implements ViewGestureDetector.Listener
             }
         }
 
-        UserKeyMsg msg = new UserKeyMsg(msgType, msgData);
+        UserKeyMsgData finalMsgData = msgData;
+        UserKeyMsg msg = UserKeyMsg.build((b) -> b.type(msgType).data(finalMsgData));
         this.keyboardView.onMsg(msg);
     }
 

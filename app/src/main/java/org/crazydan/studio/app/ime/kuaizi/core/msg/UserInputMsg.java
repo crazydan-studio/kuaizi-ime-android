@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
+import java.util.function.Consumer;
+
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 
 /**
@@ -28,12 +30,31 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
  * @date 2024-12-11
  */
 public class UserInputMsg extends BaseMsg<UserInputMsgType, UserInputMsgData> {
+    private final static Builder builder = new Builder();
 
-    public UserInputMsg(UserInputMsgType type) {
-        this(type, new UserInputMsgData());
+    /** 构建 {@link UserInputMsg} */
+    public static UserInputMsg build(Consumer<Builder> c) {
+        return Builder.build(builder, c);
     }
 
-    public UserInputMsg(UserInputMsgType type, UserInputMsgData data) {
-        super(type, data);
+    UserInputMsg(Builder builder) {
+        super(builder);
+    }
+
+    /** {@link UserInputMsg} 的构建器 */
+    public static class Builder extends BaseMsg.Builder<Builder, UserInputMsg, UserInputMsgType, UserInputMsgData> {
+
+        // ===================== Start: 构建函数 ===================
+
+        @Override
+        protected UserInputMsg build() {
+            return new UserInputMsg(this);
+        }
+
+        // ===================== End: 构建函数 ===================
+
+        // ===================== Start: 构建配置 ===================
+
+        // ===================== End: 构建配置 ===================
     }
 }

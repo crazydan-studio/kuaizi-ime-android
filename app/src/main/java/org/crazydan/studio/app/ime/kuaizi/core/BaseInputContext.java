@@ -61,7 +61,7 @@ public abstract class BaseInputContext extends Immutable {
 
     /** 触发 {@link InputMsg} 消息 */
     public void fireInputMsg(InputMsgType msgType, InputMsgData msgData) {
-        InputMsg msg = new InputMsg(msgType, msgData);
+        InputMsg msg = InputMsg.build((b) -> b.type(msgType).data(msgData));
 
         this.listener.onMsg(msg);
     }

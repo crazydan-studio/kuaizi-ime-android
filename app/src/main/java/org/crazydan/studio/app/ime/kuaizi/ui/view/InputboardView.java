@@ -37,8 +37,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
 
 /**
  * {@link Inputboard} 的视图
@@ -99,8 +101,8 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     }
 
     private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
-        boolean disableCleanBtn = msg.inputList.empty;
-        boolean disableCleanCancelBtn = !msg.inputList.canCancelClean;
+        boolean disableCleanBtn = msg.inputList.frozen || msg.inputList.empty;
+        boolean disableCleanCancelBtn = msg.inputList.frozen || !msg.inputList.canCancelClean;
 
         if (this.needToDisableInputListCleanBtn != disableCleanBtn
             || this.needToDisableInputListCleanCancelBtn != disableCleanCancelBtn //
@@ -180,12 +182,12 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     }
 
     private void onCleanInputList(View v) {
-        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Clean_InputList);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Clean_InputList));
         onMsg(msg);
     }
 
     private void onCancelCleanInputList(View v) {
-        UserInputMsg msg = new UserInputMsg(UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Cancel_Clean_InputList));
         onMsg(msg);
     }
 
