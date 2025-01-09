@@ -693,7 +693,14 @@ public abstract class BaseKeyboard implements Keyboard {
      * 并{@link #change_State_to_Init 进入初始状态}
      */
     protected void commit_InputList_and_Goto_Init_State(KeyboardContext context) {
-        commit_InputList(context, true, false);
+        InputList inputList = context.inputList;
+
+        // 在仅有唯一的配对输入时，采用配对输入方式提交，且不可被撤销
+        if (inputList.hasOnlyOnePairInputs()) {
+            commit_InputList(context, false, false, true);
+        } else {
+            commit_InputList(context, true, false);
+        }
 
         change_State_to_Init(context);
     }

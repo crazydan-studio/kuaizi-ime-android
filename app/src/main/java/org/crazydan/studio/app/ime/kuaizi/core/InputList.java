@@ -172,7 +172,7 @@ public class InputList {
 
     /** 获取指定输入上的待输入 */
     public CharInput getPendingOn(Input input) {
-        return getSelected() == input ? getPending() : null;
+        return isSelected(input) ? getPending() : null;
     }
 
     /** 获取指定输入上的非空待输入 */
@@ -463,6 +463,20 @@ public class InputList {
         doSelect(input);
     }
 
+    /** 判断当前输入列表是否有唯一的配对输入 */
+    public boolean hasOnlyOnePairInputs() {
+        if (this.inputs.size() == 5) {
+            CharInput first = (CharInput) this.inputs.get(1);
+            Input middle = getNoneEmptyPendingOrSelf(this.inputs.get(2));
+            CharInput last = (CharInput) this.inputs.get(3);
+
+            return (middle == null || middle.isGap()) //
+                   && first.getPair() == last //
+                   && last.getPair() == first;
+        }
+        return false;
+    }
+
     // ======================== End: 处理当前选中输入 ==========================
 
     // ======================== Start: 处理普通输入 ==========================
@@ -477,11 +491,11 @@ public class InputList {
         return Collections.unmodifiableList(this.inputs);
     }
 
-    /** 获取全部 {@link CharInput} */
+    /** 获取全部 {@link CharInput}：不包含 {@link #getPending() 待输入} */
     public List<CharInput> getCharInputs() {
         return this.inputs.stream()
-                          .filter(input -> !input.isGap())
-                          .map(input -> ((CharInput) input))
+                          .filter(input -> input instanceof CharInput)
+                          .map(input -> (CharInput) input)
                           .collect(Collectors.toList());
     }
 
