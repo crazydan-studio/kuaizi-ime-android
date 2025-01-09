@@ -135,7 +135,8 @@ public class ViewGestureDetector {
 
     private void onPressEnd(GestureData data) {
         this.latestPressStart = null;
-        this.latestSingleTap = null;
+        // Note: 最近的单击数据不能被重置，其将用于判断多次点击是否为有效的连击，如双击等
+        //this.latestSingleTap = null;
 
         if (data != null) {
             triggerListeners(GestureType.PressEnd, data);
@@ -297,7 +298,7 @@ public class ViewGestureDetector {
 
     private void triggerListeners(GestureType type, GestureData data) {
         this.log.debug("######################### Gesture Event ######################");
-        this.log.debug("@@ Gesture Type: %s", type);
+        this.log.debug("@@ Gesture: %s (%s)", type, data);
         this.log.debug("\n");
 
         for (Listener listener : this.listeners) {
@@ -391,6 +392,11 @@ public class ViewGestureDetector {
             this.timestamp = timestamp;
         }
 
+        @Override
+        public String toString() {
+            return "{x=" + this.x + ", y=" + this.y + '}';
+        }
+
         public static GestureData newFrom(GestureData g, float x, float y) {
             return new GestureData(x, y, g.timestamp);
         }
@@ -412,6 +418,11 @@ public class ViewGestureDetector {
             super(g.x, g.y, g.timestamp);
             this.motion = motion;
         }
+
+        @Override
+        public String toString() {
+            return "{motion=" + this.motion + '}';
+        }
     }
 
     public static class FlippingGestureData extends GestureData {
@@ -421,6 +432,11 @@ public class ViewGestureDetector {
             super(g.x, g.y, g.timestamp);
             this.motion = motion;
         }
+
+        @Override
+        public String toString() {
+            return "{motion=" + this.motion + '}';
+        }
     }
 
     public static class TickGestureData extends GestureData {
@@ -429,6 +445,11 @@ public class ViewGestureDetector {
         public TickGestureData(GestureData g, int tick) {
             super(g.x, g.y, g.timestamp);
             this.tick = tick;
+        }
+
+        @Override
+        public String toString() {
+            return "{tick=" + this.tick + '}';
         }
     }
 

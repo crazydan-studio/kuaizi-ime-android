@@ -42,6 +42,11 @@ public class Motion {
         this.timestamp = timestamp;
     }
 
+    @Override
+    public String toString() {
+        return "{direction=" + this.direction + ", distance=" + this.distance + '}';
+    }
+
     public enum Direction {
         up,
         down,
