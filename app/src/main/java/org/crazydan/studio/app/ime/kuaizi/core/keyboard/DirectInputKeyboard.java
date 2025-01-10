@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
@@ -71,15 +70,21 @@ public abstract class DirectInputKeyboard extends BaseKeyboard {
     }
 
     protected void on_CharKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        // 单字符直接输入
-        if (msg.type != UserKeyMsgType.SingleTap_Key) {
-            return;
+        switch (msg.type) {
+            case SingleTap_Key: {
+                InputList inputList = context.inputList;
+                boolean directInputting = inputList.isEmpty();
+
+                // 单字符输入
+                start_Single_CharKey_Inputting(context, msg.data(), directInputting);
+                break;
+            }
+            case LongPress_Key_Tick: {
+                // 字符、表情、符号连续输入
+                try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, this::on_CharKey_Msg);
+                break;
+            }
         }
-
-        InputList inputList = context.inputList;
-        boolean directInputting = inputList.isEmpty();
-
-        start_Single_CharKey_Inputting(context, msg.data(), directInputting);
     }
 
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {

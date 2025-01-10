@@ -192,6 +192,11 @@ public class PinyinKeyboard extends BaseKeyboard {
                 start_Single_CharKey_Inputting(context, msg.data(), directInputting);
                 break;
             }
+            case LongPress_Key_Tick: {
+                // 字符、表情、符号连续输入
+                try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, this::on_CharKey_Msg);
+                break;
+            }
         }
     }
 

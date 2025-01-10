@@ -20,6 +20,8 @@
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
@@ -53,6 +55,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchM
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
@@ -210,10 +213,7 @@ public abstract class BaseKeyboard implements Keyboard {
                     case Backspace:
                     case Space:
                     case Enter:
-                        UserKeyMsg newMsg = UserKeyMsg.build((b) -> b.type(UserKeyMsgType.SingleTap_Key)
-                                                                     .data(msg.data()));
-                        // 长按 tick 视为连续单击
-                        return try_On_Common_CtrlKey_Msg(context, newMsg);
+                        return try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, this::try_On_Common_CtrlKey_Msg);
                 }
                 break;
             }
@@ -321,6 +321,31 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         return false;
+    }
+
+    /**
+     * 将 {@link UserKeyMsgType#LongPress_Key_Tick} 转换为 {@link UserKeyMsgType#SingleTap_Key} 消息后再做处理
+     * <p/>
+     * 也就是将长按 tick 视为连续单击
+     */
+    protected <T> T try_On_LongPress_Tick_as_SingleTap_Msg(
+            KeyboardContext context, UserKeyMsg msg, BiFunction<KeyboardContext, UserKeyMsg, T> c
+    ) {
+        UserLongPressTickMsgData msgData = msg.data();
+        UserSingleTapMsgData newMsgData = new UserSingleTapMsgData(msgData.key, 0);
+        UserKeyMsg newMsg = UserKeyMsg.build((b) -> b.type(UserKeyMsgType.SingleTap_Key).data(newMsgData));
+
+        return c.apply(context, newMsg);
+    }
+
+    /** @see #try_On_LongPress_Tick_as_SingleTap_Msg(KeyboardContext, UserKeyMsg, BiFunction) */
+    protected void try_On_LongPress_Tick_as_SingleTap_Msg(
+            KeyboardContext context, UserKeyMsg msg, BiConsumer<KeyboardContext, UserKeyMsg> c
+    ) {
+        try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, (ctx, m) -> {
+            c.accept(ctx, m);
+            return null;
+        });
     }
 
     /** 在 X 型输入中的非控制按键或已禁用的按键不做处理 */

@@ -84,7 +84,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
                 continuous = false;
                 show_InputChars_Input_Popup(context);
             }
-            // Note: 长按显示提示气泡有基类处理
+            // Note: 长按显示提示气泡由基类处理
             case LongPress_Key_Tick: {
                 play_SingleTick_InputAudio(context);
 
