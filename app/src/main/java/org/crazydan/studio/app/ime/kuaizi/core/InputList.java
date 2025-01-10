@@ -33,6 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 
@@ -226,19 +227,6 @@ public class InputList {
     }
 
     /**
-     * 确认当前待输入
-     * <p/>
-     * <ul>
-     * <li>待输入为空时，不做处理；</li>
-     * <li>原位置为 Gap 时，插入待输入；</li>
-     * <li>原位置为字符输入时，将其替换为待输入；</li>
-     * </ul>
-     */
-    public void confirmPending() {
-        doConfirmPending();
-    }
-
-    /**
      * {@link #confirmPending() 确认当前待输入}，再后移光标，并在新位置新建待输入
      * <p/>
      * 即，{@link #confirmPendingAndSelectByOffset} 的参数为 <code>1</code>
@@ -261,7 +249,7 @@ public class InputList {
      * 再后移光标到指定的偏移位置，并在该位置新建待输入
      */
     public void confirmPendingAndSelectByOffset(int offset) {
-        int confirmedPendingIndex = doConfirmPending();
+        int confirmedPendingIndex = confirmPending();
         if (confirmedPendingIndex < 0) {
             return;
         }
@@ -301,6 +289,15 @@ public class InputList {
     }
 
     /**
+     * 与 {@link #confirmPending(boolean)} 的逻辑一致，
+     * 只是待输入的 {@link Input#confirm()} 接口将被调用，
+     * 也即，始终传参 <code>false</code>
+     */
+    public int confirmPending() {
+        return confirmPending(false);
+    }
+
+    /**
      * 确认当前待输入，并返回确认后的{@link #getSelectedIndex() 当前输入位置}
      * <p/>
      * <ul>
@@ -309,9 +306,14 @@ public class InputList {
      * <li>原位置为字符输入时，将其替换为待输入；</li>
      * </ul>
      *
-     * @return 若未作确认（空白待输入无需确认），则返回 <code>-1</code>
+     * @param notConfirmPendingSelf
+     *         是否不调用待输入的 {@link Input#confirm()} 接口？
+     *         对于 {@link MathExprInput}，调用该接口会使得其内嵌输入列表的待输入也被确认，
+     *         这在输入过程中手动选择其他输入时，会造成点击时的视图状态与确认后的数据状态不一致，
+     *         因此，需保持内嵌输入列表的待输入状态
+     * @return 若未作确认（空白待输入无需确认），则返回 <code>-1</code>，否则，返回当前的已选择输入的位置
      */
-    private int doConfirmPending() {
+    public int confirmPending(boolean notConfirmPendingSelf) {
         int selectedIndex = getSelectedIndex();
         if (selectedIndex < 0) {
             return -1;
@@ -336,7 +338,9 @@ public class InputList {
         }
 
         // 先由待输入做其内部确认
-        pending.confirm();
+        if (!notConfirmPendingSelf) {
+            pending.confirm();
+        }
 
         if (selected.isGap()) {
             // Note: 新的 Gap 位置自动后移，故无需更新光标的选中对象

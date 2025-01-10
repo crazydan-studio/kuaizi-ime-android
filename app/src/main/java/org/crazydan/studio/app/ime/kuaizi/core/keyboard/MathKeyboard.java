@@ -223,6 +223,7 @@ public class MathKeyboard extends BaseKeyboard {
     /** 处理数字和运算符号的输入 */
     private void do_Single_MathKey_Inputting(KeyboardContext context) {
         Key key = context.key();
+        InputList parentInputList = getParentInputList(context);
 
         InputList mathInputList = getMathInputList(context);
         if (key instanceof CharKey) {
@@ -231,6 +232,14 @@ public class MathKeyboard extends BaseKeyboard {
         //
         else if (key instanceof MathOpKey) {
             do_Single_MathOpKey_Inputting(mathInputList, (MathOpKey) key);
+        }
+
+        // Note: 对于有非空待输入的 Gap，需提前确认其待输入，
+        // 以保证该待输入，即，当前的算术输入，在上层视图上有实际的输入视图，而不是 Gap 的待输入视图，
+        // 确保在输入过程中点击某个输入时，能够定位到目标输入上
+        if (parentInputList.isGapSelected()) {
+            // Note: 在待输入上的嵌套输入列表保持未确认，以确保与其映射的视图状态与其状态是一致的
+            parentInputList.confirmPending(true);
         }
 
         // Note: 可能会新建待输入，故而，需重新取最新的
@@ -320,7 +329,8 @@ public class MathKeyboard extends BaseKeyboard {
             && !parentInputList.getPending().isMathExpr()) {
             parentInputList.confirmPendingAndSelectNext();
         } else {
-            parentInputList.confirmPending();
+            // Note: 在待输入上的嵌套输入列表保持未确认，以确保与其映射的视图状态与其状态是一致的
+            parentInputList.confirmPending(true);
         }
 
         resetMathInputList(context);
