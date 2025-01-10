@@ -42,6 +42,16 @@
                     android:name="android.view.im"
                     android:resource="@xml/method" />
         </service>
+        <!-- 支持分享应用内指定目录下的文件，不涉及系统权限的申请 -->
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths" />
+        </provider>
 
         <!-- Start: 配置
         Note:
@@ -91,6 +101,15 @@
                 android:label="@string/title_about_thanks">
             <intent-filter>
                 <action android:name=".ui.about.AboutThanks" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.about.AboutDonation"
+                android:exported="true"
+                android:label="@string/title_about_donation">
+            <intent-filter>
+                <action android:name=".ui.about.AboutDonation" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

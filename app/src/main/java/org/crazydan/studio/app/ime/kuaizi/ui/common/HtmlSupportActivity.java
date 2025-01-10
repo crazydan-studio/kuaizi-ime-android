@@ -19,9 +19,19 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.common;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.core.content.FileProvider;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
@@ -31,26 +41,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @date 2023-08-07
  */
 public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
-
-    protected void setText(int viewResId, int textResId, Object... args) {
-        // https://developer.android.com/guide/topics/resources/string-resource#formatting-strings
-        String viewText = getResources().getString(textResId, args);
-
-        TextView view = findViewById(viewResId);
-        view.setText(viewText);
-    }
-
-    protected void setHtmlText(int viewResId, int htmlRawResId, Object... args) {
-        String text = ResourceUtils.readString(getApplicationContext(), htmlRawResId, args);
-        TextView view = findViewById(viewResId);
-
-        ViewUtils.setHtmlText(view, text);
-    }
-
-    protected void setIcon(int viewResId, int iconResId) {
-        ImageView view = findViewById(viewResId);
-        view.setImageResource(iconResId);
-    }
 
     protected String getAppName() {
         return getResources().getString(R.string.app_name);
@@ -66,5 +56,62 @@ public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
         } catch (Exception ignore) {
         }
         return null;
+    }
+
+    protected void setText(int viewResId, int textResId, Object... args) {
+        // https://developer.android.com/guide/topics/resources/string-resource#formatting-strings
+        String viewText = getResources().getString(textResId, args);
+
+        TextView view = findViewById(viewResId);
+        view.setText(viewText);
+    }
+
+    protected TextView setHtmlText(int viewResId, int htmlRawResId, Object... args) {
+        String text = ResourceUtils.readString(getApplicationContext(), htmlRawResId, args);
+        TextView view = findViewById(viewResId);
+
+        ViewUtils.setHtmlText(view, text);
+
+        return view;
+    }
+
+    protected void setIcon(int viewResId, int iconResId) {
+        ImageView view = findViewById(viewResId);
+        view.setImageResource(iconResId);
+    }
+
+    protected ImageView setRawImage(int viewResId, int rawResId) {
+        try (InputStream input = getResources().openRawResource(rawResId)) {
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+            ImageView view = findViewById(viewResId);
+            view.setImageBitmap(bitmap);
+
+            return view;
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    protected void shareRawImage(int rawResId, String filename, int titleResId) {
+        File file = new File(getCacheDir(), filename);
+        file.getParentFile().mkdirs();
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            ResourceUtils.copy(getApplicationContext(), rawResId, fos);
+        } catch (IOException ignored) {
+        }
+
+        Uri uri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".provider", file);
+
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        String title = getResources().getString(titleResId);
+        intent = Intent.createChooser(intent, title);
+        startActivity(intent);
     }
 }
