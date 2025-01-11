@@ -82,7 +82,8 @@ public class MathExprInput extends CharInput {
             return this.inputList.getText(option);
         }
 
-        String text = String.format(Locale.getDefault(), "%.3f", result);
+        // Note: 涉及 ‱，因此最小精度至少需为小数点后 4 位
+        String text = String.format(Locale.getDefault(), "%.4f", result);
         text = text.replaceAll("0+$", "").replaceAll("\\.$", "");
 
         StringBuilder sb;

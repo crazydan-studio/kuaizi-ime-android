@@ -412,7 +412,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
 
         // 确保前序键盘完成退出清理工作
-        if (current != null) {
+        // Note: 若切换到输入列表提交选项键盘，则保持前序键盘的输入状态不变，
+        // 从而确保退出该键盘后，依然能够回到切换前的状态
+        if (current != null && newType != Keyboard.Type.InputList_Commit_Option) {
             withKeyboardContext(current::stop);
         }
         this.config.set(ConfigKey.prev_keyboard_type, currentType);

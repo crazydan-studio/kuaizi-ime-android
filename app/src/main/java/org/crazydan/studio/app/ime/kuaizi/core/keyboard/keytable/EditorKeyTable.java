@@ -53,11 +53,15 @@ public class EditorKeyTable extends KeyTable {
 
         int index_end = getGridLastColumnIndex();
 
+        if (this.config.hasInputs) {
+            gridKeys[1][index_end] = ctrlKey(CtrlKey.Type.Commit_InputList);
+        }
+
         gridKeys[2][2] = ctrlKey(CtrlKey.Type.Editor_Range_Selector);
         gridKeys[2][5] = ctrlKey(CtrlKey.Type.Editor_Cursor_Locator);
 
         gridKeys[2][index_end] = ctrlKey(CtrlKey.Type.Backspace);
-        gridKeys[3][index_end] = this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey();
+        gridKeys[3][index_end] = enterCtrlKey();
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
         gridKeys[5][index_end] = ctrlKey(CtrlKey.Type.Exit);
 

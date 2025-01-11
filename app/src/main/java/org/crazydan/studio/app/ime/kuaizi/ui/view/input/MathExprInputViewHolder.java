@@ -37,13 +37,13 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListViewReadonly;
  * @date 2023-09-15
  */
 public class MathExprInputViewHolder extends InputViewHolder {
-    private final InputListViewReadonly inputboardView;
+    private final InputListViewReadonly inputListView;
     private final View markerView;
 
     public MathExprInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.inputboardView = itemView.findViewById(R.id.input_list);
+        this.inputListView = itemView.findViewById(R.id.input_list);
         this.markerView = itemView.findViewById(R.id.marker);
     }
 
@@ -52,7 +52,7 @@ public class MathExprInputViewHolder extends InputViewHolder {
         super.bind(data);
 
         List<InputViewData> inputs = data.inputs;
-        whenViewReady(this.inputboardView, (view) -> {
+        whenViewReady(this.inputListView, (view) -> {
             view.setPositionInParent(data.position);
             view.update(inputs, false);
         });
