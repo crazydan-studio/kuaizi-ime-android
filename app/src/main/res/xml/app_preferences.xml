@@ -23,7 +23,7 @@
             app:key="preference_basic"
             app:title="@string/title_preference_basic">
         <PreferenceScreen android:title="@string/label_config_theme">
-            <intent android:action=".ui.PreferencesTheme" />
+            <intent android:action="${applicationId}.ui.PreferencesTheme" />
         </PreferenceScreen>
 
         <SwitchPreferenceCompat
@@ -81,33 +81,33 @@
             app:title="@string/title_preference_about">
         <!-- https://stackoverflow.com/questions/7275015/android-start-activity-from-preferences-xml#answer-10441707 -->
         <PreferenceScreen android:title="@string/title_about_thanks">
-            <intent android:action=".ui.about.AboutThanks" />
+            <intent android:action="${applicationId}.ui.about.AboutThanks" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_donation">
-            <intent android:action=".ui.about.AboutDonation" />
+            <intent android:action="${applicationId}.ui.about.AboutDonation" />
         </PreferenceScreen>
         <Preference
                 app:key="about_user_feedback"
                 android:title="@string/title_about_suggestion" />
         <PreferenceScreen android:title="@string/title_about_app">
-            <intent android:action=".ui.about.AboutApp" />
+            <intent android:action="${applicationId}.ui.about.AboutApp" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_team">
-            <intent android:action=".ui.about.AboutTeam" />
+            <intent android:action="${applicationId}.ui.about.AboutTeam" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_change_log">
-            <intent android:action=".ui.about.AboutChangeLog" />
+            <intent android:action="${applicationId}.ui.about.AboutChangeLog" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_software_service_agreement">
-            <intent android:action=".ui.about.SoftwareServiceAgreement" />
+            <intent android:action="${applicationId}.ui.about.SoftwareServiceAgreement" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_copyright">
-            <intent android:action=".ui.about.Copyright" />
+            <intent android:action="${applicationId}.ui.about.Copyright" />
         </PreferenceScreen>
         <PreferenceScreen
                 app:key="about_alpha_user_agreement"
                 android:title="@string/title_about_alpha_user_agreement">
-            <intent android:action=".ui.about.AlphaUserAgreement" />
+            <intent android:action="${applicationId}.ui.about.AlphaUserAgreement" />
         </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -26,6 +26,7 @@ import java.util.Locale;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.graphics.Point;
@@ -37,8 +38,10 @@ import android.provider.MediaStore;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
+import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
@@ -165,6 +168,9 @@ public class Preferences extends FollowSystemThemeActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.app_preferences, rootKey);
 
+            PreferenceScreen rootPref = getPreferenceManager().getPreferenceScreen();
+            updateIntentActionPlaceholderDeeply(rootPref);
+
             if (!SystemUtils.isAlphaVersion()) {
                 // https://stackoverflow.com/questions/2240326/remove-hide-a-preference-from-the-screen#answer-45274037
                 PreferenceCategory category = findPreference("preference_about");
@@ -189,6 +195,26 @@ public class Preferences extends FollowSystemThemeActivity {
                     backupUserData(getActivity());
                     return true;
                 });
+            }
+        }
+
+        /** 更新 Intent action 名字中的占位符 */
+        private void updateIntentActionPlaceholderDeeply(PreferenceGroup preference) {
+            int total = preference.getPreferenceCount();
+            for (int i = 0; i < total; i++) {
+                Preference pref = preference.getPreference(i);
+                if (!(pref instanceof PreferenceGroup)) {
+                    continue;
+                }
+
+                Intent intent = pref.getIntent();
+                if (intent != null && intent.getAction() != null //
+                    && intent.getAction().contains("${applicationId}")) {
+                    String action = intent.getAction().replace("${applicationId}", BuildConfig.APPLICATION_ID);
+                    intent.setAction(action);
+                }
+
+                updateIntentActionPlaceholderDeeply((PreferenceGroup) pref);
             }
         }
     }

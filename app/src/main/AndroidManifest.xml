@@ -63,7 +63,7 @@
                 android:exported="true"
                 android:label="@string/title_app_preferences">
             <intent-filter>
-                <action android:name=".ui.Preferences" />
+                <action android:name="${applicationId}.ui.Preferences" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -73,7 +73,7 @@
                 android:exported="true"
                 android:label="@string/label_config_theme">
             <intent-filter>
-                <action android:name=".ui.PreferencesTheme" />
+                <action android:name="${applicationId}.ui.PreferencesTheme" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -82,7 +82,7 @@
                 android:exported="true"
                 android:label="@string/title_about_app">
             <intent-filter>
-                <action android:name=".ui.about.AboutApp" />
+                <action android:name="${applicationId}.ui.about.AboutApp" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -91,7 +91,7 @@
                 android:exported="true"
                 android:label="@string/title_about_team">
             <intent-filter>
-                <action android:name=".ui.about.AboutTeam" />
+                <action android:name="${applicationId}.ui.about.AboutTeam" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -100,7 +100,7 @@
                 android:exported="true"
                 android:label="@string/title_about_thanks">
             <intent-filter>
-                <action android:name=".ui.about.AboutThanks" />
+                <action android:name="${applicationId}.ui.about.AboutThanks" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -109,7 +109,7 @@
                 android:exported="true"
                 android:label="@string/title_about_donation">
             <intent-filter>
-                <action android:name=".ui.about.AboutDonation" />
+                <action android:name="${applicationId}.ui.about.AboutDonation" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -118,7 +118,7 @@
                 android:exported="true"
                 android:label="@string/title_about_change_log">
             <intent-filter>
-                <action android:name=".ui.about.AboutChangeLog" />
+                <action android:name="${applicationId}.ui.about.AboutChangeLog" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -127,7 +127,7 @@
                 android:exported="true"
                 android:label="@string/title_about_software_service_agreement">
             <intent-filter>
-                <action android:name=".ui.about.SoftwareServiceAgreement" />
+                <action android:name="${applicationId}.ui.about.SoftwareServiceAgreement" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -136,7 +136,7 @@
                 android:exported="true"
                 android:label="@string/title_about_copyright">
             <intent-filter>
-                <action android:name=".ui.about.Copyright" />
+                <action android:name="${applicationId}.ui.about.Copyright" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -145,7 +145,7 @@
                 android:exported="true"
                 android:label="@string/title_about_alpha_user_agreement">
             <intent-filter>
-                <action android:name=".ui.about.AlphaUserAgreement" />
+                <action android:name="${applicationId}.ui.about.AlphaUserAgreement" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -174,7 +174,7 @@
                 android:screenOrientation="portrait"
                 android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name=".ui.guide.ExerciseGuide" />
+                <action android:name="${applicationId}.ui.guide.ExerciseGuide" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
