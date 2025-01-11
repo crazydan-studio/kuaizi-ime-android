@@ -195,6 +195,12 @@ inputboard_view ..> input_list_view: dispatch\n<<InputMsg>>
   - `InputboardView` 也会触发 `UserInputMsg` 消息，
     如，点击输入列表清空按钮、选中输入补全等
 
+## 开发实践
+
+- 对于预期不为 `null` 或空的变量，不加防御性处理逻辑，按照「Let it crash」原则，
+  任其崩溃，以便于尽早发现潜在的逻辑问题，并且，通过异常，也能够快速定位问题发生点，
+  可避免「无头苍蝇」似的排查和尝试
+
 ## 参考资料
 
 - [APK 签名打包](https://developer.android.com/studio/publish/app-signing?hl=zh-cn)

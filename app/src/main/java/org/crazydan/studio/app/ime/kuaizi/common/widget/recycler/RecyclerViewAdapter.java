@@ -85,7 +85,7 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
 
     /** 获取指定位置的数据项 */
     public I getItem(int position) {
-        return position < 0 ? null : this.items.get(position);
+        return position < 0 || position >= this.items.size() ? null : this.items.get(position);
     }
 
     /** 根据新旧列表更新差异数据项 */

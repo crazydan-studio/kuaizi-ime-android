@@ -908,7 +908,8 @@ public abstract class BaseKeyboard implements Keyboard {
     protected void fire_InputList_Commit_Doing(
             KeyboardContext context, CharSequence text, List<String> replacements, boolean canBeRevoked
     ) {
-        InputMsgData data = new InputListCommitMsgData(text, replacements, canBeRevoked);
+        Key key = context.key();
+        InputMsgData data = new InputListCommitMsgData(key, text, replacements, canBeRevoked);
 
         fire_InputMsg(context, InputList_Commit_Doing, data);
     }

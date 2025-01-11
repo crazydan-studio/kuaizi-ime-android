@@ -34,9 +34,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Switch_Doing;
 
 /**
  * 集成 筷字输入法 的窗口
@@ -115,6 +119,10 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         this.ime.prepareInputs(List.of(inputs));
     }
 
+    protected Keyboard.Type getKeyboardType() {
+        return this.ime.getKeyboardType();
+    }
+
     protected void startKeyboard(Keyboard.Type type) {
         startKeyboard(type, false);
     }
@@ -122,6 +130,12 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     protected void startKeyboard(Keyboard.Type type, boolean resetInputting) {
         Context context = getApplicationContext();
         this.ime.start(context, type, resetInputting);
+    }
+
+    /** 通过构造 {@link InputMsgType#Keyboard_Switch_Done} 消息以手动切换键盘类型 */
+    protected void switchKeyboard(Keyboard.Type type) {
+        KeyboardSwitchMsgData data = new KeyboardSwitchMsgData(null, type);
+        this.ime.onMsg(InputMsg.build((b) -> b.type(Keyboard_Switch_Doing).data(data)));
     }
 
     protected KeyTableConfig createKeyTableConfig() {

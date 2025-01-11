@@ -502,7 +502,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 更改最后一个输入的候选字 */
     public void changeLastInputWord(InputWord word) {
-        this.inputList.getLastCharInput().setWord(word);
+        CharInput input = this.inputList.getLastCharInput();
+        input.setWord(word);
+        input.markWordConfirmed();
     }
 
     /**

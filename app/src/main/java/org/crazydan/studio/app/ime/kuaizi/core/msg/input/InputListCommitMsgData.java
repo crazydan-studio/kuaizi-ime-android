@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
@@ -38,7 +39,9 @@ public class InputListCommitMsgData extends InputMsgData {
     /** 提交是否可被撤销 */
     public final boolean canBeRevoked;
 
-    public InputListCommitMsgData(CharSequence text, List<String> replacements, boolean canBeRevoked) {
+    public InputListCommitMsgData(Key key, CharSequence text, List<String> replacements, boolean canBeRevoked) {
+        super(key);
+
         this.text = text;
         this.replacements = replacements != null ? replacements : new ArrayList<>();
         this.canBeRevoked = canBeRevoked;

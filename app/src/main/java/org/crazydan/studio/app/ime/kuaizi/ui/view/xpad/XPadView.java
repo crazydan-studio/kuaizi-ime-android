@@ -1260,7 +1260,7 @@ public class XPadView extends View {
     }
 
     // ====================================================================
-    public GestureSimulator createSimulator() {
+    public GestureSimulator createGestureSimulator() {
         return new GestureSimulator();
     }
 
@@ -1367,34 +1367,34 @@ public class XPadView extends View {
             return this.stopped;
         }
 
-        public void input(Key start, Key charKey, Runnable after) {
+        public void input(Key startKey, Key targetKey, Runnable after) {
             this.stopped = false;
             XPadView.this.simulating = true;
 
-            doInput(start, charKey, () -> {
+            doInput(startKey, targetKey, () -> {
                 after.run();
                 XPadView.this.simulating = false;
             });
         }
 
-        public void input(Key charKey, Runnable after) {
-            input(null, charKey, after);
+        public void input(Key targetKey, Runnable after) {
+            input(null, targetKey, after);
         }
 
-        private void doInput(Key start, Key charKey, Runnable after) {
+        private void doInput(Key startKey, Key targetKey, Runnable after) {
             PointF endPoint = get_center_coordinate();
 
             // ==================================================================
             List<Runnable> gestures = new ArrayList<>();
 
-            if (start == null) {
+            if (startKey == null) {
                 gestures.add(() -> {
                     ViewGestureDetector.GestureType type = ViewGestureDetector.GestureType.PressStart;
                     XPadView.this.trailer.onGesture(type, createGestureData(type, endPoint));
                 });
             } else {
                 gestures.add(() -> {
-                    BlockKey startBlockKey = getMatchedBlockKey(start);
+                    BlockKey startBlockKey = getMatchedBlockKey(startKey);
                     PointF startPoint = getBlockCenter(startBlockKey);
 
                     executeGesture(ViewGestureDetector.GestureType.PressEnd, startPoint);
@@ -1407,13 +1407,13 @@ public class XPadView extends View {
                 });
             }
 
-            gestures.addAll(createCharKeyGesture(charKey));
+            gestures.addAll(createCharKeyGesture(targetKey));
 
             gestures.add(() -> {
                 executeGesture(ViewGestureDetector.GestureType.Moving, endPoint);
             });
 
-            if (start == null) {
+            if (startKey == null) {
                 gestures.add(() -> {
                     ViewGestureDetector.GestureType type = ViewGestureDetector.GestureType.PressEnd;
                     XPadView.this.trailer.onGesture(type, createGestureData(type, endPoint));

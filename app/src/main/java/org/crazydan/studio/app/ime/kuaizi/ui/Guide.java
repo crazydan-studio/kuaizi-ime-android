@@ -226,7 +226,8 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     private boolean isNewFeatureConfirmed() {
-        return this.preferences.getInt(pref_key_confirmed_new_features_version, 0) >= 200;
+        return BuildConfig.VERSION_CODE > 200
+               || this.preferences.getInt(pref_key_confirmed_new_features_version, 0) >= 200;
     }
 
     private void confirmNewFeatures() {

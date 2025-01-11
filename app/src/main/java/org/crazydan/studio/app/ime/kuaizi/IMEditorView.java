@@ -54,6 +54,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**
  * {@link IMEditor} 的视图
@@ -96,8 +97,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         doLayout();
     }
 
-    public XPadKeyViewHolder getXPadKeyView() {
-        return this.keyboardView.getXPadKeyViewHolder();
+    public XPadView getXPadView() {
+        XPadKeyViewHolder holder = this.keyboardView.getXPadKeyViewHolder();
+        return holder != null ? holder.getXPad() : null;
     }
 
     // =============================== Start: 消息处理 ===================================

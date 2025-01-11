@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -52,9 +55,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.InputListCommitOptionKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.LatinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinCandidateKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
@@ -62,7 +65,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.ImeIntegratedActivity;
@@ -87,6 +89,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  */
 public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgListener, ExerciseViewMsgListener {
     private static final int DRAWER_NAV_MENU_ITEM_BASE_ID = 10;
+    private static final ThreadPoolExecutor executor = Async.createExecutor(1, 1);
 
     private DrawerLayout drawerLayout;
     private NavigationView drawerNavView;
@@ -488,13 +491,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
         exercise.newStep("请<span style=\"color:#ed4c67;\">长按</span>输入提交按键%s以进入<b>输入提交选项</b>模式；",
                          key_ctrl_commit) //
                 .action((msg) -> {
-                    if (msg.type == InputMsgType.Keyboard_State_Change_Done) {
-                        KeyboardStateChangeMsgData data = msg.data();
+                    if (msg.type == InputMsgType.Keyboard_Switch_Done) {
+                        KeyboardSwitchMsgData data = msg.data();
                         Key key = data.key;
 
-                        if (data.state.type == State.Type.InputList_Commit_Option_Choose_Doing //
-                            && key_ctrl_commit.equals(key) //
-                        ) {
+                        if (data.type == Keyboard.Type.InputList_Commit_Option && key_ctrl_commit.equals(key)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -803,41 +804,44 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     private Exercise create_Exercise_XPad_Inputting(KeyboardSandboxView sandboxView) {
         Exercise exercise = Exercise.normal("X 型面板输入", sandboxView);
 
-        PinyinKeyTable keyTable = createPinyinKeyTable();
+        PinyinKeyTable pinyinKeyTable = createPinyinKeyTable();
+        LatinKeyTable latinKeyTable = LatinKeyTable.create(createKeyTableConfig());
 
-        Key key_ctrl_commit = keyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
-        Key key_ctrl_switch_latin = keyTable.switcherCtrlKey(Keyboard.Type.Latin, R.drawable.ic_latin);
-        Key key_ctrl_switch_pinyin = keyTable.switcherCtrlKey(Keyboard.Type.Pinyin, R.drawable.ic_pinyin);
-        Key key_ctrl_enter = keyTable.ctrlKey(CtrlKey.Type.Enter);
-        Key key_ctrl_space = keyTable.ctrlKey(CtrlKey.Type.Space);
+        Key key_ctrl_commit = pinyinKeyTable.ctrlKey(CtrlKey.Type.Commit_InputList);
+        Key key_ctrl_switch_latin = pinyinKeyTable.switcherCtrlKey(Keyboard.Type.Latin, R.drawable.ic_latin);
+        Key key_ctrl_switch_pinyin = pinyinKeyTable.switcherCtrlKey(Keyboard.Type.Pinyin, R.drawable.ic_pinyin);
+        CtrlKey key_ctrl_enter = pinyinKeyTable.ctrlKey(CtrlKey.Type.Enter);
+        CtrlKey key_ctrl_space = pinyinKeyTable.ctrlKey(CtrlKey.Type.Space);
 
         exercise.enableXInputPad();
         exercise.setSampleText("请换行输入练习内容：");
 
         Key[] latinSample = new Key[] {
-                keyTable.alphabetKey("A"),
-                keyTable.alphabetKey("n"),
-                keyTable.alphabetKey("d"),
-                keyTable.alphabetKey("r"),
-                keyTable.alphabetKey("o"),
-                keyTable.alphabetKey("i"),
-                keyTable.alphabetKey("d"),
+                latinKeyTable.alphabetKey("A"),
+                latinKeyTable.alphabetKey("n"),
+                latinKeyTable.alphabetKey("d"),
+                latinKeyTable.alphabetKey("r"),
+                latinKeyTable.alphabetKey("o"),
+                latinKeyTable.alphabetKey("i"),
+                latinKeyTable.alphabetKey("d"),
                 };
         Map<PinyinWord, Key[]> pinyinWordsSample = new LinkedHashMap<>();
         pinyinWordsSample.put(pinyinWord(100, "筷", "kuài"), new Key[] {
-                keyTable.level0CharKey("k"), keyTable.level1CharKey("u"), keyTable.level2CharKey("", "uai"),
+                pinyinKeyTable.level0CharKey("k"),
+                pinyinKeyTable.level1CharKey("u"),
+                pinyinKeyTable.level2CharKey("", "uai"),
                 });
         pinyinWordsSample.put(pinyinWord(101, "字", "zì"), new Key[] {
-                keyTable.level0CharKey("z"), keyTable.levelFinalCharKey("zi"),
+                pinyinKeyTable.level0CharKey("z"), pinyinKeyTable.levelFinalCharKey("zi"),
                 });
         pinyinWordsSample.put(pinyinWord(102, "输", "shū"), new Key[] {
-                keyTable.level0CharKey("sh"), keyTable.levelFinalCharKey("shu"),
+                pinyinKeyTable.level0CharKey("sh"), pinyinKeyTable.levelFinalCharKey("shu"),
                 });
         pinyinWordsSample.put(pinyinWord(103, "入", "rù"), new Key[] {
-                keyTable.level0CharKey("r"), keyTable.levelFinalCharKey("ru"),
+                pinyinKeyTable.level0CharKey("r"), pinyinKeyTable.levelFinalCharKey("ru"),
                 });
         pinyinWordsSample.put(pinyinWord(104, "法", "fǎ"), new Key[] {
-                keyTable.level0CharKey("f"), keyTable.levelFinalCharKey("fa"),
+                pinyinKeyTable.level0CharKey("f"), pinyinKeyTable.levelFinalCharKey("fa"),
                 });
 
         String sample = Arrays.stream(latinSample).map((key) -> key.value).collect(Collectors.joining("")) //
@@ -855,7 +859,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         InputListCommitMsgData data = msg.data();
-                        if (key_ctrl_enter.value.contentEquals(data.text)) {
+                        if (key_ctrl_enter.type.match(data.key)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -870,7 +874,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
             Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
             String simulatorStepName = String.format(Locale.getDefault(), "latin-char-input-step:%d:%s", i, key.value);
             Runnable restart = () -> {
-                showWarning("当前输入的字符与练习内容不符，请按演示动画重新输入");
+                showWarning("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
 
                 simulator.get().stop();
                 exercise.gotoStep(simulatorStepName);
@@ -881,19 +885,34 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                     .action(new ExerciseStep.AutoAction() {
                         @Override
                         public void start() {
-                            if (isFirstStep || simulator.get().isStopped()) {
-                                startKeyboard(Keyboard.Type.Latin);
-                                simulator.get().input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
+                            // Note: 切换键盘，无论类型是否变化，均会打断演示动画，故而，仅切换非预期类型的键盘
+                            if (getKeyboardType() != Keyboard.Type.Latin) {
+                                switchKeyboard(Keyboard.Type.Latin);
+                                // Note: 键盘切换后，做异步模拟，以确保获取到的为已更新后的视图
+                                asyncRun(this::doSimulate);
                             } else {
-                                simulator.get().input(key, exercise::gotoNextStep);
+                                // Note: 若未切换键盘，则采用同步模拟，以避免并发问题
+                                doSimulate();
                             }
                         }
 
                         @Override
                         public void onMsg(InputMsg msg) {
-                            // 若演示因手指释放而提前终止，则重新开始演示
-                            if (msg.type == InputMsgType.Keyboard_XPad_Simulation_Terminated) {
-                                restart.run();
+                            if (msg.type == InputMsgType.Keyboard_Switch_Done
+                                && ((KeyboardSwitchMsgData) msg.data()).type == Keyboard.Type.Latin) {
+                                return;
+                            }
+                            restart.run();
+                        }
+
+                        private void doSimulate() {
+                            XPadView.GestureSimulator s = simulator.get();
+
+                            // Note: 若演示动画已停止，则需要重新从起始按键开始绘制动画
+                            if (isFirstStep || s.isStopped()) {
+                                s.input(key_ctrl_switch_latin, key, exercise::gotoNextStep);
+                            } else {
+                                s.input(key, exercise::gotoNextStep);
                             }
                         }
                     });
@@ -920,14 +939,14 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         return;
                     }
                     case Keyboard_State_Change_Done: {
-                        // 忽略正常切换的情况
-                        if (CtrlKey.Type.NoOp.match(msg.data().key)) {
+                        if (!key.value.equals(msg.data().key.value)) {
                             restart.run();
                             return;
                         }
                         break;
                     }
                     case Keyboard_XPad_Simulation_Terminated:
+                    case Keyboard_Switch_Done:
                     case InputChars_Input_Doing: {
                         restart.run();
                         return;
@@ -944,7 +963,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         InputListCommitMsgData data = msg.data();
-                        if (key_ctrl_space.value.contentEquals(data.text)) {
+                        if (key_ctrl_space.type.match(data.key)) {
                             exercise.gotoNextStep();
                             return;
                         }
@@ -973,7 +992,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                                                            j,
                                                            word.id);
                 Runnable restart = () -> {
-                    showWarning("当前输入的字符与练习内容不符，请按演示动画重新输入");
+                    showWarning("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
 
                     simulator.get().stop();
                     exercise.gotoStep(firstSimulatorStepName);
@@ -987,19 +1006,33 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                         .action(new ExerciseStep.AutoAction() {
                             @Override
                             public void start() {
-                                if (isFirstStep || simulator.get().isStopped()) {
-                                    startKeyboard(Keyboard.Type.Pinyin);
-                                    simulator.get().input(key_ctrl_switch_pinyin, key, exercise::gotoNextStep);
+                                // Note: 切换键盘，无论类型是否变化，均会打断演示动画，故而，仅切换非预期类型的键盘
+                                if (getKeyboardType() != Keyboard.Type.Pinyin) {
+                                    switchKeyboard(Keyboard.Type.Pinyin);
+                                    // Note: 键盘切换后，做异步模拟，以确保获取到的为已更新后的视图
+                                    asyncRun(this::doSimulate);
                                 } else {
-                                    simulator.get().input(key, exercise::gotoNextStep);
+                                    // Note: 若未切换键盘，则采用同步模拟，以避免并发问题
+                                    doSimulate();
                                 }
                             }
 
                             @Override
                             public void onMsg(InputMsg msg) {
-                                // 若演示因手指释放而提前终止，则重新开始演示
-                                if (msg.type == InputMsgType.Keyboard_XPad_Simulation_Terminated) {
-                                    restart.run();
+                                if (msg.type == InputMsgType.Keyboard_Switch_Done
+                                    && ((KeyboardSwitchMsgData) msg.data()).type == Keyboard.Type.Pinyin) {
+                                    return;
+                                }
+                                restart.run();
+                            }
+
+                            private void doSimulate() {
+                                XPadView.GestureSimulator s = simulator.get();
+                                // Note: 若演示动画已停止，则需要重新从起始按键开始绘制动画
+                                if (isFirstStep || s.isStopped()) {
+                                    s.input(key_ctrl_switch_pinyin, key, exercise::gotoNextStep);
+                                } else {
+                                    s.input(key, exercise::gotoNextStep);
                                 }
                             }
                         });
@@ -1033,20 +1066,19 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
                             }
                             return;
                         }
+                        // InputChars_Input_Done 触发后，键盘布局还未发生变化，
+                        // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
                         case Keyboard_State_Change_Done: {
-                            // InputChars_Input_Done 触发后，键盘布局还未发生变化，
-                            // 需等到状态变化后才能确保键盘已恢复布局，这时才能继续下一步演示动画
                             if (lastKey.value.equals(msgKey.value)) {
                                 exercise.gotoNextStep();
-                                return;
-                            } else if (CtrlKey.Type.NoOp.match(msgKey)) {
+                            } else if (!key.value.equals(msgKey.value)) {
                                 restart.run();
-                                return;
                             }
-                            break;
+                            return;
                         }
                         // 拼音输入不是直输的
                         case InputList_Commit_Doing:
+                        case Keyboard_Switch_Done:
                         case Keyboard_XPad_Simulation_Terminated: {
                             restart.run();
                             return;
@@ -1269,10 +1301,33 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     // ===================== Start: 创建数据 ====================
 
     private Supplier<XPadView.GestureSimulator> createXPadGestureSimulator() {
+        AtomicReference<XPadView> xPadView = new AtomicReference<>();
         AtomicReference<XPadView.GestureSimulator> simulator = new AtomicReference<>();
+
+        // 通过 Lamdba 函数实现延迟获取，并对新旧状态的视图做检查和清理工作
         return () -> {
-            if (simulator.get() == null) {
-                simulator.set(this.imeView.getXPadKeyView().getXPad().createSimulator());
+            XPadView oldView = xPadView.get();
+            XPadView newView = this.imeView.getXPadView();
+            XPadView.GestureSimulator oldSimulator = simulator.get();
+
+            if (newView == null) {
+                return oldSimulator;
+            }
+
+            if (oldSimulator != null
+                // Note: 键盘切换后，会导致 X Pad 视图更新，因此，需为此重建模拟器
+                && !Objects.equals(oldView, newView) //
+            ) {
+                oldSimulator.stop();
+                oldSimulator = null;
+            }
+
+            if (oldSimulator == null) {
+                XPadView.GestureSimulator newSimulator = newView.createGestureSimulator();
+                //newSimulator.stop();
+
+                xPadView.set(newView);
+                simulator.set(newSimulator);
             }
             return simulator.get();
         };
@@ -1299,5 +1354,11 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
 
     private PinyinWord pinyinWord(int id, String value, String spell) {
         return PinyinWord.build((b) -> b.id(id).value(value).spell(spell));
+    }
+
+    /** 启动异步执行，以确保当前的消息已被处理完毕，避免消息嵌套导致的 IME 状态与预期不一致的问题 */
+    private void asyncRun(Runnable run) {
+        // Note: 在涉及视图更新操作时，必须最终回在 UI 线程上执行
+        executor.execute(() -> runOnUiThread(run));
     }
 }
