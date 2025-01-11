@@ -87,7 +87,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-11
  */
-public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgListener, ExerciseViewMsgListener {
+public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgListener, ExerciseViewMsgListener {
     private static final int DRAWER_NAV_MENU_ITEM_BASE_ID = 10;
     private static final ThreadPoolExecutor executor = Async.createExecutor(1, 1);
 
@@ -100,7 +100,7 @@ public class ExerciseMain extends ImeIntegratedActivity implements ExerciseMsgLi
     private ExerciseList exerciseList;
     private ExerciseListView exerciseListView;
 
-    public ExerciseMain() {
+    public ExerciseGuide() {
         super(R.layout.guide_exercise_main_activity);
     }
 

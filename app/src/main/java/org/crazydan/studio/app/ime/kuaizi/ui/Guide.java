@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonation;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseMain;
+import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseGuide;
 
 /**
  * 使用指南
@@ -167,7 +167,7 @@ public class Guide extends FollowSystemThemeActivity {
         Context context = getApplicationContext();
 
         Intent intent = new Intent();
-        intent.setClass(context, ExerciseMain.class);
+        intent.setClass(context, ExerciseGuide.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);
