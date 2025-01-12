@@ -139,6 +139,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     private void reset() {
         // TODO 在 RecyclerViewGestureDetector 会根据模型变化而重置手势状态，
         //  不需要再显式重置了？：仍需继续测试和观察
+        // Note: 在 XPad 模式下，对于其内部键盘的切换，不能重置手势，
+        // 否则，在键盘切换时将不能同时启动划圈动作，因为，重置将导致手势被打断
         //this.gesture.reset();
         this.animator.reset();
 

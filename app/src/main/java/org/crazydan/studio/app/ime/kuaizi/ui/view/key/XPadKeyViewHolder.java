@@ -27,6 +27,10 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**
  * {@link XPadKey} 视图的 {@link RecyclerView.ViewHolder}
+ * <p/>
+ * XPad 输入涉及键盘切换和输入同时进行的情况，因此，不能因为 XPad 的按键布局变化而重新构造视图，
+ * 只能保持 XPad 视图不变，并在其按键变化时调用 {@link XPadView#updateZoneKeys}
+ * 重新绘制其内部视图
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04

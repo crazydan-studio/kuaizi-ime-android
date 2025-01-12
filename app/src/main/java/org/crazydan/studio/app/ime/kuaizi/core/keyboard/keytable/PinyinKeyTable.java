@@ -264,7 +264,8 @@ public class PinyinKeyTable extends KeyTable {
             String level0Char, String level1Char, //
             Map<Integer, List<String>> level2NextChars
     ) {
-        // Note: 不能够先构建初始 XPad，再在其上直接修改分区按键，这会导致只读的 XPadKey 的 hash 值不一致
+        // Note: 不能够先构建初始 XPadKey，再在其上直接修改分区按键，
+        // 这会导致只读的 XPadKey 的 hash 值与构建时的不一致
         Key[][][] zone_2_keys = createXPadZone2Keys();
 
         switch (level0Char) {

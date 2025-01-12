@@ -87,6 +87,7 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
             Key[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
     ) {
         XPadKey oldXPadKey = getAdapter().getXPadKey();
+        // Note: 可能会切换到表情、符号等非 XPad 输入面板上，此时，XPad 是不可用的
         XPadKey newXPadKey = getXPadKeyFrom(keys);
         boolean xPadEnabled = newXPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation;
@@ -115,6 +116,7 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
         return layoutManager.getGridPaddingBottom();
     }
 
+    /** Note: 若只是 {@link XPadKey} 内部的按键布局变化，则 {@link XPadKeyViewHolder} 将不会被重建 */
     public XPadKeyViewHolder getXPadKeyViewHolder() {
         XPadKey xPadKey = getAdapter().getXPadKey();
         return getXPadKeyViewHolder(xPadKey);
