@@ -206,6 +206,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     @Override
     public void onMsg(InputMsg msg) {
         Config config = this.config;
+        // Note: 不影响按键布局的消息，将直接复制 keyFactory 为 null，
+        // 因此，仅需要关注按键布局之外的影响视图的消息
         KeyFactory keyFactory = msg.keyFactory;
 
         switch (msg.type) {

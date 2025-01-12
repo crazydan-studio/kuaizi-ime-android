@@ -54,7 +54,7 @@ public class LatinKeyTable extends KeyTable {
     /** 创建 {@link LatinKeyboard} 按键 */
     public Key[][] createKeys() {
         if (this.config.xInputPadEnabled) {
-            return createKeysForXPad();
+            return createXPadGrid();
         }
 
         // 按键布局参考: https://nbviewer.org/url/norvig.com/ipython/Gesture%20Typing.ipynb#Question-7:-Is-there-a-Keyboard-that-Maximizes-User-Satisfaction?

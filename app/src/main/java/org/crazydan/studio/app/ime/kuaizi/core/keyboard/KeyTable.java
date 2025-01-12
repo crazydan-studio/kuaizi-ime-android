@@ -499,11 +499,13 @@ public abstract class KeyTable {
 
     // ======================= Start: X Pad 按键 =======================
 
-    protected Key[][] createKeysForXPad() {
-        return createKeysForXPad(createXPadKey());
+    /** 创建以{@link #createXPadKey 初始}的 {@link XPadKey} 为中心的按键布局 */
+    protected Key[][] createXPadGrid() {
+        return createXPadGrid(createXPadKey());
     }
 
-    protected Key[][] createKeysForXPad(XPadKey xPadKey) {
+    /** 创建以 {@link XPadKey} 为中心的按键布局 */
+    protected Key[][] createXPadGrid(XPadKey xPadKey) {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
@@ -543,6 +545,7 @@ public abstract class KeyTable {
                 };
     }
 
+    /** 创建初始状态的 XPad 按键 */
     protected XPadKey createXPadKey() {
         return null;
     }

@@ -443,9 +443,6 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void do_InputChars_XPad_Input_CharKey(KeyboardContext context, CharInput pending) {
         CharKey key = context.key();
 
-        play_SingleTick_InputAudio(context);
-        show_InputChars_Input_Popup(context);
-
         InputCharsSlipStateData stateData = this.state.data();
         CharKey.Level currentKeyLevel = key.level;
 
@@ -508,6 +505,12 @@ public class PinyinKeyboard extends BaseKeyboard {
                 needToEndInputting = true;
                 break;
             }
+        }
+
+        // Note: 若需要连续输入下一个拼音，则等到下一次输入调用时再播放音效
+        if (!needToContinueInputting) {
+            play_SingleTick_InputAudio(context);
+            show_InputChars_Input_Popup(context);
         }
 
         // 确定候选字

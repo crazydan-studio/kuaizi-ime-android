@@ -61,7 +61,7 @@ public class PinyinKeyTable extends KeyTable {
     /** 创建 {@link PinyinKeyboard} 按键 */
     public Key[][] createKeys() {
         if (this.config.xInputPadEnabled) {
-            return createKeysForXPad();
+            return createXPadGrid();
         }
 
         return new Key[][] {
@@ -133,37 +133,8 @@ public class PinyinKeyTable extends KeyTable {
 
     @Override
     protected XPadKey createXPadKey() {
-        // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
-        return xPadKey(Keyboard.Type.Pinyin, new Key[][][] {
-                new Key[][] {
-                        new Key[] { level0CharKey("g"), level0CharKey("f"), level0CharKey("p"), }, //
-                        new Key[] {
-                                symbolKey("。"), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
-                                },
-                        }, //
-                new Key[][] {
-                        new Key[] {
-                                symbolKey("，", "；"), symbolKey("？", "："), symbolKey("！", "、"),
-                                }, //
-                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t"), }, //
-                }, //
-                new Key[][] {
-                        new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("r") }, //
-                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
-                }, //
-                new Key[][] {
-                        new Key[] { level0CharKey("z"), level0CharKey("s"), level0CharKey("c"), }, //
-                        new Key[] { level0CharKey("sh"), level0CharKey("zh"), level0CharKey("ch"), }, //
-                }, //
-                new Key[][] {
-                        new Key[] { level0CharKey("e"), level0CharKey("a"), level0CharKey("o"), }, //
-                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
-                }, //
-                new Key[][] {
-                        new Key[] { level0CharKey("j"), level0CharKey("w"), symbolKey("～"), }, //
-                        new Key[] { level0CharKey("x"), level0CharKey("q"), level0CharKey("k"), }, //
-                }, //
-        });
+        Key[][][] zone_2_keys = createXPadZone2Keys();
+        return xPadKey(Keyboard.Type.Pinyin, zone_2_keys);
     }
 
     /** 创建拼音后继字母第 1/2 级按键 */
@@ -293,51 +264,55 @@ public class PinyinKeyTable extends KeyTable {
             String level0Char, String level1Char, //
             Map<Integer, List<String>> level2NextChars
     ) {
-        XPadKey xPadKey = createXPadKey();
-        // 在初始键盘上显隐按键
-        Key[][] gridKeys = createKeysForXPad(xPadKey);
+        // Note: 不能够先构建初始 XPad，再在其上直接修改分区按键，这会导致只读的 XPadKey 的 hash 值不一致
+        Key[][][] zone_2_keys = createXPadZone2Keys();
 
         switch (level0Char) {
+            // Note: a e o 的后继仅需占用不会被作为拼音起始字母的按键位置，
+            // 其余按键均保持不变，以支持连续输入下一个拼音
             case "a": {
                 // a ai an ao ang
-                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ai");
-                xPadKey.zone_2_keys[4][1][1] = levelFinalCharKey("ao");
-                xPadKey.zone_2_keys[4][1][2] = levelFinalCharKey("an");
-                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("ang");
-                return gridKeys;
+                zone_2_keys[4][1][0] = levelFinalCharKey("ai");
+                zone_2_keys[4][1][1] = levelFinalCharKey("ao");
+                zone_2_keys[4][1][2] = levelFinalCharKey("an");
+                zone_2_keys[5][0][2] = levelFinalCharKey("ang");
+
+                return createXPadGrid(zone_2_keys);
             }
             case "e": {
                 // e ei en er eng
-                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ei");
-                xPadKey.zone_2_keys[4][1][1] = levelFinalCharKey("er");
-                xPadKey.zone_2_keys[4][1][2] = levelFinalCharKey("en");
-                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("eng");
-                return gridKeys;
+                zone_2_keys[4][1][0] = levelFinalCharKey("ei");
+                zone_2_keys[4][1][1] = levelFinalCharKey("er");
+                zone_2_keys[4][1][2] = levelFinalCharKey("en");
+                zone_2_keys[5][0][2] = levelFinalCharKey("eng");
+
+                return createXPadGrid(zone_2_keys);
             }
             case "o": {
                 // o ou
-                xPadKey.zone_2_keys[4][1][0] = levelFinalCharKey("ou");
-                xPadKey.zone_2_keys[4][1][1] = null;
-                xPadKey.zone_2_keys[4][1][2] = null;
-                return gridKeys;
+                zone_2_keys[4][1][0] = levelFinalCharKey("ou");
+                zone_2_keys[4][1][1] = null;
+                zone_2_keys[4][1][2] = null;
+
+                return createXPadGrid(zone_2_keys);
             }
             // Note：对 m 的单音节拼音提供连续输入支持
             case "m": {
                 // m ma me mi mo mu
-                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("m");
+                zone_2_keys[5][0][2] = levelFinalCharKey("m");
                 break;
             }
             case "h": {
                 // hm hng ha he hu
-                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("hm");
-                xPadKey.zone_2_keys[5][0][2] = levelFinalCharKey("hng");
+                zone_2_keys[3][1][2] = levelFinalCharKey("hm");
+                zone_2_keys[5][0][2] = levelFinalCharKey("hng");
                 break;
             }
             // Note：因为可用按键位不足，故而 n 的单音节拼音只能通过释放手指输入，
             // 无法连续输入，或者以 ng 替代，因为二者的候选字是一样的
             case "n": {
                 // n ng na ne ni nu nü
-                xPadKey.zone_2_keys[3][1][2] = levelFinalCharKey("ng");
+                zone_2_keys[3][1][2] = levelFinalCharKey("ng");
                 break;
             }
         }
@@ -345,11 +320,11 @@ public class PinyinKeyTable extends KeyTable {
         if (level1Char == null) {
             PinyinCharsTree level0CharsTree = charsTree.getChild(level0Char);
             if (level0CharsTree == null) {
-                return gridKeys;
+                return createXPadGrid(zone_2_keys);
             }
 
-            for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
-                Key[][] zone_2_key = xPadKey.zone_2_keys[i];
+            for (int i = 0; i < zone_2_keys.length; i++) {
+                Key[][] zone_2_key = zone_2_keys[i];
 
                 for (int j = 0; j < zone_2_key.length; j++) {
                     Key[] keys = zone_2_key[j];
@@ -382,7 +357,7 @@ public class PinyinKeyTable extends KeyTable {
                             int row = j == 0 ? j + 1 : j - 1;
 
                             String finalChar = level0CharsTree.value + child.value;
-                            xPadKey.zone_2_keys[layer][row][k] = levelFinalCharKey(finalChar);
+                            zone_2_keys[layer][row][k] = levelFinalCharKey(finalChar);
                         }
 
                         // 若第 2 级后继只有一个拼音，则直接放置
@@ -396,8 +371,8 @@ public class PinyinKeyTable extends KeyTable {
                 }
             }
         } else {
-            for (int i = 0; i < xPadKey.zone_2_keys.length; i++) {
-                Key[][] zone_2_key = xPadKey.zone_2_keys[i];
+            for (int i = 0; i < zone_2_keys.length; i++) {
+                Key[][] zone_2_key = zone_2_keys[i];
                 for (int j = 0; j < zone_2_key.length; j++) {
                     // 右下角的功能和符号按键保持不动
                     if (i + j == 1) {
@@ -418,12 +393,12 @@ public class PinyinKeyTable extends KeyTable {
                     int layer = keyCoord.layer;
 
                     Key key = level2CharKey("", text);
-                    fillGridKeyByCoord(xPadKey.zone_2_keys[layer], keyCoord, key);
+                    fillGridKeyByCoord(zone_2_keys[layer], keyCoord, key);
                 }
             });
         }
 
-        return gridKeys;
+        return createXPadGrid(zone_2_keys);
     }
 
     public CharKey level0CharKey(String ch, String... replacements) {
@@ -578,6 +553,47 @@ public class PinyinKeyTable extends KeyTable {
         }
         return new GridCoord[] {
                 coord(0, 0, 5), coord(0, 1, 5), coord(0, 2, 5), //
+        };
+    }
+
+    private Key[][] createXPadGrid(Key[][][] zone_2_keys) {
+        XPadKey xPadKey = xPadKey(Keyboard.Type.Pinyin, zone_2_keys);
+
+        return createXPadGrid(xPadKey);
+    }
+
+    /** 创建 XPad 第 2 区的按键 */
+    private Key[][][] createXPadZone2Keys() {
+        // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
+        return new Key[][][] {
+                new Key[][] {
+                        new Key[] { level0CharKey("g"), level0CharKey("f"), level0CharKey("p"), }, //
+                        new Key[] {
+                                symbolKey("。"), ctrlKey(CtrlKey.Type.Space), ctrlKey(CtrlKey.Type.Backspace),
+                                },
+                        }, //
+                new Key[][] {
+                        new Key[] {
+                                symbolKey("，", "；"), symbolKey("？", "："), symbolKey("！", "、"),
+                                }, //
+                        new Key[] { level0CharKey("d"), level0CharKey("b"), level0CharKey("t"), }, //
+                }, //
+                new Key[][] {
+                        new Key[] { level0CharKey("y"), level0CharKey("h"), level0CharKey("r") }, //
+                        new Key[] { level0CharKey("l"), level0CharKey("m"), level0CharKey("n"), }, //
+                }, //
+                new Key[][] {
+                        new Key[] { level0CharKey("z"), level0CharKey("s"), level0CharKey("c"), }, //
+                        new Key[] { level0CharKey("sh"), level0CharKey("zh"), level0CharKey("ch"), }, //
+                }, //
+                new Key[][] {
+                        new Key[] { level0CharKey("e"), level0CharKey("a"), level0CharKey("o"), }, //
+                        new Key[] { level0CharKey("i"), level0CharKey("u"), level0CharKey("ü"), }, //
+                }, //
+                new Key[][] {
+                        new Key[] { level0CharKey("j"), level0CharKey("w"), symbolKey("～"), }, //
+                        new Key[] { level0CharKey("x"), level0CharKey("q"), level0CharKey("k"), }, //
+                }, //
         };
     }
 }

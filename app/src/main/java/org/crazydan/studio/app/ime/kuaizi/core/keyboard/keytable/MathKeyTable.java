@@ -55,7 +55,7 @@ public class MathKeyTable extends KeyTable {
     /** 创建 {@link MathKeyboard} 按键 */
     public Key[][] createKeys() {
         if (this.config.xInputPadEnabled) {
-            return createKeysForXPad();
+            return createXPadGrid();
         }
 
         Key[] keys = new Key[] {
