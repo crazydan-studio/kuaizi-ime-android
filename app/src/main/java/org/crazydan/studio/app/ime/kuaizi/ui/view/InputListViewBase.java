@@ -114,8 +114,8 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
                 // 因为在算术表达式长度超出可见区域时，
                 // 滚动条移动会造成算术表达式视图直接接收 ACTION_CANCEL
                 // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
-                // 注：事件是从父 InputList 传递到子 InputList 的，
-                // 所以，无法优先处理子 InputList 的事件
+                // 注：事件是从上层 InputList 传递到嵌套 InputList 的，
+                // 所以，无法优先处理嵌套 InputList 的事件
                 boolean needToLockScrolling = msg.data().input.isMathExpr();
 
                 update(msg.inputFactory, needToLockScrolling);
@@ -155,6 +155,10 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
     }
 
     public void update(InputFactory inputFactory, boolean needToLockScrolling) {
+        if (inputFactory == null) {
+            return;
+        }
+
         List<InputViewData> dataList = inputFactory.getInputs();
         update(dataList, needToLockScrolling);
     }

@@ -90,7 +90,12 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
 
     /** 根据新旧列表更新差异数据项 */
     protected void updateItemsByDiffer(List<I> oldItems, List<I> newItems) {
-        updateItemsByComparator(oldItems, newItems, (o, n) -> Objects.equals(o, n) ? 0 : -1);
+        updateItemsByComparator(oldItems, newItems, (o, n) -> {
+            if (o instanceof Comparable && n instanceof Comparable) {
+                return ((Comparable<I>) o).compareTo(n);
+            }
+            return Objects.equals(o, n) ? 0 : -1;
+        });
     }
 
     /** 根据新旧列表更新全部数据项 */

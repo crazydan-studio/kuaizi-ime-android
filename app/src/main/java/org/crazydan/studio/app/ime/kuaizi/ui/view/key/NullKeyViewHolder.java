@@ -23,7 +23,6 @@ import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
  * 值为 null 的按键视图的 {@link RecyclerView.ViewHolder}
@@ -38,6 +37,6 @@ public class NullKeyViewHolder extends KeyViewHolder<ImageView> {
     }
 
     public void bind() {
-        ViewUtils.hide(this.itemView);
+        // Note: 无可处理视图
     }
 }

@@ -86,8 +86,9 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
     protected void update(
             Key[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
     ) {
-        XPadKey xPadKey = getXPadKeyFrom(keys);
-        boolean xPadEnabled = xPadKey != null;
+        XPadKey oldXPadKey = getAdapter().getXPadKey();
+        XPadKey newXPadKey = getXPadKeyFrom(keys);
+        boolean xPadEnabled = newXPadKey != null;
         HexagonOrientation orientation = xPadEnabled ? HexagonOrientation.FLAT_TOP : this.gridItemOrientation;
 
         KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
@@ -96,15 +97,17 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
         layoutManager.setGridItemOrientation(orientation);
         layoutManager.configGrid(columns, rows, this.gridItemMinRadius, this.gridItemSpacing, this.gridMaxPaddingRight);
 
-        if (xPadEnabled) {
-            // Note：为避免重建 view 造成 X 面板视图刷新，采用重绑定方式做视图内部的更新
-            XPadKeyViewHolder holder = getXPadKeyViewHolder(xPadKey);
+        // Note: XPadKey 将根据其 #compareTo 接口的返回值确定是否重建视图，
+        // 而该值始终返回 0，即，保持其视图不变
+        getAdapter().updateItems(keys, themeResId, orientation);
+
+        // Note：若 XPadKey 发生了变化，则手动更新 XPad 视图的内部
+        if (xPadEnabled && !Objects.equals(oldXPadKey, newXPadKey)) {
+            XPadKeyViewHolder holder = getXPadKeyViewHolder(newXPadKey);
             if (holder != null) {
-                holder.bind(xPadKey);
+                holder.bind(newXPadKey);
             }
         }
-
-        getAdapter().updateItems(keys, themeResId, orientation);
     }
 
     public float getBottomSpacing() {

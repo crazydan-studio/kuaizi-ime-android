@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-11-04
  */
-public class XPadKey extends Key {
+public class XPadKey extends Key implements Comparable<XPadKey> {
     private final static Builder builder = new Builder();
 
     /** #0 区按键 */
@@ -52,6 +52,12 @@ public class XPadKey extends Key {
         this.zone_0_key = builder.zone_0_key;
         this.zone_1_keys = builder.zone_1_keys;
         this.zone_2_keys = builder.zone_2_keys;
+    }
+
+    /** 不同的 XPad 按键，即使其内部按键不同，也视为相同，以避免其视图被重建，确保手势消息不被中断 */
+    @Override
+    public int compareTo(XPadKey o) {
+        return 0;
     }
 
     @Override

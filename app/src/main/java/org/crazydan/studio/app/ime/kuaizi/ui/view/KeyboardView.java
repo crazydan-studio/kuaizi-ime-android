@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import android.content.Context;
@@ -123,13 +122,11 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 return false;
             }
             return Objects.equals(((TypedKey<?>) key1).type, ((TypedKey<?>) key2).type);
-        } else if (key1 instanceof XPadKey) {
-            XPadKey k1 = (XPadKey) key1;
-            XPadKey k2 = (XPadKey) key2;
-
-            return Objects.equals(k1.zone_0_key, k2.zone_0_key)
-                   && Arrays.equals(k1.zone_1_keys, k2.zone_1_keys)
-                   && Arrays.deepEquals(k1.zone_2_keys, k2.zone_2_keys);
+        }
+        // Note: XPadKey 始终视为相同，以确保其视图不会被重建，其内部按键的变化，
+        // 直接获取其视图进行重绘即可
+        else if (key1 instanceof XPadKey) {
+            return true;
         }
 
         // Note: SymbolKey/InputWordKey 可以根据其 value 值确定数据相同性，
@@ -140,7 +137,9 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     // =============================== Start: 视图更新 ===================================
 
     private void reset() {
-        this.gesture.reset();
+        // TODO 在 RecyclerViewGestureDetector 会根据模型变化而重置手势状态，
+        //  不需要再显式重置了？：仍需继续测试和观察
+        //this.gesture.reset();
         this.animator.reset();
 
         // Note：不清空按键，以避免子键盘切换过程中出现闪动

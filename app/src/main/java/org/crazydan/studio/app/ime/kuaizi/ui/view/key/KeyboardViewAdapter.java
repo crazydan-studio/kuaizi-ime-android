@@ -170,7 +170,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
                 return new XPadKeyViewHolder(view);
             }
             case VIEW_TYPE_NULL_KEY: {
-                View view = inflateItemView(context, root, R.layout.key_ctrl_view);
+                View view = inflateItemView(context, root, R.layout.key_null_view);
                 return new NullKeyViewHolder(view);
             }
             default: {
