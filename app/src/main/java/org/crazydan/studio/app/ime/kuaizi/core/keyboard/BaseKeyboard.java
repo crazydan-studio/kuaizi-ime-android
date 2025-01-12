@@ -32,8 +32,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
@@ -472,10 +474,10 @@ public abstract class BaseKeyboard implements Keyboard {
             // 字母、数字可连续输入
             case Number:
             case Alphabet: {
-                CharInput pending = inputList.getPending();
+                CharInput pending = inputList.getCharPending();
                 // Note：非拉丁字符输入不可连续输入，直接对其做替换
                 if (!pending.isLatin()) {
-                    pending = inputList.newPending();
+                    pending = inputList.newCharPending();
                 }
 
                 pending.appendKey(key);
@@ -499,10 +501,10 @@ public abstract class BaseKeyboard implements Keyboard {
         CharKey key = context.key();
         InputList inputList = context.inputList;
 
-        Input input = inputList.getPending();
+        CharInput input = inputList.getCharPending();
         if (CharKey.Type.Symbol.match(key)) {
             // Note：标点符号是独立输入，故，需替换当前位置的前一个标点符号输入（当前输入必然为 Gap）
-            input = inputList.getInputBeforeSelected();
+            input = (CharInput) inputList.getInputBeforeSelected();
 
             // 对输入列表为空时的标点符号直输输入进行替换
             if (input == null) {
@@ -568,7 +570,7 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = context.inputList;
         inputList.clearCompletions();
 
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
         if (Input.isEmpty(pending) || !pending.isLatin()) {
             return;
         }
@@ -613,7 +615,7 @@ public abstract class BaseKeyboard implements Keyboard {
         // Note：输入过程中操作和处理的都是 pending
         Input pending = inputList.getPending();
 
-        if (pending.isMathExpr()) {
+        if (pending instanceof MathExprInput) {
             switch_Keyboard_To(context, Type.Math);
         } else if (pending.isEmoji()) {
             switch_Keyboard_To(context, Type.Emoji);
@@ -622,8 +624,8 @@ public abstract class BaseKeyboard implements Keyboard {
         } else if (pending.isPinyin()) {
             switch_Keyboard_To(context, Type.Pinyin_Candidate);
         } else {
-            // 在选择输入时，对于新输入，需先确认其 pending
-            if (input.isGap() && !pending.isEmpty()) {
+            // 在选择输入时，对于新输入，需先确认其待输入
+            if (input instanceof GapInput && !pending.isEmpty()) {
                 confirm_InputList_Pending(context);
             }
             change_State_to_Init(context);
@@ -635,7 +637,7 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 确认待输入，并触发 {@link InputMsgType#InputChars_Input_Done} 消息 */
     protected void confirm_InputList_Pending(KeyboardContext context) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        Input pending = inputList.getPending();
 
         inputList.confirmPendingAndSelectNext();
 
@@ -657,7 +659,7 @@ public abstract class BaseKeyboard implements Keyboard {
         }
         // 否则，直接对其做替换
         else {
-            inputList.newPending();
+            inputList.newCharPending();
         }
     }
 
@@ -666,7 +668,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Key key = context.key();
         InputList inputList = context.inputList;
 
-        inputList.newPending().appendKey(key);
+        inputList.newCharPending().appendKey(key);
 
         confirm_InputList_Pending(context);
     }
@@ -712,9 +714,10 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 删除待输入 */
     protected void drop_InputList_Pending(KeyboardContext context) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        Input pending = inputList.getPending();
 
         inputList.dropPending();
+
         fire_Common_InputMsg(context, Input_Pending_Drop_Done, pending);
     }
 
@@ -742,7 +745,7 @@ public abstract class BaseKeyboard implements Keyboard {
         Key key = context.key();
         InputList inputList = context.inputList;
 
-        inputList.newPending().appendKey(key);
+        inputList.newCharPending().appendKey(key);
 
         commit_InputList(context, false, needToBeReplaced);
     }

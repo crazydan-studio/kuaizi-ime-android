@@ -46,7 +46,7 @@ public enum InputMsgType {
     Input_Choose_Done,
     /** {@link InputList#getPending 待输入}已丢弃 */
     Input_Pending_Drop_Done,
-    /** {@link InputList#getSelected 当前选中的输入}已删除 */
+    /** {@link InputList#getSelected 当前已选中输入}已删除 */
     Input_Selected_Delete_Done,
 
     /** 输入补全已更新 */

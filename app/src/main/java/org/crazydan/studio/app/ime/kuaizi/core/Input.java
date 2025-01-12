@@ -55,35 +55,9 @@ public abstract class Input {
         return input == null || input.isEmpty();
     }
 
-    public static boolean isGap(Input input) {
-        return input != null && input.isGap();
-    }
-
-    /** 创建副本 */
-    public Input copy() {
-        Input copied;
-        try {
-            copied = getClass().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        copied.setWord(getWord());
-        if (isWordConfirmed()) {
-            copied.markWordConfirmed();
-        }
-
-        getKeys().forEach(copied::appendKey);
-
-        return copied;
-    }
-
-    /** 确认输入，一般用于包含 输入列表 的输入 */
-    public void confirm() {}
-
-    /** 是否为占位输入，也即，光标所在位置 */
-    public boolean isGap() {
-        return false;
+    /** 是否为空输入 */
+    public boolean isEmpty() {
+        return this.keys.isEmpty();
     }
 
     /** 是否为空格输入 */
@@ -125,14 +99,26 @@ public abstract class Input {
         return test(MathOpKey.Type::isOperator);
     }
 
-    /** 是否为数学计算式 */
-    public boolean isMathExpr() {
-        return false;
-    }
+    /** 确认输入，一般用于包含 输入列表 的输入 */
+    public void confirm() {}
 
-    /** 是否为空输入 */
-    public boolean isEmpty() {
-        return this.keys.isEmpty();
+    /** 创建副本 */
+    public Input copy() {
+        Input copied;
+        try {
+            copied = getClass().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        copied.setWord(getWord());
+        if (isWordConfirmed()) {
+            copied.markWordConfirmed();
+        }
+
+        getKeys().forEach(copied::appendKey);
+
+        return copied;
     }
 
     /** 获取输入按键列表 */
@@ -175,6 +161,10 @@ public abstract class Input {
         if (!this.keys.isEmpty()) {
             this.keys.remove(this.keys.size() - 1);
         }
+    }
+
+    protected void replaceKeys(List<Key> keys) {
+        this.keys = new ArrayList<>(keys);
     }
 
     /**
@@ -306,10 +296,6 @@ public abstract class Input {
 
     public void setWord(InputWord word) {
         this.word = new ConfirmableWord(word);
-    }
-
-    protected void replaceKeys(List<Key> keys) {
-        this.keys = new ArrayList<>(keys);
     }
 
     @NonNull

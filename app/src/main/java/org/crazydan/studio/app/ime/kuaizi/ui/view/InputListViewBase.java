@@ -36,6 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -45,7 +46,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData.Type.MathExpr;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
@@ -116,7 +116,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
                 // 事件而丢失 ACTION_UP 事件，从而不能触发单击消息并进而选中算术表达式中的目标输入。
                 // 注：事件是从上层 InputList 传递到嵌套 InputList 的，
                 // 所以，无法优先处理嵌套 InputList 的事件
-                boolean needToLockScrolling = msg.data().input.isMathExpr();
+                boolean needToLockScrolling = msg.data().input instanceof MathExprInput;
 
                 update(msg.inputFactory, needToLockScrolling);
                 break;
@@ -175,7 +175,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
     /** 滚动到选中输入的位置，确保其处于可见区域 */
     protected void scrollToSelectedInput(List<InputViewData> dataList) {
-        InputViewData selectedData = dataList.stream().filter(d -> d.pending).findFirst().get();
+        InputViewData selectedData = dataList.stream().filter(d -> d.hasPending).findFirst().get();
         View view = getSelectedInputView(selectedData);
 
         int offset = 0;
@@ -237,10 +237,10 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             InputViewData rightInput = findInputUnderByRange(x, y, 2 * gap);
 
             // Note: 同一时刻只有一个输入为待输入状态
-            if (leftInput != null && leftInput.pending) {
+            if (leftInput != null && leftInput.hasPending) {
                 // 当前位置在 Gap 输入视图的右侧
                 return POSITION_RIGHT_IN_GAP_INPUT_PENDING;
-            } else if (rightInput != null && rightInput.pending) {
+            } else if (rightInput != null && rightInput.hasPending) {
                 // 当前位置在 Gap 输入视图的左侧
                 return POSITION_LEFT_IN_GAP_INPUT_PENDING;
             }
@@ -262,7 +262,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         LayoutManager layoutManager = getLayoutManager();
         View view = layoutManager.findViewByPosition(selectedData.position);
 
-        if (view == null || selectedData.type != MathExpr) {
+        if (view == null || selectedData.type != InputViewData.Type.MathExpr) {
             return view;
         }
 
@@ -272,7 +272,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
             if (child instanceof InputListViewReadonly) {
                 InputListViewReadonly ro = (InputListViewReadonly) child;
-                InputViewData selected = selectedData.inputs.stream().filter(d -> d.pending).findFirst().get();
+                InputViewData selected = selectedData.inputs.stream().filter(d -> d.hasPending).findFirst().get();
 
                 return ro.getLayoutManager().findViewByPosition(selected.position);
             }

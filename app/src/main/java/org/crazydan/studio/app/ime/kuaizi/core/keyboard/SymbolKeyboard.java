@@ -56,7 +56,8 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     public void start(KeyboardContext context) {
         InputList inputList = context.inputList;
         Input selected = inputList.getSelected();
-        boolean onlyPair = selected != null && !selected.isGap() && ((CharInput) selected).hasPair();
+        // Note: 若选中输入为配对符号输入，则仅显示可选的配对符号列表
+        boolean onlyPair = selected instanceof CharInput && ((CharInput) selected).hasPair();
 
         start_Symbol_Choosing(context, onlyPair);
     }
@@ -112,7 +113,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
     /** 进入符号选择状态，并处理符号翻页 */
     private void start_Symbol_Choosing(KeyboardContext context, boolean onlyPair) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getSymbolKeysPageSize();
@@ -159,7 +160,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         }
         // 直输
         else {
-            CharInput pending = inputList.newPending();
+            CharInput pending = inputList.newCharPending();
             pending.appendKey(key);
             pending.clearPair();
 
@@ -186,8 +187,8 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         Key rightKey = right.get();
 
         // 用新的配对符号替换原配对符号
-        if (!selected.isGap() && ((CharInput) selected).hasPair()) {
-            CharInput pending = inputList.newPending();
+        if (selected instanceof CharInput && ((CharInput) selected).hasPair()) {
+            CharInput pending = inputList.newCharPending();
 
             CharInput leftInput = pending;
             CharInput rightInput = ((CharInput) selected).getPair();
@@ -203,7 +204,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
             rightInput.replaceLastKey(rightKey);
         } else {
             // 若待输入非空，且不是符号输入，则对其做配对符号包裹
-            CharInput pending = inputList.getPending();
+            Input pending = inputList.getPending();
             boolean wrapSelected = !Input.isEmpty(pending) && !pending.isSymbol();
             if (wrapSelected) {
                 // 选中被包裹输入的左侧 Gap
@@ -212,7 +213,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
                 inputList.confirmPendingAndSelectNext();
             }
 
-            CharInput leftInput = inputList.getPending();
+            CharInput leftInput = inputList.getCharPending();
             leftInput.appendKey(leftKey);
 
             if (wrapSelected) {
@@ -222,7 +223,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
                 inputList.confirmPendingAndSelectNext();
             }
 
-            CharInput rightInput = inputList.getPending();
+            CharInput rightInput = inputList.getCharPending();
             rightInput.appendKey(rightKey);
 
             // 绑定配对符号的关联：由任意一方发起绑定即可

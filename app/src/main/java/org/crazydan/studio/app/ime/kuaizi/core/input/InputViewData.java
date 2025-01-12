@@ -46,14 +46,14 @@ public class InputViewData extends Immutable {
     private final static Builder mathBuilder = new Builder(true);
 
     public enum Type {
-        /** 默认均为 {@link CharInput} */
+        /** 字符输入：{@link CharInput} */
         Char,
-        /** 占位输入：{@link Input#isGap()} */
+        /** 占位输入：{@link GapInput} */
         Gap,
+        /** 算术输入：{@link MathExprInput} */
+        MathExpr,
         /** 空格输入：{@link Input#isSpace()} */
         Space,
-        /** 算术输入：{@link Input#isMathExpr()} */
-        MathExpr
     }
 
     /** 当前输入在 {@link InputList} 中的位置（序号） */
@@ -62,17 +62,17 @@ public class InputViewData extends Immutable {
     public final Type type;
 
     /**
-     * 当前输入是否为待输入
+     * 当前输入是否有待输入
      * <p/>
-     * 只有含有{@link InputList#getPending() 待输入}的才是待输入，
+     * 只有{@link InputList#getSelected() 当前已选中输入}的才有待输入，
      * 并且，在 {@link InputList} 中必然存在唯一的待输入
      */
-    public final boolean pending;
+    public final boolean hasPending;
     /**
-     * 当前输入是否已被选中
+     * 当前输入是否为被选择状态
      * <p/>
-     * 在配对符号中，若其中一个为{@link #pending 待输入}，
-     * 则另一个也会被选中，否则，只有待输入才会被选中
+     * 在配对符号中，若其中一个{@link #hasPending 有待输入}，
+     * 则另一个也会需为被选择状态，否则，只有有待输入的才是被选择状态
      */
     public final boolean selected;
 
@@ -92,7 +92,7 @@ public class InputViewData extends Immutable {
         this.position = builder.position;
         this.type = builder.type;
 
-        this.pending = builder.pending;
+        this.hasPending = builder.hasPending;
         this.selected = builder.selected;
 
         this.gapSpaces = builder.gapSpaces;
@@ -136,7 +136,7 @@ public class InputViewData extends Immutable {
             int position, boolean canBeSelected
     ) {
         Input input = inputList.getInput(position);
-        CharInput pending = inputList.getPendingOn(input);
+        Input pending = inputList.getPendingOn(input);
 
         boolean hasPending = pending != null;
         boolean hasEmptyPending = Input.isEmpty(pending);
@@ -148,7 +148,7 @@ public class InputViewData extends Immutable {
             List<InputViewData> inputs = doBuild(mathBuilder, mathExprInput.getInputList(), option, shouldBeSelected);
 
             b.type(Type.MathExpr).inputs(inputs);
-        } else if (input.isGap()) {
+        } else if (input instanceof GapInput) {
             b.type(hasEmptyPending ? Type.Gap : Type.Char);
         } else if (input.isSpace()) {
             b.type(Type.Space);
@@ -159,7 +159,7 @@ public class InputViewData extends Immutable {
         // Note: 在视图中，需确保 Gap 空格的单位宽度与 GapInput 的宽度相同，
         // 而针对 GapInput 所添加的 Gap 空格数需要均分至左右两侧
         float[] gapSpaces = inputList.needGapSpace(position) ? new float[] { 0.5f, 0.5f } : null;
-        if (input.isGap() && !hasEmptyPending) {
+        if (input instanceof GapInput && !hasEmptyPending) {
             // 正在输入的 GapInput，需判断其待输入的左右两侧的空格数：至少需一个光标占位
             Input left = inputList.getInput(position - 1);
             Input right = inputList.getInput(position + 1);
@@ -173,7 +173,7 @@ public class InputViewData extends Immutable {
         String[] textAndSpell = getInputTextAndSpell(currInput, option);
 
         b.position(position)
-         .pending(hasPending)
+         .hasPending(hasPending)
          .selected(shouldBeSelected)
          .gapSpaces(gapSpaces)
          .text(textAndSpell[0])
@@ -205,14 +205,14 @@ public class InputViewData extends Immutable {
     }
 
     private static MathExprInput tryGetMathExprInput(InputList inputList, Input input) {
-        CharInput pending = inputList.getPendingOn(input);
+        Input pending = inputList.getPendingOn(input);
 
-        return isMathExprInput(pending)
+        return pending instanceof MathExprInput
                // 待输入的算术不能为空，否则，原输入需为空，才能将待输入作为算术输入，
                // 从而确保在未修改非算术输入时能够正常显示原始输入
                && (!Input.isEmpty(pending) || Input.isEmpty(input)) //
                ? (MathExprInput) pending //
-               : isMathExprInput(input)
+               : input instanceof MathExprInput
                  // 若算术输入 没有 被替换为非算术输入，则返回其自身
                  && Input.isEmpty(pending) //
                  ? (MathExprInput) input : null;
@@ -222,7 +222,7 @@ public class InputViewData extends Immutable {
         boolean selected = inputList.isSelected(input);
 
         // 若配对符号的另一侧符号被选中，则该侧符号也同样需被选中
-        if (!selected && !input.isGap() && ((CharInput) input).hasPair()) {
+        if (!selected && input instanceof CharInput && ((CharInput) input).hasPair()) {
             if (inputList.isSelected(((CharInput) input).getPair())) {
                 selected = true;
             }
@@ -230,16 +230,12 @@ public class InputViewData extends Immutable {
         return selected;
     }
 
-    private static boolean isMathExprInput(Input input) {
-        return input != null && input.isMathExpr();
-    }
-
     /** {@link InputViewData} 的构建器 */
     public static class Builder extends Immutable.CachableBuilder<InputViewData> {
         private int position;
         private Type type;
 
-        private boolean pending;
+        private boolean hasPending;
         private boolean selected;
 
         private float[] gapSpaces;
@@ -268,7 +264,7 @@ public class InputViewData extends Immutable {
             this.position = 0;
             this.type = null;
 
-            this.pending = false;
+            this.hasPending = false;
             this.selected = false;
 
             this.gapSpaces = null;
@@ -282,7 +278,7 @@ public class InputViewData extends Immutable {
         public int hashCode() {
             return Objects.hash(this.position,
                                 this.type,
-                                this.pending,
+                                this.hasPending,
                                 this.selected,
                                 Arrays.hashCode(this.gapSpaces),
                                 this.inputs,
@@ -306,9 +302,9 @@ public class InputViewData extends Immutable {
             return this;
         }
 
-        /** @see InputViewData#pending */
-        public Builder pending(boolean pending) {
-            this.pending = pending;
+        /** @see InputViewData#hasPending */
+        public Builder hasPending(boolean hasPending) {
+            this.hasPending = hasPending;
             return this;
         }
 

@@ -105,7 +105,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
     /** 进入表情选择状态，并处理表情翻页 */
     private void start_Emoji_Choosing(KeyboardContext context) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getEmojiKeysPageSize();
@@ -142,7 +142,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         }
 
         InputWord word = key.word;
-        CharInput pending = inputList.newPending();
+        CharInput pending = inputList.newCharPending();
 
         pending.appendKey(key);
         pending.setWord(word);

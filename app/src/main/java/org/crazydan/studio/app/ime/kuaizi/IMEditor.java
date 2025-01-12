@@ -522,15 +522,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             String wordValue = tuple[1];
             String wordSpell = tuple[2];
 
+            this.inputList.selectLast();
+
             CharKey key = CharKey.build((b) -> b.type(CharKey.Type.Alphabet).value(chars));
-            CharInput input = CharInput.from(key);
+            CharInput pending = this.inputList.newCharPending();
+            pending.appendKey(key);
 
             int wordId = 100 + i;
             PinyinWord word = PinyinWord.build((b) -> b.id(wordId).value(wordValue).spell(wordSpell));
-            input.setWord(word);
+            pending.setWord(word);
 
-            this.inputList.selectLast();
-            this.inputList.withPending(input);
             this.inputList.confirmPending();
         }
     }

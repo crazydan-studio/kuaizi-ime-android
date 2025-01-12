@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
@@ -81,7 +82,7 @@ public class MathKeyboard extends BaseKeyboard {
     /** 获取算数输入列表 */
     private InputList getMathInputList(KeyboardContext context) {
         InputList parentInputList = getParentInputList(context);
-        MathExprInput pending = (MathExprInput) parentInputList.getPending();
+        MathExprInput pending = parentInputList.getMathExprPending();
 
         return pending.getInputList();
     }
@@ -107,7 +108,7 @@ public class MathKeyboard extends BaseKeyboard {
                 mathInputList.confirmPendingAndSelect(input);
                 // 对非括号输入的修改均做替换
                 if (!isBracketInput(input)) {
-                    mathInputList.newPending();
+                    mathInputList.newCharPending();
                 }
 
                 resetMathInputList(context);
@@ -243,13 +244,13 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         // Note: 可能会新建待输入，故而，需重新取最新的
-        CharInput pending = mathInputList.getPending();
+        CharInput pending = mathInputList.getCharPending();
         fire_InputChars_Input_Doing_in_TapMode(context, pending);
     }
 
     /** 处理字符输入 */
     private void do_Single_MathCharKey_Inputting(InputList mathInputList, CharKey key) {
-        CharInput pending = mathInputList.getPending();
+        CharInput pending = mathInputList.getCharPending();
 
         // Note: 若待输入为括号，则不能在其上追加数字
         if (isBracketInput(pending)) {
@@ -257,7 +258,7 @@ public class MathKeyboard extends BaseKeyboard {
         }
 
         // Note: 在选中输入时，非括号的待输入已被清空，故而，可直接添加新输入
-        mathInputList.getPending().appendKey(key);
+        mathInputList.getCharPending().appendKey(key);
     }
 
     /** 处理运算符号的输入 */
@@ -276,7 +277,7 @@ public class MathKeyboard extends BaseKeyboard {
 
         switch (key.type) {
             case Dot: {
-                CharInput pending = mathInputList.getPending();
+                CharInput pending = mathInputList.getCharPending();
                 // 小数点只能出现在数字中，且只能出现一次
                 if (isNumberInput(pending) && !pending.hasKey(key::equals)) {
                     pending.appendKey(key);
@@ -285,9 +286,9 @@ public class MathKeyboard extends BaseKeyboard {
             }
             case Brackets: {
                 Input selected = mathInputList.getSelected();
-                CharInput pending = mathInputList.getPending();
+                CharInput pending = mathInputList.getCharPending();
                 // 对于正在输入的数字，先提交其待输入，再输入括号，以确保数字被括号包裹
-                if (selected.isGap() && isNumberInput(pending)) {
+                if (selected instanceof GapInput && isNumberInput(pending)) {
                     mathInputList.confirmPending();
                 }
 
@@ -307,7 +308,7 @@ public class MathKeyboard extends BaseKeyboard {
             default: {
                 mathInputList.confirmPendingAndSelectNext();
 
-                mathInputList.getPending().appendKey(key);
+                mathInputList.getCharPending().appendKey(key);
 
                 // Note：单算术符号不支持追加输入
                 mathInputList.confirmPendingAndSelectNext();
@@ -323,10 +324,14 @@ public class MathKeyboard extends BaseKeyboard {
     private void start_Math_Inputting(KeyboardContext context) {
         InputList parentInputList = getParentInputList(context);
 
+        Input selected = parentInputList.getSelected();
+        Input pending = parentInputList.getPending();
+
         // 先提交从其他键盘切过来之前的待输入
-        if (parentInputList.isGapSelected() //
-            && !parentInputList.hasEmptyPending() //
-            && !parentInputList.getPending().isMathExpr()) {
+        if (selected instanceof GapInput //
+            && !pending.isEmpty() //
+            && !(pending instanceof MathExprInput) //
+        ) {
             parentInputList.confirmPendingAndSelectNext();
         } else {
             // Note: 在待输入上的嵌套输入列表保持未确认，以确保与其映射的视图状态与其状态是一致的
@@ -341,11 +346,12 @@ public class MathKeyboard extends BaseKeyboard {
         InputList parentInputList = getParentInputList(context);
         parentInputList.clearCompletions();
 
+        Input selected = parentInputList.getSelected();
+        Input pending = parentInputList.getPending();
+
         // 在切换前，确保当前的算术输入列表已被确认
         // Note：新位置的待输入将被设置为普通输入，可接受非算术输入，故，不需要处理
-        if (parentInputList.getSelected().isMathExpr() //
-            || parentInputList.getPending().isMathExpr() //
-        ) {
+        if (selected instanceof MathExprInput || pending instanceof MathExprInput) {
             parentInputList.confirmPendingAndSelectNext();
         }
     }
@@ -355,17 +361,15 @@ public class MathKeyboard extends BaseKeyboard {
         InputList parentInputList = getParentInputList(context);
 
         Input selected = parentInputList.getSelected();
-        CharInput pending = parentInputList.getPending();
+        Input pending = parentInputList.getPending();
 
         // 在父输入列表中绑定算术输入列表
-        if (pending == null || !pending.isMathExpr()) {
-            if (selected.isMathExpr()) {
-                pending = (CharInput) selected.copy();
+        if (!(pending instanceof MathExprInput)) {
+            if (selected instanceof MathExprInput) {
+                parentInputList.newSelectedPending();
             } else {
-                pending = new MathExprInput();
+                parentInputList.newMathExprPending();
             }
-
-            parentInputList.withPending(pending);
         }
 
         InputList mathInputList = getMathInputList(context);
@@ -422,7 +426,7 @@ public class MathKeyboard extends BaseKeyboard {
     /** 确保非运算符类型的待输入能够做追加输入（注：默认的被选中输入是做{@link #onMsg(KeyboardContext, InputMsg) 替换输入}） */
     private void prepare_for_Pending_Append_Inputting(InputList mathInputList) {
         Input selected = mathInputList.getSelected();
-        CharInput pending = mathInputList.getPending();
+        CharInput pending = mathInputList.getCharPending();
 
         // 若待输入为空且当前选中输入是数字，则重新选中输入，以确保可在前向删除后，继续追加输入
         if (pending.isEmpty() && isNumberInput(selected)) {

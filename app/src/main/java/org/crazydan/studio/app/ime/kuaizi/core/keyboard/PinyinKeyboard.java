@@ -215,7 +215,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         change_State_To(context, state);
 
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         do_InputChars_Slipping_Input_CharKey(context, pending);
     }
@@ -227,7 +227,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
         switch (msg.type) {
             case FingerMoving: {
-                CharInput pending = inputList.getPending();
+                CharInput pending = inputList.getCharPending();
                 Key lastKey = pending.getLastKey();
 
                 if (key instanceof CharKey //
@@ -249,7 +249,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             // 故而，需要在滑屏输入状态下开始翻动输入
             case FingerFlipping: {
                 // Note：翻动发生在滑动之后，在滑动开始时已处理输入替换还是新增，故，这里无需继续处理
-                CharInput pending = inputList.getPending();
+                CharInput pending = inputList.getCharPending();
 
                 // 开始翻动输入。注意，若滑屏输入在较短时间内完成也会触发翻动事件，
                 // 故，仅针对录入了一个字符的情况
@@ -322,7 +322,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         fire_InputChars_Input_Doing(context, pending, InputCharsInputMsgData.InputMode.slip);
     }
 
-    /** 结束滑屏输入：始终针对 {@link InputList#getPending() 待输入} */
+    /** 结束滑屏输入：始终针对 {@link InputList#getCharPending() 待输入} */
     private void stop_InputChars_Slipping(KeyboardContext context) {
         hide_InputChars_Input_Popup(context);
 
@@ -348,7 +348,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         change_State_To(context, state);
 
         // Note：单字母的滑屏输入与翻动输入的触发按键是相同的，因此，对先触发的滑屏输入做替换
-        CharInput pending = inputList.newPending();
+        CharInput pending = inputList.newCharPending();
         pending.appendKey(key);
 
         fire_InputChars_Input_Doing(context, pending, InputCharsInputMsgData.InputMode.flip);
@@ -368,7 +368,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     private void stop_InputChars_Flipping(KeyboardContext context) {
         Key key = context.key();
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         // 先确认当前输入的候选字
         if (!CharKey.Type.Alphabet.match(key)) {
@@ -415,7 +415,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         switch (msg.type) {
             case SingleTap_Key: {
                 if (key instanceof CharKey && !key.disabled) {
-                    CharInput pending = inputList.getPending();
+                    CharInput pending = inputList.getCharPending();
 
                     do_InputChars_XPad_Input_CharKey(context, pending);
                 }
@@ -435,7 +435,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         change_State_To(context, state);
 
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         do_InputChars_XPad_Input_CharKey(context, pending);
     }
@@ -521,7 +521,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             stop_InputChars_Inputting(context, !needToContinueInputting);
 
             if (needToContinueInputting) {
-                inputList.newPending();
+                inputList.newCharPending();
 
                 start_InputChars_XPad_Inputting(context);
             }
@@ -541,15 +541,15 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     // ======================== End: 输入补全 ========================
 
-    /** 结束输入：始终针对 {@link InputList#getPending() 待输入}，并做状态复位 */
+    /** 结束输入：始终针对 {@link InputList#getCharPending() 待输入}，并做状态复位 */
     private void stop_InputChars_Inputting(KeyboardContext context) {
         stop_InputChars_Inputting(context, true);
     }
 
-    /** 结束输入：始终针对 {@link InputList#getPending() 待输入} */
+    /** 结束输入：始终针对 {@link InputList#getCharPending() 待输入} */
     private void stop_InputChars_Inputting(KeyboardContext context, boolean resetState) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         // 若为无效的拼音输入，则直接丢弃
         if (!this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
@@ -579,7 +579,7 @@ public class PinyinKeyboard extends BaseKeyboard {
     @Override
     protected void after_InputList_Backspacing(KeyboardContext context) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         // 在回删输入列表后，也做输入预测
         predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending, true);

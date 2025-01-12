@@ -146,10 +146,13 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
             // Note：补充输入按键，以避免待输入为空
             InputWordKey wordKey = InputWordKey.build(word);
-            inputList.getPending().appendKey(wordKey);
+            CharInput pending = inputList.getCharPending();
+
+            pending.appendKey(wordKey);
         }
 
-        CharInput pending = inputList.getPending();
+        // 更新最新的待输入
+        CharInput pending = inputList.getCharPending();
         pending.setWord(word);
 
         // 确认候选字
@@ -174,7 +177,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 play_SingleTick_InputAudio(context);
 
                 InputList inputList = context.inputList;
-                CharInput pending = inputList.getPending();
+                CharInput pending = inputList.getCharPending();
 
                 CtrlKey.Option<CtrlKey.PinyinToggleMode> option = key.option();
                 switch (option.value) {
@@ -220,7 +223,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     /** 进入候选字选择状态，并处理候选字翻页 */
     private void start_InputCandidate_Choosing(KeyboardContext context, boolean pinyinChanged) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         PinyinCandidateKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getKeysPageSize();
@@ -281,7 +284,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     private void confirm_InputList_Pending_InputCandidate(KeyboardContext context) {
         InputList inputList = context.inputList;
 
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
         pending.markWordConfirmed();
 
         inputList.confirmPendingAndSelectNext();
@@ -343,7 +346,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
     private void start_InputCandidate_Advance_Filtering(KeyboardContext context) {
         InputList inputList = context.inputList;
-        CharInput pending = inputList.getPending();
+        CharInput pending = inputList.getCharPending();
 
         PinyinCandidateChooseStateData prevStateData = this.state.data();
         PinyinWord.Filter filter = prevStateData.getFilter();

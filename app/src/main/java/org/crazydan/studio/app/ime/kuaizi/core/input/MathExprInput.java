@@ -113,11 +113,6 @@ public class MathExprInput extends CharInput {
         this.inputList.confirmPending();
     }
 
-    @Override
-    public boolean isMathExpr() {
-        return true;
-    }
-
     // ========================= Start: 覆盖父类接口 ========================
 
     @Override
