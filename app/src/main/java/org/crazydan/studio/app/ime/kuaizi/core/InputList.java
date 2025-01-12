@@ -49,7 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
  * 引用的是 {@link #inputs} 列表中的输入对象（使用引用可消除位置变动所产生的位置同步需求），
  * 其引用的可以是 Gap，也可以是可见输入，但正在输入的内容是记录在 {@link Cursor#pending}
  * 中的，只有在输入完成并 {@link #confirmPending()} 后才会替换 {@link Cursor#selected}
- * 所引用的输入
+ * 所引用的输入，该方式还可用于判断待输入{@link #hasChangedPending() 是否已被修改}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
@@ -205,6 +205,18 @@ public class InputList {
     /** 当前的待输入是否为空 */
     public boolean hasEmptyPending() {
         return Input.isEmpty(getPending());
+    }
+
+    /**
+     * 当前的待输入是否已被修改
+     * <p/>
+     * 待输入内容与 {@link #getSelected()} 内容不一致，则表示其已被修改
+     */
+    public boolean hasChangedPending() {
+        Input selected = getSelected();
+        Input pending = getPending();
+
+        return !selected.equals(pending);
     }
 
     /** 重新创建当前输入的待输入（不确认已有的待输入） */

@@ -643,17 +643,15 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /**
-     * 若当前为 Gap 输入或是已修改的输入，则先提交其待输入，并选中后继 Gap，
+     * 若当前为 Gap 输入或是已修改的输入，则先确认其待输入，再做新增，
      * 否则，则直接新建待输入以做替换输入
      */
     protected void confirm_or_New_InputList_Pending(KeyboardContext context) {
         InputList inputList = context.inputList;
-        Input selected = inputList.getSelected();
-        Input pending = inputList.getPending();
 
-        // 对于新增的或已修改的输入，先做提交，再录入
-        if (Input.isGap(selected) //
-            || !selected.equals(pending) //
+        // 先确认新增的或已修改的输入，再新增
+        if (inputList.isGapSelected() //
+            || inputList.hasChangedPending() //
         ) {
             inputList.confirmPendingAndSelectNext();
         }
