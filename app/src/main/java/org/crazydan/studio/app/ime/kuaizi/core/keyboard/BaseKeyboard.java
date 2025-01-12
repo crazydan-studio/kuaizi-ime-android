@@ -611,17 +611,7 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.select(input);
 
         // Note：输入过程中操作和处理的都是 pending
-        CharInput pending = inputList.getPending();
-
-        // 处理选中的输入需要切换到原键盘的情况
-        if (context.xInputPadEnabled) {
-            // Note：在 X 型输入中，各类键盘是可直接相互切换的，不需要退出再进入，
-            // 故而，在选中其输入时，也需要能够直接进入其输入选择状态
-            if (pending.isPinyin() && getType() != Type.Pinyin) {
-                switch_Keyboard_To(context, Type.Pinyin);
-                return;
-            }
-        }
+        Input pending = inputList.getPending();
 
         if (pending.isMathExpr()) {
             switch_Keyboard_To(context, Type.Math);
