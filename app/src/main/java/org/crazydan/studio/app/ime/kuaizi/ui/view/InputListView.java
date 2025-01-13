@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
@@ -45,7 +46,15 @@ public class InputListView extends InputListViewBase implements InputMsgListener
 
     @Override
     public void onMsg(InputMsg msg) {
+        // Note: 不影响输入列表的消息，将直接赋值 inputFactory 为 null，
+        // 因此，仅需要关注输入列表之外的影响视图的消息
+        InputFactory inputFactory = msg.inputFactory;
+
         switch (msg.type) {
+            case Input_Choose_Done: {
+                super.onMsg(msg);
+                return;
+            }
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
                 // Note: 仅关注与输入列表布局和显示相关的配置更新
@@ -53,32 +62,13 @@ public class InputListView extends InputListViewBase implements InputMsgListener
                         ConfigKey.theme, ConfigKey.enable_candidate_variant_first
                 };
                 if (!CollectionUtils.contains(effects, data.key)) {
-                    break;
+                    return;
                 }
-            }
-            case Keyboard_Switch_Done:
-            case Keyboard_Start_Done:
-            case Keyboard_State_Change_Done:
-                //
-            case InputChars_Input_Doing:
-            case InputChars_Input_Done:
-            case InputCandidate_Choose_Doing:
-            case InputCandidate_Choose_Done:
-                //
-            case Input_Selected_Delete_Done:
-            case Input_Pending_Drop_Done:
-            case Input_Completion_Apply_Done:
-                //
-            case InputList_Clean_Done:
-            case InputList_Cleaned_Cancel_Done:
-            case InputList_Commit_Doing:
-            case InputList_PairSymbol_Commit_Doing:
-            case InputList_Committed_Revoke_Doing:
-                update(msg.inputFactory);
                 break;
+            }
         }
 
-        super.onMsg(msg);
+        update(inputFactory);
     }
 
     // =============================== End: 消息处理 ===================================

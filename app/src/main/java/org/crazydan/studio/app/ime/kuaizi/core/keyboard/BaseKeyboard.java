@@ -70,11 +70,11 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChar
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Popup_Hide_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Popup_Show_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Committed_Revoke_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_PairSymbol_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Pending_Drop_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Selected_Delete_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Doing;
@@ -895,12 +895,12 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputMsg(context, InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link InputMsgType#Input_Completion_Update_Done} 消息 */
+    /** 触发 {@link InputMsgType#InputCompletion_Update_Done} 消息 */
     protected void fire_Input_Completion_Update_Done(KeyboardContext context) {
         InputList inputList = context.inputList;
         InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(inputList.getCompletionViewDataList());
 
-        fire_InputMsg(context, Input_Completion_Update_Done, data);
+        fire_InputMsg(context, InputCompletion_Update_Done, data);
     }
 
     /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */

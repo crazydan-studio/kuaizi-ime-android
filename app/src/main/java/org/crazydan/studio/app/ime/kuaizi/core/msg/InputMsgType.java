@@ -28,12 +28,12 @@ public enum InputMsgType {
 
     /** 字符输入中 */
     InputChars_Input_Doing,
+    /** 字符输入已结束 */
+    InputChars_Input_Done,
     /** 输入提示气泡显示中 */
     InputChars_Input_Popup_Show_Doing,
     /** 输入提示气泡隐藏中 */
     InputChars_Input_Popup_Hide_Doing,
-    /** 字符输入已结束 */
-    InputChars_Input_Done,
 
     /** 输入候选字选择中 */
     InputCandidate_Choose_Doing,
@@ -50,11 +50,11 @@ public enum InputMsgType {
     Input_Selected_Delete_Done,
 
     /** 输入补全已更新 */
-    Input_Completion_Update_Done,
+    InputCompletion_Update_Done,
     /** 输入补全已清除 */
-    Input_Completion_Clean_Done,
+    InputCompletion_Clean_Done,
     /** 输入补全已应用 */
-    Input_Completion_Apply_Done,
+    InputCompletion_Apply_Done,
 
     /** 输入已清空 */
     InputList_Clean_Done,

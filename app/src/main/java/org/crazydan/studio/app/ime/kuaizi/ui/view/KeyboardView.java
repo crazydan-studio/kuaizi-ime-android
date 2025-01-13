@@ -208,15 +208,11 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     @Override
     public void onMsg(InputMsg msg) {
         Config config = this.config;
-        // Note: 不影响按键布局的消息，将直接复制 keyFactory 为 null，
+        // Note: 不影响按键布局的消息，将直接赋值 keyFactory 为 null，
         // 因此，仅需要关注按键布局之外的影响视图的消息
         KeyFactory keyFactory = msg.keyFactory;
 
         switch (msg.type) {
-            // 不影响布局的消息直接忽略
-            case InputAudio_Play_Doing: {
-                return;
-            }
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
                 // Note: 仅关注与键盘布局相关的配置更新
@@ -229,6 +225,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 if (!CollectionUtils.contains(effects, data.key)) {
                     return;
                 }
+                break;
             }
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:

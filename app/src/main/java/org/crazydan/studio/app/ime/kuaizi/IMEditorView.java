@@ -144,13 +144,13 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
-            case Input_Completion_Update_Done: {
+            case InputCompletion_Update_Done: {
                 InputCompletionUpdateMsgData data = msg.data();
                 showInputCompletionListPopupWindow(data.completions);
                 break;
             }
-            case Input_Completion_Clean_Done:
-            case Input_Completion_Apply_Done: {
+            case InputCompletion_Clean_Done:
+            case InputCompletion_Apply_Done: {
                 showInputCompletionListPopupWindow(null);
                 break;
             }

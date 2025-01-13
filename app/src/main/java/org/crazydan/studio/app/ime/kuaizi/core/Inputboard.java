@@ -29,10 +29,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
@@ -99,7 +99,7 @@ public class Inputboard {
 
                 inputList.applyCompletion(data.position);
 
-                fire_InputMsg(context, Input_Completion_Apply_Done, null);
+                fire_InputMsg(context, InputCompletion_Apply_Done, null);
                 break;
             }
             case SingleTap_Btn_Clean_InputList: {

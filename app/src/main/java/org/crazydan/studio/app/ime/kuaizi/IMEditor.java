@@ -66,7 +66,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Completion_Clean_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Done;
@@ -151,7 +151,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
         this.inputList.clearCompletions();
-        fire_InputMsg(Input_Completion_Clean_Done);
+        fire_InputMsg(InputCompletion_Clean_Done);
 
         fire_InputMsg(Keyboard_Hide_Done);
     }
@@ -332,8 +332,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        KeyFactory keyFactory = createKeyFactory();
-        InputFactory inputFactory = createInputFactory();
+        KeyFactory keyFactory = createKeyFactory(type);
+        InputFactory inputFactory = createInputFactory(type);
 
         InputMsg msg = InputMsg.build((b) -> b.type(type)
                                               .data(data)
@@ -477,7 +477,33 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
-    private KeyFactory createKeyFactory() {
+    private KeyFactory createKeyFactory(InputMsgType type) {
+        // Note: 不影响按键布局的消息，不构建 KeyFactory
+        switch (type) {
+            case IME_Switch_Doing:
+            case InputAudio_Play_Doing:
+                //
+            case Keyboard_Switch_Doing:
+            case Keyboard_Start_Doing:
+            case Keyboard_Hide_Done:
+            case Keyboard_Exit_Done:
+            case Keyboard_HandMode_Switch_Doing:
+            case Keyboard_XPad_Simulation_Terminated:
+                //
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done:
+                //
+            case InputCompletion_Update_Done:
+            case InputCompletion_Clean_Done:
+            case InputCompletion_Apply_Done:
+                //
+            case Input_Choose_Doing:
+            case InputChars_Input_Popup_Hide_Doing:
+            case InputChars_Input_Popup_Show_Doing: {
+                return null;
+            }
+        }
+
         KeyFactory factory = this.keyboard != null ? withKeyboardContext(this.keyboard::buildKeyFactory) : null;
 
         boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
@@ -493,7 +519,34 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     /** 创建 {@link InputFactory} */
-    private InputFactory createInputFactory() {
+    private InputFactory createInputFactory(InputMsgType type) {
+        // Note: 不影响输入列表视图的消息，不构建 InputFactory
+        switch (type) {
+            case IME_Switch_Doing:
+            case InputAudio_Play_Doing:
+                //
+            case Keyboard_Switch_Doing:
+            case Keyboard_Start_Doing:
+            case Keyboard_Hide_Done:
+            case Keyboard_Exit_Done:
+            case Keyboard_HandMode_Switch_Doing:
+            case Keyboard_HandMode_Switch_Done:
+            case Keyboard_XPad_Simulation_Terminated:
+                //
+            case Editor_Edit_Doing:
+            case Editor_Cursor_Move_Doing:
+            case Editor_Range_Select_Doing:
+                //
+            case InputCompletion_Update_Done:
+            case InputCompletion_Clean_Done:
+                //
+            case Input_Choose_Doing:
+            case InputChars_Input_Popup_Show_Doing:
+            case InputChars_Input_Popup_Hide_Doing: {
+                return null;
+            }
+        }
+
         InputboardContext context = createInputboardContext();
         return this.inputboard.buildInputFactory(context);
     }
