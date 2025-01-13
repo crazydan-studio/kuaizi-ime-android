@@ -34,14 +34,14 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
 
 /**
- * 数学表达式输入
+ * 数学表达式{@link Input 输入}
  * <p/>
  * 内嵌独立的{@link InputList 输入列表}，以单独处理表达式中的符号和数字
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-15
  */
-public class MathExprInput extends CharInput {
+public class MathExprInput extends Input {
     private final InputList inputList;
 
     public MathExprInput() {

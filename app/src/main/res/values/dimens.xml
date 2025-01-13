@@ -34,7 +34,7 @@
     <dimen name="key_view_corner_radius">5dp</dimen>
     <dimen name="key_view_bg_min_radius">22dp</dimen>
 
-    <dimen name="gap_input_width">4dp</dimen>
+    <dimen name="gap_input_width">6dp</dimen>
     <dimen name="char_input_word_spell_text_size">10sp</dimen>
     <dimen name="char_input_word_text_size">18sp</dimen>
     <dimen name="char_key_text_size">26sp</dimen>

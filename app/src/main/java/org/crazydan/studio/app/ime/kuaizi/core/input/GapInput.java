@@ -25,7 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
 /**
  * 间隙{@link Input 输入}
  * <p/>
- * 用于统一相邻两个{@link CharInput 字符输入}间的插入输入
+ * 用于在相邻两个非 Gap 输入之间插入间隔，以方便选择和处理输入光标
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-06
