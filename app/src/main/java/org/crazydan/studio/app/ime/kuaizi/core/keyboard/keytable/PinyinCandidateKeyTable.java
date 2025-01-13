@@ -112,7 +112,7 @@ public class PinyinCandidateKeyTable extends KeyTable {
         // 拼音变换按键
         CharInput startingToggle = (CharInput) input.copy();
         if (input.is_Pinyin_SCZ_Starting()) {
-            String s = input.getChars().get(0).substring(0, 1);
+            String s = input.getKeyChars().get(0).substring(0, 1);
 
             String label = s + "," + s + "h";
             CtrlKey.Type type = CtrlKey.Type.Toggle_Pinyin_Spell;
@@ -134,14 +134,14 @@ public class PinyinCandidateKeyTable extends KeyTable {
             startingToggle.toggle_Pinyin_NL_Starting();
         }
         // 若拼音变换无效，则不提供切换按钮
-        if (!startingToggle.getChars().equals(input.getChars()) //
+        if (!startingToggle.getKeyChars().equals(input.getKeyChars()) //
             && !charsTree.isPinyinCharsInput(startingToggle)) {
             gridKeys[0][index_end] = noopCtrlKey();
         }
 
         CharInput endingToggle = (CharInput) input.copy();
         if (input.is_Pinyin_NG_Ending()) {
-            String s = input.getChars().get(input.getChars().size() - 1);
+            String s = input.getKeyChars().get(input.getKeyChars().size() - 1);
             String tail = s.endsWith("g") ? s.substring(s.length() - 3, s.length() - 1) : s.substring(s.length() - 2);
 
             String label = tail + "," + tail + "g";
@@ -154,7 +154,7 @@ public class PinyinCandidateKeyTable extends KeyTable {
             endingToggle.toggle_Pinyin_NG_Ending();
         }
         // 若拼音变换无效，则不提供切换按钮
-        if (!endingToggle.getChars().equals(input.getChars()) //
+        if (!endingToggle.getKeyChars().equals(input.getKeyChars()) //
             && !charsTree.isPinyinCharsInput(endingToggle)) {
             gridKeys[1][index_end] = noopCtrlKey();
         }

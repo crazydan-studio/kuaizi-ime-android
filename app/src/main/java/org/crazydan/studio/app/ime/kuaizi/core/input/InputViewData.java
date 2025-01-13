@@ -52,7 +52,7 @@ public class InputViewData extends Immutable {
         Gap,
         /** 算术输入：{@link MathExprInput} */
         MathExpr,
-        /** 空格输入：{@link Input#isSpace()} */
+        /** 空格输入：{@link CharInput#isSpace(Input)} */
         Space,
     }
 
@@ -150,7 +150,7 @@ public class InputViewData extends Immutable {
             b.type(Type.MathExpr).inputs(inputs);
         } else if (input instanceof GapInput) {
             b.type(hasEmptyPending ? Type.Gap : Type.Char);
-        } else if (input.isSpace()) {
+        } else if (CharInput.isSpace(input)) {
             b.type(Type.Space);
         } else {
             b.type(Type.Char);
@@ -186,19 +186,33 @@ public class InputViewData extends Immutable {
     }
 
     public static String[] getInputTextAndSpell(Input input, Input.Option option) {
-        InputWord inputWord = input.getWord();
+        if (!(input instanceof CharInput)) {
+            return new String[] { null, null };
+        }
 
         String text;
-        String spell = inputWord instanceof PinyinWord ? ((PinyinWord) inputWord).spell.value : null;
-        if (option != null && inputWord != null) {
-            text = input.getText(option).toString();
+        String spell = null;
 
-            // 若已携带读音，不再单独显示读音
-            if (spell != null && text.contains(spell)) {
-                spell = null;
-            }
+        CharInput ci = (CharInput) input;
+        InputWord inputWord = ci.getWord();
+
+        if (inputWord == null) {
+            text = ci.getJoinedKeyChars();
         } else {
-            text = inputWord != null ? inputWord.value : input.getJoinedChars();
+            if (inputWord instanceof PinyinWord) {
+                spell = ((PinyinWord) inputWord).spell.value;
+            }
+
+            if (option == null) {
+                text = inputWord.value;
+            } else {
+                text = ci.getText(option).toString();
+
+                // 若已携带读音，不再单独显示读音
+                if (spell != null && text.contains(spell)) {
+                    spell = null;
+                }
+            }
         }
 
         return new String[] { text, spell };

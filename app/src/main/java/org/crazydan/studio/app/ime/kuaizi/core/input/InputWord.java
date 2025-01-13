@@ -22,10 +22,9 @@ package org.crazydan.studio.app.ime.kuaizi.core.input;
 import java.util.Objects;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
-import org.crazydan.studio.app.ime.kuaizi.core.Input;
 
 /**
- * {@link Input 输入}对应的{@link Input#getWord() 字}
+ * {@link CharInput 字符输入}对应的{@link CharInput#getWord() 输入字}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-08

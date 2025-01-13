@@ -228,11 +228,11 @@ public class PinyinDict {
         for (int i = 0; i < total; i++) {
             CharInput input = inputs.get(i);
             // Note: 英文字符也可能组成有效拼音，故而，需仅针对拼音键盘的输入
-            if (!input.isPinyin()) {
+            if (!CharInput.isPinyin(input)) {
                 continue;
             }
 
-            String chars = input.getJoinedChars();
+            String chars = input.getJoinedKeyChars();
             Integer charsId = getPinyinCharsTree().getCharsId(chars);
             if (charsId == null) {
                 continue;

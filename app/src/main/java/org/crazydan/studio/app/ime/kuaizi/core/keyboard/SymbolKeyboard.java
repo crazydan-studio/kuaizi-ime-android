@@ -205,7 +205,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         } else {
             // 若待输入非空，且不是符号输入，则对其做配对符号包裹
             Input pending = inputList.getPending();
-            boolean wrapSelected = !Input.isEmpty(pending) && !pending.isSymbol();
+            boolean wrapSelected = !Input.isEmpty(pending) && !CharInput.isSymbol(pending);
             if (wrapSelected) {
                 // 选中被包裹输入的左侧 Gap
                 inputList.confirmPendingAndSelectPrevious();

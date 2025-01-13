@@ -504,7 +504,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void changeLastInputWord(InputWord word) {
         CharInput input = this.inputList.getLastCharInput();
         input.setWord(word);
-        input.markWordConfirmed();
+        input.confirmWord();
     }
 
     /**

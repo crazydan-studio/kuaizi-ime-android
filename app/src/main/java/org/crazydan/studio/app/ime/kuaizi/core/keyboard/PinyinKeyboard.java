@@ -253,7 +253,7 @@ public class PinyinKeyboard extends BaseKeyboard {
 
                 // 开始翻动输入。注意，若滑屏输入在较短时间内完成也会触发翻动事件，
                 // 故，仅针对录入了一个字符的情况
-                if (pending.getKeys().size() == 1) {
+                if (pending.countKeys() == 1) {
                     CharKey firstKey = (CharKey) pending.getFirstKey();
 
                     context = context.copy((b) -> b.key(firstKey));
@@ -289,7 +289,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case level_1: {
-                pending.replaceKeyAfterLevel(CharKey.Level.level_0, key);
+                pending.replaceKeysAfterLevel(CharKey.Level.level_0, key);
 
                 String level0Char = stateData.getLevel0Key().value;
                 String level1Char = key.value;
@@ -309,7 +309,7 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case level_2: {
                 // Note：第二级后继字母已包含第一级后继字母，故而，直接替换第 0 级之后的按键
-                pending.replaceKeyAfterLevel(CharKey.Level.level_0, key);
+                pending.replaceKeysAfterLevel(CharKey.Level.level_0, key);
 
                 stateData.setLevel2Key(key);
                 break;
@@ -370,7 +370,7 @@ public class PinyinKeyboard extends BaseKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getCharPending();
 
-        // 先确认当前输入的候选字
+        // 先确认当前输入的输入字
         if (!CharKey.Type.Alphabet.match(key)) {
             pending.setWord(null);
         } else {
@@ -475,7 +475,7 @@ public class PinyinKeyboard extends BaseKeyboard {
                 break;
             }
             case level_1: {
-                pending.replaceKeyAfterLevel(CharKey.Level.level_0, key);
+                pending.replaceKeysAfterLevel(CharKey.Level.level_0, key);
 
                 String level0Char = stateData.getLevel0Key().value;
                 String level1Char = key.value;
@@ -493,13 +493,13 @@ public class PinyinKeyboard extends BaseKeyboard {
             }
             case level_2: {
                 // Note：第二级后继字母已包含第一级后继字母，故而，直接替换第 0 级之后的按键
-                pending.replaceKeyAfterLevel(CharKey.Level.level_0, key);
+                pending.replaceKeysAfterLevel(CharKey.Level.level_0, key);
 
                 needToEndInputting = true;
                 break;
             }
             case level_final: {
-                pending.dropKeys();
+                pending.dropAllKeys();
                 pending.appendKey(key);
 
                 needToEndInputting = true;

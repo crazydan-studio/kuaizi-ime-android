@@ -76,7 +76,9 @@ public class PinyinDictTest extends PinyinDictBaseTest {
         }
 
         String phraseText = inputs.stream()
-                                  .map((input) -> input.hasWord() ? input.getWord().toString() : input.getJoinedChars())
+                                  .map((input) -> input.hasWord()
+                                                  ? input.getWord().toString()
+                                                  : input.getJoinedKeyChars())
                                   .collect(Collectors.joining(" "));
         Log.i(LOG_TAG, String.join(",", inputCharsArray) + ": " + phraseText);
         Assert.assertEquals("这(zhè) 是(shì) Android 输(shū) 入(rù) 法(fǎ)", phraseText);

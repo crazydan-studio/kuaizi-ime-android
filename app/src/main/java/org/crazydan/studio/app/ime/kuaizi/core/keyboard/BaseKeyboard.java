@@ -474,13 +474,13 @@ public abstract class BaseKeyboard implements Keyboard {
             // 字母、数字可连续输入
             case Number:
             case Alphabet: {
-                CharInput pending = inputList.getCharPending();
+                Input pending = inputList.getPending();
                 // Note：非拉丁字符输入不可连续输入，直接对其做替换
-                if (!pending.isLatin()) {
+                if (!CharInput.isLatin(pending)) {
                     pending = inputList.newCharPending();
                 }
+                ((CharInput) pending).appendKey(key);
 
-                pending.appendKey(key);
                 fire_InputChars_Input_Doing_in_TapMode(context, pending);
 
                 do_InputList_Pending_Completion_Updating(context);
@@ -571,7 +571,7 @@ public abstract class BaseKeyboard implements Keyboard {
         inputList.clearCompletions();
 
         CharInput pending = inputList.getCharPending();
-        if (Input.isEmpty(pending) || !pending.isLatin()) {
+        if (Input.isEmpty(pending) || !CharInput.isLatin(pending)) {
             return;
         }
 
@@ -617,15 +617,19 @@ public abstract class BaseKeyboard implements Keyboard {
 
         if (pending instanceof MathExprInput) {
             switch_Keyboard_To(context, Type.Math);
-        } else if (pending.isEmoji()) {
+        } //
+        else if (CharInput.isEmoji(pending)) {
             switch_Keyboard_To(context, Type.Emoji);
-        } else if (pending.isSymbol()) {
+        } //
+        else if (CharInput.isSymbol(pending)) {
             switch_Keyboard_To(context, Type.Symbol);
-        } else if (pending.isPinyin()) {
+        } //
+        else if (CharInput.isPinyin(pending)) {
             switch_Keyboard_To(context, Type.Pinyin_Candidate);
-        } else {
+        } //
+        else {
             // 在选择输入时，对于新输入，需先确认其待输入
-            if (input instanceof GapInput && !pending.isEmpty()) {
+            if (input instanceof GapInput && !Input.isEmpty(pending)) {
                 confirm_InputList_Pending(context);
             }
             change_State_to_Init(context);

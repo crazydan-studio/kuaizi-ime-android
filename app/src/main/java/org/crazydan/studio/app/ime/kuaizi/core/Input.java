@@ -19,327 +19,48 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
-import org.crazydan.studio.app.ime.kuaizi.core.input.word.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
-import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
-import org.crazydan.studio.app.ime.kuaizi.core.key.MathOpKey;
-import org.crazydan.studio.app.ime.kuaizi.core.key.SymbolKey;
 
 /**
- * 输入对象
- * <p/>
- * 单次有用户输入的所有有效字符均记录在该对象中，
- * 用于识别拼音、表情、符号等用户输入
+ * 用户输入
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
 public abstract class Input {
-    private List<Key> keys = new ArrayList<>();
 
-    private ConfirmableWord word = new ConfirmableWord(null);
-
+    /** 指定输入是否为 null 或{@link #isEmpty() 空白} */
     public static boolean isEmpty(Input input) {
         return input == null || input.isEmpty();
     }
 
-    /** 是否为空输入 */
-    public boolean isEmpty() {
-        return this.keys.isEmpty();
-    }
-
-    /** 是否为空格输入 */
-    public boolean isSpace() {
-        return test(CtrlKey.Type.Space::match);
-    }
-
-    /** 是否为英文字母、数字或二者的组合输入 */
-    public boolean isLatin() {
-        return !isPinyin() && test((key) -> CharKey.Type.Number.match(key) //
-                                            || CharKey.Type.Alphabet.match(key) //
-                                            // 确保括号与数字和运算符之间都有空格
-                                            || MathOpKey.Type.Brackets.match(key) //
-                                            || MathOpKey.Type.Dot.match(key));
-    }
-
-    /** 是否为拼音输入 */
-    public boolean isPinyin() {
-        return getWord() instanceof PinyinWord;
-    }
-
-    /** 是否为标点符号 */
-    public boolean isSymbol() {
-        return test((key) -> CharKey.Type.Symbol.match(key) //
-                             || key instanceof SymbolKey //
-                             || (key instanceof MathOpKey //
-                                 && !MathOpKey.Type.isOperator(key)));
-    }
-
-    /** 是否为表情符号 */
-    public boolean isEmoji() {
-        return getWord() instanceof EmojiWord //
-               || test((key) -> CharKey.Type.Emoji.match(key) //
-                                || InputWordKey.isEmoji(key));
-    }
-
-    /** 是否为数学运算符 */
-    public boolean isMathOp() {
-        return test(MathOpKey.Type::isOperator);
-    }
+    /** 是否为空白输入 */
+    protected abstract boolean isEmpty();
 
     /** 确认输入，一般用于包含 输入列表 的输入 */
     public void confirm() {}
 
     /** 创建副本 */
-    public Input copy() {
-        Input copied;
-        try {
-            copied = getClass().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        copied.setWord(getWord());
-        if (isWordConfirmed()) {
-            copied.markWordConfirmed();
-        }
-
-        getKeys().forEach(copied::appendKey);
-
-        return copied;
-    }
-
-    /** 获取输入按键列表 */
-    public List<Key> getKeys() {
-        return this.keys;
-    }
-
-    /** 获取第一个按键 */
-    public Key getFirstKey() {
-        return this.keys.isEmpty() ? null : this.keys.get(0);
-    }
-
-    /** 获取最后一个按键 */
-    public Key getLastKey() {
-        return this.keys.isEmpty() ? null : this.keys.get(this.keys.size() - 1);
-    }
-
-    /** 是否包含指定条件的按键 */
-    public boolean hasKey(Function<Key, Boolean> filter) {
-        for (Key k : this.keys) {
-            if (filter.apply(k)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** 追加输入按键 */
-    public void appendKey(Key key) {
-        this.keys.add(key);
-    }
-
-    /** 丢弃所有按键 */
-    public void dropKeys() {
-        this.keys.clear();
-    }
-
-    /** 丢弃最后一个按键 */
-    public void dropLastKey() {
-        if (!this.keys.isEmpty()) {
-            this.keys.remove(this.keys.size() - 1);
-        }
-    }
-
-    protected void replaceKeys(List<Key> keys) {
-        this.keys = new ArrayList<>(keys);
-    }
+    public abstract Input copy();
 
     /**
-     * 替换指定{@link CharKey.Level 按键级别}之后的按键
-     * <p/>
-     * 先删除指定级别之后的按键，再追加新按键
-     */
-    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {
-        boolean removing = false;
-
-        Iterator<Key> it = this.keys.iterator();
-        while (it.hasNext()) {
-            Key oldKey = it.next();
-
-            if (removing) {
-                it.remove();
-            }
-            // 移除指定级别之后的按键：连续移除匹配之后的按键
-            else {
-                removing = oldKey instanceof CharKey //
-                           && level == ((CharKey) oldKey).level;
-            }
-        }
-
-        // 追加按键
-        this.keys.add(newKey);
-    }
-
-    /** 替换指定按键的最近添加位置的按键 */
-    public void replaceLatestKey(Key oldKey, Key newKey) {
-        if (oldKey == null || newKey == null) {
-            return;
-        }
-
-        int oldKeyIndex = this.keys.lastIndexOf(oldKey);
-        if (oldKeyIndex >= 0) {
-            this.keys.set(oldKeyIndex, newKey);
-        }
-    }
-
-    /**
-     * 替换最后一个按键
-     * <p/>
-     * 若其按键列表为空，则追加新按键
-     */
-    public void replaceLastKey(Key newKey) {
-        dropLastKey();
-        appendKey(newKey);
-    }
-
-    /** 获取输入字符列表 */
-    public List<String> getChars() {
-        return this.keys.stream().map((key) -> key.value).filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    /** 获取合并后的输入字符的字符串 */
-    public String getJoinedChars() {
-        return String.join("", getChars());
-    }
-
-    /** 获取输入文本内容 */
-    public StringBuilder getText() {
-        return getText(null);
-    }
-
-    /** 获取输入文本内容 */
-    public StringBuilder getText(Option option) {
-        StringBuilder sb = new StringBuilder();
-
-        InputWord word = getWord();
-        if (word == null) {
-            getChars().forEach(sb::append);
-            return sb;
-        }
-
-        String value = word.value;
-        if (word instanceof PinyinWord && option != null) {
-            String spell = ((PinyinWord) word).spell.value;
-            String variant = ((PinyinWord) word).variant;
-
-            if (option.wordVariantUsed && variant != null) {
-                value = variant;
-            }
-            if (option.wordSpellUsedMode != null && spell != null) {
-                switch (option.wordSpellUsedMode) {
-                    case following:
-                        value = String.format("%s(%s)", value, spell);
-                        break;
-                    case replacing:
-                        value = spell;
-                        break;
-                }
-            }
-        }
-
-        if (value != null) {
-            sb.append(value);
-        }
-        return sb;
-    }
-
-    /** 输入文本内容是否只有{@link PinyinWord#spell 字的读音} */
-    public boolean isTextOnlyWordSpell(Option option) {
-        return option.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing && getWord() instanceof PinyinWord;
-    }
-
-    /** 是否有可输入字 */
-    public boolean hasWord() {
-        return getWord() != null;
-    }
-
-    /** 输入字是否已确认，已确认的字不会被词组预测等替换 */
-    public boolean isWordConfirmed() {
-        return this.word.confirmed;
-    }
-
-    /**
-     * 获取已选择候选字
+     * 获取输入的文本内容
      *
-     * @return 若为<code>null</code>，则表示未选择
+     * @param option
+     *         可能为 null
+     * @return 不返回 null
      */
-    public InputWord getWord() {
-        return this.word.value;
-    }
+    public abstract StringBuilder getText(Option option);
 
-    public void markWordConfirmed() {
-        this.word.confirmed = true;
-    }
-
-    public void setWord(InputWord word) {
-        this.word = new ConfirmableWord(word);
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        return getText().toString();
-    }
+    /**
+     * 获取输入的文本内容
+     *
+     * @return 不返回 null
+     */
+    public StringBuilder getText() {return getText(null);}
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Input that = (Input) o;
-        return this.keys.equals(that.keys) && Objects.equals(getWord(), that.getWord());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.keys, getWord());
-    }
-
-    private boolean test(Predicate<Key> predicate) {
-        for (Key key : this.keys) {
-            if (!predicate.test(key)) {
-                return false;
-            }
-        }
-        return !isEmpty();
-    }
-
-    /** 已确认的字不会被词组预测等替换 */
-    private static class ConfirmableWord {
-        private final InputWord value;
-        private boolean confirmed;
-
-        public ConfirmableWord(InputWord value) {
-            this.value = value;
-        }
-    }
+    public String toString() {return getText().toString();}
 
     public static class Option {
         /** 采用何种读音使用模式 */

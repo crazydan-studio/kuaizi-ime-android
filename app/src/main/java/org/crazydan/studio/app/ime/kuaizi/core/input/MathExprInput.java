@@ -57,8 +57,23 @@ public class MathExprInput extends CharInput {
     }
 
     @Override
-    public boolean isEmpty() {
+    public void confirm() {
+        this.inputList.confirmPending();
+    }
+
+    @Override
+    protected boolean isEmpty() {
         return this.inputList.isEmpty();
+    }
+
+    @Override
+    public Input copy() {
+        // Note：
+        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
+        // - 只有新建 pending 时才会做复制操作，
+        //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
+        //   不需要通过副本规避
+        return new MathExprInput(getInputList());
     }
 
     @Override
@@ -97,79 +112,6 @@ public class MathExprInput extends CharInput {
 
         return sb;
     }
-
-    @Override
-    public Input copy() {
-        // Note：
-        // - 输入列表直接复用，以确保与视图绑定的输入对象实例保持不变
-        // - 只有新建 pending 时才会做复制操作，
-        //   此时，对算术表达式的原输入或 pending 做修改操作都是等效的，
-        //   不需要通过副本规避
-        return new MathExprInput(getInputList());
-    }
-
-    @Override
-    public void confirm() {
-        this.inputList.confirmPending();
-    }
-
-    // ========================= Start: 覆盖父类接口 ========================
-
-    @Override
-    public boolean isSpace() {return false;}
-
-    @Override
-    public boolean isLatin() {return false;}
-
-    @Override
-    public boolean isPinyin() {return false;}
-
-    @Override
-    public boolean isSymbol() {return false;}
-
-    @Override
-    public boolean isEmoji() {return false;}
-
-    @Override
-    public List<Key> getKeys() {return new ArrayList<>();}
-
-    @Override
-    public Key getFirstKey() {return null;}
-
-    @Override
-    public Key getLastKey() {return null;}
-
-    @Override
-    public void appendKey(Key key) {}
-
-    @Override
-    public void dropLastKey() {}
-
-    @Override
-    public void replaceKeyAfterLevel(CharKey.Level level, Key newKey) {}
-
-    @Override
-    public void replaceLatestKey(Key oldKey, Key newKey) {}
-
-    @Override
-    public void replaceLastKey(Key newKey) {}
-
-    @Override
-    public List<String> getChars() {return new ArrayList<>();}
-
-    @Override
-    public boolean isTextOnlyWordSpell(Option option) {return false;}
-
-    @Override
-    public boolean hasWord() {return false;}
-
-    @Override
-    public InputWord getWord() {return null;}
-
-    @Override
-    public void setWord(InputWord word) {}
-
-    // ========================= End: 覆盖父类接口 ========================
 
     @Override
     public boolean equals(Object o) {
@@ -307,7 +249,7 @@ public class MathExprInput extends CharInput {
     }
 
     private static MathOpKey.Type getOpType(CharInput input) {
-        Key key = input != null && input.getKeys().size() == 1 ? input.getFirstKey() : null;
+        Key key = input != null && input.countKeys() == 1 ? input.getFirstKey() : null;
 
         return key instanceof MathOpKey ? ((MathOpKey) key).type : null;
     }

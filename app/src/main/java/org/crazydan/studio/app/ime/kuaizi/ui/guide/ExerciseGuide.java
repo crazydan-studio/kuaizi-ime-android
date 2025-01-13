@@ -1160,7 +1160,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             }
                             case InputChars_Input_Done: {
                                 InputCharsInputMsgData data = msg.data();
-                                Key key = data.input.getLastKey();
+                                Key key = ((CharInput) data.input).getLastKey();
 
                                 if (key.label.equals(key_level_1.label)) {
                                     changePinyinWord(expected_auto_word);
@@ -1209,7 +1209,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             }
                             case InputChars_Input_Done: {
                                 InputCharsInputMsgData data = msg.data();
-                                Key key = data.input.getLastKey();
+                                Key key = ((CharInput) data.input).getLastKey();
 
                                 if (key.label.equals(key_level_2.label)) {
                                     changePinyinWord(expected_auto_word);

@@ -101,7 +101,7 @@ public class PinyinCharsTree {
 
     /** 获取指定{@link CharInput 输入}的拼音字母组合的 id */
     public Integer getCharsId(CharInput input) {
-        String chars = input.getJoinedChars();
+        String chars = input.getJoinedKeyChars();
 
         return getCharsId(chars);
     }

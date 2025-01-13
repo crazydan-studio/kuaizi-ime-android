@@ -285,14 +285,14 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
 
         CharInput pending = inputList.getCharPending();
-        pending.markWordConfirmed();
+        pending.confirmWord();
 
         inputList.confirmPendingAndSelectNext();
 
         fire_InputCandidate_Choose_Done(context, pending);
 
         // 继续选择下一个拼音输入的候选字
-        Input selected = inputList.selectNextFirstMatched(Input::isPinyin);
+        Input selected = inputList.selectNextFirstMatched(CharInput::isPinyin);
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
@@ -301,7 +301,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
             selected = inputList.getSelected();
         }
 
-        if (!selected.isPinyin()) {
+        if (!CharInput.isPinyin(selected)) {
             exit_Keyboard(context);
         } else {
             choose_InputList_Input(context, selected);

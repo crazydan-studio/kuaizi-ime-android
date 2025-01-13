@@ -80,7 +80,7 @@ public class InputList {
      */
     public boolean isEmpty() {
         for (Input input : this.inputs) {
-            if (!(input instanceof GapInput) && !input.isEmpty()) {
+            if (!(input instanceof GapInput) && !Input.isEmpty(input)) {
                 return false;
             }
         }
@@ -190,7 +190,11 @@ public class InputList {
         return this.cursor.pending;
     }
 
-    /** 获取{@link #getSelected() 当前选中输入}的 {@link CharInput} 类型的待输入 */
+    /**
+     * 获取{@link #getSelected() 当前选中输入}的待输入
+     * <p/>
+     * 待输入必须为 {@link CharInput} 类型
+     */
     public CharInput getCharPending() {
         Input pending = getPending();
         assert pending instanceof CharInput;
@@ -198,7 +202,11 @@ public class InputList {
         return (CharInput) pending;
     }
 
-    /** 获取{@link #getSelected() 当前选中输入}的 {@link MathExprInput} 类型的待输入 */
+    /**
+     * 获取{@link #getSelected() 当前选中输入}的待输入
+     * <p/>
+     * 待输入必须为 {@link MathExprInput} 类型
+     */
     public MathExprInput getMathExprPending() {
         Input pending = getPending();
         assert pending instanceof MathExprInput;
@@ -399,7 +407,7 @@ public class InputList {
 
         if (Input.isEmpty(pending)) {
             // 若当前为空白算术输入，则直接将其移除
-            if (selected instanceof MathExprInput && selected.isEmpty()) {
+            if (selected instanceof MathExprInput && Input.isEmpty(selected)) {
                 removeNonGapInputAt(selectedIndex);
 
                 // 选中相邻的后继 Gap
@@ -722,9 +730,9 @@ public class InputList {
         Input pending = getPending();
         Input current = !Input.isEmpty(pending) ? pending : selected;
         // 逐字删除拉丁字符输入的最后一个字符
-        if (byStep && current instanceof CharInput && current.isLatin()) {
+        if (byStep && CharInput.isLatin(current)) {
             CharInput input = (CharInput) current;
-            if (input.getKeys().size() > 1) {
+            if (input.countKeys() > 1) {
                 input.dropLastKey();
                 return;
             }
@@ -736,7 +744,7 @@ public class InputList {
                 int prevIndex = selectedIndex - 1;
                 Input prev = this.inputs.get(prevIndex);
 
-                if (prev.isLatin() && prev.getKeys().size() > 1) {
+                if (CharInput.isLatin(prev) && ((CharInput) prev).countKeys() > 1) {
                     doSelect(prev);
                 } else {
                     removePairCharInputOf(prev);
@@ -858,29 +866,33 @@ public class InputList {
             return false;
         }
         // 已经有显式的空格，则不需要再添加空格
-        else if (left.isSpace() || right.isSpace()) {
+        else if (CharInput.isSpace(left) || CharInput.isSpace(right)) {
             return false;
         }
 
         // Note: 算术输入的结构更复杂，优先检查该类型
-        if ((left instanceof MathExprInput && !left.isEmpty()) //
-            || (right instanceof MathExprInput && !right.isEmpty())) {
+        if ((left instanceof MathExprInput && !Input.isEmpty(left)) //
+            || (right instanceof MathExprInput && !Input.isEmpty(right)) //
+        ) {
             return true;
         }
         // 数学运算符左右都需有空格
-        else if (left.isMathOp() || right.isMathOp()) {
+        else if (CharInput.isMathOp(left) || CharInput.isMathOp(right)) {
             return true;
-        } else if (left.isLatin()) {
-            return !right.isSymbol();
-        } else if (right.isLatin()) {
-            return !left.isSymbol();
+        } //
+        else if (CharInput.isLatin(left)) {
+            return !CharInput.isSymbol(right);
+        } //
+        else if (CharInput.isLatin(right)) {
+            return !CharInput.isSymbol(left);
         }
 
         Input.Option option = getInputOption();
-        if (left.isTextOnlyWordSpell(option)) {
-            return !right.isSymbol();
-        } else if (right.isTextOnlyWordSpell(option)) {
-            return !left.isSymbol();
+        if (CharInput.useWordSpellAsText(left, option)) {
+            return !CharInput.isSymbol(right);
+        } //
+        else if (CharInput.useWordSpellAsText(right, option)) {
+            return !CharInput.isSymbol(left);
         }
         return false;
     }
@@ -914,20 +926,23 @@ public class InputList {
 
     /** 获取全部的表情符号 */
     public List<InputWord> getEmojis() {
-        return this.inputs.stream().filter(Input::isEmoji).map((input) -> {
-            InputWord word = input.getWord();
-            Key key = input.getFirstKey();
+        return this.inputs.stream() //
+                          .filter(CharInput::isEmoji) //
+                          .map((input) -> (CharInput) input) //
+                          .map((input) -> {
+                              InputWord word = input.getWord();
+                              Key key = input.getFirstKey();
 
-            return word != null //
-                   ? word : key instanceof InputWordKey //
-                            ? ((InputWordKey) key).word : null;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+                              return word != null //
+                                     ? word : key instanceof InputWordKey //
+                                              ? ((InputWordKey) key).word : null;
+                          }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /** 获取拉丁文输入 */
     public List<String> getLatins() {
         return this.inputs.stream()
-                          .filter(Input::isLatin)
+                          .filter(CharInput::isLatin)
                           .map(Input::getText)
                           .filter(Objects::nonNull)
                           .map(StringBuilder::toString)
@@ -947,8 +962,8 @@ public class InputList {
                     phrases.add(phrase);
                     phrase = new ArrayList<>();
                 }
-            } else if (input.isPinyin()) {
-                phrase.add((PinyinWord) input.getWord());
+            } else if (CharInput.isPinyin(input)) {
+                phrase.add((PinyinWord) ((CharInput) input).getWord());
             }
         }
 
@@ -970,10 +985,10 @@ public class InputList {
         for (int i = fromIndex; i >= 0; i--) {
             Input input = getInput(i, true);
 
-            if (!input.isPinyin()) {
+            if (!CharInput.isPinyin(input)) {
                 break;
             }
-            words.add((PinyinWord) input.getWord());
+            words.add((PinyinWord) ((CharInput) input).getWord());
         }
 
         Collections.reverse(words);
@@ -1029,13 +1044,13 @@ public class InputList {
     /** 指定的输入是否代表段落结束 */
     private boolean isPinyinPhraseEndAt(int index) {
         Input input = getInput(index, true);
-        if (input == null || input.isSpace()) {
+        if (input == null || CharInput.isSpace(input)) {
             return true;
-        } else if (!input.isSymbol()) {
+        } else if (!CharInput.isSymbol(input)) {
             return false;
         }
 
-        String chars = input.getJoinedChars();
+        String chars = ((CharInput) input).getJoinedKeyChars();
         // 英文结束标点符号左右两边为中文时，则从该符号处结束短语
         if (List.of(new String[] {
                 ",", ".", ";", ":", "?", "!", //
@@ -1043,7 +1058,8 @@ public class InputList {
             Input left = getInput(index - 1, true);
             Input right = getInput(index + 1, true);
 
-            return (left == null || left.isPinyin()) && (right == null || right.isPinyin());
+            return (left == null || CharInput.isPinyin(left)) //
+                   && (right == null || CharInput.isPinyin(right));
         }
 
         return List.of(new String[] {

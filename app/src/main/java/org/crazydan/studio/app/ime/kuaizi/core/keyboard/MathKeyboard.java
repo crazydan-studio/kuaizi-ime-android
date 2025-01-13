@@ -279,7 +279,7 @@ public class MathKeyboard extends BaseKeyboard {
             case Dot: {
                 CharInput pending = mathInputList.getCharPending();
                 // 小数点只能出现在数字中，且只能出现一次
-                if (isNumberInput(pending) && !pending.hasKey(key::equals)) {
+                if (CharInput.isNumber(pending) && !pending.hasAnyKey(key::equals)) {
                     pending.appendKey(key);
                 }
                 break;
@@ -288,7 +288,7 @@ public class MathKeyboard extends BaseKeyboard {
                 Input selected = mathInputList.getSelected();
                 CharInput pending = mathInputList.getCharPending();
                 // 对于正在输入的数字，先提交其待输入，再输入括号，以确保数字被括号包裹
-                if (selected instanceof GapInput && isNumberInput(pending)) {
+                if (selected instanceof GapInput && CharInput.isNumber(pending)) {
                     mathInputList.confirmPending();
                 }
 
@@ -329,7 +329,7 @@ public class MathKeyboard extends BaseKeyboard {
 
         // 先提交从其他键盘切过来之前的待输入
         if (selected instanceof GapInput //
-            && !pending.isEmpty() //
+            && !Input.isEmpty(pending) //
             && !(pending instanceof MathExprInput) //
         ) {
             parentInputList.confirmPendingAndSelectNext();
@@ -429,27 +429,17 @@ public class MathKeyboard extends BaseKeyboard {
         CharInput pending = mathInputList.getCharPending();
 
         // 若待输入为空且当前选中输入是数字，则重新选中输入，以确保可在前向删除后，继续追加输入
-        if (pending.isEmpty() && isNumberInput(selected)) {
+        if (Input.isEmpty(pending) //
+            && (selected instanceof GapInput //
+                || CharInput.isNumber(selected)) //
+        ) {
             mathInputList.confirmPendingAndSelect(selected, true);
         }
     }
 
-    /** 指定输入是否为数字。注意，百分号为单独的输入 */
-    private boolean isNumberInput(Input input) {
-        for (Key key : input.getKeys()) {
-            // Note: 只有 运算符 和 数字符 两种按键
-            if (key instanceof MathOpKey) {
-                if (!MathOpKey.Type.Dot.match(key)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     /** 指定输入是否为括号 */
     private boolean isBracketInput(Input input) {
-        Key key = input.getFirstKey();
+        Key key = input instanceof CharInput ? ((CharInput) input).getFirstKey() : null;
 
         return MathOpKey.Type.Brackets.match(key);
     }

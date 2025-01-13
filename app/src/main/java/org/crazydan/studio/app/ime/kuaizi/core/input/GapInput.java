@@ -19,12 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.Key;
 
 /**
  * 间隙{@link Input 输入}
@@ -37,24 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 public class GapInput extends Input {
 
     @Override
-    public Input copy() {
-        return new GapInput();
-    }
+    protected boolean isEmpty() {return true;}
 
     @Override
-    public void appendKey(Key key) {}
+    public Input copy() {return new GapInput();}
 
     @Override
-    public void dropLastKey() {}
-
-    @Override
-    public List<String> getChars() {return new ArrayList<>();}
+    public StringBuilder getText(Option option) {return new StringBuilder();}
 
     @NonNull
     @Override
-    public String toString() {
-        return "Gap";
-    }
+    public String toString() {return "Gap";}
 
     @Override
     public boolean equals(Object o) {return this == o;}
