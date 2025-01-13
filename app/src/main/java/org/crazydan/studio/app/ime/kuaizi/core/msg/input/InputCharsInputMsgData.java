@@ -44,6 +44,19 @@ public class InputCharsInputMsgData extends InputMsgData {
         this.inputMode = inputMode;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+               + '{'
+               + "inputMode="
+               + this.inputMode
+               + ", key="
+               + this.key
+               + ", input="
+               + this.input
+               + '}';
+    }
+
     /** 输入方式 */
     public enum InputMode {
         /** 点击输入 */

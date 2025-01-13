@@ -39,4 +39,17 @@ public class ConfigUpdateMsgData extends InputMsgData {
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+               + '{'
+               + "key="
+               + this.key
+               + ", oldValue="
+               + this.oldValue
+               + ", newValue="
+               + this.newValue
+               + '}';
+    }
 }

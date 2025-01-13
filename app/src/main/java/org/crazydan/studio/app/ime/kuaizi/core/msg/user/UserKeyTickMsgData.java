@@ -33,4 +33,9 @@ public abstract class UserKeyTickMsgData extends UserKeyMsgData {
         super(target);
         this.tick = tick;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "tick=" + this.tick + ", key=" + this.key + '}';
+    }
 }

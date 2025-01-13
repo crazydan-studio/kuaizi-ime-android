@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
@@ -53,6 +54,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolComm
  * @date 2023-06-29
  */
 public class IMEService extends InputMethodService implements UserMsgListener, InputMsgListener, ConfigChangeListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private IMEConfig imeConfig;
     private IMEditor ime;
     private IMEditorView imeView;
@@ -222,18 +225,43 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
 
     @Override
     public void onMsg(UserInputMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.ime.getClass().getSimpleName());
+
         this.ime.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     @Override
     public void onMsg(UserKeyMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.ime.getClass().getSimpleName());
+
         this.ime.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     @Override
     public void onMsg(InputMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.imeView.getClass().getSimpleName());
+
         this.imeView.onMsg(msg);
 
+        this.log.endTreeLog();
+        /////////////////////////////////////////////////////////////////
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
+        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+
+        handleMsg(msg);
+
+        this.log.endTreeLog();
+    }
+
+    private void handleMsg(InputMsg msg) {
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 this.editorChangeRevertion = null;

@@ -38,4 +38,9 @@ public class KeyboardHandModeSwitchMsgData extends InputMsgData {
         super(key);
         this.mode = mode;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "mode=" + this.mode + ", key=" + this.key + '}';
+    }
 }

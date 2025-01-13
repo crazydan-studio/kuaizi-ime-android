@@ -50,9 +50,17 @@ public class InputListView extends InputListViewBase implements InputMsgListener
         // 因此，仅需要关注输入列表之外的影响视图的消息
         InputFactory inputFactory = msg.inputFactory;
 
+        if (inputFactory != null) {
+            this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
+            this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+            this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+        }
+
         switch (msg.type) {
             case Input_Choose_Done: {
                 super.onMsg(msg);
+
+                this.log.endTreeLog();
                 return;
             }
             case Config_Update_Done: {
@@ -69,6 +77,10 @@ public class InputListView extends InputListViewBase implements InputMsgListener
         }
 
         update(inputFactory);
+
+        if (inputFactory != null) {
+            this.log.endTreeLog();
+        }
     }
 
     // =============================== End: 消息处理 ===================================

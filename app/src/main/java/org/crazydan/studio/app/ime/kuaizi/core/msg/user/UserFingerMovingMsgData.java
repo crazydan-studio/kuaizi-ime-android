@@ -38,4 +38,9 @@ public class UserFingerMovingMsgData extends UserKeyMsgData {
         super(target);
         this.motion = motion;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "motion=" + this.motion + ", key=" + this.key + '}';
+    }
 }

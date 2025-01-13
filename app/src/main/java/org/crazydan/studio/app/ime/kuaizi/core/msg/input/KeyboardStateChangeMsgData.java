@@ -38,4 +38,9 @@ public class KeyboardStateChangeMsgData extends InputMsgData {
         super(key);
         this.state = state;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "state=" + this.state.type + ", key=" + this.key + '}';
+    }
 }

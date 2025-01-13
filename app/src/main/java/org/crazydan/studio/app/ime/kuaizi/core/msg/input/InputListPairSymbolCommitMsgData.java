@@ -36,4 +36,17 @@ public class InputListPairSymbolCommitMsgData extends InputMsgData {
         this.left = left;
         this.right = right;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+               + '{'
+               + "left="
+               + this.left
+               + ", right="
+               + this.right
+               + ", key="
+               + this.key
+               + '}';
+    }
 }

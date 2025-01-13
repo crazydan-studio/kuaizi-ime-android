@@ -219,8 +219,21 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     public void onMsg(InputMsg msg) {
         super.onMsg(msg);
 
+        //
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.exerciseList.getClass().getSimpleName());
+
         this.exerciseList.onMsg(msg);
+
+        this.log.endTreeLog();
+
+        //
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.exerciseListView.getClass().getSimpleName());
+
         this.exerciseListView.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     /** 响应 {@link Exercise} 的状态变更消息 */

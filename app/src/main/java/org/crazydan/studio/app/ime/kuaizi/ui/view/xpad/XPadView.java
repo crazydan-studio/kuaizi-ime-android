@@ -35,7 +35,6 @@ import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -1356,7 +1355,6 @@ public class XPadView extends View {
         private boolean stopped = false;
 
         public void stop() {
-            Log.d(getClass().getSimpleName(), "stop");
             this.handler.stop();
 
             this.stopped = true;

@@ -234,19 +234,18 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        // TODO 记录用户按键消息所触发的输入消息，并优化合并输入消息：仅需最后一个消息触发按键的布局更新即可
+        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.keyboard.getClass().getSimpleName()
+        });
+
         Key key = msg.data().key;
         KeyboardContext context = createKeyboardContext(key);
-
-        this.log.debug("====================== User Key Message ======================");
-        this.log.debug(">> Message Type: %s", msg.type);
-        this.log.debug(">> Message Key: %s", key);
-        this.log.debug("\n");
-
         this.keyboard.onMsg(context, msg);
 
-        this.log.debug("==============================================================");
-        this.log.debug("\n");
+        this.log.endTreeLog();
     }
 
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
@@ -257,7 +256,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
+        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.inputboard.getClass().getSimpleName()
+        });
+
         withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
+
+        this.log.endTreeLog();
     }
 
     // --------------------------------------
@@ -267,19 +275,22 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void onMsg(InputMsg msg) {
         // Note: 涉及消息的嵌套处理，可能会发生键盘切换，因此，不能定义 keyboard 的本地变量
 
-        this.log.debug("<< Input Message Type: %s", msg.type);
-        this.log.debug("<< Input Message Key: %s", msg.data().key);
-        this.log.debug("<< Input Message Input: %s", msg.data().input);
-        this.log.debug("\n");
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
+        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
                 on_Keyboard_Switch_Doing_Msg(msg.data());
                 // Note: 在键盘切换过程中，不向上转发消息
+
+                this.log.endTreeLog();
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
                 on_Keyboard_HandMode_Switch_Doing_Msg(msg.data());
+
+                this.log.endTreeLog();
                 return;
             }
             // 向键盘派发 InputList 的消息
@@ -323,6 +334,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
 
         fire_InputMsg(msg.type, msg.data());
+
+        this.log.endTreeLog();
     }
 
     /** 发送 {@link InputMsg} 消息：附带空的消息数据 */
@@ -340,7 +353,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                                               .keyFactory(keyFactory)
                                               .inputFactory(inputFactory)
                                               .inputList(this.inputList, this.inputboard.canRestoreCleaned()));
+
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+        });
+
         this.listener.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     /** 处理 {@link InputMsgType#Keyboard_Switch_Doing} 消息 */

@@ -36,4 +36,9 @@ public class UserInputCompletionSingleTapMsgData extends UserInputMsgData {
     public UserInputCompletionSingleTapMsgData(int position) {
         this.position = position;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "position=" + this.position + '}';
+    }
 }

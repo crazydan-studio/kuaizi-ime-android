@@ -60,4 +60,15 @@ public class UserInputSingleTapMsgData extends UserInputMsgData {
         this.positionInParent = positionInParent;
         this.position = position;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+               + '{'
+               + "positionInParent="
+               + this.positionInParent
+               + ", position="
+               + this.position
+               + '}';
+    }
 }

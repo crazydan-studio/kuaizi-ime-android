@@ -71,13 +71,11 @@ public class ViewGestureDetector {
     }
 
     public void reset() {
-        this.log.debug("************************* Gesture Reset **********************");
-        this.log.debug("\n");
+        this.log.beginTreeLog("Gesture Reset");
 
         onGestureEnd(this.latestPressStart);
 
-        this.log.debug("**************************************************************");
-        this.log.debug("\n");
+        this.log.endTreeLog();
     }
 
     public void onTouchEvent(@NonNull MotionEvent e) {
@@ -299,16 +297,15 @@ public class ViewGestureDetector {
     }
 
     private void triggerListeners(GestureType type, GestureData data) {
-        this.log.debug("######################### Gesture Event ######################");
-        this.log.debug("@@ Gesture: %s (%s)", type, data);
-        this.log.debug("\n");
-
         for (Listener listener : this.listeners) {
-            listener.onGesture(type, data);
-        }
+            this.log.beginTreeLog("Dispatch %s to %s",
+                                  () -> new Object[] { type, listener.getClass().getSimpleName() });
+            this.log.debug("Gesture Data: %s", () -> new Object[] { data });
 
-        this.log.debug("##############################################################");
-        this.log.debug("\n");
+            listener.onGesture(type, data);
+
+            this.log.endTreeLog();
+        }
     }
 
     private Motion createMotion(GestureData newData, GestureData oldData) {

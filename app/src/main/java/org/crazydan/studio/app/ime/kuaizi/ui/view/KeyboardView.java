@@ -201,13 +201,18 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
         }
 
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+        });
+
         this.listener.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     /** 响应来自上层派发的 {@link InputMsg} 消息 */
     @Override
     public void onMsg(InputMsg msg) {
-        Config config = this.config;
         // Note: 不影响按键布局的消息，将直接赋值 keyFactory 为 null，
         // 因此，仅需要关注按键布局之外的影响视图的消息
         KeyFactory keyFactory = msg.keyFactory;
@@ -230,6 +235,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             case Keyboard_Switch_Done:
             case Keyboard_Start_Done:
             case Keyboard_HandMode_Switch_Done: {
+                Config config = this.config;
                 if (config.bool(ConfigKey.disable_key_animation)) {
                     setItemAnimator(null);
                 } else {
@@ -250,7 +256,17 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
         }
 
+        if (keyFactory != null) {
+            this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
+            this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
+            this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+        }
+
         update(keyFactory);
+
+        if (keyFactory != null) {
+            this.log.endTreeLog();
+        }
     }
 
     // =============================== End: 消息处理 ===================================

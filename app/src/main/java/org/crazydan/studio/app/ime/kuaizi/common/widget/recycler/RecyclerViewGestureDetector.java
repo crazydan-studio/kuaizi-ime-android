@@ -45,8 +45,6 @@ public class RecyclerViewGestureDetector<I> extends ViewGestureDetector {
         I oldAdapterItem = this.prevAdapterItem;
         this.prevAdapterItem = newAdapterItem;
 
-        this.log.debug("@@ Gesture Items: %s, %s", oldAdapterItem, newAdapterItem);
-
         if (oldAdapterItem != null && newAdapterItem != null) {
             return !rv.isSameAdapterItem(oldAdapterItem, newAdapterItem);
         }

@@ -35,4 +35,9 @@ public class EditorEditMsgData extends InputMsgData {
     public EditorEditMsgData(EditorAction action) {
         this.action = action;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "action=" + this.action + ", key=" + this.key + '}';
+    }
 }

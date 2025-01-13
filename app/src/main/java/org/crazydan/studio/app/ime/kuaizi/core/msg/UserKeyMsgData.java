@@ -34,4 +34,9 @@ public class UserKeyMsgData {
     public UserKeyMsgData(Key key) {
         this.key = key;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "key=" + this.key + '}';
+    }
 }

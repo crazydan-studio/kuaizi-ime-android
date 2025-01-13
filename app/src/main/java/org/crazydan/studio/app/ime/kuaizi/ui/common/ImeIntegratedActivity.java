@@ -27,6 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.IMEConfig;
 import org.crazydan.studio.app.ime.kuaizi.IMEditor;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -50,6 +51,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
  */
 public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         implements UserMsgListener, InputMsgListener, ConfigChangeListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private final int layoutResId;
 
     protected IMEConfig imeConfig;
@@ -100,17 +103,32 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     @Override
     public void onMsg(UserInputMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.ime.getClass().getSimpleName());
+
         this.ime.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     @Override
     public void onMsg(UserKeyMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.ime.getClass().getSimpleName());
+
         this.ime.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     @Override
     public void onMsg(InputMsg msg) {
+        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
+                              + " to " + this.imeView.getClass().getSimpleName());
+
         this.imeView.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     // =============================== End: 消息处理 ===================================

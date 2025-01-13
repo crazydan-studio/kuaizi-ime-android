@@ -50,4 +50,9 @@ public class InputMsgData {
         this.key = key;
         this.input = input;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "key=" + this.key + ", input=" + this.input + '}';
+    }
 }

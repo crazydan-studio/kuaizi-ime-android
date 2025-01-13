@@ -27,6 +27,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
@@ -46,6 +47,8 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  * @date 2023-09-22
  */
 public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter, Key> {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private final float gridMaxPaddingRight;
     private final float gridItemMinRadius;
     private final float gridItemSpacing;

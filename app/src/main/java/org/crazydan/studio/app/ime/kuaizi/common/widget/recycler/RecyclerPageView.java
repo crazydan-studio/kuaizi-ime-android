@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
-import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 
 /**
  * 支持翻页的 {@link RecyclerView} 视图
@@ -38,8 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
  * @date 2024-12-21
  */
 public abstract class RecyclerPageView<A extends RecyclerViewAdapter<I, ?>, I> extends RecyclerView<A, I> {
-    protected final Logger log = Logger.getLogger(getClass());
-
     private final PagerSnapHelper pager;
     private final List<PageActiveListener> pageActiveListeners = new ArrayList<>();
 
@@ -112,7 +109,6 @@ public abstract class RecyclerPageView<A extends RecyclerViewAdapter<I, ?>, I> e
     }
 
     private void firePageActive(int position) {
-        this.log.debug("Trigger active page %d", position);
         this.pageActiveListeners.forEach((listener) -> listener.onPageActive(position));
     }
 

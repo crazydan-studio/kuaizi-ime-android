@@ -39,4 +39,9 @@ public class KeyboardSwitchMsgData extends InputMsgData {
         super(key);
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "type=" + this.type + ", key=" + this.key + '}';
+    }
 }

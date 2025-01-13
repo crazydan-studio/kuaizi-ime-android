@@ -172,7 +172,6 @@ public class RecyclerPageIndicatorView extends LinearLayout {
             int position = this.dragging
                            ? layout.findFirstCompletelyVisibleItemPosition()
                            : layout.findFirstVisibleItemPosition();
-            RecyclerPageIndicatorView.this.log.debug("Realtime scrolling to %d: %d, %d", position, dx, dy);
 
             // 激活滚动过程中切换的页的指示器
             activateDot(position);

@@ -38,4 +38,9 @@ public class InputCharsInputPopupShowMsgData extends InputMsgData {
         this.text = text;
         this.hideDelayed = hideDelayed;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "text='" + this.text + '\'' + ", key=" + this.key + '}';
+    }
 }

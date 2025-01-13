@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
@@ -60,6 +61,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTa
  */
 public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private int positionInParent = -1;
 
     private UserInputMsgListener listener;

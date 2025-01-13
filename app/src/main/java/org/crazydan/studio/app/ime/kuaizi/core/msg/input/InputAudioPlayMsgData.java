@@ -38,6 +38,11 @@ public class InputAudioPlayMsgData extends InputMsgData {
         this.audioType = audioType;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "audioType=" + this.audioType + ", key=" + this.key + '}';
+    }
+
     public enum AudioType {
         SingleTick(R.raw.tick_single),
         DoubleTick(R.raw.tick_double),

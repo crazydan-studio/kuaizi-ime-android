@@ -48,4 +48,9 @@ public class EditorCursorMsgData extends InputMsgData {
 
         return new Motion(motion.direction, distance, motion.timestamp);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "anchor=" + this.anchor + ", key=" + this.key + '}';
+    }
 }

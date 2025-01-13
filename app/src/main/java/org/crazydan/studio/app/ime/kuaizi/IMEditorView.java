@@ -31,6 +31,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
@@ -65,6 +66,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @date 2023-07-01
  */
 public class IMEditorView extends FrameLayout implements UserMsgListener, InputMsgListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private final AudioPlayer audioPlayer;
 
     private KeyboardView keyboardView;
@@ -111,13 +114,25 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserKeyMsg msg) {
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+        });
+
         this.listener.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserInputMsg msg) {
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+        });
+
         this.listener.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     // -------------------------------------------
@@ -165,9 +180,22 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
         }
 
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.keyboardView.getClass().getSimpleName()
+        });
+
         // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
         this.keyboardView.onMsg(msg);
+
+        this.log.endTreeLog();
+        ////////////////////////////////////////////////////////////
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), this.inputboardView.getClass().getSimpleName()
+        });
+
         this.inputboardView.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {

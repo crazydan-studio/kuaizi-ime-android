@@ -216,7 +216,6 @@ public class Exercise implements InputMsgListener {
         }
 
         Key key = msg.data().key;
-        this.log.debug("Got %s %s: key - %s", msg.getClass().getSimpleName(), msg.type, key);
 
         switch (msg.type) {
             case InputChars_Input_Doing:
@@ -246,8 +245,13 @@ public class Exercise implements InputMsgListener {
             }
         }
 
-        this.log.debug("Pass %s %s to the active step", msg.getClass().getSimpleName(), msg.type);
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass().getSimpleName(), current.getClass().getSimpleName()
+        });
+
         current.onMsg(msg);
+
+        this.log.endTreeLog();
     }
 
     private void on_Step_Start_Done_Msg(ExerciseStep step, boolean restarted) {

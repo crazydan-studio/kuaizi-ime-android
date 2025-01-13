@@ -175,7 +175,6 @@ public abstract class BaseKeyboard implements Keyboard {
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         Key key = context.key();
         if (key == null) {
-            this.log.debug("%s: No key for %s", msg.getClass().getSimpleName(), msg.type);
             return true;
         }
 
@@ -946,6 +945,8 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     protected void change_State_To(KeyboardContext context, State state) {
+        assert state != null;
+
         this.state = state;
 
         Key key = context.key();
