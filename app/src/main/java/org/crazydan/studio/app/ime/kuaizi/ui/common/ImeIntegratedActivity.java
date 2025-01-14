@@ -103,8 +103,9 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.ime.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.ime.getClass()
+        });
 
         this.ime.onMsg(msg);
 
@@ -113,8 +114,9 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     @Override
     public void onMsg(UserKeyMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.ime.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.ime.getClass()
+        });
 
         this.ime.onMsg(msg);
 
@@ -123,8 +125,9 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     @Override
     public void onMsg(InputMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.imeView.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.imeView.getClass()
+        });
 
         this.imeView.onMsg(msg);
 

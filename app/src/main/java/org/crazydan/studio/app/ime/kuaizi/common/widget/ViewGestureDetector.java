@@ -298,9 +298,7 @@ public class ViewGestureDetector {
 
     private void triggerListeners(GestureType type, GestureData data) {
         for (Listener listener : this.listeners) {
-            this.log.beginTreeLog("Dispatch %s to %s",
-                                  () -> new Object[] { type, listener.getClass().getSimpleName() });
-            this.log.debug("Gesture Data: %s", () -> new Object[] { data });
+            this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] { type, listener.getClass() });
 
             listener.onGesture(type, data);
 

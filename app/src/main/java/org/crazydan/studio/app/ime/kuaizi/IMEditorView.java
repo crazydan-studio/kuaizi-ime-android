@@ -115,7 +115,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     @Override
     public void onMsg(UserKeyMsg msg) {
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+                msg.getClass(), this.listener.getClass()
         });
 
         this.listener.onMsg(msg);
@@ -127,7 +127,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     @Override
     public void onMsg(UserInputMsg msg) {
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+                msg.getClass(), this.listener.getClass()
         });
 
         this.listener.onMsg(msg);
@@ -140,6 +140,33 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
+
+        handleMsg(msg);
+
+        this.log.endTreeLog();
+        //////////////////////////////////////////////////////////////
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.keyboardView.getClass()
+        });
+
+        // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
+        this.keyboardView.onMsg(msg);
+
+        this.log.endTreeLog();
+        ////////////////////////////////////////////////////////////
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.inputboardView.getClass()
+        });
+
+        this.inputboardView.onMsg(msg);
+
+        this.log.endTreeLog();
+    }
+
+    private void handleMsg(InputMsg msg) {
         switch (msg.type) {
             case Keyboard_Start_Doing: {
                 toggleShowKeyboardWarning(true);
@@ -178,28 +205,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 showInputKeyPopupWindow(null, false);
                 break;
             }
+            default: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
+            }
         }
-
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.keyboardView.getClass().getSimpleName()
-        });
-
-        // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
-        this.keyboardView.onMsg(msg);
-
-        this.log.endTreeLog();
-        ////////////////////////////////////////////////////////////
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.inputboardView.getClass().getSimpleName()
-        });
-
-        this.inputboardView.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
-        switch (data.key) {
+        switch (data.configKey) {
             case theme: {
                 doLayout();
                 break;

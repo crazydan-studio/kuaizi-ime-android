@@ -121,6 +121,9 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
                 // 所以，无法优先处理嵌套 InputList 的事件
                 boolean needToLockScrolling = msg.data().input instanceof MathExprInput;
 
+                this.log.debug("Update view for message %s with locking scrolling: %s",
+                               () -> new Object[] { msg.type, needToLockScrolling });
+
                 update(msg.inputFactory, needToLockScrolling);
                 break;
             }

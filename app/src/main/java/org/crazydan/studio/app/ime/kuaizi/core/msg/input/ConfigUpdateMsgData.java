@@ -30,12 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
  * @date 2024-12-17
  */
 public class ConfigUpdateMsgData extends InputMsgData {
-    public final ConfigKey key;
+    public final ConfigKey configKey;
     public final Object oldValue;
     public final Object newValue;
 
-    public ConfigUpdateMsgData(ConfigKey key, Object oldValue, Object newValue) {
-        this.key = key;
+    public ConfigUpdateMsgData(ConfigKey configKey, Object oldValue, Object newValue) {
+        this.configKey = configKey;
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
@@ -44,8 +44,8 @@ public class ConfigUpdateMsgData extends InputMsgData {
     public String toString() {
         return getClass().getSimpleName()
                + '{'
-               + "key="
-               + this.key
+               + "configKey="
+               + this.configKey
                + ", oldValue="
                + this.oldValue
                + ", newValue="

@@ -180,29 +180,16 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     /** 响应按键点击、双击等消息，并向上传递 {@link UserKeyMsg} 消息 */
     @Override
     public void onMsg(UserKeyMsg msg) {
-        switch (msg.type) {
-            case FingerMoving_Start: {
-                // 对光标移动和文本选择按键禁用轨迹
-                if ((CtrlKey.Type.Editor_Cursor_Locator.match(msg.data().key) //
-                     || CtrlKey.Type.Editor_Range_Selector.match(msg.data().key)) //
-                    && !isGestureTrailerDisabled() //
-                ) {
-                    this.gestureTrailer.setDisabled(false);
-                }
-                break;
-            }
-            case FingerMoving_Stop: {
-                // 确保已绘制的轨迹被重绘，以避免出现轨迹残留
-                if (!this.gestureTrailer.isDisabled()) {
-                    invalidate();
-                }
-                this.gestureTrailer.setDisabled(true);
-                break;
-            }
-        }
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
+        handleMsg(msg);
+
+        this.log.endTreeLog();
+        //////////////////////////////////////////////////////////////////////
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+                msg.getClass(), this.listener.getClass()
         });
 
         this.listener.onMsg(msg);
@@ -213,9 +200,9 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
     /** 响应来自上层派发的 {@link InputMsg} 消息 */
     @Override
     public void onMsg(InputMsg msg) {
-        // Note: 不影响按键布局的消息，将直接赋值 keyFactory 为 null，
-        // 因此，仅需要关注按键布局之外的影响视图的消息
-        KeyFactory keyFactory = msg.keyFactory;
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
             case Config_Update_Done: {
@@ -227,7 +214,9 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                         ConfigKey.enable_x_input_pad,
                         ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad
                 };
-                if (!CollectionUtils.contains(effects, data.key)) {
+                if (!CollectionUtils.contains(effects, data.configKey)) {
+                    this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
+                            .endTreeLog();
                     return;
                 }
                 break;
@@ -242,6 +231,8 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     setItemAnimator(this.animator);
                 }
                 reset();
+
+                this.log.debug("Do reset for message %s", () -> new Object[] { msg.type });
                 break;
             }
             case InputChars_Input_Doing: {
@@ -251,21 +242,72 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                     && !isGestureTrailerDisabled() //
                 ) {
                     this.gestureTrailer.setDisabled(false);
+
+                    this.log.debug("Enable gesture trailer for message %s", () -> new Object[] { msg.type });
                 }
                 break;
             }
+            // Note: 不影响按键布局的消息，直接返回
+            case IME_Switch_Doing:
+            case InputAudio_Play_Doing:
+                //
+            case Keyboard_Switch_Doing:
+            case Keyboard_Start_Doing:
+            case Keyboard_Hide_Done:
+            case Keyboard_Exit_Done:
+            case Keyboard_HandMode_Switch_Doing:
+            case Keyboard_XPad_Simulation_Terminated:
+                //
+            case InputList_Clean_Done:
+            case InputList_Cleaned_Cancel_Done:
+                //
+            case InputCompletion_Update_Done:
+            case InputCompletion_Clean_Done:
+            case InputCompletion_Apply_Done:
+                //
+            case Input_Choose_Doing:
+            case InputChars_Input_Popup_Hide_Doing:
+            case InputChars_Input_Popup_Show_Doing: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type }) //
+                        .endTreeLog();
+                return;
+            }
         }
 
-        if (keyFactory != null) {
-            this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
-            this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-            this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
-        }
+        this.log.debug("Update view for message %s", () -> new Object[] { msg.type });
 
-        update(keyFactory);
+        update(msg.keyFactory);
 
-        if (keyFactory != null) {
-            this.log.endTreeLog();
+        this.log.endTreeLog();
+    }
+
+    private void handleMsg(UserKeyMsg msg) {
+        switch (msg.type) {
+            case FingerMoving_Start: {
+                // 对光标移动和文本选择按键禁用轨迹
+                if ((CtrlKey.Type.Editor_Cursor_Locator.match(msg.data().key) //
+                     || CtrlKey.Type.Editor_Range_Selector.match(msg.data().key)) //
+                    && !isGestureTrailerDisabled() //
+                ) {
+                    this.gestureTrailer.setDisabled(false);
+
+                    this.log.debug("Enable gesture trailer for message %s", () -> new Object[] { msg.type });
+                }
+                break;
+            }
+            case FingerMoving_Stop: {
+                // 确保已绘制的轨迹被重绘，以避免出现轨迹残留
+                if (!this.gestureTrailer.isDisabled()) {
+                    invalidate();
+                }
+                this.gestureTrailer.setDisabled(true);
+
+                this.log.debug("Disable gesture trailer for message %s", () -> new Object[] { msg.type });
+                break;
+            }
+            default: {
+                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
+            }
         }
     }
 

@@ -24,7 +24,6 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
@@ -46,15 +45,9 @@ public class InputListView extends InputListViewBase implements InputMsgListener
 
     @Override
     public void onMsg(InputMsg msg) {
-        // Note: 不影响输入列表的消息，将直接赋值 inputFactory 为 null，
-        // 因此，仅需要关注输入列表之外的影响视图的消息
-        InputFactory inputFactory = msg.inputFactory;
-
-        if (inputFactory != null) {
-            this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
-            this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-            this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
-        }
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
             case Input_Choose_Done: {
@@ -69,18 +62,46 @@ public class InputListView extends InputListViewBase implements InputMsgListener
                 ConfigKey[] effects = new ConfigKey[] {
                         ConfigKey.theme, ConfigKey.enable_candidate_variant_first
                 };
-                if (!CollectionUtils.contains(effects, data.key)) {
+                if (!CollectionUtils.contains(effects, data.configKey)) {
+                    this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
+                            .endTreeLog();
                     return;
                 }
                 break;
             }
+            // Note: 不影响输入列表视图的消息，直接返回
+            case IME_Switch_Doing:
+            case InputAudio_Play_Doing:
+                //
+            case Keyboard_Switch_Doing:
+            case Keyboard_Start_Doing:
+            case Keyboard_Hide_Done:
+            case Keyboard_Exit_Done:
+            case Keyboard_HandMode_Switch_Doing:
+            case Keyboard_HandMode_Switch_Done:
+            case Keyboard_XPad_Simulation_Terminated:
+                //
+            case Editor_Edit_Doing:
+            case Editor_Cursor_Move_Doing:
+            case Editor_Range_Select_Doing:
+                //
+            case InputCompletion_Update_Done:
+            case InputCompletion_Clean_Done:
+                //
+            case Input_Choose_Doing:
+            case InputChars_Input_Popup_Show_Doing:
+            case InputChars_Input_Popup_Hide_Doing: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type }) //
+                        .endTreeLog();
+                return;
+            }
         }
 
-        update(inputFactory);
+        this.log.debug("Update view for message %s", () -> new Object[] { msg.type });
 
-        if (inputFactory != null) {
-            this.log.endTreeLog();
-        }
+        update(msg.inputFactory);
+
+        this.log.endTreeLog();
     }
 
     // =============================== End: 消息处理 ===================================

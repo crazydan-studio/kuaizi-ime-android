@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.common.log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Supplier;
@@ -35,13 +36,13 @@ public class Logger {
     /** 不做日志处理 */
     private static final Logger noop = new Logger(null) {
         @Override
-        public void beginTreeLog(String title, Supplier<Object[]> argsGetter) {}
+        public Logger beginTreeLog(String title, Supplier<Object[]> argsGetter) {return this;}
 
         @Override
         public void endTreeLog() {}
 
         @Override
-        protected void log(int level, String msg, Supplier<Object[]> argsGetter) {}
+        protected Logger log(int level, String msg, Supplier<Object[]> argsGetter) {return this;}
     };
 
     private final String tag;
@@ -57,32 +58,62 @@ public class Logger {
         this.tag = tag;
     }
 
-    public void beginTreeLog(String title) {
-        beginTreeLog(title, null);
+    public Logger beginTreeLog(String title) {
+        return beginTreeLog(title, null);
     }
 
     /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */
-    public void beginTreeLog(String title, Supplier<Object[]> argsGetter) {
+    public Logger beginTreeLog(String title, Supplier<Object[]> argsGetter) {
         title = TreeLog.format(title, argsGetter);
-
         TreeLog.begin(this.tag, title);
+
+        return this;
     }
 
     public void endTreeLog() {
         TreeLog.end();
     }
 
-    public void debug(String msg) {
-        debug(msg, null);
+    public Logger debug(String msg) {
+        return debug(msg, null);
     }
 
     /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */
-    public void debug(String msg, Supplier<Object[]> argsGetter) {
-        log(Log.DEBUG, msg, argsGetter);
+    public Logger debug(String msg, Supplier<Object[]> argsGetter) {
+        return log(Log.DEBUG, msg, argsGetter);
     }
 
-    protected void log(int level, String msg, Supplier<Object[]> argsGetter) {
+    public Logger warn(String msg) {
+        return warn(msg, null);
+    }
+
+    /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */
+    public Logger warn(String msg, Supplier<Object[]> argsGetter) {
+        return log(Log.WARN, msg, argsGetter);
+    }
+
+    public Logger info(String msg) {
+        return info(msg, null);
+    }
+
+    /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */
+    public Logger info(String msg, Supplier<Object[]> argsGetter) {
+        return log(Log.INFO, msg, argsGetter);
+    }
+
+    public Logger error(String msg) {
+        return error(msg, null);
+    }
+
+    /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */
+    public Logger error(String msg, Supplier<Object[]> argsGetter) {
+        return log(Log.ERROR, msg, argsGetter);
+    }
+
+    protected Logger log(int level, String msg, Supplier<Object[]> argsGetter) {
         TreeLog.log(level, this.tag, msg, argsGetter);
+
+        return this;
     }
 
     private static class TreeLog {
@@ -128,7 +159,7 @@ public class Logger {
             }
 
             StringBuffer sb = new StringBuffer();
-            sb.append('\n');
+            sb.append("↙˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜").append('\n');
             print(sb, log, 0);
 
             Log.i("Kuaizi_IME_TreeLog", sb.toString());
@@ -151,7 +182,13 @@ public class Logger {
         public static String format(String msg, Supplier<Object[]> argsGetter) {
             Object[] args = argsGetter != null ? argsGetter.get() : null;
 
-            return args != null ? String.format(msg, args) : msg;
+            if (args != null) {
+                args = Arrays.stream(args)
+                             .map(arg -> arg instanceof Class ? ((Class<?>) arg).getSimpleName() : arg)
+                             .toArray();
+                return String.format(msg, args);
+            }
+            return msg;
         }
 
         private static void print(StringBuffer sb, TreeLog log, int depth) {

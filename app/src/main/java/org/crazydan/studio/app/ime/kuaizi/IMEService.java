@@ -225,8 +225,9 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
 
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.ime.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.ime.getClass()
+        });
 
         this.ime.onMsg(msg);
 
@@ -235,8 +236,9 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
 
     @Override
     public void onMsg(UserKeyMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.ime.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.ime.getClass()
+        });
 
         this.ime.onMsg(msg);
 
@@ -245,16 +247,17 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
 
     @Override
     public void onMsg(InputMsg msg) {
-        this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
-                              + " to " + this.imeView.getClass().getSimpleName());
+        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                msg.getClass(), this.imeView.getClass()
+        });
 
         this.imeView.onMsg(msg);
 
         this.log.endTreeLog();
         /////////////////////////////////////////////////////////////////
-        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
-        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         handleMsg(msg);
 
@@ -302,6 +305,9 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
             case IME_Switch_Doing: {
                 switchIme();
                 break;
+            }
+            default: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
     }

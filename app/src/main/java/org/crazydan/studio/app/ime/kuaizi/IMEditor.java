@@ -234,11 +234,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
-
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.keyboard.getClass().getSimpleName()
+                msg.getClass(), this.keyboard.getClass()
         });
 
         Key key = msg.data().key;
@@ -256,11 +253,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
-
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.inputboard.getClass().getSimpleName()
+                msg.getClass(), this.inputboard.getClass()
         });
 
         withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
@@ -275,31 +269,39 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void onMsg(InputMsg msg) {
         // Note: 涉及消息的嵌套处理，可能会发生键盘切换，因此，不能定义 keyboard 的本地变量
 
-        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass().getSimpleName() });
-        this.log.debug("Message Type: %s", () -> new Object[] { msg.type });
-        this.log.debug("Message Data: %s", () -> new Object[] { msg.data() });
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
                 on_Keyboard_Switch_Doing_Msg(msg.data());
                 // Note: 在键盘切换过程中，不向上转发消息
 
-                this.log.endTreeLog();
+                this.log.warn("Do not dispatch message %s", () -> new Object[] { msg.type }) //
+                        .endTreeLog();
                 return;
             }
             case Keyboard_HandMode_Switch_Doing: {
                 on_Keyboard_HandMode_Switch_Doing_Msg(msg.data());
 
-                this.log.endTreeLog();
+                this.log.warn("Do not dispatch message %s", () -> new Object[] { msg.type }) //
+                        .endTreeLog();
                 return;
             }
             // 向键盘派发 InputList 的消息
             case Input_Choose_Doing:
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done: {
+                this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                        msg.getClass(), this.keyboard.getClass()
+                });
+
                 withKeyboardContext((context) -> {
                     this.keyboard.onMsg(context, msg);
                 });
+
+                this.log.endTreeLog();
                 break;
             }
             case InputList_PairSymbol_Commit_Doing: {
@@ -324,18 +326,27 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 }
                 break;
             }
-            default: {
+            case Input_Pending_Drop_Done:
+            case InputChars_Input_Doing:
+            case InputChars_Input_Done:
+            case InputCandidate_Choose_Done: {
                 // 若产生新的输入，则需要清除 已删除/已提交 的恢复数据
                 if (!this.inputList.isEmpty()) {
+                    this.log.debug("Clear %s's committed/cleaned for message %s",
+                                   () -> new Object[] { this.inputboard.getClass(), msg.type });
+
                     this.inputboard.clearCommitted();
                     this.inputboard.clearCleaned();
                 }
+                break;
+            }
+            default: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
+        this.log.endTreeLog();
 
         fire_InputMsg(msg.type, msg.data());
-
-        this.log.endTreeLog();
     }
 
     /** 发送 {@link InputMsg} 消息：附带空的消息数据 */
@@ -345,8 +356,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 发送 {@link InputMsg} 消息 */
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
-        KeyFactory keyFactory = createKeyFactory(type);
-        InputFactory inputFactory = createInputFactory(type);
+        KeyFactory keyFactory = createKeyFactory();
+        InputFactory inputFactory = createInputFactory();
 
         InputMsg msg = InputMsg.build((b) -> b.type(type)
                                               .data(data)
@@ -355,7 +366,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                                               .inputList(this.inputList, this.inputboard.canRestoreCleaned()));
 
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass().getSimpleName(), this.listener.getClass().getSimpleName()
+                msg.getClass(), this.listener.getClass()
         });
 
         this.listener.onMsg(msg);
@@ -497,33 +508,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
-    private KeyFactory createKeyFactory(InputMsgType type) {
-        // Note: 不影响按键布局的消息，不构建 KeyFactory
-        switch (type) {
-            case IME_Switch_Doing:
-            case InputAudio_Play_Doing:
-                //
-            case Keyboard_Switch_Doing:
-            case Keyboard_Start_Doing:
-            case Keyboard_Hide_Done:
-            case Keyboard_Exit_Done:
-            case Keyboard_HandMode_Switch_Doing:
-            case Keyboard_XPad_Simulation_Terminated:
-                //
-            case InputList_Clean_Done:
-            case InputList_Cleaned_Cancel_Done:
-                //
-            case InputCompletion_Update_Done:
-            case InputCompletion_Clean_Done:
-            case InputCompletion_Apply_Done:
-                //
-            case Input_Choose_Doing:
-            case InputChars_Input_Popup_Hide_Doing:
-            case InputChars_Input_Popup_Show_Doing: {
-                return null;
-            }
-        }
-
+    private KeyFactory createKeyFactory() {
         KeyFactory factory = this.keyboard != null ? withKeyboardContext(this.keyboard::buildKeyFactory) : null;
 
         boolean leftHandMode = this.config.get(ConfigKey.hand_mode) == Keyboard.HandMode.left;
@@ -539,34 +524,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     /** 创建 {@link InputFactory} */
-    private InputFactory createInputFactory(InputMsgType type) {
-        // Note: 不影响输入列表视图的消息，不构建 InputFactory
-        switch (type) {
-            case IME_Switch_Doing:
-            case InputAudio_Play_Doing:
-                //
-            case Keyboard_Switch_Doing:
-            case Keyboard_Start_Doing:
-            case Keyboard_Hide_Done:
-            case Keyboard_Exit_Done:
-            case Keyboard_HandMode_Switch_Doing:
-            case Keyboard_HandMode_Switch_Done:
-            case Keyboard_XPad_Simulation_Terminated:
-                //
-            case Editor_Edit_Doing:
-            case Editor_Cursor_Move_Doing:
-            case Editor_Range_Select_Doing:
-                //
-            case InputCompletion_Update_Done:
-            case InputCompletion_Clean_Done:
-                //
-            case Input_Choose_Doing:
-            case InputChars_Input_Popup_Show_Doing:
-            case InputChars_Input_Popup_Hide_Doing: {
-                return null;
-            }
-        }
-
+    private InputFactory createInputFactory() {
         InputboardContext context = createInputboardContext();
         return this.inputboard.buildInputFactory(context);
     }
