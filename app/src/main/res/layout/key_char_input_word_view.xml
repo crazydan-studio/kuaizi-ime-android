@@ -41,7 +41,7 @@ Note：其高宽会动态设置，此处可设置任意值
             app:justifyContent="center">
 
         <TextView
-                android:id="@+id/spell_view"
+                android:id="@+id/word_spell_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_word_key_word_spell_text_size" />

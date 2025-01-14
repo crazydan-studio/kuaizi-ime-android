@@ -52,8 +52,6 @@ public class InputCompletionListView extends RecyclerView<InputCompletionListVie
     public InputCompletionListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        getAdapter().setLayoutManager((InputCompletionListViewLayoutManager) getLayoutManager());
-
         RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(this);
         gesture.addListener(this);
     }

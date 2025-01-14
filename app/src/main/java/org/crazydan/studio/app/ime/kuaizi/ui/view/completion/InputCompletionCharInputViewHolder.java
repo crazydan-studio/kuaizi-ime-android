@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.completion;
 
 import android.view.View;
 import android.widget.TextView;
@@ -26,48 +26,43 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
 /**
- * {@link CharInput} 视图的 {@link RecyclerView.ViewHolder}
+ * {@link InputCompletion.CharInputViewData} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2025-01-14
  */
-public class CharInputViewHolder extends InputViewHolder {
+public class InputCompletionCharInputViewHolder extends InputViewHolder {
     private final TextView wordSpellView;
     private final TextView wordView;
+    private final TextView latinView;
 
-    public CharInputViewHolder(@NonNull View itemView) {
+    public InputCompletionCharInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.wordSpellView = itemView.findViewById(R.id.word_spell_view);
         this.wordView = itemView.findViewById(R.id.word_view);
+        this.latinView = itemView.findViewById(R.id.latin_view);
     }
 
-    @Override
-    public void bind(InputViewData data) {
-        super.bind(data);
+    public void bind(InputCompletion.CharInputViewData data) {
+        boolean hasSpell = !CharUtils.isBlank(data.spell);
 
-        setSelectedBgColor(this.itemView, data.selected);
-
-        bind(data.text, data.spell, data.selected);
-    }
-
-    private void bind(String text, String spell, boolean selected) {
         whenViewReady(this.wordView, (view) -> {
-            setSelectedTextColor(view, selected);
-            view.setText(text);
+            view.setText(hasSpell ? data.text : null);
+            ViewUtils.visible(view, hasSpell);
+        });
+        whenViewReady(this.latinView, (view) -> {
+            view.setText(!hasSpell ? data.text : null);
+            ViewUtils.visible(view, !hasSpell);
         });
 
         whenViewReady(this.wordSpellView, (view) -> {
-            boolean shown = !CharUtils.isBlank(spell);
-            if (shown) {
-                setSelectedTextColor(view, selected);
-                view.setText(spell);
-            }
-            ViewUtils.visible(view, shown);
+            view.setText(hasSpell ? data.spell : null);
+            ViewUtils.visible(view, hasSpell);
         });
     }
 }

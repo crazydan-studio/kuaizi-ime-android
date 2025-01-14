@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.completion;
 
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -37,14 +36,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
  */
 public class InputCompletionListViewAdapter
         extends RecyclerViewAdapter<InputCompletion.ViewData, InputCompletionViewHolder> {
-    private InputCompletionListViewLayoutManager layoutManager;
 
     public InputCompletionListViewAdapter() {
         super(ItemUpdatePolicy.differ);
-    }
-
-    public void setLayoutManager(InputCompletionListViewLayoutManager layoutManager) {
-        this.layoutManager = layoutManager;
     }
 
     @Override
@@ -52,8 +46,6 @@ public class InputCompletionListViewAdapter
         InputCompletion.ViewData item = getItem(position);
 
         holder.bind(item);
-
-        holder.getScrollView().setOnTouchListener(this::handleScrollViewEvent);
     }
 
     @NonNull
@@ -61,23 +53,5 @@ public class InputCompletionListViewAdapter
     public InputCompletionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = inflateItemView(parent, R.layout.input_completion_view);
         return new InputCompletionViewHolder(view);
-    }
-
-    private boolean handleScrollViewEvent(View view, MotionEvent event) {
-        boolean canScrollCompletion = view.canScrollHorizontally(-1) || view.canScrollHorizontally(1);
-
-        // https://stackoverflow.com/questions/29426858/scrollview-inside-a-recyclerview-android/68506793#answer-68506793
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                this.layoutManager.enableScroll(!canScrollCompletion);
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL: {
-                this.layoutManager.enableScroll(true);
-                break;
-            }
-        }
-        return false;
     }
 }

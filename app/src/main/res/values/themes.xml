@@ -30,8 +30,9 @@
         <item name="input_trail_color">?attr/key_highlight_fg_color</item>
         <item name="input_selection_bg_color">#ffdadada</item>
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
-        <item name="input_completions_bg_color">?attr/input_selection_bg_color</item>
-        <item name="input_completions_fg_color">?attr/input_selection_fg_color</item>
+        <item name="input_completions_bg_color">?attr/key_bg_color</item>
+        <item name="input_completions_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="input_completions_border_color">?attr/keyboard_border_color</item>
         <item name="input_completions_shadow_style">1 1 2 #a3c5c5c5</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
@@ -110,6 +111,7 @@
         <item name="input_selection_fg_color">?attr/key_fg_color</item>
         <item name="input_completions_bg_color">?attr/key_bg_color</item>
         <item name="input_completions_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="input_completions_border_color">?attr/keyboard_border_color</item>
         <item name="input_completions_shadow_style">1 1 2 #a3000000</item>
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>

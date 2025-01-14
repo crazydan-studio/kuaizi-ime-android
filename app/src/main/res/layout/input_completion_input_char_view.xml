@@ -17,40 +17,40 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!-- 字符输入间的间隔通过 GapInput 占位实现 -->
 <com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:flexWrap="nowrap"
         app:flexDirection="column"
         app:alignItems="center"
-        app:alignContent="stretch"
-        android:background="?attr/input_bg_color">
+        app:alignContent="stretch">
 
-    <!-- 以上下结构布局读音和输入 -->
     <TextView
             android:id="@+id/word_spell_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/char_input_word_spell_text_size"
-            android:gravity="center"
-            android:textColor="?attr/input_fg_color" />
+            android:textSize="@dimen/input_completions_word_spell_text_size"
+            android:textColor="?attr/input_completions_fg_color" />
 
-    <LinearLayout
+    <!-- 含读音的字和不含读音的拉丁文只出现一个，后者因为不含读音，故而其字体更大 -->
+    <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            app:layout_flexGrow="1">
+            android:layout_height="wrap_content">
 
         <TextView
                 android:id="@+id/word_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:minWidth="4dp"
-                android:gravity="center"
-                android:textSize="@dimen/char_input_word_text_size"
-                android:textColor="?attr/input_fg_color" />
-    </LinearLayout>
+                android:textSize="@dimen/input_completions_word_text_size"
+                android:textColor="?attr/input_completions_fg_color" />
+
+        <TextView
+                android:id="@+id/latin_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/input_completions_latin_text_size"
+                android:textColor="?attr/input_completions_fg_color" />
+    </FrameLayout>
 
 </com.google.android.flexbox.FlexboxLayout>

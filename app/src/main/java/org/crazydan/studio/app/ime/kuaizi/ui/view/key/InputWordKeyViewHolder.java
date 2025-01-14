@@ -45,7 +45,7 @@ public class InputWordKeyViewHolder extends KeyViewHolder<View> {
     public InputWordKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.spellView = this.fgView.findViewById(R.id.spell_view);
+        this.spellView = this.fgView.findViewById(R.id.word_spell_view);
         this.wordView = this.fgView.findViewById(R.id.word_view);
         this.traditionalMarkView = itemView.findViewById(R.id.traditional_mark_view);
     }

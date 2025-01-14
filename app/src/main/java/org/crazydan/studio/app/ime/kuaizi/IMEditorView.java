@@ -348,7 +348,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
         int width = WindowManager.LayoutParams.WRAP_CONTENT;
-        int height = (int) (contentView.getMeasuredHeight() + ScreenUtils.dpToPx(2f));
+        int height = contentView.getMeasuredHeight();
 
         showPopupWindow(window, width, height, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 
@@ -390,7 +390,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private void showPopupWindow(PopupWindow window, int width, int height, int gravity) {
         window.setWidth(width);
-        window.setHeight(height);
+        // 气泡提示的高度均加上空白的高度 2dp
+        window.setHeight(height > 0 ? (int) (height + ScreenUtils.dpToPx(2f)) : height);
 
         // 放置于被布局的键盘之上
         View parent = this;

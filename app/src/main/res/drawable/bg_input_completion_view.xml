@@ -17,13 +17,10 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-        android:width="24dp"
-        android:height="16dp"
-        android:viewportWidth="24"
-        android:viewportHeight="16">
-    <!-- https://www.iconfinder.com/icons/211653/cloud_icon -->
-    <path
-            android:pathData="m19.214,6.526c0,-0.065 0.01,-0.129 0.01,-0.194C19.225,2.832 16.506,0 13.152,0 10.733,0 8.655,1.475 7.678,3.608 7.253,3.387 6.776,3.258 6.272,3.258c-1.548,0 -2.839,1.179 -3.086,2.719C1.328,6.634 0,8.459 0,10.608c0,2.703 0.798,4.895 3.391,4.9h15.829,1.535c2.372,0 2.753,-2.019 2.753,-4.491 0.005,-2.477 -1.921,-4.485 -4.293,-4.491z"
-            android:fillColor="?attr/input_completions_bg_color" />
-</vector>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="?attr/input_completions_bg_color" />
+    <stroke
+            android:width="0.5dp"
+            android:color="?attr/input_completions_border_color" />
+    <corners android:radius="6dp" />
+</shape>
