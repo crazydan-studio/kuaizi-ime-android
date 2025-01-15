@@ -67,12 +67,15 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         public final boolean frozen;
         /** 输入列表是否为空 */
         public final boolean empty;
+        /** 输入列表是否有输入补全 */
+        public final boolean hasCompletions;
         /** 是否可取消对输入列表的清空 */
         public final boolean canCancelClean;
 
-        InputListState(boolean frozen, boolean empty, boolean canCancelClean) {
+        InputListState(boolean frozen, boolean empty, boolean hasCompletions, boolean canCancelClean) {
             this.frozen = frozen;
             this.empty = empty;
+            this.hasCompletions = hasCompletions;
             this.canCancelClean = canCancelClean;
         }
 
@@ -127,8 +130,13 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         }
 
         /** @see InputMsg#inputList */
-        public Builder inputList(InputList inputList, boolean canCancelCleanInputList) {
-            this.inputList = new InputListState(inputList.isFrozen(), inputList.isEmpty(), canCancelCleanInputList);
+        public Builder inputList(
+                InputList inputList, boolean hasCompletionsInputList, boolean canCancelCleanInputList
+        ) {
+            this.inputList = new InputListState(inputList.isFrozen(),
+                                                inputList.isEmpty(),
+                                                hasCompletionsInputList,
+                                                canCancelCleanInputList);
             return this;
         }
 

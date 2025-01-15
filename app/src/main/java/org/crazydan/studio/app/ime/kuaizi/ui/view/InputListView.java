@@ -85,8 +85,7 @@ public class InputListView extends InputListViewBase implements InputMsgListener
             case Editor_Cursor_Move_Doing:
             case Editor_Range_Select_Doing:
                 //
-            case InputCompletion_Update_Done:
-            case InputCompletion_Clean_Done:
+            case InputCompletion_Create_Done:
                 //
             case Input_Choose_Doing:
             case InputChars_Input_Popup_Show_Doing:

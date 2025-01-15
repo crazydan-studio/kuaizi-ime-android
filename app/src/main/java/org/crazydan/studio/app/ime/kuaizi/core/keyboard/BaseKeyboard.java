@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletions;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -50,7 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
@@ -70,7 +71,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChar
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Popup_Hide_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Popup_Show_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Update_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Committed_Revoke_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_PairSymbol_Commit_Doing;
@@ -567,7 +568,6 @@ public abstract class BaseKeyboard implements Keyboard {
     /** 更新待输入的输入补全 */
     protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
         InputList inputList = context.inputList;
-        inputList.clearCompletions();
 
         CharInput pending = inputList.getCharPending();
         if (Input.isEmpty(pending) || !CharInput.isLatin(pending)) {
@@ -575,6 +575,8 @@ public abstract class BaseKeyboard implements Keyboard {
         }
 
         int startPosition = inputList.getSelectedIndex();
+        InputCompletions completions = inputList.newLatinCompletions(startPosition);
+
         String text = pending.getText().toString();
         getTopBestMatchedLatins(text).forEach((latin) -> {
             // Note: 对于拉丁文输入的补全，采用逐个字符构建，
@@ -585,13 +587,13 @@ public abstract class BaseKeyboard implements Keyboard {
             }
 
             CharInput input = CharInput.from(keys);
-            InputCompletion completion = new InputCompletion(startPosition);
-            completion.add(input);
+            InputCompletion completion = new InputCompletion();
+            completion.inputs.add(input);
 
-            inputList.addCompletion(completion);
+            completions.add(completion);
         });
 
-        fire_Input_Completion_Update_Done(context);
+        fire_Input_Completion_Create_Done(context);
     }
 
     // ======================== End: 输入补全 ========================
@@ -894,12 +896,12 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputMsg(context, InputChars_Input_Done, data);
     }
 
-    /** 触发 {@link InputMsgType#InputCompletion_Update_Done} 消息 */
-    protected void fire_Input_Completion_Update_Done(KeyboardContext context) {
+    /** 触发 {@link InputMsgType#InputCompletion_Create_Done} 消息 */
+    protected void fire_Input_Completion_Create_Done(KeyboardContext context) {
         InputList inputList = context.inputList;
-        InputCompletionUpdateMsgData data = new InputCompletionUpdateMsgData(inputList.getCompletionViewDataList());
+        InputCompletionMsgData data = new InputCompletionMsgData(inputList.getCompletionViewDataList());
 
-        fire_InputMsg(context, InputCompletion_Update_Done, data);
+        fire_InputMsg(context, InputCompletion_Create_Done, data);
     }
 
     /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */

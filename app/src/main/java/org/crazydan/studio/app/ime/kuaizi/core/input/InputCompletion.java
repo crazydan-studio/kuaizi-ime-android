@@ -29,33 +29,18 @@ import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import static org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData.getInputTextAndSpell;
 
 /**
- * {@link Input} 的输入补全
- * <p/>
- * 用于自动补全正在输入的英文单词或中文句子等
+ * {@link InputCompletions 输入补全}的内容
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
 public class InputCompletion {
-    /**
-     * 开始应用补全的 {@link Input} 所在的位置
-     * <p/>
-     * 在应用补全时，将从该位置开始，挨个替换输入列表中的输入
-     */
-    public final int startPosition;
+    /** 补全的输入列表 */
     public final List<CharInput> inputs = new ArrayList<>();
-
-    public InputCompletion(int startPosition) {
-        this.startPosition = startPosition;
-    }
-
-    public void add(CharInput input) {
-        this.inputs.add(input);
-    }
 
     @Override
     public String toString() {
-        return this.startPosition + ": " + this.inputs.stream().map(Objects::toString).collect(Collectors.joining(" "));
+        return this.inputs.stream().map(Objects::toString).collect(Collectors.joining(" "));
     }
 
     /** 输入补全的视图数据 */

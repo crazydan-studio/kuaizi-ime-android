@@ -66,7 +66,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Done;
@@ -150,9 +149,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
     public void hide() {
-        this.inputList.clearCompletions();
-        fire_InputMsg(InputCompletion_Clean_Done);
-
         fire_InputMsg(Keyboard_Hide_Done);
     }
 
@@ -363,7 +359,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                                               .data(data)
                                               .keyFactory(keyFactory)
                                               .inputFactory(inputFactory)
-                                              .inputList(this.inputList, this.inputboard.canRestoreCleaned()));
+                                              .inputList(this.inputList,
+                                                         this.inputList.verifyCompletions(),
+                                                         this.inputboard.canRestoreCleaned()));
 
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
                 msg.getClass(), this.listener.getClass()

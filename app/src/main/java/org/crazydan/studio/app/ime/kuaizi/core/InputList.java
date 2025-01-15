@@ -32,6 +32,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletions;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -57,8 +58,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 public class InputList {
     private final List<Input> inputs = new ArrayList<>();
     private final Cursor cursor = new Cursor();
+
     /** 输入补全 */
-    private final List<InputCompletion> completions = new ArrayList<>();
+    private InputCompletions completions;
 
     private boolean frozen;
     private Input.Option inputOption;
@@ -137,42 +139,136 @@ public class InputList {
 
     /** 获取输入补全的视图数据 */
     public List<InputCompletion.ViewData> getCompletionViewDataList() {
-        return this.completions.stream().map((completion) -> {
+        return this.completions.data.stream().map((completion) -> {
             // Note: 使用输入选项，以确保汉字的繁/简转换符合应用的配置要求
             return InputCompletion.ViewData.create(completion, getInputOption());
         }).collect(Collectors.toList());
     }
 
-    /** 添加输入补全 */
-    public void addCompletion(InputCompletion completion) {
-        this.completions.add(completion);
+    /**
+     * 新建 {@link InputCompletions.Type#Latin} 类型的输入补全
+     * <p/>
+     * Note: 当前为单输入替换，仅需指定待输入所在的位置
+     */
+    public InputCompletions newLatinCompletions(int start) {
+        this.completions = new InputCompletions(InputCompletions.Type.Latin, start, start + 1);
+        return this.completions;
     }
 
-    /** 清空输入补全 */
-    public void clearCompletions() {
-        this.completions.clear();
+    /** 新建 {@link InputCompletions.Type#Phrase_Word} 类型的输入补全 */
+    public InputCompletions newPhraseWordCompletions(int start, int end) {
+        this.completions = new InputCompletions(InputCompletions.Type.Phrase_Word, start, end);
+        return this.completions;
+    }
+
+    /**
+     * 检查输入补全，若针对{@link #getSelected() 当前选中输入}无有效的输入补全，
+     * 则清空已有的输入补全数据，否则，保留现有的输入补全数据
+     *
+     * @return 若有有效的输入补全数据，则返回 <code>true</code>，
+     * 否则，返回 <code>false</code>
+     */
+    public boolean verifyCompletions() {
+        if (this.completions == null || this.frozen) {
+            return false;
+        }
+
+        int selectedIndex = getSelectedIndex();
+        // 当前选中输入在补全的应用范围之外时，对其不做补全
+        if (selectedIndex < this.completions.applyRange.start //
+            || selectedIndex >= this.completions.applyRange.end //
+        ) {
+            this.completions = null;
+            return false;
+        }
+
+        Input selected = getSelected();
+        Input pending = getPending();
+
+        switch (this.completions.type) {
+            // 拉丁文补全仅针对拉丁文输入
+            case Latin: {
+                if ((Input.isEmpty(pending) && !CharInput.isLatin(selected)) //
+                    || (!Input.isEmpty(pending) && !CharInput.isLatin(pending)) //
+                ) {
+                    this.completions = null;
+                    return false;
+                }
+                break;
+            }
+            // 短语补全仅针对拼音输入
+            case Phrase_Word: {
+                if ((Input.isEmpty(pending) && !CharInput.isPinyin(selected)) //
+                    || (!Input.isEmpty(pending) && !CharInput.isPinyin(pending)) //
+                ) {
+                    this.completions = null;
+                    return false;
+                }
+                break;
+            }
+        }
+        return !this.completions.data.isEmpty();
     }
 
     /** 应用指定位置的输入补全。应用后，当前的输入补全将被清空，并将光标移到补全内容的尾部 */
     public void applyCompletion(int position) {
-        InputCompletion completion = this.completions.get(position);
-        int replaceEndIndex = getSelectedIndex();
+        InputCompletions completions = this.completions;
+        this.completions = null;
 
-        int total = completion.inputs.size();
-        for (int i = 0; i < total; i++) {
-            CharInput input = completion.inputs.get(i);
-            // Note: 从补全开始位置到当前选中位置的输入执行替换，之后的输入则执行插入
-            int index = completion.startPosition + i;
-            if (index <= replaceEndIndex) {
-                select(index);
+        int selectedIndex = getSelectedIndex();
+        boolean isGapSelected = isGapSelected();
+        int rangeStart = completions.applyRange.start;
+        int rangeEnd = completions.applyRange.end;
+
+        // 先确认当前的待输入，以确保补全位置是确定的
+        confirmPending();
+        // 补充在 Gap 上的待输入确认后的补全应用位置的偏移量
+        // Note: 当前选中输入的位置必然已在补全的应用范围内，否则，是不会气泡显示补全内容的
+        if (isGapSelected) {
+            rangeStart += selectedIndex == rangeStart ? 1 : 0;
+            rangeEnd += 1;
+        }
+
+        // 在补全应用范围内的 CharInput 列表
+        List<CharInput> charInputsInRange = this.inputs.subList(rangeStart, rangeEnd)
+                                                       .stream()
+                                                       .filter(input -> input instanceof CharInput)
+                                                       .map(input -> (CharInput) input)
+                                                       .collect(Collectors.toList());
+
+        InputCompletion completion = completions.data.get(position);
+        // 在应用范围内的输入，实施补全替换
+        for (int i = 0; i < charInputsInRange.size(); i++) {
+            CharInput target = charInputsInRange.get(i);
+            CharInput source = completion.inputs.get(i);
+
+            switch (completions.type) {
+                case Latin: {
+                    select(target);
+                    withPending(source);
+                    confirmPending();
+                    break;
+                }
+                case Phrase_Word: {
+                    if (!target.isWordConfirmed() && source.hasWord()) {
+                        target.setWord(source.getWord());
+                    }
+                    break;
+                }
             }
+        }
 
-            withPending(input);
+        // 在应用范围之外多余的补全，做输入新增：倒序新增，以确保新增位置始终不变
+        for (int i = completion.inputs.size() - 1; i >= charInputsInRange.size(); i--) {
+            CharInput source = completion.inputs.get(i);
+
+            select(rangeEnd);
+            withPending(source);
             confirmPending();
         }
-        confirmPendingAndSelectNext();
 
-        clearCompletions();
+        // 确保光标移动到后续位置
+        confirmPendingAndSelectNext();
     }
 
     // ======================== End: 处理输入补全 ==========================
@@ -433,7 +529,7 @@ public class InputList {
             this.inputs.addAll(selectedIndex, Arrays.asList(gap, pending));
         } else {
             // 保持对配对符号的引用
-            if (selected instanceof CharInput) {
+            if (selected instanceof CharInput && pending instanceof CharInput) {
                 ((CharInput) pending).setPair(((CharInput) selected).getPair());
             }
 
@@ -1044,7 +1140,7 @@ public class InputList {
     /** 指定的输入是否代表段落结束 */
     private boolean isPinyinPhraseEndAt(int index) {
         Input input = getInput(index, true);
-        if (input == null || CharInput.isSpace(input)) {
+        if (!(input instanceof CharInput) || CharInput.isSpace(input)) {
             return true;
         } else if (!CharInput.isSymbol(input)) {
             return false;

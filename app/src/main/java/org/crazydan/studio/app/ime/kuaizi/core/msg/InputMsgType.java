@@ -49,10 +49,8 @@ public enum InputMsgType {
     /** {@link InputList#getSelected 当前已选中输入}已删除 */
     Input_Selected_Delete_Done,
 
-    /** 输入补全已更新 */
-    InputCompletion_Update_Done,
-    /** 输入补全已清除 */
-    InputCompletion_Clean_Done,
+    /** 输入补全已生成 */
+    InputCompletion_Create_Done,
     /** 输入补全已应用 */
     InputCompletion_Apply_Done,
 

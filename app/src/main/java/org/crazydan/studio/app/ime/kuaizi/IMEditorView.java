@@ -50,7 +50,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
@@ -74,9 +74,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private InputboardView inputboardView;
     private TextView keyboardWarningView;
 
-    private PopupWindow inputKeyPopupWindow;
-    private PopupWindow inputCompletionListPopupWindow;
-    private InputCompletionListView inputCompletionListView;
+    private PopupWindow inputPopupWindow;
+    private PopupWindow inputCompletionsPopupWindow;
+    private InputCompletionListView inputCompletionsView;
 
     private boolean needToAddBottomSpacing;
 
@@ -167,6 +167,11 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private void handleMsg(InputMsg msg) {
+        // Note: 输入补全没有确定的隐藏时机，故而，需针对每个消息做一次检查
+        if (!msg.inputList.hasCompletions) {
+            showInputCompletionsPopupWindow(null);
+        }
+
         switch (msg.type) {
             case Keyboard_Start_Doing: {
                 toggleShowKeyboardWarning(true);
@@ -186,23 +191,18 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
-            case InputCompletion_Update_Done: {
-                InputCompletionUpdateMsgData data = msg.data();
-                showInputCompletionListPopupWindow(data.completions);
-                break;
-            }
-            case InputCompletion_Clean_Done:
-            case InputCompletion_Apply_Done: {
-                showInputCompletionListPopupWindow(null);
+            case InputCompletion_Create_Done: {
+                InputCompletionMsgData data = msg.data();
+                showInputCompletionsPopupWindow(data.completions);
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = msg.data();
-                showInputKeyPopupWindow(data.text, data.hideDelayed);
+                showInputPopupWindow(data.text, data.hideDelayed);
                 break;
             }
             case InputChars_Input_Popup_Hide_Doing: {
-                showInputKeyPopupWindow(null, false);
+                showInputPopupWindow(null, false);
                 break;
             }
             default: {
@@ -262,10 +262,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.inputboardView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
-        this.inputCompletionListView = inflateWithTheme(R.layout.input_completion_list_view, themeResId, false);
-        this.inputCompletionListView.setListener(this);
+        this.inputCompletionsView = inflateWithTheme(R.layout.input_completion_list_view, themeResId, false);
+        this.inputCompletionsView.setListener(this);
 
-        preparePopupWindows(this.inputCompletionListView, inputKeyView);
+        preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         updateBottomSpacing(true);
     }
@@ -308,14 +308,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     // ==================== Start: 气泡提示 ==================
 
-    private void showInputCompletionListPopupWindow(List<InputCompletion.ViewData> completions) {
-        PopupWindow window = this.inputCompletionListPopupWindow;
+    private void showInputCompletionsPopupWindow(List<InputCompletion.ViewData> completions) {
+        PopupWindow window = this.inputCompletionsPopupWindow;
         if (CollectionUtils.isEmpty(completions)) {
             window.dismiss();
             return;
         }
 
-        this.inputCompletionListView.update(completions);
+        this.inputCompletionsView.update(completions);
         if (window.isShowing()) {
             return;
         }
@@ -329,12 +329,12 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
     }
 
-    private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
+    private void showInputPopupWindow(String key, boolean hideDelayed) {
         if (this.config.bool(ConfigKey.disable_input_key_popup_tips)) {
             return;
         }
 
-        PopupWindow window = this.inputKeyPopupWindow;
+        PopupWindow window = this.inputPopupWindow;
         if (CharUtils.isBlank(key)) {
             // Note: 存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
             post(window::dismiss);
@@ -360,8 +360,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void preparePopupWindows(InputCompletionListView completionsView, View keyView) {
         resetPopupWindows();
 
-        initPopupWindow(this.inputCompletionListPopupWindow, completionsView);
-        initPopupWindow(this.inputKeyPopupWindow, keyView);
+        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
+        initPopupWindow(this.inputPopupWindow, keyView);
     }
 
     private void initPopupWindow(PopupWindow window, View contentView) {
@@ -375,16 +375,16 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private void resetPopupWindows() {
-        if (this.inputCompletionListPopupWindow != null) {
-            this.inputCompletionListPopupWindow.dismiss();
+        if (this.inputCompletionsPopupWindow != null) {
+            this.inputCompletionsPopupWindow.dismiss();
         } else {
-            this.inputCompletionListPopupWindow = new PopupWindow();
+            this.inputCompletionsPopupWindow = new PopupWindow();
         }
 
-        if (this.inputKeyPopupWindow != null) {
-            this.inputKeyPopupWindow.dismiss();
+        if (this.inputPopupWindow != null) {
+            this.inputPopupWindow.dismiss();
         } else {
-            this.inputKeyPopupWindow = new PopupWindow();
+            this.inputPopupWindow = new PopupWindow();
         }
     }
 

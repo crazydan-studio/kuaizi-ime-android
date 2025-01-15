@@ -261,8 +261,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             case InputList_Clean_Done:
             case InputList_Cleaned_Cancel_Done:
                 //
-            case InputCompletion_Update_Done:
-            case InputCompletion_Clean_Done:
+            case InputCompletion_Create_Done:
             case InputCompletion_Apply_Done:
                 //
             case Input_Choose_Doing:

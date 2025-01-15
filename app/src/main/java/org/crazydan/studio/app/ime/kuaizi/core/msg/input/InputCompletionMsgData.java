@@ -26,15 +26,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputCompletion_Update_Done} 的消息数据
+ * {@link InputMsgType#InputCompletion_Create_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-16
  */
-public class InputCompletionUpdateMsgData extends InputMsgData {
+public class InputCompletionMsgData extends InputMsgData {
     public final List<InputCompletion.ViewData> completions;
 
-    public InputCompletionUpdateMsgData(List<InputCompletion.ViewData> completions) {
+    public InputCompletionMsgData(List<InputCompletion.ViewData> completions) {
         this.completions = completions;
     }
 }

@@ -344,7 +344,6 @@ public class MathKeyboard extends BaseKeyboard {
     /** 结束算术输入 */
     private void stop_Math_Inputting(KeyboardContext context) {
         InputList parentInputList = getParentInputList(context);
-        parentInputList.clearCompletions();
 
         Input selected = parentInputList.getSelected();
         Input pending = parentInputList.getPending();
