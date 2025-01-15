@@ -156,13 +156,9 @@ public abstract class BaseKeyboard implements Keyboard {
                 play_SingleTick_InputAudio(context);
 
                 InputList inputList = context.inputList;
-                // Note: 后续接口在对于 Gap 待输入会确认并选中下一个输入，
-                // 这会造成光标后移，为了避免该问题，提前确认待输入，
-                // 以保证取消输入列表清空后，能回到清空前的状态
-                inputList.confirmPending();
-
-                // 重新选中清空输入列表前的已选中输入
-                choose_InputList_Selected_Input(context);
+                // 重新选中清空输入列表前的已选中输入，且对于 Gap 待输入不做确认
+                Input input = inputList.getSelected();
+                choose_InputList_Input(context, input, false);
                 break;
             }
         }
@@ -614,8 +610,13 @@ public abstract class BaseKeyboard implements Keyboard {
         choose_InputList_Input(context, selected);
     }
 
-    /** 选中输入列表中的指定输入，一般切换到该输入所对应的 {@link Keyboard} 上 */
+    /** @see #choose_InputList_Input(KeyboardContext, Input, boolean) */
     protected void choose_InputList_Input(KeyboardContext context, Input input) {
+        choose_InputList_Input(context, input, true);
+    }
+
+    /** 选中输入列表中的指定输入，一般切换到该输入所对应的 {@link Keyboard} 上 */
+    protected void choose_InputList_Input(KeyboardContext context, Input input, boolean confirmGapPending) {
         InputList inputList = context.inputList;
         inputList.select(input);
 
@@ -636,7 +637,10 @@ public abstract class BaseKeyboard implements Keyboard {
         } //
         else {
             // 在选择输入时，对于新输入，需先确认其待输入
-            if (input instanceof GapInput && !Input.isEmpty(pending)) {
+            if (confirmGapPending // Note: 在输入列表清空操作被取消后，需保持 Gap 待输入不变
+                && input instanceof GapInput //
+                && !Input.isEmpty(pending) //
+            ) {
                 confirm_InputList_Pending(context);
             }
             change_State_to_Init(context);
