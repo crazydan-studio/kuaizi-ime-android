@@ -155,6 +155,12 @@ public abstract class BaseKeyboard implements Keyboard {
             case InputList_Cleaned_Cancel_Done: {
                 play_SingleTick_InputAudio(context);
 
+                InputList inputList = context.inputList;
+                // Note: 后续接口在对于 Gap 待输入会确认并选中下一个输入，
+                // 这会造成光标后移，为了避免该问题，提前确认待输入，
+                // 以保证取消输入列表清空后，能回到清空前的状态
+                inputList.confirmPending();
+
                 // 重新选中清空输入列表前的已选中输入
                 choose_InputList_Selected_Input(context);
                 break;
