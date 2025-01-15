@@ -39,7 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.determine_NotConfirmed_InputWord;
-import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords;
+import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords_with_Completions;
 
 /**
  * {@link Type#Pinyin 拼音键盘}
@@ -555,9 +555,10 @@ public class PinyinKeyboard extends BaseKeyboard {
         if (!this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
             drop_InputList_Pending(context);
         } else {
-            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending, true);
-
-            confirm_InputList_Pending(context);
+            predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
+                                                                    this.dict,
+                                                                    this::confirm_InputList_Pending,
+                                                                    this::fire_Input_Completion_Create_Done);
         }
 
         if (resetState) {
@@ -578,11 +579,10 @@ public class PinyinKeyboard extends BaseKeyboard {
 
     @Override
     protected void after_InputList_Backspacing(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        CharInput pending = inputList.getCharPending();
-
-        // 在回删输入列表后，也做输入预测
-        predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, pending, true);
+        predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
+                                                                this.dict,
+                                                                null,
+                                                                this::fire_Input_Completion_Create_Done);
     }
 
     @Override

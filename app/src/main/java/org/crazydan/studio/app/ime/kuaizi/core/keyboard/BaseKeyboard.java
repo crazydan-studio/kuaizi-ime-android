@@ -400,7 +400,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
         fire_InputChars_Input_Doing_in_TapMode(context, null);
 
-        do_InputList_Pending_Completion_Updating(context);
+        do_InputList_Pending_Completion_Creating(context);
     }
 
     /**
@@ -409,8 +409,7 @@ public abstract class BaseKeyboard implements Keyboard {
      * 可在该接口内做输入预测等，且不需要触发 {@link InputMsg} 消息，
      * 在该接口之后会触发 {@link #fire_InputChars_Input_Doing_in_TapMode 输入消息}
      */
-    protected void after_InputList_Backspacing(KeyboardContext context) {
-    }
+    protected void after_InputList_Backspacing(KeyboardContext context) {}
 
     /** 回删 目标编辑器 的内容 */
     protected void do_Editor_Backspacing(KeyboardContext context) {
@@ -485,7 +484,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
                 fire_InputChars_Input_Doing_in_TapMode(context, pending);
 
-                do_InputList_Pending_Completion_Updating(context);
+                do_InputList_Pending_Completion_Creating(context);
                 break;
             }
         }
@@ -568,7 +567,7 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 更新待输入的输入补全 */
-    protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
+    protected void do_InputList_Pending_Completion_Creating(KeyboardContext context) {
         InputList inputList = context.inputList;
 
         CharInput pending = inputList.getCharPending();
@@ -576,8 +575,8 @@ public abstract class BaseKeyboard implements Keyboard {
             return;
         }
 
-        int startPosition = inputList.getSelectedIndex();
-        InputCompletions completions = inputList.newLatinCompletions(startPosition);
+        Input selected = inputList.getSelected();
+        InputCompletions completions = inputList.newLatinCompletions(selected);
 
         String text = pending.getText().toString();
         getTopBestMatchedLatins(text).forEach((latin) -> {
@@ -723,8 +722,19 @@ public abstract class BaseKeyboard implements Keyboard {
         Input input = inputList.getSelected();
 
         inputList.deleteSelected();
+
+        after_InputList_Selected_Deleted(context);
+
         fire_Common_InputMsg(context, Input_Selected_Delete_Done, input);
     }
+
+    /**
+     * {@link #delete_InputList_Selected 选中输入已删除}后的处理
+     * <p/>
+     * 可在该接口内做输入预测等，且不需要触发 {@link InputMsg} 消息，
+     * 在该接口之后会触发 {@link InputMsgType#Input_Selected_Delete_Done} 消息
+     */
+    protected void after_InputList_Selected_Deleted(KeyboardContext context) {}
 
     /** 删除待输入 */
     protected void drop_InputList_Pending(KeyboardContext context) {

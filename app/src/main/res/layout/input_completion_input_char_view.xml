@@ -17,24 +17,22 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:flexWrap="nowrap"
-        app:flexDirection="column"
-        app:alignItems="center"
-        app:alignContent="stretch">
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal|bottom"
+        android:orientation="vertical">
 
     <TextView
             android:id="@+id/word_spell_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:textSize="@dimen/input_completions_word_spell_text_size"
             android:textColor="?attr/input_completions_fg_color" />
 
     <!-- 含读音的字和不含读音的拉丁文只出现一个，后者因为不含读音，故而其字体更大 -->
-    <FrameLayout
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -51,6 +49,6 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_completions_latin_text_size"
                 android:textColor="?attr/input_completions_fg_color" />
-    </FrameLayout>
+    </LinearLayout>
 
-</com.google.android.flexbox.FlexboxLayout>
+</LinearLayout>

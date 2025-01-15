@@ -380,7 +380,7 @@ public class MathKeyboard extends BaseKeyboard {
     // ===================== Start: 重载置空无关接口 =====================
 
     @Override
-    protected void do_InputList_Pending_Completion_Updating(KeyboardContext context) {
+    protected void do_InputList_Pending_Completion_Creating(KeyboardContext context) {
         // Note: 无需输入补全处理
     }
 

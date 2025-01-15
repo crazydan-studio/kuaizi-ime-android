@@ -24,7 +24,7 @@
     <dimen name="input_completions_view_height">42dp</dimen>
     <dimen name="input_completions_word_text_size">18sp</dimen>
     <dimen name="input_completions_word_spell_text_size">10sp</dimen>
-    <dimen name="input_completions_latin_text_size">24sp</dimen>
+    <dimen name="input_completions_latin_text_size">28sp</dimen>
     <dimen name="input_list_divider_height">20dp</dimen>
     <dimen name="input_list_button_icon_size">32dp</dimen>
     <dimen name="input_list_button_spacing">8dp</dimen>

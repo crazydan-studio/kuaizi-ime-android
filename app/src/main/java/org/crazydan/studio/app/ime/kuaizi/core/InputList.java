@@ -139,6 +139,9 @@ public class InputList {
 
     /** 获取输入补全的视图数据 */
     public List<InputCompletion.ViewData> getCompletionViewDataList() {
+        if (this.completions == null) {
+            return List.of();
+        }
         return this.completions.data.stream().map((completion) -> {
             // Note: 使用输入选项，以确保汉字的繁/简转换符合应用的配置要求
             return InputCompletion.ViewData.create(completion, getInputOption());
@@ -148,16 +151,21 @@ public class InputList {
     /**
      * 新建 {@link InputCompletions.Type#Latin} 类型的输入补全
      * <p/>
-     * Note: 当前为单输入替换，仅需指定待输入所在的位置
+     * Note: 当前为单输入替换，仅需指定待应用补全的输入即可
      */
-    public InputCompletions newLatinCompletions(int start) {
-        this.completions = new InputCompletions(InputCompletions.Type.Latin, start, start + 1);
+    public InputCompletions newLatinCompletions(Input input) {
+        int index = getInputIndex(input);
+        this.completions = new InputCompletions(InputCompletions.Type.Latin, index, index + 1);
+
         return this.completions;
     }
 
     /** 新建 {@link InputCompletions.Type#Phrase_Word} 类型的输入补全 */
-    public InputCompletions newPhraseWordCompletions(int start, int end) {
-        this.completions = new InputCompletions(InputCompletions.Type.Phrase_Word, start, end);
+    public InputCompletions newPhraseWordCompletions(Input start, Input end) {
+        int startIndex = getInputIndex(start);
+        int endIndex = getInputIndex(end);
+        this.completions = new InputCompletions(InputCompletions.Type.Phrase_Word, startIndex, endIndex + 1);
+
         return this.completions;
     }
 
@@ -174,6 +182,8 @@ public class InputList {
         }
 
         int selectedIndex = getSelectedIndex();
+        boolean isGapSelected = isGapSelected();
+
         // 当前选中输入在补全的应用范围之外时，对其不做补全
         if (selectedIndex < this.completions.applyRange.start //
             || selectedIndex >= this.completions.applyRange.end //
@@ -198,9 +208,8 @@ public class InputList {
             }
             // 短语补全仅针对拼音输入
             case Phrase_Word: {
-                if ((Input.isEmpty(pending) && !CharInput.isPinyin(selected)) //
-                    || (!Input.isEmpty(pending) && !CharInput.isPinyin(pending)) //
-                ) {
+                // 拼音是单输入并直接确认的，因此，只有光标在 Gap 上时，才会构造输入补全
+                if (!isGapSelected) {
                     this.completions = null;
                     return false;
                 }
@@ -226,15 +235,16 @@ public class InputList {
         // Note: 当前选中输入的位置必然已在补全的应用范围内，否则，是不会气泡显示补全内容的
         if (isGapSelected) {
             rangeStart += selectedIndex == rangeStart ? 1 : 0;
-            rangeEnd += 1;
+            rangeEnd += 1; // Note: 当光标在列表尾部时，该值可能会超出列表长度
         }
 
-        // 在补全应用范围内的 CharInput 列表
-        List<CharInput> charInputsInRange = this.inputs.subList(rangeStart, rangeEnd)
-                                                       .stream()
-                                                       .filter(input -> input instanceof CharInput)
-                                                       .map(input -> (CharInput) input)
-                                                       .collect(Collectors.toList());
+        // 在补全应用范围内的非空 CharInput 列表
+        List<CharInput> charInputsInRange = CollectionUtils.subList(this.inputs, rangeStart, rangeEnd)
+                                                           .stream()
+                                                           .filter(input -> input instanceof CharInput
+                                                                            && !Input.isEmpty(input))
+                                                           .map(input -> (CharInput) input)
+                                                           .collect(Collectors.toList());
 
         InputCompletion completion = completions.data.get(position);
         // 在应用范围内的输入，实施补全替换
@@ -1113,7 +1123,7 @@ public class InputList {
             }
 
             Input input = getInput(index, true);
-            if (input instanceof CharInput) {
+            if (input instanceof CharInput && !Input.isEmpty(input)) {
                 phrase.add((CharInput) input);
             }
             return true;
@@ -1140,7 +1150,9 @@ public class InputList {
     /** 指定的输入是否代表段落结束 */
     private boolean isPinyinPhraseEndAt(int index) {
         Input input = getInput(index, true);
-        if (!(input instanceof CharInput) || CharInput.isSpace(input)) {
+        if (input instanceof GapInput) {
+            return false;
+        } else if (!(input instanceof CharInput) || CharInput.isSpace(input)) {
             return true;
         } else if (!CharInput.isSymbol(input)) {
             return false;

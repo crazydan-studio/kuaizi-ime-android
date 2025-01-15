@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
@@ -64,7 +65,11 @@ public class InputCompletionViewHolder extends RecyclerViewHolder {
         // Note：在 layout xml 中设置的布局不会生效，需显式设置
         ViewGroup.MarginLayoutParams layoutParams
                 = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                   ViewGroup.LayoutParams.WRAP_CONTENT);
+                                                   ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.rightMargin = //
+        layoutParams.leftMargin = //
+                (int) (ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width) / 2f);
+
         childView.setLayoutParams(layoutParams);
 
         InputCompletionCharInputViewHolder childViewHolder = new InputCompletionCharInputViewHolder(childView);

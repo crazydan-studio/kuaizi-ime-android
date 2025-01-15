@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
@@ -32,6 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletions;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.EmojiWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -296,7 +299,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
-            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, (CharInput) selected, false);
+            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, (CharInput) selected, 1, false);
         } else {
             selected = inputList.getSelected();
         }
@@ -416,24 +419,51 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
     // ====================== End: 候选字的高级过滤 =========================
 
-    // ==========================================================================
+    @Override
+    protected void after_InputList_Selected_Deleted(KeyboardContext context) {
+        predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
+                                                                this.dict,
+                                                                null,
+                                                                this::fire_Input_Completion_Create_Done);
+    }
+
+    // ================================ Start: 共用静态接口 ==================================
+
+    /** {@link #predict_NotConfirmed_Phrase_InputWords 输入短语预测}并{@link #create_Phrase_InputWord_Completions 构造输入补全} */
+    protected static void predict_NotConfirmed_Phrase_InputWords_with_Completions(
+            KeyboardContext context, PinyinDict dict, Consumer<KeyboardContext> beforeCompletions,
+            Consumer<KeyboardContext> afterCompletions
+    ) {
+        InputList inputList = context.inputList;
+        CharInput pending = inputList.getCharPending();
+
+        List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(dict, inputList, pending, 5, true);
+
+        if (beforeCompletions != null) {
+            beforeCompletions.accept(context);
+        }
+
+        create_Phrase_InputWord_Completions(inputList, bestPhrases, () -> afterCompletions.accept(context));
+    }
 
     /**
      * 预测 <code>input</code> 所在拼音短语中 未确认输入 的字
      * <p/>
      * <code>input</code> 也将根据预测的短语结果而进行调整
+     *
+     * @return 返回应用最佳预测结果后的剩余（<code>top - 1</code>）的短语预测结果
      */
-    protected static void predict_NotConfirmed_Phrase_InputWords(
-            PinyinDict dict, InputList inputList, CharInput currentInput, boolean forInputting
+    protected static List<List<InputWord>> predict_NotConfirmed_Phrase_InputWords(
+            PinyinDict dict, InputList inputList, CharInput currentInput, int top, boolean forInputting
     ) {
         List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(currentInput);
         List<List<InputWord>> bestPhrases = dict.findTopBestMatchedPhrase(inputs,
                                                                           forInputting ? null : currentInput,
-                                                                          1);
+                                                                          top);
 
         List<InputWord> bestPhrase = CollectionUtils.first(bestPhrases);
         if (bestPhrase == null) {
-            return;
+            return List.of();
         }
 
         for (int i = 0; i < bestPhrase.size(); i++) {
@@ -449,6 +479,9 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 target.setWord(word);
             }
         }
+
+        bestPhrases.remove(0);
+        return bestPhrases;
     }
 
     /**
@@ -472,4 +505,58 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         input.setWord(word);
     }
+
+    /**
+     * 创建短语的输入补全
+     * <p/>
+     * 仅针对待输入确认后，光标位置依然在 {@link #predict_NotConfirmed_Phrase_InputWords}
+     * 所处理的{@link InputList#getPinyinPhraseInputWhichContains 短语内}
+     */
+    protected static void create_Phrase_InputWord_Completions(
+            InputList inputList, List<List<InputWord>> bestPhrases, Runnable fireCompletions
+    ) {
+        if (bestPhrases.isEmpty() || !inputList.isGapSelected()) {
+            return;
+        }
+
+        Input gap = inputList.getSelected();
+        // 在短语预测后会确认待输入，因此，需以新的待输入重新查找其所在的输入短语
+        List<CharInput> inputs = inputList.getPinyinPhraseInputWhichContains(gap);
+
+        Input first = CollectionUtils.first(inputs);
+        Input last = CollectionUtils.last(inputs);
+        int firstIndex = inputList.getInputIndex(first);
+        int lastIndex = inputList.getInputIndex(last);
+
+        // 若光标在预测短语的首尾，则需更新输入短语的起止位置
+        int gapIndex = inputList.getInputIndex(gap);
+        if (gapIndex < firstIndex) {
+            first = gap;
+        } else if (gapIndex > lastIndex) {
+            last = gap;
+        }
+
+        InputCompletions completions = inputList.newPhraseWordCompletions(first, last);
+
+        bestPhrases.forEach(phrase -> {
+            InputCompletion completion = new InputCompletion();
+            for (int i = 0; i < phrase.size(); i++) {
+                CharInput target = inputs.get(i);
+                target = (CharInput) target.copy();
+
+                InputWord word = phrase.get(i);
+                if (word != null) {
+                    target.setWord(word);
+                }
+
+                completion.inputs.add(target);
+            }
+
+            completions.add(completion);
+        });
+
+        fireCompletions.run();
+    }
+
+    // ================================ End: 共用静态接口 ==================================
 }
