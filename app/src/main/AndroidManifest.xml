@@ -105,11 +105,11 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.about.AboutDonation"
+                android:name=".ui.about.AboutDonate"
                 android:exported="true"
-                android:label="@string/title_about_donation">
+                android:label="@string/title_about_donate">
             <intent-filter>
-                <action android:name="${applicationId}.ui.about.AboutDonation" />
+                <action android:name="${applicationId}.ui.about.AboutDonate" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

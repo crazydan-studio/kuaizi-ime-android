@@ -20,6 +20,6 @@
 <paths>
     <!-- Note: 在 path 上只能指定目录，name 是该目录的标识，需通过目录来限定外部应用可访问的文件 -->
     <cache-path
-            name="donation"
-            path="donation/" />
+            name="donate"
+            path="donate/" />
 </paths>

@@ -83,8 +83,8 @@
         <PreferenceScreen android:title="@string/title_about_thanks">
             <intent android:action="${applicationId}.ui.about.AboutThanks" />
         </PreferenceScreen>
-        <PreferenceScreen android:title="@string/title_about_donation">
-            <intent android:action="${applicationId}.ui.about.AboutDonation" />
+        <PreferenceScreen android:title="@string/title_about_donate">
+            <intent android:action="${applicationId}.ui.about.AboutDonate" />
         </PreferenceScreen>
         <Preference
                 app:key="about_user_feedback"

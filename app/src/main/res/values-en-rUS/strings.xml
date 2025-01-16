@@ -32,9 +32,9 @@
     <string name="title_about_team">Development Team</string>
     <string name="title_about_suggestion">Give Us Some Suggestions</string>
     <string name="title_about_thanks">Thanks</string>
-    <string name="title_about_donation">Buy Me a Coffee</string>
-    <string name="title_about_donation_for_sharing_qrcode_to_wechat">Please choose [WeChat] and share the QR code to [File Transfer]</string>
-    <string name="title_about_donation_for_sharing_qrcode_to_alipay">Please choose [Alipay Scanner] to scan the QR code</string>
+    <string name="title_about_donate">Buy Me a Coffee</string>
+    <string name="title_about_donate_for_sharing_qrcode_to_wechat">Please choose [WeChat] and share the QR code to [File Transfer]</string>
+    <string name="title_about_donate_for_sharing_qrcode_to_alipay">Please choose [Alipay Scanner] to scan the QR code</string>
     <string name="title_about_change_log">Change Log</string>
     <string name="title_about_software_service_agreement">Software Service Agreement</string>
     <string name="title_about_copyright">Copyright</string>
@@ -56,7 +56,7 @@
     <string name="btn_guide_new_features_confirm">OK, I Know It</string>
     <string name="btn_guide_try_exercises">Try Some Exercises</string>
     <string name="btn_guide_show_preferences">Open Kuaizi Input Method Preferences</string>
-    <string name="btn_guide_show_donation">Buy Me a Coffee</string>
+    <string name="btn_guide_show_donate">Buy Me a Coffee</string>
     <string name="btn_guide_show_software_service_agreement">Read the Software Service Agreement</string>
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Goto Next</string>

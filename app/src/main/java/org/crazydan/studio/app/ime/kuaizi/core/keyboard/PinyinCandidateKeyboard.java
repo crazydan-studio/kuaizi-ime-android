@@ -437,6 +437,8 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getCharPending();
 
+        // TODO 需要更好的输入预测机制，当前的方案对预测输入并无很大帮助，仅用于做输入补全的功能测试
+        // Note: top 参数大于 1 时，可启用输入补全
         List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(dict, inputList, pending, 5, true);
 
         if (beforeCompletions != null) {

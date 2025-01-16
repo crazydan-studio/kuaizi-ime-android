@@ -35,37 +35,33 @@ import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-10
  */
-public class AboutDonation extends HtmlSupportActivity {
+public class AboutDonate extends HtmlSupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.about_donation);
+        setContentView(R.layout.about_donate);
 
         String appName = getAppName();
-        TextView alipayTextView = setHtmlText(R.id.donation_alipay_tips,
-                                              R.raw.text_about_donation_alipay_tips,
-                                              appName);
-        TextView wechatTextView = setHtmlText(R.id.donation_wechat_tips,
-                                              R.raw.text_about_donation_wechat_tips,
-                                              appName);
+        TextView alipayTextView = setHtmlText(R.id.donate_alipay_tips, R.raw.text_about_donate_alipay_tips, appName);
+        TextView wechatTextView = setHtmlText(R.id.donate_wechat_tips, R.raw.text_about_donate_wechat_tips, appName);
 
         alipayTextView.setOnClickListener((v) -> copyToClipboard(appName));
         wechatTextView.setOnClickListener((v) -> copyToClipboard(appName));
 
-        ImageView alipayImageView = setRawImage(R.id.donation_alipay, R.raw.donation_alipay);
-        ImageView wechatImageView = setRawImage(R.id.donation_wechat, R.raw.donation_wechat);
+        ImageView alipayImageView = setRawImage(R.id.donate_alipay, R.raw.donate_alipay);
+        ImageView wechatImageView = setRawImage(R.id.donate_wechat, R.raw.donate_wechat);
 
         alipayImageView.setOnLongClickListener((v) -> {
-            shareRawImage(R.raw.donation_alipay,
-                          "donation/alipay.jpg",
-                          R.string.title_about_donation_for_sharing_qrcode_to_alipay);
+            shareRawImage(R.raw.donate_alipay,
+                          "donate/alipay.jpg",
+                          R.string.title_about_donate_for_sharing_qrcode_to_alipay);
             return true;
         });
         wechatImageView.setOnLongClickListener((v) -> {
-            shareRawImage(R.raw.donation_wechat,
-                          "donation/wechat.jpg",
-                          R.string.title_about_donation_for_sharing_qrcode_to_wechat);
+            shareRawImage(R.raw.donate_wechat,
+                          "donate/wechat.jpg",
+                          R.string.title_about_donate_for_sharing_qrcode_to_wechat);
             return true;
         });
 

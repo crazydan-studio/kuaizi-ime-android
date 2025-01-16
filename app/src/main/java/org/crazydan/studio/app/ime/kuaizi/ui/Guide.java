@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
-import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonation;
+import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonate;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseGuide;
 
@@ -85,12 +85,12 @@ public class Guide extends FollowSystemThemeActivity {
 
         MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         MaterialButton btnTryExercises = findViewById(R.id.btn_guide_try_exercises);
-        MaterialButton btnShowDonation = findViewById(R.id.btn_guide_show_donation);
+        MaterialButton btnShowDonate = findViewById(R.id.btn_guide_show_donate);
         MaterialButton btnShowFeedback = findViewById(R.id.btn_guide_feedback);
 
         btnShowPreferences.setOnClickListener(this::showPreferences);
         btnTryExercises.setOnClickListener(this::tryExercises);
-        btnShowDonation.setOnClickListener(this::showDonation);
+        btnShowDonate.setOnClickListener(this::showDonate);
         btnShowFeedback.setOnClickListener(this::showFeedback);
 
         if (!isAlphaUserAgreementConfirmed()) {
@@ -153,10 +153,10 @@ public class Guide extends FollowSystemThemeActivity {
         SystemUtils.showAppPreferences(context);
     }
 
-    private void showDonation(View v) {
+    private void showDonate(View v) {
         Context context = getApplicationContext();
 
-        SystemUtils.showActivity(context, AboutDonation.class);
+        SystemUtils.showActivity(context, AboutDonate.class);
     }
 
     private void showFeedback(View v) {
