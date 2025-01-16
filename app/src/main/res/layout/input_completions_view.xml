@@ -22,7 +22,7 @@
     所以，需要在 InputCompletionsView 的子视图 input_completion_view.xml 上设置高度才会生效
     Note：不需要设置底部空白，通过补全视图的阴影留白
 -->
-<org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="0dp" />

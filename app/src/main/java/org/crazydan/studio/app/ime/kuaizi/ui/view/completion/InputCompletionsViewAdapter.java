@@ -25,19 +25,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView;
 
 /**
- * {@link InputCompletionListView} 的 {@link RecyclerView} 适配器
+ * {@link InputCompletionsView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class InputCompletionListViewAdapter
+public class InputCompletionsViewAdapter
         extends RecyclerViewAdapter<InputCompletion.ViewData, InputCompletionViewHolder> {
 
-    public InputCompletionListViewAdapter() {
+    public InputCompletionsViewAdapter() {
         super(ItemUpdatePolicy.differ);
     }
 

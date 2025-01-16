@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.GapInput;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletions;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletions;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.core.key.InputWordKey;
 
@@ -262,6 +262,8 @@ public class InputList {
                 case Phrase_Word: {
                     if (!target.isWordConfirmed() && source.hasWord()) {
                         target.setWord(source.getWord());
+                        // 直接确认输入字，以避免后续进行的短语预测对其的修改
+                        target.confirmWord();
                     }
                     break;
                 }

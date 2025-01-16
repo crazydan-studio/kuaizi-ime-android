@@ -36,10 +36,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
+        <!--
+        拉丁文字体布局位置有基线概念，如 p/q 等字母的下部会在基线以下，
+        为了确保视觉上的一致性，在输入字底部也加上一定的间距以使其底部与拉丁文的基线一致
+        -->
         <TextView
                 android:id="@+id/word_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingBottom="4sp"
                 android:textSize="@dimen/input_completions_word_text_size"
                 android:textColor="?attr/input_completions_fg_color" />
 

@@ -28,12 +28,12 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionListViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionListViewLayoutManager;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionsViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionsViewLayoutManager;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputCompletion;
 
@@ -45,11 +45,11 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class InputCompletionListView extends RecyclerView<InputCompletionListViewAdapter, InputCompletion.ViewData>
+public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapter, InputCompletion.ViewData>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public InputCompletionListView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(this);
@@ -57,13 +57,13 @@ public class InputCompletionListView extends RecyclerView<InputCompletionListVie
     }
 
     @Override
-    protected InputCompletionListViewAdapter createAdapter() {
-        return new InputCompletionListViewAdapter();
+    protected InputCompletionsViewAdapter createAdapter() {
+        return new InputCompletionsViewAdapter();
     }
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new InputCompletionListViewLayoutManager(context);
+        return new InputCompletionsViewLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================

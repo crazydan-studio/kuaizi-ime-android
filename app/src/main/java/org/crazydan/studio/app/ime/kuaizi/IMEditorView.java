@@ -41,7 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -51,7 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionListView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
@@ -76,7 +76,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private PopupWindow inputPopupWindow;
     private PopupWindow inputCompletionsPopupWindow;
-    private InputCompletionListView inputCompletionsView;
+    private InputCompletionsView inputCompletionsView;
 
     private boolean needToAddBottomSpacing;
 
@@ -262,7 +262,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.inputboardView.setListener(this);
 
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
-        this.inputCompletionsView = inflateWithTheme(R.layout.input_completion_list_view, themeResId, false);
+        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
         this.inputCompletionsView.setListener(this);
 
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
@@ -357,7 +357,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
     }
 
-    private void preparePopupWindows(InputCompletionListView completionsView, View keyView) {
+    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
         resetPopupWindows();
 
         initPopupWindow(this.inputCompletionsPopupWindow, completionsView);

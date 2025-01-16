@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 

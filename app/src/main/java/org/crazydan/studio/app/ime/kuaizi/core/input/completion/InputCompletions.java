@@ -17,12 +17,13 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.input;
+package org.crazydan.studio.app.ime.kuaizi.core.input.completion;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
+import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 
 /**
  * {@link Input} 的输入补全

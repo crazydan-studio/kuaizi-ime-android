@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 
 /**
  * 用户对 {@link Input} 操作的消息
