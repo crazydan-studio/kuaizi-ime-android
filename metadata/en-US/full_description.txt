@@ -1,0 +1,5 @@
+Kuaizi IME abandons the traditional method of tapping virtual keyboard keys one by one and instead uses a sliding screen method to input Pinyin. By carefully designing the key layout in accordance with the limited combination characteristics of Pinyin letters, it makes Pinyin input more accurate and convenient.
+
+Kuaizi IME also provides cursor movement and text selection editing support for the target editor, thereby completely eliminating the frustration of being unable to accurately position input and text due to the small screen size of mobile devices. This further enhances text input and editing efficiency on small-screen devices.
+
+User data for Kuaizi IME is stored locally only, it does not connect to the internet and does not collect or analyze user data and behavior habits. It also does not support or provide association input and fuzzy matching mechanisms. To some extent, this input method aims to strengthen users' recognition and memory of Hanzi and Pinyin, hoping to prevent the gradual forgetting and eventual abandonment of Hanzi —— the treasure of Chinese civilization —— due to reliance on digital tools.
