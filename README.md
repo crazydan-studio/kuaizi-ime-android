@@ -18,7 +18,7 @@
 ## 项目构建
 
 > 若需要自己生成字词典数据库，则需要从项目
-> [kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime?tab=readme-ov-file#%E9%A1%B9%E7%9B%AE%E5%85%8B%E9%9A%86)
+> [kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime)
 > 的子模块 `android` 克隆本项目：`git submodule update --init android`。
 
 ### 字/词典
