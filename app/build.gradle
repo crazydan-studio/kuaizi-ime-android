@@ -12,8 +12,8 @@ android {
         minSdk 25
         targetSdk 35
         // https://developer.android.com/studio/publish/versioning
-        versionCode 300
-        versionName '3.0.0'
+        versionCode 301
+        versionName '3.0.1'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -39,6 +39,10 @@ android {
         }
         // 正式发布版本
         release {
+            // 可重复构建不能在发布包中包含版本控制信息：
+            // https://f-droid.org/en/docs/Reproducible_Builds/#vcs-info
+            vcsInfo.include false
+
             // https://juejin.cn/post/6844904103131234311
             // 是否进行混淆
             minifyEnabled true
@@ -68,9 +72,17 @@ android {
             buildConfigField('String', 'BUILD_TYPE', '"alpha"')
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    dependenciesInfo {
+        // <<<< 可重复构建不能在发布包中包含依赖信息：
+        // https://f-droid.org/en/docs/Reproducible_Builds/
+        includeInApk = false
+        includeInBundle = false
+        // >>>>>
     }
 }
 
