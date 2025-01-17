@@ -383,12 +383,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.prevMasterKeyboardType = prevType;
         }
 
-        // Note: 对特定的键盘需冻结输入列表，以避免打断当前的键盘操作
-        boolean frozen = CollectionUtils.contains(new Keyboard.Type[] {
-                Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option
-        }, newType);
-        this.inputList.freeze(frozen);
-
         data = new KeyboardSwitchMsgData(data.key, newType);
         fire_InputMsg(Keyboard_Switch_Done, data);
     }
@@ -447,6 +441,12 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             withKeyboardContext(current::stop);
         }
         this.config.set(ConfigKey.prev_keyboard_type, currentType);
+
+        // Note: 对特定的键盘需冻结输入列表，以避免打断当前的键盘操作
+        boolean frozen = CollectionUtils.contains(new Keyboard.Type[] {
+                Keyboard.Type.Editor, Keyboard.Type.InputList_Commit_Option
+        }, newType);
+        this.inputList.freeze(frozen);
 
         this.keyboard = createKeyboard(newType);
         withKeyboardContext(this.keyboard::start);
