@@ -1,6 +1,10 @@
 筷字输入法 Android 客户端
 ===================================
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+  alt="Get it on F-Droid"
+  height="80">](https://f-droid.org/packages/org.crazydan.studio.app.ime.kuaizi)
+
 **注意**：本仓库仅作为筷字输入法 Android 客户端的源码仓库，
 若有缺陷反馈和改进意见，请移步至
 [crazydan-studio/kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime/issues)
