@@ -23,14 +23,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 
 /**
@@ -52,12 +53,12 @@ public class ViewGestureDetector {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final Set<Listener> listeners = new LinkedHashSet<>();
-
-    private final GestureHandler gestureHandler = new GestureHandler();
     private final List<GestureData> movingTracker = new ArrayList<>();
 
-    private final AtomicBoolean longPressing = new AtomicBoolean(false);
     private boolean moving;
+    private boolean longPressing;
+    private LongPressHandler longPressHandler;
+
     private GestureData latestPressStart;
     private SingleTapGestureData latestSingleTap;
 
@@ -89,9 +90,10 @@ public class ViewGestureDetector {
                 onPressStart(data);
                 break;
             }
+            // Note: 有些机型会在 ACTION_DOWN 后立即触发 ACTION_MOVE
             case MotionEvent.ACTION_MOVE: {
                 // Note: 移动开始时，可能还未触发长按监听，故，需显式取消长按监听
-                if (!this.longPressing.get()) {
+                if (!this.longPressing) {
                     stopLongPress();
                 }
 
@@ -101,10 +103,9 @@ public class ViewGestureDetector {
             case MotionEvent.ACTION_UP: {
                 // Note: ACTION_UP 会触发多次，需确保仅与最近的 ACTION_DOWN 相邻的才有效
                 if (this.latestPressStart != null) {
-                    if (!this.longPressing.get() //
-                        && !this.moving) {
+                    if (!this.longPressing && !this.moving) {
                         onSingleTap(data);
-                    } else if (!this.longPressing.get() && isFlipping()) {
+                    } else if (!this.longPressing && isFlipping()) {
                         onFlipping(data);
                     }
                 }
@@ -146,30 +147,36 @@ public class ViewGestureDetector {
     private void startLongPress(GestureData data) {
         stopLongPress();
 
-        Message msg = this.gestureHandler.obtainMessage(GestureHandler.MSG_LONG_PRESS, data);
-        this.gestureHandler.sendMessageDelayed(msg, LONG_PRESS_TIMEOUT_MILLS);
+        LongPressHandler handler = getLongPressHandler();
+        Message msg = handler.obtainMessage(LongPressHandler.MSG_LONG_PRESS, data);
+
+        handler.sendMessageDelayed(msg, LONG_PRESS_TIMEOUT_MILLS);
     }
 
     private void startLongPressTick(LongPressTickGestureData data) {
-        if (!this.longPressing.get()) {
+        if (!this.longPressing) {
             return;
         }
 
         long timeout = LONG_PRESS_TICK_TIMEOUT_MILLS;
         LongPressTickGestureData newData = new LongPressTickGestureData(data, data.tick + 1, data.duration + timeout);
 
-        Message msg = this.gestureHandler.obtainMessage(GestureHandler.MSG_LONG_PRESS_TICK, newData);
-        this.gestureHandler.sendMessageDelayed(msg, timeout);
+        LongPressHandler handler = getLongPressHandler();
+        Message msg = handler.obtainMessage(LongPressHandler.MSG_LONG_PRESS_TICK, newData);
+
+        handler.sendMessageDelayed(msg, timeout);
     }
 
     private void stopLongPress() {
-        this.longPressing.set(false);
-        this.gestureHandler.removeMessages(GestureHandler.MSG_LONG_PRESS_TICK);
-        this.gestureHandler.removeMessages(GestureHandler.MSG_LONG_PRESS);
+        this.longPressing = false;
+
+        if (this.longPressHandler != null) {
+            this.longPressHandler.stop();
+        }
     }
 
     private void onLongPressStart(GestureData data) {
-        this.longPressing.set(true);
+        this.longPressing = true;
 
         GestureData newData = GestureData.newFrom(data);
         triggerListeners(GestureType.LongPressStart, newData);
@@ -180,7 +187,7 @@ public class ViewGestureDetector {
     }
 
     private void onLongPressTick(LongPressTickGestureData data) {
-        if (!this.longPressing.get()) {
+        if (!this.longPressing) {
             return;
         }
 
@@ -200,7 +207,7 @@ public class ViewGestureDetector {
     }
 
     private void onLongPressEnd(GestureData data) {
-        boolean hasLongPressing = this.longPressing.get();
+        boolean hasLongPressing = this.longPressing;
         stopLongPress();
 
         if (hasLongPressing && data != null) {
@@ -231,7 +238,7 @@ public class ViewGestureDetector {
 
     private void onMoving(GestureData data) {
         // Note: PressStart、MovingStart、Flipping 均须发生在相同的位置上
-        if (!this.moving) {
+        if (!this.moving && this.movingTracker.isEmpty()) {
             // Note: 在一次完整的 按下 到 释放 的过程中，可能发生 #reset() 重置的情况，
             // 这时，需忽略对移动手势的处理
             if (this.latestPressStart == null) {
@@ -240,17 +247,26 @@ public class ViewGestureDetector {
             data = this.latestPressStart;
         }
 
-        this.moving = true;
+        // 跳过最后位置不变的轨迹点
+        GestureData last = CollectionUtils.last(this.movingTracker);
+        if (last != null && last.x == data.x && last.y == data.y) {
+            return;
+        }
         this.movingTracker.add(data);
 
         int size = this.movingTracker.size();
-        GestureData g1 = size > 1 ? this.movingTracker.get(0) : null;
+        if (size < 2) {
+            return;
+        }
+        this.moving = true;
+
+        GestureData g1 = this.movingTracker.get(1);
         GestureData g2 = this.movingTracker.get(size - 1);
 
         Motion motion = createMotion(g2, g1);
         GestureData newData = new MovingGestureData(data, motion);
 
-        if (size == 1) {
+        if (size == 2) {
             triggerListeners(GestureType.MovingStart, data);
         } else {
             triggerListeners(GestureType.Moving, newData);
@@ -333,6 +349,13 @@ public class ViewGestureDetector {
         }
 
         return new Motion(direction, (int) distance, timestamp);
+    }
+
+    private LongPressHandler getLongPressHandler() {
+        if (this.longPressHandler == null) {
+            this.longPressHandler = new LongPressHandler(this);
+        }
+        return this.longPressHandler;
     }
 
     protected String getActionName(MotionEvent e) {
@@ -471,11 +494,19 @@ public class ViewGestureDetector {
         }
     }
 
-    private class GestureHandler extends Handler {
+    private static class LongPressHandler extends Handler {
         private static final int MSG_LONG_PRESS = 1;
         private static final int MSG_LONG_PRESS_TICK = 2;
 
-        public void clear() {
+        private final ViewGestureDetector detector;
+
+        public LongPressHandler(ViewGestureDetector detector) {
+            super(Looper.getMainLooper());
+
+            this.detector = detector;
+        }
+
+        public void stop() {
             removeMessages(MSG_LONG_PRESS_TICK);
             removeMessages(MSG_LONG_PRESS);
         }
@@ -484,10 +515,10 @@ public class ViewGestureDetector {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_LONG_PRESS:
-                    onLongPressStart((GestureData) msg.obj);
+                    this.detector.onLongPressStart((GestureData) msg.obj);
                     break;
                 case MSG_LONG_PRESS_TICK:
-                    onLongPressTick((LongPressTickGestureData) msg.obj);
+                    this.detector.onLongPressTick((LongPressTickGestureData) msg.obj);
                     break;
             }
         }

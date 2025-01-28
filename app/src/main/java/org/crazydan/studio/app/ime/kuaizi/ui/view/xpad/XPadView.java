@@ -33,6 +33,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -1351,7 +1353,8 @@ public class XPadView extends View {
     }
 
     public class GestureSimulator {
-        private final Handler handler = new Handler();
+        private final GestureSimulatorHandler handler = new GestureSimulatorHandler(this);
+
         private boolean stopped = false;
 
         public void stop() {
@@ -1436,7 +1439,7 @@ public class XPadView extends View {
                 return;
             }
 
-            Message msg = this.handler.obtainMessage(Handler.MSG_TICK, cbs);
+            Message msg = this.handler.obtainMessage(GestureSimulatorHandler.MSG_TICK, cbs);
             this.handler.sendMessageDelayed(msg, 500);
         }
 
@@ -1523,22 +1526,32 @@ public class XPadView extends View {
             return null;
         }
 
-        private class Handler extends android.os.Handler {
-            private static final int MSG_TICK = 1;
+    }
 
-            public void stop() {
-                removeMessages(MSG_TICK);
-            }
+    private static class GestureSimulatorHandler extends Handler {
+        private static final int MSG_TICK = 1;
 
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what == MSG_TICK) {
-                    List<Runnable> cbs = (List<Runnable>) msg.obj;
-                    Runnable first = CollectionUtils.first(cbs);
+        private final GestureSimulator simulator;
 
-                    first.run();
-                    executeGestures(cbs.isEmpty() ? cbs : cbs.subList(1, cbs.size()));
-                }
+        public GestureSimulatorHandler(GestureSimulator simulator) {
+            super(Looper.getMainLooper());
+
+            this.simulator = simulator;
+        }
+
+        public void stop() {
+            removeMessages(MSG_TICK);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == MSG_TICK) {
+                List<Runnable> cbs = (List<Runnable>) msg.obj;
+                Runnable first = CollectionUtils.first(cbs);
+
+                first.run();
+
+                this.simulator.executeGestures(cbs.isEmpty() ? cbs : cbs.subList(1, cbs.size()));
             }
         }
     }
