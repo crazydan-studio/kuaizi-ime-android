@@ -92,8 +92,8 @@ public class ViewGestureDetector {
             }
             // Note: 有些机型会在 ACTION_DOWN 后立即触发 ACTION_MOVE
             case MotionEvent.ACTION_MOVE: {
-                // Note: 移动开始时，可能还未触发长按监听，故，需显式取消长按监听
-                if (!this.longPressing) {
+                // Note: 移动开始时，可能还未触发长按监听，故而需显式取消长按监听
+                if (this.moving && !this.longPressing) {
                     stopLongPress();
                 }
 
