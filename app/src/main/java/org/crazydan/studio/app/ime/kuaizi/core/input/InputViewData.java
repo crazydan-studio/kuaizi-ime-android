@@ -151,7 +151,7 @@ public class InputViewData extends Immutable {
         } else if (input instanceof GapInput) {
             b.type(hasEmptyPending ? Type.Gap : Type.Char);
         } else if (CharInput.isSpace(input)) {
-            b.type(Type.Space);
+            b.type(hasEmptyPending || CharInput.isSpace(pending) ? Type.Space : Type.Char);
         } else {
             b.type(Type.Char);
         }
