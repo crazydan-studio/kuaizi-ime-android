@@ -47,7 +47,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKe
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-28
  */
-public class PinyinKeyboard extends BaseKeyboard {
+public class PinyinKeyboard extends EditorEditKeyboard {
 
     public PinyinKeyboard(PinyinDict dict) {
         super(dict);

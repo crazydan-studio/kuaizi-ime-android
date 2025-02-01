@@ -47,7 +47,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Cho
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-04
  */
-public class MathKeyboard extends BaseKeyboard {
+public class MathKeyboard extends EditorEditKeyboard {
 
     public MathKeyboard(PinyinDict dict) {
         super(dict);

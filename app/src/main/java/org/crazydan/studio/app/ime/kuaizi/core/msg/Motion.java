@@ -38,6 +38,10 @@ public class Motion {
         this(motion.direction, motion.distance, motion.timestamp);
     }
 
+    public Motion(Motion motion, float distance) {
+        this(motion.direction, distance, motion.timestamp);
+    }
+
     public Motion(Direction direction, float distance, long timestamp) {
         this.direction = direction;
         this.distance = distance;

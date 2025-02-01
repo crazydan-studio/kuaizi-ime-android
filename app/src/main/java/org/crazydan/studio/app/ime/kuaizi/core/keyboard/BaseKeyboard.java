@@ -57,7 +57,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolComm
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
@@ -65,6 +64,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Cursor_Move_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Range_Select_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.IME_Switch_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputAudio_Play_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Doing;
@@ -234,93 +234,75 @@ public abstract class BaseKeyboard implements Keyboard {
                 break;
             }
             case SingleTap_Key: {
-                switch (key.type) {
-                    // Note：在任意子键盘中提交输入，都需直接回到初始键盘
-                    case Commit_InputList: {
-                        play_SingleTick_InputAudio(context);
-                        commit_InputList_and_Goto_Init_State(context);
-                        return true;
-                    }
-                    case DropInput: {
-                        play_SingleTick_InputAudio(context);
-                        delete_InputList_Selected(context);
-
-                        change_State_to_Init(context);
-                        return true;
-                    }
-                    case RevokeInput: {
-                        play_SingleTick_InputAudio(context);
-                        revoke_Committed_InputList(context);
-                        return true;
-                    }
-                    case Backspace: {
-                        play_SingleTick_InputAudio(context);
-                        show_InputChars_Input_Popup(context);
-
-                        backspace_InputList_or_Editor(context);
-                        return true;
-                    }
-                    case Space:
-                    case Enter: {
-                        play_SingleTick_InputAudio(context);
-                        show_InputChars_Input_Popup(context);
-
-                        confirm_InputList_Input_Enter_or_Space(context);
-                        return true;
-                    }
-                    case Exit: {
-                        play_SingleTick_InputAudio(context);
-                        exit_Keyboard(context);
-                        return true;
-                    }
-                    case Switch_IME: {
-                        play_SingleTick_InputAudio(context);
-                        switch_IME(context);
-                        return true;
-                    }
-                    case Switch_HandMode: {
-                        play_SingleTick_InputAudio(context);
-                        switch_HandMode(context);
-                        return true;
-                    }
-                    case Switch_Keyboard: {
-                        play_SingleTick_InputAudio(context);
-
-                        CtrlKey.Option<Keyboard.Type> option = key.option();
-                        switch_Keyboard_To(context, option.value);
-                        return true;
-                    }
+                if (try_On_Common_CtrlKey_for_SingleTap_Msg(context, msg)) {
+                    return true;
                 }
                 break;
             }
         }
 
-        // 处理定位按钮
-        if (CtrlKey.Type.Editor_Cursor_Locator.match(key)) {
-            switch (msg.type) {
-                case SingleTap_Key: {
-                    // 为双击提前播放音效
-                    play_SingleTick_InputAudio(context);
-                    return true;
-                }
-                case LongPress_Key_Start: {
-                    play_DoubleTick_InputAudio(context);
-                    // 继续 DoubleTap_Key 的逻辑
-                }
-                case DoubleTap_Key: {
-                    switch_Keyboard_To(context, Type.Editor);
-                    return true;
-                }
-                case FingerFlipping: {
-                    play_SingleTick_InputAudio(context);
+        return false;
+    }
 
-                    // 在定位切换按钮上滑动也可以移动光标，但不修改键盘状态
-                    UserFingerFlippingMsgData data = msg.data();
-                    Motion motion = data.motion;
+    /** 处理控制按键上的 {@link UserKeyMsgType#SingleTap_Key} 消息 */
+    protected boolean try_On_Common_CtrlKey_for_SingleTap_Msg(KeyboardContext context, UserKeyMsg msg) {
+        CtrlKey key = context.key();
 
-                    do_Editor_Cursor_Moving(context, motion);
-                    return true;
-                }
+        switch (key.type) {
+            // Note：在任意子键盘中提交输入，都需直接回到初始键盘
+            case Commit_InputList: {
+                play_SingleTick_InputAudio(context);
+                commit_InputList_and_Goto_Init_State(context);
+                return true;
+            }
+            case DropInput: {
+                play_SingleTick_InputAudio(context);
+                delete_InputList_Selected(context);
+
+                change_State_to_Init(context);
+                return true;
+            }
+            case RevokeInput: {
+                play_SingleTick_InputAudio(context);
+                revoke_Committed_InputList(context);
+                return true;
+            }
+            case Backspace: {
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
+
+                backspace_InputList_or_Editor(context);
+                return true;
+            }
+            case Space:
+            case Enter: {
+                play_SingleTick_InputAudio(context);
+                show_InputChars_Input_Popup(context);
+
+                confirm_InputList_Input_Enter_or_Space(context);
+                return true;
+            }
+            case Exit: {
+                play_SingleTick_InputAudio(context);
+                exit_Keyboard(context);
+                return true;
+            }
+            case Switch_IME: {
+                play_SingleTick_InputAudio(context);
+                switch_IME(context);
+                return true;
+            }
+            case Switch_HandMode: {
+                play_SingleTick_InputAudio(context);
+                switch_HandMode(context);
+                return true;
+            }
+            case Switch_Keyboard: {
+                play_SingleTick_InputAudio(context);
+
+                CtrlKey.Option<Keyboard.Type> option = key.option();
+                switch_Keyboard_To(context, option.value);
+                return true;
             }
         }
 
@@ -389,39 +371,16 @@ public abstract class BaseKeyboard implements Keyboard {
 
     // ======================== End: 对 UserKeyMsg 的通用处理 ========================
 
-    // ======================== Start: 文本编辑 ========================
+    // ======================== Start: 编辑器处理逻辑 ========================
 
-    /** 回删输入列表中的输入内容 */
-    protected void do_InputList_Backspacing(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        inputList.deleteBackward();
-
-        after_InputList_Backspacing(context);
-
-        fire_InputChars_Input_Doing_in_TapMode(context, null);
-
-        do_InputList_Pending_Completion_Creating(context);
-    }
-
-    /**
-     * 回删输入列表的输入内容之后的操作
-     * <p/>
-     * 可在该接口内做输入预测等，且不需要触发 {@link InputMsg} 消息，
-     * 在该接口之后会触发 {@link #fire_InputChars_Input_Doing_in_TapMode 输入消息}
-     */
-    protected void after_InputList_Backspacing(KeyboardContext context) {}
-
-    /** 回删 目标编辑器 的内容 */
-    protected void do_Editor_Backspacing(KeyboardContext context) {
-        do_Editor_Editing(context, EditorAction.backspace);
-    }
-
+    /** 对目标编辑器做粘贴、复制等操作 */
     protected void do_Editor_Editing(KeyboardContext context, EditorAction action) {
         InputMsgData data = new EditorEditMsgData(action);
 
         fire_InputMsg(context, Editor_Edit_Doing, data);
     }
 
+    /** 对目标编辑器做光标移动操作 */
     protected void do_Editor_Cursor_Moving(KeyboardContext context, Motion motion) {
         Key key = context.key();
         InputMsgData data = new EditorCursorMsgData(key, motion);
@@ -429,7 +388,15 @@ public abstract class BaseKeyboard implements Keyboard {
         fire_InputMsg(context, Editor_Cursor_Move_Doing, data);
     }
 
-    // ======================== End: 文本编辑逻辑 ========================
+    /** 对目标编辑器做内容选择操作 */
+    protected void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {
+        Key key = context.key();
+        InputMsgData data = new EditorCursorMsgData(key, motion);
+
+        fire_InputMsg(context, Editor_Range_Select_Doing, data);
+    }
+
+    // ======================== End: 编辑器处理逻辑 ========================
 
     // ======================== Start: 单字符输入 ========================
 
@@ -842,6 +809,11 @@ public abstract class BaseKeyboard implements Keyboard {
         }
     }
 
+    /** 回删 目标编辑器 的内容 */
+    protected void do_Editor_Backspacing(KeyboardContext context) {
+        do_Editor_Editing(context, EditorAction.backspace);
+    }
+
     /** 在 {@link #commit_InputList} 之前需要做的事情 */
     protected void before_Commit_InputList(KeyboardContext context) {
         if (this.dict != null) {
@@ -855,6 +827,26 @@ public abstract class BaseKeyboard implements Keyboard {
             handle_UserInput_Data(context, this.dict::revokeSavedUserInputData);
         }
     }
+
+    /** 回删输入列表中的输入内容 */
+    protected void do_InputList_Backspacing(KeyboardContext context) {
+        InputList inputList = context.inputList;
+        inputList.deleteBackward();
+
+        after_InputList_Backspacing(context);
+
+        fire_InputChars_Input_Doing_in_TapMode(context, null);
+
+        do_InputList_Pending_Completion_Creating(context);
+    }
+
+    /**
+     * 回删输入列表的输入内容之后的操作
+     * <p/>
+     * 可在该接口内做输入预测等，且不需要触发 {@link InputMsg} 消息，
+     * 在该接口之后会触发 {@link #fire_InputChars_Input_Doing_in_TapMode 输入消息}
+     */
+    protected void after_InputList_Backspacing(KeyboardContext context) {}
 
     /**
      * 在未{@link KeyboardContext#userInputDataDisabled 禁用}对用户输入数据的保存的情况下，

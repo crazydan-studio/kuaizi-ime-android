@@ -41,7 +41,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCand
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-11
  */
-public abstract class InputCandidateKeyboard extends BaseKeyboard {
+public abstract class InputCandidateKeyboard extends EditorEditKeyboard {
 
     protected InputCandidateKeyboard(PinyinDict dict) {
         super(dict);

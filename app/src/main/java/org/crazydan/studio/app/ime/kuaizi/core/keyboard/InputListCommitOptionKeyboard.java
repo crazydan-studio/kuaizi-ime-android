@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
+import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -36,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-08
  */
-public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
+public class InputListCommitOptionKeyboard extends BaseKeyboard {
 
     public InputListCommitOptionKeyboard() {
         super(null);
@@ -58,6 +59,18 @@ public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
         InputListCommitOptionChooseStateData stateData = this.state.data();
 
         return () -> keyTable.createKeys(stateData.getOption(), stateData.hasSpell(), stateData.hasVariant());
+    }
+
+    @Override
+    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+        if (try_On_Common_UserKey_Msg(context, msg)) {
+            return;
+        }
+
+        Key key = context.key();
+        if (key instanceof CtrlKey) {
+            on_CtrlKey_Msg(context, msg);
+        }
     }
 
     @Override
@@ -89,7 +102,6 @@ public class InputListCommitOptionKeyboard extends DirectInputKeyboard {
         return msg.type != UserKeyMsgType.SingleTap_Key;
     }
 
-    @Override
     protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (msg.type != UserKeyMsgType.SingleTap_Key) {
             return;

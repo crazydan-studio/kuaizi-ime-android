@@ -74,6 +74,9 @@ public class State {
         InputCandidate_Choose_Doing,
         /** 输入候选字高级过滤中 */
         InputCandidate_Advance_Filter_Doing,
+
+        /** 编辑器编辑中：光标移动 或 内容选择 */
+        Editor_Edit_Doing,
     }
 
     public interface Data {}

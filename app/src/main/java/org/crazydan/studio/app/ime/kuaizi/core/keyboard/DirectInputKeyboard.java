@@ -36,7 +36,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-30
  */
-public abstract class DirectInputKeyboard extends BaseKeyboard {
+public abstract class DirectInputKeyboard extends EditorEditKeyboard {
 
     protected DirectInputKeyboard(PinyinDict dict) {
         super(dict);

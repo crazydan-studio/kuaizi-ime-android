@@ -43,10 +43,10 @@ public class EditorCursorMsgData extends InputMsgData {
     }
 
     private static Motion createAnchor(Motion motion) {
-        // 根据屏幕移动距离得出光标移动字符数
-        float distance = motion.distance > 0 ? Math.max(1, motion.distance / ScreenUtils.dpToPx(16f)) : 0;
+        // 根据屏幕移动距离得出光标移动次数
+        float distance = motion.distance / ScreenUtils.dpToPx(16f);
 
-        return new Motion(motion.direction, distance, motion.timestamp);
+        return new Motion(motion, distance > 0 ? Math.max(1, distance) : 0);
     }
 
     @Override

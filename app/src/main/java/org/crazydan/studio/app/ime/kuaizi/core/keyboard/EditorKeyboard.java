@@ -25,14 +25,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
-
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Range_Select_Doing;
 
 /**
  * {@link Type#Editor 文本编辑键盘}
@@ -40,7 +34,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Ra
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-10
  */
-public class EditorKeyboard extends DirectInputKeyboard {
+public class EditorKeyboard extends EditorEditKeyboard {
 
     public EditorKeyboard() {
         super(null);
@@ -71,23 +65,25 @@ public class EditorKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        CtrlKey key = context.key();
-
-        // 在当前键盘内需单独处理光标移动按键，不采用公共处理逻辑
-        if (CtrlKey.Type.Editor_Cursor_Locator.match(key)) {
-            return false;
-        }
-
-        return super.try_On_Common_CtrlKey_Msg(context, msg);
+    protected boolean try_On_CtrlKey_Editor_Cursor_Locator_Msg(KeyboardContext context, UserKeyMsg msg) {
+        // 屏蔽基类中对光标定位按键的处理逻辑，由当前键盘自行处理
+        return false;
     }
 
     @Override
-    protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
-        CtrlKey key = context.key();
-        if (key.disabled) {
+    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+        if (try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }
+
+        Key key = context.key();
+        if (key instanceof CtrlKey && !key.disabled) {
+            on_CtrlKey_Msg(context, msg);
+        }
+    }
+
+    protected void on_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
+        CtrlKey key = context.key();
 
         switch (msg.type) {
             case SingleTap_Key: {
@@ -99,30 +95,17 @@ public class EditorKeyboard extends DirectInputKeyboard {
                 }
                 break;
             }
-            case FingerFlipping: {
-                UserFingerFlippingMsgData data = msg.data();
-                Motion motion = data.motion;
+            case FingerMoving_Start: {
                 switch (key.type) {
                     case Editor_Cursor_Locator:
-                        play_SingleTick_InputAudio(context);
-
-                        do_Editor_Cursor_Moving(context, motion);
+                        start_Editor_Cursor_Moving(context);
                         break;
                     case Editor_Range_Selector:
-                        play_SingleTick_InputAudio(context);
-
-                        do_Editor_Range_Selecting(context, motion);
+                        start_Editor_Range_Selecting(context);
                         break;
                 }
                 break;
             }
         }
-    }
-
-    private void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {
-        Key key = context.key();
-        InputMsgData data = new EditorCursorMsgData(key, motion);
-
-        fire_InputMsg(context, Editor_Range_Select_Doing, data);
     }
 }
