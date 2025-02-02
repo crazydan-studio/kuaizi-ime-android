@@ -239,18 +239,26 @@ public class XPadView extends View {
 //        }
 
         if (new_active_block == null || type == ViewGestureDetector.GestureType.PressEnd) {
-            if (this.state.type != XPadState.Type.Init && this.zone_1_animator != null) {
-                boolean finalSimulationTerminated = simulationTerminated;
+            switch (this.state.type) {
+                case Init:
+                case Editor_Edit_Doing: {
+                    break;
+                }
+                default: {
+                    if (this.zone_1_animator != null) {
+                        boolean finalSimulationTerminated = simulationTerminated;
 
-                // 输入状态结束，动画还原到初始状态
-                start_zone_1_animator(0, this.zone_1_HexagonRadius, new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        onGesture_End(listener, data, finalSimulationTerminated);
-                        invalidate();
+                        // 输入状态结束，动画还原到初始状态
+                        start_zone_1_animator(0, this.zone_1_HexagonRadius, new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                onGesture_End(listener, data, finalSimulationTerminated);
+                                invalidate();
+                            }
+                        });
+                        return;
                     }
-                });
-                return;
+                }
             }
 
             onGesture_End(listener, data, simulationTerminated);
@@ -258,9 +266,17 @@ public class XPadView extends View {
         }
 
         if (old_active_block != null) {
-            // 开始输入：减少手指画圈的半径和滑行距离
-            if (old_active_block.zone == 1 && new_active_block.zone == 2) {
-                start_zone_1_animator(this.zone_1_HexagonRadius_input_waiting, this.zone_1_HexagonRadius_input_doing);
+            switch (this.state.type) {
+                case Editor_Edit_Doing: { // 在编辑状态时，不改变键盘
+                    break;
+                }
+                default: {
+                    // 开始输入：减少手指画圈的半径和滑行距离
+                    if (old_active_block.zone == 1 && new_active_block.zone == 2) {
+                        start_zone_1_animator(this.zone_1_HexagonRadius_input_waiting,
+                                              this.zone_1_HexagonRadius_input_doing);
+                    }
+                }
             }
         }
 
@@ -280,8 +296,10 @@ public class XPadView extends View {
         }
 
         // 触发滑行过程中的切换消息
-        if (old_active_block != null //
-            && type == ViewGestureDetector.GestureType.Moving) {
+        if (this.state.type != XPadState.Type.Editor_Edit_Doing //
+            && old_active_block != null //
+            && type == ViewGestureDetector.GestureType.Moving //
+        ) {
             boolean isInputting = this.state.type == XPadState.Type.InputChars_Input_Doing;
             boolean isBlockChanged = old_active_block.zone == 1 && new_active_block.zone == 2;
             boolean isCharChanged = old_active_block.zone == 2
@@ -376,7 +394,8 @@ public class XPadView extends View {
 
     private void prepareContentOnZone(HexagonOrientation orientation) {
         XZone[] zones = determineZones();
-        boolean isInputting = this.state.type != XPadState.Type.Init;
+        boolean isInputting = this.state.type != XPadState.Type.Init
+                              && this.state.type != XPadState.Type.Editor_Edit_Doing;
 
         for (XZone zone : zones) {
             zone.clearTextPainters();
@@ -1041,10 +1060,15 @@ public class XPadView extends View {
     }
 
     private XZone[] determineZones() {
-        if (this.state.type == XPadState.Type.Init) {
-            return this.zones;
+        switch (this.state.type) {
+            case Init:
+            case Editor_Edit_Doing: {
+                return this.zones;
+            }
+            default: {
+                return this.inputting_zones;
+            }
         }
-        return this.inputting_zones;
     }
 
     private BlockKey[][] getBlockKeys_In_Zone_2(int blockIndex, boolean isActiveBlock) {
@@ -1118,30 +1142,37 @@ public class XPadView extends View {
             KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
+        if (try_OnGesture_when_Editor_Edit_Doing(listener, type, data)) {
+            return;
+        }
+
         if (this.state.type != XPadState.Type.Init) {
             return;
         }
 
-        XZone[] zones = determineZones();
-        BlockKey blockKey = getBlockKey(this.active_block);
-        XZone centerZone = zones[0];
+        BlockKey blockKey = this.zone_0_key;
 
         switch (type) {
             case PressStart: {
+                XZone[] zones = determineZones();
+                XZone centerZone = zones[0];
+
                 centerZone.press();
                 break;
             }
-            case SingleTap: // 用于播放双击提示音：两次单击音效
-            case Flipping: {
+            case SingleTap: { // 用于播放双击提示音：两次单击音效
                 trigger_Gesture(listener, blockKey, type, data);
                 break;
             }
-            case DoubleTap:
-            case LongPressStart: {
+            case DoubleTap: {
                 trigger_Gesture(listener, blockKey, type, data);
-
                 // Note：进入编辑器编辑状态会发生键盘切换，故而，需显式重置状态
                 reset();
+                break;
+            }
+            case MovingStart: {
+                this.state = new XPadState(XPadState.Type.Editor_Edit_Doing);
+                trigger_Gesture(listener, blockKey, type, data);
                 break;
             }
         }
@@ -1151,6 +1182,10 @@ public class XPadView extends View {
             KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
+        if (try_OnGesture_when_Editor_Edit_Doing(listener, type, data)) {
+            return;
+        }
+
         switch (type) {
             case SingleTap: {
                 BlockKey blockKey = getBlockKey(this.active_block);
@@ -1202,6 +1237,10 @@ public class XPadView extends View {
             KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
             ViewGestureDetector.GestureData data
     ) {
+        if (try_OnGesture_when_Editor_Edit_Doing(listener, type, data)) {
+            return;
+        }
+
         if (type != ViewGestureDetector.GestureType.Moving) {
             return;
         }
@@ -1223,6 +1262,30 @@ public class XPadView extends View {
                 break;
             }
         }
+    }
+
+    private boolean try_OnGesture_when_Editor_Edit_Doing(
+            KeyboardView.GestureListener listener, ViewGestureDetector.GestureType type,
+            ViewGestureDetector.GestureData data
+    ) {
+        if (this.state.type != XPadState.Type.Editor_Edit_Doing) {
+            return false;
+        }
+
+        BlockKey blockKey = this.zone_0_key;
+
+        switch (type) {
+            case Moving: {
+                trigger_Gesture(listener, blockKey, type, data);
+                return true;
+            }
+            case MovingEnd: {
+                trigger_Gesture(listener, blockKey, type, data);
+                reset();
+                return true;
+            }
+        }
+        return false;
     }
 
     private void trigger_Moving_Gesture(

@@ -43,9 +43,11 @@ public class XPadState {
 
         InputChars_Input_Waiting,
         InputChars_Input_Doing,
+
+        Editor_Edit_Doing,
     }
 
-    interface Data {}
+    public interface Data {}
 
     public static class KeyData implements Data {
         public final Key key;
