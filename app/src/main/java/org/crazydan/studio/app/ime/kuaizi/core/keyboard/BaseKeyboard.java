@@ -937,8 +937,17 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsgType#InputAudio_Play_Doing} 消息 */
     private void fire_InputAudio_Play_Doing(KeyboardContext context, InputAudioPlayMsgData.AudioType audioType) {
+        fire_InputAudio_Play_Doing(context, audioType, false);
+    }
+
+    private void fire_InputAudio_Play_Doing(
+            KeyboardContext context, InputAudioPlayMsgData.AudioType audioType, boolean force
+    ) {
         Key key = context.key();
-        if (CtrlKey.Type.NoOp.match(key) && audioType != InputAudioPlayMsgData.AudioType.PageFlip) {
+        if (!force //
+            && CtrlKey.Type.NoOp.match(key) //
+            && audioType != InputAudioPlayMsgData.AudioType.PageFlip //
+        ) {
             return;
         }
 
@@ -1078,7 +1087,12 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 播放输入单击音效 */
     protected void play_SingleTick_InputAudio(KeyboardContext context) {
-        fire_InputAudio_Play_Doing(context, InputAudioPlayMsgData.AudioType.SingleTick);
+        play_SingleTick_InputAudio(context, false);
+    }
+
+    /** 播放输入单击音效 */
+    protected void play_SingleTick_InputAudio(KeyboardContext context, boolean force) {
+        fire_InputAudio_Play_Doing(context, InputAudioPlayMsgData.AudioType.SingleTick, force);
     }
 
     /** 播放输入双击音效 */

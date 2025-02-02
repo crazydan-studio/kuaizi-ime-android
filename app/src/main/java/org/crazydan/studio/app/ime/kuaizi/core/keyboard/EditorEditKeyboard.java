@@ -137,7 +137,8 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
         }
         this.log.debug("Moving editor cursor: key=%s, anchor=%s", () -> new Object[] { context.key, anchor });
 
-        play_SingleTick_InputAudio(context);
+        // Note: 始终播放点击音效
+        play_SingleTick_InputAudio(context, true);
 
         // 重新定位
         stateData.startAt(msg.data().at);

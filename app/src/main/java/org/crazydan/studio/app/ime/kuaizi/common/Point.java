@@ -56,4 +56,9 @@ public class Point {
 
         return new Motion(direction, (int) distance);
     }
+
+    @Override
+    public String toString() {
+        return "{x=" + this.x + ", y=" + this.y + '}';
+    }
 }
