@@ -368,8 +368,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 },
                 new Object[] { "%s为空格输入按键，单击可在输入内容中添加空格，长按则将连续添加空格；", key_ctrl_space },
                 new Object[] {
-                        "%s为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，"
-                        + "双击则将进入<b>内容编辑</b>模式；", key_ctrl_cursor_locator
+                        "%s为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，" + "双击则将进入<b>内容编辑</b>模式；",
+                        key_ctrl_cursor_locator
                 },
                 // 其他按键
                 new Object[] { "%s为左右手输入模式切换按键，用于临时切换<b>左右手使用</b>模式；", key_ctrl_hand_mode },
@@ -590,8 +590,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按或双击</span>"
-                                + " <b>光标定位按键</b>");
+                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">双击</span><b>光标定位按键</b>");
                 });
         exercise.newStep("请在内容选择按键%s上滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {

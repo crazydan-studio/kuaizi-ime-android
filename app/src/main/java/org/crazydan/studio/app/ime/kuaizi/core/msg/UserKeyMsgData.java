@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 
 /**
@@ -30,9 +31,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.Key;
 public class UserKeyMsgData {
     /** 消息目标按键 */
     public final Key key;
+    /** 消息触发的位置坐标 */
+    public final Point at;
 
-    public UserKeyMsgData(Key key) {
+    public UserKeyMsgData(Key key, Point at) {
         this.key = key;
+        this.at = at;
     }
 
     @Override

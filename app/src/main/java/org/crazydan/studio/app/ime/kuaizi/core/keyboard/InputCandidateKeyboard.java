@@ -19,13 +19,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.PagingStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;

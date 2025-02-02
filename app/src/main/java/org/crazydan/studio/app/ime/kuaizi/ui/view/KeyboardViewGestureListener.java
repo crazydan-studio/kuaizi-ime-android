@@ -20,10 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.graphics.PointF;
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
@@ -114,23 +114,23 @@ public class KeyboardViewGestureListener implements ViewGestureDetector.Listener
 
     /** 发送 {@link UserKeyMsg} 消息，且不限定 {@link Key} 是否为 null */
     private void fire_UserKeyMsg(UserKeyMsgType msgType, Key key, ViewGestureDetector.GestureData data) {
-        UserKeyMsgData msgData = new UserKeyMsgData(key);
+        UserKeyMsgData msgData = new UserKeyMsgData(key, data.at);
 
         switch (msgType) {
             case SingleTap_Key: {
                 ViewGestureDetector.SingleTapGestureData tapData = (ViewGestureDetector.SingleTapGestureData) data;
-                msgData = new UserSingleTapMsgData(key, tapData.tick);
+                msgData = new UserSingleTapMsgData(key, tapData.at, tapData.tick);
                 break;
             }
             case LongPress_Key_Tick: {
                 ViewGestureDetector.LongPressTickGestureData tickData
                         = (ViewGestureDetector.LongPressTickGestureData) data;
-                msgData = new UserLongPressTickMsgData(key, tickData.tick, tickData.duration);
+                msgData = new UserLongPressTickMsgData(key, tickData.at, tickData.tick, tickData.duration);
                 break;
             }
             case FingerMoving: {
-                Motion motion = ((ViewGestureDetector.MovingGestureData) data).motion;
-                msgData = new UserFingerMovingMsgData(key, motion);
+                ViewGestureDetector.MovingGestureData movingData = (ViewGestureDetector.MovingGestureData) data;
+                msgData = new UserFingerMovingMsgData(key, movingData.at, movingData.motion);
                 break;
             }
             case FingerFlipping: {
@@ -154,7 +154,7 @@ public class KeyboardViewGestureListener implements ViewGestureDetector.Listener
 
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        KeyViewHolder<?> keyViewHolder = this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.x, data.y);
+        KeyViewHolder<?> keyViewHolder = this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.at.x, data.at.y);
 
         KeyViewHolder<?> oldKeyViewHolder = this.prevKeyViewHolder;
         this.prevKeyViewHolder = keyViewHolder;

@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
 
 /**
@@ -28,10 +30,29 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
  * @date 2025-02-01
  */
 public class EditorEditStateData implements State.Data {
+    /** 操作的目标 */
     public final Target target;
 
-    public EditorEditStateData(Target target) {
+    /** 起点坐标 */
+    private Point from;
+    /** 终点坐标 */
+    private Point to;
+
+    public EditorEditStateData(Target target, Point from) {
         this.target = target;
+        startAt(from);
+    }
+
+    public void startAt(Point from) {
+        this.from = from;
+    }
+
+    public void moveTo(Point to) {
+        this.to = to;
+    }
+
+    public Motion getMotion() {
+        return this.from.motion(this.to);
     }
 
     public enum Target {

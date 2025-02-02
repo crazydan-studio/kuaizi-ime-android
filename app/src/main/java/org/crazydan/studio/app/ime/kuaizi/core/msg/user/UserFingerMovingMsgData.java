@@ -19,8 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 
@@ -34,8 +35,8 @@ public class UserFingerMovingMsgData extends UserKeyMsgData {
     /** 运动信息 */
     public final Motion motion;
 
-    public UserFingerMovingMsgData(Key target, Motion motion) {
-        super(target);
+    public UserFingerMovingMsgData(Key target, Point at, Motion motion) {
+        super(target, at);
         this.motion = motion;
     }
 

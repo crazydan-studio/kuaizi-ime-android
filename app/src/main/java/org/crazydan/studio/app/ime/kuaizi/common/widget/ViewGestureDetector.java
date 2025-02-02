@@ -30,9 +30,10 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 
 /**
  * 手势检测器
@@ -249,7 +250,7 @@ public class ViewGestureDetector {
 
         // 跳过最后位置不变的轨迹点
         GestureData last = CollectionUtils.last(this.movingTracker);
-        if (last != null && last.x == data.x && last.y == data.y) {
+        if (last != null && last.at.equals(data.at)) {
             return;
         }
         this.movingTracker.add(data);
@@ -324,31 +325,10 @@ public class ViewGestureDetector {
 
     private Motion createMotion(GestureData newData, GestureData oldData) {
         if (oldData == null) {
-            return new Motion(Motion.Direction.none, 0, newData.timestamp);
+            return Motion.none;
         }
 
-        long timestamp = newData.timestamp;
-
-        double dx = newData.x - oldData.x;
-        double dy = newData.y - oldData.y;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-        double angle = Math.toDegrees(Math.acos(dx / distance));
-
-        Motion.Direction direction;
-        // Note: 屏幕绘图坐标与空间坐标存在上下翻转关系
-        //  ----- x
-        //  |
-        //  |
-        //  y
-        if (angle >= 45 && angle < 45 + 90) {
-            direction = dy > 0 ? Motion.Direction.down : Motion.Direction.up;
-        } else if (angle >= 45 + 90 && angle <= 180) {
-            direction = Motion.Direction.left;
-        } else {
-            direction = Motion.Direction.right;
-        }
-
-        return new Motion(direction, (int) distance, timestamp);
+        return oldData.at.motion(newData.at);
     }
 
     private LongPressHandler getLongPressHandler() {
@@ -402,19 +382,21 @@ public class ViewGestureDetector {
     }
 
     public static class GestureData {
-        public final float x;
-        public final float y;
+        public final Point at;
         public final long timestamp;
 
         public GestureData(float x, float y, long timestamp) {
-            this.x = x;
-            this.y = y;
+            this(new Point(x, y), timestamp);
+        }
+
+        protected GestureData(Point at, long timestamp) {
+            this.at = at;
             this.timestamp = timestamp;
         }
 
         @Override
         public String toString() {
-            return "{x=" + this.x + ", y=" + this.y + '}';
+            return "{x=" + this.at.x + ", y=" + this.at.y + '}';
         }
 
         public static GestureData newFrom(GestureData g, float x, float y) {
@@ -423,7 +405,7 @@ public class ViewGestureDetector {
 
         /** 事件位置不变，仅修改时间戳为当前时间 */
         public static GestureData newFrom(GestureData g) {
-            return new GestureData(g.x, g.y, SystemClock.uptimeMillis());
+            return new GestureData(g.at, SystemClock.uptimeMillis());
         }
 
         public static GestureData from(MotionEvent e) {
@@ -435,7 +417,7 @@ public class ViewGestureDetector {
         public final Motion motion;
 
         public MovingGestureData(GestureData g, Motion motion) {
-            super(g.x, g.y, g.timestamp);
+            super(g.at, g.timestamp);
             this.motion = motion;
         }
 
@@ -449,7 +431,7 @@ public class ViewGestureDetector {
         public final Motion motion;
 
         public FlippingGestureData(GestureData g, Motion motion) {
-            super(g.x, g.y, g.timestamp);
+            super(g.at, g.timestamp);
             this.motion = motion;
         }
 
@@ -463,7 +445,7 @@ public class ViewGestureDetector {
         public final int tick;
 
         public TickGestureData(GestureData g, int tick) {
-            super(g.x, g.y, g.timestamp);
+            super(g.at, g.timestamp);
             this.tick = tick;
         }
 

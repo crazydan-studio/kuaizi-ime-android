@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 
@@ -29,8 +30,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgData;
 public abstract class UserKeyTickMsgData extends UserKeyMsgData {
     public final int tick;
 
-    public UserKeyTickMsgData(Key target, int tick) {
-        super(target);
+    public UserKeyTickMsgData(Key target, Point at, int tick) {
+        super(target, at);
         this.tick = tick;
     }
 

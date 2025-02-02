@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
@@ -43,7 +44,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
@@ -318,7 +318,7 @@ public abstract class BaseKeyboard implements Keyboard {
             KeyboardContext context, UserKeyMsg msg, BiFunction<KeyboardContext, UserKeyMsg, T> c
     ) {
         UserLongPressTickMsgData msgData = msg.data();
-        UserSingleTapMsgData newMsgData = new UserSingleTapMsgData(msgData.key, 0);
+        UserSingleTapMsgData newMsgData = new UserSingleTapMsgData(msgData.key, msgData.at, 0);
         UserKeyMsg newMsg = UserKeyMsg.build((b) -> b.type(UserKeyMsgType.SingleTap_Key).data(newMsgData));
 
         return c.apply(context, newMsg);
@@ -381,17 +381,17 @@ public abstract class BaseKeyboard implements Keyboard {
     }
 
     /** 对目标编辑器做光标移动操作 */
-    protected void do_Editor_Cursor_Moving(KeyboardContext context, Motion motion) {
+    protected void do_Editor_Cursor_Moving(KeyboardContext context, Motion anchor) {
         Key key = context.key();
-        InputMsgData data = new EditorCursorMsgData(key, motion);
+        InputMsgData data = new EditorCursorMsgData(key, anchor);
 
         fire_InputMsg(context, Editor_Cursor_Move_Doing, data);
     }
 
     /** 对目标编辑器做内容选择操作 */
-    protected void do_Editor_Range_Selecting(KeyboardContext context, Motion motion) {
+    protected void do_Editor_Range_Selecting(KeyboardContext context, Motion anchor) {
         Key key = context.key();
-        InputMsgData data = new EditorCursorMsgData(key, motion);
+        InputMsgData data = new EditorCursorMsgData(key, anchor);
 
         fire_InputMsg(context, Editor_Range_Select_Doing, data);
     }

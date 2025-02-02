@@ -19,11 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 
 /**
  * {@link InputMsgType#Editor_Range_Select_Doing}
@@ -34,19 +33,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
  * @date 2023-07-18
  */
 public class EditorCursorMsgData extends InputMsgData {
-    /** 锚点信息 */
+    /** 锚点信息，即，光标{@link Motion#direction 移动方向}和{@link Motion#distance 移动次数} */
     public final Motion anchor;
 
-    public EditorCursorMsgData(Key key, Motion motion) {
+    public EditorCursorMsgData(Key key, Motion anchor) {
         super(key);
-        this.anchor = createAnchor(motion);
-    }
-
-    private static Motion createAnchor(Motion motion) {
-        // 根据屏幕移动距离得出光标移动次数
-        float distance = motion.distance / ScreenUtils.dpToPx(16f);
-
-        return new Motion(motion, distance > 0 ? Math.max(1, distance) : 0);
+        this.anchor = anchor;
     }
 
     @Override

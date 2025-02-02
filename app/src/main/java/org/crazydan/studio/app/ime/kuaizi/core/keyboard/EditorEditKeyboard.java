@@ -19,13 +19,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.EditorEditStateData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerMovingMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
@@ -37,7 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  * @date 2025-02-01
  */
 public abstract class EditorEditKeyboard extends BaseKeyboard {
-    private static final float MIN_MOTION_DISTANCE_IN_PX = ScreenUtils.dpToPx(10f);
+    private static final float ANCHOR_UNIT_IN_PX = ScreenUtils.dpToPx(8f);
 
     protected EditorEditKeyboard(PinyinDict dict) {
         super(dict);
@@ -46,7 +46,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
     @Override
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (this.state.type == State.Type.Editor_Edit_Doing) {
-            do_Editor_Editing(context, msg);
+            on_Editor_Editing_Msg(context, msg);
             return true;
         }
 
@@ -76,7 +76,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
                 return true;
             }
             case FingerMoving_Start: {
-                start_Editor_Cursor_Moving(context);
+                start_Editor_Editing(context, msg.data().at);
                 return true;
             }
         }
@@ -86,15 +86,33 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
 
     // ======================== Start: 编辑器编辑逻辑 ========================
 
-    protected void start_Editor_Cursor_Moving(KeyboardContext context) {
-        start_Editor_Editing(context, EditorEditStateData.Target.cursor);
+    protected void start_Editor_Editing(KeyboardContext context, Point from) {
+        this.log.debug("Start editor editing: key=%s, at=%s", () -> new Object[] { context.key, from });
+
+        CtrlKey key = context.key();
+        EditorEditStateData.Target target = null;
+        switch (key.type) {
+            case Editor_Cursor_Locator:
+                target = EditorEditStateData.Target.cursor;
+                break;
+            case Editor_Range_Selector:
+                target = EditorEditStateData.Target.selection;
+                break;
+        }
+
+        EditorEditStateData stateData = new EditorEditStateData(target, from);
+        State state = new State(State.Type.Editor_Edit_Doing, stateData, this.state);
+
+        change_State_To(context, state);
     }
 
-    protected void start_Editor_Range_Selecting(KeyboardContext context) {
-        start_Editor_Editing(context, EditorEditStateData.Target.selection);
+    protected void stop_Editor_Editing(KeyboardContext context) {
+        this.log.debug("Stop editor editing: key=%s", () -> new Object[] { context.key });
+
+        change_State_to_Previous(context);
     }
 
-    protected void do_Editor_Editing(KeyboardContext context, UserKeyMsg msg) {
+    protected void on_Editor_Editing_Msg(KeyboardContext context, UserKeyMsg msg) {
         switch (msg.type) {
             case Press_Key_Start:
             case FingerMoving_Stop: {
@@ -102,40 +120,38 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
                 return;
             }
             case FingerMoving: {
-                UserFingerMovingMsgData data = msg.data();
-                if (data.motion.distance < MIN_MOTION_DISTANCE_IN_PX) {
-                    return;
-                }
-                this.log.warn("Moving motion: %s", () -> new Object[] { data.motion });
-
-                //play_SingleTick_InputAudio(context);
-
-                EditorEditStateData stateData = this.state.data();
-                Motion motion = new Motion(data.motion, 1);
-
-                switch (stateData.target) {
-                    case cursor: {
-                        do_Editor_Cursor_Moving(context, motion);
-                        break;
-                    }
-                    case selection: {
-                        do_Editor_Range_Selecting(context, motion);
-                        break;
-                    }
-                }
+                do_Editor_Cursor_Handling(context, msg);
             }
         }
     }
 
-    protected void start_Editor_Editing(KeyboardContext context, EditorEditStateData.Target target) {
-        EditorEditStateData stateData = new EditorEditStateData(target);
-        State state = new State(State.Type.Editor_Edit_Doing, stateData, this.state);
+    protected void do_Editor_Cursor_Handling(KeyboardContext context, UserKeyMsg msg) {
+        EditorEditStateData stateData = this.state.data();
+        stateData.moveTo(msg.data().at);
 
-        change_State_To(context, state);
-    }
+        Motion motion = stateData.getMotion();
+        // 根据单位移动距离计算得出光标的移动次数
+        Motion anchor = new Motion(motion, motion.distance >= ANCHOR_UNIT_IN_PX ? 1 : 0);
+        if (anchor.distance < 1) {
+            return;
+        }
+        this.log.debug("Moving editor cursor: key=%s, anchor=%s", () -> new Object[] { context.key, anchor });
 
-    protected void stop_Editor_Editing(KeyboardContext context) {
-        change_State_To(context, this.state.previous);
+        play_SingleTick_InputAudio(context);
+
+        // 重新定位
+        stateData.startAt(msg.data().at);
+
+        switch (stateData.target) {
+            case cursor: {
+                do_Editor_Cursor_Moving(context, anchor);
+                break;
+            }
+            case selection: {
+                do_Editor_Range_Selecting(context, anchor);
+                break;
+            }
+        }
     }
 
     // ======================== End: 编辑器编辑逻辑 ========================

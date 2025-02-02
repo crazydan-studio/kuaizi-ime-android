@@ -105,7 +105,7 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
         this.started = true;
         this.trailPath.reset();
 
-        this.trailPath.moveTo(gesture.x, gesture.y);
+        this.trailPath.moveTo(gesture.at.x, gesture.at.y);
     }
 
     private void moving(ViewGestureDetector.GestureData gesture) {
@@ -113,7 +113,7 @@ public class ViewGestureTrailer implements ViewGestureDetector.Listener {
             return;
         }
 
-        this.trailPath.lineTo(gesture.x, gesture.y);
+        this.trailPath.lineTo(gesture.at.x, gesture.at.y);
     }
 
     private void stop() {

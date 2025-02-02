@@ -17,35 +17,33 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.msg;
+package org.crazydan.studio.app.ime.kuaizi.common;
 
 /**
+ * 运动信息
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-19
  */
 public class Motion {
+    public static final Motion none = new Motion(Direction.none, 0);
+
     /** 移动方向 */
     public final Direction direction;
     /** 移动距离 */
     public final float distance;
-    public final long timestamp;
-
-    public Motion() {
-        this(Direction.none, 0, 0);
-    }
 
     public Motion(Motion motion) {
-        this(motion.direction, motion.distance, motion.timestamp);
+        this(motion.direction, motion.distance);
     }
 
     public Motion(Motion motion, float distance) {
-        this(motion.direction, distance, motion.timestamp);
+        this(motion.direction, distance);
     }
 
-    public Motion(Direction direction, float distance, long timestamp) {
+    public Motion(Direction direction, float distance) {
         this.direction = direction;
         this.distance = distance;
-        this.timestamp = timestamp;
     }
 
     @Override

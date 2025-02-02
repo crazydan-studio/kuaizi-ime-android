@@ -79,7 +79,7 @@ public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapt
             return;
         }
 
-        ViewHolder holder = findViewHolderUnder(data.x, data.y);
+        ViewHolder holder = findViewHolderUnder(data.at.x, data.at.y);
         if (holder == null) {
             return;
         }

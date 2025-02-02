@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
@@ -52,7 +53,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureTrailer;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.Motion;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
@@ -213,8 +213,8 @@ public class XPadView extends View {
 
         invalidate();
 
-        float x = data.x + offset.x;
-        float y = data.y + offset.y;
+        float x = data.at.x + offset.x;
+        float y = data.at.y + offset.y;
 
         this.trailer.setDisabled(disableTrailer);
         this.trailer.onGesture(type, ViewGestureDetector.GestureData.newFrom(data, x, y));
@@ -1228,8 +1228,7 @@ public class XPadView extends View {
     private void trigger_Moving_Gesture(
             KeyboardView.GestureListener listener, Key key, ViewGestureDetector.GestureData data
     ) {
-        ViewGestureDetector.MovingGestureData movingData = new ViewGestureDetector.MovingGestureData(data,
-                                                                                                     new Motion());
+        ViewGestureDetector.MovingGestureData movingData = new ViewGestureDetector.MovingGestureData(data, Motion.none);
         trigger_Gesture(listener, key, ViewGestureDetector.GestureType.Moving, movingData);
     }
 

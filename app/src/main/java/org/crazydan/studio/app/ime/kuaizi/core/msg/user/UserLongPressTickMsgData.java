@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
+import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 
@@ -31,8 +32,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 public class UserLongPressTickMsgData extends UserKeyTickMsgData {
     public final long duration;
 
-    public UserLongPressTickMsgData(Key target, int tick, long duration) {
-        super(target, tick);
+    public UserLongPressTickMsgData(Key target, Point at, int tick, long duration) {
+        super(target, at, tick);
         this.duration = duration;
     }
 }

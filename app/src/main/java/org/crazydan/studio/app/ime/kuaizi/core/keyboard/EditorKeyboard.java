@@ -96,14 +96,7 @@ public class EditorKeyboard extends EditorEditKeyboard {
                 break;
             }
             case FingerMoving_Start: {
-                switch (key.type) {
-                    case Editor_Cursor_Locator:
-                        start_Editor_Cursor_Moving(context);
-                        break;
-                    case Editor_Range_Selector:
-                        start_Editor_Range_Selecting(context);
-                        break;
-                }
+                start_Editor_Editing(context, msg.data().at);
                 break;
             }
         }

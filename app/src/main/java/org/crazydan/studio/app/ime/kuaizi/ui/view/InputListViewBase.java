@@ -100,7 +100,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
             return;
         }
 
-        int position = findInputPositionUnder(data.x, data.y);
+        int position = findInputPositionUnder(data.at.x, data.at.y);
 
         UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(this.positionInParent, position);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Input).data(msgData));
