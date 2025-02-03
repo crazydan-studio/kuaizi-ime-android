@@ -29,12 +29,13 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.graphics.Point;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
@@ -44,7 +45,6 @@ import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
@@ -95,16 +95,17 @@ public class Preferences extends FollowSystemThemeActivity {
         String extraInfoEnabledStr = preferences.getString(pref_key, null);
         boolean extraInfoEnabled = extraInfoEnabledStr != null && Boolean.parseBoolean(extraInfoEnabledStr);
 
-        Point screenSize = ScreenUtils.getScreenSize();
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         PackageInfo pkgInfo = SystemUtils.getPackageInfo(context);
         String clientInfo = String.format(Locale.getDefault(),
-                                          "%s %s / Android %s (API %s) / %dx%d",
+                                          "%s %s / Android %s (API %s) / %dx%d (DPI %d)",
                                           Build.MANUFACTURER,
                                           Build.MODEL,
                                           Build.VERSION.RELEASE,
                                           Build.VERSION.SDK_INT,
-                                          screenSize.x,
-                                          screenSize.y);
+                                          metrics.widthPixels,
+                                          metrics.heightPixels,
+                                          metrics.densityDpi);
         String appInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
 
         String feedbackUrl = extraInfoEnabled
