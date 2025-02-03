@@ -653,17 +653,36 @@ public class XPadView extends View {
     private void prepareZones(HexagonOrientation orientation, int width, int height) {
         float padPadding = this.pad_padding;
 
-        float maxHexagonRadius = Math.min(width * 0.5f, height * 0.5f) - padPadding;
-        float zone_2_HexagonRadius = orientation == HexagonOrientation.FLAT_TOP
-                                     ? maxHexagonRadius * cos_30_divided_by_1
-                                     : maxHexagonRadius;
+        float maxCircleRadiusInX = width * 0.5f - padPadding;
+        float maxCircleRadiusInY = height * 0.5f - padPadding;
 
-        PointF origin = orientation == HexagonOrientation.FLAT_TOP
-                        ? new PointF(width - (zone_2_HexagonRadius
-                                              + padPadding),
-                                     height - maxHexagonRadius - padPadding)
-                        : new PointF(width - (zone_2_HexagonRadius * cos_30 + padPadding),
-                                     height - zone_2_HexagonRadius - padPadding);
+        float zone_2_HexagonRadius;
+        float originOffsetInX;
+        float originOffsetInY;
+        // Note:
+        // - 为 2 级分区分配的半径要尽可能大
+        // - 中心坐标需尽可能靠右下角偏移，以确保在右手的可触及范围内
+        if (orientation == HexagonOrientation.FLAT_TOP) {
+            // 尖角尽可能向右侧边靠拢
+            float r1 = maxCircleRadiusInX;
+            // 水平边尽可能向底边靠拢
+            float r2 = maxCircleRadiusInY * cos_30_divided_by_1;
+            zone_2_HexagonRadius = Math.min(r1, r2);
+
+            originOffsetInX = zone_2_HexagonRadius + padPadding;
+            originOffsetInY = zone_2_HexagonRadius * cos_30 + padPadding;
+        } else {
+            // 水平边尽可能向右侧边靠拢
+            float r1 = maxCircleRadiusInX * cos_30_divided_by_1;
+            // 尖角尽可能向底边靠拢
+            float r2 = maxCircleRadiusInY;
+            zone_2_HexagonRadius = Math.min(r1, r2);
+
+            originOffsetInX = zone_2_HexagonRadius * cos_30 + padPadding;
+            originOffsetInY = zone_2_HexagonRadius + padPadding;
+        }
+
+        PointF origin = new PointF(width - originOffsetInX, height - originOffsetInY);
         this.center_coordinate = origin;
 
         // ==================================================

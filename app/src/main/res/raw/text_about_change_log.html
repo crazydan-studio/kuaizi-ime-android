@@ -20,15 +20,21 @@
 <!DOCTYPE html><!-- https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML -->
 <p>
 	<b>
-		<big>v3.1.0 (2025-02-02) &lt;- 当前版本</big>
+		<big>v3.1.0 (2025-02-03) &lt;- 当前版本</big>
 	</b>
 </p>
 <br />
 <ul>
 	<li>&nbsp;修复在光标定位过程中会误触发按键输入的问题，并去掉长按切换编辑键盘的手势，仅保留双击切换手势。
 		同时，从光标定位按键和内容选择按键上触发的滑动手势，将实时更新编辑器中的光标位置，其与在编辑器中直接拖动光标的效果一致，
-		在操作上将会更加顺畅 <a href="https://github.com/crazydan-studio/kuaizi-ime/issues/12">#12</a>。
-		感谢 <a href="https://github.com/mzltest">@mzltest</a> 的热心建议；
+		在操作上将会更加顺畅&nbsp;<a href="https://github.com/crazydan-studio/kuaizi-ime/issues/12">#12</a>。
+		感谢&nbsp;<a href="https://github.com/mzltest">@mzltest</a>&nbsp;的热心建议；
+	</li>
+	<br />
+	<li>&nbsp;修复 X 型输入面板的辐射轴被遮挡的问题
+		&nbsp;<a href="https://github.com/crazydan-studio/kuaizi-ime/issues/12">#12</a>。
+		感谢&nbsp;<a href="https://github.com/mzltest">@mzltest</a>&nbsp;
+		与&nbsp;<a href="https://github.com/DSY-xiaoluo">@DSY-xiaoluo</a>&nbsp;的热心反馈；
 	</li>
 </ul>
 <br />
@@ -39,9 +45,11 @@
 </p>
 <br />
 <ul>
-	<li>&nbsp;修复在某些机型下按键点击和长按手势不响应的问题 <a href="https://github.com/crazydan-studio/kuaizi-ime/issues/4">#4</a>。
-		感谢 <a href="https://github.com/oblivion2023">@oblivion2023</a>、<a href="https://github.com/rsyqvthv">@rsyqvthv</a>
-		与 <a href="https://github.com/mzltest">@mzltest</a> 的热心反馈；
+	<li>&nbsp;修复在某些机型下按键点击和长按手势不响应的问题
+		&nbsp;<a href="https://github.com/crazydan-studio/kuaizi-ime/issues/4">#4</a>。
+		感谢&nbsp;<a href="https://github.com/oblivion2023">@oblivion2023</a>、
+		<a href="https://github.com/rsyqvthv">@rsyqvthv</a>&nbsp;
+		与&nbsp;<a href="https://github.com/mzltest">@mzltest</a>&nbsp;的热心反馈；
 	</li>
 	<br />
 	<li>&nbsp;修复主题配置未以「跟随系统」为默认值的问题；
@@ -146,7 +154,7 @@
 		<a href="https://github.com/crazydan-studio/kuaizi-ime/files/13110790/504690_1_En.pdf">8pen</a>
 		&nbsp;输入法的输入模式（画圈输入），以连续不间断地输入多个拼音、英文单词和数字等，
 		从而确保输入的连续性（可配置开启或关闭）。
-		感谢 <a href="https://github.com/Vinfall">@Vinfall</a>
+		感谢&nbsp;<a href="https://github.com/Vinfall">@Vinfall</a>
 		&nbsp;和&nbsp;<a href="https://support.qq.com/products/613302/profile/12/">@筷友559520</a>
 		&nbsp;反馈的意见和建议；
 	</li>
@@ -165,7 +173,7 @@
 	<li>&nbsp;中心的光标定位按键可直接双击进入内容编辑模式；
 	</li>
 	<br />
-	<li>&nbsp;补充缺失的拼音 <b>噷(hm)</b>，并微调滑屏输入的拼音按键布局；
+	<li>&nbsp;补充缺失的拼音&nbsp;<b>噷(hm)</b>，并微调滑屏输入的拼音按键布局；
 	</li>
 </ul>
 <br />
@@ -185,7 +193,7 @@
 	<li>&nbsp;改进输入撤回机制，以修复原编辑器被撤销的内容比被撤回的输入内容更多的问题；
 	</li>
 	<br />
-	<li>&nbsp;接入 <a href="https://txc.qq.com/">兔小巢</a> 以收集用户反馈；
+	<li>&nbsp;<del>接入&nbsp;<a href="https://txc.qq.com/">兔小巢</a>&nbsp;以收集用户反馈；</del>
 	</li>
 	<br />
 	<li>&nbsp;改进输入列表中的输入项被点击时的滚动逻辑，尽量确保输入项的当前位置不变，
