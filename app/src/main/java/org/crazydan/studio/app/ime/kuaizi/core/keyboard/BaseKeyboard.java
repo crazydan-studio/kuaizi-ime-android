@@ -65,7 +65,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Cursor_Move_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Range_Select_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.IME_Switch_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputAudio_Play_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputChars_Input_Done;
@@ -285,11 +284,6 @@ public abstract class BaseKeyboard implements Keyboard {
             case Exit: {
                 play_SingleTick_InputAudio(context);
                 exit_Keyboard(context);
-                return true;
-            }
-            case Switch_IME: {
-                play_SingleTick_InputAudio(context);
-                switch_IME(context);
                 return true;
             }
             case Switch_HandMode: {
@@ -1036,14 +1030,6 @@ public abstract class BaseKeyboard implements Keyboard {
         Key key = context.key();
         InputMsgData data = new KeyboardHandModeSwitchMsgData(key, mode);
         fire_InputMsg(context, Keyboard_HandMode_Switch_Doing, data);
-    }
-
-    /** 切换系统输入法 */
-    protected void switch_IME(KeyboardContext context) {
-        // Note：有可能切换，也有可能不切换，
-        // 若发生切换，则再回来时键盘状态会主动被重置，
-        // 故不需要提前重置键盘状态
-        fire_Common_InputMsg(context, IME_Switch_Doing);
     }
 
     /** 显示输入提示气泡 */

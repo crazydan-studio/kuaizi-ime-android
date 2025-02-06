@@ -54,6 +54,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     private InputListView inputListView;
 
     private View settingsBtnView;
+    private View switchImeBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
 
@@ -128,6 +129,9 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.settingsBtnView = rootView.findViewById(R.id.settings);
         toggleEnableSettingsBtn();
 
+        this.switchImeBtnView = rootView.findViewById(R.id.switch_ime);
+        toggleEnableSwitchImeBtn();
+
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
         toggleEnableInputListCleanBtn();
@@ -143,6 +147,16 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         } else {
             this.settingsBtnView.setAlpha(1.0f);
             this.settingsBtnView.setOnClickListener(this::onShowPreferences);
+        }
+    }
+
+    private void toggleEnableSwitchImeBtn() {
+        if (this.config.bool(ConfigKey.disable_switch_ime_btn)) {
+            this.switchImeBtnView.setAlpha(0.4f);
+            this.switchImeBtnView.setOnClickListener(null);
+        } else {
+            this.switchImeBtnView.setAlpha(1.0f);
+            this.switchImeBtnView.setOnClickListener(this::onSwitchIme);
         }
     }
 
@@ -179,6 +193,10 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     private void onShowPreferences(View v) {
         SystemUtils.showAppPreferences(getContext());
+    }
+
+    private void onSwitchIme(View v) {
+        SystemUtils.switchIme(getContext());
     }
 
     private void onCleanInputList(View v) {

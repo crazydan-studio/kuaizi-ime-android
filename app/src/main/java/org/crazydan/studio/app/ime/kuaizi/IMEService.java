@@ -76,8 +76,12 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
-        this.ime.destroy();
-        this.imeConfig.destroy();
+        if (this.ime != null) {
+            this.ime.destroy();
+        }
+        if (this.imeConfig != null) {
+            this.imeConfig.destroy();
+        }
 
         this.ime = null;
         this.imeView = null;

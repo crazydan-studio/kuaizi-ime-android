@@ -103,8 +103,6 @@ public class CtrlKey extends TypedKey<CtrlKey.Type> {
         /** 退回到前序状态或原键盘 */
         Exit,
 
-        /** 切换输入法 */
-        Switch_IME,
         /** 切换左右手模式 */
         Switch_HandMode,
         /** 切换键盘 */

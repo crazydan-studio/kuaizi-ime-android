@@ -22,15 +22,28 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-    <!-- 配置按钮 -->
-    <ImageButton
+    <!-- 常用功能按钮 -->
+    <FrameLayout
             android:layout_width="@dimen/input_list_button_icon_size"
             android:layout_height="@dimen/input_list_button_icon_size"
             android:layout_gravity="center"
-            android:layout_marginStart="@dimen/input_list_button_spacing"
-            android:id="@+id/settings"
-            android:src="@drawable/ic_settings"
-            android:background="?attr/input_bg_color" />
+            android:layout_marginStart="@dimen/input_list_button_spacing">
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/settings"
+                android:src="@drawable/ic_settings"
+                android:background="?attr/input_bg_color"
+                android:visibility="gone" />
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/switch_ime"
+                android:src="@drawable/ic_global"
+                android:background="?attr/input_bg_color" />
+    </FrameLayout>
 
     <View
             android:layout_width="1dp"

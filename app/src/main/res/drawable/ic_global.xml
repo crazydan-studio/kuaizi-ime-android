@@ -1,0 +1,52 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- https://www.iconfinder.com/icons/172473/globe_global_internet_icon -->
+  <path
+      android:pathData="M12,12m-11.162,0a11.162,11.162 0,1 1,22.324 0a11.162,11.162 0,1 1,-22.324 0"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M6.419,12a11.162,5.581 90,1 0,11.162 0a11.162,5.581 90,1 0,-11.162 0z"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M3.333,19.18C5.38,17.92 8.502,17.116 12,17.116c3.45,0 6.534,0.782 8.581,2.011"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"/>
+  <path
+      android:pathData="M20.667,4.82C18.62,6.08 15.498,6.884 12,6.884 8.55,6.884 5.466,6.102 3.419,4.873"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"/>
+  <path
+      android:pathData="M0.838,12L23.162,12"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"/>
+  <path
+      android:pathData="M12,0.838L12,23.162"
+      android:strokeWidth="1.676"
+      android:strokeColor="?attr/input_fg_color"/>
+</vector>

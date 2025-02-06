@@ -37,6 +37,8 @@ public enum ConfigKey {
     disable_dict_db(Boolean.class, false),
     /** 是否禁用配置按钮 */
     disable_settings_btn(Boolean.class, false),
+    /** 是否禁用 IME 切换按钮 */
+    disable_switch_ime_btn(Boolean.class, false),
     // ====================== End: 临时性配置 =====================
 
     /** 主题样式 */

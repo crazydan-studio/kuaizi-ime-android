@@ -112,8 +112,6 @@ public abstract class KeyTable {
                             Key.Style.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList_Option, key_ctrl_label_style);
 
-        ctrl_key_styles.put(CtrlKey.Type.Switch_IME,
-                            Key.Style.withIcon(R.drawable.ic_keyboard, R.attr.key_ctrl_switcher_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Switch_HandMode,
                             Key.Style.withIcon(R.drawable.ic_switch_to_left_hand,
                                                R.drawable.ic_switch_to_right_hand,

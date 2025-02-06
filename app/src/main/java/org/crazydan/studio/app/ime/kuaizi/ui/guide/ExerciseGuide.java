@@ -291,6 +291,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 break;
             }
         }
+        this.imeConfig.set(ConfigKey.disable_switch_ime_btn, true);
+
         startKeyboard(Keyboard.Type.Pinyin, true);
     }
 
