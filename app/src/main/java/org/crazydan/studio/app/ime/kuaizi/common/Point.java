@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common;
 
+import java.util.Objects;
+
 /**
  * 坐标点（只读）
  *
@@ -55,6 +57,24 @@ public class Point {
         }
 
         return new Motion(direction, (int) distance);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Point that = (Point) o;
+        return Float.compare(this.x, that.x) == 0 && Float.compare(this.y, that.y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.x, this.y);
     }
 
     @Override
