@@ -187,7 +187,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         super.onFinishInputView(finishingInput);
     }
 
-    /** 输入结束：彻底退出编辑。注意，熄屏也会调用该接口 */
+    /** 输入结束：彻底退出编辑。注意，熄屏/亮屏也会调用该接口 */
     @Override
     public void onFinishInput() {
         // Note: 在 #onCreateInputView 之前，该接口也会被调用
@@ -214,7 +214,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         this.imeConfig.set(ConfigKey.single_line_input, useSingleLineInputting, true);
         this.imeConfig.set(ConfigKey.disable_input_key_popup_tips, usePasswordInputting, true);
 
-        this.ime.start(context, keyboardType, resetInputting);
+        // Note: 不重置输入列表，以避免误操作导致输入被清空
+        this.ime.start(context, keyboardType, false /*resetInputting*/);
     }
 
     // =============================== Start: 消息处理 ===================================

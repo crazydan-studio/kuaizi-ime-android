@@ -152,10 +152,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         fire_InputMsg(Keyboard_Hide_Done);
     }
 
-    /** 退出 {@link IMEditor}，即，重置输入状态 */
+    /** 退出 {@link IMEditor} */
     public void exit() {
-        // 重置输入面板
-        withInputboardContext(this.inputboard::reset);
+        // Note: 不重置输入列表，以避免误操作导致输入被清空
+//        // 重置输入面板
+//        withInputboardContext(this.inputboard::reset);
 
         // 重置键盘
         if (this.keyboard != null) {
