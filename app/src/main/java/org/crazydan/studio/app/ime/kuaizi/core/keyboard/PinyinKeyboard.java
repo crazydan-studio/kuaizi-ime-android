@@ -193,8 +193,15 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                 break;
             }
             case LongPress_Key_Tick: {
-                // 字符、表情、符号连续输入
-                try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, this::on_CharKey_Msg);
+                // 表情、符号连续输入
+                // Note: 字符按键不支持连续输入，其会与滑行拼音输入发生冲突
+                switch (key.type) {
+                    case Emoji:
+                    case Symbol: {
+                        try_On_LongPress_Tick_as_SingleTap_Msg(context, msg, this::on_CharKey_Msg);
+                        break;
+                    }
+                }
                 break;
             }
         }
