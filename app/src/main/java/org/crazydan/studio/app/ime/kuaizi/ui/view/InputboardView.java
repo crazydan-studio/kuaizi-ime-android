@@ -41,6 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Hide_Keyboard;
 
 /**
  * {@link Inputboard} 的视图
@@ -55,6 +56,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     private View settingsBtnView;
     private View switchImeBtnView;
+    private View hideKeyboardBtnView;
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
 
@@ -97,6 +99,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
         if (msg.type == InputMsgType.Keyboard_Start_Done) {
             toggleEnableSettingsBtn();
+            toggleEnableSwitchImeBtn();
         }
         toggleEnableInputListCleanBtnByMsg(msg);
     }
@@ -132,6 +135,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.switchImeBtnView = rootView.findViewById(R.id.switch_ime);
         toggleEnableSwitchImeBtn();
 
+        this.hideKeyboardBtnView = rootView.findViewById(R.id.hide_keyboard);
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
         toggleEnableInputListCleanBtn();
@@ -141,50 +145,62 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     }
 
     private void toggleEnableSettingsBtn() {
-        if (this.config.bool(ConfigKey.disable_settings_btn)) {
-            this.settingsBtnView.setAlpha(0.4f);
-            this.settingsBtnView.setOnClickListener(null);
-        } else {
-            this.settingsBtnView.setAlpha(1.0f);
-            this.settingsBtnView.setOnClickListener(this::onShowPreferences);
-        }
+        toggleDisableBtn(this.settingsBtnView,
+                         this.config.bool(ConfigKey.disable_settings_btn),
+                         this::onShowPreferences);
     }
 
     private void toggleEnableSwitchImeBtn() {
-        if (this.config.bool(ConfigKey.disable_switch_ime_btn)) {
-            this.switchImeBtnView.setAlpha(0.4f);
-            this.switchImeBtnView.setOnClickListener(null);
-        } else {
-            this.switchImeBtnView.setAlpha(1.0f);
-            this.switchImeBtnView.setOnClickListener(this::onSwitchIme);
-        }
+        toggleDisableBtn(this.switchImeBtnView, this.config.bool(ConfigKey.disable_switch_ime_btn), this::onSwitchIme);
     }
 
     private void toggleEnableInputListCleanBtn() {
+        boolean showCleanBtn = true;
+        boolean showCleanCancelBtn = false;
+        boolean showHideKeyboardBtn = false;
         if (this.needToDisableInputListCleanBtn) {
-            ViewUtils.hide(this.inputListCleanBtnView);
-            this.inputListCleanBtnView.setOnClickListener(null);
+            showCleanBtn = false;
 
             if (this.needToDisableInputListCleanCancelBtn) {
-                ViewUtils.hide(this.inputListCleanCancelBtnView);
-                this.inputListCleanCancelBtnView.setOnClickListener(null);
+                showHideKeyboardBtn = true;
             } else {
-                ViewUtils.show(this.inputListCleanCancelBtnView);
-                this.inputListCleanCancelBtnView.setOnClickListener(this::onCancelCleanInputList);
+                showCleanCancelBtn = true;
             }
-        } else {
-            ViewUtils.show(this.inputListCleanBtnView);
-            this.inputListCleanBtnView.setOnClickListener(this::onCleanInputList);
-
-            ViewUtils.hide(this.inputListCleanCancelBtnView);
-            this.inputListCleanCancelBtnView.setOnClickListener(null);
         }
+
+        toggleShowBtn(this.inputListCleanBtnView, showCleanBtn, this::onCleanInputList);
+        toggleShowBtn(this.inputListCleanCancelBtnView, showCleanCancelBtn, this::onCancelCleanInputList);
+
+        toggleShowBtn(this.hideKeyboardBtnView, showHideKeyboardBtn, this::onHideKeyboard);
+        toggleDisableBtn(this.hideKeyboardBtnView,
+                         this.config.bool(ConfigKey.disable_hide_keyboard_btn),
+                         this::onHideKeyboard);
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
         // 通过 Context Theme 仅对面板自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         return ThemeUtils.inflate(this, resId, themeResId, true);
+    }
+
+    private void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {
+        if (disabled) {
+            btn.setAlpha(0.4f);
+            btn.setOnClickListener(null);
+        } else {
+            btn.setAlpha(1.0f);
+            btn.setOnClickListener(listener);
+        }
+    }
+
+    private void toggleShowBtn(View btn, boolean shown, View.OnClickListener listener) {
+        if (shown) {
+            ViewUtils.show(btn);
+            btn.setOnClickListener(listener);
+        } else {
+            ViewUtils.hide(btn);
+            btn.setOnClickListener(null);
+        }
     }
 
     // =============================== End: 视图更新 ===================================
@@ -206,6 +222,11 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     private void onCancelCleanInputList(View v) {
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Cancel_Clean_InputList));
+        onMsg(msg);
+    }
+
+    private void onHideKeyboard(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Hide_Keyboard));
         onMsg(msg);
     }
 

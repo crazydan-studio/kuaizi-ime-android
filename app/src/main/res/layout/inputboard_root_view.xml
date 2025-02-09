@@ -107,6 +107,13 @@
                 android:id="@+id/cancel_clean_input_list"
                 android:src="@drawable/ic_restore"
                 android:background="?attr/input_bg_color" />
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/hide_keyboard"
+                android:src="@drawable/ic_hide_keyboard"
+                android:background="?attr/input_bg_color" />
     </FrameLayout>
 
 </LinearLayout>

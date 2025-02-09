@@ -33,6 +33,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputComp
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
@@ -113,6 +114,10 @@ public class Inputboard {
 
                 Input input = inputList.getSelected();
                 fire_InputMsg(context, InputList_Cleaned_Cancel_Done, input);
+                break;
+            }
+            case SingleTap_Btn_Hide_Keyboard: {
+                fire_InputMsg(context, Keyboard_Hide_Doing, null);
                 break;
             }
         }

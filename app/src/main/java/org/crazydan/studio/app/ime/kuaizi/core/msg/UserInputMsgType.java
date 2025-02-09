@@ -37,7 +37,9 @@ public enum UserInputMsgType {
 
     /** 单击 输入列表清空 的按钮 */
     SingleTap_Btn_Clean_InputList,
-
     /** 单击 撤销 输入列表清空 的按钮 */
     SingleTap_Btn_Cancel_Clean_InputList,
+
+    /** 单击 隐藏键盘 的按钮 */
+    SingleTap_Btn_Hide_Keyboard,
 }

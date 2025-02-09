@@ -310,6 +310,10 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 switchIme();
                 break;
             }
+            case Keyboard_Hide_Doing: {
+                hideWindow();
+                break;
+            }
             default: {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
