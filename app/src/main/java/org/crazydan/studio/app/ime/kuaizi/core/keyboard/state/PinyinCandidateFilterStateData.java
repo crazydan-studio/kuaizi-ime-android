@@ -46,11 +46,18 @@ public abstract class PinyinCandidateFilterStateData<T> extends PagingStateData<
 
     /** @return 若存在变更，则返回 true，否则，返回 false */
     public boolean updateFilter(PinyinWord.Filter filter) {
+        return updateFilter(filter, true);
+    }
+
+    /** @return 若存在变更，则返回 true，否则，返回 false */
+    public boolean updateFilter(PinyinWord.Filter filter, boolean resetPage) {
         PinyinWord.Filter oldFilter = this.filter;
         this.filter = new PinyinWord.Filter(filter);
 
         if (!Objects.equals(oldFilter, this.filter)) {
-            resetPageStart();
+            if (resetPage) {
+                resetPageStart();
+            }
             return true;
         }
         return false;

@@ -81,9 +81,11 @@ public class PinyinCandidateKeyTable extends KeyTable {
         int index_mid = getGridMiddleColumnIndex();
 
         gridKeys[0][0] = noopCtrlKey(currentPage + "/" + totalPage);
-        if (totalPage > 2 || !wordFilter.isEmpty()) {
+
+        boolean isAdvanceFilter = !wordFilter.isEmpty(true);
+        if (totalPage > 2 || isAdvanceFilter) {
             CtrlKey key = ctrlKey(CtrlKey.Type.Filter_PinyinCandidate_advance, (b) -> {
-                if (!wordFilter.isEmpty()) {
+                if (isAdvanceFilter) {
                     b.icon(R.drawable.ic_filter_filled);
                 }
             });

@@ -145,6 +145,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
 
         fire_InputMsg(Keyboard_Start_Done);
+
+        // TODO 显示最新的可粘贴内容：5 min 内未粘贴的内容
     }
 
     /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */

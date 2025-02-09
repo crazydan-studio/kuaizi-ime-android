@@ -129,6 +129,10 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
 
         // Note: 默认保持键盘类型不变
         Keyboard.Type keyboardType = Keyboard.Type.Keep_Current;
+        // Note: 默认仅由 latin 和 pinyin 键盘输入
+        if (this.ime.getKeyboardType() != Keyboard.Type.Latin) {
+            keyboardType = Keyboard.Type.Pinyin;
+        }
 
         switch (attribute.inputType & InputType.TYPE_MASK_CLASS) {
             case InputType.TYPE_CLASS_NUMBER:
@@ -139,11 +143,6 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 resetInputting = true;
                 break;
             case InputType.TYPE_CLASS_TEXT:
-                // Note: 文本输入默认仅由 latin 和 pinyin 键盘处理
-                if (this.ime.getKeyboardType() != Keyboard.Type.Latin) {
-                    keyboardType = Keyboard.Type.Pinyin;
-                }
-
                 int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
                 if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
                     || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD

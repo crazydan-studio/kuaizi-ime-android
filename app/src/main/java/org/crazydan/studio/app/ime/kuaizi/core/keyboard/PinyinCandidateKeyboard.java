@@ -403,18 +403,21 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
     private void update_InputCandidate_Advance_Filter(PinyinCandidateAdvanceFilterStateData stateData, CtrlKey key) {
         PinyinWord.Filter filter = stateData.getFilter();
 
+        boolean resetPage = true;
         switch (key.type) {
             case Filter_PinyinCandidate_by_Spell: {
                 filter.addSpellByKey(key);
                 break;
             }
             case Filter_PinyinCandidate_by_Radical: {
+                // Note: 部首条件的增减不会影响部首的分页结果，故而，不重置分页
+                resetPage = false;
                 filter.addRadicalByKey(key);
                 break;
             }
         }
 
-        stateData.updateFilter(filter);
+        stateData.updateFilter(filter, resetPage);
     }
 
     // ====================== End: 候选字的高级过滤 =========================

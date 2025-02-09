@@ -194,7 +194,11 @@ public class PinyinWord extends InputWord {
         }
 
         public boolean isEmpty() {
-            return this.spells.isEmpty() //
+            return isEmpty(false);
+        }
+
+        public boolean isEmpty(boolean excludeSpells) {
+            return (excludeSpells || this.spells.isEmpty()) //
                    && this.radicals.isEmpty();
         }
 

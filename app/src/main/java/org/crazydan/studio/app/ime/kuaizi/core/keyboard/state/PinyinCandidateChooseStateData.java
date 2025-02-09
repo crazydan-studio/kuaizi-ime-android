@@ -88,7 +88,8 @@ public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateDa
         }
 
         int pageSize = getPageSize();
-        // Note：第一页为最佳候选字，单独进行过滤
+        // Note：存在过滤条件时，仅过滤匹配的拼音字（不含表情），
+        // 并合并高频字和其他字，高频字不再单独占用首页
         List<InputWord> firstPageData = CollectionUtils.subList(candidates, 0, pageSize)
                                                        .stream()
                                                        .filter(this::matched)
@@ -108,17 +109,11 @@ public class PinyinCandidateChooseStateData extends PinyinCandidateFilterStateDa
         else if (firstPageData.isEmpty()) {
             return restPageData;
         }
-        // 不够一页时，做合并
-        else if (totalPageDataSize <= pageSize) {
+        // 高频字不单独占用一页
+        else {
             firstPageData.addAll(restPageData);
-
             return firstPageData;
         }
-
-        // 首页和剩余数据在单独页显示
-        CollectionUtils.fillToSize(firstPageData, null, pageSize).addAll(restPageData);
-
-        return firstPageData;
     }
 
     private boolean matched(InputWord word) {
