@@ -88,17 +88,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:gravity="center"
+                android:gravity="center_vertical|end"
                 android:id="@+id/toolbar"
-                android:orientation="horizontal">
-
-            <ImageButton
-                    android:layout_width="@dimen/input_list_button_icon_size"
-                    android:layout_height="@dimen/input_list_button_icon_size"
-                    android:id="@+id/tool_clipboard"
-                    android:src="@drawable/ic_clipboard"
-                    android:background="?attr/input_bg_color"
-                    android:layout_marginHorizontal="4dp" />
+                android:orientation="horizontal"
+                android:paddingHorizontal="4dp"
+                android:layoutDirection="ltr">
 
             <ImageButton
                     android:layout_width="@dimen/input_list_button_icon_size"
@@ -107,6 +101,14 @@
                     android:src="@drawable/ic_settings"
                     android:background="?attr/input_bg_color"
                     android:layout_marginHorizontal="4dp" />
+
+            <ImageButton
+                    android:layout_width="@dimen/input_list_button_icon_size"
+                    android:layout_height="@dimen/input_list_button_icon_size"
+                    android:id="@+id/tool_clipboard"
+                    android:src="@drawable/ic_clipboard"
+                    android:background="?attr/input_bg_color"
+                    android:layout_marginHorizontal="2dp" />
         </LinearLayout>
     </FrameLayout>
 

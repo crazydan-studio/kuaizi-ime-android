@@ -100,6 +100,12 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         // Note: 本视图为上层视图的子视图，在主题样式更新时，上层视图会自动重建本视图，
         // 因此，不需要重复处理本视图的布局更新等问题
 
+        handleMsg(msg);
+
+        this.inputListView.onMsg(msg);
+    }
+
+    private void handleMsg(InputMsg msg) {
         if (msg.inputList.frozen) {
             this.state = new State(State.Type.Input_Freeze_Doing);
         } else if (msg.type == InputMsgType.Keyboard_Start_Done) {
@@ -113,9 +119,8 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
                 this.state = new State(State.Type.Init);
             }
         }
-        updateToolsByState();
 
-        this.inputListView.onMsg(msg);
+        updateToolsByState();
     }
 
     // =============================== End: 消息处理 ===================================
@@ -233,6 +238,18 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         toggleDisableBtn(this.settingsBtnView,
                          this.config.bool(ConfigKey.disable_settings_btn),
                          this::onShowPreferences);
+
+        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
+        switch (handMode) {
+            case left: {
+                this.toolbarView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                break;
+            }
+            case right: {
+                this.toolbarView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                break;
+            }
+        }
     }
 
     private void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {

@@ -111,7 +111,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         // 通过当前层向逻辑层和视图层分别转发用户消息和输入消息
         this.ime.setListener(this);
         this.imeView.setListener(this);
-        this.imeView.setConfig(this.imeConfig.immutable());
+        this.imeView.setConfig(this.imeConfig.mutable());
 
         return this.imeView;
     }

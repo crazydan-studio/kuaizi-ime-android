@@ -51,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
@@ -80,7 +81,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private boolean needToAddBottomSpacing;
 
-    private Config config;
+    private Config.Mutable config;
     private UserMsgListener listener;
 
     public IMEditorView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -95,7 +96,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                               R.raw.tick_ping);
     }
 
-    public void setConfig(Config config) {
+    public void setConfig(Config.Mutable config) {
         this.config = config;
         doLayout();
     }
@@ -181,6 +182,11 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 toggleShowKeyboardWarning(false);
                 // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次更新
                 updateBottomSpacing(false);
+                break;
+            }
+            case Keyboard_HandMode_Switch_Done: {
+                KeyboardHandModeSwitchMsgData data = msg.data();
+                this.config.set(ConfigKey.hand_mode, data.mode);
                 break;
             }
             case Config_Update_Done: {

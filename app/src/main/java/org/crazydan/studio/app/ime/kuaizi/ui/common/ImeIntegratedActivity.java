@@ -85,7 +85,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
         this.ime.setListener(this);
         this.imeView.setListener(this);
-        this.imeView.setConfig(this.imeConfig.immutable());
+        this.imeView.setConfig(this.imeConfig.mutable());
     }
 
     @Override
