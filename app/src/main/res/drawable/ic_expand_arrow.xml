@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   ~ 筷字输入法 - 高效编辑需要又好又快的输入法
   ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
   ~
@@ -17,17 +17,14 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="?attr/app_bg_color">
-
-    <include layout="@layout/app_actionbar" />
-
-    <FrameLayout
-            android:id="@+id/tool_settings"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-</LinearLayout>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/3994400/arrow_forward_navigation_next_right_icon -->
+    <path
+            android:fillColor="?attr/input_fg_color"
+            android:pathData="M18.068,10.717 L8.067,2.383a1.668,1.668 0,0 0,-2.136 2.562l8.465,7.054 -8.465,7.054a1.668,1.668 0,0 0,2.136 2.562L18.068,13.28a1.669,1.669 0,0 0,0 -2.562z"
+            android:strokeWidth="0.277813" />
+</vector>

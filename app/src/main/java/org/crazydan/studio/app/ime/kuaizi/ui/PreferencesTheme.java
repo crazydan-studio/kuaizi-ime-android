@@ -48,7 +48,7 @@ public class PreferencesTheme extends ImeIntegratedActivity {
 
         if (savedInstanceState == null) {
             SettingsFragment settings = new SettingsFragment(this::startKeyboard);
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, settings).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.tool_settings, settings).commit();
         }
 
         // 禁用字典：仅做视图展示，无需实际操作

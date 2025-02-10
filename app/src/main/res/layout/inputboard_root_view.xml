@@ -32,16 +32,15 @@
         <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/settings"
-                android:src="@drawable/ic_settings"
-                android:background="?attr/input_bg_color"
-                android:visibility="gone" />
+                android:id="@+id/tool_switch_ime"
+                android:src="@drawable/ic_global"
+                android:background="?attr/input_bg_color" />
 
         <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/switch_ime"
-                android:src="@drawable/ic_global"
+                android:id="@+id/show_toolbar"
+                android:src="@drawable/ic_expand_arrow"
                 android:background="?attr/input_bg_color" />
     </FrameLayout>
 
@@ -60,24 +59,55 @@
             android:layout_marginHorizontal="1dp"
             android:layout_marginVertical="4dp">
 
-        <TextView
-                android:layout_width="wrap_content"
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/inputbar">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/text_alpha_using_warning"
+                    android:alpha=".1"
+                    android:textColor="?attr/input_fg_color"
+                    android:textSize="@dimen/char_input_word_text_size" />
+
+            <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
+            <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/input_list"
+                    android:clipToPadding="false"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="16dp" />
+        </FrameLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="@string/text_alpha_using_warning"
-                android:alpha=".1"
-                android:textColor="?attr/input_fg_color"
-                android:textSize="@dimen/char_input_word_text_size" />
+                android:id="@+id/toolbar"
+                android:orientation="horizontal">
 
-        <!-- 设置 clipToPadding 为 false 以避免 padding 效果为遮挡列表内容 -->
-        <org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/input_list"
-                android:clipToPadding="false"
-                android:paddingStart="8dp"
-                android:paddingEnd="16dp" />
+            <ImageButton
+                    android:layout_width="@dimen/input_list_button_icon_size"
+                    android:layout_height="@dimen/input_list_button_icon_size"
+                    android:id="@+id/tool_clipboard"
+                    android:src="@drawable/ic_clipboard"
+                    android:background="?attr/input_bg_color"
+                    android:layout_marginHorizontal="4dp" />
+
+            <ImageButton
+                    android:layout_width="@dimen/input_list_button_icon_size"
+                    android:layout_height="@dimen/input_list_button_icon_size"
+                    android:id="@+id/tool_settings"
+                    android:src="@drawable/ic_settings"
+                    android:background="?attr/input_bg_color"
+                    android:layout_marginHorizontal="4dp" />
+        </LinearLayout>
     </FrameLayout>
 
     <View
@@ -111,8 +141,15 @@
         <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/hide_keyboard"
+                android:id="@+id/tool_hide_keyboard"
                 android:src="@drawable/ic_hide_keyboard"
+                android:background="?attr/input_bg_color" />
+
+        <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/hide_toolbar"
+                android:src="@drawable/ic_collapse_arrow"
                 android:background="?attr/input_bg_color" />
     </FrameLayout>
 

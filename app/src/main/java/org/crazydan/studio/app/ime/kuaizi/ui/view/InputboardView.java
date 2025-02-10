@@ -52,19 +52,24 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @date 2025-01-06
  */
 public class InputboardView extends FrameLayout implements UserMsgListener, InputMsgListener {
+    private View inputbarView;
     private InputListView inputListView;
 
+    private View toolbarView;
     private View settingsBtnView;
+    private View clipboardBtnView;
+
+    private View showToolbarBtnView;
+    private View hideToolbarBtnView;
     private View switchImeBtnView;
     private View hideKeyboardBtnView;
+
     private View inputListCleanBtnView;
     private View inputListCleanCancelBtnView;
 
-    private boolean needToDisableInputListCleanBtn = true;
-    private boolean needToDisableInputListCleanCancelBtn = true;
-
     private Config config;
     private UserMsgListener listener;
+    private State state = new State(State.Type.Init);
 
     public InputboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -95,27 +100,22 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         // Note: 本视图为上层视图的子视图，在主题样式更新时，上层视图会自动重建本视图，
         // 因此，不需要重复处理本视图的布局更新等问题
 
+        if (msg.inputList.frozen) {
+            this.state = new State(State.Type.Input_Freeze_Doing);
+        } else if (msg.type == InputMsgType.Keyboard_Start_Done) {
+            this.state = new State(State.Type.Init);
+        } else {
+            if (!msg.inputList.empty) {
+                this.state = new State(State.Type.Input_Doing);
+            } else if (msg.inputList.canCancelClean) {
+                this.state = new State(State.Type.Input_Cleaned_Cancel_Waiting);
+            } else {
+                this.state = new State(State.Type.Init);
+            }
+        }
+        updateToolsByState();
+
         this.inputListView.onMsg(msg);
-
-        if (msg.type == InputMsgType.Keyboard_Start_Done) {
-            toggleEnableSettingsBtn();
-            toggleEnableSwitchImeBtn();
-        }
-        toggleEnableInputListCleanBtnByMsg(msg);
-    }
-
-    private void toggleEnableInputListCleanBtnByMsg(InputMsg msg) {
-        boolean disableCleanBtn = msg.inputList.frozen || msg.inputList.empty;
-        boolean disableCleanCancelBtn = msg.inputList.frozen || !msg.inputList.canCancelClean;
-
-        if (this.needToDisableInputListCleanBtn != disableCleanBtn
-            || this.needToDisableInputListCleanCancelBtn != disableCleanCancelBtn //
-        ) {
-            this.needToDisableInputListCleanBtn = disableCleanBtn;
-            this.needToDisableInputListCleanCancelBtn = disableCleanCancelBtn;
-
-            toggleEnableInputListCleanBtn();
-        }
     }
 
     // =============================== End: 消息处理 ===================================
@@ -129,58 +129,110 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
         View rootView = inflateWithTheme(R.layout.inputboard_root_view, themeResId);
 
-        this.settingsBtnView = rootView.findViewById(R.id.settings);
-        toggleEnableSettingsBtn();
+        this.toolbarView = rootView.findViewById(R.id.toolbar);
+        this.settingsBtnView = rootView.findViewById(R.id.tool_settings);
+        this.clipboardBtnView = rootView.findViewById(R.id.tool_clipboard);
 
-        this.switchImeBtnView = rootView.findViewById(R.id.switch_ime);
-        toggleEnableSwitchImeBtn();
+        this.showToolbarBtnView = rootView.findViewById(R.id.show_toolbar);
+        this.hideToolbarBtnView = rootView.findViewById(R.id.hide_toolbar);
+        this.switchImeBtnView = rootView.findViewById(R.id.tool_switch_ime);
+        this.hideKeyboardBtnView = rootView.findViewById(R.id.tool_hide_keyboard);
 
-        this.hideKeyboardBtnView = rootView.findViewById(R.id.hide_keyboard);
         this.inputListCleanBtnView = rootView.findViewById(R.id.clean_input_list);
         this.inputListCleanCancelBtnView = rootView.findViewById(R.id.cancel_clean_input_list);
-        toggleEnableInputListCleanBtn();
 
+        this.inputbarView = rootView.findViewById(R.id.inputbar);
         this.inputListView = rootView.findViewById(R.id.input_list);
         this.inputListView.setListener(this);
-    }
 
-    private void toggleEnableSettingsBtn() {
-        toggleDisableBtn(this.settingsBtnView,
-                         this.config.bool(ConfigKey.disable_settings_btn),
-                         this::onShowPreferences);
-    }
-
-    private void toggleEnableSwitchImeBtn() {
-        toggleDisableBtn(this.switchImeBtnView, this.config.bool(ConfigKey.disable_switch_ime_btn), this::onSwitchIme);
-    }
-
-    private void toggleEnableInputListCleanBtn() {
-        boolean showCleanBtn = true;
-        boolean showCleanCancelBtn = false;
-        boolean showHideKeyboardBtn = false;
-        if (this.needToDisableInputListCleanBtn) {
-            showCleanBtn = false;
-
-            if (this.needToDisableInputListCleanCancelBtn) {
-                showHideKeyboardBtn = true;
-            } else {
-                showCleanCancelBtn = true;
-            }
-        }
-
-        toggleShowBtn(this.inputListCleanBtnView, showCleanBtn, this::onCleanInputList);
-        toggleShowBtn(this.inputListCleanCancelBtnView, showCleanCancelBtn, this::onCancelCleanInputList);
-
-        toggleShowBtn(this.hideKeyboardBtnView, showHideKeyboardBtn, this::onHideKeyboard);
-        toggleDisableBtn(this.hideKeyboardBtnView,
-                         this.config.bool(ConfigKey.disable_hide_keyboard_btn),
-                         this::onHideKeyboard);
+        updateToolsByState();
     }
 
     private <T extends View> T inflateWithTheme(int resId, int themeResId) {
         // 通过 Context Theme 仅对面板自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         return ThemeUtils.inflate(this, resId, themeResId, true);
+    }
+
+    /** 根据输入面板状态更新工具状态 */
+    private void updateToolsByState() {
+        switch (this.state.type) {
+            case Init: {
+                ViewUtils.visible(this.inputbarView, false);
+                ViewUtils.visible(this.toolbarView, true);
+
+                toggleShowBtn(this.switchImeBtnView, true, this::onSwitchIme);
+                toggleShowBtn(this.showToolbarBtnView, false, this::onShowToolbar);
+
+                toggleShowBtn(this.hideToolbarBtnView, false, this::onHideToolbar);
+                toggleShowBtn(this.hideKeyboardBtnView, true, this::onHideKeyboard);
+                toggleShowBtn(this.inputListCleanBtnView, false, this::onCleanInputList);
+                toggleShowBtn(this.inputListCleanCancelBtnView, false, this::onCancelCleanInputList);
+                break;
+            }
+            case Input_Freeze_Doing: {
+                ViewUtils.visible(this.inputbarView, true);
+                ViewUtils.visible(this.toolbarView, false);
+
+                toggleShowBtn(this.switchImeBtnView, true, this::onSwitchIme);
+                toggleShowBtn(this.showToolbarBtnView, false, this::onShowToolbar);
+
+                toggleShowBtn(this.hideToolbarBtnView, false, this::onHideToolbar);
+                toggleShowBtn(this.hideKeyboardBtnView, true, this::onHideKeyboard);
+                toggleShowBtn(this.inputListCleanBtnView, false, this::onCleanInputList);
+                toggleShowBtn(this.inputListCleanCancelBtnView, false, this::onCancelCleanInputList);
+                break;
+            }
+            case Input_Doing: {
+                ViewUtils.visible(this.inputbarView, true);
+                ViewUtils.visible(this.toolbarView, false);
+
+                toggleShowBtn(this.switchImeBtnView, false, this::onSwitchIme);
+                toggleShowBtn(this.showToolbarBtnView, true, this::onShowToolbar);
+
+                toggleShowBtn(this.hideToolbarBtnView, false, this::onHideToolbar);
+                toggleShowBtn(this.hideKeyboardBtnView, false, this::onHideKeyboard);
+                toggleShowBtn(this.inputListCleanBtnView, true, this::onCleanInputList);
+                toggleShowBtn(this.inputListCleanCancelBtnView, false, this::onCancelCleanInputList);
+                break;
+            }
+            case Input_Cleaned_Cancel_Waiting: {
+                ViewUtils.visible(this.inputbarView, true);
+                ViewUtils.visible(this.toolbarView, false);
+
+                toggleShowBtn(this.switchImeBtnView, false, this::onSwitchIme);
+                toggleShowBtn(this.showToolbarBtnView, true, this::onShowToolbar);
+
+                toggleShowBtn(this.hideToolbarBtnView, false, this::onHideToolbar);
+                toggleShowBtn(this.hideKeyboardBtnView, false, this::onHideKeyboard);
+                toggleShowBtn(this.inputListCleanBtnView, false, this::onCleanInputList);
+                toggleShowBtn(this.inputListCleanCancelBtnView, true, this::onCancelCleanInputList);
+                break;
+            }
+            case Toolbar_Show_Doing: {
+                ViewUtils.visible(this.inputbarView, false);
+                ViewUtils.visible(this.toolbarView, true);
+
+                toggleShowBtn(this.switchImeBtnView, false, this::onSwitchIme);
+                toggleShowBtn(this.showToolbarBtnView, false, this::onShowToolbar);
+
+                toggleShowBtn(this.hideToolbarBtnView, true, this::onHideToolbar);
+                toggleShowBtn(this.hideKeyboardBtnView, false, this::onHideKeyboard);
+                toggleShowBtn(this.inputListCleanBtnView, false, this::onCleanInputList);
+                toggleShowBtn(this.inputListCleanCancelBtnView, false, this::onCancelCleanInputList);
+                break;
+            }
+        }
+
+        toggleDisableBtn(this.switchImeBtnView, this.config.bool(ConfigKey.disable_switch_ime_btn), this::onSwitchIme);
+        toggleDisableBtn(this.hideKeyboardBtnView,
+                         this.config.bool(ConfigKey.disable_hide_keyboard_btn),
+                         this::onHideKeyboard);
+
+        toggleDisableBtn(this.clipboardBtnView, false, this::onShowClipboard);
+        toggleDisableBtn(this.settingsBtnView,
+                         this.config.bool(ConfigKey.disable_settings_btn),
+                         this::onShowPreferences);
     }
 
     private void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {
@@ -207,6 +259,16 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     // ==================== Start: 按键事件处理 ==================
 
+    private void onShowToolbar(View v) {
+        this.state = new State(State.Type.Toolbar_Show_Doing, this.state);
+        updateToolsByState();
+    }
+
+    private void onHideToolbar(View v) {
+        this.state = this.state.prev;
+        updateToolsByState();
+    }
+
     private void onShowPreferences(View v) {
         SystemUtils.showAppPreferences(getContext());
     }
@@ -230,5 +292,36 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         onMsg(msg);
     }
 
+    private void onShowClipboard(View v) {
+        // TODO 显示剪贴板
+    }
+
     // ==================== End: 按键事件处理 ==================
+
+    private static class State {
+        public final Type type;
+        public final State prev;
+
+        State(Type type) {
+            this(type, null);
+        }
+
+        State(Type type, State prev) {
+            this.type = type;
+            this.prev = prev;
+        }
+
+        enum Type {
+            /** 初始 */
+            Init,
+            /** 输入冻结中 */
+            Input_Freeze_Doing,
+            /** 输入中 */
+            Input_Doing,
+            /** 等待撤销对输入的清空操作 */
+            Input_Cleaned_Cancel_Waiting,
+            /** 工具栏显示中 */
+            Toolbar_Show_Doing,
+        }
+    }
 }

@@ -159,7 +159,7 @@ public class Preferences extends FollowSystemThemeActivity {
         setContentView(R.layout.app_preferences_activity);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.settings, new SettingsFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.tool_settings, new SettingsFragment()).commit();
         }
     }
 
