@@ -55,6 +55,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     private View inputbarView;
     private InputListView inputListView;
 
+    private View rootView;
     private View toolbarView;
     private View settingsBtnView;
     private View clipboardBtnView;
@@ -133,6 +134,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         int themeResId = theme.getResId(getContext());
 
         View rootView = inflateWithTheme(R.layout.inputboard_root_view, themeResId);
+        this.rootView = rootView.findViewById(R.id.root);
 
         this.toolbarView = rootView.findViewById(R.id.toolbar);
         this.settingsBtnView = rootView.findViewById(R.id.tool_settings);
@@ -240,13 +242,15 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
                          this::onShowPreferences);
 
         Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
+        // Note: 对父布局的方向调整会直接影响子布局的方向，
+        // 对于不需要调整布局方向的，需要在 layout xml 中强制设置默认方向
         switch (handMode) {
             case left: {
-                this.toolbarView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                this.rootView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
                 break;
             }
             case right: {
-                this.toolbarView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                this.rootView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
                 break;
             }
         }
