@@ -42,7 +42,7 @@
                 android:id="@+id/show_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_expand_arrow"
+                android:src="@drawable/ic_tools"
                 android:background="?attr/input_bg_color" />
     </FrameLayout>
 

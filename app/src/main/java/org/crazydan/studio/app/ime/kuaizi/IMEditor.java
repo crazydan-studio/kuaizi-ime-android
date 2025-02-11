@@ -68,6 +68,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Switch_Done;
@@ -252,11 +253,26 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.inputboard.getClass()
-        });
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
-        withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
+        switch (msg.type) {
+            // 直接处理不需要由输入面板转发的消息
+            case SingleTap_Btn_Hide_Keyboard: {
+                fire_InputMsg(Keyboard_Hide_Doing);
+                break;
+            }
+            default: {
+                this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                        msg.getClass(), this.inputboard.getClass()
+                });
+
+                withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
+
+                this.log.endTreeLog();
+            }
+        }
 
         this.log.endTreeLog();
     }
