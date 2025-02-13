@@ -95,5 +95,8 @@ public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapt
 
     public void update(List<InputCompletion.ViewData> completions) {
         getAdapter().updateItems(completions);
+
+        // 复位滚动位置
+        getLayoutManager().scrollToPosition(0);
     }
 }

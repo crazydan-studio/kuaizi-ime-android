@@ -39,6 +39,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.widget.TextView;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
@@ -66,6 +67,23 @@ public class ViewUtils {
 
     public static boolean isVisible(View view) {
         return view.getVisibility() == View.VISIBLE;
+    }
+
+    /**
+     * Note: 对父布局的方向调整会直接影响子布局的方向，
+     * 对于不需要调整布局方向的，需要在 layout xml 中强制设置默认方向
+     */
+    public static void updateLayoutDirection(View view, Keyboard.HandMode handMode) {
+        switch (handMode) {
+            case left: {
+                view.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                break;
+            }
+            case right: {
+                view.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                break;
+            }
+        }
     }
 
     public static void setHeight(View view, int height) {

@@ -187,6 +187,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             case Keyboard_HandMode_Switch_Done: {
                 KeyboardHandModeSwitchMsgData data = msg.data();
                 this.config.set(ConfigKey.hand_mode, data.mode);
+
+                updateInputCompletionsLayout();
                 break;
             }
             case Config_Update_Done: {
@@ -274,6 +276,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         preparePopupWindows(this.inputCompletionsView, inputKeyView);
 
         updateBottomSpacing(true);
+        updateInputCompletionsLayout();
     }
 
     private void updateBottomSpacing(boolean force) {
@@ -408,6 +411,25 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         int y = location[1] - window.getHeight();
 
         post(() -> window.showAtLocation(parent, gravity, x, y));
+    }
+
+    private void updateInputCompletionsLayout() {
+        if (this.inputCompletionsView == null) {
+            return;
+        }
+
+        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
+        switch (handMode) {
+            case left: {
+                handMode = Keyboard.HandMode.right;
+                break;
+            }
+            case right: {
+                handMode = Keyboard.HandMode.left;
+                break;
+            }
+        }
+        ViewUtils.updateLayoutDirection(this.inputCompletionsView, handMode);
     }
 
     // ==================== End: 气泡提示 ==================

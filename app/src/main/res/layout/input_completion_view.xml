@@ -23,7 +23,8 @@
         android:paddingHorizontal="8dp"
         android:paddingVertical="2dp"
         android:layout_marginHorizontal="4dp"
-        android:background="@drawable/bg_input_completion_view">
+        android:background="@drawable/bg_input_completion_view"
+        android:layoutDirection="ltr">
 
     <LinearLayout
             android:id="@+id/inputs_view"

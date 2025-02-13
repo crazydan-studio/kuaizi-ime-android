@@ -164,14 +164,14 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
             case Init: {
                 this.tools.toolbar.shown = true;
 
-                this.tools.switchIme.shown = true;
+                this.tools.settings.shown = true;
                 this.tools.hideKeyboard.shown = true;
                 break;
             }
             case Input_Freeze_Doing: {
                 this.tools.inputbar.shown = true;
 
-                this.tools.switchIme.shown = true;
+                this.tools.settings.shown = true;
                 this.tools.hideKeyboard.shown = true;
                 break;
             }
@@ -200,18 +200,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.tools.update();
 
         Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-        // Note: 对父布局的方向调整会直接影响子布局的方向，
-        // 对于不需要调整布局方向的，需要在 layout xml 中强制设置默认方向
-        switch (handMode) {
-            case left: {
-                this.rootView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-                break;
-            }
-            case right: {
-                this.rootView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-                break;
-            }
-        }
+        ViewUtils.updateLayoutDirection(this.rootView, handMode);
     }
 
     private static void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {
@@ -306,7 +295,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     private static class BtnTools {
         public BtnGroup inputbar;
-        public Btn switchIme;
+        public Btn settings;
         public Btn showToolbar;
 
         public Btn hideToolbar;
@@ -316,16 +305,16 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         public Btn cancelCleanInputList;
 
         public BtnGroup toolbar;
-        public Btn settings;
+        public Btn switchIme;
         public Btn clipboard;
 
         private Btn[] getBtnInToolbar() {
-            return new Btn[] { this.settings, this.clipboard };
+            return new Btn[] { this.switchIme, this.clipboard };
         }
 
         private Btn[] getBtnInInputbar() {
             return new Btn[] {
-                    this.switchIme,
+                    this.settings,
                     this.showToolbar,
                     this.hideToolbar,
                     this.hideKeyboard,
