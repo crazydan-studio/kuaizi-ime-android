@@ -37,6 +37,7 @@
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
+        <item name="btn_tool_fg_color">#ff616161</item>
         <!-- 键盘按键样式 -->
         <item name="key_bg_color">#ffffffff</item>
         <item name="key_fg_color">#ff616161</item>
@@ -116,6 +117,7 @@
         <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
+        <item name="btn_tool_fg_color">#fffafafa</item>
         <!-- 键盘按键样式 -->
         <item name="key_bg_color">#ff2f3336</item>
         <item name="key_fg_color">#ff71d4fe</item>

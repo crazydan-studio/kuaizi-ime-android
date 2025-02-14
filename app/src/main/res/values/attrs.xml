@@ -40,6 +40,8 @@
         <attr name="input_char_math_expr_border_color" format="color" />
         <attr name="input_char_math_expr_border_highlight_color" format="color" />
 
+        <attr name="btn_tool_fg_color" format="color" />
+
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
         <attr name="key_highlight_fg_color" format="color" />
