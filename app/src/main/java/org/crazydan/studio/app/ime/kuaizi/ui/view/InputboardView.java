@@ -35,7 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 
@@ -98,16 +97,12 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
     private void handleMsg(InputMsg msg) {
         if (msg.inputList.frozen) {
             this.state = new State(State.Type.Input_Freeze_Doing);
-        } else if (msg.type == InputMsgType.Keyboard_Start_Done) {
-            this.state = new State(State.Type.Init);
+        } else if (!msg.inputList.empty) {
+            this.state = new State(State.Type.Input_Doing);
+        } else if (msg.inputList.canCancelClean) {
+            this.state = new State(State.Type.Input_Cleaned_Cancel_Waiting);
         } else {
-            if (!msg.inputList.empty) {
-                this.state = new State(State.Type.Input_Doing);
-            } else if (msg.inputList.canCancelClean) {
-                this.state = new State(State.Type.Input_Cleaned_Cancel_Waiting);
-            } else {
-                this.state = new State(State.Type.Init);
-            }
+            this.state = new State(State.Type.Init);
         }
 
         updateToolsByState();
