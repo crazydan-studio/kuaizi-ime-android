@@ -36,7 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.determine_NotConfirmed_InputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords_with_Completions;
@@ -49,10 +48,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKe
  */
 public class PinyinKeyboard extends EditorEditKeyboard {
 
-    public PinyinKeyboard(PinyinDict dict) {
-        super(dict);
-    }
-
     @Override
     public Type getType() {return Type.Pinyin;}
 
@@ -64,7 +59,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
 
-        PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
+        PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
                 InputCharsSlipStateData stateData = this.state.data();
@@ -301,7 +296,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                 String level0Char = stateData.getLevel0Key().value;
                 String level1Char = key.value;
 
-                PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
+                PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
                 PinyinCharsTree level1CharsTree = charsTree.getChild(level0Char).getChild(level1Char);
 
                 List<String> level2NextChars = level1CharsTree != null
@@ -324,7 +319,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         }
 
         // 确定拼音的候选字
-        determine_NotConfirmed_InputWord(this.dict, pending);
+        determine_NotConfirmed_InputWord(context.dict, pending);
 
         fire_InputChars_Input_Doing(context, pending, InputCharsInputMsgData.InputMode.slip);
     }
@@ -346,7 +341,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
 
         String startChar = key.value;
         // 若无以输入按键开头的拼音，则不进入该状态
-        if (this.dict.getPinyinCharsTree().getChild(startChar) == null) {
+        if (context.dict.getPinyinCharsTree().getChild(startChar) == null) {
             return;
         }
 
@@ -383,7 +378,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         } else {
             pending.appendKey(key);
 
-            determine_NotConfirmed_InputWord(this.dict, pending);
+            determine_NotConfirmed_InputWord(context.dict, pending);
         }
 
         // 再结束输入
@@ -453,7 +448,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         InputCharsSlipStateData stateData = this.state.data();
         CharKey.Level currentKeyLevel = key.level;
 
-        PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
+        PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
         boolean needToEndInputting = false;
         boolean needToContinueInputting = false;
 
@@ -461,7 +456,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         switch (currentKeyLevel) {
             case level_0: {
                 // 若当前 pending 为有效拼音，则结束当前输入，并创建新输入
-                if (this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
+                if (context.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
                     needToEndInputting = true;
                     needToContinueInputting = true;
                     break;
@@ -521,7 +516,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         }
 
         // 确定候选字
-        determine_NotConfirmed_InputWord(this.dict, pending);
+        determine_NotConfirmed_InputWord(context.dict, pending);
 
         InputList inputList = context.inputList;
         if (needToEndInputting) {
@@ -542,8 +537,8 @@ public class PinyinKeyboard extends EditorEditKeyboard {
     // ======================== Start: 输入补全 ========================
 
     @Override
-    protected List<String> getTopBestMatchedLatins(String text) {
-        return this.dict.findTopBestMatchedLatins(text, 5);
+    protected List<String> getTopBestMatchedLatins(KeyboardContext context, String text) {
+        return context.dict.findTopBestMatchedLatins(text, 5);
     }
 
     // ======================== End: 输入补全 ========================
@@ -559,11 +554,10 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         CharInput pending = inputList.getCharPending();
 
         // 若为无效的拼音输入，则直接丢弃
-        if (!this.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
+        if (!context.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
             drop_InputList_Pending(context);
         } else {
             predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
-                                                                    this.dict,
                                                                     this::confirm_InputList_Pending,
                                                                     this::fire_Input_Completion_Create_Done);
         }
@@ -586,10 +580,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
 
     @Override
     protected void after_InputList_Backspacing(KeyboardContext context) {
-        predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
-                                                                this.dict,
-                                                                null,
-                                                                this::fire_Input_Completion_Create_Done);
+        predict_NotConfirmed_Phrase_InputWords_with_Completions(context, null, this::fire_Input_Completion_Create_Done);
     }
 
     @Override

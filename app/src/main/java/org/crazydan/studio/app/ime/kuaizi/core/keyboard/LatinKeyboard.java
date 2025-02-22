@@ -24,7 +24,6 @@ import java.util.List;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.LatinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
  * {@link Type#Latin 拉丁文键盘}
@@ -35,10 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  * @date 2023-07-29
  */
 public class LatinKeyboard extends DirectInputKeyboard {
-
-    public LatinKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     public Type getType() {return Type.Latin;}
@@ -55,7 +50,7 @@ public class LatinKeyboard extends DirectInputKeyboard {
     }
 
     @Override
-    protected List<String> getTopBestMatchedLatins(String text) {
-        return this.dict.findTopBestMatchedLatins(text, 5);
+    protected List<String> getTopBestMatchedLatins(KeyboardContext context, String text) {
+        return context.dict.findTopBestMatchedLatins(text, 5);
     }
 }

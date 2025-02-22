@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import android.content.ClipboardManager;
 import android.content.Context;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
@@ -30,6 +31,9 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
+import org.crazydan.studio.app.ime.kuaizi.core.BaseInputContext;
+import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
+import org.crazydan.studio.app.ime.kuaizi.core.ClipboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
@@ -93,6 +97,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private InputList inputList;
 
     private Keyboard keyboard;
+    private Clipboard clipboard;
     private Inputboard inputboard;
     /** 切换前的主键盘类型 */
     private Keyboard.Type prevMasterKeyboardType;
@@ -135,6 +140,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.dict.open(context, this);
         }
 
+        if (this.clipboard == null) {
+            ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            this.clipboard = new Clipboard(clipboardManager);
+        }
+
         // 先切换键盘
         switchKeyboardTo(keyboardType);
 
@@ -147,7 +157,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         fire_InputMsg(Keyboard_Start_Done);
 
-        // TODO 显示最新的可粘贴内容：5 min 内未粘贴的内容
+        withClipboardContext(this.clipboard::start);
     }
 
     /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
@@ -184,6 +194,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.inputList = null;
 
         this.keyboard = null;
+        this.clipboard = null;
         this.inputboard = null;
         this.prevMasterKeyboardType = null;
 
@@ -482,21 +493,21 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             case InputList_Commit_Option:
                 return new InputListCommitOptionKeyboard();
             case Math:
-                return new MathKeyboard(this.dict);
+                return new MathKeyboard();
             case Symbol:
-                return new SymbolKeyboard(this.dict);
+                return new SymbolKeyboard();
             case Latin:
-                return new LatinKeyboard(this.dict);
+                return new LatinKeyboard();
             case Emoji:
-                return new EmojiKeyboard(this.dict);
+                return new EmojiKeyboard();
             case Pinyin_Candidate:
-                return new PinyinCandidateKeyboard(this.dict);
+                return new PinyinCandidateKeyboard();
             default:
-                return new PinyinKeyboard(this.dict);
+                return new PinyinKeyboard();
         }
     }
 
-    public void withKeyboardContext(Consumer<KeyboardContext> c) {
+    protected void withKeyboardContext(Consumer<KeyboardContext> c) {
         withKeyboardContext((context) -> {
             c.accept(context);
             return null;
@@ -509,10 +520,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     private KeyboardContext createKeyboardContext(Key key) {
-        return KeyboardContext.build((b) -> b.config(this.config, this.inputboard)
-                                             .key(key)
-                                             .inputList(this.inputList)
-                                             .listener(this));
+        return KeyboardContext.build((b) -> withInputContextBuilder(b.config(this.config, this.inputboard).key(key)));
     }
 
     protected void withInputboardContext(Consumer<InputboardContext> c) {
@@ -521,7 +529,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     private InputboardContext createInputboardContext() {
-        return InputboardContext.build((b) -> b.config(this.config).inputList(this.inputList).listener(this));
+        return InputboardContext.build((b) -> withInputContextBuilder(b.config(this.config)));
     }
 
     /** 创建 {@link KeyFactory} 以使其携带{@link KeyFactory.NoAnimation 无动画}和{@link KeyFactory.LeftHandMode 左手模式}信息 */
@@ -544,6 +552,15 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private InputFactory createInputFactory() {
         InputboardContext context = createInputboardContext();
         return this.inputboard.buildInputFactory(context);
+    }
+
+    protected void withClipboardContext(Consumer<ClipboardContext> c) {
+        ClipboardContext context = ClipboardContext.build(this::withInputContextBuilder);
+        c.accept(context);
+    }
+
+    private void withInputContextBuilder(BaseInputContext.Builder<?, ?> builder) {
+        builder.dict(this.dict).inputList(this.inputList).listener(this);
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================

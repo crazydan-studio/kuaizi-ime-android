@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
  * 按键直接输入目标组件的键盘，
@@ -37,10 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  * @date 2023-07-30
  */
 public abstract class DirectInputKeyboard extends EditorEditKeyboard {
-
-    protected DirectInputKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     public void onMsg(KeyboardContext context, InputMsg msg) {

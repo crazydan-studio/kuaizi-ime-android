@@ -56,10 +56,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  */
 public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
-    public PinyinCandidateKeyboard(PinyinDict dict) {
-        super(dict);
-    }
-
     @Override
     public Type getType() {return Type.Pinyin_Candidate;}
 
@@ -81,7 +77,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
                 PinyinCandidateChooseStateData stateData = this.state.data();
-                PinyinCharsTree charsTree = this.dict.getPinyinCharsTree();
+                PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
 
                 return () -> keyTable.createKeys(charsTree,
                                                  stateData.input,
@@ -233,17 +229,17 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        Map<Integer, InputWord> candidateMap = this.dict.getCandidatePinyinWords(pending);
+        Map<Integer, InputWord> candidateMap = context.dict.getCandidatePinyinWords(pending);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
 
-        List<Integer> topBestCandidateIds = this.dict.getTopBestCandidatePinyinWordIds(pending, bestCandidatesTop);
+        List<Integer> topBestCandidateIds = context.dict.getTopBestCandidatePinyinWordIds(pending, bestCandidatesTop);
         List<InputWord> topBestCandidates = topBestCandidateIds.stream()
                                                                .map(candidateMap::get)
                                                                .collect(Collectors.toList());
 
         // 拼音修正后，需更新其自动确定的候选字
         if (pinyinChanged) {
-            determine_NotConfirmed_InputWord(this.dict, pending);
+            determine_NotConfirmed_InputWord(context.dict, pending);
         }
 
         // 当前输入确定的拼音字放在最前面
@@ -255,7 +251,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         // Note：以最新确定的输入候选字做为表情的关键字查询条件
         List<PinyinWord> emojiKeywords = inputList.getPinyinPhraseWordsFrom(pending);
-        List<InputWord> topBestEmojis = this.dict.findTopBestEmojisMatchedPhrase(emojiKeywords, bestEmojisTop);
+        List<InputWord> topBestEmojis = context.dict.findTopBestEmojisMatchedPhrase(emojiKeywords, bestEmojisTop);
         topBestCandidates.addAll(topBestEmojis);
 
         if (!topBestCandidates.isEmpty()) {
@@ -299,7 +295,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
-            predict_NotConfirmed_Phrase_InputWords(this.dict, inputList, (CharInput) selected, 1, false);
+            predict_NotConfirmed_Phrase_InputWords(context.dict, inputList, (CharInput) selected, 1, false);
         } else {
             selected = inputList.getSelected();
         }
@@ -424,17 +420,14 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
     @Override
     protected void after_InputList_Selected_Deleted(KeyboardContext context) {
-        predict_NotConfirmed_Phrase_InputWords_with_Completions(context,
-                                                                this.dict,
-                                                                null,
-                                                                this::fire_Input_Completion_Create_Done);
+        predict_NotConfirmed_Phrase_InputWords_with_Completions(context, null, this::fire_Input_Completion_Create_Done);
     }
 
     // ================================ Start: 共用静态接口 ==================================
 
     /** {@link #predict_NotConfirmed_Phrase_InputWords 输入短语预测}并{@link #create_Phrase_InputWord_Completions 构造输入补全} */
     protected static void predict_NotConfirmed_Phrase_InputWords_with_Completions(
-            KeyboardContext context, PinyinDict dict, Consumer<KeyboardContext> beforeCompletions,
+            KeyboardContext context, Consumer<KeyboardContext> beforeCompletions,
             Consumer<KeyboardContext> afterCompletions
     ) {
         InputList inputList = context.inputList;
@@ -442,7 +435,11 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         // TODO 需要更好的输入预测机制，当前的方案对预测输入并无很大帮助，仅用于做输入补全的功能测试
         // Note: top 参数大于 1 时，可启用输入补全
-        List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(dict, inputList, pending, 1, true);
+        List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(context.dict,
+                                                                                   inputList,
+                                                                                   pending,
+                                                                                   1,
+                                                                                   true);
 
         if (beforeCompletions != null) {
             beforeCompletions.accept(context);

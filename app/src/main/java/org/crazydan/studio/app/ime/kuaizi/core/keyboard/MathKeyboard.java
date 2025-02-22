@@ -34,7 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.MathKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.SymbolKeyboard.prepare_for_PairKey_Inputting;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Done;
@@ -48,10 +47,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Cho
  * @date 2023-07-04
  */
 public class MathKeyboard extends EditorEditKeyboard {
-
-    public MathKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     public Type getType() {return Type.Math;}

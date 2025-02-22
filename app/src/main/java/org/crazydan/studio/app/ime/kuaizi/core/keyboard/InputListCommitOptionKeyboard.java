@@ -39,10 +39,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
  */
 public class InputListCommitOptionKeyboard extends BaseKeyboard {
 
-    public InputListCommitOptionKeyboard() {
-        super(null);
-    }
-
     @Override
     public Type getType() {return Type.InputList_Commit_Option;}
 

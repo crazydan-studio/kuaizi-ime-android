@@ -33,7 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.SymbolEmojiKeyT
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.SymbolChooseStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.Symbol;
 import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
 
@@ -44,10 +43,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.SymbolGroup;
  * @date 2024-12-10
  */
 public class SymbolKeyboard extends InputCandidateKeyboard {
-
-    public SymbolKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     public Type getType() {return Type.Symbol;}

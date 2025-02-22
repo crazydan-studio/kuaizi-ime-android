@@ -26,7 +26,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.EditorEditStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
  * 编辑器 编辑键盘
@@ -38,10 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  */
 public abstract class EditorEditKeyboard extends BaseKeyboard {
     private static final float ANCHOR_UNIT_IN_PX = ScreenUtils.dpToPx(8f);
-
-    protected EditorEditKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {

@@ -36,10 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
  */
 public class EditorKeyboard extends EditorEditKeyboard {
 
-    public EditorKeyboard() {
-        super(null);
-    }
-
     @Override
     public Type getType() {return Type.Editor;}
 

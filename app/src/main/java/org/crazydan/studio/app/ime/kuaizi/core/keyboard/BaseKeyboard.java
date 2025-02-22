@@ -59,7 +59,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgD
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Cursor_Move_Doing;
@@ -89,17 +88,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
 public abstract class BaseKeyboard implements Keyboard {
     protected final Logger log = Logger.getLogger(getClass());
 
-    /**
-     * 为确保在各键盘内提交输入均能对{@link #handle_UserInput_Data 用户输入做保存}，
-     * 因此，需要在基类中统一调用字典的存储接口
-     */
-    protected final PinyinDict dict;
-
     protected State state = new State(State.Type.InputChars_Input_Wait_Doing);
-
-    protected BaseKeyboard(PinyinDict dict) {
-        this.dict = dict;
-    }
 
     /** 获取键盘初始状态，即，{@link State.Type#InputChars_Input_Wait_Doing 待输入}状态 */
     protected State getInitState() {
@@ -523,7 +512,7 @@ public abstract class BaseKeyboard implements Keyboard {
     // ======================== Start: 输入补全 ========================
 
     /** 查找以指定 text 开头的最靠前的 top 个拉丁文 */
-    protected List<String> getTopBestMatchedLatins(String text) {
+    protected List<String> getTopBestMatchedLatins(KeyboardContext context, String text) {
         return List.of();
     }
 
@@ -540,7 +529,7 @@ public abstract class BaseKeyboard implements Keyboard {
         InputCompletions completions = inputList.newLatinCompletions(selected);
 
         String text = pending.getText().toString();
-        getTopBestMatchedLatins(text).forEach((latin) -> {
+        getTopBestMatchedLatins(context, text).forEach((latin) -> {
             // Note: 对于拉丁文输入的补全，采用逐个字符构建，
             // 以支持在应用补全后，仍然可以从输入中逐个删除
             List<Key> keys = CharKey.from(latin);
@@ -810,16 +799,12 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 在 {@link #commit_InputList} 之前需要做的事情 */
     protected void before_Commit_InputList(KeyboardContext context) {
-        if (this.dict != null) {
-            handle_UserInput_Data(context, this.dict::saveUserInputData);
-        }
+        handle_UserInput_Data(context, context.dict::saveUserInputData);
     }
 
     /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
     protected void after_Revoke_Committed_InputList(KeyboardContext context) {
-        if (this.dict != null) {
-            handle_UserInput_Data(context, this.dict::revokeSavedUserInputData);
-        }
+        handle_UserInput_Data(context, context.dict::revokeSavedUserInputData);
     }
 
     /** 回删输入列表中的输入内容 */

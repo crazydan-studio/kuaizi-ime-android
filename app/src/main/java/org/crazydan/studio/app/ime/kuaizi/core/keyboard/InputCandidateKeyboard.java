@@ -29,7 +29,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserFingerFlippingMsgData;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCandidate_Choose_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCandidate_Choose_Done;
@@ -42,10 +41,6 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCand
  * @date 2024-12-11
  */
 public abstract class InputCandidateKeyboard extends EditorEditKeyboard {
-
-    protected InputCandidateKeyboard(PinyinDict dict) {
-        super(dict);
-    }
 
     @Override
     public void onMsg(KeyboardContext context, UserKeyMsg msg) {
