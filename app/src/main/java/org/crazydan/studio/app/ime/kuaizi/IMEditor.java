@@ -282,6 +282,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 withInputboardContext((context) -> this.inputboard.onMsg(context, msg));
 
                 this.log.endTreeLog();
+                /////////////////////////////////////////////////////////////////
+                this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
+                        msg.getClass(), this.clipboard.getClass()
+                });
+
+                withClipboardContext((context) -> this.clipboard.onMsg(context, msg));
+
+                this.log.endTreeLog();
             }
         }
 
@@ -367,7 +375,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 break;
             }
             default: {
-                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
+                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
             }
         }
         this.log.endTreeLog();

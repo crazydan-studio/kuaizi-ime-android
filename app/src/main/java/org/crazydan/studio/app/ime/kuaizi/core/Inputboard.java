@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.function.Supplier;
 
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -47,6 +48,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTa
  * @date 2025-01-04
  */
 public class Inputboard {
+    protected final Logger log = Logger.getLogger(getClass());
+
     private Stage stage;
 
     public Inputboard() {
@@ -67,6 +70,7 @@ public class Inputboard {
     public void onMsg(InputboardContext context, UserInputMsg msg) {
         InputList inputList = context.inputList;
         if (inputList.isFrozen()) {
+            this.log.warn("InputList is frozen, ignore message %s", () -> new Object[] { msg.type });
             return;
         }
 
@@ -114,6 +118,9 @@ public class Inputboard {
                 Input input = inputList.getSelected();
                 fire_InputMsg(context, InputList_Cleaned_Cancel_Done, input);
                 break;
+            }
+            default: {
+                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
             }
         }
     }

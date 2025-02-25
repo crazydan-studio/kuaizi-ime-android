@@ -315,7 +315,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 break;
             }
             default: {
-                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
+                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
             }
         }
     }

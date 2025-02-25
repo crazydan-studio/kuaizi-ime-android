@@ -89,7 +89,7 @@ public abstract class BaseInputContext extends Immutable {
         protected void doCopy(I source) {
             super.doCopy(source);
 
-            inputList(source.inputList).listener(source.listener);
+            dict(this.dict).inputList(source.inputList).listener(source.listener);
         }
 
         @Override

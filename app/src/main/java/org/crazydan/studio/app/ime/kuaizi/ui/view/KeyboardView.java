@@ -267,7 +267,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             case Input_Choose_Doing:
             case InputChars_Input_Popup_Hide_Doing:
             case InputChars_Input_Popup_Show_Doing: {
-                this.log.warn("Ignore message %s", () -> new Object[] { msg.type }) //
+                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type }) //
                         .endTreeLog();
                 return;
             }

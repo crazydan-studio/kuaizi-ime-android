@@ -105,7 +105,7 @@ public abstract class Immutable {
         protected abstract O build();
 
         /** 从指定 {@link Immutable} 中复制初始的构建配置 */
-        protected void doCopy(O obj) {}
+        protected void doCopy(O source) {}
     }
 
     /**
