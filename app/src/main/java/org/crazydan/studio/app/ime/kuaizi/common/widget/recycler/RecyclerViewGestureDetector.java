@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
+import android.content.Context;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
@@ -32,7 +33,9 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 public class RecyclerViewGestureDetector<I> extends ViewGestureDetector {
     private I prevAdapterItem;
 
-    public RecyclerViewGestureDetector(RecyclerView<?, I> rv) {
+    public RecyclerViewGestureDetector(Context context, RecyclerView<?, I> rv) {
+        super(context);
+
         rv.addOnItemTouchListener(new ItemTouchListener());
     }
 

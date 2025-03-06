@@ -52,7 +52,8 @@ public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapt
     public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(this);
+        RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(context,
+                                                                                                          this);
         gesture.addListener(this);
     }
 

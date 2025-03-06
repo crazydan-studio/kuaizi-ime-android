@@ -24,11 +24,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import androidx.annotation.NonNull;
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.Point;
@@ -55,6 +57,8 @@ public class ViewGestureDetector {
 
     private final Set<Listener> listeners = new LinkedHashSet<>();
     private final List<GestureData> movingTracker = new ArrayList<>();
+    /** 判定移动的最小 距离 的阈值（单位：px） */
+    private final int movingDistanceThreshold;
 
     private boolean moving;
     private boolean longPressing;
@@ -65,6 +69,13 @@ public class ViewGestureDetector {
 
     public interface Listener {
         void onGesture(GestureType type, GestureData data);
+    }
+
+    public ViewGestureDetector(Context context) {
+        // 参考 android.view.GestureDetector#init
+        ViewConfiguration configuration = ViewConfiguration.get(context);
+
+        this.movingDistanceThreshold = configuration.getScaledTouchSlop();
     }
 
     public ViewGestureDetector addListener(Listener listener) {
@@ -92,8 +103,6 @@ public class ViewGestureDetector {
                 // 而不会因为后续监听的执行导致其执行被延后
                 startLongPress(data);
                 onPressStart(data);
-
-                this.log.debug("On Press Start");
                 break;
             }
             // Note: 有些机型会在 ACTION_DOWN 后立即触发 ACTION_MOVE
@@ -101,11 +110,9 @@ public class ViewGestureDetector {
                 // Note: 移动开始时，可能还未触发长按监听，故而需显式取消长按监听
                 if (this.moving && !this.longPressing) {
                     stopLongPress();
-                    this.log.debug("Stop Long Press");
                 }
 
                 onMoving(data);
-                this.log.debug("On Moving");
                 break;
             }
             case MotionEvent.ACTION_UP: {
@@ -113,20 +120,16 @@ public class ViewGestureDetector {
                 if (this.latestPressStart != null) {
                     if (!this.longPressing && !this.moving) {
                         onSingleTap(data);
-                        this.log.debug("On Single Tap");
                     } else if (!this.longPressing && isFlipping()) {
                         onFlipping(data);
-                        this.log.debug("On Flipping");
                     }
                 }
 
                 onGestureEnd(data);
-                this.log.debug("On Gesture End");
                 break;
             }
             case MotionEvent.ACTION_CANCEL: {
                 onGestureEnd(data);
-                this.log.debug("On Gesture End");
                 break;
             }
         }
@@ -135,11 +138,15 @@ public class ViewGestureDetector {
     }
 
     private void onGestureEnd(GestureData data) {
+        this.log.beginTreeLog("Gesture End");
+
         // Note: 先结束带定时任务的事件
         onLongPressEnd(data);
         onMovingEnd(data);
 
         onPressEnd(data);
+
+        this.log.endTreeLog();
     }
 
     private void onPressStart(GestureData data) {
@@ -159,6 +166,8 @@ public class ViewGestureDetector {
     }
 
     private void startLongPress(GestureData data) {
+        this.log.debug("Start Long Press");
+
         stopLongPress();
 
         LongPressHandler handler = getLongPressHandler();
@@ -171,6 +180,8 @@ public class ViewGestureDetector {
         if (!this.longPressing) {
             return;
         }
+
+        this.log.debug("Start Long Press Tick");
 
         long timeout = LONG_PRESS_TICK_TIMEOUT_MILLS;
         LongPressTickGestureData newData = new LongPressTickGestureData(data, data.tick + 1, data.duration + timeout);
@@ -185,7 +196,10 @@ public class ViewGestureDetector {
         this.longPressing = false;
 
         if (this.longPressHandler != null) {
+            this.log.debug("Stop Long Press Handler");
+
             this.longPressHandler.stop();
+            this.longPressHandler = null;
         }
     }
 
@@ -272,18 +286,22 @@ public class ViewGestureDetector {
         if (size < 2) {
             return;
         }
-        this.moving = true;
 
         GestureData g1 = this.movingTracker.get(1);
         GestureData g2 = this.movingTracker.get(size - 1);
-
         Motion motion = createMotion(g2, g1);
-        GestureData newData = new MovingGestureData(data, motion);
 
-        if (size == 2) {
-            triggerListeners(GestureType.MovingStart, data);
-        } else {
+        // 持续移动
+        if (this.moving) {
+            GestureData newData = new MovingGestureData(data, motion);
+
             triggerListeners(GestureType.Moving, newData);
+        }
+        // 开始移动
+        else if (motion.distance > this.movingDistanceThreshold) {
+            this.moving = true;
+
+            triggerListeners(GestureType.MovingStart, data);
         }
     }
 
@@ -409,7 +427,7 @@ public class ViewGestureDetector {
 
         @Override
         public String toString() {
-            return "{x=" + this.at.x + ", y=" + this.at.y + '}';
+            return "{x=" + this.at.x + ", y=" + this.at.y + ", timestamp=" + this.timestamp + '}';
         }
 
         public static GestureData newFrom(GestureData g, float x, float y) {

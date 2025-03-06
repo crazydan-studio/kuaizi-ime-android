@@ -73,7 +73,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
         // Note：取消动画以确保输入能够直接显隐，不做淡化
         setItemAnimator(null);
 
-        RecyclerViewGestureDetector<InputViewData> gesture = new RecyclerViewGestureDetector<>(this);
+        RecyclerViewGestureDetector<InputViewData> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
 

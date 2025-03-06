@@ -92,7 +92,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         this.gestureTrailer.setColor(trailColor);
 
         KeyboardViewGestureListener gestureListener = new KeyboardViewGestureListener(this);
-        this.gesture = new RecyclerViewGestureDetector<>(this);
+        this.gesture = new RecyclerViewGestureDetector<>(context, this);
         // Note：确保先处理视图消息，再处理轨迹消息，因为前者会对轨迹做禁用处理
         this.gesture.addListener(gestureListener) //
                     .addListener(gestureTrailer);
