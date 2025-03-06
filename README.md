@@ -221,6 +221,9 @@ inputboard_view ..> input_list_view: dispatch\n<<InputMsg>>
 - [维特比算法](https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95)
 - [wmhst7/THU_AI_Course_Pinyin](https://github.com/wmhst7/THU_AI_Course_Pinyin)
 - [基于 Bigram+HMM 的拼音汉字转换](https://github.com/iseesaw/Pinyin2ChineseChars)
+- 设备调试相关
+  - [Samsung Remote Test Lab](https://developer.samsung.com/remote-test-lab):
+    免费的三星远程调试服务，可远程调试多种型号的三星设备
 
 ## 友情赞助
 
