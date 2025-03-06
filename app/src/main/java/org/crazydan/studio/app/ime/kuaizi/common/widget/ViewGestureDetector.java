@@ -83,12 +83,17 @@ public class ViewGestureDetector {
     public void onTouchEvent(@NonNull MotionEvent e) {
         GestureData data = GestureData.from(e);
 
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { getActionName(e) })
+                .debug("Gesture Data: %s", () -> new Object[] { data });
+
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN: {
                 // Note: 优先触发长按监听，以确保其在指定的延时后能够及时执行，
                 // 而不会因为后续监听的执行导致其执行被延后
                 startLongPress(data);
                 onPressStart(data);
+
+                this.log.debug("On Press Start");
                 break;
             }
             // Note: 有些机型会在 ACTION_DOWN 后立即触发 ACTION_MOVE
@@ -96,9 +101,11 @@ public class ViewGestureDetector {
                 // Note: 移动开始时，可能还未触发长按监听，故而需显式取消长按监听
                 if (this.moving && !this.longPressing) {
                     stopLongPress();
+                    this.log.debug("Stop Long Press");
                 }
 
                 onMoving(data);
+                this.log.debug("On Moving");
                 break;
             }
             case MotionEvent.ACTION_UP: {
@@ -106,19 +113,25 @@ public class ViewGestureDetector {
                 if (this.latestPressStart != null) {
                     if (!this.longPressing && !this.moving) {
                         onSingleTap(data);
+                        this.log.debug("On Single Tap");
                     } else if (!this.longPressing && isFlipping()) {
                         onFlipping(data);
+                        this.log.debug("On Flipping");
                     }
                 }
 
                 onGestureEnd(data);
+                this.log.debug("On Gesture End");
                 break;
             }
             case MotionEvent.ACTION_CANCEL: {
                 onGestureEnd(data);
+                this.log.debug("On Gesture End");
                 break;
             }
         }
+
+        this.log.endTreeLog();
     }
 
     private void onGestureEnd(GestureData data) {

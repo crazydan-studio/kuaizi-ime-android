@@ -429,13 +429,11 @@ public class PinyinDict {
         return new File(context.getFilesDir(), dbType.fileName);
     }
 
-    public void saveUserDB(Context context, OutputStream output) {
+    public void saveUserDB(Context context, OutputStream output) throws IOException {
         File userDBFile = getUserDBFile(context);
 
         try (InputStream input = FileUtils.newInput(userDBFile)) {
             ResourceUtils.copy(input, output);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
         }
     }
 

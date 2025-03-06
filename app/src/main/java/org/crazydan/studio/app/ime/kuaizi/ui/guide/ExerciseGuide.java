@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.guide;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -30,10 +31,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
@@ -42,8 +45,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
+import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
@@ -109,6 +115,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        startDebugLogs();
+
         this.exerciseList = new ExerciseList();
         this.exerciseList.setListener(this);
 
@@ -129,6 +137,13 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         // 准备就绪，开始练习
         // Note: 由视图 ExerciseListView 在滚动到目标练习后，再激活具体的 Exercise
         this.exerciseList.start(exercises);
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopDebugLogs();
+
+        super.onDestroy();
     }
 
     @Override
@@ -1349,6 +1364,10 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
     private void showWarning(String msg, Object... args) {
         Context context = getApplicationContext();
+        showWarning(context, msg, args);
+    }
+
+    private void showWarning(Context context, String msg, Object... args) {
         String text = String.format(Locale.getDefault(), msg, args);
 
         Toast.with(context)
@@ -1374,5 +1393,52 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     private void asyncRun(Runnable run) {
         // Note: 在涉及视图更新操作时，必须最终回在 UI 线程上执行
         executor.execute(() -> runOnUiThread(run));
+    }
+
+    private void startDebugLogs() {
+        if (!BuildConfig.DEBUG) {
+            return;
+        }
+
+        Logger.enableLogCache(true);
+
+        showWarning("<span style=\"color:#ed4c67;\">注意</span>："
+                    + "本地调试日志文件将在<span style=\"color:#ed4c67;\">当前窗口退出后</span>生成！");
+    }
+
+    private void stopDebugLogs() {
+        if (!BuildConfig.DEBUG) {
+            return;
+        }
+
+        List<String> logs = Logger.getCachedLogs();
+        Logger.enableLogCache(false);
+
+        if (logs.isEmpty()) {
+            return;
+        }
+
+        String fileName = "Kuaizi_IME_Debug.log.zip";
+        String date = DateFormat.format("yyyyMMddHHmmss", new Date()).toString();
+
+        Context context = getApplicationContext();
+        executor.submit(() -> {
+            FileUtils.saveZipToDownload(context, fileName, (zip) -> {
+                ZipEntry zipEntry = new ZipEntry("log-" + date + ".txt");
+                zip.putNextEntry(zipEntry);
+
+                for (String log : logs) {
+                    FileUtils.write(zip, log);
+                }
+
+                zip.closeEntry();
+            });
+
+            runOnUiThread(() -> showWarning(context,
+                                            "已在【<span style=\"color:#ed4c67;\">下载</span>】目录"
+                                            + "生成名为【<span style=\"color:#ed4c67;\">%s</span>】"
+                                            + "的本地调试日志文件",
+                                            fileName));
+        });
     }
 }

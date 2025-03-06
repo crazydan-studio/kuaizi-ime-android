@@ -45,6 +45,8 @@ public class Logger {
         protected Logger log(int level, String msg, Supplier<Object[]> argsGetter) {return this;}
     };
 
+    private static final LogCache cache = new LogCache();
+
     private final String tag;
 
     public static Logger getLogger(Class<?> cls) {
@@ -52,6 +54,17 @@ public class Logger {
             return noop;
         }
         return new Logger(cls.getSimpleName());
+    }
+
+    public static void enableLogCache(boolean enabled) {
+        cache.enabled = enabled;
+        if (!enabled) {
+            cache.logs.clear();
+        }
+    }
+
+    public static List<String> getCachedLogs() {
+        return new ArrayList<>(cache.logs);
     }
 
     Logger(String tag) {
@@ -162,7 +175,10 @@ public class Logger {
             sb.append("↙˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜").append('\n');
             print(sb, log, 0);
 
-            Log.i("Kuaizi_IME_TreeLog", sb.toString());
+            String msg = sb.toString();
+            cache.cache(msg);
+
+            Log.i("Kuaizi_IME_TreeLog", msg);
         }
 
         public static void log(int level, String tag, String msg, Supplier<Object[]> argsGetter) {
@@ -223,6 +239,17 @@ public class Logger {
             sb.append(log.msg).append('\n');
 
             log.children.forEach((child) -> print(sb, child, depth + 1));
+        }
+    }
+
+    private static class LogCache {
+        private boolean enabled;
+        private final List<String> logs = new ArrayList<>();
+
+        public void cache(String log) {
+            if (this.enabled) {
+                this.logs.add(log);
+            }
         }
     }
 }

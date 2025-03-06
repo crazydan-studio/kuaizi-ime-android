@@ -19,13 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui;
 
-import java.io.File;
-import java.io.OutputStream;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -33,8 +29,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -63,30 +57,8 @@ public class Preferences extends FollowSystemThemeActivity {
 
     public static void backupUserData(Activity context) {
         String fileName = "kuaizi_user_data_backup.db";
-        // https://stackoverflow.com/questions/59103133/how-to-directly-download-a-file-to-download-directory-on-android-q-android-10#answer-64357198
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream");
-            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
-            ContentResolver resolver = context.getContentResolver();
-            Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
-
-            try (OutputStream output = resolver.openOutputStream(uri)) {
-                PinyinDict.instance().saveUserDB(context, output);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        } else {
-            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + fileName);
-
-            try (OutputStream output = FileUtils.newOutput(dir)) {
-                PinyinDict.instance().saveUserDB(context, output);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
+        FileUtils.saveToDownload(context, fileName, (output) -> PinyinDict.instance().saveUserDB(context, output));
     }
 
     public static void openFeedbackUrl(Activity context) {
