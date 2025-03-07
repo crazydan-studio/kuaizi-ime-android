@@ -120,7 +120,7 @@ public class Inputboard {
                 break;
             }
             default: {
-                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
     }

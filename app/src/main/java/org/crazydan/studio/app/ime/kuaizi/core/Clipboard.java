@@ -59,7 +59,7 @@ public class Clipboard {
 
         switch (msg.type) {
             default: {
-                this.log.warn("Do not handle message %s", () -> new Object[] { msg.type });
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
     }

@@ -222,8 +222,9 @@ public class ViewGestureDetector {
         // 若发生了移动，则需要更新 tick 事件发生位置
         int size = this.movingTracker.size();
         if (size > 0) {
-            GestureData g = this.movingTracker.get(size - 1);
-            data = new LongPressTickGestureData(g, data.tick, data.duration);
+            GestureData end = this.movingTracker.get(size - 1);
+
+            data = new LongPressTickGestureData(end, data.tick, data.duration);
         }
 
         // 分发当前 tick 事件
@@ -287,21 +288,23 @@ public class ViewGestureDetector {
             return;
         }
 
-        GestureData g1 = this.movingTracker.get(1);
-        GestureData g2 = this.movingTracker.get(size - 1);
-        Motion motion = createMotion(g2, g1);
+        GestureData start = this.movingTracker.get(0);
+        GestureData end = this.movingTracker.get(size - 1);
+        Motion motion = createMotion(end, start);
 
-        // 持续移动
+        // 移动开始
+        if (!this.moving && motion.distance > this.movingDistanceThreshold) {
+            this.moving = true;
+
+            // Note: MovingStart 需从事件初始发生位置开始触发，
+            // 然后，再继续触发当前点的 Moving 事件
+            triggerListeners(GestureType.MovingStart, start);
+        }
+
         if (this.moving) {
             GestureData newData = new MovingGestureData(data, motion);
 
             triggerListeners(GestureType.Moving, newData);
-        }
-        // 开始移动
-        else if (motion.distance > this.movingDistanceThreshold) {
-            this.moving = true;
-
-            triggerListeners(GestureType.MovingStart, data);
         }
     }
 
@@ -317,17 +320,17 @@ public class ViewGestureDetector {
 
     private void onFlipping(GestureData data) {
         int size = this.movingTracker.size();
-        GestureData g1 = this.movingTracker.get(0);
+        GestureData start = this.movingTracker.get(0);
         // Note: g2 应该始终与 data 相同
-        GestureData g2 = this.movingTracker.get(size - 1);
+        GestureData end = this.movingTracker.get(size - 1);
 
-        Motion motion = createMotion(g2, g1);
+        Motion motion = createMotion(end, start);
         if (motion.distance <= 0) {
             return;
         }
 
         // Note: 坐标位置设置为事件初始发生位置
-        GestureData newData = new FlippingGestureData(g1, motion);
+        GestureData newData = new FlippingGestureData(start, motion);
 
         triggerListeners(GestureType.Flipping, newData);
     }
@@ -338,10 +341,10 @@ public class ViewGestureDetector {
             return false;
         }
 
-        GestureData g1 = this.movingTracker.get(0);
-        GestureData g2 = this.movingTracker.get(size - 1);
+        GestureData start = this.movingTracker.get(0);
+        GestureData end = this.movingTracker.get(size - 1);
 
-        return g2.timestamp - g1.timestamp < FLIPPING_TIMEOUT_MILLS;
+        return end.timestamp - start.timestamp < FLIPPING_TIMEOUT_MILLS;
     }
 
     private void triggerListeners(GestureType type, GestureData data) {
