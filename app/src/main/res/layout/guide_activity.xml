@@ -98,7 +98,20 @@
                 android:layout_width="256dp"
                 android:layout_height="64dp"
                 android:gravity="center"
+                android:layout_marginBottom="16dp"
                 app:backgroundTint="#3395d4"
+                android:textColor="@color/color_white"
+                app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guide_change_log"
+                android:text="@string/title_about_change_log"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_width="256dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                app:backgroundTint="#ce4e48"
                 android:textColor="@color/color_white"
                 app:cornerRadius="8dp" />
 

@@ -39,6 +39,7 @@ import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
@@ -62,10 +63,9 @@ public class Preferences extends FollowSystemThemeActivity {
     }
 
     public static void openFeedbackUrl(Activity context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String pref_key = "user_feedback_with_extra_info_enabled";
-        String extraInfoEnabledStr = preferences.getString(pref_key, null);
-        boolean extraInfoEnabled = extraInfoEnabledStr != null && Boolean.parseBoolean(extraInfoEnabledStr);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        PreferencesUtils.update(preferences, (editor) -> editor.remove(pref_key));
 
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         PackageInfo pkgInfo = SystemUtils.getPackageInfo(context);
@@ -80,34 +80,25 @@ public class Preferences extends FollowSystemThemeActivity {
                                           metrics.densityDpi);
         String appInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
 
-        String feedbackUrl = extraInfoEnabled
-                             ? Preferences.createFeedbackUrl(preferences, clientInfo, appInfo)
-                             : Preferences.createFeedbackUrl(preferences, null, null);
-
-        if (extraInfoEnabledStr != null) {
-            SystemUtils.openLink(context, feedbackUrl);
-            return;
-        }
-
         AlertPopup.with(context)
                   .setView(R.layout.guide_alert_view)
                   .setCancelable(true)
                   .setTitle(R.string.title_tips)
                   .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
                   .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
-                      savePreference(preferences, pref_key, Boolean.FALSE.toString());
+                      String feedbackUrl = Preferences.createFeedbackUrl(null, null);
 
                       SystemUtils.openLink(context, feedbackUrl);
                   })
                   .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
-                      savePreference(preferences, pref_key, Boolean.TRUE.toString());
+                      String feedbackUrl = Preferences.createFeedbackUrl(clientInfo, appInfo);
 
                       SystemUtils.openLink(context, feedbackUrl);
                   })
                   .show();
     }
 
-    private static String createFeedbackUrl(SharedPreferences preferences, String clientInfo, String appInfo) {
+    private static String createFeedbackUrl(String clientInfo, String appInfo) {
         String title = Uri.encode("[Android] ");
         String body = clientInfo != null && appInfo != null
                       //
@@ -117,12 +108,6 @@ public class Preferences extends FollowSystemThemeActivity {
         // Note: 可用的 label 需提前建好
         return "https://github.com/crazydan-studio/kuaizi-ime/issues/new" //
                + "?labels=android,feedback&title=" + title + "&body=" + body;
-    }
-
-    private static void savePreference(SharedPreferences preferences, String key, String value) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(key, value);
-        editor.apply();
     }
 
     @Override
