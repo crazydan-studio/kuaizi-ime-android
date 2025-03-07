@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 
@@ -89,22 +89,22 @@ public class Preferences extends FollowSystemThemeActivity {
             return;
         }
 
-        Alert.with(context)
-             .setView(R.layout.guide_alert_view)
-             .setCancelable(true)
-             .setTitle(R.string.title_tips)
-             .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
-             .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
-                 savePreference(preferences, pref_key, Boolean.FALSE.toString());
+        AlertPopup.with(context)
+                  .setView(R.layout.guide_alert_view)
+                  .setCancelable(true)
+                  .setTitle(R.string.title_tips)
+                  .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
+                  .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
+                      savePreference(preferences, pref_key, Boolean.FALSE.toString());
 
-                 SystemUtils.openLink(context, feedbackUrl);
-             })
-             .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
-                 savePreference(preferences, pref_key, Boolean.TRUE.toString());
+                      SystemUtils.openLink(context, feedbackUrl);
+                  })
+                  .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
+                      savePreference(preferences, pref_key, Boolean.TRUE.toString());
 
-                 SystemUtils.openLink(context, feedbackUrl);
-             })
-             .show();
+                      SystemUtils.openLink(context, feedbackUrl);
+                  })
+                  .show();
     }
 
     private static String createFeedbackUrl(SharedPreferences preferences, String clientInfo, String appInfo) {

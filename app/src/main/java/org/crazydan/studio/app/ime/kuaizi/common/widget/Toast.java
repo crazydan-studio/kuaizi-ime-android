@@ -19,36 +19,35 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget;
 
-import android.content.Context;
-import android.os.Build;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.text.Html;
 import android.view.View;
-import android.widget.TextView;
+import com.google.android.material.snackbar.Snackbar;
 import org.crazydan.studio.app.ime.kuaizi.R;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-02-12
  */
 public class Toast {
-    public static final int LENGTH_SHORT = 0;
-    public static final int LENGTH_LONG = 1;
+    public static final int LENGTH_SHORT = Snackbar.LENGTH_SHORT;
+    public static final int LENGTH_LONG = Snackbar.LENGTH_LONG;
+    public static final int LENGTH_INDEFINITE = Snackbar.LENGTH_INDEFINITE;
 
-    private final Context context;
+    private final View context;
+    private final View anchor;
 
     private CharSequence text;
     private int duration;
-    private int gravity = Gravity.BOTTOM | Gravity.CENTER;
-    private int xOffset;
-    private int yOffset;
 
-    public static Toast with(Context context) {
+    public static Toast with(View context) {
         return new Toast(context);
     }
 
-    private Toast(Context context) {
+    private Toast(View context) {
         this.context = context;
+        this.anchor = context.findViewById(R.id.snackbar_anchor);
     }
 
     public Toast setText(CharSequence text) {
@@ -56,35 +55,17 @@ public class Toast {
         return this;
     }
 
+    public Toast setHtml(String html) {
+        return setText(Html.fromHtml(html, FROM_HTML_MODE_COMPACT));
+    }
+
     public Toast setDuration(int duration) {
         this.duration = duration;
         return this;
     }
 
-    public Toast setGravity(int gravity, int xOffset, int yOffset) {
-        this.gravity = gravity;
-        this.xOffset = xOffset;
-        this.yOffset = yOffset;
-        return this;
-    }
-
     public void show() {
-        android.widget.Toast toast;
-
-        // Note: Android API 30 以上版本的 Toast#makeText 不支持定制消息的位置，需采用自定义视图规避该问题
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            View view = LayoutInflater.from(this.context).inflate(R.layout.app_toast_view, null);
-            ((TextView) view.findViewById(R.id.message)).setText(this.text);
-
-            toast = new android.widget.Toast(this.context);
-            toast.setView(view);
-        } else {
-            toast = android.widget.Toast.makeText(this.context, this.text, this.duration);
-        }
-
-        toast.setDuration(this.duration);
-        toast.setGravity(this.gravity, this.xOffset, this.yOffset);
-
-        toast.show();
+        // Note: Snackbar 将自动管理多个实例，确保将前一个隐藏后再显示下一个
+        Snackbar.make(this.context, this.text, this.duration).setAnchorView(this.anchor).show();
     }
 }

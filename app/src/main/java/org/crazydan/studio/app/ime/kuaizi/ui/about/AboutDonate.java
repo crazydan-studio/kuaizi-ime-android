@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
 
 /**
@@ -73,6 +72,6 @@ public class AboutDonate extends HtmlSupportActivity {
 
         clipboard.setPrimaryClip(clip);
 
-        Toast.with(this).setText("备注信息「" + text + "」已复制").setDuration(Toast.LENGTH_SHORT).show();
+        toast("备注信息【<span style=\"color:#ed4c67;\">%s</span>】已复制", text);
     }
 }

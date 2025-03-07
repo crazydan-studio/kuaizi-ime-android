@@ -35,9 +35,7 @@ import java.util.zip.ZipEntry;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.Html;
 import android.text.format.DateFormat;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -51,7 +49,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
@@ -87,8 +84,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsgL
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseListStartDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 import org.hexworks.mixite.core.api.HexagonOrientation;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -531,7 +526,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
+                    toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
                 });
         exercise.newStep("请点击按键%s以设置待提交的输入需携带拼音。<b>注</b>：可多次点击做形式切换；",
                          key_ctrl_commit_mode_with_pinyin) //
@@ -559,7 +554,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         return;
                     }
 
-                    showWarning("请按当前步骤的指导要求撤回输入内容");
+                    toast("请按当前步骤的指导要求撤回输入内容");
                 });
 
         return exercise;
@@ -592,7 +587,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求移动目标编辑器中的光标");
+                    toast("请按当前步骤的指导要求移动目标编辑器中的光标");
                 });
         exercise.newStep("请<span style=\"color:#ed4c67;\">双击</span>光标定位按键%s以进入<b>内容编辑</b>模式；",
                          key_ctrl_cursor_locator) //
@@ -607,7 +602,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">双击</span><b>光标定位按键</b>");
+                    toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">双击</span><b>光标定位按键</b>");
                 });
         exercise.newStep("请在内容选择按键%s上滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {
@@ -620,7 +615,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求选择编辑内容");
+                    toast("请按当前步骤的指导要求选择编辑内容");
                 });
         exercise.newStep("请尝试点击%s、%s等按键，并观察复制、粘贴、剪切、撤销和重做等操作的结果；",
                          key_ctrl_edit_copy,
@@ -631,7 +626,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         return;
                     }
 
-                    showWarning("请按当前步骤的指导要求操作编辑内容");
+                    toast("请按当前步骤的指导要求操作编辑内容");
                 });
 
         exercise.newStep("请点击退出按键%s以切换回原键盘；", key_ctrl_exit) //
@@ -674,7 +669,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                 }
                             }
 
-                            showWarning("请按当前步骤的指导要求输入空格");
+                            toast("请按当前步骤的指导要求输入空格");
                         });
                 continue;
             }
@@ -691,7 +686,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             case Keyboard_Switch_Done: {
                                 KeyboardSwitchMsgData data = msg.data();
                                 if (data.type != Keyboard.Type.Pinyin) {
-                                    showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字母");
+                                    toast("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字母");
                                 }
                                 return;
                             }
@@ -706,17 +701,17 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                 }
                                 // 若点击的不是预期按键，则显示提示信息
                                 else if (!key.value.equalsIgnoreCase(key_char.value)) {
-                                    showWarning(useUpperCase
-                                                ? "请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
-                                                  + "按键 <span style=\"color:#ed4c67;\">%s</span>"
-                                                : "请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
-                                                key_char.value);
+                                    toast(useUpperCase
+                                          ? "请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                                            + "按键 <span style=\"color:#ed4c67;\">%s</span>"
+                                          : "请按当前步骤的指导要求点击按键 <span style=\"color:#ed4c67;\">%s</span>",
+                                          key_char.value);
                                 }
                                 return;
                             }
                         }
 
-                        showWarning("请按当前步骤的指导要求输入字母 <span style=\"color:#ed4c67;\">%s</span>", ch);
+                        toast("请按当前步骤的指导要求输入字母 <span style=\"color:#ed4c67;\">%s</span>", ch);
                     });
         }
 
@@ -728,7 +723,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         case Keyboard_Switch_Done: {
                             KeyboardSwitchMsgData data = msg.data();
                             if (data.type != Keyboard.Type.Pinyin) {
-                                showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字符");
+                                toast("请先切换到拼音输入键盘，再按当前步骤的指导要求输入字符");
                             }
                             return;
                         }
@@ -744,14 +739,14 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             }
                             // 若点击的不是预期按键，则显示提示信息
                             else if (!key.value.equals(key_symbol_tanhao.value)) {
-                                showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
-                                            + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.value);
+                                toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">快速双击</span>"
+                                      + "按键 <span style=\"color:#ed4c67;\">%s</span>", key_symbol_tanhao.value);
                             }
                             return;
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">%s</span>", tanhao);
+                    toast("请按当前步骤的指导要求输入字符 <span style=\"color:#ed4c67;\">%s</span>", tanhao);
                 });
 
         add_Common_Input_Committing_Step(exercise, key_ctrl_commit);
@@ -783,7 +778,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求切换到算术键盘");
+                    toast("请按当前步骤的指导要求切换到算术键盘");
                 });
 
         Key[] mathKeys = new Key[] {
@@ -810,9 +805,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             }
                         }
 
-                        showWarning("请按当前步骤的指导要求输入%s <span style=\"color:#ed4c67;\">%s</span>",
-                                    mathKey instanceof MathOpKey ? "运算符" : "数字",
-                                    mathKey.value);
+                        toast("请按当前步骤的指导要求输入%s <span style=\"color:#ed4c67;\">%s</span>",
+                              mathKey instanceof MathOpKey ? "运算符" : "数字",
+                              mathKey.value);
                     });
         }
 
@@ -824,7 +819,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         return;
                     }
 
-                    showWarning("请按当前步骤的指导要求提交输入内容");
+                    toast("请按当前步骤的指导要求提交输入内容");
                 });
 
         return exercise;
@@ -893,7 +888,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             return;
                         }
                     }
-                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>回车按键</b>");
+                    toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>回车按键</b>");
                 });
 
         for (int i = 0; i < latinSample.length; i++) {
@@ -903,7 +898,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
             Supplier<XPadView.GestureSimulator> simulator = createXPadGestureSimulator();
             String simulatorStepName = String.format(Locale.getDefault(), "latin-char-input-step:%d:%s", i, key.value);
             Runnable restart = () -> {
-                showWarning("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
+                toast("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
 
                 simulator.get().stop();
                 exercise.gotoStep(simulatorStepName);
@@ -982,7 +977,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     }
                 }
 
-                showWarning("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.label);
+                toast("请按演示动画输入字符 <span style=\"color:#ed4c67;\">%s</span>", key.label);
             });
         }
 
@@ -997,7 +992,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             return;
                         }
                     }
-                    showWarning("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>空格按键</b>");
+                    toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">点击</span> <b>空格按键</b>");
                 });
 
         int i = 0;
@@ -1021,7 +1016,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                                            j,
                                                            word.id);
                 Runnable restart = () -> {
-                    showWarning("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
+                    toast("当前操作与练习内容的要求不符，请按演示动画重新操作，并等待动画结束");
 
                     simulator.get().stop();
                     exercise.gotoStep(firstSimulatorStepName);
@@ -1114,7 +1109,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按演示动画输入 <span style=\"color:#ed4c67;\">%s</span>", key.label);
+                    toast("请按演示动画输入 <span style=\"color:#ed4c67;\">%s</span>", key.label);
                 });
             }
         }
@@ -1146,7 +1141,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         case Keyboard_Switch_Done: {
                             KeyboardSwitchMsgData data = msg.data();
                             if (data.type != Keyboard.Type.Pinyin) {
-                                showWarning("请先切换到拼音输入键盘，再按当前步骤的指导要求输入拼音");
+                                toast("请先切换到拼音输入键盘，再按当前步骤的指导要求输入拼音");
                             }
                             return;
                         }
@@ -1155,21 +1150,21 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             Key key = data.key;
 
                             if (data.inputMode != InputCharsInputMsgData.InputMode.slip) {
-                                showWarning("请按当前步骤的指导要求从按键"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要做点击或翻页等动作", key_level_0.label);
+                                toast("请按当前步骤的指导要求从按键"
+                                      + " <span style=\"color:#ed4c67;\">%s</span>"
+                                      + " 上滑出，不要做点击或翻页等动作", key_level_0.label);
                             } else if (key.label.equals(key_level_0.label)) {
                                 exercise.gotoNextStep();
                             } else {
-                                showWarning("请按当前步骤的指导要求从按键"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要从其他按键上滑出", key_level_0.label);
+                                toast("请按当前步骤的指导要求从按键"
+                                      + " <span style=\"color:#ed4c67;\">%s</span>"
+                                      + " 上滑出，不要从其他按键上滑出", key_level_0.label);
                             }
                             return;
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求输入拼音");
+                    toast("请按当前步骤的指导要求输入拼音");
                 });
 
         if (key_level_2 == null) {
@@ -1181,9 +1176,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                 Key key = msg.data().key;
 
                                 if (!key.label.equals(key_level_1.label)) {
-                                    showWarning("请重新滑回到按键"
-                                                + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                + " 上，再就地释放手指", key_level_1.label);
+                                    toast("请重新滑回到按键"
+                                          + " <span style=\"color:#ed4c67;\">%s</span>"
+                                          + " 上，再就地释放手指", key_level_1.label);
                                 }
                                 return;
                             }
@@ -1195,7 +1190,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {
-                                    showWarning("当前输入的拼音与练习内容不符，请重新开始本练习");
+                                    toast("当前输入的拼音与练习内容不符，请重新开始本练习");
                                     exercise.restart();
                                 }
                                 return;
@@ -1212,12 +1207,12 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             if (key.label.equals(key_level_1.label)) {
                                 exercise.gotoNextStep();
                             } else {
-                                showWarning("请按当前步骤的指导要求从按键"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>"
-                                            + " 上滑出，不要从其他按键上滑出", key_level_1.label);
+                                toast("请按当前步骤的指导要求从按键"
+                                      + " <span style=\"color:#ed4c67;\">%s</span>"
+                                      + " 上滑出，不要从其他按键上滑出", key_level_1.label);
                             }
                         } else {
-                            showWarning("当前操作不符合输入要求，请重新开始本练习");
+                            toast("当前操作不符合输入要求，请重新开始本练习");
                             exercise.restart();
                         }
                     });
@@ -1229,9 +1224,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                 Key key = msg.data().key;
 
                                 if (!key.label.startsWith(key_level_0.label + key_level_1.label)) {
-                                    showWarning("请重新滑回到按键"
-                                                + " <span style=\"color:#ed4c67;\">%s</span>"
-                                                + " 上，再从其上滑出", key_level_1.label);
+                                    toast("请重新滑回到按键"
+                                          + " <span style=\"color:#ed4c67;\">%s</span>"
+                                          + " 上，再从其上滑出", key_level_1.label);
                                     exercise.gotoStep("input_level_1");
                                 }
                                 return;
@@ -1244,7 +1239,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                     changePinyinWord(expected_auto_word);
                                     exercise.gotoNextStep();
                                 } else {
-                                    showWarning("当前输入的拼音与练习内容不符，请重新开始本练习");
+                                    toast("当前输入的拼音与练习内容不符，请重新开始本练习");
                                     exercise.restart();
                                 }
                                 return;
@@ -1273,8 +1268,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("请按当前步骤的指导要求选中指定的拼音候选字"
-                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
+                    toast("请按当前步骤的指导要求选中指定的拼音候选字" + " <span style=\"color:#ed4c67;\">%s</span>",
+                          expected_auto_word.value);
                 });
 
         exercise.newStep(word_choose_step_content != null ? word_choose_step_content : new Object[] {
@@ -1294,8 +1289,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             if (word != null && case_word.value.equals(word.value)) {
                                 exercise.gotoNextStep();
                             } else {
-                                showWarning("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
-                                            + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
+                                toast("当前选择的候选字与练习内容不符，请按照指导步骤重新选择"
+                                      + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
 
                                 // Note: 对于选中的非拼音候选字，则不做替换
                                 if (word instanceof PinyinWord) {
@@ -1307,8 +1302,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     }
 
-                    showWarning("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择"
-                                + " <span style=\"color:#ed4c67;\">%s</span>", expected_auto_word.value);
+                    toast("当前操作不符合练习步骤指导要求，请按照指导步骤重新选择" + " <span style=\"color:#ed4c67;\">%s</span>",
+                          expected_auto_word.value);
 
                     changePinyinWord(expected_auto_word);
                     exercise.gotoStep("select_auto_word");
@@ -1323,7 +1318,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         return;
                     }
 
-                    showWarning("请按当前步骤的指导要求提交输入内容");
+                    toast("请按当前步骤的指导要求提交输入内容");
                 });
     }
 
@@ -1362,21 +1357,6 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         };
     }
 
-    private void showWarning(String msg, Object... args) {
-        Context context = getApplicationContext();
-        showWarning(context, msg, args);
-    }
-
-    private void showWarning(Context context, String msg, Object... args) {
-        String text = String.format(Locale.getDefault(), msg, args);
-
-        Toast.with(context)
-             .setText(Html.fromHtml(text, FROM_HTML_MODE_COMPACT))
-             .setDuration(Toast.LENGTH_LONG)
-             .setGravity(Gravity.TOP | Gravity.CENTER, 0, 0)
-             .show();
-    }
-
     private void changePinyinWord(PinyinWord word) {
         // Note: 仅在输入过程中调用，故而，字典已完成初始化
         PinyinDict dict = PinyinDict.instance();
@@ -1402,8 +1382,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         Logger.enableLogCache(true);
 
-        showWarning("<span style=\"color:#ed4c67;\">注意</span>："
-                    + "本地调试日志文件将在<span style=\"color:#ed4c67;\">当前窗口退出后</span>生成！");
+        toast("<b>注意</b>：本地调试日志文件将在<span style=\"color:#ed4c67;\">当前窗口退出后</span>生成！");
     }
 
     private void stopDebugLogs() {
@@ -1434,11 +1413,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 zip.closeEntry();
             });
 
-            runOnUiThread(() -> showWarning(context,
-                                            "已在【<span style=\"color:#ed4c67;\">下载</span>】目录"
-                                            + "生成名为【<span style=\"color:#ed4c67;\">%s</span>】"
-                                            + "的本地调试日志文件",
-                                            fileName));
+            runOnUiThread(() -> alert("已在【<span style=\"color:#ed4c67;\">下载</span>】目录"
+                                      + "生成名为【<span style=\"color:#ed4c67;\">%s</span>】"
+                                      + "的本地调试日志文件", fileName));
         });
     }
 }

@@ -38,7 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-24
  */
-public class Alert {
+public class AlertPopup {
     private final Context context;
 
     private View view;
@@ -48,60 +48,60 @@ public class Alert {
     private Button positiveBtn;
     private boolean cancelable;
 
-    private Alert(Context context) {
+    private AlertPopup(Context context) {
         this.context = context;
     }
 
-    public static Alert with(Activity context) {
-        return new Alert(context);
+    public static AlertPopup with(Activity context) {
+        return new AlertPopup(context);
     }
 
-    public Alert setView(int resId) {
+    public AlertPopup setView(int resId) {
         View view = LayoutInflater.from(this.context).inflate(resId, null);
         return setView(view);
     }
 
-    public Alert setView(View view) {
+    public AlertPopup setView(View view) {
         this.view = view;
         return this;
     }
 
-    public Alert setTitle(int resId, Object... args) {
+    public AlertPopup setTitle(int resId, Object... args) {
         String title = this.context.getString(resId, args);
         return setTitle(title.trim());
     }
 
-    public Alert setTitle(CharSequence title) {
+    public AlertPopup setTitle(CharSequence title) {
         this.title = title;
         return this;
     }
 
-    public Alert setMessage(int resId, Object... args) {
+    public AlertPopup setMessage(int resId, Object... args) {
         String message = this.context.getString(resId, args);
         return setMessage(message.trim());
     }
 
-    public Alert setRawMessage(int rawResId, Object... args) {
+    public AlertPopup setRawMessage(int rawResId, Object... args) {
         String message = ResourceUtils.readString(this.context, rawResId, args);
         return setMessage(message.trim());
     }
 
-    public Alert setMessage(CharSequence message) {
+    public AlertPopup setMessage(CharSequence message) {
         this.message = message;
         return this;
     }
 
-    public Alert setNegativeButton(int resId, DialogInterface.OnClickListener listener) {
+    public AlertPopup setNegativeButton(int resId, DialogInterface.OnClickListener listener) {
         this.negativeBtn = new Button(this.context.getString(resId), listener);
         return this;
     }
 
-    public Alert setPositiveButton(int resId, DialogInterface.OnClickListener listener) {
+    public AlertPopup setPositiveButton(int resId, DialogInterface.OnClickListener listener) {
         this.positiveBtn = new Button(this.context.getString(resId), listener);
         return this;
     }
 
-    public Alert setCancelable(boolean cancelable) {
+    public AlertPopup setCancelable(boolean cancelable) {
         this.cancelable = cancelable;
         return this;
     }

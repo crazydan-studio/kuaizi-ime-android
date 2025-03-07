@@ -34,7 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.IMEService;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Alert;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonate;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseGuide;
@@ -131,13 +131,13 @@ public class Guide extends FollowSystemThemeActivity {
             String appName = getResources().getString(R.string.app_name);
             String appNameShown = getResources().getString(R.string.app_name_shown);
 
-            Alert.with(this)
-                 .setView(R.layout.guide_alert_view)
-                 .setTitle(R.string.title_tips)
-                 .setMessage(R.string.msg_ime_should_be_enabled_first, appName, appNameShown)
-                 .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
-                 .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
-                 .show();
+            AlertPopup.with(this)
+                      .setView(R.layout.guide_alert_view)
+                      .setTitle(R.string.title_tips)
+                      .setMessage(R.string.msg_ime_should_be_enabled_first, appName, appNameShown)
+                      .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
+                      .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
+                      .show();
         }
     }
 
@@ -177,20 +177,20 @@ public class Guide extends FollowSystemThemeActivity {
     private void showAlphaUserAgreementConfirmWindow() {
         String appName = getResources().getString(R.string.app_name);
 
-        Alert.with(this)
-             .setView(R.layout.guide_alert_view)
-             .setTitle(R.string.title_about_alpha_user_agreement)
-             .setRawMessage(R.raw.text_about_alpha_user_agreement, appName)
-             .setNegativeButton(R.string.btn_guide_reject_alpha_user_agreement, (dialog, which) -> {
-                 // 关闭窗口
-                 // https://gist.github.com/goliver79/8878498
-                 finish();
-             })
-             .setPositiveButton(R.string.btn_guide_confirm_alpha_user_agreement, (dialog, which) -> {
-                 confirmAlphaUserAgreement();
-                 showNewFeatures();
-             })
-             .show();
+        AlertPopup.with(this)
+                  .setView(R.layout.guide_alert_view)
+                  .setTitle(R.string.title_about_alpha_user_agreement)
+                  .setRawMessage(R.raw.text_about_alpha_user_agreement, appName)
+                  .setNegativeButton(R.string.btn_guide_reject_alpha_user_agreement, (dialog, which) -> {
+                      // 关闭窗口
+                      // https://gist.github.com/goliver79/8878498
+                      finish();
+                  })
+                  .setPositiveButton(R.string.btn_guide_confirm_alpha_user_agreement, (dialog, which) -> {
+                      confirmAlphaUserAgreement();
+                      showNewFeatures();
+                  })
+                  .show();
     }
 
     private boolean isAlphaUserAgreementConfirmed() {
@@ -210,19 +210,19 @@ public class Guide extends FollowSystemThemeActivity {
     private void showNewFeatures() {
         String appName = getResources().getString(R.string.app_name);
 
-        Alert.with(this)
-             .setView(R.layout.guide_alert_view)
-             .setTitle(R.string.title_about_new_features)
-             .setRawMessage(R.raw.text_about_new_features_v2,
-                            appName,
-                            getResources().getString(R.string.btn_guide_try_exercises),
-                            getResources().getString(R.string.btn_guide_show_preferences),
-                            getResources().getString(R.string.label_config_theme),
-                            getResources().getString(R.string.label_enable_x_input_pad))
-             .setPositiveButton(R.string.btn_guide_new_features_confirm, (dialog, which) -> {
-                 confirmNewFeatures();
-             })
-             .show();
+        AlertPopup.with(this)
+                  .setView(R.layout.guide_alert_view)
+                  .setTitle(R.string.title_about_new_features)
+                  .setRawMessage(R.raw.text_about_new_features_v2,
+                                 appName,
+                                 getResources().getString(R.string.btn_guide_try_exercises),
+                                 getResources().getString(R.string.btn_guide_show_preferences),
+                                 getResources().getString(R.string.label_config_theme),
+                                 getResources().getString(R.string.label_enable_x_input_pad))
+                  .setPositiveButton(R.string.btn_guide_new_features_confirm, (dialog, which) -> {
+                      confirmNewFeatures();
+                  })
+                  .show();
     }
 
     private boolean isNewFeatureConfirmed() {

@@ -35,6 +35,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+    <!-- SnackBar 的定位视图 -->
+    <View
+            android:id="@+id/snackbar_anchor"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom" />
+
     <View
             android:layout_width="match_parent"
             android:layout_height="1dp"

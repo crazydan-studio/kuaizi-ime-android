@@ -19,11 +19,17 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.common;
 
+import java.util.Locale;
+
 import android.os.Bundle;
+import android.text.Html;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
+
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -78,5 +84,29 @@ public abstract class ActionBarSupportActivity extends AppCompatActivity {
 
     protected boolean isActionBarEnabled() {
         return true;
+    }
+
+    /**
+     * 采用 SnackBar 显示提示信息
+     * <p/>
+     * 仅针对应用内显示的提示信息
+     */
+    protected void toast(String msg, Object... args) {
+        String text = String.format(Locale.getDefault(), msg, args);
+
+        Toast.with(getToolbar()).setHtml(text).setDuration(Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * 采用 {@link android.widget.Toast Toast} 显示提示信息
+     * <p/>
+     * 适用于全局提示，可确保在窗口退出后依然能够显示提示信息
+     */
+    protected void alert(String msg, Object... args) {
+        String text = String.format(Locale.getDefault(), msg, args);
+
+        android.widget.Toast.makeText(getApplicationContext(),
+                                      Html.fromHtml(text, FROM_HTML_MODE_COMPACT),
+                                      android.widget.Toast.LENGTH_LONG).show();
     }
 }
