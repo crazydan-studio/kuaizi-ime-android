@@ -20,7 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.about;
 
 import android.os.Bundle;
+import android.text.Spanned;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ChangelogUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
 
 /**
@@ -37,6 +40,8 @@ public class AboutChangelog extends HtmlSupportActivity {
         setContentView(R.layout.about_text_with_icon_activity);
 
         setIcon(R.id.about_icon, R.drawable.ic_changelog);
-        setHtmlText(R.id.about_text, R.raw.text_about_changelog);
+
+        Spanned html = ChangelogUtils.forHtml(getApplicationContext());
+        ViewUtils.setHtmlText(findViewById(R.id.about_text), html);
     }
 }

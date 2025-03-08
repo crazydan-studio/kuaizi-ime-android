@@ -201,4 +201,10 @@ public class SystemUtils {
             throw new IllegalStateException(e);
         }
     }
+
+    public static String getAppVersion(Context context) {
+        // https://developer.android.com/studio/publish/versioning
+        // https://stackoverflow.com/questions/4616095/how-can-you-get-the-build-version-number-of-your-android-application#answer-6593822
+        return getPackageInfo(context).versionName;
+    }
 }

@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.common;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 
 /**
  * 支持根据系统暗黑主题设置窗口主题
@@ -53,5 +54,13 @@ public abstract class FollowSystemThemeActivity extends ActionBarSupportActivity
         }
 
         return themeResId;
+    }
+
+    protected String getAppName() {
+        return getResources().getString(R.string.app_name);
+    }
+
+    protected String getAppVersion() {
+        return SystemUtils.getAppVersion(getApplicationContext());
     }
 }

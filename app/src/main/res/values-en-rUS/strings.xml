@@ -49,6 +49,7 @@
 
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
+    <string name="btn_confirm">OK</string>
     <string name="btn_feedback_open_link_without_extra_info">Continue, but without extra information</string>
     <string name="btn_feedback_open_link_with_extra_info">Continue, and with extra information</string>
     <string name="btn_guide_confirm_alpha_user_agreement">OK, I Agree the Agreement</string>

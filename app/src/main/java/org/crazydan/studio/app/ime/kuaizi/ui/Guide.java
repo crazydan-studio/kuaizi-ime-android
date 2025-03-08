@@ -25,17 +25,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Spanned;
 import android.view.View;
+import android.widget.TextView;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.button.MaterialButton;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.IMEService;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ChangelogUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
-import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutChangelog;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonate;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseGuide;
@@ -84,6 +87,10 @@ public class Guide extends FollowSystemThemeActivity {
 
         updateSwitcher();
 
+        TextView textVersion = findViewById(R.id.app_version);
+        textVersion.setText(ViewUtils.parseHtml("<a href='#'>v%s</a>", getAppVersion()));
+        textVersion.setOnClickListener(this::showChangelog);
+
         MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         btnShowPreferences.setOnClickListener(this::showPreferences);
 
@@ -95,9 +102,6 @@ public class Guide extends FollowSystemThemeActivity {
 
         MaterialButton btnShowFeedback = findViewById(R.id.btn_guide_feedback);
         btnShowFeedback.setOnClickListener(this::showFeedback);
-
-        MaterialButton btnShowChangelog = findViewById(R.id.btn_guide_changelog);
-        btnShowChangelog.setOnClickListener(this::showChangelog);
 
         if (!isAlphaUserAgreementConfirmed()) {
             showAlphaUserAgreementConfirmWindow();
@@ -165,12 +169,6 @@ public class Guide extends FollowSystemThemeActivity {
         SystemUtils.showActivity(context, AboutDonate.class);
     }
 
-    private void showChangelog(View v) {
-        Context context = getApplicationContext();
-
-        SystemUtils.showActivity(context, AboutChangelog.class);
-    }
-
     private void showFeedback(View v) {
         Preferences.openFeedbackUrl(this);
     }
@@ -183,6 +181,20 @@ public class Guide extends FollowSystemThemeActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);
+    }
+
+    private void showChangelog(View v) {
+        Context context = getApplicationContext();
+        Spanned html = ChangelogUtils.forHtml(context, getAppVersion());
+
+        AlertPopup.with(this)
+                  .setView(R.layout.guide_alert_view)
+                  .setCancelable(true)
+                  .setTitle(R.string.title_about_changelog)
+                  .setMessage(html)
+                  .setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
+                  })
+                  .show();
     }
 
     // ====================================================================

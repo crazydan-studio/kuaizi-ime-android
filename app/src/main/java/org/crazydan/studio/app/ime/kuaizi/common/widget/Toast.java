@@ -19,12 +19,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget;
 
-import android.text.Html;
+import android.text.Spanned;
 import android.view.View;
 import com.google.android.material.snackbar.Snackbar;
 import org.crazydan.studio.app.ime.kuaizi.R;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -55,8 +54,9 @@ public class Toast {
         return this;
     }
 
-    public Toast setHtml(String html) {
-        return setText(Html.fromHtml(html, FROM_HTML_MODE_COMPACT));
+    public Toast setHtml(String html, Object... args) {
+        Spanned text = ViewUtils.parseHtml(html, args);
+        return setText(text);
     }
 
     public Toast setDuration(int duration) {

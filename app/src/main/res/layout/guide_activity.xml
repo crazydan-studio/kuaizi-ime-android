@@ -38,11 +38,33 @@
                 android:layout_height="128dp"
                 app:srcCompat="@drawable/ic_logo" />
 
-        <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switcher"
-                android:layout_width="48dp"
-                android:layout_height="16dp"
-                android:layout_gravity="center" />
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp">
+
+            <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switcher"
+                    android:layout_width="48dp"
+                    android:layout_height="16dp" />
+
+            <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            <TextView
+                    android:id="@+id/app_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -98,20 +120,7 @@
                 android:layout_width="256dp"
                 android:layout_height="64dp"
                 android:gravity="center"
-                android:layout_marginBottom="16dp"
                 app:backgroundTint="#1976d2"
-                android:textColor="@color/color_white"
-                app:cornerRadius="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_guide_changelog"
-                android:text="@string/title_about_changelog"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:layout_width="256dp"
-                android:layout_height="64dp"
-                android:gravity="center"
-                app:backgroundTint="#ce4e48"
                 android:textColor="@color/color_white"
                 app:cornerRadius="8dp" />
 

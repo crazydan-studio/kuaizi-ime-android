@@ -119,16 +119,24 @@ public class ViewUtils {
     }
 
     public static void setHtmlText(TextView view, String text) {
-        // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
         Spanned html = parseHtml(text);
+        setHtmlText(view, html);
+    }
+
+    public static void setHtmlText(TextView view, Spanned html) {
+        // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
         view.setText(html);
 
         // https://stackoverflow.com/questions/4438713/android-html-in-textview-with-link-clickable#answer-8722574
         view.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    public static Spanned parseHtml(String text) {
+    public static Spanned parseHtml(String text, Object... args) {
         text = text.replaceAll("(?m)(^\\s+|\\s+$)", "").replaceAll("\n", "");
+
+        if (args.length > 0) {
+            text = String.format(text, args);
+        }
 
         // https://developer.android.com/guide/topics/resources/string-resource#StylingWithHTML
         return Html.fromHtml(text, FROM_HTML_MODE_COMPACT);

@@ -114,7 +114,7 @@ public class AlertPopup {
 
         titleView.setText(this.title);
         if (this.message instanceof Spanned) {
-            messageView.setText(this.message);
+            ViewUtils.setHtmlText(messageView, (Spanned) this.message);
         } else {
             ViewUtils.setHtmlText(messageView, this.message.toString());
         }

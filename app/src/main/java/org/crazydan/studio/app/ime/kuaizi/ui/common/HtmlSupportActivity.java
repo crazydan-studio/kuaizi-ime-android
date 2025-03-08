@@ -25,14 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.text.Spanned;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.core.content.FileProvider;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
@@ -41,22 +40,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @date 2023-08-07
  */
 public abstract class HtmlSupportActivity extends FollowSystemThemeActivity {
-
-    protected String getAppName() {
-        return getResources().getString(R.string.app_name);
-    }
-
-    protected String getAppVersion() {
-        // https://developer.android.com/studio/publish/versioning
-        // https://stackoverflow.com/questions/4616095/how-can-you-get-the-build-version-number-of-your-android-application#answer-6593822
-        try {
-            PackageInfo pkgInfo = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0);
-
-            return pkgInfo.versionName;
-        } catch (Exception ignore) {
-        }
-        return null;
-    }
 
     protected void setText(int viewResId, int textResId, Object... args) {
         // https://developer.android.com/guide/topics/resources/string-resource#formatting-strings
