@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * 在 {@link InputCompletion} 上触发的 {@link UserInputMsgType#SingleTap_Input} 消息数据
+ * 在 {@link InputCompletion} 上触发的 {@link UserInputMsgType#SingleTap_InputCompletion} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-06

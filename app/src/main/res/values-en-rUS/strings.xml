@@ -143,4 +143,8 @@
     <string name="value_theme_follow_system">Follow System</string>
     <string name="value_hand_mode_left">Left Mode</string>
     <string name="value_hand_mode_right">Right Mode</string>
+
+    <string name="title_clip_past_url">Past Copied URL</string>
+    <string name="title_clip_past_captcha">Past Copied Captcha</string>
+    <string name="title_clip_past_content">Past Copied Content</string>
 </resources>

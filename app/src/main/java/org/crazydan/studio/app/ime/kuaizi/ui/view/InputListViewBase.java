@@ -35,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputViewData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
@@ -44,7 +45,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
@@ -84,7 +84,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new InputListViewLayoutManager(context);
+        return new RecyclerViewLinearLayoutManager(context);
     }
 
     // =============================== Start: 消息处理 ===================================

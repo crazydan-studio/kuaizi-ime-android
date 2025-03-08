@@ -29,6 +29,7 @@
     <dimen name="input_list_button_icon_size">32dp</dimen>
     <dimen name="input_list_button_spacing">8dp</dimen>
     <dimen name="input_popup_key_text_size">28sp</dimen>
+    <dimen name="clip_input_data_text_size">18sp</dimen>
     <dimen name="keyboard_view_height">260dp</dimen>
     <dimen name="keyboard_right_spacing">12dp</dimen>
     <dimen name="keyboard_bottom_spacing">24dp</dimen>

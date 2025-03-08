@@ -99,4 +99,9 @@ public enum InputMsgType {
     IME_Switch_Doing,
     /** （系统）配置已更新 */
     Config_Update_Done,
+
+    /** 剪贴板数据已生成 */
+    ClipInput_Data_Create_Done,
+    /** 剪贴板数据已应用 */
+    ClipInput_Data_Apply_Done,
 }

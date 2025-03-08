@@ -17,20 +17,13 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!-- 设置 android:layoutDirection="ltr" 以固定文本方向，确保其不随父视图的布局方向而变化 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/input_completions_view_height"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="2dp"
-        android:layout_marginHorizontal="4dp"
-        android:background="@drawable/bg_input_completion_view"
-        android:layoutDirection="ltr">
-
-    <LinearLayout
-            android:id="@+id/inputs_view"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal|bottom"
-            android:orientation="horizontal" />
-</LinearLayout>
+<!--
+    在 InputMethodService#setCandidatesView 中会将候选视图的布局高度设置为 wrap_content，
+    所以，需要在 ClipInputDataListView 的子视图 clip_input_data_view.xml 上设置高度才会生效
+    Note：不需要设置底部空白，通过补全视图的阴影留白
+-->
+<org.crazydan.studio.app.ime.kuaizi.ui.view.ClipInputDataListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="0dp"
+        android:layoutDirection="ltr" />

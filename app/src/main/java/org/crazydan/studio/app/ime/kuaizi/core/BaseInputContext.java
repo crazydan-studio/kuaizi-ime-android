@@ -52,6 +52,11 @@ public abstract class BaseInputContext extends Immutable {
     }
 
     /** 发送 {@link InputMsg} 消息 */
+    public void fireInputMsg(InputMsgType type) {
+        fireInputMsg(type, new InputMsgData());
+    }
+
+    /** 发送 {@link InputMsg} 消息 */
     public void fireInputMsg(InputMsgType type, Input input) {
         fireInputMsg(type, null, input);
     }

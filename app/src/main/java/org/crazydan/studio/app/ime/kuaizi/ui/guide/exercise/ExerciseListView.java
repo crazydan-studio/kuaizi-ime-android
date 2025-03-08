@@ -27,6 +27,7 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsg;
@@ -60,7 +61,7 @@ public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter, 
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new ExerciseListViewLayoutManager(context);
+        return new RecyclerViewLinearLayoutManager(context);
     }
 
     /** 更新视图 */

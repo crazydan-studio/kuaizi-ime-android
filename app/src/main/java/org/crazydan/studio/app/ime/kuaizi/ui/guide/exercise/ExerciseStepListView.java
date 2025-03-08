@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -45,7 +46,7 @@ public class ExerciseStepListView extends RecyclerView<ExerciseStepListViewAdapt
 
     @Override
     protected LayoutManager createLayoutManager(Context context) {
-        return new ExerciseStepListViewLayoutManager(context);
+        return new RecyclerViewLinearLayoutManager(context, true);
     }
 
     /** 更新视图 */

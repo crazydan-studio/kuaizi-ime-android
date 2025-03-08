@@ -17,21 +17,28 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link ExerciseListView} 的布局器
+ * 在 {@link ClipInputData} 上触发的 {@link UserInputMsgType#SingleTap_ClipInputData} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-19
+ * @date 2025-03-08
  */
-public class ExerciseListViewLayoutManager extends LinearLayoutManager {
+public class UserClipInputDataSingleTapMsgData extends UserInputMsgData {
+    /** 与消息相关的 {@link ClipInputData} */
+    public final ClipInputData clip;
 
-    public ExerciseListViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public UserClipInputDataSingleTapMsgData(ClipInputData clip) {
+        this.clip = clip;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "content=" + this.clip.content + '}';
     }
 }

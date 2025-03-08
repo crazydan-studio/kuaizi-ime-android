@@ -17,19 +17,24 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
-import android.content.Context;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
+
+import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
+ * {@link InputMsgType# ClipInput_Data_Create_Done} 消息数据
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-09-19
+ * @date 2025-03-07
  */
-public class ExerciseStepListViewLayoutManager extends LinearLayoutManager {
+public class ClipInputMsgData extends InputMsgData {
+    public final List<ClipInputData> clips;
 
-    public ExerciseStepListViewLayoutManager(Context context) {
-        super(context, RecyclerView.VERTICAL, false);
+    public ClipInputMsgData(List<ClipInputData> clips) {
+        this.clips = clips;
     }
 }

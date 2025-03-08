@@ -17,22 +17,25 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
+package org.crazydan.studio.app.ime.kuaizi.common.widget.recycler;
 
 import android.content.Context;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputListView;
 
 /**
- * {@link InputListView} 的 {@link RecyclerView} 布局器
+ * 水平滚动的{@link RecyclerView}布局器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-07-07
+ * @date 2025-03-08
  */
-public class InputListViewLayoutManager extends LinearLayoutManager {
+public class RecyclerViewLinearLayoutManager extends LinearLayoutManager {
 
-    public InputListViewLayoutManager(Context context) {
-        super(context, RecyclerView.HORIZONTAL, false);
+    public RecyclerViewLinearLayoutManager(Context context) {
+        this(context, false);
+    }
+
+    public RecyclerViewLinearLayoutManager(Context context, boolean vertical) {
+        super(context, vertical ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL, false);
     }
 }

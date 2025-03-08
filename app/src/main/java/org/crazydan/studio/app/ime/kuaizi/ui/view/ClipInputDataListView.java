@@ -29,37 +29,32 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.completion.InputCompletionsViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserClipInputDataSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.clip.ClipInputDataListViewAdapter;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputCompletion;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_ClipInputData;
 
 /**
- * 输入补全列表视图
- * <p/>
- * 需在显示前调用 {@link #update} 更新列表数据
- *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-11
+ * @date 2025-03-08
  */
-public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapter, InputCompletion.ViewData>
+public class ClipInputDataListView extends RecyclerView<ClipInputDataListViewAdapter, ClipInputData>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public InputCompletionsView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ClipInputDataListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        RecyclerViewGestureDetector<InputCompletion.ViewData> gesture = new RecyclerViewGestureDetector<>(context,
-                                                                                                          this);
+        RecyclerViewGestureDetector<ClipInputData> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
 
     @Override
-    protected InputCompletionsViewAdapter createAdapter() {
-        return new InputCompletionsViewAdapter();
+    protected ClipInputDataListViewAdapter createAdapter() {
+        return new ClipInputDataListViewAdapter();
     }
 
     @Override
@@ -86,16 +81,18 @@ public class InputCompletionsView extends RecyclerView<InputCompletionsViewAdapt
         }
 
         int position = holder.getAdapterPosition();
-        UserInputCompletionSingleTapMsgData msgData = new UserInputCompletionSingleTapMsgData(position);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_InputCompletion).data(msgData));
+        ClipInputData clip = getAdapter().getItem(position);
+
+        UserClipInputDataSingleTapMsgData msgData = new UserClipInputDataSingleTapMsgData(clip);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_ClipInputData).data(msgData));
 
         this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
 
-    public void update(List<InputCompletion.ViewData> completions) {
-        getAdapter().updateItems(completions);
+    public void update(List<ClipInputData> clips) {
+        getAdapter().updateItems(clips);
 
         // 复位滚动位置
         getLayoutManager().scrollToPosition(0);

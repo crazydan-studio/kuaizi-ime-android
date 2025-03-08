@@ -41,17 +41,20 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
 import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ClipInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.ClipInputDataListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
@@ -78,6 +81,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private PopupWindow inputPopupWindow;
     private PopupWindow inputCompletionsPopupWindow;
     private InputCompletionsView inputCompletionsView;
+    private PopupWindow clipInputDataPopupWindow;
+    private ClipInputDataListView clipInputDataListView;
 
     private boolean needToAddBottomSpacing;
 
@@ -188,7 +193,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 KeyboardHandModeSwitchMsgData data = msg.data();
                 this.config.set(ConfigKey.hand_mode, data.mode);
 
-                updateInputCompletionsLayout();
+                updatePopupViewLayout(this.inputCompletionsView);
+                updatePopupViewLayout(this.clipInputDataListView);
                 break;
             }
             case Config_Update_Done: {
@@ -201,16 +207,30 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
             case InputCompletion_Create_Done: {
                 InputCompletionMsgData data = msg.data();
+
+                showClipInputDataPopupWindow(null);
                 showInputCompletionsPopupWindow(data.completions);
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = msg.data();
+
+                showClipInputDataPopupWindow(null);
                 showInputPopupWindow(data.text, data.hideDelayed);
                 break;
             }
             case InputChars_Input_Popup_Hide_Doing: {
                 showInputPopupWindow(null, false);
+                break;
+            }
+            case ClipInput_Data_Create_Done: {
+                ClipInputMsgData data = msg.data();
+
+                showClipInputDataPopupWindow(data.clips);
+                break;
+            }
+            case ClipInput_Data_Apply_Done: {
+                showClipInputDataPopupWindow(null);
                 break;
             }
             default: {
@@ -272,11 +292,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
         this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
         this.inputCompletionsView.setListener(this);
+        this.clipInputDataListView = inflateWithTheme(R.layout.clip_input_data_list_view, themeResId, false);
+        this.clipInputDataListView.setListener(this);
 
-        preparePopupWindows(this.inputCompletionsView, inputKeyView);
+        preparePopupWindows(this.inputCompletionsView, inputKeyView, this.clipInputDataListView);
 
         updateBottomSpacing(true);
-        updateInputCompletionsLayout();
+        updatePopupViewLayout(this.inputCompletionsView);
+        updatePopupViewLayout(this.clipInputDataListView);
     }
 
     private void updateBottomSpacing(boolean force) {
@@ -366,11 +389,35 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
     }
 
-    private void preparePopupWindows(InputCompletionsView completionsView, View keyView) {
+    private void showClipInputDataPopupWindow(List<ClipInputData> clips) {
+        PopupWindow window = this.clipInputDataPopupWindow;
+        if (CollectionUtils.isEmpty(clips)) {
+            window.dismiss();
+            return;
+        }
+
+        this.clipInputDataListView.update(clips);
+        if (window.isShowing()) {
+            return;
+        }
+
+        View contentView = window.getContentView();
+        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+
+        int width = getMeasuredWidth();
+        int height = contentView.getMeasuredHeight();
+
+        showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
+    }
+
+    private void preparePopupWindows(
+            InputCompletionsView completionsView, View keyView, ClipInputDataListView clipView
+    ) {
         resetPopupWindows();
 
         initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
         initPopupWindow(this.inputPopupWindow, keyView);
+        initPopupWindow(this.clipInputDataPopupWindow, clipView);
     }
 
     private void initPopupWindow(PopupWindow window, View contentView) {
@@ -395,6 +442,12 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         } else {
             this.inputPopupWindow = new PopupWindow();
         }
+
+        if (this.clipInputDataPopupWindow != null) {
+            this.clipInputDataPopupWindow.dismiss();
+        } else {
+            this.clipInputDataPopupWindow = new PopupWindow();
+        }
     }
 
     private void showPopupWindow(PopupWindow window, int width, int height, int gravity) {
@@ -413,8 +466,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         post(() -> window.showAtLocation(parent, gravity, x, y));
     }
 
-    private void updateInputCompletionsLayout() {
-        if (this.inputCompletionsView == null) {
+    private void updatePopupViewLayout(View view) {
+        if (view == null) {
             return;
         }
 
@@ -429,7 +482,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 break;
             }
         }
-        ViewUtils.updateLayoutDirection(this.inputCompletionsView, handMode);
+        ViewUtils.updateLayoutDirection(view, handMode);
     }
 
     // ==================== End: 气泡提示 ==================
