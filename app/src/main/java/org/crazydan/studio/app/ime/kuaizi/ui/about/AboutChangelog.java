@@ -29,14 +29,14 @@ import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-08-07
  */
-public class AboutChangeLog extends HtmlSupportActivity {
+public class AboutChangelog extends HtmlSupportActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about_text_with_icon_activity);
 
-        setIcon(R.id.about_icon, R.drawable.ic_change_log);
-        setHtmlText(R.id.about_text, R.raw.text_about_change_log);
+        setIcon(R.id.about_icon, R.drawable.ic_changelog);
+        setHtmlText(R.id.about_text, R.raw.text_about_changelog);
     }
 }

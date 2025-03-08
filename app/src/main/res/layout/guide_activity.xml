@@ -104,8 +104,8 @@
                 app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_guide_change_log"
-                android:text="@string/title_about_change_log"
+                android:id="@+id/btn_guide_changelog"
+                android:text="@string/title_about_changelog"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="256dp"

@@ -35,7 +35,7 @@
     <string name="title_about_donate">友情赞助</string>
     <string name="title_about_donate_for_sharing_qrcode_to_wechat">请选择微信「发送给朋友」并分享二维码给「文件传输助手」</string>
     <string name="title_about_donate_for_sharing_qrcode_to_alipay">请选择「支付宝二维码识别」以扫描二维码</string>
-    <string name="title_about_change_log">变更日志</string>
+    <string name="title_about_changelog">变更日志</string>
     <string name="title_about_software_service_agreement">软件服务协议</string>
     <string name="title_about_copyright">版权声明</string>
     <string name="title_about_alpha_user_agreement">内测用户协议</string>

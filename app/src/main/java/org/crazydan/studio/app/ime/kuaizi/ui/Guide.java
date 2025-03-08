@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
-import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutChangeLog;
+import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutChangelog;
 import org.crazydan.studio.app.ime.kuaizi.ui.about.AboutDonate;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.ExerciseGuide;
@@ -96,8 +96,8 @@ public class Guide extends FollowSystemThemeActivity {
         MaterialButton btnShowFeedback = findViewById(R.id.btn_guide_feedback);
         btnShowFeedback.setOnClickListener(this::showFeedback);
 
-        MaterialButton btnShowChangeL = findViewById(R.id.btn_guide_change_log);
-        btnShowChangeL.setOnClickListener(this::showChangeLog);
+        MaterialButton btnShowChangelog = findViewById(R.id.btn_guide_changelog);
+        btnShowChangelog.setOnClickListener(this::showChangelog);
 
         if (!isAlphaUserAgreementConfirmed()) {
             showAlphaUserAgreementConfirmWindow();
@@ -165,10 +165,10 @@ public class Guide extends FollowSystemThemeActivity {
         SystemUtils.showActivity(context, AboutDonate.class);
     }
 
-    private void showChangeLog(View v) {
+    private void showChangelog(View v) {
         Context context = getApplicationContext();
 
-        SystemUtils.showActivity(context, AboutChangeLog.class);
+        SystemUtils.showActivity(context, AboutChangelog.class);
     }
 
     private void showFeedback(View v) {

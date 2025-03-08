@@ -114,11 +114,11 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.about.AboutChangeLog"
+                android:name=".ui.about.AboutChangelog"
                 android:exported="true"
-                android:label="@string/title_about_change_log">
+                android:label="@string/title_about_changelog">
             <intent-filter>
-                <action android:name="${applicationId}.ui.about.AboutChangeLog" />
+                <action android:name="${applicationId}.ui.about.AboutChangelog" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

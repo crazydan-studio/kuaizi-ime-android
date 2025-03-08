@@ -95,8 +95,8 @@
         <PreferenceScreen android:title="@string/title_about_team">
             <intent android:action="${applicationId}.ui.about.AboutTeam" />
         </PreferenceScreen>
-        <PreferenceScreen android:title="@string/title_about_change_log">
-            <intent android:action="${applicationId}.ui.about.AboutChangeLog" />
+        <PreferenceScreen android:title="@string/title_about_changelog">
+            <intent android:action="${applicationId}.ui.about.AboutChangelog" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/title_about_software_service_agreement">
             <intent android:action="${applicationId}.ui.about.SoftwareServiceAgreement" />
