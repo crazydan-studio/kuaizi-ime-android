@@ -20,7 +20,7 @@
 <!-- 设置 android:layoutDirection="ltr" 以固定文本方向，确保其不随父视图的布局方向而变化 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
-        android:layout_height="@dimen/input_completions_view_height"
+        android:layout_height="wrap_content"
         android:paddingHorizontal="8dp"
         android:paddingVertical="2dp"
         android:layout_marginHorizontal="4dp"

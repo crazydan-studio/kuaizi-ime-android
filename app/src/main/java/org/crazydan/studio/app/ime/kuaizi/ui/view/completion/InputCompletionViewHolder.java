@@ -65,7 +65,7 @@ public class InputCompletionViewHolder extends RecyclerViewHolder {
         // Note：在 layout xml 中设置的布局不会生效，需显式设置
         ViewGroup.MarginLayoutParams layoutParams
                 = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                   ViewGroup.LayoutParams.MATCH_PARENT);
+                                                   ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.rightMargin = //
         layoutParams.leftMargin = //
                 (int) (ScreenUtils.pxFromDimension(getContext(), R.dimen.gap_input_width) / 2f);

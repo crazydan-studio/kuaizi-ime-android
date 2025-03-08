@@ -352,11 +352,11 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             return;
         }
 
-        // https://android.googlesource.com/platform/packages/inputmethods/PinyinIME/+/40056ae7c2757681d88d2e226c4681281bd07129/src/com/android/inputmethod/pinyin/PinyinIME.java#1247
-        // https://stackoverflow.com/questions/3514392/android-ime-showing-a-custom-pop-up-dialog-like-swype-keyboard-which-can-ente#answer-32858312
-        // Note: 自动补全视图的高度和宽度是固定的，故而，只用取一次
+        View contentView = window.getContentView();
+        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+
         int width = getMeasuredWidth();
-        int height = (int) ScreenUtils.pxFromDimension(getContext(), R.dimen.input_completions_view_height);
+        int height = contentView.getMeasuredHeight();
 
         showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
     }
