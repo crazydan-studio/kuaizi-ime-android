@@ -28,9 +28,9 @@
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
-    <string name="title_about_app">筷字输入法</string>
+    <string name="title_about_app">本应用</string>
     <string name="title_about_team">开发团队</string>
-    <string name="title_about_suggestion">意见与建议</string>
+    <string name="title_about_feedback">使用反馈</string>
     <string name="title_about_thanks">感谢</string>
     <string name="title_about_donate">友情赞助</string>
     <string name="title_about_donate_for_sharing_qrcode_to_wechat">请选择微信「发送给朋友」并分享二维码给「文件传输助手」</string>

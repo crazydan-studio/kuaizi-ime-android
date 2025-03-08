@@ -66,7 +66,7 @@
 
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_guide_feedback"
-                android:text="@string/title_about_suggestion"
+                android:text="@string/title_about_feedback"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="256dp"

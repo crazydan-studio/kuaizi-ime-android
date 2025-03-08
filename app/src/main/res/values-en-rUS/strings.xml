@@ -28,9 +28,9 @@
 
     <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
     <string name="title_app_guide_exercise">Kuaizi Input Method Guide</string>
-    <string name="title_about_app">Kuaizi Input Method</string>
+    <string name="title_about_app">The Application</string>
     <string name="title_about_team">Development Team</string>
-    <string name="title_about_suggestion">Give Us Some Suggestions</string>
+    <string name="title_about_feedback">Feedback</string>
     <string name="title_about_thanks">Thanks</string>
     <string name="title_about_donate">Buy Me a Coffee</string>
     <string name="title_about_donate_for_sharing_qrcode_to_wechat">Please choose [WeChat] and share the QR code to [File Transfer]</string>
