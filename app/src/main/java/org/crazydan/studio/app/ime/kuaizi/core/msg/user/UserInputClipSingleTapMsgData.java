@@ -30,11 +30,14 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
  * @date 2025-03-08
  */
 public class UserInputClipSingleTapMsgData extends UserInputMsgData {
+    /** 触发消息的数据项位置 */
+    public final int position;
     /** 与消息相关的 {@link InputClip} */
     public final InputClip clip;
 
-    public UserInputClipSingleTapMsgData(InputClip clip) {
+    public UserInputClipSingleTapMsgData(int position, InputClip clip) {
         this.clip = clip;
+        this.position = position;
     }
 
     @Override

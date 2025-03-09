@@ -83,7 +83,7 @@ public class InputClipListView extends RecyclerView<InputClipListViewAdapter, In
         int position = holder.getAdapterPosition();
         InputClip clip = getAdapter().getItem(position);
 
-        UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(clip);
+        UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(position, clip);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
 
         this.listener.onMsg(msg);

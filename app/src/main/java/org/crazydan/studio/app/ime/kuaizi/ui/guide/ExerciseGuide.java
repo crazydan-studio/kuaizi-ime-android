@@ -288,6 +288,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         switch (exercise.getMode()) {
             case free:
                 freeMode = true;
+                exercise.setSampleText("链接：http://example.com，请注意查收\n链接：https://www.example.com/path?query=string#fragment 请注意查收\n链接：ftp://ftp.example.com:21/files，请注意查收\n验证码：234567，请注意查收\n验证码：23456789，请注意查收\n手机号：+86-13812345678，请注意查收\n手机号：086-13812345678，请注意查收\n手机号：13812345678，请注意查收\n电话号：010-12345678，请注意查收\n电话号：021 12345678，请注意查收\n电话号：(0755)1234567，请注意查收\n邮箱：user@example.com，请注意查收\n邮箱：user.name+tag@mail.co.uk，请注意查收\n邮箱：john_doe123@sub.domain.org，请注意查收\n");
             case introduce: {
                 // Note: 置为 null 的配置项将被移除而采用系统配置
                 this.imeConfig.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);

@@ -348,9 +348,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
 
         this.inputCompletionsView.update(completions);
-        if (window.isShowing()) {
-            return;
-        }
 
         View contentView = window.getContentView();
         contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -397,9 +394,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
 
         this.inputClipListView.update(clips);
-        if (window.isShowing()) {
-            return;
-        }
 
         View contentView = window.getContentView();
         contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);

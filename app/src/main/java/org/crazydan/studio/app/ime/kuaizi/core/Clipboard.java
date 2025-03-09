@@ -20,7 +20,11 @@
 package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -44,9 +48,41 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip
  * @date 2025-02-21
  */
 public class Clipboard {
+    private static final Pattern REGEX_CAPTCHA = Pattern.compile("^.*?(\\d{6,8}).*$",
+                                                                 Pattern.DOTALL | Pattern.MULTILINE);
+    /**
+     * 匹配：
+     * - http://example.com
+     * - https://www.example.com/path?query=string#fragment
+     * - ftp://ftp.example.com:21/files
+     */
+    private static final Pattern REGEX_URL = Pattern.compile(
+            "^.*?((https?|ftp)://([\\w-]+\\.)+\\w{2,}(:\\d+)?(/[^\\s?#]*)?(\\?[^#]*)?(#\\S*)?).*$",
+            Pattern.DOTALL | Pattern.MULTILINE);
+    /**
+     * 匹配：
+     * - +86-13812345678, 086-13812345678
+     * - 13812345678
+     * - 010-12345678, 021 12345678
+     * - (0755)1234567
+     */
+    private static final Pattern REGEX_PHONE = Pattern.compile(
+            "^.*?((\\+?0?86-?)?1[3-9]\\d{9}|(\\+?0?86-?)?(\\(\\d{3,4}\\)|\\d{3,4})[- ]?\\d{7,8}).*$",
+            Pattern.DOTALL | Pattern.MULTILINE);
+    /**
+     * 匹配：
+     * - user@example.com
+     * - user.name+tag@mail.co.uk
+     * - john_doe123@sub.domain.org
+     */
+    private static final Pattern REGEX_EMAIL = Pattern.compile("^.*?([\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}).*$",
+                                                               Pattern.DOTALL | Pattern.MULTILINE);
+
     protected final Logger log = Logger.getLogger(getClass());
 
     private final ClipboardManager manager;
+
+    private int latestClipHash;
 
     public Clipboard(ClipboardManager manager) {
         this.manager = manager;
@@ -62,12 +98,21 @@ public class Clipboard {
             case SingleTap_InputClip: {
                 UserInputClipSingleTapMsgData data = msg.data();
 
-                if (data.clip.type == InputClip.Type.captcha) {
-                    // TODO 逐字输入
-                } else {
-                    InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
-
-                    context.fireInputMsg(Editor_Edit_Doing, msgData);
+                switch (data.clip.type) {
+                    case captcha:
+                    case phone: {
+                        // TODO 逐字输入
+                        break;
+                    }
+                    default: {
+                        if (data.position > 0) {
+                            // TODO 从原始内容中提取的剪切数据，需逐字输入
+                        } else {
+                            // 直接粘贴剪贴板原始内容
+                            InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
+                            context.fireInputMsg(Editor_Edit_Doing, msgData);
+                        }
+                    }
                 }
 
                 context.fireInputMsg(InputClip_Data_Apply_Done);
@@ -81,41 +126,99 @@ public class Clipboard {
 
     // =============================== End: 消息处理 ===================================
 
+    // =============================== Start: 生命周期 ===================================
+
     public void start(ClipboardContext context) {
-        InputClip data = readClipData(this.manager);
-        if (data == null) {
+        InputClip primary = readClip(this.manager);
+        if (primary == null) {
             return;
         }
 
+        int clipHash = primary.hashCode();
+        // 若剪贴板无变化，则不再提示可粘贴
+        if (this.latestClipHash == clipHash) {
+            return;
+        }
+        this.latestClipHash = clipHash;
+
+        String primaryText = cleanClipText(primary);
+        InputClip inner = extractInnerClip(primary);
+
         List<InputClip> clips = new ArrayList<>();
-        // - 正则表达式提取 6-8 位数字作为验证码，提示的验证码用星号脱敏
-        // - 提供 将标点符号替换为下划线 后的剪贴结果
-        clips.add(data);
+        clips.add(primary);
+
+        if (inner != null) {
+            if (primaryText.equals(inner.text)) {
+                // 仅更改类型，以保留首尾的空白字符
+                clips.set(0, primary.copy((b) -> b.type(inner.type)));
+            } else {
+                clips.add(inner);
+            }
+        }
 
         InputClipMsgData msgData = new InputClipMsgData(clips);
-
         context.fireInputMsg(InputClip_Data_Create_Done, msgData);
     }
 
-    private InputClip readClipData(ClipboardManager manager) {
-        ClipData clip = manager.getPrimaryClip();
-        ClipData.Item item = clip != null ? clip.getItemAt(0) : null;
+    // =============================== End: 生命周期 ===================================
 
-        if (item == null) {
+    private String cleanClipText(InputClip clip) {
+        return clip.text.trim();
+    }
+
+    private InputClip readClip(ClipboardManager manager) {
+        ClipData data = manager.getPrimaryClip();
+        if (data == null) {
             return null;
         }
 
-        // TODO 分析数据，拆分为多个可粘贴内容，交给上层显示
-        InputClip data = InputClip.build((b) -> {
-            if (item.getText() != null) {
-                b.type(InputClip.Type.text).text(item.getText().toString());
+        InputClip clip = InputClip.build((b) -> {
+            String text = null;
+            String html = null;
+
+            for (int i = 0; i < data.getItemCount(); i++) {
+                ClipData.Item item = data.getItemAt(i);
+                if (item.getText() != null) {
+                    text = item.getText().toString();
+                } else if (item.getHtmlText() != null) {
+                    html = item.getHtmlText();
+                }
+            }
+
+            if (text != null) {
+                b.type(InputClip.Type.text).text(text).html(html);
             }
         });
 
-        return data.type == null ? null : data;
+        return clip.type != null ? clip : null;
     }
 
-    private void pastClipData(ClipboardManager manager, InputClip data, Runnable cb) {
+    private InputClip extractInnerClip(InputClip primary) {
+        String primaryText = cleanClipText(primary);
+
+        Map<InputClip.Type, Matcher> matchers = new HashMap<InputClip.Type, Matcher>() {{
+            put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
+            put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));
+            put(InputClip.Type.phone, REGEX_PHONE.matcher(primaryText));
+            put(InputClip.Type.captcha, REGEX_CAPTCHA.matcher(primaryText));
+        }};
+
+        for (Map.Entry<InputClip.Type, Matcher> entry : matchers.entrySet()) {
+            Matcher matcher = entry.getValue();
+            if (!matcher.matches()) {
+                continue;
+            }
+
+            String text = matcher.group(1);
+            InputClip.Type type = entry.getKey();
+
+            return InputClip.build((b) -> b.type(type).text(text));
+        }
+
+        return null;
+    }
+
+    private void pastClip(ClipboardManager manager, InputClip data, Runnable cb) {
         ClipData oldClip = manager.getPrimaryClip();
 
         switch (data.type) {
