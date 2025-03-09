@@ -26,18 +26,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 
 /**
- * {@link ClipInputData} 视图的 {@link RecyclerView.ViewHolder}
+ * {@link InputClip} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class ClipInputDataViewHolder extends RecyclerViewHolder {
+public class InputClipViewHolder extends RecyclerViewHolder {
     private final TextView textView;
 
-    public ClipInputDataViewHolder(@NonNull View itemView) {
+    public InputClipViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.textView = itemView.findViewById(R.id.clip_text);
@@ -47,22 +47,28 @@ public class ClipInputDataViewHolder extends RecyclerViewHolder {
         this.itemView.setBackground(bg);
     }
 
-    public void bind(ClipInputData data) {
+    public void bind(InputClip data) {
         whenViewReady(this.textView, (view) -> {
+            int resId = R.string.title_clip_past_content;
             switch (data.type) {
                 case url: {
-                    this.textView.setText(R.string.title_clip_past_url);
+                    resId = R.string.title_clip_past_url;
                     break;
                 }
                 case captcha: {
-                    this.textView.setText(R.string.title_clip_past_captcha);
+                    resId = R.string.title_clip_past_captcha;
                     break;
                 }
-                default: {
-                    this.textView.setText(R.string.title_clip_past_content);
+                case phone: {
+                    resId = R.string.title_clip_past_phone;
+                    break;
+                }
+                case email: {
+                    resId = R.string.title_clip_past_email;
                     break;
                 }
             }
+            this.textView.setText(resId);
         });
     }
 }

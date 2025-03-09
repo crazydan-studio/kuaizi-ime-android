@@ -25,32 +25,32 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.ClipInputDataListView;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputClipListView;
 
 /**
- * {@link ClipInputDataListView} 的 {@link RecyclerView} 适配器
+ * {@link InputClipListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-08
  */
-public class ClipInputDataListViewAdapter extends RecyclerViewAdapter<ClipInputData, ClipInputDataViewHolder> {
+public class InputClipListViewAdapter extends RecyclerViewAdapter<InputClip, InputClipViewHolder> {
 
-    public ClipInputDataListViewAdapter() {
+    public InputClipListViewAdapter() {
         super(ItemUpdatePolicy.differ);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ClipInputDataViewHolder holder, int position) {
-        ClipInputData item = getItem(position);
+    public void onBindViewHolder(@NonNull InputClipViewHolder holder, int position) {
+        InputClip item = getItem(position);
 
         holder.bind(item);
     }
 
     @NonNull
     @Override
-    public ClipInputDataViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = inflateItemView(parent, R.layout.clip_input_data_view);
-        return new ClipInputDataViewHolder(view);
+    public InputClipViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflateItemView(parent, R.layout.input_clip_view);
+        return new InputClipViewHolder(view);
     }
 }

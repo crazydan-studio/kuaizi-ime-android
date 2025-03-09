@@ -129,6 +129,8 @@
     <string name="value_hand_mode_right">右手模式</string>
 
     <string name="title_clip_past_url">粘贴已复制的链接</string>
-    <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
     <string name="title_clip_past_content">粘贴已复制的内容</string>
+    <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
+    <string name="title_clip_past_phone">粘贴已复制的手机号</string>
+    <string name="title_clip_past_email">粘贴已复制的邮箱</string>
 </resources>

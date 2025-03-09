@@ -29,32 +29,32 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserClipInputDataSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.clip.ClipInputDataListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.clip.InputClipListViewAdapter;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_ClipInputData;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputClip;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-08
  */
-public class ClipInputDataListView extends RecyclerView<ClipInputDataListViewAdapter, ClipInputData>
+public class InputClipListView extends RecyclerView<InputClipListViewAdapter, InputClip>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public ClipInputDataListView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public InputClipListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        RecyclerViewGestureDetector<ClipInputData> gesture = new RecyclerViewGestureDetector<>(context, this);
+        RecyclerViewGestureDetector<InputClip> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
 
     @Override
-    protected ClipInputDataListViewAdapter createAdapter() {
-        return new ClipInputDataListViewAdapter();
+    protected InputClipListViewAdapter createAdapter() {
+        return new InputClipListViewAdapter();
     }
 
     @Override
@@ -81,17 +81,17 @@ public class ClipInputDataListView extends RecyclerView<ClipInputDataListViewAda
         }
 
         int position = holder.getAdapterPosition();
-        ClipInputData clip = getAdapter().getItem(position);
+        InputClip clip = getAdapter().getItem(position);
 
-        UserClipInputDataSingleTapMsgData msgData = new UserClipInputDataSingleTapMsgData(clip);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_ClipInputData).data(msgData));
+        UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(clip);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
 
         this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
 
-    public void update(List<ClipInputData> clips) {
+    public void update(List<InputClip> clips) {
         getAdapter().updateItems(clips);
 
         // 复位滚动位置

@@ -19,26 +19,26 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * 在 {@link ClipInputData} 上触发的 {@link UserInputMsgType#SingleTap_ClipInputData} 消息数据
+ * 在 {@link InputClip} 上触发的 {@link UserInputMsgType#SingleTap_InputClip} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-08
  */
-public class UserClipInputDataSingleTapMsgData extends UserInputMsgData {
-    /** 与消息相关的 {@link ClipInputData} */
-    public final ClipInputData clip;
+public class UserInputClipSingleTapMsgData extends UserInputMsgData {
+    /** 与消息相关的 {@link InputClip} */
+    public final InputClip clip;
 
-    public UserClipInputDataSingleTapMsgData(ClipInputData clip) {
+    public UserInputClipSingleTapMsgData(InputClip clip) {
         this.clip = clip;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '{' + "content=" + this.clip.content + '}';
+        return getClass().getSimpleName() + "{text=" + this.clip.text + '}';
     }
 }

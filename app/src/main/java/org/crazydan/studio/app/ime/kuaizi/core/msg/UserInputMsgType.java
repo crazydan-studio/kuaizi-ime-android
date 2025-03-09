@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 
 /**
@@ -35,8 +35,8 @@ public enum UserInputMsgType {
 
     /** 单击 {@link InputCompletion} */
     SingleTap_InputCompletion,
-    /** 单击 {@link ClipInputData} */
-    SingleTap_ClipInputData,
+    /** 单击 {@link InputClip} */
+    SingleTap_InputClip,
 
     /** 单击 输入列表清空 的按钮 */
     SingleTap_Btn_Clean_InputList,

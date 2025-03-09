@@ -17,13 +17,8 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!--
-    在 InputMethodService#setCandidatesView 中会将候选视图的布局高度设置为 wrap_content，
-    所以，需要在 ClipInputDataListView 的子视图 clip_input_data_view.xml 上设置高度才会生效
-    Note：不需要设置底部空白，通过补全视图的阴影留白
--->
-<org.crazydan.studio.app.ime.kuaizi.ui.view.ClipInputDataListView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.crazydan.studio.app.ime.kuaizi.ui.view.InputClipListView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="0dp"
+        android:paddingBottom="4dp"
         android:layoutDirection="ltr" />

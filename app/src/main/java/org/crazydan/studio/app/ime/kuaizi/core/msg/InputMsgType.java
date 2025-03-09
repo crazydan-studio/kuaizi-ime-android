@@ -101,7 +101,7 @@ public enum InputMsgType {
     Config_Update_Done,
 
     /** 剪贴板数据已生成 */
-    ClipInput_Data_Create_Done,
+    InputClip_Data_Create_Done,
     /** 剪贴板数据已应用 */
-    ClipInput_Data_Apply_Done,
+    InputClip_Data_Apply_Done,
 }

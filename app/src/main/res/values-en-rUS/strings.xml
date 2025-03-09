@@ -145,6 +145,8 @@
     <string name="value_hand_mode_right">Right Mode</string>
 
     <string name="title_clip_past_url">Past Copied URL</string>
-    <string name="title_clip_past_captcha">Past Copied Captcha</string>
     <string name="title_clip_past_content">Past Copied Content</string>
+    <string name="title_clip_past_captcha">Past Copied Captcha</string>
+    <string name="title_clip_past_phone">Past Copied Phone Number</string>
+    <string name="title_clip_past_email">Past Copied Email</string>
 </resources>

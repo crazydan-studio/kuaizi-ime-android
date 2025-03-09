@@ -23,21 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.ClipboardManager;
-import android.os.PersistableBundle;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ClipInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserClipInputDataSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.ClipInput_Data_Apply_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.ClipInput_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 
 /**
  * 剪贴板
@@ -46,15 +44,9 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Ed
  * @date 2025-02-21
  */
 public class Clipboard {
-    /** 多长间隔内的剪贴数据可以用于自动粘贴 */
-    private final static long MAX_DURATION_TO_BE_AUTO_PASTED = 30 * 1000;
-
     protected final Logger log = Logger.getLogger(getClass());
 
     private final ClipboardManager manager;
-
-    /** 最近的剪贴板数据 */
-    private ClipInputData latest;
 
     public Clipboard(ClipboardManager manager) {
         this.manager = manager;
@@ -67,20 +59,18 @@ public class Clipboard {
         // TODO 显示剪贴板、粘贴选中内容、操作剪贴板
 
         switch (msg.type) {
-            case SingleTap_ClipInputData: {
-                UserClipInputDataSingleTapMsgData data = msg.data();
+            case SingleTap_InputClip: {
+                UserInputClipSingleTapMsgData data = msg.data();
 
-                if (data.clip.type == ClipInputData.Type.captcha) {
+                if (data.clip.type == InputClip.Type.captcha) {
                     // TODO 逐字输入
                 } else {
-                    pastClipData(this.manager, data.clip, () -> {
-                        InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
+                    InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
 
-                        context.fireInputMsg(Editor_Edit_Doing, msgData);
-                    });
+                    context.fireInputMsg(Editor_Edit_Doing, msgData);
                 }
 
-                context.fireInputMsg(ClipInput_Data_Apply_Done);
+                context.fireInputMsg(InputClip_Data_Apply_Done);
                 break;
             }
             default: {
@@ -92,31 +82,22 @@ public class Clipboard {
     // =============================== End: 消息处理 ===================================
 
     public void start(ClipboardContext context) {
-        ClipInputData data = readClipData(this.manager);
+        InputClip data = readClipData(this.manager);
         if (data == null) {
             return;
         }
 
-        if (this.latest != null && this.latest.isSameWith(data)) {
-            if (this.latest.usedAt > 0
-                || Math.abs(this.latest.createdAt - data.createdAt) > MAX_DURATION_TO_BE_AUTO_PASTED) {
-                return;
-            }
-        } else {
-            this.latest = data;
-        }
-
-        List<ClipInputData> clips = new ArrayList<>();
+        List<InputClip> clips = new ArrayList<>();
         // - 正则表达式提取 6-8 位数字作为验证码，提示的验证码用星号脱敏
         // - 提供 将标点符号替换为下划线 后的剪贴结果
         clips.add(data);
 
-        ClipInputMsgData msgData = new ClipInputMsgData(clips);
+        InputClipMsgData msgData = new InputClipMsgData(clips);
 
-        context.fireInputMsg(ClipInput_Data_Create_Done, msgData);
+        context.fireInputMsg(InputClip_Data_Create_Done, msgData);
     }
 
-    private ClipInputData readClipData(ClipboardManager manager) {
+    private InputClip readClipData(ClipboardManager manager) {
         ClipData clip = manager.getPrimaryClip();
         ClipData.Item item = clip != null ? clip.getItemAt(0) : null;
 
@@ -124,32 +105,22 @@ public class Clipboard {
             return null;
         }
 
-        PersistableBundle extras = clip.getDescription().getExtras();
-        boolean sensitive = extras != null && extras.containsKey(ClipDescription.EXTRA_IS_SENSITIVE);
-
         // TODO 分析数据，拆分为多个可粘贴内容，交给上层显示
-        ClipInputData data = ClipInputData.build((b) -> {
-            b.sensitive(sensitive);
-
+        InputClip data = InputClip.build((b) -> {
             if (item.getText() != null) {
-                b.type(ClipInputData.Type.text).content(item.getText().toString());
+                b.type(InputClip.Type.text).text(item.getText().toString());
             }
         });
 
         return data.type == null ? null : data;
     }
 
-    private void pastClipData(ClipboardManager manager, ClipInputData data, Runnable cb) {
+    private void pastClipData(ClipboardManager manager, InputClip data, Runnable cb) {
         ClipData oldClip = manager.getPrimaryClip();
 
         switch (data.type) {
-            case html: {
-                ClipData clip = ClipData.newHtmlText("", data.content, data.content);
-                manager.setPrimaryClip(clip);
-                break;
-            }
             default: {
-                ClipData clip = ClipData.newPlainText("", data.content);
+                ClipData clip = ClipData.newPlainText("", data.text);
                 manager.setPrimaryClip(clip);
                 break;
             }

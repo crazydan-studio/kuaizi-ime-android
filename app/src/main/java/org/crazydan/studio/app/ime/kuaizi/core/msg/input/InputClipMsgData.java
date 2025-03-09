@@ -21,7 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.clip.ClipInputData;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
@@ -31,10 +31,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-07
  */
-public class ClipInputMsgData extends InputMsgData {
-    public final List<ClipInputData> clips;
+public class InputClipMsgData extends InputMsgData {
+    public final List<InputClip> clips;
 
-    public ClipInputMsgData(List<ClipInputData> clips) {
+    public InputClipMsgData(List<InputClip> clips) {
         this.clips = clips;
     }
 }

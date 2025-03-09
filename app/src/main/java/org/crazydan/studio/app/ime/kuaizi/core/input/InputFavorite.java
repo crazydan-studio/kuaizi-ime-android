@@ -17,49 +17,52 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.input.clip;
+package org.crazydan.studio.app.ime.kuaizi.core.input;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 
-/** 剪贴板数据 */
-public class ClipInputData extends Immutable {
+/**
+ * 输入收藏
+ *
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2023-07-06
+ */
+public class InputFavorite extends Immutable {
     private final static Builder builder = new Builder();
 
-    /** 类型（文本、图像。。。） */
-    public final Type type;
-    /** 内容 */
-    public final String content;
+    /** 文本内容 */
+    public final String text;
+    /** HTML 内容，用于支持剪贴板的富文本，其与 {@link #text} 必须成对出现 */
+    public final String html;
 
     /** 创建时间 */
     public final long createdAt;
-    /** 最近粘贴时间 */
+    /** 最近使用时间 */
     public final long usedAt;
-    /** 粘贴次数 */
+    /** 使用次数 */
     public final long usedCount;
-    /**
-     * 是否敏感内容：密码、银行卡号等，由系统确定得出。
-     * 检测得到的验证码等也将标记为敏感
-     */
+
+    /** 是否敏感内容：密码、银行卡号、验证码等。在使用时，需逐字输入 */
     public final boolean sensitive;
 
-    /** 构建 {@link ClipInputData} */
-    public static ClipInputData build(Consumer<Builder> c) {
+    /** 构建 {@link InputFavorite} */
+    public static InputFavorite build(Consumer<Builder> c) {
         return Builder.build(builder, c);
     }
 
     /** 创建副本 */
-    public ClipInputData copy(Consumer<Builder> c) {
+    public InputFavorite copy(Consumer<Builder> c) {
         return Builder.copy(builder, this, c);
     }
 
-    protected ClipInputData(Builder builder) {
+    protected InputFavorite(Builder builder) {
         super(builder);
 
-        this.type = builder.type;
-        this.content = builder.content;
+        this.text = builder.text;
+        this.html = builder.html;
 
         this.createdAt = builder.createdAt;
         this.usedAt = builder.usedAt;
@@ -67,26 +70,10 @@ public class ClipInputData extends Immutable {
         this.sensitive = builder.sensitive;
     }
 
-    public boolean isSameWith(ClipInputData data) {
-        return Objects.equals(this.type, data.type) && Objects.equals(this.content, data.content);
-    }
-
-    /** {@link ClipInputData} 的类型 */
-    public enum Type {
-        /** 文本 */
-        text,
-        /** HTML */
-        html,
-        /** 链接文本 */
-        url,
-        /** 验证码 */
-        captcha,
-    }
-
-    /** {@link ClipInputData} 的构建器 */
-    public static class Builder extends Immutable.Builder<ClipInputData> {
-        private Type type;
-        private String content;
+    /** {@link InputFavorite} 的构建器 */
+    public static class Builder extends Immutable.Builder<InputFavorite> {
+        private String text;
+        private String html;
 
         private long createdAt;
         private long usedAt;
@@ -96,16 +83,17 @@ public class ClipInputData extends Immutable {
         // ===================== Start: 构建函数 ===================
 
         @Override
-        protected ClipInputData build() {
-            return new ClipInputData(this);
+        protected InputFavorite build() {
+            return new InputFavorite(this);
         }
 
         @Override
-        protected void doCopy(ClipInputData source) {
+        protected void doCopy(InputFavorite source) {
             super.doCopy(source);
 
-            this.type = source.type;
-            this.content = source.content;
+            this.text = source.text;
+            this.html = source.html;
+
             this.createdAt = source.createdAt;
             this.usedAt = source.usedAt;
             this.usedCount = source.usedCount;
@@ -114,8 +102,8 @@ public class ClipInputData extends Immutable {
 
         @Override
         protected void reset() {
-            this.type = null;
-            this.content = null;
+            this.text = null;
+            this.html = null;
 
             this.createdAt = 0;
             this.usedAt = 0;
@@ -125,44 +113,44 @@ public class ClipInputData extends Immutable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.type, this.content, this.createdAt, this.usedAt, this.usedCount, this.sensitive);
+            return Objects.hash(this.text, this.html, this.createdAt, this.usedAt, this.usedCount, this.sensitive);
         }
 
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 构建配置 ===================
 
-        /** @see ClipInputData#type */
-        public Builder type(Type type) {
-            this.type = type;
+        /** @see InputFavorite#text */
+        public Builder text(String text) {
+            this.text = text;
             return this;
         }
 
-        /** @see ClipInputData#content */
-        public Builder content(String content) {
-            this.content = content;
+        /** @see InputFavorite#html */
+        public Builder html(String html) {
+            this.html = html;
             return this;
         }
 
-        /** @see ClipInputData#createdAt */
+        /** @see InputFavorite#createdAt */
         public Builder createdAt(long createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        /** @see ClipInputData#usedAt */
+        /** @see InputFavorite#usedAt */
         public Builder usedAt(long usedAt) {
             this.usedAt = usedAt;
             return this;
         }
 
-        /** @see ClipInputData#usedCount */
+        /** @see InputFavorite#usedCount */
         public Builder usedCount(long usedCount) {
             this.usedCount = usedCount;
             return this;
         }
 
-        /** @see ClipInputData#sensitive */
+        /** @see InputFavorite#sensitive */
         public Builder sensitive(boolean sensitive) {
             this.sensitive = sensitive;
             return this;
