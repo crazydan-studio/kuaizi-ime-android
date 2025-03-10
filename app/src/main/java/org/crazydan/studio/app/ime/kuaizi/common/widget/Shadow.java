@@ -67,7 +67,7 @@ public class Shadow {
         Bitmap bitmap = Bitmap.createBitmap(dstWidth, dstHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
-        drawable.setBounds(0, 0, dstWidth, dstHeight);
+        drawable.setBounds(0, 0, dstWidth, (int) (dstHeight - this.dy));
         drawable.draw(canvas);
 
         return attachTo(bitmap, dstWidth, dstHeight);

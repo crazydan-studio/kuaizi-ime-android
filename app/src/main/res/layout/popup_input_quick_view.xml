@@ -1,4 +1,4 @@
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ 筷字输入法 - 高效编辑需要又好又快的输入法
   ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
   ~
@@ -17,10 +17,8 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?attr/input_completions_bg_color" />
-    <stroke
-            android:width="0.5dp"
-            android:color="?attr/input_completions_border_color" />
-    <corners android:radius="6dp" />
-</shape>
+<org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="2dp"
+        android:layoutDirection="ltr" />

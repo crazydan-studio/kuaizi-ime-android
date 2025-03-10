@@ -17,8 +17,20 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<org.crazydan.studio.app.ime.kuaizi.ui.view.InputClipListView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="2dp"
-        android:layoutDirection="ltr" />
+        android:orientation="horizontal">
+
+    <TextView
+            android:id="@+id/fg_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="0dp"
+            android:textSize="@dimen/input_popup_key_text_size"
+            android:textStyle="bold"
+            android:textColor="?attr/key_highlight_fg_color"
+            android:background="@drawable/bg_input_popup_key_view" />
+</LinearLayout>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   ~ 筷字输入法 - 高效编辑需要又好又快的输入法
   ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
   ~
@@ -17,19 +17,10 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-    <TextView
-            android:id="@+id/fg_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="0dp"
-            android:textSize="@dimen/input_popup_key_text_size"
-            android:textStyle="bold"
-            android:textColor="?attr/key_highlight_fg_color"
-            android:background="@drawable/bg_input_popup_key_view" />
-</LinearLayout>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="?attr/input_quick_bg_color" />
+    <stroke
+            android:width="0.5dp"
+            android:color="?attr/input_quick_border_color" />
+    <corners android:radius="6dp" />
+</shape>

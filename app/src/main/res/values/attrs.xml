@@ -33,10 +33,10 @@
         <attr name="input_trail_color" format="color" />
         <attr name="input_selection_bg_color" format="color" />
         <attr name="input_selection_fg_color" format="color" />
-        <attr name="input_completions_bg_color" format="color" />
-        <attr name="input_completions_fg_color" format="color" />
-        <attr name="input_completions_border_color" format="color" />
-        <attr name="input_completions_shadow_style" format="string" />
+        <attr name="input_quick_bg_color" format="color" />
+        <attr name="input_quick_fg_color" format="color" />
+        <attr name="input_quick_border_color" format="color" />
+        <attr name="input_quick_shadow_style" format="string" />
         <attr name="input_char_math_expr_border_color" format="color" />
         <attr name="input_char_math_expr_border_highlight_color" format="color" />
 

@@ -25,6 +25,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
@@ -33,28 +34,35 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.clip.InputClipListViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputQuickViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickViewData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputClip;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputCompletion;
 
 /**
+ * 快捷输入视图
+ * <p/>
+ * 需在显示前调用 {@link #update} 更新列表数据
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-08
+ * @date 2023-10-11
  */
-public class InputClipListView extends RecyclerView<InputClipListViewAdapter, InputClip>
+public class InputQuickView extends RecyclerView<InputQuickViewAdapter, InputQuickViewData>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public InputClipListView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public InputQuickView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        RecyclerViewGestureDetector<InputClip> gesture = new RecyclerViewGestureDetector<>(context, this);
+        RecyclerViewGestureDetector<InputQuickViewData> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
 
     @Override
-    protected InputClipListViewAdapter createAdapter() {
-        return new InputClipListViewAdapter();
+    protected InputQuickViewAdapter createAdapter() {
+        return new InputQuickViewAdapter();
     }
 
     @Override
@@ -81,18 +89,30 @@ public class InputClipListView extends RecyclerView<InputClipListViewAdapter, In
         }
 
         int position = holder.getAdapterPosition();
-        InputClip clip = getAdapter().getItem(position);
+        InputQuickViewData item = getAdapter().getItem(position);
 
-        UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(position, clip);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
+        UserInputMsg msg = null;
+        switch (item.type) {
+            case input_completion: {
+                UserInputCompletionSingleTapMsgData msgData = new UserInputCompletionSingleTapMsgData(position);
+                msg = UserInputMsg.build((b) -> b.type(SingleTap_InputCompletion).data(msgData));
+                break;
+            }
+            case input_clip: {
+                UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(position,
+                                                                                          (InputClip) item.data);
+                msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
+                break;
+            }
+        }
 
-        this.listener.onMsg(msg);
+        ObjectUtils.invokeWhenNonNull(msg, (m) -> this.listener.onMsg(m));
     }
 
     // =============================== End: 消息处理 ===================================
 
-    public void update(List<InputClip> clips) {
-        getAdapter().updateItems(clips);
+    public void update(List<?> dataList) {
+        getAdapter().updateItems(InputQuickViewData.from(dataList));
 
         // 复位滚动位置
         getLayoutManager().scrollToPosition(0);

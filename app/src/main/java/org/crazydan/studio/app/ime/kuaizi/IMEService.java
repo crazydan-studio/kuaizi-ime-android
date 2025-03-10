@@ -31,6 +31,7 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
@@ -77,12 +78,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
-        if (this.ime != null) {
-            this.ime.destroy();
-        }
-        if (this.imeConfig != null) {
-            this.imeConfig.destroy();
-        }
+        ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::destroy);
+        ObjectUtils.invokeWhenNonNull(this.imeConfig, IMEConfig::destroy);
 
         this.ime = null;
         this.imeView = null;
@@ -180,9 +177,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
     @Override
     public void onFinishInputView(boolean finishingInput) {
-        if (this.ime != null) {
-            this.ime.hide();
-        }
+        ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::hide);
+        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
 
         super.onFinishInputView(finishingInput);
     }
@@ -191,9 +187,9 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onFinishInput() {
         // Note: 在 #onCreateInputView 之前，该接口也会被调用
-        if (this.ime != null) {
-            this.ime.exit();
-        }
+        ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::exit);
+        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
+
         this.editorChangeRevertion = null;
 
         super.onFinishInput();
@@ -223,9 +219,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
         // Note: 配置变更也可能发生在输入法未初始化时
-        if (this.ime != null) {
-            this.ime.onChanged(key, oldValue, newValue);
-        }
+        ObjectUtils.invokeWhenNonNull(this.ime, (ime) -> ime.onChanged(key, oldValue, newValue));
     }
 
     @Override

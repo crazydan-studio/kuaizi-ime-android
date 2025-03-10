@@ -51,7 +51,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip
  * @date 2025-02-21
  */
 public class Clipboard {
-    private static final Pattern REGEX_CAPTCHA = Pattern.compile("^.*?(\\d{6,8}).*$",
+    private static final Pattern REGEX_CAPTCHA = Pattern.compile("^.*?\\D(\\d{6,8})\\D.*$",
                                                                  Pattern.DOTALL | Pattern.MULTILINE);
     /**
      * 匹配：

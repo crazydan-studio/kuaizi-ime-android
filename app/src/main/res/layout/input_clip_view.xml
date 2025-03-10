@@ -21,16 +21,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="4dp"
         android:layout_marginHorizontal="4dp"
-        android:background="@drawable/bg_input_completion_view"
+        android:background="@drawable/bg_input_popup_quick_view"
         android:layoutDirection="ltr">
 
     <TextView
             android:id="@+id/clip_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="4dp"
             android:textSize="@dimen/input_clip_text_size"
-            android:textColor="?attr/input_completions_fg_color" />
+            android:textColor="?attr/input_quick_fg_color" />
 </LinearLayout>

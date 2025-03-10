@@ -20,8 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -41,8 +43,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
-import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -54,8 +54,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupSho
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputClipListView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputCompletionsView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
@@ -78,11 +77,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private InputboardView inputboardView;
     private TextView keyboardWarningView;
 
-    private PopupWindow inputPopupWindow;
-    private PopupWindow inputCompletionsPopupWindow;
-    private InputCompletionsView inputCompletionsView;
-    private PopupWindow inputClipPopupWindow;
-    private InputClipListView inputClipListView;
+    private PopupWindow inputKeyPopupWindow;
+    private PopupWindow inputQuickPopupWindow;
 
     private boolean needToAddBottomSpacing;
 
@@ -109,6 +105,11 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     public XPadView getXPadView() {
         XPadKeyViewHolder holder = this.keyboardView.getXPadKeyViewHolder();
         return holder != null ? holder.getXPad() : null;
+    }
+
+    public void close() {
+        showInputQuickPopupWindow(null);
+        showInputKeyPopupWindow(null, false);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -175,7 +176,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void handleMsg(InputMsg msg) {
         // Note: 输入补全没有确定的隐藏时机，故而，需针对每个消息做一次检查
         if (!msg.inputList.hasCompletions) {
-            showInputCompletionsPopupWindow(null);
+            //showInputCompletionsPopupWindow(null);
         }
 
         switch (msg.type) {
@@ -193,8 +194,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 KeyboardHandModeSwitchMsgData data = msg.data();
                 this.config.set(ConfigKey.hand_mode, data.mode);
 
-                updatePopupViewLayout(this.inputCompletionsView);
-                updatePopupViewLayout(this.inputClipListView);
+                updatePopupViewLayout(this.inputQuickPopupWindow.getContentView());
                 break;
             }
             case Config_Update_Done: {
@@ -208,29 +208,28 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             case InputCompletion_Create_Done: {
                 InputCompletionMsgData data = msg.data();
 
-                showInputClipPopupWindow(null);
-                showInputCompletionsPopupWindow(data.completions);
+                showInputQuickPopupWindow(data.completions);
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = msg.data();
 
-                showInputClipPopupWindow(null);
-                showInputPopupWindow(data.text, data.hideDelayed);
+                showInputQuickPopupWindow(null);
+                showInputKeyPopupWindow(data.text, data.hideDelayed);
                 break;
             }
             case InputChars_Input_Popup_Hide_Doing: {
-                showInputPopupWindow(null, false);
+                showInputKeyPopupWindow(null, false);
                 break;
             }
             case InputClip_Data_Create_Done: {
                 InputClipMsgData data = msg.data();
 
-                showInputClipPopupWindow(data.clips);
+                showInputQuickPopupWindow(data.clips);
                 break;
             }
             case InputClip_Data_Apply_Done: {
-                showInputClipPopupWindow(null);
+                showInputQuickPopupWindow(null);
                 break;
             }
             default: {
@@ -271,7 +270,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     /** 布局视图 */
     private void doLayout() {
-        resetPopupWindows();
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
@@ -284,22 +282,19 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.keyboardView = rootView.findViewById(R.id.keyboard);
         this.keyboardView.setConfig(this.config);
         this.keyboardView.setListener(this);
+        updateBottomSpacing(true);
 
         this.inputboardView = rootView.findViewById(R.id.inputboard);
         this.inputboardView.setConfig(this.config);
         this.inputboardView.setListener(this);
 
-        View inputKeyView = inflateWithTheme(R.layout.input_popup_key_view, themeResId, false);
-        this.inputCompletionsView = inflateWithTheme(R.layout.input_completions_view, themeResId, false);
-        this.inputCompletionsView.setListener(this);
-        this.inputClipListView = inflateWithTheme(R.layout.input_clip_list_view, themeResId, false);
-        this.inputClipListView.setListener(this);
+        View inputKeyView = inflateWithTheme(R.layout.popup_input_key_view, themeResId, false);
+        this.inputKeyPopupWindow = preparePopupWindow(this.inputKeyPopupWindow, inputKeyView);
 
-        preparePopupWindows(this.inputCompletionsView, inputKeyView, this.inputClipListView);
-
-        updateBottomSpacing(true);
-        updatePopupViewLayout(this.inputCompletionsView);
-        updatePopupViewLayout(this.inputClipListView);
+        InputQuickView inputQuickView = inflateWithTheme(R.layout.popup_input_quick_view, themeResId, false);
+        inputQuickView.setListener(this);
+        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickView);
+        updatePopupViewLayout(inputQuickView);
     }
 
     private void updateBottomSpacing(boolean force) {
@@ -340,30 +335,30 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     // ==================== Start: 气泡提示 ==================
 
-    private void showInputCompletionsPopupWindow(List<InputCompletion.ViewData> completions) {
-        PopupWindow window = this.inputCompletionsPopupWindow;
-        if (CollectionUtils.isEmpty(completions)) {
+    private void showInputQuickPopupWindow(List<?> dataList) {
+        PopupWindow window = this.inputQuickPopupWindow;
+        if (CollectionUtils.isEmpty(dataList)) {
             window.dismiss();
             return;
         }
 
-        this.inputCompletionsView.update(completions);
+        InputQuickView inputQuickView = (InputQuickView) window.getContentView();
 
-        View contentView = window.getContentView();
-        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        inputQuickView.update(dataList);
+        inputQuickView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-        int width = getMeasuredWidth();
-        int height = contentView.getMeasuredHeight();
+        int width = WindowManager.LayoutParams.MATCH_PARENT;
+        int height = inputQuickView.getMeasuredHeight();
 
-        showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
+        showPopupWindow(window, () -> new Point(width, height), Gravity.START | Gravity.TOP);
     }
 
-    private void showInputPopupWindow(String key, boolean hideDelayed) {
+    private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
         if (this.config.bool(ConfigKey.disable_input_key_popup_tips)) {
             return;
         }
 
-        PopupWindow window = this.inputPopupWindow;
+        PopupWindow window = this.inputKeyPopupWindow;
         if (CharUtils.isBlank(key)) {
             // Note: 存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
             post(window::dismiss);
@@ -379,39 +374,21 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         int width = WindowManager.LayoutParams.WRAP_CONTENT;
         int height = contentView.getMeasuredHeight();
 
-        showPopupWindow(window, width, height, Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        showPopupWindow(window, () -> new Point(width, height), Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 
         if (hideDelayed) {
             postDelayed(window::dismiss, 600);
         }
     }
 
-    private void showInputClipPopupWindow(List<InputClip> clips) {
-        PopupWindow window = this.inputClipPopupWindow;
-        if (CollectionUtils.isEmpty(clips)) {
-            window.dismiss();
-            return;
+    private PopupWindow preparePopupWindow(PopupWindow window, View contentView) {
+        if (window == null) {
+            window = new PopupWindow();
+
+            initPopupWindow(window, contentView);
         }
 
-        this.inputClipListView.update(clips);
-
-        View contentView = window.getContentView();
-        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-        int width = getMeasuredWidth();
-        int height = contentView.getMeasuredHeight();
-
-        showPopupWindow(window, width, height, Gravity.START | Gravity.TOP);
-    }
-
-    private void preparePopupWindows(
-            InputCompletionsView completionsView, View keyView, InputClipListView clipView
-    ) {
-        resetPopupWindows();
-
-        initPopupWindow(this.inputCompletionsPopupWindow, completionsView);
-        initPopupWindow(this.inputPopupWindow, keyView);
-        initPopupWindow(this.inputClipPopupWindow, clipView);
+        return window;
     }
 
     private void initPopupWindow(PopupWindow window, View contentView) {
@@ -424,40 +401,27 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
     }
 
-    private void resetPopupWindows() {
-        if (this.inputCompletionsPopupWindow != null) {
-            this.inputCompletionsPopupWindow.dismiss();
-        } else {
-            this.inputCompletionsPopupWindow = new PopupWindow();
-        }
+    private void showPopupWindow(PopupWindow window, Supplier<Point> sizeGetter, int gravity) {
+        post(() -> {
+            // Note: 初始启动时，getMeasuredWidth/getMeasuredHeight 将返回 0，故而，需在视图渲染完毕后，再取值
+            Point size = sizeGetter.get();
 
-        if (this.inputPopupWindow != null) {
-            this.inputPopupWindow.dismiss();
-        } else {
-            this.inputPopupWindow = new PopupWindow();
-        }
+            int width = size.x;
+            int height = size.y;
 
-        if (this.inputClipPopupWindow != null) {
-            this.inputClipPopupWindow.dismiss();
-        } else {
-            this.inputClipPopupWindow = new PopupWindow();
-        }
-    }
+            window.setWidth(width);
+            window.setHeight(height);
 
-    private void showPopupWindow(PopupWindow window, int width, int height, int gravity) {
-        window.setWidth(width);
-        // 气泡提示的高度均加上空白的高度 2dp
-        window.setHeight(height > 0 ? (int) (height + ScreenUtils.dpToPx(2f)) : height);
+            // 放置于被布局的键盘之上
+            View parent = this;
+            int[] location = new int[2];
+            parent.getLocationInWindow(location);
 
-        // 放置于被布局的键盘之上
-        View parent = this;
-        int[] location = new int[2];
-        parent.getLocationInWindow(location);
+            int x = location[0];
+            int y = location[1] - height;
 
-        int x = location[0];
-        int y = location[1] - window.getHeight();
-
-        post(() -> window.showAtLocation(parent, gravity, x, y));
+            window.showAtLocation(parent, gravity, x, y);
+        });
     }
 
     private void updatePopupViewLayout(View view) {

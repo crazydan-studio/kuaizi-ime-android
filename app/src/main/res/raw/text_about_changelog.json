@@ -18,7 +18,7 @@
         "t": "键盘退出时，不重置输入列表，以避免误操作导致输入被清空&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;的热心反馈"
       },
       {
-        "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>&nbsp;与&nbsp;<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;的热心反馈与建议"
+        "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/39\">#39</a>。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>、<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;与&nbsp;<a href=\"https://github.com/zhangyuyard\">@zhangyuyard</a>&nbsp;的热心反馈与建议"
       },
       {
         "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;的热心反馈"

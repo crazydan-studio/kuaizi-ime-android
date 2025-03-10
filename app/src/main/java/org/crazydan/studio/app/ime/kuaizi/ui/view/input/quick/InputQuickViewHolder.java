@@ -17,40 +17,33 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.clip;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick;
 
 import android.view.View;
-import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputClipListView;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**
- * {@link InputClipListView} 的 {@link RecyclerView} 适配器
+ * {@link InputQuickViewData} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-08
+ * @date 2025-03-10
  */
-public class InputClipListViewAdapter extends RecyclerViewAdapter<InputClip, InputClipViewHolder> {
+public abstract class InputQuickViewHolder extends RecyclerViewHolder {
 
-    public InputClipListViewAdapter() {
-        super(ItemUpdatePolicy.differ);
+    public InputQuickViewHolder(@NonNull View itemView) {
+        super(itemView);
+
+        ViewUtils.enableHardwareAccelerated(itemView);
+
+        String shadow = getStringByAttrId(R.attr.input_quick_shadow_style);
+        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
+        this.itemView.setBackground(bg);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull InputClipViewHolder holder, int position) {
-        InputClip item = getItem(position);
-
-        holder.bind(item);
-    }
-
-    @NonNull
-    @Override
-    public InputClipViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = inflateItemView(parent, R.layout.input_clip_view);
-        return new InputClipViewHolder(view);
-    }
+    public abstract void bind(Object data);
 }

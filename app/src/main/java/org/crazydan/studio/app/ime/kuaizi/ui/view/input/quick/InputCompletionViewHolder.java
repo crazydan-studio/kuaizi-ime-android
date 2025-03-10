@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.completion;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 
 /**
@@ -36,24 +34,23 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-12
  */
-public class InputCompletionViewHolder extends RecyclerViewHolder {
+public class InputCompletionViewHolder extends InputQuickViewHolder {
     private final ViewGroup inputsView;
 
     public InputCompletionViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.inputsView = itemView.findViewById(R.id.inputs_view);
-
-        String shadow = getStringByAttrId(R.attr.input_completions_shadow_style);
-        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
-        this.itemView.setBackground(bg);
     }
 
-    public void bind(InputCompletion.ViewData data) {
+    @Override
+    public void bind(Object data) {
+        InputCompletion.ViewData completion = (InputCompletion.ViewData) data;
+
         whenViewReady(this.inputsView, (view) -> {
             view.removeAllViews();
 
-            data.inputs.forEach((input) -> createChildView(view, input));
+            completion.inputs.forEach((input) -> createChildView(view, input));
         });
     }
 

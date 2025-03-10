@@ -17,40 +17,37 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view.clip;
+package org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick;
 
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 
 /**
  * {@link InputClip} 视图的 {@link RecyclerView.ViewHolder}
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2023-10-12
+ * @date 2025-03-10
  */
-public class InputClipViewHolder extends RecyclerViewHolder {
+public class InputClipViewHolder extends InputQuickViewHolder {
     private final TextView textView;
 
     public InputClipViewHolder(@NonNull View itemView) {
         super(itemView);
 
         this.textView = itemView.findViewById(R.id.clip_text);
-
-        String shadow = getStringByAttrId(R.attr.input_completions_shadow_style);
-        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
-        this.itemView.setBackground(bg);
     }
 
-    public void bind(InputClip data) {
+    @Override
+    public void bind(Object data) {
+        InputClip clip = (InputClip) data;
+
         whenViewReady(this.textView, (view) -> {
             int resId = R.string.title_clip_past_content;
-            switch (data.type) {
+            switch (clip.type) {
                 case url: {
                     resId = R.string.title_clip_past_url;
                     break;
