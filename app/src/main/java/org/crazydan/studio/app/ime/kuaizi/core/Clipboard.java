@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,17 +29,20 @@ import java.util.regex.Pattern;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 
 /**
  * 剪贴板
@@ -82,7 +85,7 @@ public class Clipboard {
 
     private final ClipboardManager manager;
 
-    private int latestClipHash;
+    private int latestUsedClipCode;
 
     public Clipboard(ClipboardManager manager) {
         this.manager = manager;
@@ -92,8 +95,6 @@ public class Clipboard {
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
     public void onMsg(ClipboardContext context, UserInputMsg msg) {
-        // TODO 显示剪贴板、粘贴选中内容、操作剪贴板
-
         switch (msg.type) {
             case SingleTap_InputClip: {
                 UserInputClipSingleTapMsgData data = msg.data();
@@ -101,12 +102,13 @@ public class Clipboard {
                 switch (data.clip.type) {
                     case captcha:
                     case phone: {
-                        // TODO 逐字输入
+                        commitClipText(context, data.clip, true);
                         break;
                     }
                     default: {
                         if (data.position > 0) {
-                            // TODO 从原始内容中提取的剪切数据，需逐字输入
+                            // 从原始内容中提取的数据需单独提交
+                            commitClipText(context, data.clip, false);
                         } else {
                             // 直接粘贴剪贴板原始内容
                             InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
@@ -115,6 +117,8 @@ public class Clipboard {
                     }
                 }
 
+                this.latestUsedClipCode = data.clip.code;
+
                 context.fireInputMsg(InputClip_Data_Apply_Done);
                 break;
             }
@@ -122,6 +126,12 @@ public class Clipboard {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
+    }
+
+    private void commitClipText(ClipboardContext context, InputClip clip, boolean oneByOne) {
+        InputClipTextCommitMsgData msgData = new InputClipTextCommitMsgData(clip.text, oneByOne);
+
+        context.fireInputMsg(InputClip_Text_Commit_Doing, msgData);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -134,17 +144,18 @@ public class Clipboard {
             return;
         }
 
-        int clipHash = primary.hashCode();
-        // 若剪贴板无变化，则不再提示可粘贴
-        if (this.latestClipHash == clipHash) {
+        int clipCode = primary.code;
+        // 若剪贴板数据已使用，则不再提示可粘贴
+        if (this.latestUsedClipCode == clipCode) {
             return;
         }
-        this.latestClipHash = clipHash;
+        this.latestUsedClipCode = 0;
 
         String primaryText = cleanClipText(primary);
-        InputClip inner = extractInnerClip(primary);
+        InputClip inner = extractInnerClip(primaryText, clipCode);
 
         List<InputClip> clips = new ArrayList<>();
+        // Note: 确保原始内容在第一的位置
         clips.add(primary);
 
         if (inner != null) {
@@ -185,18 +196,16 @@ public class Clipboard {
                 }
             }
 
-            if (text != null) {
+            if (!CharUtils.isBlank(text)) {
                 b.type(InputClip.Type.text).text(text).html(html);
             }
         });
 
-        return clip.type != null ? clip : null;
+        return clip.type != null ? clip.copy((b) -> b.code(clip.hashCode())) : null;
     }
 
-    private InputClip extractInnerClip(InputClip primary) {
-        String primaryText = cleanClipText(primary);
-
-        Map<InputClip.Type, Matcher> matchers = new HashMap<InputClip.Type, Matcher>() {{
+    private InputClip extractInnerClip(String primaryText, int code) {
+        Map<InputClip.Type, Matcher> matchers = new LinkedHashMap<InputClip.Type, Matcher>() {{
             put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
             put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));
             put(InputClip.Type.phone, REGEX_PHONE.matcher(primaryText));
@@ -212,7 +221,7 @@ public class Clipboard {
             String text = matcher.group(1);
             InputClip.Type type = entry.getKey();
 
-            return InputClip.build((b) -> b.type(type).text(text));
+            return InputClip.build((b) -> b.type(type).code(code).text(text));
         }
 
         return null;

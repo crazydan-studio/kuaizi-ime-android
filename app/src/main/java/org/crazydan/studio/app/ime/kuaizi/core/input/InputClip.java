@@ -35,6 +35,8 @@ public class InputClip extends Immutable {
 
     /** 类型（文本、HTML、URL。。。） */
     public final Type type;
+    /** 唯一标识，用于判断数据是否已使用 */
+    public final int code;
 
     /** 文本内容 */
     public final String text;
@@ -55,6 +57,7 @@ public class InputClip extends Immutable {
         super(builder);
 
         this.type = builder.type;
+        this.code = builder.code;
 
         this.text = builder.text;
         this.html = builder.html;
@@ -77,6 +80,7 @@ public class InputClip extends Immutable {
     /** {@link InputClip} 的构建器 */
     public static class Builder extends Immutable.Builder<InputClip> {
         private Type type;
+        private int code;
 
         private String text;
         private String html;
@@ -93,6 +97,7 @@ public class InputClip extends Immutable {
             super.doCopy(source);
 
             this.type = source.type;
+            this.code = source.code;
 
             this.text = source.text;
             this.html = source.html;
@@ -101,6 +106,7 @@ public class InputClip extends Immutable {
         @Override
         protected void reset() {
             this.type = null;
+            this.code = 0;
 
             this.text = null;
             this.html = null;
@@ -108,7 +114,7 @@ public class InputClip extends Immutable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.type, this.text, this.html);
+            return Objects.hash(this.type, this.code, this.text, this.html);
         }
 
         // ===================== End: 构建函数 ===================
@@ -118,6 +124,12 @@ public class InputClip extends Immutable {
         /** @see InputClip#type */
         public Builder type(Type type) {
             this.type = type;
+            return this;
+        }
+
+        /** @see InputClip#code */
+        public Builder code(int code) {
+            this.code = code;
             return this;
         }
 

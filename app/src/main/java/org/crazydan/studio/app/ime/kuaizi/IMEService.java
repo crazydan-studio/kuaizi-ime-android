@@ -44,6 +44,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
 
@@ -293,6 +294,11 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 moveCursor(msg.data());
                 break;
             }
+            case InputClip_Text_Commit_Doing: {
+                InputClipTextCommitMsgData d = msg.data();
+                commitText(d.text, d.oneByOne, false);
+                break;
+            }
             case Editor_Range_Select_Doing: {
                 selectText(msg.data());
                 break;
@@ -423,22 +429,11 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         // Note: 假设替换字符的长度均相同
         CharSequence raw = ic.getTextBeforeCursor(text.length(), 0);
         // 替换字符
-        if (replacements.contains(raw.toString())) {
+        if (raw != null && replacements.contains(raw.toString())) {
             replaceTextBeforeCursor(ic, text, raw.length());
-        }
-        // 输入字符
-        else if (text.length() == 1) {
-            char ch = text.charAt(0);
-            // 单个字符需以事件形式发送，才能被所有组件识别
-            sendKeyChar(ch);
         } else {
-            EditorSelection before = EditorSelection.from(ic);
-
-            addText(ic, text);
-
-            EditorSelection after = EditorSelection.from(ic);
-
-            this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
+            // 输入字符
+            commitText(text, false, true);
         }
     }
 
@@ -464,6 +459,38 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         ic.setSelection(start + offset, end + offset);
 
         ic.endBatchEdit();
+    }
+
+    private void commitText(CharSequence text, boolean oneByOne, boolean revertable) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
+        if (text.length() == 1) {
+            char ch = text.charAt(0);
+            // 单个字符需以事件形式发送，才能被所有组件识别
+            sendKeyChar(ch);
+        } else {
+            EditorSelection before = EditorSelection.from(ic);
+
+            if (!oneByOne) {
+                addText(ic, text);
+            } else {
+                for (int i = 0; i < text.length(); i++) {
+                    char ch = text.charAt(i);
+                    sendKeyChar(ch);
+                }
+            }
+
+            EditorSelection after = EditorSelection.from(ic);
+
+            if (revertable) {
+                this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
+            } else {
+                this.editorChangeRevertion = null;
+            }
+        }
     }
 
     private void sendKey(int code) {

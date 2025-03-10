@@ -19,22 +19,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
-import java.util.List;
-
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputClip_Data_Create_Done} 消息数据
+ * {@link InputMsgType#InputClip_Text_Commit_Doing} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-07
+ * @date 2025-03-10
  */
-public class InputClipMsgData extends InputMsgData {
-    public final List<InputClip> clips;
+public class InputClipTextCommitMsgData extends InputMsgData {
+    /** 待提交的文本内容 */
+    public final CharSequence text;
+    /** 是否逐字输入 */
+    public final boolean oneByOne;
 
-    public InputClipMsgData(List<InputClip> clips) {
-        this.clips = clips;
+    public InputClipTextCommitMsgData(CharSequence text) {
+        this(text, false);
+    }
+
+    public InputClipTextCommitMsgData(CharSequence text, boolean oneByOne) {
+        this.text = text;
+        this.oneByOne = oneByOne;
     }
 }

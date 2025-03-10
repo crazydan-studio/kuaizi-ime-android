@@ -27,12 +27,14 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import androidx.appcompat.widget.AppCompatEditText;
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
 
@@ -63,7 +65,7 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
                 this.editorChangeRevertion = null;
 
                 InputListCommitMsgData d = msg.data();
-                commitText(d.text, d.replacements);
+                commitText(d.text, d.replacements, true);
                 break;
             }
             case InputList_Committed_Revoke_Doing: {
@@ -76,6 +78,11 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
 
                 InputListPairSymbolCommitMsgData d = msg.data();
                 commitPairSymbolText(d.left, d.right);
+                break;
+            }
+            case InputClip_Text_Commit_Doing: {
+                InputClipTextCommitMsgData d = msg.data();
+                commitText(d.text, null, false);
                 break;
             }
             case Editor_Cursor_Move_Doing: {
@@ -100,19 +107,23 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
         }
     }
 
-    private void commitText(CharSequence text, List<String> replacements) {
+    private void commitText(CharSequence text, List<String> replacements, boolean revertable) {
         EditorSelection before = EditorSelection.from(this);
 
         int start = before.start;
         int end = before.end;
 
-        Editable editable = getText();
-        // Note：假设替换字符的长度均相同
-        int replacementStartIndex = Math.max(0, start - text.length());
-        CharSequence raw = editable.subSequence(replacementStartIndex, start);
-        if (replacements.contains(raw.toString())) {
-            replaceText(text, replacementStartIndex, start);
-            return;
+        if (!CollectionUtils.isEmpty(replacements)) {
+            Editable editable = getText();
+
+            // Note：假设替换字符的长度均相同
+            int replacementStartIndex = Math.max(0, start - text.length());
+            CharSequence raw = editable.subSequence(replacementStartIndex, start);
+
+            if (replacements.contains(raw.toString())) {
+                replaceText(text, replacementStartIndex, start);
+                return;
+            }
         }
 
         replaceText(text, start, end);
@@ -121,8 +132,12 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
         int offset = text.length();
         setSelection(start + offset);
 
-        EditorSelection after = EditorSelection.from(this);
-        this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
+        if (revertable) {
+            EditorSelection after = EditorSelection.from(this);
+            this.editorChangeRevertion = new EditorSelection.ChangeRevertion(before, after);
+        } else {
+            this.editorChangeRevertion = null;
+        }
     }
 
     private void commitPairSymbolText(CharSequence left, CharSequence right) {
