@@ -1,6 +1,6 @@
 {
   "3.1.0": {
-    "date": "2025-03-08",
+    "date": "2025-03-11",
     "logs": [
       {
         "t": "在输入列表的空闲状态显示工具栏，并内置剪贴板管理、快捷配置、复制/粘贴、输入法切换等功能按键，同时适配左右手模式，自动调整功能按键的布局方向&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
@@ -15,13 +15,16 @@
         "t": "取消拼音键盘中对字符按键的长按手势，以避免与滑行输入发生冲突"
       },
       {
-        "t": "键盘退出时，不重置输入列表，以避免误操作导致输入被清空&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;的热心反馈"
+        "t": "键盘退出时，不重置输入列表，以避免误操作导致输入被清空&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       },
       {
         "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/39\">#39</a>。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>、<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;与&nbsp;<a href=\"https://github.com/zhangyuyard\">@zhangyuyard</a>&nbsp;的热心反馈与建议"
       },
       {
-        "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;的热心反馈"
+        "t": "支持在主界面以点击版本号的方式查看当前版本的变更日志"
+      },
+      {
+        "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       },
       {
         "t": "修复在 Android API 30 及以上版本的系统中不能指定 Toast 消息的位置的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/26\">#26</a>。感谢&nbsp;<a href=\"https://github.com/ZreXoc\">@ZreXoc</a>&nbsp;的热心反馈"
@@ -33,7 +36,7 @@
         "t": "修复拼音滑屏输入时，容易激活滑过的按键并以滑过的按键作为拼音声母，使得拼音输入与预期不符的问题"
       },
       {
-        "t": "支持在主界面以点击版本号的方式查看当前版本的变更日志"
+        "t": "修复光标移动发生越界而跳出当前编辑区域并聚焦到其他界面元素的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       }
     ]
   },
