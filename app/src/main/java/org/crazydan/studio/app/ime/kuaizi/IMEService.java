@@ -27,6 +27,8 @@ import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedText;
+import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodSubtype;
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
@@ -342,8 +344,40 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
             return;
         }
 
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+
         // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
         for (int i = 0; i < anchor.distance; i++) {
+            ExtractedText extractedText = ic.getExtractedText(new ExtractedTextRequest(), 0);
+            // 已失去焦点
+            if (extractedText == null) {
+                break;
+            }
+
+            boolean needToStop = false;
+            // 光标移动不能超出当前的编辑区域
+            // Note: 通过方向键做文本选择不会超出编辑区域，故而，仅需检查光标移动，确保其不超过文本的首尾位置
+            switch (anchor.direction) {
+                case up:
+                case left: {
+                    needToStop = extractedText.selectionStart == 0 && extractedText.selectionEnd == 0;
+                    break;
+                }
+                case right:
+                case down: {
+                    int end = extractedText.text.length();
+                    needToStop = extractedText.selectionStart == end && extractedText.selectionEnd == end;
+                    break;
+                }
+            }
+
+            if (needToStop) {
+                break;
+            }
+
             switch (anchor.direction) {
                 case up:
                     sendKey(KeyEvent.KEYCODE_DPAD_UP);

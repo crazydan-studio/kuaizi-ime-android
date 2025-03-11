@@ -81,11 +81,11 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
 
     // ======================== Start: 编辑器编辑逻辑 ========================
 
+    /** 仅处理光标移动 */
     protected void start_Editor_Editing(KeyboardContext context, Point from) {
-        this.log.debug("Start editor editing: key=%s, at=%s", () -> new Object[] { context.key, from });
-
         CtrlKey key = context.key();
-        EditorEditStateData.Target target = null;
+
+        EditorEditStateData.Target target;
         switch (key.type) {
             case Editor_Cursor_Locator:
                 target = EditorEditStateData.Target.cursor;
@@ -93,7 +93,13 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
             case Editor_Range_Selector:
                 target = EditorEditStateData.Target.selection;
                 break;
+            default: {
+                // 忽略非光标移动
+                return;
+            }
         }
+
+        this.log.debug("Start editor editing: key=%s, at=%s", () -> new Object[] { context.key, from });
 
         EditorEditStateData stateData = new EditorEditStateData(target, from);
         State state = new State(State.Type.Editor_Edit_Doing, stateData, this.state);
