@@ -174,11 +174,17 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         doStartInput(Keyboard.Type.By_ImeSubtype, null, null, false);
     }
 
+    @Override
+    public void hideWindow() {
+        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
+
+        super.hideWindow();
+    }
+
     /** 隐藏输入：暂时退出编辑，但会恢复编辑 */
     @Override
     public void onFinishInputView(boolean finishingInput) {
         ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::hide);
-        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
 
         super.onFinishInputView(finishingInput);
     }
@@ -188,7 +194,6 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     public void onFinishInput() {
         // Note: 在 #onCreateInputView 之前，该接口也会被调用
         ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::exit);
-        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
 
         this.editorChangeRevertion = null;
 

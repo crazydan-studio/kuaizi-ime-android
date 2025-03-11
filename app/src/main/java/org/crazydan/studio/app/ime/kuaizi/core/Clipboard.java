@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,18 +31,17 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 
 /**
@@ -86,6 +86,7 @@ public class Clipboard {
     private final ClipboardManager manager;
 
     private int latestUsedClipCode;
+    private List<InputClip> latestClips;
 
     public Clipboard(ClipboardManager manager) {
         this.manager = manager;
@@ -97,8 +98,10 @@ public class Clipboard {
     public void onMsg(ClipboardContext context, UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_InputClip: {
-                UserInputClipSingleTapMsgData data = msg.data();
+                // 提前废弃数据，以避免 commit 消息更新剪贴数据的视图
+                discardClips();
 
+                UserInputClipSingleTapMsgData data = msg.data();
                 switch (data.clip.type) {
                     case captcha:
                     case phone: {
@@ -116,8 +119,6 @@ public class Clipboard {
                         }
                     }
                 }
-
-                this.latestUsedClipCode = data.clip.code;
 
                 context.fireInputMsg(InputClip_Data_Apply_Done);
                 break;
@@ -139,39 +140,76 @@ public class Clipboard {
     // =============================== Start: 生命周期 ===================================
 
     public void start(ClipboardContext context) {
-        InputClip primary = readClip(this.manager);
-        if (primary == null) {
-            return;
-        }
-
-        int clipCode = primary.code;
-        // 若剪贴板数据已使用，则不再提示可粘贴
-        if (this.latestUsedClipCode == clipCode) {
-            return;
-        }
-        this.latestUsedClipCode = 0;
-
-        String primaryText = cleanClipText(primary);
-        InputClip inner = extractInnerClip(primaryText, clipCode);
-
-        List<InputClip> clips = new ArrayList<>();
-        // Note: 确保原始内容在第一的位置
-        clips.add(primary);
-
-        if (inner != null) {
-            if (primaryText.equals(inner.text)) {
-                // 仅更改类型，以保留首尾的空白字符
-                clips.set(0, primary.copy((b) -> b.type(inner.type)));
-            } else {
-                clips.add(inner);
-            }
-        }
-
-        InputClipMsgData msgData = new InputClipMsgData(clips);
-        context.fireInputMsg(InputClip_Data_Create_Done, msgData);
     }
 
     // =============================== End: 生命周期 ===================================
+
+    /**
+     * 废弃剪贴数据，不再使用
+     * <p/>
+     * 一般在有新的输入时，需废弃剪贴数据
+     */
+    public void discardClips() {
+        if (this.latestClips == null) {
+            return;
+        }
+
+        this.log.debug("Discard Clips");
+
+        InputClip primary = readClip(this.manager);
+        doDiscardClips(primary);
+    }
+
+    /** 检查是否有有效的剪贴数据 */
+    public boolean verifyClips() {
+        InputClip primary = readClip(this.manager);
+        if (primary == null) {
+            doDiscardClips(null);
+            return false;
+        }
+
+        int clipCode = primary.code;
+        // 若剪贴板数据已使用，则数据失效
+        if (this.latestUsedClipCode == clipCode) {
+            return false;
+        }
+        this.latestUsedClipCode = 0;
+
+        if (CollectionUtils.isEmpty(this.latestClips) //
+            || this.latestClips.get(0).code != clipCode //
+        ) {
+            String primaryText = cleanClipText(primary);
+            InputClip other = extractOtherClip(primaryText, clipCode);
+
+            List<InputClip> clips = new ArrayList<>();
+            // Note: 确保原始内容在第一的位置
+            clips.add(primary);
+
+            if (other != null) {
+                if (primaryText.equals(other.text)) {
+                    // 仅更改类型，以保留首尾的空白字符
+                    clips.set(0, primary.copy((b) -> b.type(other.type)));
+                } else {
+                    clips.add(other);
+                }
+            }
+            this.latestClips = Collections.unmodifiableList(clips);
+        }
+
+        return true;
+    }
+
+    /** 返回剪贴数据 */
+    public List<InputClip> getClips() {
+        return this.latestClips;
+    }
+
+    // =============================== Start: 内部方法 ===================================
+
+    private void doDiscardClips(InputClip primary) {
+        this.latestClips = null;
+        this.latestUsedClipCode = primary != null ? primary.code : 0;
+    }
 
     private String cleanClipText(InputClip clip) {
         return clip.text.trim();
@@ -204,7 +242,7 @@ public class Clipboard {
         return clip.type != null ? clip.copy((b) -> b.code(clip.hashCode())) : null;
     }
 
-    private InputClip extractInnerClip(String primaryText, int code) {
+    private InputClip extractOtherClip(String primaryText, int code) {
         Map<InputClip.Type, Matcher> matchers = new LinkedHashMap<InputClip.Type, Matcher>() {{
             put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
             put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));
@@ -246,4 +284,6 @@ public class Clipboard {
         }
         manager.setPrimaryClip(oldClip);
     }
+
+    // =============================== End: 内部方法 ===================================
 }

@@ -100,8 +100,6 @@ public enum InputMsgType {
     /** （系统）配置已更新 */
     Config_Update_Done,
 
-    /** 剪贴板数据已生成 */
-    InputClip_Data_Create_Done,
     /** 剪贴板数据已应用 */
     InputClip_Data_Apply_Done,
     /** 剪贴板文本提交中：将文本写入到 目标编辑器 中 */

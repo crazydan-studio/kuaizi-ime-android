@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -48,6 +49,9 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
     /** 输入列表状态 */
     public final InputListState inputList;
 
+    /** 快捷输入数据 */
+    public final List<?> inputQuickList;
+
     /** 构建 {@link InputMsg} */
     public static InputMsg build(Consumer<Builder> c) {
         return Builder.build(builder, c);
@@ -60,6 +64,7 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         this.inputFactory = builder.inputFactory;
 
         this.inputList = builder.inputList;
+        this.inputQuickList = builder.inputQuickList;
     }
 
     public static class InputListState {
@@ -67,15 +72,12 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         public final boolean frozen;
         /** 输入列表是否为空 */
         public final boolean empty;
-        /** 输入列表是否有输入补全 */
-        public final boolean hasCompletions;
         /** 是否可取消对输入列表的清空 */
         public final boolean canCancelClean;
 
-        InputListState(boolean frozen, boolean empty, boolean hasCompletions, boolean canCancelClean) {
+        InputListState(boolean frozen, boolean empty, boolean canCancelClean) {
             this.frozen = frozen;
             this.empty = empty;
-            this.hasCompletions = hasCompletions;
             this.canCancelClean = canCancelClean;
         }
 
@@ -91,6 +93,7 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         private InputFactory inputFactory;
 
         private InputListState inputList;
+        private List<?> inputQuickList;
 
         // ===================== Start: 构建函数 ===================
 
@@ -106,11 +109,16 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
             this.keyFactory = null;
             this.inputFactory = null;
             this.inputList = null;
+            this.inputQuickList = null;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), this.keyFactory, this.inputFactory, this.inputList);
+            return Objects.hash(super.hashCode(),
+                                this.keyFactory,
+                                this.inputFactory,
+                                this.inputList,
+                                this.inputQuickList);
         }
 
         // ===================== End: 构建函数 ===================
@@ -130,13 +138,14 @@ public class InputMsg extends BaseMsg<InputMsgType, InputMsgData> {
         }
 
         /** @see InputMsg#inputList */
-        public Builder inputList(
-                InputList inputList, boolean hasCompletionsInputList, boolean canCancelCleanInputList
-        ) {
-            this.inputList = new InputListState(inputList.isFrozen(),
-                                                inputList.isEmpty(),
-                                                hasCompletionsInputList,
-                                                canCancelCleanInputList);
+        public Builder inputList(InputList inputList, boolean canCancelCleanInputList) {
+            this.inputList = new InputListState(inputList.isFrozen(), inputList.isEmpty(), canCancelCleanInputList);
+            return this;
+        }
+
+        /** @see InputMsg#inputQuickList */
+        public Builder inputQuickList(List<?> inputQuickList) {
+            this.inputQuickList = inputQuickList;
             return this;
         }
 

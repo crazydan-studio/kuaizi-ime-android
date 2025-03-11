@@ -50,8 +50,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
@@ -99,7 +97,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     public void setConfig(Config.Mutable config) {
         this.config = config;
-        doLayout();
+        updateLayout();
     }
 
     public XPadView getXPadView() {
@@ -174,10 +172,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private void handleMsg(InputMsg msg) {
-        // Note: 输入补全没有确定的隐藏时机，故而，需针对每个消息做一次检查
-        if (!msg.inputList.hasCompletions) {
-            //showInputCompletionsPopupWindow(null);
-        }
+        // Note: 快捷输入没有确定的隐藏时机，故而，需针对每个消息做一次处理，在数据为 null 时隐藏，有数据时显示
+        showInputQuickPopupWindow(msg.inputQuickList);
 
         switch (msg.type) {
             case Keyboard_Start_Doing: {
@@ -205,12 +201,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
-            case InputCompletion_Create_Done: {
-                InputCompletionMsgData data = msg.data();
-
-                showInputQuickPopupWindow(data.completions);
-                break;
-            }
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = msg.data();
 
@@ -219,16 +209,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
             case InputChars_Input_Popup_Hide_Doing: {
                 showInputKeyPopupWindow(null, false);
-                break;
-            }
-            case InputClip_Data_Create_Done: {
-                InputClipMsgData data = msg.data();
-
-                showInputQuickPopupWindow(data.clips);
-                break;
-            }
-            case InputClip_Data_Apply_Done: {
-                showInputQuickPopupWindow(null);
                 break;
             }
             default: {
@@ -240,7 +220,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
         switch (data.configKey) {
             case theme: {
-                doLayout();
+                updateLayout();
                 break;
             }
             case enable_x_input_pad:
@@ -267,8 +247,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     // =============================== Start: 视图更新 ===================================
 
-    /** 布局视图 */
-    private void doLayout() {
+    /** 更新布局 */
+    private void updateLayout() {
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
@@ -341,7 +321,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void showInputQuickPopupWindow(List<?> dataList) {
         PopupWindow window = this.inputQuickPopupWindow;
         if (CollectionUtils.isEmpty(dataList)) {
-            window.dismiss();
+            post(window::dismiss);
             return;
         }
 
@@ -353,13 +333,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
         PopupWindow window = this.inputKeyPopupWindow;
-
-        if (this.config.bool(ConfigKey.disable_input_key_popup_tips)) {
-            window.dismiss();
-            return;
-        }
-
-        if (CharUtils.isBlank(key)) {
+        if (this.config.bool(ConfigKey.disable_input_key_popup_tips) //
+            || CharUtils.isBlank(key) //
+        ) {
             // Note: 存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
             post(window::dismiss);
             return;
@@ -411,7 +387,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             int y = location[1] - height;
 
             // 设置初始显示位置：其仅在未显示时有效
-            window.showAtLocation(this.popupAnchor, Gravity.START | Gravity.TOP, 0, 0);
+            window.showAtLocation(this.popupAnchor, Gravity.START | Gravity.TOP, x, y);
 
             // 确保窗口按照内容高度调整位置：其仅在显示时有效
             // Note: 需要强制更新，否则，内容布局会出现跳动

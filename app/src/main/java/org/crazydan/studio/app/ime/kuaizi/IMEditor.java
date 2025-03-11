@@ -308,6 +308,22 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
+            case Editor_Edit_Doing: {
+                EditorEditMsgData data = msg.data();
+                // 非剪贴板操作，则不废弃剪贴数据
+                if (!EditorAction.forClip(data.action)) {
+                    break;
+                }
+            }
+            case InputList_PairSymbol_Commit_Doing:
+            case InputList_Commit_Doing:
+            case InputChars_Input_Doing: {
+                // 若正在输入，则废弃剪贴数据
+                this.clipboard.discardClips();
+            }
+        }
+
+        switch (msg.type) {
             case Keyboard_Switch_Doing: {
                 on_Keyboard_Switch_Doing_Msg(msg.data());
                 // Note: 在键盘切换过程中，不向上转发消息
@@ -392,14 +408,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private void fire_InputMsg(InputMsgType type, InputMsgData data) {
         KeyFactory keyFactory = createKeyFactory();
         InputFactory inputFactory = createInputFactory();
+        List<?> inputQuickList = getInputQuickList();
 
         InputMsg msg = InputMsg.build((b) -> b.type(type)
                                               .data(data)
                                               .keyFactory(keyFactory)
                                               .inputFactory(inputFactory)
-                                              .inputList(this.inputList,
-                                                         this.inputList.verifyCompletions(),
-                                                         this.inputboard.canRestoreCleaned()));
+                                              .inputQuickList(inputQuickList)
+                                              .inputList(this.inputList, this.inputboard.canRestoreCleaned()));
 
         this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
                 msg.getClass(), this.listener.getClass()
@@ -569,6 +585,15 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     private void withInputContextBuilder(BaseInputContext.Builder<?, ?> builder) {
         builder.dict(this.dict).inputList(this.inputList).listener(this);
+    }
+
+    private List<?> getInputQuickList() {
+        if (this.inputList.verifyCompletions()) {
+            return this.inputList.getCompletionViewDataList();
+        } else if (this.clipboard.verifyClips()) {
+            return this.clipboard.getClips();
+        }
+        return null;
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================

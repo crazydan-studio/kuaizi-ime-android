@@ -57,4 +57,15 @@ public enum EditorAction {
         }
         return true;
     }
+
+    /** 是否为剪贴板操作 */
+    public static boolean forClip(EditorAction action) {
+        switch (action) {
+            case copy:
+            case paste:
+            case cut:
+                return true;
+        }
+        return false;
+    }
 }
