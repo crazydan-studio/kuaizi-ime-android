@@ -52,7 +52,7 @@
                 android:id="@+id/latin_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/input_completions_latin_text_size"
+                android:textSize="@dimen/input_quick_text_size"
                 android:textColor="?attr/input_quick_fg_color" />
     </LinearLayout>
 

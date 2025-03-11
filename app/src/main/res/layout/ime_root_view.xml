@@ -24,6 +24,12 @@
         android:orientation="vertical"
         android:background="?attr/keyboard_bg_color">
 
+    <!-- 气泡提示的定位视图 -->
+    <View
+            android:id="@+id/popup_anchor"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+
     <View
             android:id="@+id/top_border"
             android:layout_width="match_parent"
@@ -39,8 +45,7 @@
     <View
             android:id="@+id/snackbar_anchor"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_gravity="bottom" />
+            android:layout_height="0dp" />
 
     <View
             android:layout_width="match_parent"

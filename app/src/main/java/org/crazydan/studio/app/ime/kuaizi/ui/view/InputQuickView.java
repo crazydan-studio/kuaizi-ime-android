@@ -56,6 +56,9 @@ public class InputQuickView extends RecyclerView<InputQuickViewAdapter, InputQui
     public InputQuickView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
+        // 去掉动画，以避免闪烁
+        setItemAnimator(null);
+
         RecyclerViewGestureDetector<InputQuickViewData> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }

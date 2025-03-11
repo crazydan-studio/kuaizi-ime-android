@@ -20,10 +20,8 @@
 package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -36,6 +34,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
@@ -77,6 +76,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private InputboardView inputboardView;
     private TextView keyboardWarningView;
 
+    private View popupAnchor;
     private PopupWindow inputKeyPopupWindow;
     private PopupWindow inputQuickPopupWindow;
 
@@ -214,7 +214,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             case InputChars_Input_Popup_Show_Doing: {
                 InputCharsInputPopupShowMsgData data = msg.data();
 
-                showInputQuickPopupWindow(null);
                 showInputKeyPopupWindow(data.text, data.hideDelayed);
                 break;
             }
@@ -288,13 +287,17 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.inputboardView.setConfig(this.config);
         this.inputboardView.setListener(this);
 
+        // <<<<<<<<<< 气泡提示
+        this.popupAnchor = rootView.findViewById(R.id.popup_anchor);
+
         View inputKeyView = inflateWithTheme(R.layout.popup_input_key_view, themeResId, false);
         this.inputKeyPopupWindow = preparePopupWindow(this.inputKeyPopupWindow, inputKeyView);
 
         InputQuickView inputQuickView = inflateWithTheme(R.layout.popup_input_quick_view, themeResId, false);
         inputQuickView.setListener(this);
-        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickView);
         updatePopupViewLayout(inputQuickView);
+        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickView);
+        // >>>>>>>>>>>
     }
 
     private void updateBottomSpacing(boolean force) {
@@ -343,22 +346,19 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         }
 
         InputQuickView inputQuickView = (InputQuickView) window.getContentView();
-
         inputQuickView.update(dataList);
-        inputQuickView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-        int width = WindowManager.LayoutParams.MATCH_PARENT;
-        int height = inputQuickView.getMeasuredHeight();
-
-        showPopupWindow(window, () -> new Point(width, height), Gravity.START | Gravity.TOP);
+        showPopupWindow(window);
     }
 
     private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
+        PopupWindow window = this.inputKeyPopupWindow;
+
         if (this.config.bool(ConfigKey.disable_input_key_popup_tips)) {
+            window.dismiss();
             return;
         }
 
-        PopupWindow window = this.inputKeyPopupWindow;
         if (CharUtils.isBlank(key)) {
             // Note: 存在因滑动太快而无法隐藏的问题，故而，延迟隐藏
             post(window::dismiss);
@@ -369,12 +369,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         TextView textView = contentView.findViewById(R.id.fg_view);
         textView.setText(key);
 
-        contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-        int width = WindowManager.LayoutParams.WRAP_CONTENT;
-        int height = contentView.getMeasuredHeight();
-
-        showPopupWindow(window, () -> new Point(width, height), Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        showPopupWindow(window);
 
         if (hideDelayed) {
             postDelayed(window::dismiss, 600);
@@ -382,45 +377,45 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private PopupWindow preparePopupWindow(PopupWindow window, View contentView) {
-        if (window == null) {
-            window = new PopupWindow();
+        // Note: 重建窗口，以便于更新主题样式
+        ObjectUtils.invokeWhenNonNull(window, PopupWindow::dismiss);
 
-            initPopupWindow(window, contentView);
-        }
+        window = new PopupWindow(contentView,
+                                 WindowManager.LayoutParams.MATCH_PARENT,
+                                 WindowManager.LayoutParams.WRAP_CONTENT);
 
-        return window;
-    }
-
-    private void initPopupWindow(PopupWindow window, View contentView) {
         window.setClippingEnabled(false);
         window.setBackgroundDrawable(null);
         window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
 
-        window.setContentView(contentView);
-
         window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+
+        return window;
     }
 
-    private void showPopupWindow(PopupWindow window, Supplier<Point> sizeGetter, int gravity) {
+    private void showPopupWindow(PopupWindow window) {
+        // Note: 初始启动时，测量内容尺寸将返回 0，故而，需在视图渲染完毕后，再取值
         post(() -> {
-            // Note: 初始启动时，getMeasuredWidth/getMeasuredHeight 将返回 0，故而，需在视图渲染完毕后，再取值
-            Point size = sizeGetter.get();
+            // 测量内容高度
+            View contentView = window.getContentView();
+            contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-            int width = size.x;
-            int height = size.y;
-
-            window.setWidth(width);
-            window.setHeight(height);
+            int height = contentView.getMeasuredHeight();
 
             // 放置于被布局的键盘之上
-            View parent = this;
+            View parent = this.popupAnchor;
             int[] location = new int[2];
             parent.getLocationInWindow(location);
 
             int x = location[0];
             int y = location[1] - height;
 
-            window.showAtLocation(parent, gravity, x, y);
+            // 设置初始显示位置：其仅在未显示时有效
+            window.showAtLocation(this.popupAnchor, Gravity.START | Gravity.TOP, 0, 0);
+
+            // 确保窗口按照内容高度调整位置：其仅在显示时有效
+            // Note: 需要强制更新，否则，内容布局会出现跳动
+            window.update(x, y, window.getWidth(), window.getHeight(), true);
         });
     }
 
