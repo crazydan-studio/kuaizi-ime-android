@@ -433,7 +433,6 @@ public abstract class BaseKeyboard implements Keyboard {
                 ((CharInput) pending).appendKey(key);
 
                 fire_InputChars_Input_Doing_in_TapMode(context, pending);
-
                 do_InputList_Pending_Completion_Creating(context);
                 break;
             }
@@ -481,7 +480,9 @@ public abstract class BaseKeyboard implements Keyboard {
         context = context.copy((b) -> b.key(newKey));
 
         show_InputChars_Input_Popup(context);
+
         fire_InputChars_Input_Doing_in_TapMode(context, input);
+        do_InputList_Pending_Completion_Creating(context);
     }
 
     /** 提交单字符按键的替换输入：对编辑框内的输入字符做输入替换 */
