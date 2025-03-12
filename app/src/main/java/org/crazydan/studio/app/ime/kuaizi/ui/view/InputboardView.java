@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Hide_Keyboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Keyboard;
 
 /**
  * {@link Inputboard} 的视图
@@ -132,7 +132,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.tools.settings = new Btn(rootView, R.id.tool_settings, this::onShowPreferences);
         this.tools.clipboard = new Btn(rootView, R.id.tool_clipboard, this::onShowClipboard);
         this.tools.switchIme = new Btn(rootView, R.id.tool_switch_ime, this::onSwitchIme);
-        this.tools.hideKeyboard = new Btn(rootView, R.id.tool_hide_keyboard, this::onHideKeyboard);
+        this.tools.closeKeyboard = new Btn(rootView, R.id.tool_close_keyboard, this::onCloseKeyboard);
 
         this.tools.cleanInputList = new Btn(rootView, R.id.clean_input_list, this::onCleanInputList);
         this.tools.cancelCleanInputList = new Btn(rootView, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
@@ -153,21 +153,21 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.tools.clipboard.disabled = false;
         this.tools.settings.disabled = this.config.bool(ConfigKey.disable_settings_btn);
         this.tools.switchIme.disabled = this.config.bool(ConfigKey.disable_switch_ime_btn);
-        this.tools.hideKeyboard.disabled = this.config.bool(ConfigKey.disable_hide_keyboard_btn);
+        this.tools.closeKeyboard.disabled = this.config.bool(ConfigKey.disable_close_keyboard_btn);
 
         switch (this.state.type) {
             case Init: {
                 this.tools.toolbar.shown = true;
 
                 this.tools.settings.shown = true;
-                this.tools.hideKeyboard.shown = true;
+                this.tools.closeKeyboard.shown = true;
                 break;
             }
             case Input_Freeze_Doing: {
                 this.tools.inputbar.shown = true;
 
                 this.tools.settings.shown = true;
-                this.tools.hideKeyboard.shown = true;
+                this.tools.closeKeyboard.shown = true;
                 break;
             }
             case Input_Doing: {
@@ -250,8 +250,8 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         onMsg(msg);
     }
 
-    private void onHideKeyboard(View v) {
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Hide_Keyboard));
+    private void onCloseKeyboard(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Close_Keyboard));
         onMsg(msg);
     }
 
@@ -294,7 +294,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         public Btn showToolbar;
 
         public Btn hideToolbar;
-        public Btn hideKeyboard;
+        public Btn closeKeyboard;
 
         public Btn cleanInputList;
         public Btn cancelCleanInputList;
@@ -312,7 +312,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
                     this.settings,
                     this.showToolbar,
                     this.hideToolbar,
-                    this.hideKeyboard,
+                    this.closeKeyboard,
                     this.cleanInputList,
                     this.cancelCleanInputList
             };

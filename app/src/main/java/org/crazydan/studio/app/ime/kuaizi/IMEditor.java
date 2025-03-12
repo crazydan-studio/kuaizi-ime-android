@@ -70,10 +70,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Hide_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Switch_Done;
 
@@ -160,9 +160,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         withClipboardContext(this.clipboard::start);
     }
 
-    /** 隐藏 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
-    public void hide() {
-        fire_InputMsg(Keyboard_Hide_Done);
+    /** 关闭 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
+    public void close() {
+        fire_InputMsg(Keyboard_Close_Done);
     }
 
     /** 退出 {@link IMEditor} */
@@ -270,8 +270,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         switch (msg.type) {
             // 直接处理不需要由输入面板转发的消息
-            case SingleTap_Btn_Hide_Keyboard: {
-                fire_InputMsg(Keyboard_Hide_Doing);
+            case SingleTap_Btn_Close_Keyboard: {
+                fire_InputMsg(Keyboard_Close_Doing);
                 break;
             }
             default: {

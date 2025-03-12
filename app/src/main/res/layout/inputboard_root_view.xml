@@ -142,7 +142,7 @@
                 android:background="@android:color/transparent" />
 
         <ImageButton
-                android:id="@+id/tool_hide_keyboard"
+                android:id="@+id/tool_close_keyboard"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_btn_tool_hide_keyboard"

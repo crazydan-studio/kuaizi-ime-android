@@ -39,8 +39,8 @@ public enum ConfigKey {
     disable_settings_btn(Boolean.class, false),
     /** 是否禁用 IME 切换按钮 */
     disable_switch_ime_btn(Boolean.class, false),
-    /** 是否禁用隐藏键盘按钮 */
-    disable_hide_keyboard_btn(Boolean.class, false),
+    /** 是否禁用键盘关闭按钮 */
+    disable_close_keyboard_btn(Boolean.class, false),
     // ====================== End: 临时性配置 =====================
 
     /** 主题样式 */
@@ -70,6 +70,11 @@ public enum ConfigKey {
 
     /** 适配移动端的上滑手势 */
     adapt_desktop_swipe_up_gesture(Boolean.class, false),
+
+    /** 是否禁用剪贴数据提示 */
+    disable_input_clip_popup_tips(Boolean.class, false),
+    /** 已使用的剪贴数据标识 */
+    used_input_clip_code(String.class, ""),
     ;
 
     public final Class<?> type;

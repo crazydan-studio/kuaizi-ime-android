@@ -75,7 +75,7 @@ public class InputListView extends InputListViewBase implements InputMsgListener
                 //
             case Keyboard_Switch_Doing:
             case Keyboard_Start_Doing:
-            case Keyboard_Hide_Done:
+            case Keyboard_Close_Done:
             case Keyboard_Exit_Done:
             case Keyboard_HandMode_Switch_Doing:
             case Keyboard_HandMode_Switch_Done:

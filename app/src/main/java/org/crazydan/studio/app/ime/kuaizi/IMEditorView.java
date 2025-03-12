@@ -320,7 +320,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private void showInputQuickPopupWindow(List<?> dataList) {
         PopupWindow window = this.inputQuickPopupWindow;
-        if (CollectionUtils.isEmpty(dataList)) {
+        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips) //
+            || CollectionUtils.isEmpty(dataList) //
+        ) {
             post(window::dismiss);
             return;
         }

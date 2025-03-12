@@ -86,10 +86,10 @@ public enum InputMsgType {
     Keyboard_Start_Doing,
     /** 键盘已启动 */
     Keyboard_Start_Done,
-    /** 键盘隐藏中 */
-    Keyboard_Hide_Doing,
-    /** 键盘已隐藏 */
-    Keyboard_Hide_Done,
+    /** 键盘关闭中 */
+    Keyboard_Close_Doing,
+    /** 键盘已关闭 */
+    Keyboard_Close_Done,
     /** 键盘已退出 */
     Keyboard_Exit_Done,
     /** X 型输入键盘的演示已被终止：仅用于发送演示终止消息 */

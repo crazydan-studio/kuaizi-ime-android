@@ -253,7 +253,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 //
             case Keyboard_Switch_Doing:
             case Keyboard_Start_Doing:
-            case Keyboard_Hide_Done:
+            case Keyboard_Close_Done:
             case Keyboard_Exit_Done:
             case Keyboard_HandMode_Switch_Doing:
             case Keyboard_XPad_Simulation_Terminated:
