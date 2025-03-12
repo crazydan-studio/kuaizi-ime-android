@@ -222,6 +222,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 }
                 break;
             }
+            case InputClip_Text_Commit_Doing: {
+                showInputKeyPopupWindow("已" + EditorAction.paste.label, true);
+                break;
+            }
             case InputClip_Data_Apply_Done: {
                 // TODO 提示是否收藏剪贴数据
                 break;

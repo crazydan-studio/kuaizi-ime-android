@@ -132,6 +132,12 @@ public class Clipboard {
         }
     }
 
+    /** 监听剪贴板变化，并仅执行一次调用 */
+    public void onClipChangedOnce(Runnable cb) {
+        OnceClipChangedListener listener = new OnceClipChangedListener(this.manager, cb);
+        listener.start();
+    }
+
     private void commitClipText(ClipboardContext context, InputClip clip, boolean oneByOne) {
         InputClipTextCommitMsgData msgData = new InputClipTextCommitMsgData(clip.text, oneByOne);
 
@@ -150,9 +156,7 @@ public class Clipboard {
         } else {
             this.latestUsedClipCode = context.usedClipCode;
 
-            if (updateClips(false)) {
-                context.fireInputMsg(InputClip_Data_Create_Done);
-            }
+            updateClips(context, false);
         }
     }
 
@@ -183,18 +187,18 @@ public class Clipboard {
     }
 
     /** 更新剪贴数据，用于剪贴板发生变化时调用 */
-    public boolean updateClips(boolean force) {
+    public void updateClips(ClipboardContext context, boolean force) {
         InputClip primary = readClip(this.manager);
         if (primary == null) {
             discardClips();
-            return false;
+            return;
         }
 
         String clipCode = primary.code;
         // 若剪贴板数据已使用，则不再处理
         if (!force && clipCode.equals(this.latestUsedClipCode)) {
             discardClips();
-            return false;
+            return;
         }
 
         String primaryText = cleanClipText(primary);
@@ -218,7 +222,7 @@ public class Clipboard {
 
         this.latestClips = Collections.unmodifiableList(clips);
 
-        return true;
+        context.fireInputMsg(InputClip_Data_Create_Done);
     }
 
     // =============================== Start: 内部方法 ===================================
@@ -308,4 +312,24 @@ public class Clipboard {
     }
 
     // =============================== End: 内部方法 ===================================
+
+    private static class OnceClipChangedListener implements ClipboardManager.OnPrimaryClipChangedListener {
+        private final ClipboardManager manager;
+        private final Runnable cb;
+
+        OnceClipChangedListener(ClipboardManager manager, Runnable cb) {
+            this.manager = manager;
+            this.cb = cb;
+        }
+
+        public void start() {
+            this.manager.addPrimaryClipChangedListener(this);
+        }
+
+        @Override
+        public void onPrimaryClipChanged() {
+            this.cb.run();
+            this.manager.removePrimaryClipChangedListener(this);
+        }
+    }
 }

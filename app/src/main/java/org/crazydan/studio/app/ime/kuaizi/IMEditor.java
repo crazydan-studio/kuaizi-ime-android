@@ -74,7 +74,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Discard_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Done;
@@ -326,7 +325,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 .debug("Message Type: %s", () -> new Object[] { msg.type }) //
                 .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
-        on_Before_InputClip_Related_Msg(msg);
+        on_InputClip_Related_Msg(msg);
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
@@ -403,8 +402,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.log.endTreeLog();
 
         fire_InputMsg(msg.type, msg.data());
-
-        on_After_InputClip_Related_Msg(msg);
     }
 
     /** 发送 {@link InputMsg} 消息：附带空的消息数据 */
@@ -457,8 +454,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
     }
 
-    /** 前处理与剪贴数据相关的消息：针对需要在消息之前提前处理剪贴数据的情况 */
-    private void on_Before_InputClip_Related_Msg(InputMsg msg) {
+    /** 处理与剪贴数据相关的消息 */
+    private void on_InputClip_Related_Msg(InputMsg msg) {
         if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
             return;
         }
@@ -472,36 +469,28 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 this.clipboard.discardClips();
                 break;
             }
+            case InputClip_Data_Create_Done: {
+                startAutoClipsDiscard();
+                break;
+            }
             case InputClip_Data_Apply_Done: {
                 InputClipMsgData data = msg.data();
-
                 // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
                 this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
                 break;
             }
-        }
-    }
-
-    /** 后处理与剪贴数据相关的消息：针对需要消息处理完毕后，才能处理剪贴数据的情况 */
-    private void on_After_InputClip_Related_Msg(InputMsg msg) {
-        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
-            return;
-        }
-
-        switch (msg.type) {
             case Editor_Edit_Doing: {
                 EditorEditMsgData data = msg.data();
-
-                // 对剪贴板造成修改的操作，需要强制同步更新剪贴数据
-                if (EditorAction.hasClipEffect(data.action)) {
-                    this.config.set(ConfigKey.used_input_clip_code, null);
-
-                    if (this.clipboard.updateClips(true)) {
-                        fire_InputMsg(InputClip_Data_Create_Done);
-
-                        startAutoClipsDiscard();
-                    }
+                // 只有对剪贴板造成修改的操作，才需要同步更新剪贴数据
+                if (!EditorAction.hasClipEffect(data.action)) {
+                    break;
                 }
+                this.config.set(ConfigKey.used_input_clip_code, null);
+
+                // Note: 在 IMEService 中是异步执行剪切、复制操作的，故而，只能监听剪贴板以得到实时的剪贴数据
+                this.clipboard.onClipChangedOnce(() -> { //
+                    withClipboardContext((context) -> this.clipboard.updateClips(context, true));
+                });
                 break;
             }
         }
