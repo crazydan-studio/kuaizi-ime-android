@@ -74,7 +74,7 @@ public enum ConfigKey {
     /** 是否禁用剪贴数据提示 */
     disable_input_clip_popup_tips(Boolean.class, false),
     /** 剪贴数据提示的超时时间（毫秒） */
-    input_clip_popup_tips_timeout(Integer.class, 8 * 1000),
+    input_clip_popup_tips_timeout(Integer.class, 15 * 1000),
     /** 已使用的剪贴数据标识 */
     used_input_clip_code(String.class, null),
     ;

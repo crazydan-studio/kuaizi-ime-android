@@ -198,19 +198,22 @@ public class Clipboard {
         }
 
         String primaryText = cleanClipText(primary);
-        InputClip other = extractOtherClip(primaryText, clipCode);
+        List<InputClip> others = extractOtherClips(primaryText, clipCode);
 
         List<InputClip> clips = new ArrayList<>();
         // Note: 确保原始内容在第一的位置
         clips.add(primary);
 
-        if (other != null) {
-            if (primaryText.equals(other.text)) {
-                // 仅更改类型，以保留首尾的空白字符
-                clips.set(0, primary.copy((b) -> b.type(other.type)));
-            } else {
-                clips.add(other);
+        if (!others.isEmpty()) {
+            InputClip first = others.get(0);
+
+            // 仅更改类型，以保留首尾的空白字符
+            if (primaryText.equals(first.text)) {
+                clips.set(0, primary.copy((b) -> b.type(first.type)));
+                others.remove(0);
             }
+
+            clips.addAll(others);
         }
 
         this.latestClips = Collections.unmodifiableList(clips);
@@ -251,27 +254,37 @@ public class Clipboard {
         return clip.type != null ? clip.copy((b) -> b.code(clip.hashCode() + "")) : null;
     }
 
-    private InputClip extractOtherClip(String primaryText, String code) {
+    private List<InputClip> extractOtherClips(String primaryText, String code) {
         Map<InputClip.Type, Matcher> matchers = new LinkedHashMap<InputClip.Type, Matcher>() {{
+            // <<<<<<< 可重复匹配的类型，但每种类型仅支持匹配到一条数据
             put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
             put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));
             put(InputClip.Type.phone, REGEX_PHONE.matcher(primaryText));
+            // >>>>>>>
+            // <<<<<<< 不可重复匹配的类型：在有其他类型的匹配数据时，不再匹配这些类型的数据
             put(InputClip.Type.captcha, REGEX_CAPTCHA.matcher(primaryText));
+            // >>>>>>>
         }};
 
+        List<InputClip> clips = new ArrayList<>();
         for (Map.Entry<InputClip.Type, Matcher> entry : matchers.entrySet()) {
             Matcher matcher = entry.getValue();
             if (!matcher.matches()) {
                 continue;
             }
 
-            String text = matcher.group(1);
             InputClip.Type type = entry.getKey();
+            if (!clips.isEmpty() && type == InputClip.Type.captcha) {
+                continue;
+            }
 
-            return InputClip.build((b) -> b.type(type).code(code).text(text));
+            String text = matcher.group(1);
+            InputClip clip = InputClip.build((b) -> b.type(type).code(code).text(text));
+
+            clips.add(clip);
         }
 
-        return null;
+        return clips;
     }
 
     private void pastClip(ClipboardManager manager, InputClip data, Runnable cb) {

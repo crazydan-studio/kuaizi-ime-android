@@ -211,6 +211,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 showInputKeyPopupWindow(null, false);
                 break;
             }
+            case Editor_Edit_Doing: {
+                // TODO 对回删以外的操作给予气泡提示
+                break;
+            }
+            case InputClip_Data_Apply_Done: {
+                // TODO 提示是否收藏剪贴数据
+                break;
+            }
             default: {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
