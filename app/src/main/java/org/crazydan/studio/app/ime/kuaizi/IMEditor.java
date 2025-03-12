@@ -461,8 +461,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
 
         switch (msg.type) {
+            case InputList_Commit_Doing: {
+                InputListCommitMsgData d = msg.data();
+                // 仅换行和空格的输入不影响剪贴数据的处理
+                if ("\n".contentEquals(d.text) || " ".contentEquals(d.text)) {
+                    break;
+                }
+            }
             case InputList_PairSymbol_Commit_Doing:
-            case InputList_Commit_Doing:
             case InputChars_Input_Doing: {
                 // 若正在输入，则废弃剪贴数据
                 // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
