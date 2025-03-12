@@ -40,13 +40,16 @@ public class Toast {
     private CharSequence text;
     private int duration;
 
+    private CharSequence actionText;
+    private View.OnClickListener actionListener;
+
     public static Toast with(View context) {
         return new Toast(context);
     }
 
     private Toast(View context) {
         this.context = context;
-        this.anchor = context.findViewById(R.id.snackbar_anchor);
+        this.anchor = context.findViewById(R.id.toast_anchor);
     }
 
     public Toast setText(CharSequence text) {
@@ -64,8 +67,21 @@ public class Toast {
         return this;
     }
 
+    public Toast setAction(int resId, View.OnClickListener listener) {
+        return setAction(this.context.getContext().getText(resId), listener);
+    }
+
+    public Toast setAction(CharSequence text, View.OnClickListener listener) {
+        this.actionText = text;
+        this.actionListener = listener;
+        return this;
+    }
+
     public void show() {
         // Note: Snackbar 将自动管理多个实例，确保将前一个隐藏后再显示下一个
-        Snackbar.make(this.context, this.text, this.duration).setAnchorView(this.anchor).show();
+        Snackbar.make(this.context, this.text, this.duration)
+                .setAnchorView(this.anchor)
+                .setAction(this.actionText, this.actionListener)
+                .show();
     }
 }

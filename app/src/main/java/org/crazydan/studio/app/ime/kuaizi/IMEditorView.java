@@ -40,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -227,7 +228,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 break;
             }
             case InputClip_Data_Apply_Done: {
-                // TODO 提示是否收藏剪贴数据
+                Toast.with(this).setHtml("是否收藏已粘贴内容？").setDuration(5000).setAction("收藏", (v) -> {}).show();
                 break;
             }
             default: {
@@ -336,6 +337,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     // =============================== End: 视图更新 ===================================
 
     // ==================== Start: 气泡提示 ==================
+
+    private Toast createToast(String msg, Object... args) {
+        return Toast.with(this).setHtml(msg, args).setDuration(Toast.LENGTH_LONG);
+    }
 
     private void showInputQuickPopupWindow(List<?> dataList) {
         PopupWindow window = this.inputQuickPopupWindow;

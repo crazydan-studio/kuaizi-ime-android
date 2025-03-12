@@ -43,7 +43,7 @@
 
     <!-- SnackBar 的定位视图 -->
     <View
-            android:id="@+id/snackbar_anchor"
+            android:id="@+id/toast_anchor"
             android:layout_width="0dp"
             android:layout_height="0dp" />
 
