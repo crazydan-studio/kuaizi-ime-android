@@ -43,6 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMs
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 
 /**
@@ -143,9 +144,16 @@ public class Clipboard {
 
     /** 检查剪贴板，并构造{@link #verifyClips() 可使用的}剪贴数据 */
     public void start(ClipboardContext context) {
-        this.latestUsedClipCode = context.usedClipCode;
+        if (context.clipsDisabled) {
+            this.latestUsedClipCode = null;
+            this.latestClips = null;
+        } else {
+            this.latestUsedClipCode = context.usedClipCode;
 
-        updateClips(false);
+            if (updateClips(false)) {
+                context.fireInputMsg(InputClip_Data_Create_Done);
+            }
+        }
     }
 
     // =============================== End: 生命周期 ===================================
@@ -175,18 +183,18 @@ public class Clipboard {
     }
 
     /** 更新剪贴数据，用于剪贴板发生变化时调用 */
-    public void updateClips(boolean force) {
+    public boolean updateClips(boolean force) {
         InputClip primary = readClip(this.manager);
         if (primary == null) {
             discardClips();
-            return;
+            return false;
         }
 
         String clipCode = primary.code;
         // 若剪贴板数据已使用，则不再处理
         if (!force && clipCode.equals(this.latestUsedClipCode)) {
             discardClips();
-            return;
+            return false;
         }
 
         String primaryText = cleanClipText(primary);
@@ -206,6 +214,8 @@ public class Clipboard {
         }
 
         this.latestClips = Collections.unmodifiableList(clips);
+
+        return true;
     }
 
     // =============================== Start: 内部方法 ===================================

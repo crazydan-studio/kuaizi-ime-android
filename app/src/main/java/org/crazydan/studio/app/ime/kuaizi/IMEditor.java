@@ -25,6 +25,9 @@ import java.util.function.Function;
 
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
@@ -71,6 +74,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Discard_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
@@ -94,6 +98,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     private Config.Mutable config;
     private PinyinDict dict;
+    private TaskHandler task;
 
     private InputList inputList;
 
@@ -108,6 +113,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     IMEditor(Config.Mutable config, PinyinDict dict) {
         this.config = config;
         this.dict = dict;
+        this.task = new TaskHandler(this);
 
         this.inputList = new InputList();
 
@@ -158,7 +164,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         fire_InputMsg(Keyboard_Start_Done);
 
-        withClipboardContext(this.clipboard::start);
+        // 启动异步任务
+        this.task.start();
     }
 
     /** 关闭 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
@@ -182,6 +189,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 销毁 {@link IMEditor}，即，关闭并回收资源 */
     public void destroy() {
+        this.task.stop();
+        this.task = null;
+
         // 确保拼音字典库能够被开启方及时关闭
         if (!this.config.bool(ConfigKey.disable_dict_db) //
             && this.keyboard != null // 已调用 #start 方法
@@ -200,6 +210,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.prevMasterKeyboardType = null;
 
         this.listener = null;
+    }
+
+    /** {@link #start} 的异步后处理，避免阻塞主视图的布局更新 */
+    private void afterStart() {
+        withClipboardContext(this.clipboard::start);
+
+        startAutoClipsDiscard();
     }
 
     // =============================== End: 生命周期 ===================================
@@ -308,15 +325,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 .debug("Message Type: %s", () -> new Object[] { msg.type }) //
                 .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
-        switch (msg.type) {
-            case InputList_PairSymbol_Commit_Doing:
-            case InputList_Commit_Doing:
-            case InputChars_Input_Doing: {
-                // 若正在输入，则废弃剪贴数据
-                // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
-                this.clipboard.discardClips();
-            }
-        }
+        on_InputClip_Related_Msg(msg);
 
         switch (msg.type) {
             case Keyboard_Switch_Doing: {
@@ -370,23 +379,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 if (EditorAction.hasEditorEffect(data.action)) {
                     this.inputboard.clearCommitted();
                 }
-                // 对剪贴板造成修改的操作，需要强制同步更新剪贴数据
-                if (EditorAction.hasClipEffect(data.action)) {
-                    this.clipboard.updateClips(true);
-                    this.config.set(ConfigKey.used_input_clip_code, null);
-                }
-
                 // TODO 对回删以外的操作给予气泡提示
 
-                break;
-            }
-            case InputClip_Data_Apply_Done: {
-                InputClipMsgData data = msg.data();
-
-                // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
-                this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
-
-                // TODO 提示是否收藏剪贴数据
                 break;
             }
             case Input_Pending_Drop_Done:
@@ -460,6 +454,49 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.config.set(ConfigKey.hand_mode, mode);
 
         fire_InputMsg(Keyboard_HandMode_Switch_Done, data);
+    }
+
+    /** 处理与剪贴数据相关的消息 */
+    private void on_InputClip_Related_Msg(InputMsg msg) {
+        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
+            return;
+        }
+
+        switch (msg.type) {
+            case InputList_PairSymbol_Commit_Doing:
+            case InputList_Commit_Doing:
+            case InputChars_Input_Doing: {
+                // 若正在输入，则废弃剪贴数据
+                // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
+                this.clipboard.discardClips();
+                break;
+            }
+            case Editor_Edit_Doing: {
+                EditorEditMsgData data = msg.data();
+
+                // 对剪贴板造成修改的操作，需要强制同步更新剪贴数据
+                if (EditorAction.hasClipEffect(data.action)) {
+                    this.config.set(ConfigKey.used_input_clip_code, null);
+
+                    if (this.clipboard.updateClips(true)) {
+                        startAutoClipsDiscard();
+                    }
+                }
+                break;
+            }
+            case InputClip_Data_Apply_Done: {
+                InputClipMsgData data = msg.data();
+
+                // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
+                this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
+
+                // TODO 提示是否收藏剪贴数据
+                break;
+            }
+            default: {
+                this.log.warn("Unrelated with input clip, ignore message %s", () -> new Object[] { msg.type });
+            }
+        }
     }
 
     // =============================== End: 消息处理 ===================================
@@ -591,13 +628,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         return this.inputboard.buildInputFactory(context);
     }
 
-    protected void withClipboardContext(Consumer<ClipboardContext> c) {
-        String usedClipCode = this.config.get(ConfigKey.used_input_clip_code);
-
-        ClipboardContext context = ClipboardContext.build((b) -> withInputContextBuilder(b.usedClipCode(usedClipCode)));
-        c.accept(context);
-    }
-
     private void withInputContextBuilder(BaseInputContext.Builder<?, ?> builder) {
         builder.dict(this.dict).inputList(this.inputList).listener(this);
     }
@@ -612,6 +642,38 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return this.clipboard.getClips();
         }
         return null;
+    }
+
+    protected void withClipboardContext(Consumer<ClipboardContext> c) {
+        String usedClipCode = this.config.get(ConfigKey.used_input_clip_code);
+        boolean clipsDisabled = this.config.bool(ConfigKey.disable_input_clip_popup_tips);
+
+        ClipboardContext context = ClipboardContext.build((b) -> withInputContextBuilder(b.usedClipCode(usedClipCode)
+                                                                                          .clipsDisabled(clipsDisabled)));
+        c.accept(context);
+    }
+
+    private void discardClips() {
+        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
+            return;
+        }
+
+        this.clipboard.discardClips();
+
+        fire_InputMsg(InputClip_Data_Discard_Done);
+    }
+
+    private void startAutoClipsDiscard() {
+        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
+            return;
+        }
+
+        this.task.removeMessages(TaskHandler.MSG_CLIPS_DISCARD);
+
+        int clipTipsTimeout = this.config.get(ConfigKey.input_clip_popup_tips_timeout);
+        if (clipTipsTimeout > 0) {
+            this.task.sendEmptyMessageDelayed(TaskHandler.MSG_CLIPS_DISCARD, clipTipsTimeout);
+        }
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================
@@ -653,4 +715,41 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     // =============================== End: 自动化，用于模拟输入等 ===================================
+
+    private static class TaskHandler extends Handler {
+        private static final int MSG_START = 0;
+        private static final int MSG_CLIPS_DISCARD = 1;
+
+        private final IMEditor editor;
+
+        public TaskHandler(IMEditor editor) {
+            super(Looper.getMainLooper());
+
+            this.editor = editor;
+        }
+
+        public void start() {
+            stop();
+            sendEmptyMessage(MSG_START);
+        }
+
+        public void stop() {
+            removeMessages(MSG_START);
+            removeMessages(MSG_CLIPS_DISCARD);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_START: {
+                    this.editor.afterStart();
+                    break;
+                }
+                case MSG_CLIPS_DISCARD: {
+                    this.editor.discardClips();
+                    break;
+                }
+            }
+        }
+    }
 }

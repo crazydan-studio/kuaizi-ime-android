@@ -68,6 +68,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 记录可撤回输入的选区信息 */
     private EditorSelection.ChangeRevertion editorChangeRevertion;
 
+    // =============================== Start: 生命周期 ===================================
+
     /** 系统输入法切换到本输入法时调用 */
     @Override
     public void onCreate() {
@@ -214,6 +216,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         // Note: 不重置输入列表，以避免误操作导致输入被清空
         this.ime.start(context, keyboardType, false /*resetInputting*/);
     }
+
+    // =============================== End: 生命周期 ===================================
 
     // =============================== Start: 消息处理 ===================================
 

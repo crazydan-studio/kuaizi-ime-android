@@ -34,6 +34,8 @@ public class ClipboardContext extends BaseInputContext {
     // <<<<<<<<<<<<<<<<<<<<<<<<< 配置信息
     /** 已使用的剪贴数据标识 */
     public final String usedClipCode;
+    /** 是否已禁用剪贴数据 */
+    public final boolean clipsDisabled;
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     /** 构建 {@link ClipboardContext} */
@@ -45,11 +47,13 @@ public class ClipboardContext extends BaseInputContext {
         super(builder);
 
         this.usedClipCode = builder.usedClipCode;
+        this.clipsDisabled = builder.clipsDisabled;
     }
 
     /** {@link ClipboardContext} 的构建器 */
     public static class Builder extends BaseInputContext.Builder<Builder, ClipboardContext> {
         private String usedClipCode;
+        private boolean clipsDisabled;
 
         protected Builder() {
             super(1);
@@ -67,11 +71,12 @@ public class ClipboardContext extends BaseInputContext {
             super.reset();
 
             this.usedClipCode = null;
+            this.clipsDisabled = false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), this.usedClipCode);
+            return Objects.hash(super.hashCode(), this.usedClipCode, this.clipsDisabled);
         }
 
         // ===================== End: 构建函数 ===================
@@ -81,6 +86,12 @@ public class ClipboardContext extends BaseInputContext {
         /** @see ClipboardContext#usedClipCode */
         public Builder usedClipCode(String usedClipCode) {
             this.usedClipCode = usedClipCode;
+            return this;
+        }
+
+        /** @see ClipboardContext#clipsDisabled */
+        public Builder clipsDisabled(boolean clipsDisabled) {
+            this.clipsDisabled = clipsDisabled;
             return this;
         }
 
