@@ -36,7 +36,7 @@ public class InputClip extends Immutable {
     /** 类型（文本、HTML、URL。。。） */
     public final Type type;
     /** 唯一标识，用于判断数据是否已使用 */
-    public final int code;
+    public final String code;
 
     /** 文本内容 */
     public final String text;
@@ -80,7 +80,7 @@ public class InputClip extends Immutable {
     /** {@link InputClip} 的构建器 */
     public static class Builder extends Immutable.Builder<InputClip> {
         private Type type;
-        private int code;
+        private String code;
 
         private String text;
         private String html;
@@ -106,7 +106,7 @@ public class InputClip extends Immutable {
         @Override
         protected void reset() {
             this.type = null;
-            this.code = 0;
+            this.code = null;
 
             this.text = null;
             this.html = null;
@@ -128,7 +128,7 @@ public class InputClip extends Immutable {
         }
 
         /** @see InputClip#code */
-        public Builder code(int code) {
+        public Builder code(String code) {
             this.code = code;
             return this;
         }

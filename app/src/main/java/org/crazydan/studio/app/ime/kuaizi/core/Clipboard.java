@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 
@@ -85,7 +86,7 @@ public class Clipboard {
 
     private final ClipboardManager manager;
 
-    private int latestUsedClipCode;
+    private String latestUsedClipCode;
     private List<InputClip> latestClips;
 
     public Clipboard(ClipboardManager manager) {
@@ -98,7 +99,7 @@ public class Clipboard {
     public void onMsg(ClipboardContext context, UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_InputClip: {
-                // 提前废弃数据，以避免 commit 消息更新剪贴数据的视图
+                // 提前废弃数据，以避免下面的数据粘贴消息更新气泡提示
                 discardClips();
 
                 UserInputClipSingleTapMsgData data = msg.data();
@@ -120,7 +121,8 @@ public class Clipboard {
                     }
                 }
 
-                context.fireInputMsg(InputClip_Data_Apply_Done);
+                InputClipMsgData msgData = new InputClipMsgData(data.clip);
+                context.fireInputMsg(InputClip_Data_Apply_Done, msgData);
                 break;
             }
             default: {
@@ -139,7 +141,11 @@ public class Clipboard {
 
     // =============================== Start: 生命周期 ===================================
 
+    /** 检查剪贴板，并构造{@link #verifyClips() 可使用的}剪贴数据 */
     public void start(ClipboardContext context) {
+        this.latestUsedClipCode = context.usedClipCode;
+
+        updateClips(false);
     }
 
     // =============================== End: 生命周期 ===================================
@@ -147,56 +153,20 @@ public class Clipboard {
     /**
      * 废弃剪贴数据，不再使用
      * <p/>
-     * 一般在有新的输入时，需废弃剪贴数据
+     * 一般在有新的输入或超过一定的时间后，需废弃剪贴数据
      */
     public void discardClips() {
         if (this.latestClips == null) {
             return;
         }
-
         this.log.debug("Discard Clips");
 
-        InputClip primary = readClip(this.manager);
-        doDiscardClips(primary);
+        this.latestClips = null;
     }
 
     /** 检查是否有有效的剪贴数据 */
     public boolean verifyClips() {
-        InputClip primary = readClip(this.manager);
-        if (primary == null) {
-            doDiscardClips(null);
-            return false;
-        }
-
-        int clipCode = primary.code;
-        // 若剪贴板数据已使用，则数据失效
-        if (this.latestUsedClipCode == clipCode) {
-            return false;
-        }
-        this.latestUsedClipCode = 0;
-
-        if (CollectionUtils.isEmpty(this.latestClips) //
-            || this.latestClips.get(0).code != clipCode //
-        ) {
-            String primaryText = cleanClipText(primary);
-            InputClip other = extractOtherClip(primaryText, clipCode);
-
-            List<InputClip> clips = new ArrayList<>();
-            // Note: 确保原始内容在第一的位置
-            clips.add(primary);
-
-            if (other != null) {
-                if (primaryText.equals(other.text)) {
-                    // 仅更改类型，以保留首尾的空白字符
-                    clips.set(0, primary.copy((b) -> b.type(other.type)));
-                } else {
-                    clips.add(other);
-                }
-            }
-            this.latestClips = Collections.unmodifiableList(clips);
-        }
-
-        return true;
+        return !CollectionUtils.isEmpty(this.latestClips);
     }
 
     /** 返回剪贴数据 */
@@ -204,12 +174,41 @@ public class Clipboard {
         return this.latestClips;
     }
 
-    // =============================== Start: 内部方法 ===================================
+    /** 更新剪贴数据，用于剪贴板发生变化时调用 */
+    public void updateClips(boolean force) {
+        InputClip primary = readClip(this.manager);
+        if (primary == null) {
+            discardClips();
+            return;
+        }
 
-    private void doDiscardClips(InputClip primary) {
-        this.latestClips = null;
-        this.latestUsedClipCode = primary != null ? primary.code : 0;
+        String clipCode = primary.code;
+        // 若剪贴板数据已使用，则不再处理
+        if (!force && clipCode.equals(this.latestUsedClipCode)) {
+            discardClips();
+            return;
+        }
+
+        String primaryText = cleanClipText(primary);
+        InputClip other = extractOtherClip(primaryText, clipCode);
+
+        List<InputClip> clips = new ArrayList<>();
+        // Note: 确保原始内容在第一的位置
+        clips.add(primary);
+
+        if (other != null) {
+            if (primaryText.equals(other.text)) {
+                // 仅更改类型，以保留首尾的空白字符
+                clips.set(0, primary.copy((b) -> b.type(other.type)));
+            } else {
+                clips.add(other);
+            }
+        }
+
+        this.latestClips = Collections.unmodifiableList(clips);
     }
+
+    // =============================== Start: 内部方法 ===================================
 
     private String cleanClipText(InputClip clip) {
         return clip.text.trim();
@@ -239,10 +238,10 @@ public class Clipboard {
             }
         });
 
-        return clip.type != null ? clip.copy((b) -> b.code(clip.hashCode())) : null;
+        return clip.type != null ? clip.copy((b) -> b.code(clip.hashCode() + "")) : null;
     }
 
-    private InputClip extractOtherClip(String primaryText, int code) {
+    private InputClip extractOtherClip(String primaryText, String code) {
         Map<InputClip.Type, Matcher> matchers = new LinkedHashMap<InputClip.Type, Matcher>() {{
             put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
             put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));

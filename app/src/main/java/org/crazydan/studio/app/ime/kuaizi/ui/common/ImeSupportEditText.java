@@ -98,7 +98,7 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
             case Editor_Edit_Doing: {
                 EditorEditMsgData d = msg.data();
 
-                if (EditorAction.hasEffect(d.action)) {
+                if (EditorAction.hasEditorEffect(d.action)) {
                     this.editorChangeRevertion = null;
                 }
                 editText(d.action);

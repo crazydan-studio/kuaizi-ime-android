@@ -293,7 +293,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 this.imeConfig.set(ConfigKey.enable_x_input_pad, freeMode ? null : false);
                 this.imeConfig.set(ConfigKey.disable_user_input_data, freeMode ? null : true);
                 this.imeConfig.set(ConfigKey.disable_settings_btn, false);
-                this.imeConfig.set(ConfigKey.disable_input_clip_popup_tips, false);
+                this.imeConfig.set(ConfigKey.disable_input_clip_popup_tips, !freeMode);
                 break;
             }
             case normal: {

@@ -48,8 +48,8 @@ public enum EditorAction {
         this.label = label;
     }
 
-    /** 检查指定的编辑动作是否会造成内容修改 */
-    public static boolean hasEffect(EditorAction action) {
+    /** 是否为修改编辑器内容的操作 */
+    public static boolean hasEditorEffect(EditorAction action) {
         switch (action) {
             case select_all:
             case copy:
@@ -58,11 +58,10 @@ public enum EditorAction {
         return true;
     }
 
-    /** 是否为剪贴板操作 */
-    public static boolean forClip(EditorAction action) {
+    /** 是否为修改剪贴板的操作 */
+    public static boolean hasClipEffect(EditorAction action) {
         switch (action) {
             case copy:
-            case paste:
             case cut:
                 return true;
         }

@@ -64,6 +64,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
@@ -308,17 +309,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
-            case Editor_Edit_Doing: {
-                EditorEditMsgData data = msg.data();
-                // 非剪贴板操作，则不废弃剪贴数据
-                if (!EditorAction.forClip(data.action)) {
-                    break;
-                }
-            }
             case InputList_PairSymbol_Commit_Doing:
             case InputList_Commit_Doing:
             case InputChars_Input_Doing: {
                 // 若正在输入，则废弃剪贴数据
+                // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
                 this.clipboard.discardClips();
             }
         }
@@ -370,10 +365,28 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             case Editor_Edit_Doing: {
                 EditorEditMsgData data = msg.data();
+
                 // 对编辑内容会造成修改的操作，需要清除 已提交 的恢复数据
-                if (EditorAction.hasEffect(data.action)) {
+                if (EditorAction.hasEditorEffect(data.action)) {
                     this.inputboard.clearCommitted();
                 }
+                // 对剪贴板造成修改的操作，需要强制同步更新剪贴数据
+                if (EditorAction.hasClipEffect(data.action)) {
+                    this.clipboard.updateClips(true);
+                    this.config.set(ConfigKey.used_input_clip_code, null);
+                }
+
+                // TODO 对回删以外的操作给予气泡提示
+
+                break;
+            }
+            case InputClip_Data_Apply_Done: {
+                InputClipMsgData data = msg.data();
+
+                // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
+                this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
+
+                // TODO 提示是否收藏剪贴数据
                 break;
             }
             case Input_Pending_Drop_Done:
@@ -579,7 +592,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     protected void withClipboardContext(Consumer<ClipboardContext> c) {
-        ClipboardContext context = ClipboardContext.build(this::withInputContextBuilder);
+        String usedClipCode = this.config.get(ConfigKey.used_input_clip_code);
+
+        ClipboardContext context = ClipboardContext.build((b) -> withInputContextBuilder(b.usedClipCode(usedClipCode)));
         c.accept(context);
     }
 
@@ -590,7 +605,10 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private List<?> getInputQuickList() {
         if (this.inputList.verifyCompletions()) {
             return this.inputList.getCompletionViewDataList();
-        } else if (this.clipboard.verifyClips()) {
+        } else if ( //
+                !this.config.bool(ConfigKey.disable_input_clip_popup_tips) //
+                && this.clipboard.verifyClips() //
+        ) {
             return this.clipboard.getClips();
         }
         return null;

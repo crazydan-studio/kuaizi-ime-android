@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -30,6 +31,11 @@ import java.util.function.Consumer;
 public class ClipboardContext extends BaseInputContext {
     private final static Builder builder = new Builder();
 
+    // <<<<<<<<<<<<<<<<<<<<<<<<< 配置信息
+    /** 已使用的剪贴数据标识 */
+    public final String usedClipCode;
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     /** 构建 {@link ClipboardContext} */
     public static ClipboardContext build(Consumer<Builder> c) {
         return Builder.build(builder, c);
@@ -37,10 +43,13 @@ public class ClipboardContext extends BaseInputContext {
 
     ClipboardContext(Builder builder) {
         super(builder);
+
+        this.usedClipCode = builder.usedClipCode;
     }
 
     /** {@link ClipboardContext} 的构建器 */
     public static class Builder extends BaseInputContext.Builder<Builder, ClipboardContext> {
+        private String usedClipCode;
 
         protected Builder() {
             super(1);
@@ -53,9 +62,27 @@ public class ClipboardContext extends BaseInputContext {
             return new ClipboardContext(this);
         }
 
+        @Override
+        protected void reset() {
+            super.reset();
+
+            this.usedClipCode = null;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), this.usedClipCode);
+        }
+
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 构建配置 ===================
+
+        /** @see ClipboardContext#usedClipCode */
+        public Builder usedClipCode(String usedClipCode) {
+            this.usedClipCode = usedClipCode;
+            return this;
+        }
 
         // ===================== End: 构建配置 ===================
     }

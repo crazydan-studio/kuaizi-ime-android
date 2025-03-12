@@ -74,7 +74,7 @@ public enum ConfigKey {
     /** 是否禁用剪贴数据提示 */
     disable_input_clip_popup_tips(Boolean.class, false),
     /** 已使用的剪贴数据标识 */
-    used_input_clip_code(String.class, ""),
+    used_input_clip_code(String.class, null),
     ;
 
     public final Class<?> type;
