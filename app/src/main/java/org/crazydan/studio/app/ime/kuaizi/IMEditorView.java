@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -48,6 +49,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
@@ -212,7 +214,12 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 break;
             }
             case Editor_Edit_Doing: {
-                // TODO 对回删以外的操作给予气泡提示
+                EditorEditMsgData data = msg.data();
+                // 对影响编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
+                // Note: 回删已做气泡提示，不再重复提示
+                if (data.action != EditorAction.backspace) {
+                    showInputKeyPopupWindow("已" + data.action.label, true);
+                }
                 break;
             }
             case InputClip_Data_Apply_Done: {
