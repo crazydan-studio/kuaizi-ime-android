@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<resources>
+    <string name="app_name">Kuaizi IME</string>
+    <string name="app_name_shown">@string/app_name</string>
+    <string name="app_name_with_version">Kuaizi IME v%1$s</string>
+    <string name="app_slogan">Kuaizi Input Method Editor: Efficient writing requires a good and fast input method</string>
+    <string name="app_copyright">
+        © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
+    </string>
+
+    <string name="title_app_preferences">Preferences</string>
+    <string name="title_app_guide_exercise">Kuaizi IME Guide</string>
+    <string name="title_about_app">Kuaizi Input Method</string>
+    <string name="title_about_team">Development Team</string>
+    <string name="title_about_suggestion">Give Feedback/Report Issue</string>
+    <string name="title_about_thanks">Acknowledgments</string>
+    <string name="title_about_donate">Buy me a Coffee</string>
+    <string name="title_about_donate_for_sharing_qrcode_to_wechat">Please choose [WeChat] and share the QR code to [File Transfer]</string>
+    <string name="title_about_donate_for_sharing_qrcode_to_alipay">Please choose [Alipay Scanner] to scan the QR code</string>
+    <string name="title_about_change_log">Changelog</string>
+    <string name="title_about_software_service_agreement">Software Service Agreement</string>
+    <string name="title_about_copyright">Copyright</string>
+    <string name="title_about_alpha_user_agreement">Alpha User Agreement</string>
+    <string name="title_about_new_features">New Features</string>
+    <string name="title_user_data_backup">Data Backup</string>
+    <string name="title_tips">Tips</string>
+
+    <string name="label_method_subtype_generic">%s</string>
+    <string name="label_method_subtype_zh_CN">Chinese (China)</string>
+    <string name="label_input_word_key_trad_mark">繁</string>
+
+    <string name="btn_enable_right_now">Yes</string>
+    <string name="btn_enable_later">Later</string>
+    <string name="btn_feedback_open_link_without_extra_info">Continue without extra information</string>
+    <string name="btn_feedback_open_link_with_extra_info">Continue with extra information</string>
+    <string name="btn_guide_confirm_alpha_user_agreement">OK, I agree to the agreement.</string>
+    <string name="btn_guide_reject_alpha_user_agreement">NO, I reject the agreement.</string>
+    <string name="btn_guide_new_features_confirm">OK, I understand.</string>
+    <string name="btn_guide_try_exercises">Practice Exercises</string>
+    <string name="btn_guide_show_preferences">Open Preferences</string>
+    <string name="btn_guide_show_donate">Buy me a coffee</string>
+    <string name="btn_guide_show_software_service_agreement">Read the Software Service Agreement</string>
+    <string name="btn_guide_exercise_try_again">Try Again</string>
+    <string name="btn_guide_exercise_try_new_one">Go to next exercise</string>
+
+    <!-- Preference Titles -->
+    <string name="title_preference_basic">Basic Settings</string>
+    <string name="title_preference_x_input_pad">X-shaped Input Pad Settings</string>
+    <string name="title_preference_privacy">Privacy First</string>
+    <string name="title_preference_performance">Animation &amp; Audio</string>
+    <string name="title_preference_user_data">User Data</string>
+    <string name="title_preference_about">About</string>
+
+    <!-- Settings Preferences -->
+    <string name="label_config_theme">Configure the Keyboard Style</string>
+    <string name="label_choose_theme">Keyboard Theme</string>
+    <string name="label_enable_x_input_pad">Enable the X-shaped keyboard</string>
+    <string name="label_enable_latin_use_pinyin_keys_in_x_input_pad">Use same keys between Pinyin and Latin keyboard</string>
+    <string name="label_switch_hand_mode">Switch the keyboard hand-orientation</string>
+    <string name="label_adapt_desktop_swipe_up_gesture">Adapt to systemwide Swipe-up gesture</string>
+    <string name="label_enable_candidate_variant_first">Show Traditional Chinese characters first</string>
+    <string name="label_disable_user_input_data">Do not save user input Data</string>
+    <string name="label_disable_key_clicked_audio">Disable typing sounds</string>
+    <string name="label_disable_key_animation">Disable keypress animation</string>
+    <string name="label_disable_paging_audio">Disable the Paging Audio</string>
+    <string name="label_disable_input_key_popup_tips">Disable key popups</string>
+    <string name="label_disable_gesture_slipping_trail">Disable Swipe trail</string>
+
+    <string name="desc_enable_candidate_variant_first">
+        Prefers Traditional Chinese characters first
+        over the default of showing Simplified Chinese characters first.
+    </string>
+    <string name="desc_disable_user_input_data">
+        Prevents analyzing the input to prevent privacy leaks.
+        However, it will reduce the
+        word matching accuracy of the input method.
+    </string>
+    <string name="desc_enable_x_input_pad">
+        If the X-shaped keyboard is enabled,
+        an input mode similar to the 8VIM/8pen-system will be used
+        to support continuous input of Pinyin and Latin characters.
+    </string>
+    <string name="desc_enable_latin_use_pinyin_keys_in_x_input_pad">
+        Enabling this option aligns the Latin keyboard layout with the Pinyin keyboard,
+        minimizing discomfort when switching between the two.
+        However, it may slightly reduce efficiency for English input.
+    </string>
+    <string name="desc_adapt_desktop_swipe_up_gesture">
+        If the system uses a swipe-up gesture to return to the home screen,
+        this settings adds a blank space beneath the input keyboard
+        to prevent conflicts between swipe input and the system swipe-up gesture.
+    </string>
+
+    <string name="msg_ime_should_be_enabled_first">
+        &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,
+        &amp;#160;so it cannot be activated.&lt;/p>
+        &lt;br/>
+        &lt;p>Please first select
+        &amp;#160;&lt;span style="color:#ed4c67;">%2$s&lt;/span>&amp;#160;
+        in the System Keyboards list to enable it.&lt;/p>
+        &lt;br/>
+        &lt;p>Do you want to enable it right now?&lt;/p>
+    </string>
+
+    <string name="text_alpha_using_warning">@null</string>
+    <string name="text_exercise_edit_text_placeholder">
+        Please follow the instructions
+        to use the keyboard.
+    </string>
+    <string name="text_exercise_free_mode_edit_text_placeholder">
+        Input any text to test the keyboard.
+    </string>
+    <string name="text_dict_db_init_warning">
+        Loading Dict DB, please wait a moment …
+    </string>
+
+    <string name="value_theme_light">Light</string>
+    <string name="value_theme_night">Dark</string>
+    <string name="value_theme_follow_system">System</string>
+    <string name="value_hand_mode_left">Left-hand Mode</string>
+    <string name="value_hand_mode_right">Right-hand Mode</string>
+</resources>
