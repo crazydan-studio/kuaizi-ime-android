@@ -20,22 +20,22 @@
 <resources>
     <string name="app_name">Kuaizi Input Method</string>
     <string name="app_name_shown">@string/app_name</string>
-    <string name="app_name_with_version">Kuaizi Input Method v%1$s</string>
-    <string name="app_slogan">Kuaizi Input Method: Efficient editing requires a good and fast input method</string>
+    <string name="app_name_with_version">Kuaizi IME v%1$s</string>
+    <string name="app_slogan">Kuaizi Input Method: Efficient writing requires a good and fast input method</string>
     <string name="app_copyright">
         © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
     </string>
 
-    <string name="title_app_preferences">Kuaizi Input Method Preferences</string>
-    <string name="title_app_guide_exercise">Kuaizi Input Method Guide</string>
+    <string name="title_app_preferences">Preferences</string>
+    <string name="title_app_guide_exercise">Kuaizi IME Guide</string>
     <string name="title_about_app">Kuaizi Input Method</string>
     <string name="title_about_team">Development Team</string>
-    <string name="title_about_suggestion">Give Us Some Suggestions</string>
-    <string name="title_about_thanks">Thanks</string>
-    <string name="title_about_donate">Buy Me a Coffee</string>
+    <string name="title_about_suggestion">Give Feedback/Report Issue</string>
+    <string name="title_about_thanks">Acknowledgments</string>
+    <string name="title_about_donate">Buy me a Coffee</string>
     <string name="title_about_donate_for_sharing_qrcode_to_wechat">Please choose [WeChat] and share the QR code to [File Transfer]</string>
     <string name="title_about_donate_for_sharing_qrcode_to_alipay">Please choose [Alipay Scanner] to scan the QR code</string>
-    <string name="title_about_change_log">Change Log</string>
+    <string name="title_about_change_log">Changelog</string>
     <string name="title_about_software_service_agreement">Software Service Agreement</string>
     <string name="title_about_copyright">Copyright</string>
     <string name="title_about_alpha_user_agreement">Alpha User Agreement</string>
@@ -49,14 +49,14 @@
 
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
-    <string name="btn_feedback_open_link_without_extra_info">Continue, but always without extra information</string>
-    <string name="btn_feedback_open_link_with_extra_info">Continue, and always with extra information</string>
-    <string name="btn_guide_confirm_alpha_user_agreement">OK, I Agree the Agreement</string>
-    <string name="btn_guide_reject_alpha_user_agreement">NO, I Reject the Agreement</string>
-    <string name="btn_guide_new_features_confirm">OK, I Know It</string>
-    <string name="btn_guide_try_exercises">Try Some Exercises</string>
-    <string name="btn_guide_show_preferences">Open Kuaizi Input Method Preferences</string>
-    <string name="btn_guide_show_donate">Buy Me a Coffee</string>
+    <string name="btn_feedback_open_link_without_extra_info">Continue without extra information</string>
+    <string name="btn_feedback_open_link_with_extra_info">Continue with extra information</string>
+    <string name="btn_guide_confirm_alpha_user_agreement">OK, I agree to the Agreement</string>
+    <string name="btn_guide_reject_alpha_user_agreement">NO, I reject the Agreement</string>
+    <string name="btn_guide_new_features_confirm">OK, I understand</string>
+    <string name="btn_guide_try_exercises">Practice Exercises</string>
+    <string name="btn_guide_show_preferences">Open Preferences</string>
+    <string name="btn_guide_show_donate">Buy Me A Coffee</string>
     <string name="btn_guide_show_software_service_agreement">Read the Software Service Agreement</string>
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Goto Next</string>
@@ -71,47 +71,43 @@
 
     <!-- Settings Preferences -->
     <string name="label_config_theme">Configure the Keyboard Style</string>
-    <string name="label_choose_theme">Choose the Keyboard Theme</string>
+    <string name="label_choose_theme">Keyboard Theme</string>
     <string name="label_enable_x_input_pad">Enable the X-shaped Input Pad</string>
     <string name="label_enable_latin_use_pinyin_keys_in_x_input_pad">Use Same Keys between Pinyin and Latin Keyboard</string>
     <string name="label_switch_hand_mode">Switch the Keyboard Hand Mode</string>
-    <string name="label_adapt_desktop_swipe_up_gesture">Adapt System Swipe Up Gesture</string>
-    <string name="label_enable_candidate_variant_first">Enable Traditional Chinese Candidate First</string>
-    <string name="label_disable_user_input_data">DO NOT SAVE User Inputting Data</string>
-    <string name="label_disable_key_clicked_audio">Disable the Key Clicked Audio</string>
-    <string name="label_disable_key_animation">Disable the Key Animation</string>
+    <string name="label_adapt_desktop_swipe_up_gesture">Adapt to Swipe-up Gesture</string>
+    <string name="label_enable_candidate_variant_first">Show Traditional Chinese characters first</string>
+    <string name="label_disable_user_input_data">Do not save User Input Data</string>
+    <string name="label_disable_key_clicked_audio">Disable typing sounds</string>
+    <string name="label_disable_key_animation">Disable keypress animation</string>
     <string name="label_disable_paging_audio">Disable the Paging Audio</string>
-    <string name="label_disable_input_key_popup_tips">Disable the Key Popup Tips</string>
-    <string name="label_disable_gesture_slipping_trail">Disable the Slipping Trail</string>
+    <string name="label_disable_input_key_popup_tips">Disable key popups</string>
+    <string name="label_disable_gesture_slipping_trail">Disable Swipe trail</string>
 
     <string name="desc_enable_candidate_variant_first">
-        Enable Traditional Chinese candidate first
-        to automatically convert the selected Simplified Chinese candidate
-        into its Traditional Chinese form without the need
-        to long-press the inputting submit key every time for explicit conversion.
+        Prefers Traditional Chinese characters first
+        over the default of showing Simplified Chinese characters first.
     </string>
     <string name="desc_disable_user_input_data">
-        Forbidden recording the user inputting data can avoid privacy leaks
-        which caused by analyzing the inputting words in the input method.
-        However, it will reduce the words matching accuracy of the input method,
-        so it will have a certain effect on the inputting efficiency.
+        Prevents analyzing the input to prevent privacy leaks.
+        However, it will reduce the
+        word matching accuracy of the input method.
     </string>
     <string name="desc_enable_x_input_pad">
         If the X-shaped Input Pad is enabled,
-        the input mode similar to the 8VIM/8pen input method will be used
-        to support continuous inputting Pinyin and English characters
+        an input mode similar to the 8VIM/8pen input method will be used
+        to support continuous input of Pinyin and English characters
         to ensure the continuity of the input.
     </string>
     <string name="desc_enable_latin_use_pinyin_keys_in_x_input_pad">
-        If this option is enabled,
-        the keys and layout of the Latin keyboard will be the same as the Pinyin keyboard,
-        to reduce the discomfort caused by switching between them.
-        But it may reduce the inputting efficiency of the English words.
+        Enabling this option aligns the Latin keyboard layout with the Pinyin keyboard,
+        minimizing discomfort when switching between the two.
+        However, it may slightly reduce efficiency for English input.
     </string>
     <string name="desc_adapt_desktop_swipe_up_gesture">
-        If the system uses a swipe-up gesture to return to the desktop,
-        the enough blank space should be added at the bottom of the input keyboard
-        to avoid conflict between the keyboard swipe inputting and the system swipe-up gesture.
+        If the system uses a swipe-up gesture to return to the home screen,
+        sufficient blank space should be added at the bottom of the input keyboard
+        to prevent conflicts between swipe input and the swipe-up gesture.
     </string>
 
     <string name="msg_ime_should_be_enabled_first">
@@ -127,19 +123,19 @@
 
     <string name="text_alpha_using_warning">@null</string>
     <string name="text_exercise_edit_text_placeholder">
-        Please follow the above instructions
-        to operate the keyboard to input content
+        Please follow the instructions
+        to use the keyboard.
     </string>
     <string name="text_exercise_free_mode_edit_text_placeholder">
-        Please input any text for free exercises
+        Input any text to test the keyboard.
     </string>
     <string name="text_dict_db_init_warning">
         Loading Dict DB, please wait a moment …
     </string>
 
     <string name="value_theme_light">Light</string>
-    <string name="value_theme_night">Night</string>
+    <string name="value_theme_night">Dark</string>
     <string name="value_theme_follow_system">Follow System</string>
-    <string name="value_hand_mode_left">Left Mode</string>
-    <string name="value_hand_mode_right">Right Mode</string>
+    <string name="value_hand_mode_left">Left-hand Mode</string>
+    <string name="value_hand_mode_right">Right-hand Mode</string>
 </resources>
