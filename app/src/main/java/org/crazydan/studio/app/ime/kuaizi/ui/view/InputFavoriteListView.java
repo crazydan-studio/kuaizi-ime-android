@@ -70,7 +70,7 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
     /** 向上传递 {@link UserInputMsg} 消息 */
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        if (type != ViewGestureDetector.GestureType.SingleTap) {
+        if (type != ViewGestureDetector.GestureType.DoubleTap) {
             return;
         }
 

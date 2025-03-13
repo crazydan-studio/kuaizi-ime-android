@@ -63,6 +63,7 @@
     <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
     <string name="btn_save_as_favorite">收藏</string>
+    <string name="btn_delete_selected">删除已选中项</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -122,6 +123,9 @@
     </string>
     <string name="text_dict_db_init_warning">
         正在加载字典，请稍等一会儿 。。。
+    </string>
+    <string name="text_empty_clipboard_warning">
+        还未收藏任何内容，请在复制或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
     </string>
 
     <string name="value_theme_light">浅色主题</string>

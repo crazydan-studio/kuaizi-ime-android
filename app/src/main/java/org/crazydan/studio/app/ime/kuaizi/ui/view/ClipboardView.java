@@ -27,6 +27,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -47,7 +48,8 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  */
 public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
     private final InputFavoriteListView favoriteListView;
-    private final TextView titleTextView;
+    private final TextView titleView;
+    private final TextView warningView;
 
     private Config config;
     private UserMsgListener listener;
@@ -57,7 +59,8 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
         inflate(context, R.layout.ime_board_clip_view, this);
 
-        this.titleTextView = findViewById(R.id.title);
+        this.titleView = findViewById(R.id.title);
+        this.warningView = findViewById(R.id.warning);
 
         this.favoriteListView = findViewById(R.id.favorite_list);
         this.favoriteListView.setListener(this);
@@ -93,8 +96,12 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
                 int total = data.favorites.size();
                 String title = getContext().getString(R.string.title_clipboard, total > 999 ? "999+" : total);
 
-                this.titleTextView.setText(title);
+                this.titleView.setText(title);
                 this.favoriteListView.update(data.favorites);
+
+                boolean showWarning = total == 0;
+                ViewUtils.visible(this.warningView, showWarning);
+                ViewUtils.visible(this.favoriteListView, !showWarning);
                 break;
             }
         }

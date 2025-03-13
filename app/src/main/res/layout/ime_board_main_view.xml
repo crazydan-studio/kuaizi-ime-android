@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-    <!-- SnackBar 的定位视图 -->
+    <!-- Toast 的定位视图 -->
     <View
             android:id="@+id/toast_anchor"
             android:layout_width="0dp"

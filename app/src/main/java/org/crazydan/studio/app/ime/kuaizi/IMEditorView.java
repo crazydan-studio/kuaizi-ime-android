@@ -25,7 +25,7 @@ import java.util.Map;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
@@ -53,7 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class IMEditorView extends FrameLayout implements UserMsgListener, InputMsgListener {
+public class IMEditorView extends LinearLayout implements UserMsgListener, InputMsgListener {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final AudioPlayer audioPlayer;
