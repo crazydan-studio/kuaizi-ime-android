@@ -106,9 +106,6 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
-        // Note: 本视图为上层视图的子视图，在主题样式更新时，上层视图会自动重建本视图，
-        // 因此，不需要重复处理本视图的布局更新等问题
-
         handleMsg(msg);
 
         this.inputListView.onMsg(msg);

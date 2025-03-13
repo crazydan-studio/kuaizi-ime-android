@@ -100,25 +100,13 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserKeyMsg msg) {
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.listener.getClass()
-        });
-
         this.listener.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.listener.getClass()
-        });
-
         this.listener.onMsg(msg);
-
-        this.log.endTreeLog();
 
         // 直接处理面板关闭消息：关闭无需清理等工作
         switch (msg.type) {
@@ -143,20 +131,18 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.log.endTreeLog();
 
         // Note: 涉及重建视图和视图显隐切换等情况，因此，需在最后转发消息到子视图
-        //////////////////////////////////////////////////////////////
         InputMsgListener current = currentBoard();
-
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), current.getClass()
-        });
-
         current.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     private void handleMsg(InputMsg msg) {
         switch (msg.type) {
+            case Keyboard_Start_Done: {
+                // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次底部空白更新
+                MainboardView mainboard = getBoard(BoardType.main);
+                mainboard.updateBottomSpacing(false);
+                break;
+            }
             case Config_Update_Done: {
                 on_Config_Update_Done_Msg(msg.data());
                 break;

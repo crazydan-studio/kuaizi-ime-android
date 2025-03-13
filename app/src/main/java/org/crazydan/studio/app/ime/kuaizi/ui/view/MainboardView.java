@@ -136,25 +136,13 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserKeyMsg msg) {
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.listener.getClass()
-        });
-
         this.listener.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.listener.getClass()
-        });
-
         this.listener.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     // -------------------------------------------
@@ -171,22 +159,8 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         this.log.endTreeLog();
 
         // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
-        //////////////////////////////////////////////////////////////
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.keyboardView.getClass()
-        });
-
         this.keyboardView.onMsg(msg);
-
-        this.log.endTreeLog();
-        ////////////////////////////////////////////////////////////
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.inputboardView.getClass()
-        });
-
         this.inputboardView.onMsg(msg);
-
-        this.log.endTreeLog();
     }
 
     private void handleMsg(InputMsg msg) {
@@ -200,8 +174,6 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
             }
             case Keyboard_Start_Done: {
                 toggleShowKeyboardWarning(false);
-                // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次更新
-                updateBottomSpacing(false);
                 break;
             }
             case Keyboard_HandMode_Switch_Done: {

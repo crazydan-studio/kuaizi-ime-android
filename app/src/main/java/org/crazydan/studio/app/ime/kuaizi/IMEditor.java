@@ -263,15 +263,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                msg.getClass(), this.keyboard.getClass()
-        });
-
         Key key = msg.data().key;
         KeyboardContext context = createKeyboardContext(key);
         this.keyboard.onMsg(context, msg);
-
-        this.log.endTreeLog();
     }
 
     /** 响应视图的 {@link UserInputMsg} 消息：向下传递消息给 {@link InputList} */
