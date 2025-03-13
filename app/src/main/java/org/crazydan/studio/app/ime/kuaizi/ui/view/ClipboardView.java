@@ -50,6 +50,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     private final InputFavoriteListView favoriteListView;
     private final TextView titleView;
     private final TextView warningView;
+    private final View dataPaneView;
 
     private Config config;
     private UserMsgListener listener;
@@ -61,6 +62,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
+        this.dataPaneView = findViewById(R.id.data_pane);
 
         this.favoriteListView = findViewById(R.id.favorite_list);
         this.favoriteListView.setListener(this);
@@ -101,7 +103,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
                 boolean showWarning = total == 0;
                 ViewUtils.visible(this.warningView, showWarning);
-                ViewUtils.visible(this.favoriteListView, !showWarning);
+                ViewUtils.visible(this.dataPaneView, !showWarning);
                 break;
             }
         }

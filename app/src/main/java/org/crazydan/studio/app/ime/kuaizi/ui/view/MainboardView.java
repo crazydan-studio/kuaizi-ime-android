@@ -122,9 +122,6 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     public void close() {
         showInputQuickPopupWindow(null);
         showInputKeyPopupWindow(null, false);
-
-        this.inputKeyPopupWindow = null;
-        this.inputQuickPopupWindow = null;
     }
 
     // =============================== Start: 消息处理 ===================================
