@@ -42,6 +42,7 @@
     <string name="title_about_new_features">新功能介绍</string>
     <string name="title_user_data_backup">数据备份</string>
     <string name="title_tips">友情提示</string>
+    <string name="title_clipboard">剪贴板</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>

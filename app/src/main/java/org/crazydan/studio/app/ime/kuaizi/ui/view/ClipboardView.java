@@ -21,16 +21,12 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
-import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -44,19 +40,19 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class ClipboardView extends FrameLayout implements UserMsgListener, InputMsgListener {
-    private InputListView inputListView;
+public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
+    private InputFavoriteListView favoriteListView;
 
     private Config config;
     private UserMsgListener listener;
 
     public ClipboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public void setConfig(Config config) {
         this.config = config;
-        doLayout();
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -81,7 +77,7 @@ public class ClipboardView extends FrameLayout implements UserMsgListener, Input
 
         handleMsg(msg);
 
-        this.inputListView.onMsg(msg);
+        //this.favoriteListView.onMsg(msg);
     }
 
     private void handleMsg(InputMsg msg) {
@@ -91,21 +87,11 @@ public class ClipboardView extends FrameLayout implements UserMsgListener, Input
 
     // =============================== Start: 视图更新 ===================================
 
-    /** 布局视图 */
-    private void doLayout() {
-        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int themeResId = theme.getResId(getContext());
+    private void init(Context context) {
+        inflate(context, R.layout.ime_board_clip_view, this);
 
-        View rootView = inflateWithTheme(R.layout.clipboard_root_view, themeResId);
-
-        this.inputListView = rootView.findViewById(R.id.input_list);
-        this.inputListView.setListener(this);
-    }
-
-    private <T extends View> T inflateWithTheme(int resId, int themeResId) {
-        // 通过 Context Theme 仅对面板自身的视图设置主题样式，
-        // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        return ThemeUtils.inflate(this, resId, themeResId, true);
+        this.favoriteListView = findViewById(R.id.favorite_list);
+        this.favoriteListView.setListener(this);
     }
 
     // =============================== End: 视图更新 ===================================

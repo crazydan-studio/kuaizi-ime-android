@@ -22,12 +22,11 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -50,23 +49,25 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-06
  */
-public class InputboardView extends FrameLayout implements UserMsgListener, InputMsgListener {
+public class InputboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
     private InputListView inputListView;
 
-    private View rootView;
     private final BtnTools tools = new BtnTools();
 
     private Config config;
     private UserMsgListener listener;
+
     private State state = new State(State.Type.Init);
 
     public InputboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public void setConfig(Config config) {
         this.config = config;
-        doLayout();
+
+        updateToolsByState();
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -112,38 +113,25 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
 
     // =============================== Start: 视图更新 ===================================
 
-    /** 布局视图 */
-    private void doLayout() {
-        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int themeResId = theme.getResId(getContext());
+    private void init(Context context) {
+        inflate(context, R.layout.ime_board_input_view, this);
 
-        View rootView = inflateWithTheme(R.layout.inputboard_root_view, themeResId);
-        this.rootView = rootView.findViewById(R.id.root);
-
-        this.inputListView = rootView.findViewById(R.id.input_list);
+        this.inputListView = findViewById(R.id.input_list);
         this.inputListView.setListener(this);
 
-        this.tools.toolbar = new BtnGroup(rootView, R.id.toolbar);
-        this.tools.inputbar = new BtnGroup(rootView, R.id.inputbar);
+        this.tools.toolbar = new BtnGroup(this, R.id.toolbar);
+        this.tools.inputbar = new BtnGroup(this, R.id.inputbar);
 
-        this.tools.showToolbar = new Btn(rootView, R.id.show_toolbar, this::onShowToolbar);
-        this.tools.hideToolbar = new Btn(rootView, R.id.hide_toolbar, this::onHideToolbar);
+        this.tools.showToolbar = new Btn(this, R.id.show_toolbar, this::onShowToolbar);
+        this.tools.hideToolbar = new Btn(this, R.id.hide_toolbar, this::onHideToolbar);
 
-        this.tools.settings = new Btn(rootView, R.id.tool_settings, this::onShowPreferences);
-        this.tools.clipboard = new Btn(rootView, R.id.tool_clipboard, this::onShowClipboard);
-        this.tools.switchIme = new Btn(rootView, R.id.tool_switch_ime, this::onSwitchIme);
-        this.tools.closeKeyboard = new Btn(rootView, R.id.tool_close_keyboard, this::onCloseKeyboard);
+        this.tools.settings = new Btn(this, R.id.tool_settings, this::onShowPreferences);
+        this.tools.clipboard = new Btn(this, R.id.tool_clipboard, this::onShowClipboard);
+        this.tools.switchIme = new Btn(this, R.id.tool_switch_ime, this::onSwitchIme);
+        this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
 
-        this.tools.cleanInputList = new Btn(rootView, R.id.clean_input_list, this::onCleanInputList);
-        this.tools.cancelCleanInputList = new Btn(rootView, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
-
-        updateToolsByState();
-    }
-
-    private <T extends View> T inflateWithTheme(int resId, int themeResId) {
-        // 通过 Context Theme 仅对面板自身的视图设置主题样式，
-        // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        return ThemeUtils.inflate(this, resId, themeResId, true);
+        this.tools.cleanInputList = new Btn(this, R.id.clean_input_list, this::onCleanInputList);
+        this.tools.cancelCleanInputList = new Btn(this, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
     }
 
     /** 根据输入面板状态更新工具状态 */
@@ -195,7 +183,7 @@ public class InputboardView extends FrameLayout implements UserMsgListener, Inpu
         this.tools.update();
 
         Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-        ViewUtils.updateLayoutDirection(this.rootView, handMode);
+        ViewUtils.updateLayoutDirection(this, handMode);
     }
 
     private static void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {
