@@ -65,11 +65,11 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 public class MainboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
     protected final Logger log = Logger.getLogger(getClass());
 
-    private TextView warningView;
-    private KeyboardView keyboardView;
-    private InputboardView inputboardView;
+    private final TextView warningView;
+    private final KeyboardView keyboardView;
+    private final InputboardView inputboardView;
 
-    private View popupAnchor;
+    private final View popupAnchor;
     private PopupWindow inputKeyPopupWindow;
     private PopupWindow inputQuickPopupWindow;
 
@@ -80,7 +80,29 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
 
     public MainboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+
+        inflate(context, R.layout.ime_board_main_view, this);
+
+        this.warningView = findViewById(R.id.warning);
+        this.keyboardView = findViewById(R.id.keyboard);
+        this.keyboardView.setListener(this);
+
+        this.inputboardView = findViewById(R.id.inputboard);
+        this.inputboardView.setListener(this);
+
+        // <<<<<<<<<< 气泡提示
+        this.popupAnchor = findViewById(R.id.popup_anchor);
+
+        View inputKeyView = inflate(context, R.layout.popup_input_key_view, null);
+        this.inputKeyPopupWindow = preparePopupWindow(this.inputKeyPopupWindow, inputKeyView);
+
+        InputQuickListView inputQuickListView = (InputQuickListView) inflate(context,
+                                                                             R.layout.popup_input_quick_list_view,
+                                                                             null);
+        inputQuickListView.setListener(this);
+
+        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickListView);
+        // >>>>>>>>>>>
     }
 
     public void setConfig(Config.Mutable config) {
@@ -255,31 +277,6 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     // =============================== End: 消息处理 ===================================
 
     // =============================== Start: 视图更新 ===================================
-
-    private void init(Context context) {
-        inflate(context, R.layout.ime_board_main_view, this);
-
-        this.warningView = findViewById(R.id.warning);
-        this.keyboardView = findViewById(R.id.keyboard);
-        this.keyboardView.setListener(this);
-
-        this.inputboardView = findViewById(R.id.inputboard);
-        this.inputboardView.setListener(this);
-
-        // <<<<<<<<<< 气泡提示
-        this.popupAnchor = findViewById(R.id.popup_anchor);
-
-        View inputKeyView = inflate(context, R.layout.popup_input_key_view, null);
-        this.inputKeyPopupWindow = preparePopupWindow(this.inputKeyPopupWindow, inputKeyView);
-
-        InputQuickListView inputQuickListView = (InputQuickListView) inflate(context,
-                                                                             R.layout.popup_input_quick_list_view,
-                                                                             null);
-        inputQuickListView.setListener(this);
-
-        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickListView);
-        // >>>>>>>>>>>
-    }
 
     public void updateBottomSpacing(boolean force) {
         // Note: 仅竖屏模式下需要添加底部空白

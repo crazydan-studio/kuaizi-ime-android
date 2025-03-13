@@ -40,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Keyboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Show_Clipboard;
 
 /**
  * {@link Inputboard} 的视图
@@ -50,7 +51,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @date 2025-01-06
  */
 public class InputboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
-    private InputListView inputListView;
+    private final InputListView inputListView;
 
     private final BtnTools tools = new BtnTools();
 
@@ -61,7 +62,25 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
     public InputboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+
+        inflate(context, R.layout.ime_board_input_view, this);
+
+        this.inputListView = findViewById(R.id.input_list);
+        this.inputListView.setListener(this);
+
+        this.tools.toolbar = new BtnGroup(this, R.id.toolbar);
+        this.tools.inputbar = new BtnGroup(this, R.id.inputbar);
+
+        this.tools.showToolbar = new Btn(this, R.id.show_toolbar, this::onShowToolbar);
+        this.tools.hideToolbar = new Btn(this, R.id.hide_toolbar, this::onHideToolbar);
+
+        this.tools.settings = new Btn(this, R.id.tool_settings, this::onShowPreferences);
+        this.tools.clipboard = new Btn(this, R.id.tool_clipboard, this::onShowClipboard);
+        this.tools.switchIme = new Btn(this, R.id.tool_switch_ime, this::onSwitchIme);
+        this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
+
+        this.tools.cleanInputList = new Btn(this, R.id.clean_input_list, this::onCleanInputList);
+        this.tools.cancelCleanInputList = new Btn(this, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
     }
 
     public void setConfig(Config config) {
@@ -107,31 +126,6 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         }
 
         updateToolsByState();
-    }
-
-    // =============================== End: 消息处理 ===================================
-
-    // =============================== Start: 视图更新 ===================================
-
-    private void init(Context context) {
-        inflate(context, R.layout.ime_board_input_view, this);
-
-        this.inputListView = findViewById(R.id.input_list);
-        this.inputListView.setListener(this);
-
-        this.tools.toolbar = new BtnGroup(this, R.id.toolbar);
-        this.tools.inputbar = new BtnGroup(this, R.id.inputbar);
-
-        this.tools.showToolbar = new Btn(this, R.id.show_toolbar, this::onShowToolbar);
-        this.tools.hideToolbar = new Btn(this, R.id.hide_toolbar, this::onHideToolbar);
-
-        this.tools.settings = new Btn(this, R.id.tool_settings, this::onShowPreferences);
-        this.tools.clipboard = new Btn(this, R.id.tool_clipboard, this::onShowClipboard);
-        this.tools.switchIme = new Btn(this, R.id.tool_switch_ime, this::onSwitchIme);
-        this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
-
-        this.tools.cleanInputList = new Btn(this, R.id.clean_input_list, this::onCleanInputList);
-        this.tools.cancelCleanInputList = new Btn(this, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
     }
 
     /** 根据输入面板状态更新工具状态 */
@@ -186,6 +180,10 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         ViewUtils.updateLayoutDirection(this, handMode);
     }
 
+    // =============================== End: 消息处理 ===================================
+
+    // ==================== Start: 按键事件处理 ==================
+
     private static void toggleDisableBtn(View btn, boolean disabled, View.OnClickListener listener) {
         if (disabled) {
             btn.setAlpha(0.4f);
@@ -205,10 +203,6 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
             btn.setOnClickListener(null);
         }
     }
-
-    // =============================== End: 视图更新 ===================================
-
-    // ==================== Start: 按键事件处理 ==================
 
     private void onShowToolbar(View v) {
         this.state = new State(State.Type.Toolbar_Show_Doing, this.state);
@@ -244,7 +238,8 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
     }
 
     private void onShowClipboard(View v) {
-        // TODO 显示剪贴板
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Show_Clipboard));
+        onMsg(msg);
     }
 
     // ==================== End: 按键事件处理 ==================

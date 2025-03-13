@@ -26,7 +26,7 @@
     <declare-styleable name="keyboard_style">
         <attr name="keyboard_bg_color" format="color" />
         <attr name="keyboard_border_color" format="color" />
-        <attr name="keyboard_divider_color" format="color" />
+        <attr name="board_divider_color" format="color" />
 
         <attr name="input_bg_color" format="color" />
         <attr name="input_fg_color" format="color" />

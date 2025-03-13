@@ -119,6 +119,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.listener.onMsg(msg);
 
         this.log.endTreeLog();
+
+        // 直接处理面板关闭消息：关闭无需清理等工作
+        switch (msg.type) {
+            case SingleTap_Btn_Close_Clipboard: {
+                activeBoard(BoardType.main);
+                break;
+            }
+        }
     }
 
     // -------------------------------------------
@@ -134,6 +142,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
         this.log.endTreeLog();
 
+        // Note: 涉及重建视图和视图显隐切换等情况，因此，需在最后转发消息到子视图
         //////////////////////////////////////////////////////////////
         InputMsgListener current = currentBoard();
 
@@ -141,7 +150,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 msg.getClass(), current.getClass()
         });
 
-        // Note: 涉及重建视图的情况，因此，需在最后转发消息到子视图
         current.onMsg(msg);
 
         this.log.endTreeLog();
@@ -155,6 +163,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg(msg.data());
+                break;
+            }
+            case InputFavorite_Create_Done: {
+                activeBoard(BoardType.clip);
                 break;
             }
             default: {
@@ -204,6 +216,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
+        // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
         ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
 
         MainboardView mainboardView = findViewById(R.id.mainboard);
@@ -220,6 +233,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             put(BoardType.main, mainboardView);
             put(BoardType.clip, clipboardView);
         }};
+
+        // 确保按已激活的类型显隐面板，而不是按视图中的设置
+        activeBoard(this.activeBoard);
         // >>>>>>>>>>>>
     }
 
@@ -231,6 +247,17 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private void activeBoard(BoardType type) {
         this.activeBoard = type;
+
+        this.boards.forEach((t, view) -> {
+            if (t == type) {
+                view.setVisibility(View.VISIBLE);
+            } else if (t == BoardType.main) {
+                // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
+                view.setVisibility(View.INVISIBLE);
+            } else {
+                view.setVisibility(View.GONE);
+            }
+        });
     }
 
     private <T> T currentBoard() {

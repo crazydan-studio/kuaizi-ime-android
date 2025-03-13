@@ -24,35 +24,36 @@
         android:layoutDirection="ltr">
 
     <LinearLayout
-            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/input_list_view_height"
+            android:layout_height="@dimen/toolbar_view_height"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="4dp">
+            android:paddingHorizontal="4dp"
+            android:layout_marginVertical="4dp">
 
         <TextView
+                android:id="@+id/title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:textSize="20sp"
-                android:text="@string/title_clipboard" />
+                android:textColor="?attr/input_fg_color"
+                android:textSize="@dimen/char_input_word_text_size" />
 
         <ImageButton
                 android:id="@+id/close"
-                android:layout_width="@dimen/input_list_button_icon_size"
-                android:layout_height="@dimen/input_list_button_icon_size"
+                android:layout_width="@dimen/btn_tool_icon_size"
+                android:layout_height="@dimen/btn_tool_icon_size"
                 android:layout_gravity="center"
-                android:layout_marginStart="@dimen/input_list_button_spacing"
-                android:src="@drawable/ic_btn_tool_tools"
+                android:layout_marginStart="@dimen/btn_tool_spacing"
+                android:src="@drawable/ic_btn_tool_close"
                 android:background="@android:color/transparent" />
     </LinearLayout>
 
     <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="?attr/keyboard_divider_color" />
+            android:background="?attr/board_divider_color" />
 
     <org.crazydan.studio.app.ime.kuaizi.ui.view.InputFavoriteListView
             android:id="@+id/favorite_list"

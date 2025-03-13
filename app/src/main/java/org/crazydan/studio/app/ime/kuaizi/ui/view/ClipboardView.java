@@ -21,7 +21,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -31,6 +33,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Clipboard;
 
 /**
  * {@link Clipboard} 的视图
@@ -41,14 +46,24 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
  * @date 2025-03-13
  */
 public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
-    private InputFavoriteListView favoriteListView;
+    private final InputFavoriteListView favoriteListView;
+    private final TextView titleTextView;
 
     private Config config;
     private UserMsgListener listener;
 
     public ClipboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+
+        inflate(context, R.layout.ime_board_clip_view, this);
+
+        this.titleTextView = findViewById(R.id.title);
+
+        this.favoriteListView = findViewById(R.id.favorite_list);
+        this.favoriteListView.setListener(this);
+
+        View closeBtnView = findViewById(R.id.close);
+        closeBtnView.setOnClickListener(this::onCloseClipboard);
     }
 
     public void setConfig(Config config) {
@@ -72,31 +87,27 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
-        // Note: 本视图为上层视图的子视图，在主题样式更新时，上层视图会自动重建本视图，
-        // 因此，不需要重复处理本视图的布局更新等问题
+        switch (msg.type) {
+            case InputFavorite_Create_Done: {
+                InputFavoriteMsgData data = msg.data();
+                int total = data.favorites.size();
+                String title = getContext().getString(R.string.title_clipboard, total > 999 ? "999+" : total);
 
-        handleMsg(msg);
-
-        //this.favoriteListView.onMsg(msg);
-    }
-
-    private void handleMsg(InputMsg msg) {
+                this.titleTextView.setText(title);
+                this.favoriteListView.update(data.favorites);
+                break;
+            }
+        }
     }
 
     // =============================== End: 消息处理 ===================================
 
-    // =============================== Start: 视图更新 ===================================
-
-    private void init(Context context) {
-        inflate(context, R.layout.ime_board_clip_view, this);
-
-        this.favoriteListView = findViewById(R.id.favorite_list);
-        this.favoriteListView.setListener(this);
-    }
-
-    // =============================== End: 视图更新 ===================================
-
     // ==================== Start: 按键事件处理 ==================
+
+    private void onCloseClipboard(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Close_Clipboard));
+        onMsg(msg);
+    }
 
     // ==================== End: 按键事件处理 ==================
 }

@@ -43,7 +43,7 @@
     <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="?attr/keyboard_divider_color" />
+            android:background="?attr/board_divider_color" />
 
     <LinearLayout
             android:layout_width="match_parent"

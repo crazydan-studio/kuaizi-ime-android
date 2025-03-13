@@ -86,8 +86,5 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
 
     public void update(List<InputFavorite> dataList) {
         getAdapter().updateItems(dataList);
-
-        // 复位滚动位置
-        getLayoutManager().scrollToPosition(0);
     }
 }

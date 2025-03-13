@@ -1,0 +1,29 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/211651/close_round_icon -->
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M20.504,18.119 L14.385,12 20.504,5.881c0.661,-0.661 0.661,-1.724 0,-2.385 -0.661,-0.661 -1.724,-0.661 -2.385,0L12,9.615 5.881,3.496c-0.661,-0.661 -1.724,-0.661 -2.385,0 -0.661,0.661 -0.661,1.724 0,2.385L9.615,12 3.496,18.119c-0.661,0.661 -0.661,1.724 0,2.385 0.661,0.661 1.724,0.661 2.385,0L12,14.385l6.119,6.119c0.661,0.661 1.724,0.661 2.385,0 0.656,-0.661 0.656,-1.729 0,-2.385z" />
+</vector>

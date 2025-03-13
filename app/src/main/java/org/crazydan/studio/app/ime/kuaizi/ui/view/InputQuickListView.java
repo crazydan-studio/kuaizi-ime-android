@@ -117,7 +117,7 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
     public void update(List<?> dataList) {
         getAdapter().updateItems(InputQuickViewData.from(dataList));
 
-        // 复位滚动位置
-        getLayoutManager().scrollToPosition(0);
+//        // 复位滚动位置
+//        getLayoutManager().scrollToPosition(0);
     }
 }

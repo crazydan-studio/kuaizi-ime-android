@@ -25,10 +25,10 @@
 
     <!-- 常用功能按钮 -->
     <FrameLayout
-            android:layout_width="@dimen/input_list_button_icon_size"
-            android:layout_height="@dimen/input_list_button_icon_size"
+            android:layout_width="@dimen/btn_tool_icon_size"
+            android:layout_height="@dimen/btn_tool_icon_size"
             android:layout_gravity="center"
-            android:layout_marginStart="@dimen/input_list_button_spacing">
+            android:layout_marginStart="@dimen/btn_tool_spacing">
 
         <ImageButton
                 android:id="@+id/tool_settings"
@@ -47,15 +47,15 @@
 
     <View
             android:layout_width="1dp"
-            android:layout_height="@dimen/input_list_divider_height"
+            android:layout_height="@dimen/btn_tool_divider_height"
             android:layout_gravity="center"
             android:layout_marginStart="8dp"
-            android:background="?attr/keyboard_divider_color" />
+            android:background="?attr/board_divider_color" />
 
     <!-- 输入列表 -->
     <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="@dimen/input_list_view_height"
+            android:layout_height="@dimen/toolbar_view_height"
             android:layout_weight="1"
             android:layout_marginHorizontal="1dp"
             android:layout_marginVertical="4dp">
@@ -97,15 +97,15 @@
 
             <ImageButton
                     android:id="@+id/tool_switch_ime"
-                    android:layout_width="@dimen/input_list_button_icon_size"
-                    android:layout_height="@dimen/input_list_button_icon_size"
+                    android:layout_width="@dimen/btn_tool_icon_size"
+                    android:layout_height="@dimen/btn_tool_icon_size"
                     android:src="@drawable/ic_btn_tool_global"
                     android:background="@android:color/transparent" />
 
             <ImageButton
                     android:id="@+id/tool_clipboard"
-                    android:layout_width="@dimen/input_list_button_icon_size"
-                    android:layout_height="@dimen/input_list_button_icon_size"
+                    android:layout_width="@dimen/btn_tool_icon_size"
+                    android:layout_height="@dimen/btn_tool_icon_size"
                     android:src="@drawable/ic_btn_tool_clipboard"
                     android:layout_marginHorizontal="2dp"
                     android:background="@android:color/transparent" />
@@ -114,17 +114,17 @@
 
     <View
             android:layout_width="1dp"
-            android:layout_height="@dimen/input_list_divider_height"
+            android:layout_height="@dimen/btn_tool_divider_height"
             android:layout_gravity="center"
             android:layout_marginEnd="8dp"
-            android:background="?attr/keyboard_divider_color" />
+            android:background="?attr/board_divider_color" />
 
     <!-- 删除与撤销按钮 -->
     <FrameLayout
-            android:layout_width="@dimen/input_list_button_icon_size"
-            android:layout_height="@dimen/input_list_button_icon_size"
+            android:layout_width="@dimen/btn_tool_icon_size"
+            android:layout_height="@dimen/btn_tool_icon_size"
             android:layout_gravity="center"
-            android:layout_marginEnd="@dimen/input_list_button_spacing">
+            android:layout_marginEnd="@dimen/btn_tool_spacing">
 
         <ImageButton
                 android:id="@+id/clean_input_list"
@@ -144,7 +144,7 @@
                 android:id="@+id/tool_close_keyboard"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_btn_tool_hide_keyboard"
+                android:src="@drawable/ic_btn_tool_close_keyboard"
                 android:background="@android:color/transparent" />
 
         <ImageButton

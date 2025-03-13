@@ -108,4 +108,9 @@ public enum InputMsgType {
     InputClip_Data_Discard_Done,
     /** 剪贴板文本提交中：将文本写入到 目标编辑器 中 */
     InputClip_Text_Commit_Doing,
+
+    /** 已收藏输入已生成 */
+    InputFavorite_Create_Done,
+    /** 已收藏输入已应用 */
+    InputFavorite_Apply_Done,
 }

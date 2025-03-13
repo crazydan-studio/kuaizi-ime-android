@@ -45,4 +45,8 @@ public enum UserInputMsgType {
 
     /** 单击 关闭键盘 的按钮 */
     SingleTap_Btn_Close_Keyboard,
+    /** 单击 显示剪贴板 的按钮 */
+    SingleTap_Btn_Show_Clipboard,
+    /** 单击 关闭剪贴板 的按钮 */
+    SingleTap_Btn_Close_Clipboard,
 }

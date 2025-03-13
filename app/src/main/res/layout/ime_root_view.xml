@@ -36,7 +36,8 @@
         <org.crazydan.studio.app.ime.kuaizi.ui.view.ClipboardView
                 android:id="@+id/clipboard"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
         <!-- Note: 在切换到其他面板时，主面板需设置为 invisible，
         确保其依然占有空间，从而方便其他面板在该空间内布局 -->
@@ -44,6 +45,6 @@
                 android:id="@+id/mainboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="invisible" />
+                android:visibility="visible" />
     </FrameLayout>
 </LinearLayout>

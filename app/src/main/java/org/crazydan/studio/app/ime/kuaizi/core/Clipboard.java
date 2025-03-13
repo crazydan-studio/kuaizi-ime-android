@@ -34,17 +34,20 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Create_Done;
 
 /**
  * 剪贴板
@@ -100,30 +103,11 @@ public class Clipboard {
     public void onMsg(ClipboardContext context, UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_InputClip: {
-                // 提前废弃数据，以避免下面的数据粘贴消息更新气泡提示
-                discardClips();
-
-                UserInputClipSingleTapMsgData data = msg.data();
-                switch (data.clip.type) {
-                    case captcha:
-                    case phone: {
-                        commitClipText(context, data.clip, true);
-                        break;
-                    }
-                    default: {
-                        if (data.position > 0) {
-                            // 从原始内容中提取的数据需单独提交
-                            commitClipText(context, data.clip, false);
-                        } else {
-                            // 直接粘贴剪贴板原始内容
-                            InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
-                            context.fireInputMsg(Editor_Edit_Doing, msgData);
-                        }
-                    }
-                }
-
-                InputClipMsgData msgData = new InputClipMsgData(data.clip);
-                context.fireInputMsg(InputClip_Data_Apply_Done, msgData);
+                on_SingleTap_InputClip_Msg(context, msg);
+                break;
+            }
+            case SingleTap_Btn_Show_Clipboard: {
+                on_SingleTap_Btn_Show_Clipboard_Msg(context, msg);
                 break;
             }
             default: {
@@ -136,6 +120,40 @@ public class Clipboard {
     public void onClipChangedOnce(Runnable cb) {
         OnceClipChangedListener listener = new OnceClipChangedListener(this.manager, cb);
         listener.start();
+    }
+
+    private void on_SingleTap_InputClip_Msg(ClipboardContext context, UserInputMsg msg) {
+        // 提前废弃数据，以避免下面的数据粘贴消息更新气泡提示
+        discardClips();
+
+        UserInputClipSingleTapMsgData data = msg.data();
+        switch (data.clip.type) {
+            case captcha:
+            case phone: {
+                commitClipText(context, data.clip, true);
+                break;
+            }
+            default: {
+                if (data.position > 0) {
+                    // 从原始内容中提取的数据需单独提交
+                    commitClipText(context, data.clip, false);
+                } else {
+                    // 直接粘贴剪贴板原始内容
+                    InputMsgData msgData = new EditorEditMsgData(EditorAction.paste);
+                    context.fireInputMsg(Editor_Edit_Doing, msgData);
+                }
+            }
+        }
+
+        InputClipMsgData msgData = new InputClipMsgData(data.clip);
+        context.fireInputMsg(InputClip_Data_Apply_Done, msgData);
+    }
+
+    private void on_SingleTap_Btn_Show_Clipboard_Msg(ClipboardContext context, UserInputMsg msg) {
+        List<InputFavorite> favorites = new ArrayList<>();
+
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(favorites);
+        context.fireInputMsg(InputFavorite_Create_Done, msgData);
     }
 
     private void commitClipText(ClipboardContext context, InputClip clip, boolean oneByOne) {
