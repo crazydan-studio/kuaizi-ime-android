@@ -61,6 +61,7 @@
     <string name="btn_guide_show_software_service_agreement">软件服务协议</string>
     <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
+    <string name="btn_save_as_favorite">收藏</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -133,4 +134,12 @@
     <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
     <string name="title_clip_past_phone">粘贴已复制的电话号码</string>
     <string name="title_clip_past_email">粘贴已复制的邮箱</string>
+
+    <string name="tip_editor_action_select_all">已全选</string>
+    <string name="tip_editor_action_undo">已撤销</string>
+    <string name="tip_editor_action_redo">已重做</string>
+    <string name="tip_whether_save_pasted_content">是否收藏已粘贴内容？</string>
+    <string name="tip_whether_save_cut_content">是否收藏已剪切内容？</string>
+    <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
+    <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
 </resources>

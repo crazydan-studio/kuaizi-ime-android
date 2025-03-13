@@ -39,7 +39,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -53,8 +52,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.InputboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
@@ -100,7 +100,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     public void setConfig(Config.Mutable config) {
         this.config = config;
-        updateLayout();
+        doLayout();
     }
 
     public XPadView getXPadView() {
@@ -215,20 +215,24 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 break;
             }
             case Editor_Edit_Doing: {
-                EditorEditMsgData data = msg.data();
-                // 对影响编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
-                // Note: 回删已做气泡提示，不再重复提示
-                if (data.action != EditorAction.backspace) {
-                    showInputKeyPopupWindow("已" + data.action.label, true);
-                }
+                on_Editor_Edit_Doing(msg.data());
+                break;
+            }
+            case InputList_Commit_Doing: {
+                InputListCommitMsgData data = msg.data();
+                // TODO 提示是否收藏已输入内容：仅针对非替换且可撤回的输入
                 break;
             }
             case InputClip_Text_Commit_Doing: {
-                showInputKeyPopupWindow("已" + EditorAction.paste.label, true);
+                // TODO 提示是否收藏已粘贴内容
                 break;
             }
             case InputClip_Data_Apply_Done: {
-                Toast.with(this).setHtml("是否收藏已粘贴内容？").setDuration(5000).setAction("收藏", (v) -> {}).show();
+                Toast.with(this)
+                     .setText(R.string.tip_whether_save_pasted_content)
+                     .setDuration(5000)
+                     .setAction(R.string.btn_save_as_favorite, (v) -> {})
+                     .show();
                 break;
             }
             default: {
@@ -240,7 +244,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
         switch (data.configKey) {
             case theme: {
-                updateLayout();
+                doLayout();
                 break;
             }
             case enable_x_input_pad:
@@ -263,12 +267,38 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         this.audioPlayer.play(data.audioType.resId);
     }
 
+    private void on_Editor_Edit_Doing(EditorEditMsgData data) {
+        CharSequence tip = null;
+        // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
+        // Note: 回删已做气泡提示，不再重复提示
+        switch (data.action) {
+            case select_all: {
+                tip = getContext().getText(R.string.tip_editor_action_select_all);
+                break;
+            }
+            case redo: {
+                tip = getContext().getText(R.string.tip_editor_action_redo);
+                break;
+            }
+            case undo: {
+                tip = getContext().getText(R.string.tip_editor_action_undo);
+                break;
+            }
+        }
+
+        if (tip != null) {
+            showInputKeyPopupWindow(tip.toString(), true);
+        }
+
+        // TODO 提示是否收藏已复制、剪切、粘贴内容
+    }
+
     // =============================== End: 消息处理 ===================================
 
     // =============================== Start: 视图更新 ===================================
 
-    /** 更新布局 */
-    private void updateLayout() {
+    /** 布局视图 */
+    private void doLayout() {
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
@@ -293,10 +323,12 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         View inputKeyView = inflateWithTheme(R.layout.popup_input_key_view, themeResId, false);
         this.inputKeyPopupWindow = preparePopupWindow(this.inputKeyPopupWindow, inputKeyView);
 
-        InputQuickView inputQuickView = inflateWithTheme(R.layout.popup_input_quick_view, themeResId, false);
-        inputQuickView.setListener(this);
-        updatePopupViewLayout(inputQuickView);
-        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickView);
+        InputQuickListView inputQuickListView = inflateWithTheme(R.layout.popup_input_quick_list_view,
+                                                                 themeResId,
+                                                                 false);
+        inputQuickListView.setListener(this);
+        updatePopupViewLayout(inputQuickListView);
+        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickListView);
         // >>>>>>>>>>>
     }
 
@@ -338,10 +370,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     // ==================== Start: 气泡提示 ==================
 
-    private Toast createToast(String msg, Object... args) {
-        return Toast.with(this).setHtml(msg, args).setDuration(Toast.LENGTH_LONG);
-    }
-
     private void showInputQuickPopupWindow(List<?> dataList) {
         PopupWindow window = this.inputQuickPopupWindow;
         if (CollectionUtils.isEmpty(dataList)) {
@@ -349,8 +377,8 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             return;
         }
 
-        InputQuickView inputQuickView = (InputQuickView) window.getContentView();
-        inputQuickView.update(dataList);
+        InputQuickListView inputQuickListView = (InputQuickListView) window.getContentView();
+        inputQuickListView.update(dataList);
 
         showPopupWindow(window);
     }

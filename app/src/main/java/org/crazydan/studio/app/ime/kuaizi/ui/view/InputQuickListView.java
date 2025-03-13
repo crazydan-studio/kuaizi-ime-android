@@ -35,25 +35,25 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputQuickViewAdapter;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputQuickListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickViewData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputClip;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_InputCompletion;
 
 /**
- * 快捷输入视图
+ * 快捷输入的列表视图
  * <p/>
  * 需在显示前调用 {@link #update} 更新列表数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-10-11
  */
-public class InputQuickView extends RecyclerView<InputQuickViewAdapter, InputQuickViewData>
+public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, InputQuickViewData>
         implements ViewGestureDetector.Listener {
     private UserInputMsgListener listener;
 
-    public InputQuickView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public InputQuickListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         // 去掉动画，以避免闪烁
@@ -64,8 +64,8 @@ public class InputQuickView extends RecyclerView<InputQuickViewAdapter, InputQui
     }
 
     @Override
-    protected InputQuickViewAdapter createAdapter() {
-        return new InputQuickViewAdapter();
+    protected InputQuickListViewAdapter createAdapter() {
+        return new InputQuickListViewAdapter();
     }
 
     @Override

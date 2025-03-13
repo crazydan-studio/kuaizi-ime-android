@@ -34,7 +34,7 @@ public class Toast {
     public static final int LENGTH_LONG = Snackbar.LENGTH_LONG;
     public static final int LENGTH_INDEFINITE = Snackbar.LENGTH_INDEFINITE;
 
-    private final View context;
+    private final View root;
     private final View anchor;
 
     private CharSequence text;
@@ -43,13 +43,17 @@ public class Toast {
     private CharSequence actionText;
     private View.OnClickListener actionListener;
 
-    public static Toast with(View context) {
-        return new Toast(context);
+    public static Toast with(View root) {
+        return new Toast(root);
     }
 
-    private Toast(View context) {
-        this.context = context;
-        this.anchor = context.findViewById(R.id.toast_anchor);
+    private Toast(View root) {
+        this.root = root;
+        this.anchor = root.findViewById(R.id.toast_anchor);
+    }
+
+    public Toast setText(int resId) {
+        return setText(this.root.getContext().getText(resId));
     }
 
     public Toast setText(CharSequence text) {
@@ -68,7 +72,7 @@ public class Toast {
     }
 
     public Toast setAction(int resId, View.OnClickListener listener) {
-        return setAction(this.context.getContext().getText(resId), listener);
+        return setAction(this.root.getContext().getText(resId), listener);
     }
 
     public Toast setAction(CharSequence text, View.OnClickListener listener) {
@@ -79,7 +83,7 @@ public class Toast {
 
     public void show() {
         // Note: Snackbar 将自动管理多个实例，确保将前一个隐藏后再显示下一个
-        Snackbar.make(this.context, this.text, this.duration)
+        Snackbar.make(this.root, this.text, this.duration)
                 .setAnchorView(this.anchor)
                 .setAction(this.actionText, this.actionListener)
                 .show();

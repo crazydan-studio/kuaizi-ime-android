@@ -25,7 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewAdapter;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputClipViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputCompletionViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickPlaceholderViewHolder;
@@ -33,17 +33,17 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickViewData
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickViewHolder;
 
 /**
- * {@link InputQuickView} 的 {@link RecyclerView} 适配器
+ * {@link InputQuickListView} 的 {@link RecyclerView} 适配器
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-10
  */
-public class InputQuickViewAdapter extends RecyclerViewAdapter<InputQuickViewData, InputQuickViewHolder> {
+public class InputQuickListViewAdapter extends RecyclerViewAdapter<InputQuickViewData, InputQuickViewHolder> {
     private static final int VIEW_TYPE_PLACEHOLDER = -1;
     private static final int VIEW_TYPE_COMPLETION = 0;
     private static final int VIEW_TYPE_CLIP = 1;
 
-    public InputQuickViewAdapter() {
+    public InputQuickListViewAdapter() {
         super(ItemUpdatePolicy.differ);
     }
 
