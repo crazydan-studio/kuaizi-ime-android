@@ -57,4 +57,8 @@ public enum UserInputMsgType {
     SingleTap_Btn_Select_InputFavorite,
     /** 单击 删除已选中的 {@link InputFavorite} 的按钮 */
     SingleTap_Btn_Delete_Selected_InputFavorite,
+    /** 单击 清空全部 {@link InputFavorite} 的按钮 */
+    SingleTap_Btn_Clear_All_InputFavorite,
+    /** 单击 收藏粘贴数据 的按钮 */
+    SingleTap_Btn_Save_Clip_to_Favorite,
 }

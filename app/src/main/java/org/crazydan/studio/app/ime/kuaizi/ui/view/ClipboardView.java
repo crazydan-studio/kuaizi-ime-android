@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -39,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
 
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clear_All_InputFavorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Clipboard;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Delete_Selected_InputFavorite;
 
@@ -57,6 +59,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     private final View dataPaneView;
 
     private final TextView deleteSelectedBtnView;
+    private final TextView clearAllBtnView;
 
     private Config config;
     private UserMsgListener listener;
@@ -70,6 +73,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         this.warningView = findViewById(R.id.warning);
         this.dataPaneView = findViewById(R.id.data_pane);
         this.deleteSelectedBtnView = findViewById(R.id.delete_selected);
+        this.clearAllBtnView = findViewById(R.id.clear_all);
 
         this.favoriteListView = findViewById(R.id.favorite_list);
         this.favoriteListView.setListener(this);
@@ -121,7 +125,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
     private void on_InputFavorite_Update_Done_Msg(InputFavoriteMsgData data) {
         int total = data.favorites.size();
-        CharSequence title = textWithNumber(R.string.title_clipboard, total);
+        CharSequence title = textWithNumber(R.string.title_favorites, total);
 
         this.titleView.setText(title);
         this.favoriteListView.update(data.favorites);
@@ -130,11 +134,11 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         ViewUtils.visible(this.warningView, showWarning);
         ViewUtils.visible(this.dataPaneView, !showWarning);
 
-        updateBtnDeleteSelected();
+        updateBtnStatus();
     }
 
     private void on_SingleTap_Select_InputFavorite_Msg() {
-        updateBtnDeleteSelected();
+        updateBtnStatus();
     }
 
     // =============================== End: 消息处理 ===================================
@@ -155,26 +159,51 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(selected);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
         onMsg(msg);
+
+        Toast.with(this)
+             .setText(R.string.tip_whether_undo_favorite_delete)
+             .setDuration(3000)
+             .setAction(R.string.btn_undo, (vv) -> {})
+             .show();
+    }
+
+    private void onClearAll(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Clear_All_InputFavorite));
+        onMsg(msg);
+
+        Toast.with(this)
+             .setText(R.string.tip_whether_undo_favorite_delete)
+             .setDuration(3000)
+             .setAction(R.string.btn_undo, (vv) -> {})
+             .show();
     }
 
     // ==================== End: 按键事件处理 ==================
 
-    private void updateBtnDeleteSelected() {
+    private void updateBtnStatus() {
         List<Integer> selected = this.favoriteListView.getAdapter().getSelectedItems();
         int total = selected.size();
+        boolean disabled = total == 0;
 
-        CharSequence text = textWithNumber(R.string.btn_delete_selected, total);
-        if (selected.isEmpty()) {
-            this.deleteSelectedBtnView.setAlpha(.1f);
-            this.deleteSelectedBtnView.setOnClickListener(null);
+        updateBtn(this.deleteSelectedBtnView,
+                  textWithNumber(R.string.btn_delete_selected, total),
+                  disabled,
+                  this::onDeleteSelected);
+        updateBtn(this.clearAllBtnView, getContext().getString(R.string.btn_clear_all), disabled, this::onClearAll);
+    }
+
+    private void updateBtn(TextView view, CharSequence text, boolean disabled, View.OnClickListener listener) {
+        if (disabled) {
+            view.setAlpha(.1f);
+            view.setOnClickListener(null);
         } else {
             text = ViewUtils.parseHtml("<a href='#'>" + text + "</a>");
 
-            this.deleteSelectedBtnView.setAlpha(1f);
-            this.deleteSelectedBtnView.setOnClickListener(this::onDeleteSelected);
+            view.setAlpha(1f);
+            view.setOnClickListener(listener);
         }
 
-        this.deleteSelectedBtnView.setText(text);
+        view.setText(text);
     }
 
     private CharSequence textWithNumber(int resId, int number) {

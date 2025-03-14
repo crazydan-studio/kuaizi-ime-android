@@ -42,7 +42,7 @@
     <string name="title_about_new_features">新功能介绍</string>
     <string name="title_user_data_backup">数据备份</string>
     <string name="title_tips">友情提示</string>
-    <string name="title_clipboard">剪贴板 (%1$s 条)</string>
+    <string name="title_favorites">已收藏 (%1$s 条)</string>
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
@@ -64,6 +64,8 @@
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
     <string name="btn_save_as_favorite">收藏</string>
     <string name="btn_delete_selected">删除已选中项 (%1$s 条)</string>
+    <string name="btn_clear_all">全部清空</string>
+    <string name="btn_undo">撤销</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -135,6 +137,15 @@
     <string name="value_hand_mode_right">右手模式</string>
 
     <!-- 输入法面板文本 -->
+    <string name="value_text_type_normal">普通文本</string>
+    <string name="value_text_type_url">链接</string>
+    <string name="value_text_type_captcha">验证码</string>
+    <string name="value_text_type_phone">电话号码</string>
+    <string name="value_text_type_email">邮箱</string>
+    <string name="value_text_type_id_card">身份证号</string>
+    <string name="value_text_type_credit_card">银行卡号</string>
+    <string name="value_text_type_address">地址</string>
+
     <string name="title_clip_past_url">粘贴已复制的链接</string>
     <string name="title_clip_past_content">粘贴已复制的内容</string>
     <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
@@ -144,11 +155,14 @@
     <string name="tip_editor_action_select_all">已全选</string>
     <string name="tip_editor_action_undo">已撤销</string>
     <string name="tip_editor_action_redo">已重做</string>
+    <string name="tip_editor_action_paste">已粘贴</string>
     <string name="tip_whether_save_pasted_content">是否收藏已粘贴内容？</string>
     <string name="tip_whether_save_cut_content">是否收藏已剪切内容？</string>
     <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
     <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
+    <string name="tip_whether_undo_favorite_delete">是否撤销删除操作？</string>
 
+    <string name="label_text_type">文本类型：%1$s</string>
     <string name="label_created_at">创建日期：%1$s</string>
     <string name="label_used_count">使用次数：%1$s</string>
 </resources>

@@ -37,8 +37,12 @@ public class InputFavorite extends Immutable {
     /** 对象 id，一般对应持久化的主键值 */
     public final Integer id;
 
+    /** 文本类型 */
+    public final InputTextType type;
     /** 文本内容 */
     public final String text;
+    /** HTML 内容，用于支持富文本，其与 {@link #text} 必须成对出现 */
+    public final String html;
 
     /** 创建时间 */
     public final Date createdAt;
@@ -47,12 +51,14 @@ public class InputFavorite extends Immutable {
     /** 使用次数 */
     public final long usedCount;
 
-    /** 是否敏感内容：密码、银行卡号、验证码等。在使用时，需逐字输入 */
-    public final boolean sensitive;
-
     /** 构建 {@link InputFavorite} */
     public static InputFavorite build(Consumer<Builder> c) {
         return Builder.build(builder, c);
+    }
+
+    /** 从 {@link InputClip} 构建 {@link InputFavorite} */
+    public static InputFavorite from(InputClip clip) {
+        return build((b) -> b.type(clip.type).text(clip.text).html(clip.html).createdAt(new Date()));
     }
 
     /** 创建副本 */
@@ -64,23 +70,26 @@ public class InputFavorite extends Immutable {
         super(builder);
 
         this.id = builder.id;
+        this.type = builder.type;
         this.text = builder.text;
+        this.html = builder.html;
 
         this.createdAt = builder.createdAt;
         this.usedAt = builder.usedAt;
         this.usedCount = builder.usedCount;
-        this.sensitive = builder.sensitive;
     }
 
     /** {@link InputFavorite} 的构建器 */
     public static class Builder extends Immutable.Builder<InputFavorite> {
         private Integer id;
+
+        private InputTextType type;
         private String text;
+        private String html;
 
         private Date createdAt;
         private Date usedAt;
         private long usedCount;
-        private boolean sensitive;
 
         // ===================== Start: 构建函数 ===================
 
@@ -94,28 +103,30 @@ public class InputFavorite extends Immutable {
             super.doCopy(source);
 
             this.id = source.id;
+            this.type = source.type;
             this.text = source.text;
+            this.html = source.html;
 
             this.createdAt = source.createdAt;
             this.usedAt = source.usedAt;
             this.usedCount = source.usedCount;
-            this.sensitive = source.sensitive;
         }
 
         @Override
         protected void reset() {
             this.id = null;
+            this.type = InputTextType.text;
             this.text = null;
+            this.html = null;
 
             this.createdAt = null;
             this.usedAt = null;
             this.usedCount = 0;
-            this.sensitive = false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.id, this.text, this.createdAt, this.usedAt, this.usedCount, this.sensitive);
+            return Objects.hash(this.id, this.type, this.text, this.html, this.createdAt, this.usedAt, this.usedCount);
         }
 
         // ===================== End: 构建函数 ===================
@@ -128,9 +139,21 @@ public class InputFavorite extends Immutable {
             return this;
         }
 
+        /** @see InputFavorite#type */
+        public Builder type(InputTextType type) {
+            this.type = type;
+            return this;
+        }
+
         /** @see InputFavorite#text */
         public Builder text(String text) {
             this.text = text;
+            return this;
+        }
+
+        /** @see InputFavorite#html */
+        public Builder html(String html) {
+            this.html = html;
             return this;
         }
 
@@ -149,12 +172,6 @@ public class InputFavorite extends Immutable {
         /** @see InputFavorite#usedCount */
         public Builder usedCount(long usedCount) {
             this.usedCount = usedCount;
-            return this;
-        }
-
-        /** @see InputFavorite#sensitive */
-        public Builder sensitive(boolean sensitive) {
-            this.sensitive = sensitive;
             return this;
         }
 

@@ -96,6 +96,13 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/btn_delete_selected" />
+
+                <TextView
+                        android:id="@+id/clear_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/btn_clear_all" />
             </LinearLayout>
 
             <org.crazydan.studio.app.ime.kuaizi.ui.view.InputFavoriteListView

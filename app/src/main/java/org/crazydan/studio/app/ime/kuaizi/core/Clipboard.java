@@ -21,9 +21,11 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputTextType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
@@ -44,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveClipToFavoriteBtnSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
@@ -51,6 +55,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Delete_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Save_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
 
 /**
@@ -93,6 +98,7 @@ public class Clipboard {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final ClipboardManager manager;
+    private final List<InputFavorite> favorites = new ArrayList<>();
 
     private String latestUsedClipCode;
     private List<InputClip> latestClips;
@@ -100,6 +106,22 @@ public class Clipboard {
     public Clipboard(ClipboardManager manager) {
         this.manager = manager;
     }
+
+    // =============================== Start: 生命周期 ===================================
+
+    /** 检查剪贴板，并构造{@link #verifyClips() 可使用的}剪贴数据 */
+    public void start(ClipboardContext context) {
+        if (context.clipsDisabled) {
+            this.latestUsedClipCode = null;
+            this.latestClips = null;
+        } else {
+            this.latestUsedClipCode = context.usedClipCode;
+
+            updateClips(context, false);
+        }
+    }
+
+    // =============================== End: 生命周期 ===================================
 
     // =============================== Start: 消息处理 ===================================
 
@@ -118,8 +140,16 @@ public class Clipboard {
                 on_SingleTap_Btn_Show_Clipboard_Msg(context);
                 break;
             }
+            case SingleTap_Btn_Save_Clip_to_Favorite: {
+                on_SingleTap_Btn_Save_Clip_to_Favorite_Msg(context, msg);
+                break;
+            }
             case SingleTap_Btn_Delete_Selected_InputFavorite: {
                 on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(context, msg);
+                break;
+            }
+            case SingleTap_Btn_Clear_All_InputFavorite: {
+                on_SingleTap_Btn_Clear_All_InputFavorite_Msg(context);
                 break;
             }
             default: {
@@ -169,20 +199,45 @@ public class Clipboard {
     }
 
     private void on_SingleTap_Btn_Show_Clipboard_Msg(ClipboardContext context) {
-        List<InputFavorite> favorites = new ArrayList<>();
+        // TODO 从数据库中查询已收藏，按使用次数、最近使用、创建时间降序排序
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(favorites);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
         context.fireInputMsg(InputFavorite_Create_Done, msgData);
+    }
+
+    private void on_SingleTap_Btn_Save_Clip_to_Favorite_Msg(ClipboardContext context, UserInputMsg msg) {
+        UserSaveClipToFavoriteBtnSingleTapMsgData data = msg.data();
+        InputFavorite favorite = InputFavorite.from(data.clip);
+
+        // TODO 保存已收藏到数据库
+
+        this.favorites.add(favorite.copy((b) -> b.id((int) new Date().getTime())));
+
+        context.fireInputMsg(InputFavorite_Save_Done);
     }
 
     private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(ClipboardContext context, UserInputMsg msg) {
         UserDeleteSelectedBtnSingleTapMsgData data = msg.data();
         // TODO 从数据库中删除已收藏
 
-        // 获取最新已收藏输入
-        List<InputFavorite> favorites = new ArrayList<>();
+        for (Integer id : data.selected) {
+            InputFavorite favorite = this.favorites.stream()
+                                                   .filter((f) -> Objects.equals(f.id, id))
+                                                   .findFirst()
+                                                   .orElse(null);
+            this.favorites.remove(favorite);
+        }
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(favorites);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
+        context.fireInputMsg(InputFavorite_Delete_Done, msgData);
+    }
+
+    private void on_SingleTap_Btn_Clear_All_InputFavorite_Msg(ClipboardContext context) {
+        // TODO 从数据库中清空全部已收藏
+
+        this.favorites.clear();
+
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
         context.fireInputMsg(InputFavorite_Delete_Done, msgData);
     }
 
@@ -193,22 +248,6 @@ public class Clipboard {
     }
 
     // =============================== End: 消息处理 ===================================
-
-    // =============================== Start: 生命周期 ===================================
-
-    /** 检查剪贴板，并构造{@link #verifyClips() 可使用的}剪贴数据 */
-    public void start(ClipboardContext context) {
-        if (context.clipsDisabled) {
-            this.latestUsedClipCode = null;
-            this.latestClips = null;
-        } else {
-            this.latestUsedClipCode = context.usedClipCode;
-
-            updateClips(context, false);
-        }
-    }
-
-    // =============================== End: 生命周期 ===================================
 
     /**
      * 废弃剪贴数据，不再使用
@@ -299,7 +338,7 @@ public class Clipboard {
             }
 
             if (!CharUtils.isBlank(text)) {
-                b.type(InputClip.Type.text).text(text).html(html);
+                b.type(InputTextType.text).text(text).html(html);
             }
         });
 
@@ -307,26 +346,26 @@ public class Clipboard {
     }
 
     private List<InputClip> extractOtherClips(String primaryText, String code) {
-        Map<InputClip.Type, Matcher> matchers = new LinkedHashMap<InputClip.Type, Matcher>() {{
+        Map<InputTextType, Matcher> matchers = new LinkedHashMap<InputTextType, Matcher>() {{
             // <<<<<<< 可重复匹配的类型，但每种类型仅支持匹配到一条数据
-            put(InputClip.Type.url, REGEX_URL.matcher(primaryText));
-            put(InputClip.Type.email, REGEX_EMAIL.matcher(primaryText));
-            put(InputClip.Type.phone, REGEX_PHONE.matcher(primaryText));
+            put(InputTextType.url, REGEX_URL.matcher(primaryText));
+            put(InputTextType.email, REGEX_EMAIL.matcher(primaryText));
+            put(InputTextType.phone, REGEX_PHONE.matcher(primaryText));
             // >>>>>>>
             // <<<<<<< 不可重复匹配的类型：在有其他类型的匹配数据时，不再匹配这些类型的数据
-            put(InputClip.Type.captcha, REGEX_CAPTCHA.matcher(primaryText));
+            put(InputTextType.captcha, REGEX_CAPTCHA.matcher(primaryText));
             // >>>>>>>
         }};
 
         List<InputClip> clips = new ArrayList<>();
-        for (Map.Entry<InputClip.Type, Matcher> entry : matchers.entrySet()) {
+        for (Map.Entry<InputTextType, Matcher> entry : matchers.entrySet()) {
             Matcher matcher = entry.getValue();
             if (!matcher.matches()) {
                 continue;
             }
 
-            InputClip.Type type = entry.getKey();
-            if (!clips.isEmpty() && type == InputClip.Type.captcha) {
+            InputTextType type = entry.getKey();
+            if (!clips.isEmpty() && type == InputTextType.captcha) {
                 continue;
             }
 

@@ -33,8 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 public class InputClip extends Immutable {
     private final static Builder builder = new Builder();
 
-    /** 类型（文本、HTML、URL。。。） */
-    public final Type type;
+    /** 类型 */
+    public final InputTextType type;
     /** 唯一标识，用于判断数据是否已使用 */
     public final String code;
 
@@ -63,23 +63,9 @@ public class InputClip extends Immutable {
         this.html = builder.html;
     }
 
-    /** {@link InputClip} 的类型 */
-    public enum Type {
-        /** 文本 */
-        text,
-        /** 链接文本 */
-        url,
-        /** 验证码 */
-        captcha,
-        /** 手机/电话号码 */
-        phone,
-        /** 邮箱 */
-        email,
-    }
-
     /** {@link InputClip} 的构建器 */
     public static class Builder extends Immutable.Builder<InputClip> {
-        private Type type;
+        private InputTextType type;
         private String code;
 
         private String text;
@@ -122,7 +108,7 @@ public class InputClip extends Immutable {
         // ===================== Start: 构建配置 ===================
 
         /** @see InputClip#type */
-        public Builder type(Type type) {
+        public Builder type(InputTextType type) {
             this.type = type;
             return this;
         }

@@ -52,31 +52,54 @@
                     android:gravity="center_vertical|start">
 
                 <TextView
+                        android:id="@+id/text_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_text_type"
+                        android:textSize="12sp"
+                        android:alpha=".3" />
+
+                <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="8dp"
+                        android:background="?attr/board_divider_color"
+                        android:alpha=".3" />
+
+                <TextView
                         android:id="@+id/created_at"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_created_at"
-                        android:alpha=".3" />
-
-                <TextView
-                        android:id="@+id/used_count"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_used_count"
-                        android:layout_marginStart="8dp"
+                        android:textSize="12sp"
                         android:alpha=".3" />
             </LinearLayout>
 
             <TextView
                     android:id="@+id/text"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="8dp"
                     android:gravity="center_vertical|start"
                     android:textSize="@dimen/input_quick_text_size"
                     android:textColor="?attr/input_quick_fg_color"
                     android:ellipsize="end"
                     android:maxLines="2" />
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical|start">
+
+                <TextView
+                        android:id="@+id/used_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_used_count"
+                        android:textSize="12sp"
+                        android:alpha=".3" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
