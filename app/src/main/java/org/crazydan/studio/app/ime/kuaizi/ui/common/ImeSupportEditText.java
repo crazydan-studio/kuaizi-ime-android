@@ -34,9 +34,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
 
 /**
  * 支持 筷字输入法 输入的编辑框
@@ -80,8 +80,9 @@ public class ImeSupportEditText extends AppCompatEditText implements InputMsgLis
                 commitPairSymbolText(d.left, d.right);
                 break;
             }
+            case InputFavorite_Text_Commit_Doing:
             case InputClip_Text_Commit_Doing: {
-                InputClipTextCommitMsgData d = msg.data();
+                InputTextCommitMsgData d = msg.data();
                 commitText(d.text, null, false);
                 break;
             }

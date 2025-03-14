@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.List;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -35,8 +37,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Clipboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Delete_Selected_InputFavorite;
 
 /**
  * {@link Clipboard} 的视图
@@ -52,6 +56,8 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     private final TextView warningView;
     private final View dataPaneView;
 
+    private final TextView deleteSelectedBtnView;
+
     private Config config;
     private UserMsgListener listener;
 
@@ -63,6 +69,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
         this.dataPaneView = findViewById(R.id.data_pane);
+        this.deleteSelectedBtnView = findViewById(R.id.delete_selected);
 
         this.favoriteListView = findViewById(R.id.favorite_list);
         this.favoriteListView.setListener(this);
@@ -84,7 +91,16 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
     public void onMsg(UserInputMsg msg) {
-        this.listener.onMsg(msg);
+        switch (msg.type) {
+            // 仅内部处理的消息，不必向上传递
+            case SingleTap_Btn_Select_InputFavorite: {
+                on_SingleTap_Select_InputFavorite_Msg();
+                break;
+            }
+            default: {
+                this.listener.onMsg(msg);
+            }
+        }
     }
 
     // -------------------------------------------
@@ -93,20 +109,32 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
+            case InputFavorite_Apply_Done:
+            case InputFavorite_Delete_Done:
             case InputFavorite_Create_Done: {
                 InputFavoriteMsgData data = msg.data();
-                int total = data.favorites.size();
-                String title = getContext().getString(R.string.title_clipboard, total > 999 ? "999+" : total);
-
-                this.titleView.setText(title);
-                this.favoriteListView.update(data.favorites);
-
-                boolean showWarning = total == 0;
-                ViewUtils.visible(this.warningView, showWarning);
-                ViewUtils.visible(this.dataPaneView, !showWarning);
+                on_InputFavorite_Update_Done_Msg(data);
                 break;
             }
         }
+    }
+
+    private void on_InputFavorite_Update_Done_Msg(InputFavoriteMsgData data) {
+        int total = data.favorites.size();
+        CharSequence title = textWithNumber(R.string.title_clipboard, total);
+
+        this.titleView.setText(title);
+        this.favoriteListView.update(data.favorites);
+
+        boolean showWarning = total == 0;
+        ViewUtils.visible(this.warningView, showWarning);
+        ViewUtils.visible(this.dataPaneView, !showWarning);
+
+        updateBtnDeleteSelected();
+    }
+
+    private void on_SingleTap_Select_InputFavorite_Msg() {
+        updateBtnDeleteSelected();
     }
 
     // =============================== End: 消息处理 ===================================
@@ -118,5 +146,38 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         onMsg(msg);
     }
 
+    private void onDeleteSelected(View v) {
+        List<Integer> selected = this.favoriteListView.getAdapter().getSelectedItems();
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(selected);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
+        onMsg(msg);
+    }
+
     // ==================== End: 按键事件处理 ==================
+
+    private void updateBtnDeleteSelected() {
+        List<Integer> selected = this.favoriteListView.getAdapter().getSelectedItems();
+        int total = selected.size();
+
+        CharSequence text = textWithNumber(R.string.btn_delete_selected, total);
+        if (selected.isEmpty()) {
+            this.deleteSelectedBtnView.setAlpha(.1f);
+            this.deleteSelectedBtnView.setOnClickListener(null);
+        } else {
+            text = ViewUtils.parseHtml("<a href='#'>" + text + "</a>");
+
+            this.deleteSelectedBtnView.setAlpha(1f);
+            this.deleteSelectedBtnView.setOnClickListener(this::onDeleteSelected);
+        }
+
+        this.deleteSelectedBtnView.setText(text);
+    }
+
+    private CharSequence textWithNumber(int resId, int number) {
+        return getContext().getString(resId, number > 999 ? "999+" : number);
+    }
 }

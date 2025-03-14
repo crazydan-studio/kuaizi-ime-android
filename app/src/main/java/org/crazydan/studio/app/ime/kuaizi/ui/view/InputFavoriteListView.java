@@ -32,7 +32,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLin
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputFavoriteListViewAdapter;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.DoubleTap_InputFavorite;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Select_InputFavorite;
 
 /**
  * {@link InputFavorite} 的列表视图
@@ -47,13 +51,15 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
     public InputFavoriteListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
+        setItemAnimator(null);
+
         RecyclerViewGestureDetector<InputFavorite> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
 
     @Override
     protected InputFavoriteListViewAdapter createAdapter() {
-        return new InputFavoriteListViewAdapter();
+        return new InputFavoriteListViewAdapter(this::onItemSelected);
     }
 
     @Override
@@ -80,6 +86,16 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
         }
 
         int position = holder.getAdapterPosition();
+        InputFavorite item = getAdapter().getItem(position);
+
+        UserInputFavoriteDoubleTapMsgData msgData = new UserInputFavoriteDoubleTapMsgData(position, item);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(DoubleTap_InputFavorite).data(msgData));
+        this.listener.onMsg(msg);
+    }
+
+    private void onItemSelected() {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Select_InputFavorite));
+        this.listener.onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================

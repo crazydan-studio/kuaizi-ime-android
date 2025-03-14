@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg;
 
 import org.crazydan.studio.app.ime.kuaizi.core.Input;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
 
 /**
@@ -37,6 +38,8 @@ public enum UserInputMsgType {
     SingleTap_InputCompletion,
     /** 单击 {@link InputClip} */
     SingleTap_InputClip,
+    /** 双击 {@link InputFavorite} */
+    DoubleTap_InputFavorite,
 
     /** 单击 输入列表清空 的按钮 */
     SingleTap_Btn_Clean_InputList,
@@ -49,4 +52,9 @@ public enum UserInputMsgType {
     SingleTap_Btn_Show_Clipboard,
     /** 单击 关闭剪贴板 的按钮 */
     SingleTap_Btn_Close_Clipboard,
+
+    /** 单击 选中 {@link InputFavorite} 的按钮 */
+    SingleTap_Btn_Select_InputFavorite,
+    /** 单击 删除已选中的 {@link InputFavorite} 的按钮 */
+    SingleTap_Btn_Delete_Selected_InputFavorite,
 }

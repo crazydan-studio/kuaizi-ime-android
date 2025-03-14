@@ -63,7 +63,7 @@
     <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
     <string name="btn_save_as_favorite">收藏</string>
-    <string name="btn_delete_selected">删除已选中项</string>
+    <string name="btn_delete_selected">删除已选中项 (%1$s 条)</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -134,6 +134,7 @@
     <string name="value_hand_mode_left">左手模式</string>
     <string name="value_hand_mode_right">右手模式</string>
 
+    <!-- 输入法面板文本 -->
     <string name="title_clip_past_url">粘贴已复制的链接</string>
     <string name="title_clip_past_content">粘贴已复制的内容</string>
     <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
@@ -147,4 +148,7 @@
     <string name="tip_whether_save_cut_content">是否收藏已剪切内容？</string>
     <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
     <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
+
+    <string name="label_created_at">创建日期：%1$s</string>
+    <string name="label_used_count">使用次数：%1$s</string>
 </resources>

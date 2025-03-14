@@ -19,6 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -35,16 +39,49 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputFavoriteListView;
  * @date 2025-03-13
  */
 public class InputFavoriteListViewAdapter extends RecyclerViewAdapter<InputFavorite, InputFavoriteViewHolder> {
+    private final SparseBooleanArray selected;
+    private final Runnable onSelectedListener;
 
-    public InputFavoriteListViewAdapter() {
+    public InputFavoriteListViewAdapter(Runnable onSelectedListener) {
         super(ItemUpdatePolicy.differ);
+
+        this.selected = new SparseBooleanArray();
+        this.onSelectedListener = onSelectedListener;
+    }
+
+    @Override
+    public List<InputFavorite> updateItems(List<InputFavorite> newItems) {
+        this.selected.clear();
+
+        return super.updateItems(newItems);
+    }
+
+    /** @return 已选中项的 {@link InputFavorite#id} */
+    public List<Integer> getSelectedItems() {
+        List<Integer> list = new ArrayList<>(this.selected.size());
+
+        for (int i = 0; i < this.items.size(); i++) {
+            InputFavorite item = this.items.get(i);
+            boolean selected = this.selected.get(i, false);
+
+            if (selected) {
+                list.add(item.id);
+            }
+        }
+        return list;
     }
 
     @Override
     public void onBindViewHolder(@NonNull InputFavoriteViewHolder holder, int position) {
         InputFavorite item = getItem(position);
+        boolean selected = this.selected.get(position, false);
 
-        holder.bind(item);
+        holder.bind(item, selected, () -> {
+            boolean checked = this.selected.get(position, false);
+            this.selected.put(position, !checked);
+
+            this.onSelectedListener.run();
+        });
     }
 
     @NonNull

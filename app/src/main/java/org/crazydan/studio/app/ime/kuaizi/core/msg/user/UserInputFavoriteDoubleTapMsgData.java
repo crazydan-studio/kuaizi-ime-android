@@ -17,29 +17,31 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link InputMsgType#InputClip_Text_Commit_Doing} 消息数据
+ * 在 {@link InputFavorite} 上触发的 {@link UserInputMsgType#DoubleTap_InputFavorite} 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-10
+ * @date 2025-03-14
  */
-public class InputClipTextCommitMsgData extends InputMsgData {
-    /** 待提交的文本内容 */
-    public final CharSequence text;
-    /** 是否逐字输入 */
-    public final boolean oneByOne;
+public class UserInputFavoriteDoubleTapMsgData extends UserInputMsgData {
+    /** 触发消息的数据项位置 */
+    public final int position;
+    /** 与消息相关的 {@link InputFavorite} */
+    public final InputFavorite favorite;
 
-    public InputClipTextCommitMsgData(CharSequence text) {
-        this(text, false);
+    public UserInputFavoriteDoubleTapMsgData(int position, InputFavorite favorite) {
+        this.position = position;
+        this.favorite = favorite;
     }
 
-    public InputClipTextCommitMsgData(CharSequence text, boolean oneByOne) {
-        this.text = text;
-        this.oneByOne = oneByOne;
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{text=" + this.favorite.text + '}';
     }
 }

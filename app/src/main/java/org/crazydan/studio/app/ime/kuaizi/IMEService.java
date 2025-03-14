@@ -47,9 +47,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorCursorMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
 
 /**
  * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
@@ -293,8 +293,9 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 moveCursor(msg.data());
                 break;
             }
+            case InputFavorite_Text_Commit_Doing:
             case InputClip_Text_Commit_Doing: {
-                InputClipTextCommitMsgData d = msg.data();
+                InputTextCommitMsgData d = msg.data();
                 commitText(d.text, d.oneByOne, false);
                 break;
             }

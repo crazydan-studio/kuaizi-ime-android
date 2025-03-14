@@ -19,14 +19,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
+import java.util.Date;
+
+import android.text.format.DateUtils;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+
+import static android.text.format.DateUtils.FORMAT_NUMERIC_DATE;
+import static android.text.format.DateUtils.FORMAT_SHOW_DATE;
+import static android.text.format.DateUtils.FORMAT_SHOW_TIME;
+import static android.text.format.DateUtils.FORMAT_SHOW_YEAR;
 
 /**
  * {@link InputFavorite} 视图的 {@link RecyclerView.ViewHolder}
@@ -35,18 +44,55 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
  * @date 2025-03-10
  */
 public class InputFavoriteViewHolder extends RecyclerViewHolder {
+    private final CheckBox checkboxView;
+    private final TextView textView;
+    private final TextView createdAtView;
+    private final TextView usedCountView;
 
     public InputFavoriteViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        ViewUtils.enableHardwareAccelerated(itemView);
-
-        String shadow = getStringByAttrId(R.attr.input_quick_shadow_style);
-        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
-        this.itemView.setBackground(bg);
+        this.checkboxView = itemView.findViewById(R.id.checkbox);
+        this.textView = itemView.findViewById(R.id.text);
+        this.createdAtView = itemView.findViewById(R.id.created_at);
+        this.usedCountView = itemView.findViewById(R.id.used_count);
     }
 
-    public void bind(InputFavorite data) {
+    public void bind(InputFavorite data, boolean selected, Runnable onCheck) {
+        whenViewReady(this.checkboxView, (v) -> {
+            v.setChecked(selected);
+            v.setOnClickListener((vv) -> onCheck.run());
+        });
 
+        whenViewReady(this.textView, (v) -> {
+            String text = data.text;
+            if (data.sensitive) {
+                if (text.length() > 4) {
+                    text = text.substring(0, 4) + "*".repeat(text.length() - 4);
+                } else {
+                    text = text.charAt(0) + "***";
+                }
+            }
+
+            v.setText(text);
+        });
+
+        whenViewReady(this.createdAtView, (v) -> {
+            String date = format(data.createdAt, false);
+            ViewUtils.setText(v, R.string.label_created_at, date);
+        });
+        whenViewReady(this.usedCountView, (v) -> {
+            String date = format(data.usedAt, true);
+            ViewUtils.setText(v, R.string.label_used_count, data.usedCount + (data.usedCount > 0 ? " @ " + date : ""));
+        });
+    }
+
+    private String format(Date date, boolean withTime) {
+        if (date == null) {
+            return null;
+        }
+
+        int flags = FORMAT_SHOW_YEAR | FORMAT_SHOW_DATE | FORMAT_NUMERIC_DATE;
+        return DateUtils.formatDateTime(getContext(), date.getTime(), withTime ? flags | FORMAT_SHOW_TIME : flags);
     }
 }

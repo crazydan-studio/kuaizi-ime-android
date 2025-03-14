@@ -17,31 +17,31 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * 在 {@link InputClip} 上触发的 {@link UserInputMsgType#SingleTap_InputClip} 消息数据
+ * {@link InputMsgType#InputClip_Text_Commit_Doing}、
+ * {@link InputMsgType#InputFavorite_Text_Commit_Doing}
+ * 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-08
+ * @date 2025-03-10
  */
-public class UserInputClipSingleTapMsgData extends UserInputMsgData {
-    /** 触发消息的数据项位置 */
-    public final int position;
-    /** 与消息相关的 {@link InputClip} */
-    public final InputClip clip;
+public class InputTextCommitMsgData extends InputMsgData {
+    /** 待提交的文本内容 */
+    public final CharSequence text;
+    /** 是否逐字输入 */
+    public final boolean oneByOne;
 
-    public UserInputClipSingleTapMsgData(int position, InputClip clip) {
-        this.position = position;
-        this.clip = clip;
+    public InputTextCommitMsgData(CharSequence text) {
+        this(text, false);
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{text=" + this.clip.text + '}';
+    public InputTextCommitMsgData(CharSequence text, boolean oneByOne) {
+        this.text = text;
+        this.oneByOne = oneByOne;
     }
 }

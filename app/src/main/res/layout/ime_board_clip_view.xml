@@ -94,6 +94,7 @@
                         android:id="@+id/delete_selected"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:text="@string/btn_delete_selected" />
             </LinearLayout>
 
@@ -101,8 +102,9 @@
                     android:id="@+id/favorite_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingVertical="8dp"
-                    android:paddingHorizontal="8dp" />
+                    android:paddingHorizontal="8dp"
+                    android:scrollbars="vertical"
+                    android:fillViewport="true" />
         </LinearLayout>
     </FrameLayout>
 </LinearLayout>

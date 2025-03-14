@@ -39,15 +39,19 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Create_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Delete_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
 
 /**
  * 剪贴板
@@ -106,8 +110,16 @@ public class Clipboard {
                 on_SingleTap_InputClip_Msg(context, msg);
                 break;
             }
+            case DoubleTap_InputFavorite: {
+                on_DoubleTap_InputFavorite_Msg(context, msg);
+                break;
+            }
             case SingleTap_Btn_Show_Clipboard: {
-                on_SingleTap_Btn_Show_Clipboard_Msg(context, msg);
+                on_SingleTap_Btn_Show_Clipboard_Msg(context);
+                break;
+            }
+            case SingleTap_Btn_Delete_Selected_InputFavorite: {
+                on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(context, msg);
                 break;
             }
             default: {
@@ -149,15 +161,33 @@ public class Clipboard {
         context.fireInputMsg(InputClip_Data_Apply_Done, msgData);
     }
 
-    private void on_SingleTap_Btn_Show_Clipboard_Msg(ClipboardContext context, UserInputMsg msg) {
+    private void on_DoubleTap_InputFavorite_Msg(ClipboardContext context, UserInputMsg msg) {
+        UserInputFavoriteDoubleTapMsgData data = msg.data();
+
+        InputTextCommitMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
+        context.fireInputMsg(InputFavorite_Text_Commit_Doing, msgData);
+    }
+
+    private void on_SingleTap_Btn_Show_Clipboard_Msg(ClipboardContext context) {
         List<InputFavorite> favorites = new ArrayList<>();
 
         InputFavoriteMsgData msgData = new InputFavoriteMsgData(favorites);
         context.fireInputMsg(InputFavorite_Create_Done, msgData);
     }
 
+    private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(ClipboardContext context, UserInputMsg msg) {
+        UserDeleteSelectedBtnSingleTapMsgData data = msg.data();
+        // TODO 从数据库中删除已收藏
+
+        // 获取最新已收藏输入
+        List<InputFavorite> favorites = new ArrayList<>();
+
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(favorites);
+        context.fireInputMsg(InputFavorite_Delete_Done, msgData);
+    }
+
     private void commitClipText(ClipboardContext context, InputClip clip, boolean oneByOne) {
-        InputClipTextCommitMsgData msgData = new InputClipTextCommitMsgData(clip.text, oneByOne);
+        InputTextCommitMsgData msgData = new InputTextCommitMsgData(clip.text, oneByOne);
 
         context.fireInputMsg(InputClip_Text_Commit_Doing, msgData);
     }
@@ -307,26 +337,6 @@ public class Clipboard {
         }
 
         return clips;
-    }
-
-    private void pastClip(ClipboardManager manager, InputClip data, Runnable cb) {
-        ClipData oldClip = manager.getPrimaryClip();
-
-        switch (data.type) {
-            default: {
-                ClipData clip = ClipData.newPlainText("", data.text);
-                manager.setPrimaryClip(clip);
-                break;
-            }
-        }
-
-        cb.run();
-
-        if (oldClip == null) {
-            // 清空剪贴板
-            oldClip = ClipData.newPlainText("", "");
-        }
-        manager.setPrimaryClip(oldClip);
     }
 
     // =============================== End: 内部方法 ===================================

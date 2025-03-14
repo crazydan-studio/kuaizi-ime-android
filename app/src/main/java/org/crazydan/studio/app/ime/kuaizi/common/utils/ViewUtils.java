@@ -118,6 +118,11 @@ public class ViewUtils {
         return Color.TRANSPARENT;
     }
 
+    public static void setText(TextView view, int strResId, Object... args) {
+        String text = view.getContext().getString(strResId, args);
+        view.setText(text);
+    }
+
     public static void setHtmlText(TextView view, String text) {
         Spanned html = parseHtml(text);
         setHtmlText(view, html);

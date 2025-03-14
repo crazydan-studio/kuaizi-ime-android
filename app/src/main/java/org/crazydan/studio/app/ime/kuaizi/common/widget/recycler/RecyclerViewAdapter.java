@@ -109,7 +109,8 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
         int newItemsSize = newItems != null ? newItems.size() : 0;
 
         if (oldItemsSize > newItemsSize) {
-            for (int i = newItemsSize; i < oldItemsSize; i++) {
+            // 从尾部向头部做删除，以确保待删除数据的位置不变
+            for (int i = oldItemsSize - 1; i >= newItemsSize; i--) {
                 notifyItemRemoved(i);
             }
         } else if (oldItemsSize < newItemsSize) {

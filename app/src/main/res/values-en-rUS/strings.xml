@@ -63,7 +63,7 @@
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Goto Next</string>
     <string name="btn_save_as_favorite">OK</string>
-    <string name="btn_delete_selected">Delete The Selected</string>
+    <string name="btn_delete_selected">Delete The Selected (%1$s Items)</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -151,6 +151,7 @@
     <string name="value_hand_mode_left">Left Mode</string>
     <string name="value_hand_mode_right">Right Mode</string>
 
+    <!-- 输入法面板文本 -->
     <string name="title_clip_past_url">Past Copied URL</string>
     <string name="title_clip_past_content">Past Copied Content</string>
     <string name="title_clip_past_captcha">Past Copied Captcha</string>
@@ -164,4 +165,7 @@
     <string name="tip_whether_save_cut_content">Whether to save the cut content?</string>
     <string name="tip_whether_save_copied_content">Whether to save the copied content?</string>
     <string name="tip_whether_save_commited_content">Whether to save the inputting content?</string>
+
+    <string name="label_created_at">Created At: %1$s</string>
+    <string name="label_used_count">Used Times: %1$s</string>
 </resources>

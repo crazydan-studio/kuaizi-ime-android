@@ -19,29 +19,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * 在 {@link InputClip} 上触发的 {@link UserInputMsgType#SingleTap_InputClip} 消息数据
+ * {@link UserInputMsgType#SingleTap_Btn_Delete_Selected_InputFavorite} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-08
+ * @date 2025-03-14
  */
-public class UserInputClipSingleTapMsgData extends UserInputMsgData {
-    /** 触发消息的数据项位置 */
-    public final int position;
-    /** 与消息相关的 {@link InputClip} */
-    public final InputClip clip;
+public class UserDeleteSelectedBtnSingleTapMsgData extends UserInputMsgData {
+    /** 与消息相关的已选中数据的唯一标识或位置信息 */
+    public final List<Integer> selected;
 
-    public UserInputClipSingleTapMsgData(int position, InputClip clip) {
-        this.position = position;
-        this.clip = clip;
+    public UserDeleteSelectedBtnSingleTapMsgData(List<Integer> selected) {
+        this.selected = selected;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{text=" + this.clip.text + '}';
+        return getClass().getSimpleName() + '{' + "selected=" + this.selected.size() + '}';
     }
 }

@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.input;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -33,15 +34,16 @@ import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 public class InputFavorite extends Immutable {
     private final static Builder builder = new Builder();
 
+    /** 对象 id，一般对应持久化的主键值 */
+    public final Integer id;
+
     /** 文本内容 */
     public final String text;
-    /** HTML 内容，用于支持剪贴板的富文本，其与 {@link #text} 必须成对出现 */
-    public final String html;
 
     /** 创建时间 */
-    public final long createdAt;
+    public final Date createdAt;
     /** 最近使用时间 */
-    public final long usedAt;
+    public final Date usedAt;
     /** 使用次数 */
     public final long usedCount;
 
@@ -61,8 +63,8 @@ public class InputFavorite extends Immutable {
     protected InputFavorite(Builder builder) {
         super(builder);
 
+        this.id = builder.id;
         this.text = builder.text;
-        this.html = builder.html;
 
         this.createdAt = builder.createdAt;
         this.usedAt = builder.usedAt;
@@ -72,11 +74,11 @@ public class InputFavorite extends Immutable {
 
     /** {@link InputFavorite} 的构建器 */
     public static class Builder extends Immutable.Builder<InputFavorite> {
+        private Integer id;
         private String text;
-        private String html;
 
-        private long createdAt;
-        private long usedAt;
+        private Date createdAt;
+        private Date usedAt;
         private long usedCount;
         private boolean sensitive;
 
@@ -91,8 +93,8 @@ public class InputFavorite extends Immutable {
         protected void doCopy(InputFavorite source) {
             super.doCopy(source);
 
+            this.id = source.id;
             this.text = source.text;
-            this.html = source.html;
 
             this.createdAt = source.createdAt;
             this.usedAt = source.usedAt;
@@ -102,23 +104,29 @@ public class InputFavorite extends Immutable {
 
         @Override
         protected void reset() {
+            this.id = null;
             this.text = null;
-            this.html = null;
 
-            this.createdAt = 0;
-            this.usedAt = 0;
+            this.createdAt = null;
+            this.usedAt = null;
             this.usedCount = 0;
             this.sensitive = false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.text, this.html, this.createdAt, this.usedAt, this.usedCount, this.sensitive);
+            return Objects.hash(this.id, this.text, this.createdAt, this.usedAt, this.usedCount, this.sensitive);
         }
 
         // ===================== End: 构建函数 ===================
 
         // ===================== Start: 构建配置 ===================
+
+        /** @see InputFavorite#id */
+        public Builder id(Integer id) {
+            this.id = id;
+            return this;
+        }
 
         /** @see InputFavorite#text */
         public Builder text(String text) {
@@ -126,20 +134,14 @@ public class InputFavorite extends Immutable {
             return this;
         }
 
-        /** @see InputFavorite#html */
-        public Builder html(String html) {
-            this.html = html;
-            return this;
-        }
-
         /** @see InputFavorite#createdAt */
-        public Builder createdAt(long createdAt) {
+        public Builder createdAt(Date createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
         /** @see InputFavorite#usedAt */
-        public Builder usedAt(long usedAt) {
+        public Builder usedAt(Date usedAt) {
             this.usedAt = usedAt;
             return this;
         }

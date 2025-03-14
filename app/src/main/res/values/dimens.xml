@@ -21,7 +21,7 @@
     <dimen name="about_activity_text_size">18sp</dimen>
 
     <dimen name="input_popup_key_text_size">28sp</dimen>
-    <dimen name="input_quick_text_size">22sp</dimen>
+    <dimen name="input_quick_text_size">20sp</dimen>
     <dimen name="input_completions_word_text_size">16sp</dimen>
     <dimen name="input_completions_word_spell_text_size">8sp</dimen>
 

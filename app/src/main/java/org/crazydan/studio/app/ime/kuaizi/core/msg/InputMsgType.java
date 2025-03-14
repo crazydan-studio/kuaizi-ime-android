@@ -113,4 +113,8 @@ public enum InputMsgType {
     InputFavorite_Create_Done,
     /** 已收藏输入已应用 */
     InputFavorite_Apply_Done,
+    /** 已收藏输入已删除 */
+    InputFavorite_Delete_Done,
+    /** 已收藏输入文本提交中：将文本写入到 目标编辑器 中 */
+    InputFavorite_Text_Commit_Doing,
 }
