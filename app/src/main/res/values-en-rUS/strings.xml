@@ -51,6 +51,7 @@
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
     <string name="btn_confirm">OK</string>
+    <string name="btn_cancel">Cancel</string>
     <string name="btn_feedback_open_link_without_extra_info">Continue, but without extra information</string>
     <string name="btn_feedback_open_link_with_extra_info">Continue, and with extra information</string>
     <string name="btn_guide_confirm_alpha_user_agreement">OK, I Agree the Agreement</string>
@@ -63,9 +64,8 @@
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Goto Next</string>
     <string name="btn_save_as_favorite">Save</string>
-    <string name="btn_delete_selected">Delete The Selected (%1$s Items)</string>
+    <string name="btn_delete_selected">Delete Selected (%1$s Items)</string>
     <string name="btn_clear_all">Clear All</string>
-    <string name="btn_undo">Undo</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">Basic Settings</string>
@@ -143,7 +143,7 @@
         Loading Dict DB, please wait a moment …
     </string>
     <string name="text_empty_clipboard_warning">
-        The clipboard is empty, please click the button [OK] in the toast
+        The favorites is empty, please click the button [OK] in the toast
         when copied text or committed inputs via Kuaizi IME
     </string>
 
@@ -155,6 +155,7 @@
 
     <!-- 输入法面板文本 -->
     <string name="value_text_type_normal">Normal Text</string>
+    <string name="value_text_type_html">Rich Text</string>
     <string name="value_text_type_url">URL</string>
     <string name="value_text_type_captcha">Captcha</string>
     <string name="value_text_type_phone">Phone Number</string>
@@ -177,7 +178,8 @@
     <string name="tip_whether_save_cut_content">Save the cut content?</string>
     <string name="tip_whether_save_copied_content">Save the copied content?</string>
     <string name="tip_whether_save_commited_content">Save the inputting content?</string>
-    <string name="tip_whether_undo_favorite_delete">Undo the favorites deletion?</string>
+    <string name="tip_whether_delete_selected">Delete the selected items?</string>
+    <string name="tip_whether_clear_all">Clear all items?</string>
 
     <string name="label_text_type">Text Type: %1$s</string>
     <string name="label_created_at">Created At: %1$s</string>

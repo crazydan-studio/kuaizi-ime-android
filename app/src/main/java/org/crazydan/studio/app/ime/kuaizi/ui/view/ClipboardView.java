@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -29,8 +30,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ConfirmPopup;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -52,7 +55,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
+public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
     private final InputFavoriteListView favoriteListView;
     private final TextView titleView;
     private final TextView warningView;
@@ -60,6 +63,9 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
     private final TextView deleteSelectedBtnView;
     private final TextView clearAllBtnView;
+
+    private ConfirmPopup deleteSelectedPopup;
+    private ConfirmPopup clearAllPopup;
 
     private Config config;
     private UserMsgListener listener;
@@ -84,6 +90,17 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
     public void setConfig(Config config) {
         this.config = config;
+    }
+
+    @Override
+    public void close() {
+        this.favoriteListView.update(new ArrayList<>());
+
+        ObjectUtils.invokeWhenNonNull(this.deleteSelectedPopup, ConfirmPopup::dismiss);
+        ObjectUtils.invokeWhenNonNull(this.clearAllPopup, ConfirmPopup::dismiss);
+
+        this.deleteSelectedPopup = null;
+        this.clearAllPopup = null;
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -156,26 +173,32 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
             return;
         }
 
-        UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(selected);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
-        onMsg(msg);
+        this.deleteSelectedPopup = //
+                ConfirmPopup.with(this)
+                            .setMessage(R.string.tip_whether_delete_selected)
+                            .setPositiveButton(R.string.btn_confirm, (vv) -> {
+                                UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(
+                                        selected);
+                                UserInputMsg msg = UserInputMsg.build((b) -> b.type(
+                                        SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
 
-        Toast.with(this)
-             .setText(R.string.tip_whether_undo_favorite_delete)
-             .setDuration(3000)
-             .setAction(R.string.btn_undo, (vv) -> {})
-             .show();
+                                onMsg(msg);
+                            })
+                            .setNegativeButton(R.string.btn_cancel, null)
+                            .show();
     }
 
     private void onClearAll(View v) {
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Clear_All_InputFavorite));
-        onMsg(msg);
-
-        Toast.with(this)
-             .setText(R.string.tip_whether_undo_favorite_delete)
-             .setDuration(3000)
-             .setAction(R.string.btn_undo, (vv) -> {})
-             .show();
+        this.clearAllPopup = //
+                ConfirmPopup.with(this)
+                            .setMessage(R.string.tip_whether_clear_all)
+                            .setPositiveButton(R.string.btn_confirm, (vv) -> {
+                                UserInputMsg msg = UserInputMsg.build((b) -> b.type(
+                                        SingleTap_Btn_Clear_All_InputFavorite));
+                                onMsg(msg);
+                            })
+                            .setNegativeButton(R.string.btn_cancel, null)
+                            .show();
     }
 
     // ==================== End: 按键事件处理 ==================

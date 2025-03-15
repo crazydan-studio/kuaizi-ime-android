@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -67,7 +68,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class MainboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
+public class MainboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final TextView warningView;
@@ -124,6 +125,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         return holder != null ? holder.getXPad() : null;
     }
 
+    @Override
     public void close() {
         showInputQuickPopupWindow(null);
         showInputKeyPopupWindow(null, false);
@@ -350,7 +352,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
             int y = location[1] - height;
 
             // 设置初始显示位置：其仅在未显示时有效
-            window.showAtLocation(this.popupAnchor, Gravity.START | Gravity.TOP, x, y);
+            window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y);
 
             // 确保窗口按照内容高度调整位置：其仅在显示时有效
             // Note: 需要强制更新，否则，内容布局会出现跳动

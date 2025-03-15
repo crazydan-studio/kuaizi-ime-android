@@ -25,6 +25,8 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 public enum InputTextType {
     /** 文本 */
     text(R.string.value_text_type_normal),
+    /** HTML 富文本 */
+    html(R.string.value_text_type_html),
     /** 链接文本 */
     url(R.string.value_text_type_url),
     /** 验证码 */

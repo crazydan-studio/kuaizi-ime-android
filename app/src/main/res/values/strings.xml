@@ -51,6 +51,7 @@
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
     <string name="btn_confirm">确认</string>
+    <string name="btn_cancel">取消</string>
     <string name="btn_feedback_open_link_without_extra_info">继续反馈，但不附带系统和应用信息</string>
     <string name="btn_feedback_open_link_with_extra_info">继续反馈，并附带系统和应用信息</string>
     <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议</string>
@@ -65,7 +66,6 @@
     <string name="btn_save_as_favorite">收藏</string>
     <string name="btn_delete_selected">删除已选中项 (%1$s 条)</string>
     <string name="btn_clear_all">全部清空</string>
-    <string name="btn_undo">撤销</string>
 
     <!-- Preference Titles -->
     <string name="title_preference_basic">基础配置</string>
@@ -138,6 +138,7 @@
 
     <!-- 输入法面板文本 -->
     <string name="value_text_type_normal">普通文本</string>
+    <string name="value_text_type_html">富文本</string>
     <string name="value_text_type_url">链接</string>
     <string name="value_text_type_captcha">验证码</string>
     <string name="value_text_type_phone">电话号码</string>
@@ -160,7 +161,8 @@
     <string name="tip_whether_save_cut_content">是否收藏已剪切内容？</string>
     <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
     <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
-    <string name="tip_whether_undo_favorite_delete">是否撤销删除操作？</string>
+    <string name="tip_whether_delete_selected">是否删除已选中项？</string>
+    <string name="tip_whether_clear_all">是否清空全部数据？</string>
 
     <string name="label_text_type">文本类型：%1$s</string>
     <string name="label_created_at">创建日期：%1$s</string>

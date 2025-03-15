@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -237,11 +238,18 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         this.boards.forEach((t, view) -> {
             if (t == type) {
                 view.setVisibility(View.VISIBLE);
-            } else if (t == BoardType.main) {
-                // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
-                view.setVisibility(View.INVISIBLE);
             } else {
-                view.setVisibility(View.GONE);
+                // TODO 增加淡出动画
+                if (t == BoardType.main) {
+                    // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
+                    view.setVisibility(View.INVISIBLE);
+                } else {
+                    view.setVisibility(View.GONE);
+                }
+
+                if (view instanceof ViewClosable) {
+                    ((ViewClosable) view).close();
+                }
             }
         });
     }

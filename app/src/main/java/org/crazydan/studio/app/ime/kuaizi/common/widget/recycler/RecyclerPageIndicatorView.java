@@ -50,7 +50,7 @@ public class RecyclerPageIndicatorView extends LinearLayout {
     public RecyclerPageIndicatorView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        ThemeUtils.applyStyledAttributes(context, attrs, R.styleable.RecyclerPageIndicatorView, (typedArray) -> {
+        ThemeUtils.applyStyledAttrs(context, attrs, R.styleable.RecyclerPageIndicatorView, (typedArray) -> {
             int size = typedArray.getDimensionPixelSize(R.styleable.RecyclerPageIndicatorView_dot_size, 0);
             int spacing = typedArray.getDimensionPixelSize(R.styleable.RecyclerPageIndicatorView_dot_spacing, 0);
 

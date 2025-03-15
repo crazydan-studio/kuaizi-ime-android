@@ -156,18 +156,6 @@
         <item name="key_char_symbol_bg_color">?attr/key_bg_color</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
 
-        <!--<item name="key_char_level_0_bg_color">#9900c040</item>
-        <item name="key_char_level_0_fg_color">#bfffffff</item>
-        <item name="key_char_level_1_bg_color">#9900a060</item>
-        <item name="key_char_level_1_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_2_bg_color">#9940c000</item>
-        <item name="key_char_level_2_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_3_bg_color">#99008080</item>
-        <item name="key_char_level_3_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_4_bg_color">#990060a0</item>
-        <item name="key_char_level_4_fg_color">?attr/key_char_level_0_fg_color</item>
-        <item name="key_char_level_5_bg_color">#ff3730a3</item>
-        <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>-->
         <item name="key_char_level_0_bg_color">#68ce4e48</item>
         <item name="key_char_level_0_fg_color">#ffffffff</item>
         <item name="key_char_level_1_bg_color">#68cb6b54</item>

@@ -250,6 +250,28 @@ public class Clipboard {
     // =============================== End: 消息处理 ===================================
 
     /**
+     * 检查指定的 {@link InputClip} 是否可被收藏
+     * <p/>
+     * 已收藏的 {@link InputClip} 将返回 <code>false</code>
+     * <p/>
+     * 只有可收藏的 {@link InputClip} 才弹出收藏提示
+     */
+    public boolean canBeFavorite(InputClip clip) {
+        return canBeFavorite(clip.text);
+    }
+
+    /**
+     * 检查指定的文本是否可被收藏
+     * <p/>
+     * 已收藏的文本将返回 <code>false</code>
+     * <p/>
+     * 只有可收藏的文本才弹出收藏提示
+     */
+    public boolean canBeFavorite(String text) {
+        return true;
+    }
+
+    /**
      * 废弃剪贴数据，不再使用
      * <p/>
      * 一般在有新的输入或超过一定的时间后，需废弃剪贴数据

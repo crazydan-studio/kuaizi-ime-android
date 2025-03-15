@@ -88,18 +88,25 @@ public class ThemeUtils {
         return false;
     }
 
-    public static void applyStyledAttributes(
+    /** 获取指定 R.style 中的属性值，返回结果的属性值顺序与参数 attrs 中的属性顺序一致 */
+    public static int[] getStyledAttrs(Context context, int styleResId, int[] attrs) {
+        int[] results = new int[attrs.length];
+
+        try (
+                TypedArray typedArray = context.obtainStyledAttributes(styleResId, attrs)
+        ) {
+            for (int i = 0; i < attrs.length; i++) {
+                results[i] = typedArray.getResourceId(i, 0);
+            }
+        }
+        return results;
+    }
+
+    public static void applyStyledAttrs(
             Context context, AttributeSet attrSet, int[] attrs, Consumer<TypedArray> apply
     ) {
-        TypedArray typedArray = null;
-        try {
-            typedArray = context.obtainStyledAttributes(attrSet, attrs);
-
+        try (TypedArray typedArray = context.obtainStyledAttributes(attrSet, attrs)) {
             apply.accept(typedArray);
-        } finally {
-            if (typedArray != null) {
-                typedArray.recycle();
-            }
         }
     }
 

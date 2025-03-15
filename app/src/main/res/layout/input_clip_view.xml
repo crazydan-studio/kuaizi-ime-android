@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:layout_marginVertical="4dp"
+            android:layout_marginVertical="8dp"
             android:textSize="@dimen/input_quick_text_size"
             android:textColor="?attr/input_quick_fg_color" />
 </LinearLayout>
