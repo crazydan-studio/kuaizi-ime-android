@@ -30,7 +30,7 @@
 
     <!-- 以上下结构布局读音和输入 -->
     <TextView
-            android:id="@+id/word_spell_view"
+            android:id="@+id/word_spell"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/char_input_word_spell_text_size"
@@ -43,7 +43,7 @@
             app:layout_flexGrow="1">
 
         <TextView
-                android:id="@+id/word_view"
+                android:id="@+id/word"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"

@@ -26,7 +26,7 @@ Note：其高宽会动态设置，此处可设置任意值
         android:layout_height="match_parent">
 
     <ImageView
-            android:id="@+id/bg_view"
+            android:id="@+id/bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
@@ -36,7 +36,7 @@ Note：其高宽会动态设置，此处可设置任意值
             android:layout_height="match_parent">
 
         <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/fg_view"
+                android:id="@+id/fg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
@@ -54,7 +54,7 @@ Note：其高宽会动态设置，此处可设置任意值
                     app:alignContent="stretch">
 
                 <TextView
-                        android:id="@+id/source_view"
+                        android:id="@+id/source"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:translationY="-1dp"
@@ -72,7 +72,7 @@ Note：其高宽会动态设置，此处可设置任意值
             </com.google.android.flexbox.FlexboxLayout>
 
             <TextView
-                    android:id="@+id/target_view"
+                    android:id="@+id/target"
                     android:layout_width="wrap_content"
                     android:layout_height="15dp"
                     android:translationY="-5dp"

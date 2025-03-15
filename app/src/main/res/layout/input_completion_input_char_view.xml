@@ -24,7 +24,7 @@
         android:orientation="vertical">
 
     <TextView
-            android:id="@+id/word_spell_view"
+            android:id="@+id/word_spell"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -41,7 +41,7 @@
         为了确保视觉上的一致性，在输入字底部也加上一定的间距以使其底部与拉丁文的基线一致
         -->
         <TextView
-                android:id="@+id/word_view"
+                android:id="@+id/word"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingBottom="4sp"
@@ -49,7 +49,7 @@
                 android:textColor="?attr/input_quick_fg_color" />
 
         <TextView
-                android:id="@+id/latin_view"
+                android:id="@+id/latin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_quick_text_size"

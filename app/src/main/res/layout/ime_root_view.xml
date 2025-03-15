@@ -29,6 +29,12 @@
             android:layout_height="1dp"
             android:background="?attr/keyboard_border_color" />
 
+    <!-- Toast 的定位视图 -->
+    <View
+            android:id="@+id/toast_anchor"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

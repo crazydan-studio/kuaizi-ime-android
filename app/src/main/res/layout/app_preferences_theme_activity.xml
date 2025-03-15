@@ -56,7 +56,7 @@
                 android:background="@android:drawable/dialog_holo_light_frame">
 
             <org.crazydan.studio.app.ime.kuaizi.IMEditorViewReadonly
-                    android:id="@+id/input_pane_view"
+                    android:id="@+id/input_pane"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
         </LinearLayout>

@@ -25,7 +25,7 @@ Note：其高宽会动态设置，此处可设置任意值
         android:layout_height="match_parent">
 
     <ImageView
-            android:id="@+id/bg_view"
+            android:id="@+id/bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
@@ -36,14 +36,14 @@ Note：其高宽会动态设置，此处可设置任意值
 
         <!-- 控制按钮图标 -->
         <ImageView
-                android:id="@+id/fg_view"
+                android:id="@+id/fg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true" />
 
         <!-- 控制按钮文本 -->
         <TextView
-                android:id="@+id/fg_text_view"
+                android:id="@+id/fg_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"

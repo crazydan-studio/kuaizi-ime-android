@@ -34,12 +34,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-    <!-- Toast 的定位视图 -->
-    <View
-            android:id="@+id/toast_anchor"
-            android:layout_width="0dp"
-            android:layout_height="0dp" />
-
     <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -73,7 +67,7 @@
         </FrameLayout>
 
         <View
-                android:id="@+id/bottom_spacing_view"
+                android:id="@+id/bottom_spacing"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:visibility="gone" />

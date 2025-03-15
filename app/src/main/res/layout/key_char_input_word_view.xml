@@ -26,13 +26,13 @@ Note：其高宽会动态设置，此处可设置任意值
         android:layout_height="match_parent">
 
     <ImageView
-            android:id="@+id/bg_view"
+            android:id="@+id/bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
 
     <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/fg_view"
+            android:id="@+id/fg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:flexWrap="nowrap"
@@ -41,7 +41,7 @@ Note：其高宽会动态设置，此处可设置任意值
             app:justifyContent="center">
 
         <TextView
-                android:id="@+id/word_spell_view"
+                android:id="@+id/word_spell"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_word_key_word_spell_text_size" />
@@ -51,7 +51,7 @@ Note：其高宽会动态设置，此处可设置任意值
                 android:layout_height="wrap_content">
 
             <TextView
-                    android:id="@+id/word_view"
+                    android:id="@+id/word"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/input_word_key_word_text_size"
@@ -61,14 +61,14 @@ Note：其高宽会动态设置，此处可设置任意值
                     app:layout_constraintTop_toTopOf="parent" />
 
             <RelativeLayout
-                    android:id="@+id/traditional_mark_view"
+                    android:id="@+id/traditional_mark"
                     android:layout_width="10dp"
                     android:layout_height="10dp"
                     android:layout_marginBottom="3dp"
                     android:background="@drawable/bg_input_word_char_key_view"
-                    app:layout_constraintStart_toEndOf="@+id/word_view"
+                    app:layout_constraintStart_toEndOf="@+id/word"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintBottom_toBottomOf="@+id/word_view">
+                    app:layout_constraintBottom_toBottomOf="@+id/word">
 
                 <TextView
                         android:layout_width="wrap_content"

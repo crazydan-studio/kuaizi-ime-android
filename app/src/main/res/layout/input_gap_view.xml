@@ -25,14 +25,14 @@
 
     <!-- 光标位置 -->
     <LinearLayout
-            android:id="@+id/cursor_view"
+            android:id="@+id/cursor"
             android:layout_width="@dimen/gap_input_width"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center">
 
         <View
-                android:id="@+id/blink_view"
+                android:id="@+id/blink"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"

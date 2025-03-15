@@ -25,7 +25,7 @@
         android:layout_marginTop="8dp">
 
     <TextView
-            android:id="@+id/title_view"
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="24sp"
@@ -34,7 +34,7 @@
             android:layout_marginBottom="12dp" />
 
     <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseStepListView
-            android:id="@+id/step_list_view"
+            android:id="@+id/step_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -44,7 +44,7 @@
             android:scrollbars="vertical" />
 
     <org.crazydan.studio.app.ime.kuaizi.ui.common.ImeSupportEditText
-            android:id="@+id/editor_view"
+            android:id="@+id/editor"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_marginHorizontal="6dp"

@@ -44,13 +44,13 @@
             必须先对其进行布局，再通过布局后的对象重新绘制图像的方式得到
             -->
             <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
-                    android:id="@+id/keyboard_sandbox_view"
+                    android:id="@+id/keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
 
             <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
-                    android:id="@+id/xpad_keyboard_sandbox_view"
+                    android:id="@+id/xpad_keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
                     android:visibility="invisible" />
@@ -64,13 +64,13 @@
                     app:alignContent="stretch">
 
                 <org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.ExerciseListView
-                        android:id="@+id/exercise_list_view"
+                        android:id="@+id/exercise_list"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         app:layout_flexGrow="1" />
 
                 <org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView
-                        android:id="@+id/exercise_list_indicator_view"
+                        android:id="@+id/exercise_list_indicator"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="6dp"
@@ -84,7 +84,7 @@
 
         <include
                 layout="@layout/ime_view"
-                android:id="@+id/input_pane_view"
+                android:id="@+id/input_pane"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
     </LinearLayout>
@@ -93,7 +93,7 @@
     https://stackoverflow.com/questions/62436886/navigation-view-menu-item-doesnt-respond-to-any-click#answer-62439907
     -->
     <com.google.android.material.navigation.NavigationView
-            android:id="@+id/drawer_nav_view"
+            android:id="@+id/drawer_nav"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="end"

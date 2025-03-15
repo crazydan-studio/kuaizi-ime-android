@@ -27,7 +27,7 @@
         android:gravity="center">
 
     <TextView
-            android:id="@+id/title_view"
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="24sp" />
@@ -41,7 +41,7 @@
             android:layout_marginVertical="12dp">
 
         <TextView
-                android:id="@+id/message_view"
+                android:id="@+id/message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/about_activity_text_size" />
@@ -54,7 +54,7 @@
             android:gravity="center">
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/positive_btn_view"
+                android:id="@+id/positive_btn"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="match_parent"
@@ -66,7 +66,7 @@
                 app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/negative_btn_view"
+                android:id="@+id/negative_btn"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="match_parent"

@@ -22,7 +22,7 @@
         android:layout_height="match_parent">
 
     <org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView
-            android:id="@+id/fg_view"
+            android:id="@+id/fg"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 </FrameLayout>
