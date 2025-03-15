@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ConfirmPopup;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
-import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
+import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -44,18 +44,18 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clear_All_InputFavorite;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Clipboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Favoriteboard;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Delete_Selected_InputFavorite;
 
 /**
- * {@link Clipboard} 的视图
+ * {@link Favoriteboard} 的视图
  * <p/>
  * 由 {@link InputFavoriteListView} 以及相关的功能按钮组成
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class ClipboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
+public class FavoriteboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
     private final InputFavoriteListView favoriteListView;
     private final TextView titleView;
     private final TextView warningView;
@@ -70,10 +70,10 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
     private Config config;
     private UserMsgListener listener;
 
-    public ClipboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public FavoriteboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        inflate(context, R.layout.ime_board_clip_view, this);
+        inflate(context, R.layout.ime_board_favorite_view, this);
 
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
@@ -85,7 +85,7 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
         this.favoriteListView.setListener(this);
 
         View closeBtnView = findViewById(R.id.close);
-        closeBtnView.setOnClickListener(this::onCloseClipboard);
+        closeBtnView.setOnClickListener(this::onCloseFavoriteboard);
     }
 
     public void setConfig(Config config) {
@@ -162,8 +162,8 @@ public class ClipboardView extends LinearLayout implements UserMsgListener, Inpu
 
     // ==================== Start: 按键事件处理 ==================
 
-    private void onCloseClipboard(View v) {
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Close_Clipboard));
+    private void onCloseFavoriteboard(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Close_Favoriteboard));
         onMsg(msg);
     }
 

@@ -142,8 +142,8 @@
     <string name="text_dict_db_init_warning">
         Loading Dict DB, please wait a moment …
     </string>
-    <string name="text_empty_clipboard_warning">
-        The favorites is empty, please click the button [OK] in the toast
+    <string name="text_empty_favoriteboard_warning">
+        There\'s no any favorite, please click the button [OK] in the toast
         when copied text or committed inputs via Kuaizi IME
     </string>
 

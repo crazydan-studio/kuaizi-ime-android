@@ -103,10 +103,10 @@
                     android:background="@android:color/transparent" />
 
             <ImageButton
-                    android:id="@+id/tool_clipboard"
+                    android:id="@+id/tool_favoriteboard"
                     android:layout_width="@dimen/btn_tool_icon_size"
                     android:layout_height="@dimen/btn_tool_icon_size"
-                    android:src="@drawable/ic_btn_tool_clipboard"
+                    android:src="@drawable/ic_btn_tool_favoriteboard"
                     android:layout_marginHorizontal="2dp"
                     android:background="@android:color/transparent" />
         </LinearLayout>

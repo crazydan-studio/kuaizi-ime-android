@@ -109,7 +109,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="@string/text_empty_clipboard_warning"
+                android:text="@string/text_empty_favoriteboard_warning"
                 android:textColor="?attr/input_fg_color"
                 android:textSize="@dimen/char_input_word_text_size"
                 android:visibility="gone" />

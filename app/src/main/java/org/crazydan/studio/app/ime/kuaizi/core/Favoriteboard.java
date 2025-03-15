@@ -59,12 +59,14 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavo
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
 
 /**
- * 剪贴板
+ * 收藏面板
+ * <p/>
+ * 负责处理 {@link InputClip} 与 {@link InputFavorite} 的管理
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-02-21
  */
-public class Clipboard {
+public class Favoriteboard {
     private static final Pattern REGEX_CAPTCHA = Pattern.compile("^.*?\\D(\\d{6,8})\\D.*$",
                                                                  Pattern.DOTALL | Pattern.MULTILINE);
     /**
@@ -97,20 +99,20 @@ public class Clipboard {
 
     protected final Logger log = Logger.getLogger(getClass());
 
-    private final ClipboardManager manager;
+    private final ClipboardManager clipboard;
     private final List<InputFavorite> favorites = new ArrayList<>();
 
     private String latestUsedClipCode;
     private List<InputClip> latestClips;
 
-    public Clipboard(ClipboardManager manager) {
-        this.manager = manager;
+    public Favoriteboard(ClipboardManager clipboard) {
+        this.clipboard = clipboard;
     }
 
     // =============================== Start: 生命周期 ===================================
 
     /** 检查剪贴板，并构造{@link #verifyClips() 可使用的}剪贴数据 */
-    public void start(ClipboardContext context) {
+    public void start(FavoriteboardContext context) {
         if (context.clipsDisabled) {
             this.latestUsedClipCode = null;
             this.latestClips = null;
@@ -126,7 +128,7 @@ public class Clipboard {
     // =============================== Start: 消息处理 ===================================
 
     /** 响应来自上层派发的 {@link UserInputMsg} 消息 */
-    public void onMsg(ClipboardContext context, UserInputMsg msg) {
+    public void onMsg(FavoriteboardContext context, UserInputMsg msg) {
         switch (msg.type) {
             case SingleTap_InputClip: {
                 on_SingleTap_InputClip_Msg(context, msg);
@@ -136,8 +138,8 @@ public class Clipboard {
                 on_DoubleTap_InputFavorite_Msg(context, msg);
                 break;
             }
-            case SingleTap_Btn_Show_Clipboard: {
-                on_SingleTap_Btn_Show_Clipboard_Msg(context);
+            case SingleTap_Btn_Open_Favoriteboard: {
+                on_SingleTap_Btn_Open_Favoriteboard_Msg(context);
                 break;
             }
             case SingleTap_Btn_Save_Clip_to_Favorite: {
@@ -160,11 +162,11 @@ public class Clipboard {
 
     /** 监听剪贴板变化，并仅执行一次调用 */
     public void onClipChangedOnce(Runnable cb) {
-        OnceClipChangedListener listener = new OnceClipChangedListener(this.manager, cb);
+        OnceClipChangedListener listener = new OnceClipChangedListener(this.clipboard, cb);
         listener.start();
     }
 
-    private void on_SingleTap_InputClip_Msg(ClipboardContext context, UserInputMsg msg) {
+    private void on_SingleTap_InputClip_Msg(FavoriteboardContext context, UserInputMsg msg) {
         // 提前废弃数据，以避免下面的数据粘贴消息更新气泡提示
         discardClips();
 
@@ -191,21 +193,21 @@ public class Clipboard {
         context.fireInputMsg(InputClip_Data_Apply_Done, msgData);
     }
 
-    private void on_DoubleTap_InputFavorite_Msg(ClipboardContext context, UserInputMsg msg) {
+    private void on_DoubleTap_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserInputFavoriteDoubleTapMsgData data = msg.data();
 
         InputTextCommitMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
         context.fireInputMsg(InputFavorite_Text_Commit_Doing, msgData);
     }
 
-    private void on_SingleTap_Btn_Show_Clipboard_Msg(ClipboardContext context) {
+    private void on_SingleTap_Btn_Open_Favoriteboard_Msg(FavoriteboardContext context) {
         // TODO 从数据库中查询已收藏，按使用次数、最近使用、创建时间降序排序
 
         InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
         context.fireInputMsg(InputFavorite_Create_Done, msgData);
     }
 
-    private void on_SingleTap_Btn_Save_Clip_to_Favorite_Msg(ClipboardContext context, UserInputMsg msg) {
+    private void on_SingleTap_Btn_Save_Clip_to_Favorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserSaveClipToFavoriteBtnSingleTapMsgData data = msg.data();
         InputFavorite favorite = InputFavorite.from(data.clip);
 
@@ -216,7 +218,7 @@ public class Clipboard {
         context.fireInputMsg(InputFavorite_Save_Done);
     }
 
-    private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(ClipboardContext context, UserInputMsg msg) {
+    private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserDeleteSelectedBtnSingleTapMsgData data = msg.data();
         // TODO 从数据库中删除已收藏
 
@@ -232,7 +234,7 @@ public class Clipboard {
         context.fireInputMsg(InputFavorite_Delete_Done, msgData);
     }
 
-    private void on_SingleTap_Btn_Clear_All_InputFavorite_Msg(ClipboardContext context) {
+    private void on_SingleTap_Btn_Clear_All_InputFavorite_Msg(FavoriteboardContext context) {
         // TODO 从数据库中清空全部已收藏
 
         this.favorites.clear();
@@ -241,7 +243,7 @@ public class Clipboard {
         context.fireInputMsg(InputFavorite_Delete_Done, msgData);
     }
 
-    private void commitClipText(ClipboardContext context, InputClip clip, boolean oneByOne) {
+    private void commitClipText(FavoriteboardContext context, InputClip clip, boolean oneByOne) {
         InputTextCommitMsgData msgData = new InputTextCommitMsgData(clip.text, oneByOne);
 
         context.fireInputMsg(InputClip_Text_Commit_Doing, msgData);
@@ -296,8 +298,8 @@ public class Clipboard {
     }
 
     /** 更新剪贴数据，用于剪贴板发生变化时调用 */
-    public void updateClips(ClipboardContext context, boolean force) {
-        InputClip primary = readClip(this.manager);
+    public void updateClips(FavoriteboardContext context, boolean force) {
+        InputClip primary = readClip(this.clipboard);
         if (primary == null) {
             discardClips();
             return;

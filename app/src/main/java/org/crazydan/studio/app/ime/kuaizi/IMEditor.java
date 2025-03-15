@@ -30,13 +30,14 @@ import android.os.Looper;
 import android.os.Message;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.BaseInputContext;
-import org.crazydan.studio.app.ime.kuaizi.core.Clipboard;
-import org.crazydan.studio.app.ime.kuaizi.core.ClipboardContext;
+import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
+import org.crazydan.studio.app.ime.kuaizi.core.FavoriteboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.InputFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
@@ -103,7 +104,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private InputList inputList;
 
     private Keyboard keyboard;
-    private Clipboard clipboard;
+    private Favoriteboard favoriteboard;
     private Inputboard inputboard;
     /** 切换前的主键盘类型 */
     private Keyboard.Type prevMasterKeyboardType;
@@ -147,9 +148,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.dict.open(context, this);
         }
 
-        if (this.clipboard == null) {
-            ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            this.clipboard = new Clipboard(clipboardManager);
+        if (this.favoriteboard == null) {
+            ClipboardManager clipboard = SystemUtils.getClipboard(context);
+            this.favoriteboard = new Favoriteboard(clipboard);
         }
 
         // 先切换键盘
@@ -205,7 +206,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.inputList = null;
 
         this.keyboard = null;
-        this.clipboard = null;
+        this.favoriteboard = null;
         this.inputboard = null;
         this.prevMasterKeyboardType = null;
 
@@ -214,7 +215,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** {@link #start} 的异步后处理，避免阻塞主视图的布局更新 */
     private void afterStart() {
-        withClipboardContext(this.clipboard::start);
+        withFavoriteboardContext(this.favoriteboard::start);
 
         startAutoClipsDiscard();
     }
@@ -296,10 +297,10 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 this.log.endTreeLog();
                 /////////////////////////////////////////////////////////////////
                 this.log.beginTreeLog("Dispatch %s to %s", () -> new Object[] {
-                        msg.getClass(), this.clipboard.getClass()
+                        msg.getClass(), this.favoriteboard.getClass()
                 });
 
-                withClipboardContext((context) -> this.clipboard.onMsg(context, msg));
+                withFavoriteboardContext((context) -> this.favoriteboard.onMsg(context, msg));
 
                 this.log.endTreeLog();
             }
@@ -466,7 +467,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             case InputChars_Input_Doing: {
                 // 若正在输入，则废弃剪贴数据
                 // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
-                this.clipboard.discardClips();
+                this.favoriteboard.discardClips();
                 break;
             }
             case InputClip_Data_Create_Done: {
@@ -488,8 +489,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 this.config.set(ConfigKey.used_input_clip_code, null);
 
                 // Note: 在 IMEService 中是异步执行剪切、复制操作的，故而，只能监听剪贴板以得到实时的剪贴数据
-                this.clipboard.onClipChangedOnce(() -> { //
-                    withClipboardContext((context) -> this.clipboard.updateClips(context, true));
+                this.favoriteboard.onClipChangedOnce(() -> { //
+                    withFavoriteboardContext((context) -> this.favoriteboard.updateClips(context, true));
                 });
                 break;
             }
@@ -634,19 +635,19 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return this.inputList.getCompletionViewDataList();
         } else if ( //
                 !this.config.bool(ConfigKey.disable_input_clip_popup_tips) //
-                && this.clipboard.verifyClips() //
+                && this.favoriteboard.verifyClips() //
         ) {
-            return this.clipboard.getClips();
+            return this.favoriteboard.getClips();
         }
         return null;
     }
 
-    protected void withClipboardContext(Consumer<ClipboardContext> c) {
+    protected void withFavoriteboardContext(Consumer<FavoriteboardContext> c) {
         String usedClipCode = this.config.get(ConfigKey.used_input_clip_code);
         boolean clipsDisabled = this.config.bool(ConfigKey.disable_input_clip_popup_tips);
 
-        ClipboardContext context = ClipboardContext.build((b) -> withInputContextBuilder(b.usedClipCode(usedClipCode)
-                                                                                          .clipsDisabled(clipsDisabled)));
+        FavoriteboardContext context = FavoriteboardContext.build((b) -> withInputContextBuilder(b.usedClipCode(
+                usedClipCode).clipsDisabled(clipsDisabled)));
         c.accept(context);
     }
 
@@ -655,7 +656,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.clipboard.discardClips();
+        this.favoriteboard.discardClips();
 
         fire_InputMsg(InputClip_Data_Discard_Done);
     }

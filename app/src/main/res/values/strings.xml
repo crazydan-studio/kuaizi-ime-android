@@ -126,7 +126,7 @@
     <string name="text_dict_db_init_warning">
         正在加载字典，请稍等一会儿 。。。
     </string>
-    <string name="text_empty_clipboard_warning">
+    <string name="text_empty_favoriteboard_warning">
         还未收藏任何内容，请在复制或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
     </string>
 

@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Keyboard;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Show_Clipboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Open_Favoriteboard;
 
 /**
  * {@link Inputboard} 的视图
@@ -75,7 +75,7 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         this.tools.hideToolbar = new Btn(this, R.id.hide_toolbar, this::onHideToolbar);
 
         this.tools.settings = new Btn(this, R.id.tool_settings, this::onShowPreferences);
-        this.tools.clipboard = new Btn(this, R.id.tool_clipboard, this::onShowClipboard);
+        this.tools.favoriteboard = new Btn(this, R.id.tool_favoriteboard, this::onOpenFavoriteboard);
         this.tools.switchIme = new Btn(this, R.id.tool_switch_ime, this::onSwitchIme);
         this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
 
@@ -129,7 +129,7 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
     private void updateToolsByState() {
         this.tools.reset();
 
-        this.tools.clipboard.disabled = false;
+        this.tools.favoriteboard.disabled = false;
         this.tools.settings.disabled = this.config.bool(ConfigKey.disable_settings_btn);
         this.tools.switchIme.disabled = this.config.bool(ConfigKey.disable_switch_ime_btn);
         this.tools.closeKeyboard.disabled = this.config.bool(ConfigKey.disable_close_keyboard_btn);
@@ -234,8 +234,8 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         onMsg(msg);
     }
 
-    private void onShowClipboard(View v) {
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Show_Clipboard));
+    private void onOpenFavoriteboard(View v) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Open_Favoriteboard));
         onMsg(msg);
     }
 
@@ -281,10 +281,10 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
         public BtnGroup toolbar;
         public Btn switchIme;
-        public Btn clipboard;
+        public Btn favoriteboard;
 
         private Btn[] getBtnInToolbar() {
-            return new Btn[] { this.switchIme, this.clipboard };
+            return new Btn[] { this.switchIme, this.favoriteboard };
         }
 
         private Btn[] getBtnInInputbar() {

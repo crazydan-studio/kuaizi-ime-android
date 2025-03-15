@@ -19,13 +19,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.about;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.HtmlSupportActivity;
 
 /**
@@ -45,8 +43,8 @@ public class AboutDonate extends HtmlSupportActivity {
         TextView alipayTextView = setHtmlText(R.id.donate_alipay_tips, R.raw.text_about_donate_alipay_tips, appName);
         TextView wechatTextView = setHtmlText(R.id.donate_wechat_tips, R.raw.text_about_donate_wechat_tips, appName);
 
-        alipayTextView.setOnClickListener((v) -> copyToClipboard(appName));
-        wechatTextView.setOnClickListener((v) -> copyToClipboard(appName));
+        alipayTextView.setOnClickListener((v) -> pasteToClipboard(appName));
+        wechatTextView.setOnClickListener((v) -> pasteToClipboard(appName));
 
         ImageView alipayImageView = setRawImage(R.id.donate_alipay, R.raw.donate_alipay);
         ImageView wechatImageView = setRawImage(R.id.donate_wechat, R.raw.donate_wechat);
@@ -66,11 +64,8 @@ public class AboutDonate extends HtmlSupportActivity {
 
     }
 
-    private void copyToClipboard(String text) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("label", text);
-
-        clipboard.setPrimaryClip(clip);
+    private void pasteToClipboard(String text) {
+        SystemUtils.pasteToClipboard(getApplicationContext(), text);
 
         toast("备注信息【<span style=\"color:#ed4c67;\">%s</span>】已复制", text);
     }

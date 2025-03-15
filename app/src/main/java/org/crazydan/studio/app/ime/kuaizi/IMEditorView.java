@@ -42,14 +42,14 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.ClipboardView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**
  * {@link IMEditor} 的视图
  * <p/>
- * 由 {@link MainboardView}、{@link ClipboardView} 等组成
+ * 由 {@link MainboardView}、{@link FavoriteboardView} 等组成
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
@@ -111,7 +111,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
 
         // 直接处理面板关闭消息：关闭无需清理等工作
         switch (msg.type) {
-            case SingleTap_Btn_Close_Clipboard: {
+            case SingleTap_Btn_Close_Favoriteboard: {
                 activeBoard(BoardType.main);
                 break;
             }
@@ -153,7 +153,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
                 break;
             }
             case InputFavorite_Create_Done: {
-                activeBoard(BoardType.clip);
+                activeBoard(BoardType.favorite);
                 break;
             }
             default: {
@@ -211,14 +211,14 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         mainboardView.setListener(this);
         mainboardView.updateBottomSpacing(true);
 
-        ClipboardView clipboardView = findViewById(R.id.clipboard);
-        clipboardView.setConfig(this.config);
-        clipboardView.setListener(this);
+        FavoriteboardView favoriteboardView = findViewById(R.id.favoriteboard);
+        favoriteboardView.setConfig(this.config);
+        favoriteboardView.setListener(this);
 
         // <<<<<<<<<<<< 面板管理
         this.boards = new HashMap<BoardType, View>() {{
             put(BoardType.main, mainboardView);
-            put(BoardType.clip, clipboardView);
+            put(BoardType.favorite, favoriteboardView);
         }};
 
         // 确保按已激活的类型显隐面板，而不是按视图中的设置
@@ -260,7 +260,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
 
     private enum BoardType {
         main,
-        clip,
+        favorite,
         settings,
         ;
     }

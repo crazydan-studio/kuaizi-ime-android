@@ -41,8 +41,8 @@
                 android:layout_height="wrap_content"
                 android:visibility="visible" />
 
-        <org.crazydan.studio.app.ime.kuaizi.ui.view.ClipboardView
-                android:id="@+id/clipboard"
+        <org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView
+                android:id="@+id/favoriteboard"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone" />

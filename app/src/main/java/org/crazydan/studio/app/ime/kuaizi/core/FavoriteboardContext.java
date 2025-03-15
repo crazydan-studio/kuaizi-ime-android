@@ -23,12 +23,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * {@link Clipboard} 的上下文
+ * {@link Favoriteboard} 的上下文
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-02-21
  */
-public class ClipboardContext extends BaseInputContext {
+public class FavoriteboardContext extends BaseInputContext {
     private final static Builder builder = new Builder();
 
     // <<<<<<<<<<<<<<<<<<<<<<<<< 配置信息
@@ -38,20 +38,20 @@ public class ClipboardContext extends BaseInputContext {
     public final boolean clipsDisabled;
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    /** 构建 {@link ClipboardContext} */
-    public static ClipboardContext build(Consumer<Builder> c) {
+    /** 构建 {@link FavoriteboardContext} */
+    public static FavoriteboardContext build(Consumer<Builder> c) {
         return Builder.build(builder, c);
     }
 
-    ClipboardContext(Builder builder) {
+    FavoriteboardContext(Builder builder) {
         super(builder);
 
         this.usedClipCode = builder.usedClipCode;
         this.clipsDisabled = builder.clipsDisabled;
     }
 
-    /** {@link ClipboardContext} 的构建器 */
-    public static class Builder extends BaseInputContext.Builder<Builder, ClipboardContext> {
+    /** {@link FavoriteboardContext} 的构建器 */
+    public static class Builder extends BaseInputContext.Builder<Builder, FavoriteboardContext> {
         private String usedClipCode;
         private boolean clipsDisabled;
 
@@ -62,8 +62,8 @@ public class ClipboardContext extends BaseInputContext {
         // ===================== Start: 构建函数 ===================
 
         @Override
-        protected ClipboardContext doBuild() {
-            return new ClipboardContext(this);
+        protected FavoriteboardContext doBuild() {
+            return new FavoriteboardContext(this);
         }
 
         @Override
@@ -83,13 +83,13 @@ public class ClipboardContext extends BaseInputContext {
 
         // ===================== Start: 构建配置 ===================
 
-        /** @see ClipboardContext#usedClipCode */
+        /** @see FavoriteboardContext#usedClipCode */
         public Builder usedClipCode(String usedClipCode) {
             this.usedClipCode = usedClipCode;
             return this;
         }
 
-        /** @see ClipboardContext#clipsDisabled */
+        /** @see FavoriteboardContext#clipsDisabled */
         public Builder clipsDisabled(boolean clipsDisabled) {
             this.clipsDisabled = clipsDisabled;
             return this;

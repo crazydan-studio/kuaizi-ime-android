@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.utils;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -198,5 +200,16 @@ public class SystemUtils {
         // https://developer.android.com/studio/publish/versioning
         // https://stackoverflow.com/questions/4616095/how-can-you-get-the-build-version-number-of-your-android-application#answer-6593822
         return getPackageInfo(context).versionName;
+    }
+
+    public static ClipboardManager getClipboard(Context context) {
+        return (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+    }
+
+    public static void pasteToClipboard(Context context, String text) {
+        ClipboardManager clipboard = getClipboard(context);
+
+        ClipData clip = ClipData.newPlainText("", text);
+        clipboard.setPrimaryClip(clip);
     }
 }

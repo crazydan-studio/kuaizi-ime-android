@@ -48,10 +48,10 @@ public enum UserInputMsgType {
 
     /** 单击 关闭键盘 的按钮 */
     SingleTap_Btn_Close_Keyboard,
-    /** 单击 显示剪贴板 的按钮 */
-    SingleTap_Btn_Show_Clipboard,
-    /** 单击 关闭剪贴板 的按钮 */
-    SingleTap_Btn_Close_Clipboard,
+    /** 单击 打开已收藏 的按钮 */
+    SingleTap_Btn_Open_Favoriteboard,
+    /** 单击 关闭已收藏 的按钮 */
+    SingleTap_Btn_Close_Favoriteboard,
 
     /** 单击 选中 {@link InputFavorite} 的按钮 */
     SingleTap_Btn_Select_InputFavorite,
