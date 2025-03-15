@@ -158,7 +158,6 @@
     <string name="tip_editor_action_redo">已重做</string>
     <string name="tip_editor_action_paste">已粘贴</string>
     <string name="tip_whether_save_pasted_content">是否收藏已粘贴内容？</string>
-    <string name="tip_whether_save_cut_content">是否收藏已剪切内容？</string>
     <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
     <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
     <string name="tip_whether_delete_selected">是否删除已选中项？</string>

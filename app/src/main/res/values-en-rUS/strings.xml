@@ -175,7 +175,6 @@
     <string name="tip_editor_action_redo">Redo</string>
     <string name="tip_editor_action_paste">Pasted</string>
     <string name="tip_whether_save_pasted_content">Save the pasted content?</string>
-    <string name="tip_whether_save_cut_content">Save the cut content?</string>
     <string name="tip_whether_save_copied_content">Save the copied content?</string>
     <string name="tip_whether_save_commited_content">Save the inputting content?</string>
     <string name="tip_whether_delete_selected">Delete the selected items?</string>

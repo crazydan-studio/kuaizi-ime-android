@@ -43,10 +43,10 @@ public class ExerciseViewHolder extends RecyclerViewHolder implements InputMsgLi
     public ExerciseViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.titleView = itemView.findViewById(R.id.title_view);
-        this.editorView = itemView.findViewById(R.id.editor_view);
+        this.titleView = itemView.findViewById(R.id.title);
+        this.editorView = itemView.findViewById(R.id.editor);
 
-        this.stepListView = itemView.findViewById(R.id.step_list_view);
+        this.stepListView = itemView.findViewById(R.id.step_list);
     }
 
     @Override

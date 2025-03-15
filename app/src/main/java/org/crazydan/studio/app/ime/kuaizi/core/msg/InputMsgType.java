@@ -100,17 +100,19 @@ public enum InputMsgType {
     /** （系统）配置已更新 */
     Config_Update_Done,
 
-    /** 剪贴板数据已生成 */
-    InputClip_Data_Create_Done,
-    /** 剪贴板数据已应用 */
-    InputClip_Data_Apply_Done,
-    /** 剪贴板数据已废弃 */
-    InputClip_Data_Discard_Done,
-    /** 剪贴板文本提交中：将文本写入到 目标编辑器 中 */
+    /** 剪贴数据已生成 */
+    InputClip_Create_Done,
+    /** 剪贴数据已应用 */
+    InputClip_Apply_Done,
+    /** 剪贴数据已废弃 */
+    InputClip_Discard_Done,
+    /** 剪贴数据可以被收藏 */
+    InputClip_CanBe_Favorite,
+    /** 剪贴文本提交中：将文本写入到 目标编辑器 中 */
     InputClip_Text_Commit_Doing,
 
-    /** 已收藏输入已生成 */
-    InputFavorite_Create_Done,
+    /** 收藏面板已启动 */
+    Favoriteboard_Start_Done,
     /** 已收藏输入已应用 */
     InputFavorite_Apply_Done,
     /** 已收藏输入已删除 */

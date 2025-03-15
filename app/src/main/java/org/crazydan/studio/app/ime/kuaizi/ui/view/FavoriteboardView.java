@@ -132,7 +132,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
         switch (msg.type) {
             case InputFavorite_Apply_Done:
             case InputFavorite_Delete_Done:
-            case InputFavorite_Create_Done: {
+            case Favoriteboard_Start_Done: {
                 InputFavoriteMsgData data = msg.data();
                 on_InputFavorite_Update_Done_Msg(data);
                 break;

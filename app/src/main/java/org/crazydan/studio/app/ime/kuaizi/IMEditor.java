@@ -75,7 +75,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Data_Discard_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Discard_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Exit_Done;
@@ -114,10 +114,10 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     IMEditor(Config.Mutable config, PinyinDict dict) {
         this.config = config;
         this.dict = dict;
+
         this.task = new TaskHandler(this);
 
         this.inputList = new InputList();
-
         this.inputboard = new Inputboard();
     }
 
@@ -171,14 +171,19 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 关闭 {@link IMEditor}，仅隐藏面板，但输入状态保持不变 */
     public void close() {
+        withFavoriteboardContext(this.favoriteboard::close);
+
         fire_InputMsg(Keyboard_Close_Done);
     }
 
     /** 退出 {@link IMEditor} */
     public void exit() {
+        if (this.favoriteboard != null) {
+            withFavoriteboardContext(this.favoriteboard::close);
+        }
+
         // Note: 不重置输入列表，以避免误操作导致输入被清空
-//        // 重置输入面板
-//        withInputboardContext(this.inputboard::reset);
+        //withInputboardContext(this.inputboard::reset);
 
         // 重置键盘
         if (this.keyboard != null) {
@@ -200,13 +205,17 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.dict.close();
         }
 
+        if (this.favoriteboard != null) {
+            withFavoriteboardContext(this.favoriteboard::close);
+            this.favoriteboard = null;
+        }
+
         this.config = null;
         this.dict = null;
 
         this.inputList = null;
 
         this.keyboard = null;
-        this.favoriteboard = null;
         this.inputboard = null;
         this.prevMasterKeyboardType = null;
 
@@ -217,7 +226,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private void afterStart() {
         withFavoriteboardContext(this.favoriteboard::start);
 
-        startAutoClipsDiscard();
+        startAutoDiscardClips();
     }
 
     // =============================== End: 生命周期 ===================================
@@ -465,33 +474,18 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             case InputList_PairSymbol_Commit_Doing:
             case InputChars_Input_Doing: {
-                // 若正在输入，则废弃剪贴数据
-                // Note: 下次重新开启输入键盘时，将可继续提示可剪贴
-                this.favoriteboard.discardClips();
+                // 若正在输入，则废弃剪贴数据，且重新激活输入法也不再提示
+                discardClips();
                 break;
             }
-            case InputClip_Data_Create_Done: {
-                startAutoClipsDiscard();
+            case InputClip_Create_Done: {
+                startAutoDiscardClips();
                 break;
             }
-            case InputClip_Data_Apply_Done: {
+            case InputClip_Apply_Done: {
                 InputClipMsgData data = msg.data();
                 // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
                 this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
-                break;
-            }
-            case Editor_Edit_Doing: {
-                EditorEditMsgData data = msg.data();
-                // 只有对剪贴板造成修改的操作，才需要同步更新剪贴数据
-                if (!EditorAction.hasClipEffect(data.action)) {
-                    break;
-                }
-                this.config.set(ConfigKey.used_input_clip_code, null);
-
-                // Note: 在 IMEService 中是异步执行剪切、复制操作的，故而，只能监听剪贴板以得到实时的剪贴数据
-                this.favoriteboard.onClipChangedOnce(() -> { //
-                    withFavoriteboardContext((context) -> this.favoriteboard.updateClips(context, true));
-                });
                 break;
             }
         }
@@ -656,12 +650,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             return;
         }
 
-        this.favoriteboard.discardClips();
+        String clipCode = this.favoriteboard.discardClips();
+        this.config.set(ConfigKey.used_input_clip_code, clipCode);
 
-        fire_InputMsg(InputClip_Data_Discard_Done);
+        fire_InputMsg(InputClip_Discard_Done);
     }
 
-    private void startAutoClipsDiscard() {
+    private void startAutoDiscardClips() {
         if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
             return;
         }

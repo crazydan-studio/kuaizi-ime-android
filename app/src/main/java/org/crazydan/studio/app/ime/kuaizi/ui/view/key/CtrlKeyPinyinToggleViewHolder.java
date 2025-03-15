@@ -41,8 +41,8 @@ public class CtrlKeyPinyinToggleViewHolder extends KeyViewHolder<View> {
     public CtrlKeyPinyinToggleViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.sourceView = itemView.findViewById(R.id.source_view);
-        this.targetView = itemView.findViewById(R.id.target_view);
+        this.sourceView = itemView.findViewById(R.id.source);
+        this.targetView = itemView.findViewById(R.id.target);
     }
 
     public void bind(CtrlKey key, HexagonOrientation orientation) {

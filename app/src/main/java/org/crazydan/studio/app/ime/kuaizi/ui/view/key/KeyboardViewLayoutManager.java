@@ -387,7 +387,7 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
 
             for (int j = 0; j < ((ViewGroup) view).getChildCount(); j++) {
                 View child = ((ViewGroup) view).getChildAt(j);
-                if (child.getId() == R.id.bg_view) {
+                if (child.getId() == R.id.bg) {
                     continue;
                 }
 

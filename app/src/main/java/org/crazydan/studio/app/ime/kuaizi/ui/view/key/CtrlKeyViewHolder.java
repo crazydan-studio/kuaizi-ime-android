@@ -41,7 +41,7 @@ public class CtrlKeyViewHolder extends KeyViewHolder<ImageView> {
     public CtrlKeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.fgTextView = itemView.findViewById(R.id.fg_text_view);
+        this.fgTextView = itemView.findViewById(R.id.fg_text);
     }
 
     public void bind(CtrlKey key, HexagonOrientation orientation) {

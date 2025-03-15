@@ -43,7 +43,7 @@ public class GapInputViewHolder extends InputViewHolder {
     public GapInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.blinkView = itemView.findViewById(R.id.blink_view);
+        this.blinkView = itemView.findViewById(R.id.blink);
     }
 
     @Override

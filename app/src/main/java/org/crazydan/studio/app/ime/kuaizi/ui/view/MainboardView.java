@@ -38,12 +38,10 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -51,14 +49,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveClipToFavoriteBtnSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
-
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Save_Clip_to_Favorite;
 
 /**
  * 主面板视图
@@ -201,22 +194,6 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
                 on_Editor_Edit_Doing(msg.data());
                 break;
             }
-            case InputList_Commit_Doing: {
-                InputListCommitMsgData data = msg.data();
-                // TODO 提示是否收藏已输入内容：仅针对非替换且可撤回的输入
-                break;
-            }
-            case InputClip_Data_Apply_Done: {
-                // Note: InputClip_Text_Commit_Doing 之后会发送 InputClip_Data_Apply_Done 消息，
-                // 故而，不对 InputClip_Text_Commit_Doing 做提示
-                InputClipMsgData data = msg.data();
-                Toast.with(this)
-                     .setText(R.string.tip_whether_save_pasted_content)
-                     .setDuration(5000)
-                     .setAction(R.string.btn_save_as_favorite, (v) -> saveToFavorite(data.clip))
-                     .show();
-                break;
-            }
             default: {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
@@ -224,26 +201,31 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     }
 
     private void on_Editor_Edit_Doing(EditorEditMsgData data) {
-        CharSequence tip = null;
+        Integer resId = null;
         // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
-        // Note: 回删已作气泡提示，复制、剪切、粘贴也会提示收藏，无需再作提示
+        // Note: 回删已作气泡提示，复制、剪切也会提示收藏，无需再作提示
         switch (data.action) {
             case select_all: {
-                tip = getContext().getText(R.string.tip_editor_action_select_all);
+                resId = R.string.tip_editor_action_select_all;
                 break;
             }
             case redo: {
-                tip = getContext().getText(R.string.tip_editor_action_redo);
+                resId = R.string.tip_editor_action_redo;
                 break;
             }
             case undo: {
-                tip = getContext().getText(R.string.tip_editor_action_undo);
+                resId = R.string.tip_editor_action_undo;
+                break;
+            }
+            case paste: {
+                resId = R.string.tip_editor_action_paste;
                 break;
             }
         }
 
-        if (tip != null) {
-            showInputKeyPopupWindow(tip.toString(), true);
+        if (resId != null) {
+            String tip = getContext().getString(resId);
+            showInputKeyPopupWindow(tip, true);
         }
     }
 
@@ -265,7 +247,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         float height = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
         height -= this.keyboardView.getBottomSpacing();
 
-        View bottomSpacingView = this.findViewById(R.id.bottom_spacing_view);
+        View bottomSpacingView = this.findViewById(R.id.bottom_spacing);
         if (needSpacing && height > 0) {
             ViewUtils.show(bottomSpacingView);
             ViewUtils.setHeight(bottomSpacingView, (int) height);
@@ -307,7 +289,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         }
 
         View contentView = window.getContentView();
-        TextView textView = contentView.findViewById(R.id.fg_view);
+        TextView textView = contentView.findViewById(R.id.fg);
         textView.setText(key);
 
         showPopupWindow(window);
@@ -380,10 +362,4 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     }
 
     // ==================== End: 气泡提示 ==================
-
-    private void saveToFavorite(InputClip clip) {
-        UserSaveClipToFavoriteBtnSingleTapMsgData data = new UserSaveClipToFavoriteBtnSingleTapMsgData(clip);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_Clip_to_Favorite).data(data));
-        onMsg(msg);
-    }
 }

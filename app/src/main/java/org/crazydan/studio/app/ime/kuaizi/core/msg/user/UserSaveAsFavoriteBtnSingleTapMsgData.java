@@ -24,19 +24,29 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link UserInputMsgType#SingleTap_Btn_Save_Clip_to_Favorite} 的消息数据
+ * {@link UserInputMsgType#SingleTap_Btn_Save_As_Favorite} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-14
  */
-public class UserSaveClipToFavoriteBtnSingleTapMsgData extends UserInputMsgData {
+public class UserSaveAsFavoriteBtnSingleTapMsgData extends UserInputMsgData {
+    /** 与消息相关的 输入文本 */
+    public final CharSequence text;
     /** 与消息相关的 {@link InputClip} */
     public final InputClip clip;
 
-    public UserSaveClipToFavoriteBtnSingleTapMsgData(InputClip clip) {this.clip = clip;}
+    public UserSaveAsFavoriteBtnSingleTapMsgData(CharSequence text) {
+        this.clip = null;
+        this.text = text;
+    }
+
+    public UserSaveAsFavoriteBtnSingleTapMsgData(InputClip clip) {
+        this.clip = clip;
+        this.text = null;
+    }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '{' + "text=" + this.clip.text + '}';
+        return getClass().getSimpleName();
     }
 }

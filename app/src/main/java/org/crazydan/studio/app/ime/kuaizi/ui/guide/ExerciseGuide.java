@@ -116,13 +116,13 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         this.exerciseList.setListener(this);
 
         this.drawerLayout = findViewById(R.id.drawer_layout);
-        this.drawerNavView = findViewById(R.id.drawer_nav_view);
-        this.exerciseListView = findViewById(R.id.exercise_list_view);
+        this.drawerNavView = findViewById(R.id.drawer_nav);
+        this.exerciseListView = findViewById(R.id.exercise_list);
         initDrawerView();
         initExerciseListView();
 
-        this.sandboxView = findViewById(R.id.keyboard_sandbox_view);
-        this.xPadSandboxView = findViewById(R.id.xpad_keyboard_sandbox_view);
+        this.sandboxView = findViewById(R.id.keyboard_sandbox);
+        this.xPadSandboxView = findViewById(R.id.xpad_keyboard_sandbox);
 
         // 创建练习，并向 sandbox view 注册待渲染的按键
         List<Exercise> exercises = createExercises(this.sandboxView, this.xPadSandboxView);
@@ -205,7 +205,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     }
 
     private void initExerciseListView() {
-        RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator_view);
+        RecyclerPageIndicatorView indicatorView = findViewById(R.id.exercise_list_indicator);
         indicatorView.attachTo(this.exerciseListView);
 
         this.exerciseListView.setListener(this);

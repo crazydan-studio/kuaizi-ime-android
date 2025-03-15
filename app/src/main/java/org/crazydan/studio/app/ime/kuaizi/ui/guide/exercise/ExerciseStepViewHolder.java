@@ -42,8 +42,8 @@ public class ExerciseStepViewHolder extends RecyclerViewHolder {
     public ExerciseStepViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.pointerView = itemView.findViewById(R.id.pointer_view);
-        this.contentView = itemView.findViewById(R.id.content_view);
+        this.pointerView = itemView.findViewById(R.id.pointer);
+        this.contentView = itemView.findViewById(R.id.content);
     }
 
     /** 视图与数据的初始绑定 */

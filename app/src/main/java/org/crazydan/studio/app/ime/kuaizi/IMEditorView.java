@@ -29,22 +29,31 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveAsFavoriteBtnSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
+
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Save_As_Favorite;
 
 /**
  * {@link IMEditor} 的视图
@@ -91,6 +100,43 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         MainboardView mainboard = getBoard(BoardType.main);
         mainboard.close();
     }
+
+    // =============================== Start: 视图更新 ===================================
+
+    /** 布局视图 */
+    private void doLayout() {
+        // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
+        removeAllViews();
+
+        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
+        int themeResId = theme.getResId(getContext());
+
+        // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
+        // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
+        // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
+        ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
+
+        MainboardView mainboardView = findViewById(R.id.mainboard);
+        mainboardView.setConfig(this.config);
+        mainboardView.setListener(this);
+        mainboardView.updateBottomSpacing(true);
+
+        FavoriteboardView favoriteboardView = findViewById(R.id.favoriteboard);
+        favoriteboardView.setConfig(this.config);
+        favoriteboardView.setListener(this);
+
+        // <<<<<<<<<<<< 面板管理
+        this.boards = new HashMap<BoardType, View>() {{
+            put(BoardType.main, mainboardView);
+            put(BoardType.favorite, favoriteboardView);
+        }};
+
+        // 确保按已激活的类型显隐面板，而不是按视图中的设置
+        activeBoard(this.activeBoard);
+        // >>>>>>>>>>>>
+    }
+
+    // =============================== End: 视图更新 ===================================
 
     // =============================== Start: 消息处理 ===================================
 
@@ -152,7 +198,33 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
-            case InputFavorite_Create_Done: {
+            case InputList_Commit_Doing: {
+                InputListCommitMsgData data = msg.data();
+                // 是否收藏已输入内容：仅针对非替换且可撤回的输入
+                if (!data.canBeRevoked || !CollectionUtils.isEmpty(data.replacements)) {
+                    break;
+                }
+
+                Toast.with(this)
+                     .setText(R.string.tip_whether_save_commited_content)
+                     .setDuration(5000)
+                     .setAction(R.string.btn_save_as_favorite, (v) -> saveTextToFavorite(data.text))
+                     .show();
+                break;
+            }
+            case InputClip_CanBe_Favorite: {
+                InputClipMsgData data = msg.data();
+
+                Toast.with(this)
+                     .setText(data.source == InputClipMsgData.SourceType.copy_cut
+                              ? R.string.tip_whether_save_copied_content
+                              : R.string.tip_whether_save_pasted_content)
+                     .setDuration(5000)
+                     .setAction(R.string.btn_save_as_favorite, (v) -> saveClipToFavorite(data.clip))
+                     .show();
+                break;
+            }
+            case Favoriteboard_Start_Done: {
                 activeBoard(BoardType.favorite);
                 break;
             }
@@ -189,44 +261,21 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         this.audioPlayer.play(data.audioType.resId);
     }
 
-    // =============================== End: 消息处理 ===================================
+    private void saveTextToFavorite(CharSequence text) {
+        UserInputMsgData data = new UserSaveAsFavoriteBtnSingleTapMsgData(text);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
 
-    // =============================== Start: 视图更新 ===================================
-
-    /** 布局视图 */
-    private void doLayout() {
-        // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
-        removeAllViews();
-
-        Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int themeResId = theme.getResId(getContext());
-
-        // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
-        // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
-        ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
-
-        MainboardView mainboardView = findViewById(R.id.mainboard);
-        mainboardView.setConfig(this.config);
-        mainboardView.setListener(this);
-        mainboardView.updateBottomSpacing(true);
-
-        FavoriteboardView favoriteboardView = findViewById(R.id.favoriteboard);
-        favoriteboardView.setConfig(this.config);
-        favoriteboardView.setListener(this);
-
-        // <<<<<<<<<<<< 面板管理
-        this.boards = new HashMap<BoardType, View>() {{
-            put(BoardType.main, mainboardView);
-            put(BoardType.favorite, favoriteboardView);
-        }};
-
-        // 确保按已激活的类型显隐面板，而不是按视图中的设置
-        activeBoard(this.activeBoard);
-        // >>>>>>>>>>>>
+        onMsg(msg);
     }
 
-    // =============================== End: 视图更新 ===================================
+    private void saveClipToFavorite(InputClip clip) {
+        UserInputMsgData data = new UserSaveAsFavoriteBtnSingleTapMsgData(clip);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
+
+        onMsg(msg);
+    }
+
+    // =============================== End: 消息处理 ===================================
 
     private <T> T getBoard(BoardType type) {
         return (T) this.boards.get(type);

@@ -24,16 +24,31 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputClip_Data_Apply_Done} 消息数据
+ * {@link InputMsgType#InputClip_Apply_Done}、
+ * {@link InputMsgType#InputClip_CanBe_Favorite}
+ * 消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-12
  */
 public class InputClipMsgData extends InputMsgData {
+    public final SourceType source;
     /** 当前处理的剪贴数据 */
     public final InputClip clip;
 
     public InputClipMsgData(InputClip clip) {
+        this(null, clip);
+    }
+
+    public InputClipMsgData(SourceType source, InputClip clip) {
+        this.source = source;
         this.clip = clip;
+    }
+
+    public enum SourceType {
+        /** 因粘贴而产生 */
+        paste,
+        /** 因复制/剪切而产生 */
+        copy_cut,
     }
 }

@@ -42,8 +42,8 @@ public class CharInputViewHolder extends InputViewHolder {
     public CharInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.wordSpellView = itemView.findViewById(R.id.word_spell_view);
-        this.wordView = itemView.findViewById(R.id.word_view);
+        this.wordSpellView = itemView.findViewById(R.id.word_spell);
+        this.wordView = itemView.findViewById(R.id.word);
     }
 
     @Override

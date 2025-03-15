@@ -26,7 +26,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputFavorite_Create_Done} 的消息数据
+ * {@link InputMsgType#Favoriteboard_Start_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13

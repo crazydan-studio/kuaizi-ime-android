@@ -60,5 +60,5 @@ public enum UserInputMsgType {
     /** 单击 清空全部 {@link InputFavorite} 的按钮 */
     SingleTap_Btn_Clear_All_InputFavorite,
     /** 单击 收藏粘贴数据 的按钮 */
-    SingleTap_Btn_Save_Clip_to_Favorite,
+    SingleTap_Btn_Save_As_Favorite,
 }

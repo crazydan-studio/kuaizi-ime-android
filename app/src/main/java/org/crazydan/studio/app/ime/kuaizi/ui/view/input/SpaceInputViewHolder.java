@@ -39,7 +39,7 @@ public class SpaceInputViewHolder extends InputViewHolder {
     public SpaceInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.spaceView = itemView.findViewById(R.id.space_view);
+        this.spaceView = itemView.findViewById(R.id.space);
     }
 
     @Override

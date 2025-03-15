@@ -81,7 +81,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         this.imeConfig.set(ConfigKey.disable_close_keyboard_btn, true);
 
         this.ime = IMEditor.create(this.imeConfig.mutable());
-        this.imeView = findViewById(R.id.input_pane_view);
+        this.imeView = findViewById(R.id.input_pane);
 
         this.ime.setListener(this);
         this.imeView.setListener(this);

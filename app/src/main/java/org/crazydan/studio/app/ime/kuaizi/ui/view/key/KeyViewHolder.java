@@ -52,8 +52,8 @@ public abstract class KeyViewHolder<V extends View> extends RecyclerViewHolder {
     public KeyViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.bgView = itemView.findViewById(R.id.bg_view);
-        this.fgView = itemView.findViewById(R.id.fg_view);
+        this.bgView = itemView.findViewById(R.id.bg);
+        this.fgView = itemView.findViewById(R.id.fg);
     }
 
     public void bind(Key key, HexagonOrientation orientation) {

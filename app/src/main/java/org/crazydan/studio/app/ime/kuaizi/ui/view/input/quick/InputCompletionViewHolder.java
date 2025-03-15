@@ -40,7 +40,7 @@ public class InputCompletionViewHolder extends InputQuickViewHolder {
     public InputCompletionViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.inputsView = itemView.findViewById(R.id.inputs_view);
+        this.inputsView = itemView.findViewById(R.id.inputs);
     }
 
     @Override

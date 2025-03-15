@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputTextType;
 
 import static android.text.format.DateUtils.FORMAT_NUMERIC_DATE;
 import static android.text.format.DateUtils.FORMAT_SHOW_DATE;
@@ -45,7 +46,7 @@ import static android.text.format.DateUtils.FORMAT_SHOW_YEAR;
  */
 public class InputFavoriteViewHolder extends RecyclerViewHolder {
     private final CheckBox checkboxView;
-    private final TextView textView;
+    private final TextView contentView;
 
     private final TextView textTypeView;
     private final TextView createdAtView;
@@ -55,7 +56,7 @@ public class InputFavoriteViewHolder extends RecyclerViewHolder {
         super(itemView);
 
         this.checkboxView = itemView.findViewById(R.id.checkbox);
-        this.textView = itemView.findViewById(R.id.text);
+        this.contentView = itemView.findViewById(R.id.content);
 
         this.textTypeView = itemView.findViewById(R.id.text_type);
         this.createdAtView = itemView.findViewById(R.id.created_at);
@@ -68,8 +69,13 @@ public class InputFavoriteViewHolder extends RecyclerViewHolder {
             v.setOnClickListener((vv) -> onCheck.run());
         });
 
-        whenViewReady(this.textView, (v) -> {
-            v.setText(data.text);
+        whenViewReady(this.contentView, (v) -> {
+            CharSequence text = data.text;
+            if (data.type == InputTextType.html) {
+                text = ViewUtils.parseHtml(data.html);
+            }
+
+            v.setText(text);
         });
 
         whenViewReady(this.textTypeView, (v) -> {

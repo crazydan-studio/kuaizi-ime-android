@@ -134,13 +134,13 @@ public class ConfirmPopup {
         // 阻止事件向上层视图传播，从而保证窗口的模态特性
         contentView.setOnTouchListener((v, event) -> true);
 
-        TextView messageView = contentView.findViewById(R.id.message_view);
+        TextView messageView = contentView.findViewById(R.id.message);
         messageView.setText(this.message);
 
-        TextView negativeBtnView = contentView.findViewById(R.id.negative_btn_view);
+        TextView negativeBtnView = contentView.findViewById(R.id.negative_btn);
         initButtonView(negativeBtnView, this.negativeBtn);
 
-        TextView positiveBtnView = contentView.findViewById(R.id.positive_btn_view);
+        TextView positiveBtnView = contentView.findViewById(R.id.positive_btn);
         initButtonView(positiveBtnView, this.positiveBtn);
 
         return contentView;

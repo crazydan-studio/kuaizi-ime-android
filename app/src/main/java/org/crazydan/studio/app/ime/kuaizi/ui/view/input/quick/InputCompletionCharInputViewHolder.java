@@ -43,9 +43,9 @@ public class InputCompletionCharInputViewHolder extends InputViewHolder {
     public InputCompletionCharInputViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.wordSpellView = itemView.findViewById(R.id.word_spell_view);
-        this.wordView = itemView.findViewById(R.id.word_view);
-        this.latinView = itemView.findViewById(R.id.latin_view);
+        this.wordSpellView = itemView.findViewById(R.id.word_spell);
+        this.wordView = itemView.findViewById(R.id.word);
+        this.latinView = itemView.findViewById(R.id.latin);
     }
 
     public void bind(InputCompletion.CharInputViewData data) {
