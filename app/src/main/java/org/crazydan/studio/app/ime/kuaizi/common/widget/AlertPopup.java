@@ -109,8 +109,8 @@ public class AlertPopup {
     public void show() {
         TextView titleView = this.view.findViewById(R.id.title);
         TextView messageView = this.view.findViewById(R.id.message);
-        android.widget.Button negativeBtnView = this.view.findViewById(R.id.negative_btn);
-        android.widget.Button positiveBtnView = this.view.findViewById(R.id.positive_btn);
+        android.widget.Button negativeBtnView = this.view.findViewById(R.id.btn_negative);
+        android.widget.Button positiveBtnView = this.view.findViewById(R.id.btn_positive);
 
         titleView.setText(this.title);
         if (this.message instanceof Spanned) {

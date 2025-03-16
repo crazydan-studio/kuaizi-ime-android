@@ -27,17 +27,17 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.MathExprInput;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCompletion_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Clean_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Cleaned_Cancel_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_START_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_END_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_START_IN_INPUT_LIST;
 
 /**
  * 输入面板
@@ -76,7 +76,7 @@ public class Inputboard {
 
         switch (msg.type) {
             case SingleTap_Input: {
-                UserInputSingleTapMsgData data = msg.data();
+                UserInputListInputMsgData data = msg.data();
 
                 Input input;
                 if (data.positionInParent < 0) {
@@ -99,7 +99,7 @@ public class Inputboard {
                 break;
             }
             case SingleTap_InputCompletion: {
-                UserInputCompletionSingleTapMsgData data = msg.data();
+                UserInputCompletionMsgData data = msg.data();
 
                 inputList.applyCompletion(data.position);
 

@@ -19,26 +19,29 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.completion.InputCompletion;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * 在 {@link InputCompletion} 上触发的 {@link UserInputMsgType#SingleTap_InputCompletion} 消息数据
+ * {@link UserInputMsgType#SingleTap_Btn_Paste_InputFavorite} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-01-06
+ * @date 2025-03-14
  */
-public class UserInputCompletionSingleTapMsgData extends UserInputMsgData {
-    /** 与消息相关的 {@link InputCompletion} 所在的位置 */
+public class UserInputFavoriteMsgData extends UserInputMsgData {
+    /** 触发消息的数据项位置 */
     public final int position;
+    /** 与消息相关的 {@link InputFavorite} */
+    public final InputFavorite favorite;
 
-    public UserInputCompletionSingleTapMsgData(int position) {
+    public UserInputFavoriteMsgData(int position, InputFavorite favorite) {
         this.position = position;
+        this.favorite = favorite;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '{' + "position=" + this.position + '}';
+        return getClass().getSimpleName() + "{text=" + this.favorite.text + '}';
     }
 }

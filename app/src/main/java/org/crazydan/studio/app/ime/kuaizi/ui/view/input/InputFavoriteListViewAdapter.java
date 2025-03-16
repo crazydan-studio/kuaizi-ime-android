@@ -22,7 +22,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -39,48 +38,44 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.InputFavoriteListView;
  * @date 2025-03-13
  */
 public class InputFavoriteListViewAdapter extends RecyclerViewAdapter<InputFavorite, InputFavoriteViewHolder> {
-    private final SparseBooleanArray selected;
-    private final Runnable onSelectedListener;
+    private final ItemListener listener;
+    private final List<Integer> selected;
 
-    public InputFavoriteListViewAdapter(Runnable onSelectedListener) {
+    public InputFavoriteListViewAdapter(ItemListener listener) {
         super(ItemUpdatePolicy.differ);
 
-        this.selected = new SparseBooleanArray();
-        this.onSelectedListener = onSelectedListener;
+        this.selected = new ArrayList<>();
+        this.listener = listener;
     }
 
-    @Override
-    public List<InputFavorite> updateItems(List<InputFavorite> newItems) {
-        this.selected.clear();
+    public void updateItems(List<InputFavorite> newItems, boolean reset) {
+        if (reset) {
+            this.selected.clear();
+        }
 
-        return super.updateItems(newItems);
+        super.updateItems(newItems);
     }
 
     /** @return 已选中项的 {@link InputFavorite#id} */
     public List<Integer> getSelectedItems() {
-        List<Integer> list = new ArrayList<>(this.selected.size());
-
-        for (int i = 0; i < this.items.size(); i++) {
-            InputFavorite item = this.items.get(i);
-            boolean selected = this.selected.get(i, false);
-
-            if (selected) {
-                list.add(item.id);
-            }
-        }
-        return list;
+        return new ArrayList<>(this.selected);
     }
 
     @Override
     public void onBindViewHolder(@NonNull InputFavoriteViewHolder holder, int position) {
         InputFavorite item = getItem(position);
-        boolean selected = this.selected.get(position, false);
+        boolean selected = this.selected.contains(item.id);
 
-        holder.bind(item, selected, () -> {
-            boolean checked = this.selected.get(position, false);
-            this.selected.put(position, !checked);
+        holder.bind(item, selected, (checked) -> {
+            if (checked) {
+                this.selected.add(item.id);
+            } else {
+                this.selected.remove(item.id);
+            }
 
-            this.onSelectedListener.run();
+            this.listener.onItemCheck(position, checked);
+        }, () -> {
+            this.listener.onItemPaste(position);
         });
     }
 
@@ -89,5 +84,12 @@ public class InputFavoriteListViewAdapter extends RecyclerViewAdapter<InputFavor
     public InputFavoriteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = inflateItemView(parent, R.layout.input_favorite_view);
         return new InputFavoriteViewHolder(view);
+    }
+
+    public interface ItemListener {
+
+        void onItemCheck(int position, boolean checked);
+
+        void onItemPaste(int position);
     }
 }

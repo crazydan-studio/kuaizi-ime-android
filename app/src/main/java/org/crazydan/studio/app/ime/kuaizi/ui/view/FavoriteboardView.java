@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -38,10 +37,11 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputDeleteMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clear_All_InputFavorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Favoriteboard;
@@ -78,13 +78,13 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
         this.dataPaneView = findViewById(R.id.data_pane);
-        this.deleteSelectedBtnView = findViewById(R.id.delete_selected);
-        this.clearAllBtnView = findViewById(R.id.clear_all);
+        this.deleteSelectedBtnView = findViewById(R.id.btn_delete_selected);
+        this.clearAllBtnView = findViewById(R.id.btn_clear_all);
 
         this.favoriteListView = findViewById(R.id.favorite_list);
         this.favoriteListView.setListener(this);
 
-        View closeBtnView = findViewById(R.id.close);
+        View closeBtnView = findViewById(R.id.btn_close);
         closeBtnView.setOnClickListener(this::onCloseFavoriteboard);
     }
 
@@ -94,7 +94,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
 
     @Override
     public void close() {
-        this.favoriteListView.update(new ArrayList<>());
+        this.favoriteListView.clear();
 
         ObjectUtils.invokeWhenNonNull(this.deleteSelectedPopup, ConfirmPopup::dismiss);
         ObjectUtils.invokeWhenNonNull(this.clearAllPopup, ConfirmPopup::dismiss);
@@ -130,22 +130,24 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
-            case InputFavorite_Apply_Done:
+            case InputFavorite_Paste_Done:
             case InputFavorite_Delete_Done:
+            case InputFavorite_Save_Done:
             case InputFavorite_Be_Ready: {
                 InputFavoriteMsgData data = msg.data();
-                on_InputFavorite_Update_Done_Msg(data);
+                // Note: 粘贴操作不重置列表，以确保其列表项的已选中状态不变
+                on_InputFavorite_Update_Done_Msg(data, msg.type != InputMsgType.InputFavorite_Paste_Done);
                 break;
             }
         }
     }
 
-    private void on_InputFavorite_Update_Done_Msg(InputFavoriteMsgData data) {
+    private void on_InputFavorite_Update_Done_Msg(InputFavoriteMsgData data, boolean reset) {
         int total = data.favorites.size();
         CharSequence title = textWithNumber(R.string.title_favorites, total);
 
         this.titleView.setText(title);
-        this.favoriteListView.update(data.favorites);
+        this.favoriteListView.update(data.favorites, reset);
 
         boolean showWarning = total == 0;
         ViewUtils.visible(this.warningView, showWarning);
@@ -177,8 +179,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
                 ConfirmPopup.with(this)
                             .setMessage(R.string.confirm_whether_delete_selected)
                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
-                                UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(
-                                        selected);
+                                UserInputDeleteMsgData data = new UserInputDeleteMsgData(selected);
                                 UserInputMsg msg = UserInputMsg.build((b) -> b.type(
                                         SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
 
@@ -204,7 +205,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
     // ==================== End: 按键事件处理 ==================
 
     private void updateBtnStatus() {
-        List<Integer> selected = this.favoriteListView.getAdapter().getSelectedItems();
+        List<Integer> selected = this.favoriteListView.getSelected();
         int total = selected.size();
         boolean disabled = total == 0;
 
@@ -212,7 +213,11 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
                   textWithNumber(R.string.btn_delete_selected, total),
                   disabled,
                   this::onDeleteSelected);
-        updateBtn(this.clearAllBtnView, getContext().getString(R.string.btn_clear_all), disabled, this::onClearAll);
+
+        updateBtn(this.clearAllBtnView,
+                  getContext().getString(R.string.btn_clear_all),
+                  this.favoriteListView.isEmpty(),
+                  this::onClearAll);
     }
 
     private void updateBtn(TextView view, CharSequence text, boolean disabled, View.OnClickListener listener) {

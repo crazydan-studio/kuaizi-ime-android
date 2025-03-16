@@ -38,8 +38,6 @@ public enum UserInputMsgType {
     SingleTap_InputCompletion,
     /** 单击 {@link InputClip} */
     SingleTap_InputClip,
-    /** 双击 {@link InputFavorite} */
-    DoubleTap_InputFavorite,
 
     /** 单击 输入列表清空 的按钮 */
     SingleTap_Btn_Clean_InputList,

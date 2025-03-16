@@ -37,8 +37,8 @@ public class ExerciseStepLastViewHolder extends ExerciseStepViewHolder {
     public ExerciseStepLastViewHolder(@NonNull View itemView) {
         super(itemView);
 
-        this.restartBtn = itemView.findViewById(R.id.restart_btn);
-        this.continueBtn = itemView.findViewById(R.id.continue_btn);
+        this.restartBtn = itemView.findViewById(R.id.btn_restart);
+        this.continueBtn = itemView.findViewById(R.id.btn_continue);
     }
 
     /** 视图与数据的初始绑定 */

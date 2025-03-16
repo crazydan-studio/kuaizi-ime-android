@@ -45,10 +45,9 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserDeleteSelectedBtnSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveAsFavoriteBtnSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputDeleteMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Apply_Done;
@@ -57,6 +56,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Be_Ready;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Delete_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Paste_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Save_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
 
@@ -161,8 +161,8 @@ public class Favoriteboard {
                 on_SingleTap_InputClip_Msg(context, msg);
                 break;
             }
-            case DoubleTap_InputFavorite: {
-                on_DoubleTap_InputFavorite_Msg(context, msg);
+            case SingleTap_Btn_Paste_InputFavorite: {
+                on_SingleTap_Btn_Paste_InputFavorite_Msg(context, msg);
                 break;
             }
             case SingleTap_Btn_Open_Favoriteboard: {
@@ -191,7 +191,7 @@ public class Favoriteboard {
         // 提前废弃数据，以避免后面的数据粘贴消息更新气泡提示
         discardClips();
 
-        UserInputClipSingleTapMsgData data = msg.data();
+        UserInputClipMsgData data = msg.data();
         switch (data.clip.type) {
             case captcha: {
                 commitClipText(context, data.clip, true);
@@ -215,35 +215,50 @@ public class Favoriteboard {
         trySave(context, data.clip, InputClipMsgData.ClipSourceType.paste);
     }
 
-    private void on_DoubleTap_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
-        UserInputFavoriteDoubleTapMsgData data = msg.data();
+    private void on_SingleTap_Btn_Paste_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
+        UserInputFavoriteMsgData data = msg.data();
 
-        InputTextCommitMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
+        InputMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
         context.fireInputMsg(InputFavorite_Text_Commit_Doing, msgData);
+
+        // TODO 更新使用次数及时间
+
+        for (int i = 0; i < this.favorites.size(); i++) {
+            InputFavorite f = this.favorites.get(i);
+
+            if (Objects.equals(f.id, data.favorite.id)) {
+                this.favorites.set(i, f.copy((b) -> b.usedCount(f.usedCount + 1).usedAt(new Date())));
+                break;
+            }
+        }
+
+        msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
+        context.fireInputMsg(InputFavorite_Paste_Done, msgData);
     }
 
     private void on_SingleTap_Btn_Open_Favoriteboard_Msg(FavoriteboardContext context) {
-        // TODO 从数据库中查询已收藏，按使用次数、最近使用、创建时间降序排序
+        // TODO 从数据库中查询已收藏，按创建时间、最近使用、使用次数降序排序
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
         context.fireInputMsg(InputFavorite_Be_Ready, msgData);
     }
 
     private void on_SingleTap_Btn_Save_As_Favorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
-        UserSaveAsFavoriteBtnSingleTapMsgData data = msg.data();
+        UserInputClipMsgData data = msg.data();
 
         InputClip clip = data.clip;
         InputFavorite favorite = InputFavorite.from(clip);
 
         // TODO 保存已收藏到数据库
 
-        this.favorites.add(favorite.copy((b) -> b.id((int) new Date().getTime())));
+        this.favorites.add(0, favorite.copy((b) -> b.id((int) new Date().getTime())));
 
-        context.fireInputMsg(InputFavorite_Save_Done);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
+        context.fireInputMsg(InputFavorite_Save_Done, msgData);
     }
 
     private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
-        UserDeleteSelectedBtnSingleTapMsgData data = msg.data();
+        UserInputDeleteMsgData data = msg.data();
         // TODO 从数据库中删除已收藏
 
         for (Integer id : data.selected) {
@@ -254,7 +269,7 @@ public class Favoriteboard {
             this.favorites.remove(favorite);
         }
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
         context.fireInputMsg(InputFavorite_Delete_Done, msgData);
     }
 
@@ -263,7 +278,7 @@ public class Favoriteboard {
 
         this.favorites.clear();
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
+        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
         context.fireInputMsg(InputFavorite_Delete_Done, msgData);
     }
 

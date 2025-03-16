@@ -54,7 +54,7 @@
             android:gravity="center">
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/positive_btn"
+                android:id="@+id/btn_positive"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="match_parent"
@@ -66,7 +66,7 @@
                 app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-                android:id="@+id/negative_btn"
+                android:id="@+id/btn_negative"
                 android:textSize="16sp"
                 android:textAllCaps="false"
                 android:layout_width="match_parent"

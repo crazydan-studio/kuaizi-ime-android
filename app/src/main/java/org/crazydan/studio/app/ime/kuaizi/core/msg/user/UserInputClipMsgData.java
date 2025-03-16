@@ -24,18 +24,24 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * 在 {@link InputClip} 上触发的 {@link UserInputMsgType#SingleTap_InputClip} 消息数据
+ * {@link UserInputMsgType#SingleTap_InputClip}、
+ * {@link UserInputMsgType#SingleTap_Btn_Save_As_Favorite}
+ * 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-08
  */
-public class UserInputClipSingleTapMsgData extends UserInputMsgData {
+public class UserInputClipMsgData extends UserInputMsgData {
     /** 触发消息的数据项位置 */
     public final int position;
     /** 与消息相关的 {@link InputClip} */
     public final InputClip clip;
 
-    public UserInputClipSingleTapMsgData(int position, InputClip clip) {
+    public UserInputClipMsgData(InputClip clip) {
+        this(-1, clip);
+    }
+
+    public UserInputClipMsgData(int position, InputClip clip) {
         this.position = position;
         this.clip = clip;
     }

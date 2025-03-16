@@ -43,15 +43,15 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputViewHolder;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Input;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_END_IN_INPUT_LIST;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputSingleTapMsgData.POSITION_START_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_END_IN_INPUT_LIST;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_LEFT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_RIGHT_IN_GAP_INPUT_PENDING;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInputMsgData.POSITION_START_IN_INPUT_LIST;
 
 /**
  * {@link InputListView} 的基类
@@ -102,7 +102,7 @@ public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputV
 
         int position = findInputPositionUnder(data.at.x, data.at.y);
 
-        UserInputSingleTapMsgData msgData = new UserInputSingleTapMsgData(this.positionInParent, position);
+        UserInputListInputMsgData msgData = new UserInputListInputMsgData(this.positionInParent, position);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Input).data(msgData));
         fire_UserInputMsg(msg);
     }

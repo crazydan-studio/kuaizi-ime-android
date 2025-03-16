@@ -26,7 +26,7 @@
         android:layout_marginVertical="4dp">
 
     <com.google.android.material.button.MaterialButton
-            android:id="@+id/restart_btn"
+            android:id="@+id/btn_restart"
             android:text="@string/btn_guide_exercise_try_again"
             android:textSize="16sp"
             android:textAllCaps="false"
@@ -40,7 +40,7 @@
             app:cornerRadius="8dp" />
 
     <com.google.android.material.button.MaterialButton
-            android:id="@+id/continue_btn"
+            android:id="@+id/btn_continue"
             android:text="@string/btn_guide_exercise_try_new_one"
             android:textSize="16sp"
             android:textAllCaps="false"

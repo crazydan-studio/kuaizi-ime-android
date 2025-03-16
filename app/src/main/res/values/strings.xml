@@ -65,7 +65,7 @@
     <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
     <string name="btn_save_as_favorite">收藏</string>
-    <string name="btn_delete_selected">删除已选中项 (%1$s 条)</string>
+    <string name="btn_delete_selected">删除选中项 (%1$s 条)</string>
     <string name="btn_clear_all">全部清空</string>
 
     <!-- Preference Titles -->

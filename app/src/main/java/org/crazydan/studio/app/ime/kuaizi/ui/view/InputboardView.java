@@ -71,16 +71,16 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         this.tools.toolbar = new BtnGroup(this, R.id.toolbar);
         this.tools.inputbar = new BtnGroup(this, R.id.inputbar);
 
-        this.tools.showToolbar = new Btn(this, R.id.show_toolbar, this::onShowToolbar);
-        this.tools.hideToolbar = new Btn(this, R.id.hide_toolbar, this::onHideToolbar);
+        this.tools.showToolbar = new Btn(this, R.id.btn_show_toolbar, this::onShowToolbar);
+        this.tools.hideToolbar = new Btn(this, R.id.btn_hide_toolbar, this::onHideToolbar);
 
-        this.tools.settings = new Btn(this, R.id.tool_settings, this::onShowPreferences);
-        this.tools.favoriteboard = new Btn(this, R.id.tool_favoriteboard, this::onOpenFavoriteboard);
-        this.tools.switchIme = new Btn(this, R.id.tool_switch_ime, this::onSwitchIme);
+        this.tools.settings = new Btn(this, R.id.btn_open_settings, this::onShowPreferences);
+        this.tools.favoriteboard = new Btn(this, R.id.btn_open_favoriteboard, this::onOpenFavoriteboard);
+        this.tools.switchIme = new Btn(this, R.id.btn_switch_ime, this::onSwitchIme);
         this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
 
-        this.tools.cleanInputList = new Btn(this, R.id.clean_input_list, this::onCleanInputList);
-        this.tools.cancelCleanInputList = new Btn(this, R.id.cancel_clean_input_list, this::onCancelCleanInputList);
+        this.tools.cleanInputList = new Btn(this, R.id.btn_clean_input_list, this::onCleanInputList);
+        this.tools.cancelCleanInputList = new Btn(this, R.id.btn_cancel_clean_input_list, this::onCancelCleanInputList);
     }
 
     public void setConfig(Config config) {

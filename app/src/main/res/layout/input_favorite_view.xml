@@ -21,91 +21,101 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
         android:layout_marginVertical="4dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:gravity="center"
         android:background="@drawable/bg_input_popup_quick_view"
         android:layoutDirection="ltr">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
+    <!-- 选中框放在离手最远端，以避免误选或误删 -->
+    <CheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-        <CheckBox
-                android:id="@+id/checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginVertical="4dp">
 
         <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginHorizontal="8dp"
-                android:layout_marginVertical="4dp">
-
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical|start">
-
-                <TextView
-                        android:id="@+id/text_type"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_text_type"
-                        android:textSize="12sp"
-                        android:alpha=".3" />
-
-                <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginHorizontal="8dp"
-                        android:background="?attr/board_divider_color"
-                        android:alpha=".3" />
-
-                <TextView
-                        android:id="@+id/created_at"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_created_at"
-                        android:textSize="12sp"
-                        android:alpha=".3" />
-            </LinearLayout>
+                android:orientation="horizontal"
+                android:gravity="center_vertical|start">
 
             <TextView
-                    android:id="@+id/content"
-                    android:layout_width="match_parent"
+                    android:id="@+id/text_type"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="8dp"
-                    android:gravity="center_vertical|start"
-                    android:textSize="@dimen/input_quick_text_size"
-                    android:textColor="?attr/input_quick_fg_color"
-                    android:ellipsize="end"
-                    android:maxLines="2" />
+                    android:text="@string/label_text_type"
+                    android:textSize="12sp"
+                    android:alpha=".3" />
 
-            <LinearLayout
-                    android:layout_width="match_parent"
+            <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="?attr/board_divider_color"
+                    android:alpha=".2" />
+
+            <TextView
+                    android:id="@+id/created_at"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical|start">
-
-                <TextView
-                        android:id="@+id/used_count"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_used_count"
-                        android:textSize="12sp"
-                        android:alpha=".3" />
-            </LinearLayout>
+                    android:text="@string/label_created_at"
+                    android:textSize="12sp"
+                    android:alpha=".3" />
         </LinearLayout>
 
         <TextView
-                android:id="@+id/paste_btn"
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:gravity="center_vertical|start"
+                android:textSize="18sp"
+                android:ellipsize="end"
+                android:maxLines="2" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+            <TextView
+                    android:id="@+id/used_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_used_count"
+                    android:textSize="12sp"
+                    android:alpha=".3" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="8dp"
+            android:background="?attr/board_divider_color"
+            android:alpha=".2" />
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="8dp">
+
+        <TextView
+                android:id="@+id/btn_paste"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/btn_paste" />
+                android:text="@string/btn_paste"
+                android:textColor="?attr/input_quick_fg_color" />
     </LinearLayout>
 </LinearLayout>

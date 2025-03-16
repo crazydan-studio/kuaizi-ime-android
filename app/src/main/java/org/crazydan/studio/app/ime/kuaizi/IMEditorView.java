@@ -25,11 +25,14 @@ import java.util.Map;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
@@ -40,13 +43,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveAsFavoriteBtnSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
@@ -68,6 +70,9 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
 
     private Config.Mutable config;
     private UserMsgListener listener;
+
+    private Animation enterAnim;
+    private Animation exitAnim;
 
     private BoardType activeBoard = BoardType.main;
     private Map<BoardType, View> boards;
@@ -113,6 +118,16 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
         // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
         ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
+
+        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation, android.R.attr.windowExitAnimation };
+        int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
+                                                     R.style.Theme_Kuaizi_PopupWindow_Animation,
+                                                     animAttrs);
+        int enterAnimResId = animResIds[0];
+        int exitAnimResId = animResIds[1];
+
+        this.enterAnim = AnimationUtils.loadAnimation(getContext(), enterAnimResId);
+        this.exitAnim = AnimationUtils.loadAnimation(getContext(), exitAnimResId);
 
         MainboardView mainboardView = findViewById(R.id.mainboard);
         mainboardView.setConfig(this.config);
@@ -183,6 +198,10 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
     private void handleMsg(InputMsg msg) {
         switch (msg.type) {
             case Keyboard_Start_Done: {
+                // 确保键盘启动后，始终在主面板上，
+                // 从而保证可粘贴提示等在主面板上的弹窗能够正常显示
+                activeBoard(BoardType.main);
+
                 // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次底部空白更新
                 MainboardView mainboard = getBoard(BoardType.main);
                 mainboard.updateBottomSpacing(false);
@@ -246,7 +265,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
     }
 
     private void saveClipToFavorite(InputClip clip) {
-        UserInputMsgData data = new UserSaveAsFavoriteBtnSingleTapMsgData(clip);
+        UserInputClipMsgData data = new UserInputClipMsgData(clip);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
 
         onMsg(msg);
@@ -258,30 +277,68 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         return (T) this.boards.get(type);
     }
 
-    private void activeBoard(BoardType type) {
-        this.activeBoard = type;
+    private <T> T currentBoard() {
+        return getBoard(this.activeBoard);
+    }
 
-        this.boards.forEach((t, view) -> {
-            if (t == type) {
-                view.setVisibility(View.VISIBLE);
-            } else {
-                // TODO 增加淡出动画
-                if (t == BoardType.main) {
-                    // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
-                    view.setVisibility(View.INVISIBLE);
-                } else {
-                    view.setVisibility(View.GONE);
-                }
+    private void activeBoard(BoardType activeType) {
+        BoardType currentType = this.activeBoard;
+        this.activeBoard = activeType;
 
+        View activeView = this.boards.get(activeType);
+        assert activeView != null;
+
+        View currentView = currentType != activeType ? this.boards.get(currentType) : null;
+        closeBoard(currentType, currentView);
+
+        // Note: 需采用动画渐显形式切换面板，以避免切换过程太突兀，
+        // 特别是处于最顶层的视图，其直接显示会遮挡下层视图的隐藏动画效果
+        showBoard(activeType, activeView);
+    }
+
+    private void closeBoard(BoardType type, View view) {
+        if (view == null || !ViewUtils.isVisible(view)) {
+            return;
+        }
+
+        this.exitAnim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
                 if (view instanceof ViewClosable) {
                     ((ViewClosable) view).close();
                 }
             }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                IMEditorView.this.exitAnim.setAnimationListener(null);
+                hideView(type, view);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
         });
+
+        view.startAnimation(this.exitAnim);
     }
 
-    private <T> T currentBoard() {
-        return getBoard(this.activeBoard);
+    private void showBoard(BoardType type, View view) {
+        if (ViewUtils.isVisible(view)) {
+            return;
+        }
+
+        view.startAnimation(this.enterAnim);
+        // Note: 只有已显示的视图才能应用动画
+        view.setVisibility(View.VISIBLE);
+    }
+
+    private void hideView(BoardType type, View view) {
+        if (type == BoardType.main) {
+            // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
+            view.setVisibility(View.INVISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
+        }
     }
 
     private enum BoardType {

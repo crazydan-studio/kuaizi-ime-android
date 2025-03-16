@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import java.util.Date;
+import java.util.function.Consumer;
 
 import android.text.format.DateUtils;
 import android.view.View;
@@ -47,7 +48,7 @@ import static android.text.format.DateUtils.FORMAT_SHOW_YEAR;
 public class InputFavoriteViewHolder extends RecyclerViewHolder {
     private final CheckBox checkboxView;
     private final TextView contentView;
-    private final TextView pastedBtnView;
+    private final TextView pasteBtnView;
 
     private final TextView textTypeView;
     private final TextView createdAtView;
@@ -58,20 +59,20 @@ public class InputFavoriteViewHolder extends RecyclerViewHolder {
 
         this.checkboxView = itemView.findViewById(R.id.checkbox);
         this.contentView = itemView.findViewById(R.id.content);
-        this.pastedBtnView = itemView.findViewById(R.id.paste_btn);
+        this.pasteBtnView = itemView.findViewById(R.id.btn_paste);
 
         this.textTypeView = itemView.findViewById(R.id.text_type);
         this.createdAtView = itemView.findViewById(R.id.created_at);
         this.usedCountView = itemView.findViewById(R.id.used_count);
     }
 
-    public void bind(InputFavorite data, boolean selected, Runnable onCheck) {
+    public void bind(InputFavorite data, boolean selected, Consumer<Boolean> onCheck, Runnable onPaste) {
         whenViewReady(this.checkboxView, (v) -> {
             v.setChecked(selected);
-            v.setOnClickListener((vv) -> onCheck.run());
+            v.setOnClickListener((vv) -> onCheck.accept(v.isChecked()));
         });
-        whenViewReady(this.pastedBtnView, (v) -> {
-            //
+        whenViewReady(this.pasteBtnView, (v) -> {
+            v.setOnClickListener((vv) -> onPaste.run());
         });
 
         whenViewReady(this.contentView, (v) -> {

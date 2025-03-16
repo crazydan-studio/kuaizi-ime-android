@@ -24,12 +24,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link UserInputMsgType#SingleTap_Input} 消息数据
+ * {@link UserInputMsgType#SingleTap_Input} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-05
  */
-public class UserInputSingleTapMsgData extends UserInputMsgData {
+public class UserInputListInputMsgData extends UserInputMsgData {
     /** 在输入列表的开头位置 */
     public static final int POSITION_START_IN_INPUT_LIST = 0;
     /** 在输入列表的尾部位置 */
@@ -56,7 +56,7 @@ public class UserInputSingleTapMsgData extends UserInputMsgData {
      */
     public final int position;
 
-    public UserInputSingleTapMsgData(int positionInParent, int position) {
+    public UserInputListInputMsgData(int positionInParent, int position) {
         this.positionInParent = positionInParent;
         this.position = position;
     }

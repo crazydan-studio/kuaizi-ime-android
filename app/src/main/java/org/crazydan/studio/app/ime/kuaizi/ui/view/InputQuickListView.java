@@ -33,8 +33,8 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLin
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionSingleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputQuickListViewAdapter;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick.InputQuickViewData;
 
@@ -97,13 +97,13 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
         UserInputMsg msg = null;
         switch (item.type) {
             case input_completion: {
-                UserInputCompletionSingleTapMsgData msgData = new UserInputCompletionSingleTapMsgData(position);
+                UserInputCompletionMsgData msgData = new UserInputCompletionMsgData(position);
                 msg = UserInputMsg.build((b) -> b.type(SingleTap_InputCompletion).data(msgData));
                 break;
             }
             case input_clip: {
-                UserInputClipSingleTapMsgData msgData = new UserInputClipSingleTapMsgData(position,
-                                                                                          (InputClip) item.data);
+                UserInputClipMsgData msgData = new UserInputClipMsgData(position,
+                                                                        (InputClip) item.data);
                 msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
                 break;
             }

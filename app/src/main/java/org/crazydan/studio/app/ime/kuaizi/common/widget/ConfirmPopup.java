@@ -137,10 +137,10 @@ public class ConfirmPopup {
         TextView messageView = contentView.findViewById(R.id.message);
         messageView.setText(this.message);
 
-        TextView negativeBtnView = contentView.findViewById(R.id.negative_btn);
+        TextView negativeBtnView = contentView.findViewById(R.id.btn_negative);
         initButtonView(negativeBtnView, this.negativeBtn);
 
-        TextView positiveBtnView = contentView.findViewById(R.id.positive_btn);
+        TextView positiveBtnView = contentView.findViewById(R.id.btn_positive);
         initButtonView(positiveBtnView, this.positiveBtn);
 
         return contentView;

@@ -87,9 +87,9 @@ public class Guide extends FollowSystemThemeActivity {
 
         updateSwitcher();
 
-        TextView textVersion = findViewById(R.id.app_version);
-        textVersion.setText(ViewUtils.parseHtml("<a href='#'>v%s</a>", getAppVersion()));
-        textVersion.setOnClickListener(this::showChangelog);
+        TextView btnShowChangelog = findViewById(R.id.btn_show_changelog);
+        btnShowChangelog.setText(ViewUtils.parseHtml("<a href='#'>v%s</a>", getAppVersion()));
+        btnShowChangelog.setOnClickListener(this::showChangelog);
 
         MaterialButton btnShowPreferences = findViewById(R.id.btn_guide_show_preferences);
         btnShowPreferences.setOnClickListener(this::showPreferences);
@@ -123,7 +123,7 @@ public class Guide extends FollowSystemThemeActivity {
     }
 
     private void updateSwitcher() {
-        SwitchCompat switcher = findViewById(R.id.switcher);
+        SwitchCompat switcher = findViewById(R.id.btn_switcher);
         switcher.setChecked(isImeEnabled() && isImeDefault());
 
         switcher.setOnClickListener(this::switchIme);

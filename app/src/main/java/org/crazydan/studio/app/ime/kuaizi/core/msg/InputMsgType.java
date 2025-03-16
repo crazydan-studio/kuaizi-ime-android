@@ -113,8 +113,8 @@ public enum InputMsgType {
 
     /** 已收藏输入已就绪 */
     InputFavorite_Be_Ready,
-    /** 已收藏输入已应用 */
-    InputFavorite_Apply_Done,
+    /** 已收藏输入已粘贴 */
+    InputFavorite_Paste_Done,
     /** 已收藏输入已删除 */
     InputFavorite_Delete_Done,
     /** 已收藏输入已保存 */

@@ -19,23 +19,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerView;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewLinearLayoutManager;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleTapMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputFavoriteListViewAdapter;
 
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.DoubleTap_InputFavorite;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Paste_InputFavorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Select_InputFavorite;
 
 /**
@@ -45,19 +44,16 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @date 2025-03-13
  */
 public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAdapter, InputFavorite>
-        implements ViewGestureDetector.Listener {
+        implements InputFavoriteListViewAdapter.ItemListener {
     private UserInputMsgListener listener;
 
     public InputFavoriteListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        RecyclerViewGestureDetector<InputFavorite> gesture = new RecyclerViewGestureDetector<>(context, this);
-        gesture.addListener(this);
     }
 
     @Override
     protected InputFavoriteListViewAdapter createAdapter() {
-        return new InputFavoriteListViewAdapter(this::onItemSelected);
+        return new InputFavoriteListViewAdapter(this);
     }
 
     @Override
@@ -65,8 +61,20 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
         return new RecyclerViewLinearLayoutManager(context, true);
     }
 
-    public void update(List<InputFavorite> dataList) {
-        getAdapter().updateItems(dataList);
+    public boolean isEmpty() {
+        return getAdapter().getItemCount() == 0;
+    }
+
+    public List<Integer> getSelected() {
+        return getAdapter().getSelectedItems();
+    }
+
+    public void clear() {
+        getAdapter().updateItems(new ArrayList<>(), true);
+    }
+
+    public void update(List<InputFavorite> dataList, boolean reset) {
+        getAdapter().updateItems(dataList, reset);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -75,28 +83,22 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
         this.listener = listener;
     }
 
-    /** 向上传递 {@link UserInputMsg} 消息 */
+    // -------------------------------------------
+
     @Override
-    public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        if (type != ViewGestureDetector.GestureType.DoubleTap) {
-            return;
-        }
+    public void onItemCheck(int position, boolean checked) {
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Select_InputFavorite));
 
-        ViewHolder holder = findViewHolderUnder(data.at.x, data.at.y);
-        if (holder == null) {
-            return;
-        }
-
-        int position = holder.getAdapterPosition();
-        InputFavorite item = getAdapter().getItem(position);
-
-        UserInputFavoriteDoubleTapMsgData msgData = new UserInputFavoriteDoubleTapMsgData(position, item);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(DoubleTap_InputFavorite).data(msgData));
         this.listener.onMsg(msg);
     }
 
-    private void onItemSelected() {
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Select_InputFavorite));
+    @Override
+    public void onItemPaste(int position) {
+        InputFavorite favorite = getAdapter().getItem(position);
+
+        UserInputFavoriteMsgData data = new UserInputFavoriteMsgData(position, favorite);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Paste_InputFavorite).data(data));
+
         this.listener.onMsg(msg);
     }
 

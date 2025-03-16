@@ -19,26 +19,27 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.user;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
+import java.util.List;
+
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
 
 /**
- * {@link UserInputMsgType#SingleTap_Btn_Save_As_Favorite} 的消息数据
+ * {@link UserInputMsgType#SingleTap_Btn_Delete_Selected_InputFavorite} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-14
  */
-public class UserSaveAsFavoriteBtnSingleTapMsgData extends UserInputMsgData {
-    /** 与消息相关的 {@link InputClip} */
-    public final InputClip clip;
+public class UserInputDeleteMsgData extends UserInputMsgData {
+    /** 与消息相关的已选中数据的唯一标识或位置信息 */
+    public final List<Integer> selected;
 
-    public UserSaveAsFavoriteBtnSingleTapMsgData(InputClip clip) {
-        this.clip = clip;
+    public UserInputDeleteMsgData(List<Integer> selected) {
+        this.selected = selected;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName();
+        return getClass().getSimpleName() + '{' + "selected=" + this.selected.size() + '}';
     }
 }

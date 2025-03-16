@@ -18,13 +18,12 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="?attr/keyboard_bg_color">
+        android:orientation="vertical">
 
     <View
-            android:id="@+id/top_border"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="?attr/keyboard_border_color" />
@@ -35,9 +34,22 @@
             android:layout_width="0dp"
             android:layout_height="0dp" />
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+        <!-- 各个面板都需单独设置背景，以避免淡出过程中透明背景提前显示底层视图，
+        并且其视图边界以主面板为准 -->
+        <org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView
+                android:id="@+id/favoriteboard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                android:background="?attr/keyboard_bg_color"
+                app:layout_constraintTop_toTopOf="@+id/mainboard"
+                app:layout_constraintStart_toStartOf="@+id/mainboard"
+                app:layout_constraintEnd_toEndOf="@+id/mainboard"
+                app:layout_constraintBottom_toBottomOf="@+id/mainboard" />
 
         <!-- Note: 在切换到其他面板时，主面板需设置为 invisible，
         确保其依然占有空间，从而方便其他面板在该空间内布局 -->
@@ -45,12 +57,11 @@
                 android:id="@+id/mainboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="visible" />
-
-        <org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView
-                android:id="@+id/favoriteboard"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
-    </FrameLayout>
+                android:visibility="visible"
+                android:background="?attr/keyboard_bg_color"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
