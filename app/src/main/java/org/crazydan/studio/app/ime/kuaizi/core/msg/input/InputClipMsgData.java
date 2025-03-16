@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
@@ -32,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
  * @date 2025-03-12
  */
 public class InputClipMsgData extends InputMsgData {
-    public final SourceType source;
+    public final ClipSourceType source;
     /** 当前处理的剪贴数据 */
     public final InputClip clip;
 
@@ -40,15 +41,24 @@ public class InputClipMsgData extends InputMsgData {
         this(null, clip);
     }
 
-    public InputClipMsgData(SourceType source, InputClip clip) {
+    public InputClipMsgData(ClipSourceType source, InputClip clip) {
         this.source = source;
         this.clip = clip;
     }
 
-    public enum SourceType {
-        /** 因粘贴而产生 */
-        paste,
-        /** 因复制/剪切而产生 */
-        copy_cut,
+    public enum ClipSourceType {
+        /** 来自粘贴操作 */
+        paste(R.string.confirm_whether_save_pasted_content),
+        /** 来自复制/剪贴 */
+        copy_cut(R.string.confirm_whether_save_copied_content),
+        /** 来自用户输入 */
+        user_input(R.string.confirm_whether_save_input_content),
+        ;
+
+        public final int confirmResId;
+
+        ClipSourceType(int confirmResId) {
+            this.confirmResId = confirmResId;
+        }
     }
 }

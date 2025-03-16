@@ -30,19 +30,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType;
  * @date 2025-03-14
  */
 public class UserSaveAsFavoriteBtnSingleTapMsgData extends UserInputMsgData {
-    /** 与消息相关的 输入文本 */
-    public final CharSequence text;
     /** 与消息相关的 {@link InputClip} */
     public final InputClip clip;
 
-    public UserSaveAsFavoriteBtnSingleTapMsgData(CharSequence text) {
-        this.clip = null;
-        this.text = text;
-    }
-
     public UserSaveAsFavoriteBtnSingleTapMsgData(InputClip clip) {
         this.clip = clip;
-        this.text = null;
     }
 
     @Override

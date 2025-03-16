@@ -291,7 +291,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 .debug("Message Data: %s", () -> new Object[] { msg.data() });
 
         switch (msg.type) {
-            // 直接处理不需要由输入面板转发的消息
+            // 直接处理不需要转发的消息
             case SingleTap_Btn_Close_Keyboard: {
                 fire_InputMsg(Keyboard_Close_Doing);
                 break;
@@ -466,11 +466,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         switch (msg.type) {
             case InputList_Commit_Doing: {
-                InputListCommitMsgData d = msg.data();
+                InputListCommitMsgData data = msg.data();
                 // 仅换行和空格的输入不影响剪贴数据的处理
-                if ("\n".contentEquals(d.text) || " ".contentEquals(d.text)) {
+                if ("\n".contentEquals(data.text) || " ".contentEquals(data.text)) {
                     break;
                 }
+                // 仅非替换且可撤回的输入才可被收藏
+                if (data.canBeRevoked && CollectionUtils.isEmpty(data.replacements)) {
+                    asyncSaveTextToFavorite(data.text);
+                }
+                break;
             }
             case InputList_PairSymbol_Commit_Doing:
             case InputChars_Input_Doing: {
@@ -479,13 +484,14 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 break;
             }
             case InputClip_Create_Done: {
+                // Note: 对相同的剪贴数据只会提示一次
                 startAutoDiscardClips();
                 break;
             }
             case InputClip_Apply_Done: {
                 InputClipMsgData data = msg.data();
-                // Note: 在发送已使用消息之前，剪贴数据已被废弃，这里无需再做处理
-                this.config.set(ConfigKey.used_input_clip_code, data.clip.code);
+                // Note: 在消息发送前，剪贴数据已被废弃，这里无需再做处理
+                disableClips(data.clip.code);
                 break;
             }
         }
@@ -645,13 +651,17 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         c.accept(context);
     }
 
+    private void disableClips(String clipCode) {
+        this.config.set(ConfigKey.used_input_clip_code, clipCode);
+    }
+
     private void discardClips() {
         if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
             return;
         }
 
         String clipCode = this.favoriteboard.discardClips();
-        this.config.set(ConfigKey.used_input_clip_code, clipCode);
+        disableClips(clipCode);
 
         fire_InputMsg(InputClip_Discard_Done);
     }
@@ -667,6 +677,20 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         if (clipTipsTimeout > 0) {
             this.task.sendEmptyMessageDelayed(TaskHandler.MSG_CLIPS_DISCARD, clipTipsTimeout);
         }
+    }
+
+    private void asyncSaveTextToFavorite(CharSequence text) {
+        this.task.removeMessages(TaskHandler.MSG_FAVORITE_TEXT);
+
+        Message msg = new Message();
+        msg.what = TaskHandler.MSG_FAVORITE_TEXT;
+        msg.obj = text;
+
+        this.task.sendMessage(msg);
+    }
+
+    private void saveTextToFavorite(CharSequence text) {
+        withFavoriteboardContext((context) -> this.favoriteboard.trySave(context, text.toString()));
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================
@@ -712,6 +736,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private static class TaskHandler extends Handler {
         private static final int MSG_START = 0;
         private static final int MSG_CLIPS_DISCARD = 1;
+        private static final int MSG_FAVORITE_TEXT = 2;
 
         private final IMEditor editor;
 
@@ -729,6 +754,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         public void stop() {
             removeMessages(MSG_START);
             removeMessages(MSG_CLIPS_DISCARD);
+            removeMessages(MSG_FAVORITE_TEXT);
         }
 
         @Override
@@ -740,6 +766,11 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 }
                 case MSG_CLIPS_DISCARD: {
                     this.editor.discardClips();
+                    break;
+                }
+                case MSG_FAVORITE_TEXT: {
+                    CharSequence text = (CharSequence) msg.obj;
+                    this.editor.saveTextToFavorite(text);
                     break;
                 }
             }

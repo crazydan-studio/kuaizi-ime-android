@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.common.widget;
 
+import org.crazydan.studio.app.ime.kuaizi.R;
+
 /**
  * 编辑器的编辑动作
  *
@@ -27,31 +29,41 @@ package org.crazydan.studio.app.ime.kuaizi.common.widget;
  */
 public enum EditorAction {
     /** 回删 */
-    backspace("回删"),
+    backspace("回删", 0),
     /** 全选 */
-    select_all("全选"),
+    select_all("全选", R.string.tip_editor_action_select_all),
     /** 复制 */
-    copy("复制"),
+    copy("复制", R.string.tip_editor_action_copy),
     /** 粘贴 */
-    paste("粘贴"),
+    paste("粘贴", R.string.tip_editor_action_paste),
     /** 剪切 */
-    cut("剪切"),
+    cut("剪切", R.string.tip_editor_action_cut),
     /** 撤销 */
-    undo("撤销"),
+    undo("撤销", R.string.tip_editor_action_undo),
     /** 重做 */
-    redo("重做"),
+    redo("重做", R.string.tip_editor_action_redo),
+    /**
+     * 收藏
+     * <p/>
+     * 注意，对选中内容做收藏，需要先复制再监听剪贴板，最后还原剪贴板，过程比较复杂，
+     * 可以通过复制操作触发收藏的方式添加收藏
+     */
+    favorite("收藏", R.string.tip_editor_action_favorite),
     ;
 
     public final String label;
+    public final int tipResId;
 
-    EditorAction(String label) {
+    EditorAction(String label, int tipResId) {
         this.label = label;
+        this.tipResId = tipResId;
     }
 
     /** 是否为修改编辑器内容的操作 */
     public static boolean hasEditorEffect(EditorAction action) {
         switch (action) {
             case select_all:
+            case favorite:
             case copy:
                 return false;
         }

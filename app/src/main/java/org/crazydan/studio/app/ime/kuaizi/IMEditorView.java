@@ -29,7 +29,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
@@ -47,7 +46,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveAsFavoriteBtnSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
@@ -198,34 +196,12 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
             }
-            case InputList_Commit_Doing: {
-                InputListCommitMsgData data = msg.data();
-                // 是否收藏已输入内容：仅针对非替换且可撤回的输入
-                if (!data.canBeRevoked || !CollectionUtils.isEmpty(data.replacements)) {
-                    break;
-                }
-
-                Toast.with(this)
-                     .setText(R.string.tip_whether_save_commited_content)
-                     .setDuration(5000)
-                     .setAction(R.string.btn_save_as_favorite, (v) -> saveTextToFavorite(data.text))
-                     .show();
+            case InputFavorite_Be_Ready: {
+                activeBoard(BoardType.favorite);
                 break;
             }
             case InputClip_CanBe_Favorite: {
-                InputClipMsgData data = msg.data();
-
-                Toast.with(this)
-                     .setText(data.source == InputClipMsgData.SourceType.copy_cut
-                              ? R.string.tip_whether_save_copied_content
-                              : R.string.tip_whether_save_pasted_content)
-                     .setDuration(5000)
-                     .setAction(R.string.btn_save_as_favorite, (v) -> saveClipToFavorite(data.clip))
-                     .show();
-                break;
-            }
-            case Favoriteboard_Start_Done: {
-                activeBoard(BoardType.favorite);
+                on_InputClip_CanBe_Favorite_Msg(msg.data());
                 break;
             }
             default: {
@@ -261,11 +237,12 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         this.audioPlayer.play(data.audioType.resId);
     }
 
-    private void saveTextToFavorite(CharSequence text) {
-        UserInputMsgData data = new UserSaveAsFavoriteBtnSingleTapMsgData(text);
-        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
-
-        onMsg(msg);
+    private void on_InputClip_CanBe_Favorite_Msg(InputClipMsgData data) {
+        Toast.with(this)
+             .setText(data.source.confirmResId)
+             .setDuration(5000)
+             .setAction(R.string.btn_save_as_favorite, (v) -> saveClipToFavorite(data.clip))
+             .show();
     }
 
     private void saveClipToFavorite(InputClip clip) {

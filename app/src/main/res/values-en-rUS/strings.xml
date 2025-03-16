@@ -52,6 +52,7 @@
     <string name="btn_enable_later">Later</string>
     <string name="btn_confirm">OK</string>
     <string name="btn_cancel">Cancel</string>
+    <string name="btn_paste">Paste</string>
     <string name="btn_feedback_open_link_without_extra_info">Continue, but without extra information</string>
     <string name="btn_feedback_open_link_with_extra_info">Continue, and with extra information</string>
     <string name="btn_guide_confirm_alpha_user_agreement">OK, I Agree the Agreement</string>
@@ -171,14 +172,17 @@
     <string name="title_clip_past_email">Past Copied Email</string>
 
     <string name="tip_editor_action_select_all">All Selected</string>
+    <string name="tip_editor_action_copy">Copied</string>
+    <string name="tip_editor_action_cut">Cut</string>
     <string name="tip_editor_action_undo">Undo</string>
     <string name="tip_editor_action_redo">Redo</string>
     <string name="tip_editor_action_paste">Pasted</string>
-    <string name="tip_whether_save_pasted_content">Save the pasted content?</string>
-    <string name="tip_whether_save_copied_content">Save the copied content?</string>
-    <string name="tip_whether_save_commited_content">Save the inputting content?</string>
-    <string name="tip_whether_delete_selected">Delete the selected items?</string>
-    <string name="tip_whether_clear_all">Clear all items?</string>
+    <string name="tip_editor_action_favorite">Saved</string>
+    <string name="confirm_whether_save_pasted_content">Save the pasted content?</string>
+    <string name="confirm_whether_save_copied_content">Save the copied content?</string>
+    <string name="confirm_whether_save_input_content">Save the inputting content?</string>
+    <string name="confirm_whether_delete_selected">Delete the selected items?</string>
+    <string name="confirm_whether_clear_all">Clear all items?</string>
 
     <string name="label_text_type">Text Type: %1$s</string>
     <string name="label_created_at">Created At: %1$s</string>

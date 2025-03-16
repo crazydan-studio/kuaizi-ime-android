@@ -51,8 +51,6 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
     public InputFavoriteListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        setItemAnimator(null);
-
         RecyclerViewGestureDetector<InputFavorite> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
     }
@@ -65,6 +63,10 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
     @Override
     protected LayoutManager createLayoutManager(Context context) {
         return new RecyclerViewLinearLayoutManager(context, true);
+    }
+
+    public void update(List<InputFavorite> dataList) {
+        getAdapter().updateItems(dataList);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -99,8 +101,4 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
     }
 
     // =============================== End: 消息处理 ===================================
-
-    public void update(List<InputFavorite> dataList) {
-        getAdapter().updateItems(dataList);
-    }
 }

@@ -111,8 +111,8 @@ public enum InputMsgType {
     /** 剪贴文本提交中：将文本写入到 目标编辑器 中 */
     InputClip_Text_Commit_Doing,
 
-    /** 收藏面板已启动 */
-    Favoriteboard_Start_Done,
+    /** 已收藏输入已就绪 */
+    InputFavorite_Be_Ready,
     /** 已收藏输入已应用 */
     InputFavorite_Apply_Done,
     /** 已收藏输入已删除 */

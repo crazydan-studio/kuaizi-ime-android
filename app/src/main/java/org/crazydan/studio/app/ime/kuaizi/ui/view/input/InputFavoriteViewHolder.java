@@ -47,6 +47,7 @@ import static android.text.format.DateUtils.FORMAT_SHOW_YEAR;
 public class InputFavoriteViewHolder extends RecyclerViewHolder {
     private final CheckBox checkboxView;
     private final TextView contentView;
+    private final TextView pastedBtnView;
 
     private final TextView textTypeView;
     private final TextView createdAtView;
@@ -57,6 +58,7 @@ public class InputFavoriteViewHolder extends RecyclerViewHolder {
 
         this.checkboxView = itemView.findViewById(R.id.checkbox);
         this.contentView = itemView.findViewById(R.id.content);
+        this.pastedBtnView = itemView.findViewById(R.id.paste_btn);
 
         this.textTypeView = itemView.findViewById(R.id.text_type);
         this.createdAtView = itemView.findViewById(R.id.created_at);
@@ -67,6 +69,9 @@ public class InputFavoriteViewHolder extends RecyclerViewHolder {
         whenViewReady(this.checkboxView, (v) -> {
             v.setChecked(selected);
             v.setOnClickListener((vv) -> onCheck.run());
+        });
+        whenViewReady(this.pastedBtnView, (v) -> {
+            //
         });
 
         whenViewReady(this.contentView, (v) -> {

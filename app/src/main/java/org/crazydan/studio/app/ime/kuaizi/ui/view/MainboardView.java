@@ -38,6 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -190,8 +191,13 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
                 showInputKeyPopupWindow(null, false);
                 break;
             }
+            case InputFavorite_Save_Done: {
+                showTipPopupWindow(EditorAction.favorite.tipResId);
+                break;
+            }
             case Editor_Edit_Doing: {
-                on_Editor_Edit_Doing(msg.data());
+                EditorEditMsgData data = msg.data();
+                on_Editor_Edit_Doing_Msg(data.action);
                 break;
             }
             default: {
@@ -200,32 +206,17 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         }
     }
 
-    private void on_Editor_Edit_Doing(EditorEditMsgData data) {
-        Integer resId = null;
-        // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
-        // Note: 回删已作气泡提示，复制、剪切也会提示收藏，无需再作提示
-        switch (data.action) {
-            case select_all: {
-                resId = R.string.tip_editor_action_select_all;
-                break;
-            }
-            case redo: {
-                resId = R.string.tip_editor_action_redo;
-                break;
-            }
-            case undo: {
-                resId = R.string.tip_editor_action_undo;
-                break;
-            }
+    private void on_Editor_Edit_Doing_Msg(EditorAction action) {
+        switch (action) {
+            case select_all:
+            case redo:
+            case undo:
             case paste: {
-                resId = R.string.tip_editor_action_paste;
+                // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
+                // Note: 回删已作气泡提示，复制、剪切也会提示收藏，无需再作提示
+                showTipPopupWindow(action.tipResId);
                 break;
             }
-        }
-
-        if (resId != null) {
-            String tip = getContext().getString(resId);
-            showInputKeyPopupWindow(tip, true);
         }
     }
 
@@ -276,6 +267,12 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         inputQuickListView.update(dataList);
 
         showPopupWindow(window);
+    }
+
+    private void showTipPopupWindow(int resId) {
+        String tips = resId != 0 ? getContext().getString(resId) : null;
+
+        showInputKeyPopupWindow(tips, true);
     }
 
     private void showInputKeyPopupWindow(String key, boolean hideDelayed) {

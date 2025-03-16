@@ -101,5 +101,11 @@
                         android:alpha=".3" />
             </LinearLayout>
         </LinearLayout>
+
+        <TextView
+                android:id="@+id/paste_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_paste" />
     </LinearLayout>
 </LinearLayout>

@@ -52,6 +52,7 @@
     <string name="btn_enable_later">稍后再说</string>
     <string name="btn_confirm">确认</string>
     <string name="btn_cancel">取消</string>
+    <string name="btn_paste">粘贴</string>
     <string name="btn_feedback_open_link_without_extra_info">继续反馈，但不附带系统和应用信息</string>
     <string name="btn_feedback_open_link_with_extra_info">继续反馈，并附带系统和应用信息</string>
     <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议</string>
@@ -154,14 +155,17 @@
     <string name="title_clip_past_email">粘贴已复制的邮箱</string>
 
     <string name="tip_editor_action_select_all">已全选</string>
+    <string name="tip_editor_action_copy">已复制</string>
+    <string name="tip_editor_action_cut">已剪切</string>
     <string name="tip_editor_action_undo">已撤销</string>
     <string name="tip_editor_action_redo">已重做</string>
     <string name="tip_editor_action_paste">已粘贴</string>
-    <string name="tip_whether_save_pasted_content">是否收藏已粘贴内容？</string>
-    <string name="tip_whether_save_copied_content">是否收藏已复制内容？</string>
-    <string name="tip_whether_save_commited_content">是否收藏已输入内容？</string>
-    <string name="tip_whether_delete_selected">是否删除已选中项？</string>
-    <string name="tip_whether_clear_all">是否清空全部数据？</string>
+    <string name="tip_editor_action_favorite">已收藏</string>
+    <string name="confirm_whether_save_pasted_content">是否收藏已粘贴内容？</string>
+    <string name="confirm_whether_save_copied_content">是否收藏已复制内容？</string>
+    <string name="confirm_whether_save_input_content">是否收藏已输入内容？</string>
+    <string name="confirm_whether_delete_selected">是否删除已选中项？</string>
+    <string name="confirm_whether_clear_all">是否清空全部数据？</string>
 
     <string name="label_text_type">文本类型：%1$s</string>
     <string name="label_created_at">创建日期：%1$s</string>

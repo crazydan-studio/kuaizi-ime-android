@@ -132,7 +132,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
         switch (msg.type) {
             case InputFavorite_Apply_Done:
             case InputFavorite_Delete_Done:
-            case Favoriteboard_Start_Done: {
+            case InputFavorite_Be_Ready: {
                 InputFavoriteMsgData data = msg.data();
                 on_InputFavorite_Update_Done_Msg(data);
                 break;
@@ -175,7 +175,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
 
         this.deleteSelectedPopup = //
                 ConfirmPopup.with(this)
-                            .setMessage(R.string.tip_whether_delete_selected)
+                            .setMessage(R.string.confirm_whether_delete_selected)
                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                 UserDeleteSelectedBtnSingleTapMsgData data = new UserDeleteSelectedBtnSingleTapMsgData(
                                         selected);
@@ -191,7 +191,7 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
     private void onClearAll(View v) {
         this.clearAllPopup = //
                 ConfirmPopup.with(this)
-                            .setMessage(R.string.tip_whether_clear_all)
+                            .setMessage(R.string.confirm_whether_clear_all)
                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                 UserInputMsg msg = UserInputMsg.build((b) -> b.type(
                                         SingleTap_Btn_Clear_All_InputFavorite));

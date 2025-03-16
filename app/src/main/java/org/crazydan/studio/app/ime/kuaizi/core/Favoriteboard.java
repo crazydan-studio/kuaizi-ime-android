@@ -39,6 +39,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputTextType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
@@ -50,11 +51,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteDoubleT
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSaveAsFavoriteBtnSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Favoriteboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_CanBe_Favorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Be_Ready;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Delete_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Save_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
@@ -120,7 +121,7 @@ public class Favoriteboard {
         } else {
             this.latestUsedClipCode = context.usedClipCode;
 
-            updateClips(context, false);
+            updateClips(context);
         }
 
         bindClipboard(context);
@@ -134,10 +135,10 @@ public class Favoriteboard {
         unbindClipboard();
 
         this.clipChangedListener = () -> {
-            // Note: 剪贴板监听仅输入法处于前台时才会触发，因此，复制/剪切均视由输入法触发，
+            // Note: 剪贴板监听仅输入法处于前台时才会触发，因此，复制/剪切均将由输入法触发，
             // 故而，不提示可粘贴
             InputClip clip = readClip(this.clipboard);
-            trySave(context, clip, true);
+            trySave(context, clip, InputClipMsgData.ClipSourceType.copy_cut);
         };
         this.clipboard.addPrimaryClipChangedListener(this.clipChangedListener);
     }
@@ -211,7 +212,7 @@ public class Favoriteboard {
         InputClipMsgData msgData = new InputClipMsgData(data.clip);
         context.fireInputMsg(InputClip_Apply_Done, msgData);
 
-        trySave(context, data.clip, false);
+        trySave(context, data.clip, InputClipMsgData.ClipSourceType.paste);
     }
 
     private void on_DoubleTap_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
@@ -225,19 +226,13 @@ public class Favoriteboard {
         // TODO 从数据库中查询已收藏，按使用次数、最近使用、创建时间降序排序
 
         InputFavoriteMsgData msgData = new InputFavoriteMsgData(this.favorites);
-        context.fireInputMsg(Favoriteboard_Start_Done, msgData);
+        context.fireInputMsg(InputFavorite_Be_Ready, msgData);
     }
 
     private void on_SingleTap_Btn_Save_As_Favorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserSaveAsFavoriteBtnSingleTapMsgData data = msg.data();
 
         InputClip clip = data.clip;
-        if (clip == null && data.text != null) {
-            clip = InputClip.build((b) -> b.text(data.text.toString()));
-            // 需对原始文本做类型检测
-            clip = deeplyCollectClips(clip).get(0);
-        }
-
         InputFavorite favorite = InputFavorite.from(clip);
 
         // TODO 保存已收藏到数据库
@@ -278,23 +273,28 @@ public class Favoriteboard {
         context.fireInputMsg(InputClip_Text_Commit_Doing, msgData);
     }
 
-    private void trySave(FavoriteboardContext context, InputClip clip, boolean fromClipboard) {
+    private void trySave(FavoriteboardContext context, InputClip clip, InputClipMsgData.ClipSourceType source) {
         if (!canBeSave(clip)) {
             return;
         }
 
-        InputClipMsgData.SourceType source = InputClipMsgData.SourceType.paste;
-        // Note: 来自剪贴板的数据，需要做类型检查
-        if (fromClipboard) {
-            source = InputClipMsgData.SourceType.copy_cut;
+        // Note: 对于未确定类型或来自复制/剪切的数据，需要做类型检测
+        if (clip.type == null || source == InputClipMsgData.ClipSourceType.copy_cut) {
             clip = deeplyCollectClips(clip).get(0);
         }
 
-        InputClipMsgData data = new InputClipMsgData(source, clip);
-        context.fireInputMsg(InputClip_CanBe_Favorite, data);
+        InputClipMsgData msgData = new InputClipMsgData(source, clip);
+        context.fireInputMsg(InputClip_CanBe_Favorite, msgData);
     }
 
     // =============================== End: 消息处理 ===================================
+
+    /** 尝试收藏用户输入的文本 <code>text</code>，并发送 {@link InputMsgType#InputClip_CanBe_Favorite} 消息 */
+    public void trySave(FavoriteboardContext context, String text) {
+        InputClip clip = InputClip.build((b) -> b.text(text));
+
+        trySave(context, clip, InputClipMsgData.ClipSourceType.user_input);
+    }
 
     /**
      * 检查指定的 {@link InputClip} 是否可被收藏
@@ -304,17 +304,10 @@ public class Favoriteboard {
      * 只有可收藏的 {@link InputClip} 才弹出收藏提示
      */
     public boolean canBeSave(InputClip clip) {
-        return clip != null && canBeSave(clip.text);
-    }
+        if (clip == null || CharUtils.isBlank(clip.text)) {
+            return false;
+        }
 
-    /**
-     * 检查指定的文本是否可被收藏
-     * <p/>
-     * 已收藏的文本将返回 <code>false</code>
-     * <p/>
-     * 只有可收藏的文本才弹出收藏提示
-     */
-    public boolean canBeSave(String text) {
         return true;
     }
 
@@ -346,7 +339,7 @@ public class Favoriteboard {
     }
 
     /** 更新剪贴数据，用于剪贴板发生变化时调用 */
-    public void updateClips(FavoriteboardContext context, boolean force) {
+    private void updateClips(FavoriteboardContext context) {
         InputClip primary = readClip(this.clipboard);
         if (primary == null) {
             discardClips();
@@ -354,7 +347,7 @@ public class Favoriteboard {
         }
 
         // 若剪贴板数据已使用，则不再处理
-        if (!force && primary.code.equals(this.latestUsedClipCode)) {
+        if (primary.code.equals(this.latestUsedClipCode)) {
             discardClips();
             return;
         }
@@ -363,13 +356,18 @@ public class Favoriteboard {
 
         this.latestClips = Collections.unmodifiableList(clips);
 
-        context.fireInputMsg(InputClip_Create_Done);
+        InputClipMsgData msgData = new InputClipMsgData(primary);
+        context.fireInputMsg(InputClip_Create_Done, msgData);
     }
 
     // =============================== Start: 内部方法 ===================================
 
     /** 从指定的剪贴数据中掘取不同{@link InputTextType 类型}的数据 */
     private List<InputClip> deeplyCollectClips(InputClip primary) {
+        if (primary.type == null) {
+            primary = primary.copy((b) -> b.type(InputTextType.text));
+        }
+
         List<InputClip> clips = new ArrayList<>();
         // Note: 确保原始内容在第一的位置
         clips.add(primary);
@@ -412,9 +410,11 @@ public class Favoriteboard {
 
             for (int i = 0; i < data.getItemCount(); i++) {
                 ClipData.Item item = data.getItemAt(i);
+
                 if (item.getText() != null) {
                     text = item.getText().toString();
-                } else if (item.getHtmlText() != null) {
+                }
+                if (item.getHtmlText() != null) {
                     html = item.getHtmlText();
                 }
             }
