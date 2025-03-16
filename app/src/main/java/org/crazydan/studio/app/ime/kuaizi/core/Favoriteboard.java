@@ -116,15 +116,14 @@ public class Favoriteboard {
 
     public void start(FavoriteboardContext context) {
         if (context.clipsDisabled) {
-            this.latestUsedClipCode = null;
             this.latestClips = null;
+            this.latestUsedClipCode = null;
         } else {
             this.latestUsedClipCode = context.usedClipCode;
 
             updateClips(context);
+            bindClipboard(context);
         }
-
-        bindClipboard(context);
     }
 
     public void close(FavoriteboardContext context) {
