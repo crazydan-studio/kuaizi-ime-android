@@ -72,9 +72,11 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserEditorActionSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Discard_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Close_Done;
@@ -294,6 +296,13 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             // 直接处理不需要转发的消息
             case SingleTap_Btn_Close_Keyboard: {
                 fire_InputMsg(Keyboard_Close_Doing);
+                break;
+            }
+            case SingleTap_Btn_Editor_Action: {
+                UserEditorActionSingleTapMsgData data = msg.data();
+                InputMsgData msgData = new EditorEditMsgData(data.action);
+
+                onMsg(InputMsg.build((b) -> b.type(Editor_Edit_Doing).data(msgData)));
                 break;
             }
             default: {

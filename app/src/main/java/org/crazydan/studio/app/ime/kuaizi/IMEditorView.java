@@ -72,7 +72,6 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
     private UserMsgListener listener;
 
     private Animation enterAnim;
-    private Animation exitAnim;
 
     private BoardType activeBoard = BoardType.main;
     private Map<BoardType, View> boards;
@@ -119,15 +118,13 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
         ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
 
-        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation, android.R.attr.windowExitAnimation };
+        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
         int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
                                                      R.style.Theme_Kuaizi_PopupWindow_Animation,
                                                      animAttrs);
         int enterAnimResId = animResIds[0];
-        int exitAnimResId = animResIds[1];
 
         this.enterAnim = AnimationUtils.loadAnimation(getContext(), enterAnimResId);
-        this.exitAnim = AnimationUtils.loadAnimation(getContext(), exitAnimResId);
 
         MainboardView mainboardView = findViewById(R.id.mainboard);
         mainboardView.setConfig(this.config);
@@ -312,7 +309,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
 
         activeView.startAnimation(enterAnim);
         // Note: 只有已显示的视图才能应用动画
-        activeView.setVisibility(View.VISIBLE);
+        ViewUtils.show(activeView);
     }
 
     private void hideView(BoardType type, View view) {
@@ -331,9 +328,7 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
             ((ViewClosable) view).close();
         }
         // 延迟隐藏，以便于给足视图 close 的时间，避免再次显示时还留有未复位的子视图
-        post(() -> {
-            view.setVisibility(View.GONE);
-        });
+        post(() -> ViewUtils.hide(view));
     }
 
     private enum BoardType {

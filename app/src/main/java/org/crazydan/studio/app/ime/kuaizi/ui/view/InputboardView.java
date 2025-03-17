@@ -19,15 +19,22 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
@@ -36,10 +43,12 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserEditorActionSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clean_InputList;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Keyboard;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Editor_Action;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Open_Favoriteboard;
 
 /**
@@ -53,7 +62,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
 public class InputboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
     private final InputListView inputListView;
 
-    private final BtnTools tools = new BtnTools();
+    private final BtnTools tools;
 
     private Config config;
     private UserMsgListener listener;
@@ -65,11 +74,20 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
         inflate(context, R.layout.ime_board_input_view, this);
 
+        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
+        int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
+                                                     R.style.Theme_Kuaizi_PopupWindow_Animation,
+                                                     animAttrs);
+        int enterAnimResId = animResIds[0];
+
+        Animation enterAnim = AnimationUtils.loadAnimation(getContext(), enterAnimResId);
+        this.tools = new BtnTools(enterAnim);
+
         this.inputListView = findViewById(R.id.input_list);
         this.inputListView.setListener(this);
 
-        this.tools.toolbar = new BtnGroup(this, R.id.toolbar);
-        this.tools.inputbar = new BtnGroup(this, R.id.inputbar);
+        this.tools.addGroup(BtnGroupType.inputbar, findViewById(R.id.inputbar));
+        this.tools.addGroup(BtnGroupType.toolbar, findViewById(R.id.toolbar));
 
         this.tools.showToolbar = new Btn(this, R.id.btn_show_toolbar, this::onShowToolbar);
         this.tools.hideToolbar = new Btn(this, R.id.btn_hide_toolbar, this::onHideToolbar);
@@ -77,7 +95,12 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         this.tools.settings = new Btn(this, R.id.btn_open_settings, this::onShowPreferences);
         this.tools.favoriteboard = new Btn(this, R.id.btn_open_favoriteboard, this::onOpenFavoriteboard);
         this.tools.switchIme = new Btn(this, R.id.btn_switch_ime, this::onSwitchIme);
-        this.tools.closeKeyboard = new Btn(this, R.id.tool_close_keyboard, this::onCloseKeyboard);
+        this.tools.closeKeyboard = new Btn(this, R.id.btn_close_keyboard, this::onCloseKeyboard);
+
+        this.tools.editorCopy = new Btn(this, R.id.btn_editor_copy, this::onEditorCopy);
+        this.tools.editorPaste = new Btn(this, R.id.btn_editor_paste, this::onEditorPaste);
+        this.tools.editorCut = new Btn(this, R.id.btn_editor_cut, this::onEditorCut);
+        this.tools.editorSelectAll = new Btn(this, R.id.btn_editor_select_all, this::onEditorSelectAll);
 
         this.tools.cleanInputList = new Btn(this, R.id.btn_clean_input_list, this::onCleanInputList);
         this.tools.cancelCleanInputList = new Btn(this, R.id.btn_cancel_clean_input_list, this::onCancelCleanInputList);
@@ -112,6 +135,17 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
     }
 
     private void handleMsg(InputMsg msg) {
+        switch (msg.type) {
+            // 忽略不更改输入面板状态的消息
+            case InputFavorite_Save_Done:
+            case InputClip_CanBe_Favorite:
+            case Editor_Cursor_Move_Doing:
+            case Editor_Range_Select_Doing:
+            case Editor_Edit_Doing: {
+                return;
+            }
+        }
+
         if (msg.inputList.frozen) {
             this.state = new State(State.Type.Input_Freeze_Doing);
         } else if (!msg.inputList.empty) {
@@ -136,35 +170,35 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
         switch (this.state.type) {
             case Init: {
-                this.tools.toolbar.shown = true;
+                this.tools.activeGroup(BtnGroupType.toolbar);
 
-                this.tools.settings.shown = true;
+                this.tools.switchIme.shown = true;
                 this.tools.closeKeyboard.shown = true;
                 break;
             }
             case Input_Freeze_Doing: {
-                this.tools.inputbar.shown = true;
+                this.tools.activeGroup(BtnGroupType.inputbar);
 
-                this.tools.settings.shown = true;
+                this.tools.switchIme.shown = true;
                 this.tools.closeKeyboard.shown = true;
                 break;
             }
             case Input_Doing: {
-                this.tools.inputbar.shown = true;
+                this.tools.activeGroup(BtnGroupType.inputbar);
 
                 this.tools.showToolbar.shown = true;
                 this.tools.cleanInputList.shown = true;
                 break;
             }
             case Input_Cleaned_Cancel_Waiting: {
-                this.tools.inputbar.shown = true;
+                this.tools.activeGroup(BtnGroupType.inputbar);
 
                 this.tools.showToolbar.shown = true;
                 this.tools.cancelCleanInputList.shown = true;
                 break;
             }
             case Toolbar_Show_Doing: {
-                this.tools.toolbar.shown = true;
+                this.tools.activeGroup(BtnGroupType.toolbar);
 
                 this.tools.hideToolbar.shown = true;
                 break;
@@ -239,6 +273,29 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         onMsg(msg);
     }
 
+    private void onEditorCopy(View v) {
+        fire_Editor_Action_Msg(EditorAction.copy);
+    }
+
+    private void onEditorPaste(View v) {
+        fire_Editor_Action_Msg(EditorAction.paste);
+    }
+
+    private void onEditorCut(View v) {
+        fire_Editor_Action_Msg(EditorAction.cut);
+    }
+
+    private void onEditorSelectAll(View v) {
+        fire_Editor_Action_Msg(EditorAction.select_all);
+    }
+
+    private void fire_Editor_Action_Msg(EditorAction action) {
+        UserEditorActionSingleTapMsgData data = new UserEditorActionSingleTapMsgData(action);
+        UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Editor_Action).data(data));
+
+        onMsg(msg);
+    }
+
     // ==================== End: 按键事件处理 ==================
 
     private static class State {
@@ -269,8 +326,13 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
     }
 
     private static class BtnTools {
-        public BtnGroup inputbar;
-        public Btn settings;
+        private final Animation enterAnim;
+        private final Map<BtnGroupType, View> groups;
+
+        private BtnGroupType activeGroup;
+
+        // <<<<<<<<<<<<<< 输入栏按钮
+        public Btn switchIme;
         public Btn showToolbar;
 
         public Btn hideToolbar;
@@ -278,29 +340,54 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
         public Btn cleanInputList;
         public Btn cancelCleanInputList;
+        // >>>>>>>>>>>>>>
 
-        public BtnGroup toolbar;
-        public Btn switchIme;
+        // <<<<<<<<<<<<<< 工具栏按钮
         public Btn favoriteboard;
+        public Btn editorCopy;
+        public Btn editorPaste;
+        public Btn editorCut;
+        public Btn editorSelectAll;
+        public Btn settings;
+        // >>>>>>>>>>>>>>
+
+        BtnTools(Animation enterAnim) {
+            this.enterAnim = enterAnim;
+            this.groups = new HashMap<>();
+        }
+
+        public void addGroup(BtnGroupType type, View view) {
+            this.groups.put(type, view);
+        }
+
+        public void activeGroup(BtnGroupType type) {
+            this.activeGroup = type;
+        }
 
         private Btn[] getBtnInToolbar() {
-            return new Btn[] { this.switchIme, this.favoriteboard };
+            return new Btn[] {
+                    this.favoriteboard,
+                    this.editorCopy,
+                    this.editorPaste,
+                    this.editorCut,
+                    this.editorSelectAll,
+                    this.settings,
+                    };
         }
 
         private Btn[] getBtnInInputbar() {
             return new Btn[] {
-                    this.settings,
+                    this.switchIme,
                     this.showToolbar,
                     this.hideToolbar,
                     this.closeKeyboard,
                     this.cleanInputList,
-                    this.cancelCleanInputList
-            };
+                    this.cancelCleanInputList,
+                    };
         }
 
         public void reset() {
-            this.inputbar.shown = false;
-            this.toolbar.shown = false;
+            this.activeGroup = null;
 
             // 工具栏中的按钮：默认均显示且启用
             for (Btn btn : getBtnInToolbar()) {
@@ -316,27 +403,56 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         }
 
         public void update() {
-            ViewUtils.visible(this.inputbar.view, this.inputbar.shown);
-            ViewUtils.visible(this.toolbar.view, this.toolbar.shown);
-
-            for (Btn btn : getBtnInToolbar()) {
-                toggleShowBtn(btn.view, btn.shown, btn.listener);
-                toggleDisableBtn(btn.view, btn.disabled, btn.listener);
+            View activeGroupView = this.groups.get(this.activeGroup);
+            if (activeGroupView == null) {
+                return;
             }
+            showGroupView(activeGroupView);
+
+            // /////////////////////////////////////////
             for (Btn btn : getBtnInInputbar()) {
                 toggleShowBtn(btn.view, btn.shown, btn.listener);
                 toggleDisableBtn(btn.view, btn.disabled, btn.listener);
             }
+            for (Btn btn : getBtnInToolbar()) {
+                toggleShowBtn(btn.view, btn.shown, btn.listener);
+                toggleDisableBtn(btn.view, btn.disabled, btn.listener);
+            }
+        }
+
+        private void showGroupView(View groupView) {
+            for (View view : BtnTools.this.groups.values()) {
+                if (view != groupView) {
+                    ViewUtils.hide(view);
+                }
+            }
+
+            if (ViewUtils.isVisible(groupView)) {
+                return;
+            }
+
+            this.enterAnim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {}
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    BtnTools.this.enterAnim.setAnimationListener(null);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+
+            groupView.startAnimation(this.enterAnim);
+            // Note: 只有已显示的视图才能应用动画
+            ViewUtils.show(groupView);
         }
     }
 
-    private static class BtnGroup {
-        public final View view;
-        public boolean shown;
-
-        BtnGroup(View rootView, int viewId) {
-            this.view = rootView.findViewById(viewId);
-        }
+    private enum BtnGroupType {
+        inputbar,
+        toolbar,
     }
 
     private static class Btn {

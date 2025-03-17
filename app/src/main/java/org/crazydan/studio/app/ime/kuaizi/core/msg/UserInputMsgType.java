@@ -44,6 +44,8 @@ public enum UserInputMsgType {
     /** 单击 撤销 输入列表清空 的按钮 */
     SingleTap_Btn_Cancel_Clean_InputList,
 
+    /** 单击 编辑动作 的按钮 */
+    SingleTap_Btn_Editor_Action,
     /** 单击 关闭键盘 的按钮 */
     SingleTap_Btn_Close_Keyboard,
     /** 单击 打开已收藏 的按钮 */

@@ -207,13 +207,14 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
     }
 
     private void on_Editor_Edit_Doing_Msg(EditorAction action) {
+        // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
+        // Note: 复制和粘贴可能内容为空，不会提示可收藏，因此，仍需提示
         switch (action) {
-            case select_all:
-            case redo:
-            case undo:
-            case paste: {
-                // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
-                // Note: 回删已作气泡提示，复制、剪切也会提示收藏，无需再作提示
+            case backspace: // 已作气泡提示
+            case favorite: { // 有专门的收藏确认提示
+                break;
+            }
+            default: {
                 showTipPopupWindow(action.tipResId);
                 break;
             }
