@@ -17,7 +17,7 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!-- 设置 android:layoutDirection="ltr" 以固定文本方向，确保其不随父视图的布局方向而变化 -->
+<!-- 设置 android:layoutDirection="ltr" 可以固定布局方向，确保其不随父视图的布局方向而变化 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

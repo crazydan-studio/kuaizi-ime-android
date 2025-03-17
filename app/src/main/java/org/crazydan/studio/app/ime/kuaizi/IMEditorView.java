@@ -27,7 +27,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
@@ -48,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
@@ -63,7 +64,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class IMEditorView extends LinearLayout implements UserMsgListener, InputMsgListener {
+public class IMEditorView extends FrameLayout implements UserMsgListener, InputMsgListener {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final AudioPlayer audioPlayer;
@@ -115,7 +116,9 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
 
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
-        // Note: 其内部的视图也会按照主题样式进行更新，无需单独处理
+        // Note:
+        // - 其内部的视图也会按照主题样式进行更新，无需在子视图中单独处理
+        // - 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
         ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
 
         int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
@@ -129,7 +132,6 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         MainboardView mainboardView = findViewById(R.id.mainboard);
         mainboardView.setConfig(this.config);
         mainboardView.setListener(this);
-        mainboardView.updateBottomSpacing(true);
 
         FavoriteboardView favoriteboardView = findViewById(R.id.favoriteboard);
         favoriteboardView.setConfig(this.config);
@@ -198,14 +200,15 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
                 // 确保键盘启动后，始终在主面板上，
                 // 从而保证可粘贴提示等在主面板上的弹窗能够正常显示
                 activeBoard(BoardType.main);
-
-                // Note: 键盘启动时，可能涉及横竖屏的转换，故而，需做一次底部空白更新
-                MainboardView mainboard = getBoard(BoardType.main);
-                mainboard.updateBottomSpacing(false);
                 break;
             }
             case Config_Update_Done: {
                 on_Config_Update_Done_Msg(msg.data());
+                break;
+            }
+            case Keyboard_HandMode_Switch_Done: {
+                KeyboardHandModeSwitchMsgData data = msg.data();
+                this.config.set(ConfigKey.hand_mode, data.mode);
                 break;
             }
             case InputAudio_Play_Doing: {
@@ -232,10 +235,14 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
                 doLayout();
                 break;
             }
+            case hand_mode: {
+                // 若更改系统的左右手模式，则以系统为准
+                this.config.set(ConfigKey.hand_mode, data.newValue);
+            }
             case enable_x_input_pad:
             case adapt_desktop_swipe_up_gesture: {
-                MainboardView mainboard = getBoard(BoardType.main);
-                mainboard.updateBottomSpacing(false);
+                // 触发面板的更新
+                activeBoard(this.activeBoard);
                 break;
             }
         }
@@ -289,7 +296,15 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         View currentView = currentType != activeType ? this.boards.get(currentType) : null;
         hideView(currentType, currentView);
 
-        if (ViewUtils.isVisible(activeView)) {
+        showView(activeView);
+    }
+
+    private void showView(View view) {
+        if (view instanceof ViewClosable) {
+            ((ViewClosable) view).update();
+        }
+
+        if (ViewUtils.isVisible(view)) {
             return;
         }
 
@@ -307,9 +322,9 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
             public void onAnimationRepeat(Animation animation) {}
         });
 
-        activeView.startAnimation(enterAnim);
+        view.startAnimation(enterAnim);
         // Note: 只有已显示的视图才能应用动画
-        ViewUtils.show(activeView);
+        ViewUtils.show(view);
     }
 
     private void hideView(BoardType type, View view) {

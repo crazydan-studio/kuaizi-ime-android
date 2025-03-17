@@ -25,5 +25,7 @@ package org.crazydan.studio.app.ime.kuaizi.common.widget;
  */
 public interface ViewClosable {
 
+    void update();
+
     void close();
 }

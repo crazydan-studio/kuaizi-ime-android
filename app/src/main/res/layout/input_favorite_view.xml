@@ -17,7 +17,7 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!-- 设置 android:layoutDirection="ltr" 以固定文本方向，确保其不随父视图的布局方向而变化 -->
+<!-- 设置 android:layoutDirection="ltr" 可以固定布局方向，确保其不随父视图的布局方向而变化 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,8 +25,7 @@
         android:layout_marginVertical="4dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:background="@drawable/bg_input_popup_quick_view"
-        android:layoutDirection="ltr">
+        android:background="@drawable/bg_input_popup_quick_view">
 
     <!-- 选中框放在离手最远端，以避免误选或误删 -->
     <CheckBox
@@ -39,7 +38,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginVertical="4dp">
+            android:layout_marginVertical="4dp"
+            android:layoutDirection="ltr">
 
         <LinearLayout
                 android:layout_width="match_parent"

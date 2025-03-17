@@ -70,20 +70,31 @@ public class ViewUtils {
     }
 
     /**
+     * 根据左右手模式设置视图的布局方向：
+     * <br/>
+     * 若指定的为左手模式，则采用从右到左的布局方向，否则，采用从左到右的布局方向
+     * <p/>
+     *
      * Note: 对父布局的方向调整会直接影响子布局的方向，
      * 对于不需要调整布局方向的，需要在 layout xml 中强制设置默认方向
+     *
+     * @param reverse
+     *         若为 <code>true</code>，则采用与默认相反的布局方向
      */
-    public static void updateLayoutDirection(View view, Keyboard.HandMode handMode) {
+    public static void updateLayoutDirection(View view, Keyboard.HandMode handMode, boolean reverse) {
+        int direction = -1;
         switch (handMode) {
             case left: {
-                view.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                direction = reverse ? View.LAYOUT_DIRECTION_LTR : View.LAYOUT_DIRECTION_RTL;
                 break;
             }
             case right: {
-                view.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                direction = reverse ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
                 break;
             }
         }
+
+        view.setLayoutDirection(direction);
     }
 
     public static void setHeight(View view, int height) {

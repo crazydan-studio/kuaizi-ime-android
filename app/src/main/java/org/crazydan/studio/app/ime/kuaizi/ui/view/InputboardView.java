@@ -27,7 +27,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
@@ -35,10 +34,8 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
-import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -59,20 +56,17 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-06
  */
-public class InputboardView extends LinearLayout implements UserMsgListener, InputMsgListener {
+public class InputboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener {
     private final InputListView inputListView;
 
     private final BtnTools tools;
 
-    private Config config;
     private UserMsgListener listener;
 
     private State state = new State(State.Type.Init);
 
     public InputboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-
-        inflate(context, R.layout.ime_board_input_view, this);
+        super(context, attrs, R.layout.ime_board_input_view);
 
         int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
         int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
@@ -106,9 +100,7 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
         this.tools.cancelCleanInputList = new Btn(this, R.id.btn_cancel_clean_input_list, this::onCancelCleanInputList);
     }
 
-    public void setConfig(Config config) {
-        this.config = config;
-
+    public void update() {
         updateToolsByState();
     }
 
@@ -141,7 +133,10 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
             case InputClip_CanBe_Favorite:
             case Editor_Cursor_Move_Doing:
             case Editor_Range_Select_Doing:
-            case Editor_Edit_Doing: {
+            case Editor_Edit_Doing:
+            case InputAudio_Play_Doing:
+            case InputChars_Input_Popup_Show_Doing:
+            case InputChars_Input_Popup_Hide_Doing: {
                 return;
             }
         }
@@ -207,8 +202,7 @@ public class InputboardView extends LinearLayout implements UserMsgListener, Inp
 
         this.tools.update();
 
-        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-        ViewUtils.updateLayoutDirection(this, handMode);
+        updateLayoutDirection();
     }
 
     // =============================== End: 消息处理 ===================================

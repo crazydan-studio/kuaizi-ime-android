@@ -24,7 +24,6 @@ import java.util.List;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,7 +32,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ConfirmPopup;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
-import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
@@ -55,7 +53,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class FavoriteboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
+public class FavoriteboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener, ViewClosable {
     private final InputFavoriteListView favoriteListView;
     private final TextView titleView;
     private final TextView warningView;
@@ -67,13 +65,10 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
     private ConfirmPopup deleteSelectedPopup;
     private ConfirmPopup clearAllPopup;
 
-    private Config config;
     private UserMsgListener listener;
 
     public FavoriteboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-
-        inflate(context, R.layout.ime_board_favorite_view, this);
+        super(context, attrs, R.layout.ime_board_favorite_view);
 
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
@@ -88,8 +83,9 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
         closeBtnView.setOnClickListener(this::onCloseFavoriteboard);
     }
 
-    public void setConfig(Config config) {
-        this.config = config;
+    @Override
+    public void update() {
+        updateLayoutDirection();
     }
 
     @Override
@@ -130,6 +126,10 @@ public class FavoriteboardView extends LinearLayout implements UserMsgListener, 
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
+            case Keyboard_HandMode_Switch_Done: {
+                updateLayoutDirection();
+                break;
+            }
             case InputFavorite_Paste_Done:
             case InputFavorite_Delete_Done:
             case InputFavorite_Save_Done:

@@ -26,7 +26,6 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -50,7 +49,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
@@ -62,7 +60,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class MainboardView extends LinearLayout implements UserMsgListener, InputMsgListener, ViewClosable {
+public class MainboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener, ViewClosable {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final TextView warningView;
@@ -75,13 +73,10 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
 
     private boolean needToAddBottomSpacing;
 
-    private Config.Mutable config;
     private UserMsgListener listener;
 
     public MainboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-
-        inflate(context, R.layout.ime_board_main_view, this);
+        super(context, attrs, R.layout.ime_board_main_view);
 
         this.warningView = findViewById(R.id.warning);
         this.keyboardView = findViewById(R.id.keyboard);
@@ -105,18 +100,28 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
         // >>>>>>>>>>>
     }
 
-    public void setConfig(Config.Mutable config) {
-        this.config = config;
+    @Override
+    public void setConfig(Config config) {
+        super.setConfig(config);
 
         this.keyboardView.setConfig(this.config);
         this.inputboardView.setConfig(this.config);
 
-        updatePopupViewLayout(this.inputQuickPopupWindow.getContentView());
+        // 做一次强制更新
+        updateBottomSpacing(true);
     }
 
     public XPadView getXPadView() {
         XPadKeyViewHolder holder = this.keyboardView.getXPadKeyViewHolder();
         return holder != null ? holder.getXPad() : null;
+    }
+
+    @Override
+    public void update() {
+        this.inputboardView.update();
+
+        updateBottomSpacing(false);
+        updateReverseLayoutDirection(this.inputQuickPopupWindow.getContentView());
     }
 
     @Override
@@ -175,10 +180,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
                 break;
             }
             case Keyboard_HandMode_Switch_Done: {
-                KeyboardHandModeSwitchMsgData data = msg.data();
-                this.config.set(ConfigKey.hand_mode, data.mode);
-
-                updatePopupViewLayout(this.inputQuickPopupWindow.getContentView());
+                updateReverseLayoutDirection(this.inputQuickPopupWindow.getContentView());
                 break;
             }
             case InputChars_Input_Popup_Show_Doing: {
@@ -225,7 +227,7 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
 
     // =============================== Start: 视图更新 ===================================
 
-    public void updateBottomSpacing(boolean force) {
+    private void updateBottomSpacing(boolean force) {
         // Note: 仅竖屏模式下需要添加底部空白
         boolean needSpacing = this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
                               && !this.config.bool(ConfigKey.enable_x_input_pad)
@@ -338,25 +340,6 @@ public class MainboardView extends LinearLayout implements UserMsgListener, Inpu
             // Note: 需要强制更新，否则，内容布局会出现跳动
             window.update(x, y, window.getWidth(), window.getHeight(), true);
         });
-    }
-
-    private void updatePopupViewLayout(View view) {
-        if (view == null) {
-            return;
-        }
-
-        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-        switch (handMode) {
-            case left: {
-                handMode = Keyboard.HandMode.right;
-                break;
-            }
-            case right: {
-                handMode = Keyboard.HandMode.left;
-                break;
-            }
-        }
-        ViewUtils.updateLayoutDirection(view, handMode);
     }
 
     // ==================== End: 气泡提示 ==================
