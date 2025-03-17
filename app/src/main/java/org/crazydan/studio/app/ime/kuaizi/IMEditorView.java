@@ -288,63 +288,57 @@ public class IMEditorView extends LinearLayout implements UserMsgListener, Input
         View activeView = this.boards.get(activeType);
         assert activeView != null;
 
+        // Note: 仅视图进场才需要动画，退场视图直接隐藏即可，从而避免二者出现重影
         View currentView = currentType != activeType ? this.boards.get(currentType) : null;
-        closeBoard(currentType, currentView);
+        hideView(currentType, currentView);
 
-        // Note: 需采用动画渐显形式切换面板，以避免切换过程太突兀，
-        // 特别是处于最顶层的视图，其直接显示会遮挡下层视图的隐藏动画效果
-        showBoard(activeType, activeView);
-    }
-
-    private void closeBoard(BoardType type, View view) {
-        if (view == null || !ViewUtils.isVisible(view)) {
+        if (ViewUtils.isVisible(activeView)) {
             return;
         }
 
-        this.exitAnim.setAnimationListener(new Animation.AnimationListener() {
+        Animation enterAnim = this.enterAnim;
+        enterAnim.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {
-                if (view instanceof ViewClosable) {
-                    ((ViewClosable) view).close();
-                }
-            }
+            public void onAnimationStart(Animation animation) {}
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                IMEditorView.this.exitAnim.setAnimationListener(null);
-                hideView(type, view);
+                enterAnim.setAnimationListener(null);
             }
 
             @Override
             public void onAnimationRepeat(Animation animation) {}
         });
 
-        view.startAnimation(this.exitAnim);
-    }
-
-    private void showBoard(BoardType type, View view) {
-        if (ViewUtils.isVisible(view)) {
-            return;
-        }
-
-        view.startAnimation(this.enterAnim);
+        activeView.startAnimation(enterAnim);
         // Note: 只有已显示的视图才能应用动画
-        view.setVisibility(View.VISIBLE);
+        activeView.setVisibility(View.VISIBLE);
     }
 
     private void hideView(BoardType type, View view) {
-        if (type == BoardType.main) {
-            // Note: 主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
-            view.setVisibility(View.INVISIBLE);
-        } else {
-            view.setVisibility(View.GONE);
+        if (view == null || !ViewUtils.isVisible(view)) {
+            return;
         }
+
+        if (type == BoardType.main) {
+            // Note: 因为主面板在最上层，因此，隐藏时需要直接隐藏，以便于下层的面板的进场动画能够显示，
+            // 且主面板需始终保有其所占空间，从而确保其他面板在该空间内布局
+            view.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        if (view instanceof ViewClosable) {
+            ((ViewClosable) view).close();
+        }
+        // 延迟隐藏，以便于给足视图 close 的时间，避免再次显示时还留有未复位的子视图
+        post(() -> {
+            view.setVisibility(View.GONE);
+        });
     }
 
     private enum BoardType {
         main,
         favorite,
-        settings,
         ;
     }
 }
