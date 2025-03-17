@@ -74,359 +74,706 @@ public enum SymbolGroup {
             }),
 
     /**
-     * 数学符号：https://tool.lmeee.com/fuhao/shuxue
-     * <pre>
-     * var data = [];
-     * document.querySelectorAll('.copyBtn').forEach(function(el) {
-     *   data.push(el.getAttribute('data-clipboard-text'));
-     * });
-     * console.log(data.join('\n'));
-     * </pre>
+     * 数学符号：https://coolsymbol.com/pi-symbol-infinity-symbol-sum-sigma-symbol-square-root-symbol-integral-symbol-math-signs.html
      */
     math("数学", new Symbol[] {
-            single("+"), single("-"), single("±"), single("×"), single("÷"), single("="), single("≠"),
             //
-            single("∽"), single("≈"), single("≌"), single("≡"), single("≥"), single("≤"),
+            single("+"), single("-"), single("="), single("^"), single("%"),
             //
-            single("≯"), single("≮"), single("^"), single("∨"), single("∧"),
+            single("℅"), single("‰"), single("‱"), single("π"), single("∞"), single("Σ"),
             //
-            single("%"), single("‰"), single("‱"), single("℅"),
+            single("√"), single("∛"), single("∜"), single("∫"), single("∬"),
             //
-            single("＜"), single("＞"), single("/"), single("‖"),
+            single("∭"), single("∮"), single("∯"), single("∰"), single("∱"),
             //
-            single("＋"), single("－"), single("⊥"), single("∠"),
+            single("∲"), single("∳"), single("∀"), single("∁"), single("∂"),
             //
-            single("⌒"), single("⊙"), single("∑"), single("∝"), single("∞"),
+            single("∃"), single("∄"), single("∅"), single("∆"), single("∇"),
             //
-            single("∈"), single("∪"), single("∩"), single("∏"), single("∟"),
+            single("∈"), single("∉"), single("∊"), single("∋"), single("∌"),
             //
-            single("∶"), single("∴"), single("∵"), single("∷"),
+            single("∍"), single("∎"), single("∏"), single("∐"), single("∑"),
             //
-            single("㏑"), single("㏒"), single("℃"), single("℉"),
+            single("−"), single("∓"), single("∔"), single("∕"), single("∖"),
             //
-            single("㏄"), single("㎎"), single("㎏"), single("㎜"),
+            single("∗"), single("∘"), single("∙"), single("∝"), single("∟"),
             //
-            single("㎝"), single("㎞"), single("㏎"), single("㎡"),
+            single("∠"), single("∡"), single("∢"), single("∣"), single("∤"),
             //
-            single("㏕"), single("∫"), single("∬"), single("∭"),
+            single("∥"), single("∦"), single("∧"), single("∨"), single("∩"),
             //
-            single("∱"), single("∮"), single("∲"), single("∳"), single("∯"), single("∰"),
+            single("∪"), single("∴"), single("∵"), single("∶"), single("∷"),
             //
-            single("✓"), single("√"), single("☒"), single("✗"), single("✘"),
+            single("∸"), single("∹"), single("∺"), single("∻"), single("∼"),
             //
-            single("✕"), single("☓"), single("х"), single("╳"), single("ㄨ"), single("メ"),
+            single("∽"), single("∾"), single("∿"), single("≀"), single("≁"),
+            //
+            single("≂"), single("≃"), single("≄"), single("≅"), single("≆"),
+            //
+            single("≇"), single("≈"), single("≉"), single("≊"), single("≋"),
+            //
+            single("≌"), single("≍"), single("≎"), single("≏"), single("≐"),
+            //
+            single("≑"), single("≒"), single("≓"), single("≔"), single("≕"),
+            //
+            single("≖"), single("≗"), single("≘"), single("≙"), single("≚"),
+            //
+            single("≛"), single("≜"), single("≝"), single("≞"), single("≟"),
+            //
+            single("≠"), single("≡"), single("≢"), single("≣"), single("≤"),
+            //
+            single("≥"), single("≦"), single("≧"), single("≨"), single("≩"),
+            //
+            single("≪"), single("≫"), single("≬"), single("≭"), single("≮"),
+            //
+            single("≯"), single("≰"), single("≱"), single("≲"), single("≳"),
+            //
+            single("≴"), single("≵"), single("≶"), single("≷"), single("≸"),
+            //
+            single("≹"), single("≺"), single("≻"), single("≼"), single("≽"),
+            //
+            single("≾"), single("≿"), single("⊀"), single("⊁"), single("⊂"),
+            //
+            single("⊃"), single("⊄"), single("⊅"), single("⊆"), single("⊇"),
+            //
+            single("⊈"), single("⊉"), single("⊊"), single("⊋"), single("⊌"),
+            //
+            single("⊍"), single("⊎"), single("⊏"), single("⊐"), single("⊑"),
+            //
+            single("⊒"), single("⊓"), single("⊔"), single("⊕"), single("⊖"),
+            //
+            single("⊗"), single("⊘"), single("⊙"), single("⊚"), single("⊛"),
+            //
+            single("⊜"), single("⊝"), single("⊞"), single("⊟"), single("⊠"),
+            //
+            single("⊡"), single("⊢"), single("⊣"), single("⊤"), single("⊥"),
+            //
+            single("⊦"), single("⊧"), single("⊨"), single("⊩"), single("⊪"),
+            //
+            single("⊫"), single("⊬"), single("⊭"), single("⊮"), single("⊯"),
+            //
+            single("⊰"), single("⊱"), single("⊲"), single("⊳"), single("⊴"),
+            //
+            single("⊵"), single("⊶"), single("⊷"), single("⊸"), single("⊹"),
+            //
+            single("⊺"), single("⊻"), single("⊼"), single("⊽"), single("⊾"),
+            //
+            single("⊿"), single("⋀"), single("⋁"), single("⋂"), single("⋃"),
+            //
+            single("⋄"), single("⋅"), single("⋆"), single("⋇"), single("⋈"),
+            //
+            single("⋉"), single("⋊"), single("⋋"), single("⋌"), single("⋍"),
+            //
+            single("⋎"), single("⋏"), single("⋐"), single("⋑"), single("⋒"),
+            //
+            single("⋓"), single("⋔"), single("⋕"), single("⋖"), single("⋗"),
+            //
+            single("⋘"), single("⋙"), single("⋚"), single("⋛"), single("⋜"),
+            //
+            single("⋝"), single("⋞"), single("⋟"), single("⋠"), single("⋡"),
+            //
+            single("⋢"), single("⋣"), single("⋤"), single("⋥"), single("⋦"),
+            //
+            single("⋧"), single("⋨"), single("⋩"), single("⋪"), single("⋫"),
+            //
+            single("⋬"), single("⋭"), single("⋮"), single("⋯"), single("⋰"),
+            //
+            single("⋱"), single("⁺"), single("⁻"), single("⁼"), single("⁽"),
+            //
+            single("⁾"), single("ⁿ"), single("₊"), single("₋"), single("₌"),
+            //
+            single("₍"), single("₎"), single("✖"), single("﹢"), single("﹣"),
+            //
+            single("＋"), single("－"), single("／"), single("＝"), single("÷"),
+            //
+            single("±"), single("×"), single("✓"), single("☒"), single("✗"),
+            //
+            single("✘"), single("✕"), single("☓"), single("х"), single("╳"),
+            //
+            single("ㄨ"), single("メ"), single("＜"), single("＞"),
+            //
+            single("/"), single("‖"), single("⌒"), single("㏑"), single("㏒"),
+            //
+            single("℃"), single("℉"), single("㏄"), single("㎎"), single("㎏"),
+            //
+            single("㎜"), single("㎝"), single("㎞"), single("㏎"), single("㎡"),
+            //
+            single("㏕"), single("⅟"), single("½"), single("⅓"), single("⅕"), single("⅙"),
+            //
+            single("⅛"), single("⅔"), single("⅖"), single("⅚"), single("⅜"),
+            //
+            single("¾"), single("⅗"), single("⅝"), single("⅞"), single("⅘"),
+            //
+            single("¼"), single("⅐"), single("⅑"), single("⅒"), single("↉"),
             }),
     /**
-     * 箭头符号：https://tool.lmeee.com/fuhao/jiantou
+     * 箭头符号：https://coolsymbol.com/arrow-symbols-arrow-signs.html
      */
     arrow("箭头", new Symbol[] {
-            single("➝"), single("➙"), single("➞"), single("➜"), single("➡"), single("➨"),
             //
-            single("➥"), single("➦"), single("➧"), single("➛"), single("➺"), single("➻"),
+            single("↕"), single("↖"), single("↗"), single("↘"), single("↙"),
             //
-            single("➤"), single("➣"), single("➢"), single("➩"), single("➪"),
+            single("↚"), single("↛"), single("↜"), single("↝"), single("↞"),
             //
-            single("➫"), single("➬"), single("➭"), single("➮"), single("➯"), single("➱"),
+            single("↟"), single("↠"), single("↡"), single("↢"), single("↣"),
             //
-            single("➲"), single("⏎"), single("➟"), single("⇪"),
+            single("↤"), single("↥"), single("↦"), single("↧"), single("↨"),
             //
-            single("⇨"), single("⇦"), single("⇒"), single("⇐"), single("⇑"), single("⇓"),
+            single("↩"), single("↪"), single("↫"), single("↬"), single("↭"),
             //
-            single("⇗"), single("⇖"), single("⇙"), single("⇘"), single("⇛"), single("⇚"),
+            single("↮"), single("↯"), single("↰"), single("↱"), single("↲"),
             //
-            single("⇔"), single("⇕"), single("⇧"), single("⇩"),
+            single("↳"), single("↴"), single("↶"), single("↷"), single("↸"),
             //
-            single("➳"), single("➵"), single("➶"), single("➴"),
+            single("↹"), single("↺"), single("↻"), single("↼"), single("↽"),
             //
-            single("➽"), single("➼"), single("➸"), single("➷"), single("➹"),
+            single("↾"), single("↿"), single("⇀"), single("⇁"), single("⇂"),
             //
-            single("↶"), single("↷"), single("↺"), single("↻"),
+            single("⇃"), single("⇄"), single("⇅"), single("⇆"), single("⇇"),
             //
-            single("➚"), single("➘"), single("↙"), single("↘"), single("↗"), single("↖"),
+            single("⇈"), single("⇉"), single("⇊"), single("⇋"), single("⇌"),
             //
-            single("↳"), single("↰"), single("↱"), single("↲"), single("↴"), single("↵"), single("☇"),
+            single("⇍"), single("⇎"), single("⇏"), single("⇕"), single("⇖"),
             //
-            single("⇀"), single("↼"), single("↿"), single("⇃"),
+            single("⇗"), single("⇘"), single("⇙"), single("⇚"), single("⇛"),
             //
-            single("⇁"), single("↽"), single("↾"), single("⇂"),
+            single("⇜"), single("⇝"), single("⇞"), single("⇟"), single("⇠"),
             //
-            single("↑"), single("↓"), single("→"), single("←"),
+            single("⇡"), single("⇢"), single("⇣"), single("⇤"), single("⇥"),
             //
-            single("↣"), single("↢"), single("↦"), single("↤"), single("↠"), single("↞"),
+            single("⇦"), single("⇧"), single("⇨"), single("⇩"), single("⇪"),
             //
-            single("↔"), single("↕"), single("↥"), single("↧"),
+            single("⌅"), single("⌆"), single("⌤"), single("⏎"), single("▶"),
             //
-            single("⇢"), single("⇠"), single("⇡"), single("⇣"),
+            single("☇"), single("☈"), single("☊"), single("☋"), single("☌"),
             //
-            single("⇟"), single("⇞"), single("↡"), single("↟"),
+            single("☍"), single("➔"), single("➘"), single("➙"), single("➚"),
             //
-            single("↬"), single("↫"), single("↝"), single("↜"),
+            single("➛"), single("➜"), single("➝"), single("➞"), single("➟"),
             //
-            single("⇝"), single("⇜"), single("↭"), single("↯"),
+            single("➠"), single("➡"), single("➢"), single("➣"), single("➤"),
             //
-            single("↛"), single("↚"), single("↮"), single("⇏"), single("⇍"), single("⇎"),
+            single("➥"), single("➦"), single("➧"), single("➨"), single("➩"),
             //
-            single("↸"), single("⇥"), single("⇤"), single("↹"), single("↨"),
+            single("➪"), single("➫"), single("➬"), single("➭"), single("➮"),
             //
-            single("⇉"), single("⇇"), single("⇈"), single("⇊"),
+            single("➯"), single("➱"), single("➲"), single("➳"), single("➴"),
             //
-            single("⇆"), single("⇄"), single("⇅"), single("⇋"), single("⇌"),
+            single("➵"), single("➶"), single("➷"), single("➸"), single("➹"),
+            //
+            single("➺"), single("➻"), single("➼"), single("➽"), single("➾"),
+            //
+            single("⤴"), single("⤵"), single("↵"), single("↓"), single("↔"),
+            //
+            single("←"), single("→"), single("↑"), single("⌦"), single("⌫"),
+            //
+            single("⌧"), single("⇰"), single("⇫"), single("⇬"), single("⇭"),
+            //
+            single("⇳"), single("⇮"), single("⇯"), single("⇱"), single("⇲"),
+            //
+            single("⇴"), single("⇵"), single("⇷"), single("⇸"), single("⇹"),
+            //
+            single("⇺"), single("⇑"), single("⇓"), single("⇽"), single("⇾"),
+            //
+            single("⇿"), single("⬳"), single("⟿"), single("⤉"), single("⤈"),
+            //
+            single("⇻"), single("⇼"), single("⬴"), single("⤀"), single("⬵"),
+            //
+            single("⤁"), single("⬹"), single("⤔"), single("⬺"), single("⤕"),
+            //
+            single("⬶"), single("⤅"), single("⬻"), single("⤖"), single("⬷"),
+            //
+            single("⤐"), single("⬼"), single("⤗"), single("⬽"), single("⤘"),
+            //
+            single("⤝"), single("⤞"), single("⤟"), single("⤠"), single("⤡"),
+            //
+            single("⤢"), single("⤣"), single("⤤"), single("⤥"), single("⤦"),
+            //
+            single("⤪"), single("⤨"), single("⤧"), single("⤩"), single("⤭"),
+            //
+            single("⤮"), single("⤯"), single("⤰"), single("⤱"), single("⤲"),
+            //
+            single("⤫"), single("⤬"), single("⬐"), single("⬎"), single("⬑"),
+            //
+            single("⬏"), single("⤶"), single("⤷"), single("⥂"), single("⥃"),
+            //
+            single("⥄"), single("⭀"), single("⥱"), single("⥶"), single("⥸"),
+            //
+            single("⭂"), single("⭈"), single("⭊"), single("⥵"), single("⭁"),
+            //
+            single("⭇"), single("⭉"), single("⥲"), single("⭋"), single("⭌"),
+            //
+            single("⥳"), single("⥴"), single("⥆"), single("⥅"), single("⥹"),
+            //
+            single("⥻"), single("⬰"), single("⥈"), single("⬾"), single("⥇"),
+            //
+            single("⬲"), single("⟴"), single("⥷"), single("⭃"), single("⥺"),
+            //
+            single("⭄"), single("⥉"), single("⥰"), single("⬿"), single("⤳"),
+            //
+            single("⥊"), single("⥋"), single("⥌"), single("⥍"), single("⥎"),
+            //
+            single("⥏"), single("⥐"), single("⥑"), single("⥒"), single("⥓"),
+            //
+            single("⥔"), single("⥕"), single("⥖"), single("⥗"), single("⥘"),
+            //
+            single("⥙"), single("⥚"), single("⥛"), single("⥜"), single("⥝"),
+            //
+            single("⥞"), single("⥟"), single("⥠"), single("⥡"), single("⥢"),
+            //
+            single("⥤"), single("⥣"), single("⥥"), single("⥦"), single("⥨"),
+            //
+            single("⥧"), single("⥩"), single("⥮"), single("⥯"), single("⥪"),
+            //
+            single("⥬"), single("⥫"), single("⥭"), single("⤌"), single("⤍"),
+            //
+            single("⤎"), single("⤏"), single("⬸"), single("⤑"), single("⬱"),
+            //
+            single("⟸"), single("⟹"), single("⟺"), single("⤂"), single("⤃"),
+            //
+            single("⤄"), single("⤆"), single("⤇"), single("⤊"), single("⤋"),
+            //
+            single("⭅"), single("⭆"), single("⟰"), single("⟱"), single("⇐"),
+            //
+            single("⇒"), single("⇔"), single("⇶"), single("⟵"), single("⟶"),
+            //
+            single("⟷"), single("⬄"), single("⬀"), single("⬁"), single("⬂"),
+            //
+            single("⬃"), single("⬅"), single("⬆"), single("⬇"), single("⬈"),
+            //
+            single("⬉"), single("⬊"), single("⬋"), single("⬌"), single("⬍"),
+            //
+            single("⟻"), single("⟼"), single("⤒"), single("⤓"), single("⤙"),
+            //
+            single("⤚"), single("⤛"), single("⤜"), single("⥼"), single("⥽"),
+            //
+            single("⥾"), single("⥿"), single("⤼"), single("⤽"), single("⤾"),
+            //
+            single("⤿"), single("⤸"), single("⤺"), single("⤹"), single("⤻"),
+            //
+            single("⥀"), single("⥁"), single("⟲"), single("⟳"),
             }),
     /**
-     * 序号符号：https://tool.lmeee.com/fuhao/shuzi
+     * 序号符号：
+     * - https://tool.lmeee.com/fuhao/shuzi
+     * - https://coolsymbol.com/number-symbols.html
      */
     index("序号", new Symbol[] {
-            single("⓪"),
             //
-            single("①"), single("②"), single("③"), single("④"), single("⑤"), single("⑥"),
+            single("⓪"), single("①"), single("②"), single("③"), single("④"),
             //
-            single("⑦"), single("⑧"), single("⑨"), single("⑩"), single("⑪"), single("⑫"),
+            single("⑤"), single("⑥"), single("⑦"), single("⑧"), single("⑨"),
             //
-            single("⑬"), single("⑭"), single("⑮"), single("⑯"), single("⑰"), single("⑱"),
+            single("⑩"), single("⑪"), single("⑫"), single("⑬"), single("⑭"),
             //
-            single("⑲"), single("⑳"), single("㉑"), single("㉒"), single("㉓"), single("㉔"),
+            single("⑮"), single("⑯"), single("⑰"), single("⑱"), single("⑲"),
             //
-            single("㉕"), single("㉖"), single("㉗"), single("㉘"), single("㉙"), single("㉚"),
+            single("⑳"), single("㉑"), single("㉒"), single("㉓"), single("㉔"),
             //
-            single("㉛"), single("㉜"), single("㉝"), single("㉞"), single("㉟"), single("㊱"),
+            single("㉕"), single("㉖"), single("㉗"), single("㉘"), single("㉙"),
             //
-            single("㊲"), single("㊳"), single("㊴"), single("㊵"), single("㊶"), single("㊷"),
+            single("㉚"), single("㉛"), single("㉜"), single("㉝"), single("㉞"),
             //
-            single("㊸"), single("㊹"), single("㊺"), single("㊻"), single("㊼"), single("㊽"),
+            single("㉟"), single("㊱"), single("㊲"), single("㊳"), single("㊴"),
             //
-            single("㊾"), single("㊿"),
+            single("㊵"), single("㊶"), single("㊷"), single("㊸"), single("㊹"),
             //
-            single("⓵"), single("⓶"), single("⓷"), single("⓸"), single("⓹"),
+            single("㊺"), single("㊻"), single("㊼"), single("㊽"), single("㊾"),
             //
-            single("⓺"), single("⓻"), single("⓼"), single("⓽"), single("⓾"),
+            single("㊿"), single("⓵"), single("⓶"), single("⓷"), single("⓸"),
             //
-            single("⑴"), single("⑵"), single("⑶"), single("⑷"),
+            single("⓹"), single("⓺"), single("⓻"), single("⓼"), single("⓽"),
             //
-            single("⑸"), single("⑹"), single("⑺"), single("⑻"), single("⑼"), single("⑽"),
+            single("⓾"), single("➀"), single("➁"), single("➂"), single("➃"),
             //
-            single("⑾"), single("⑿"), single("⒀"), single("⒁"), single("⒂"), single("⒃"),
+            single("➄"), single("➅"), single("➆"), single("➇"), single("➈"),
             //
-            single("⒄"), single("⒅"), single("⒆"), single("⒇"),
+            single("➉"), single("⑴"), single("⑵"), single("⑶"), single("⑷"),
             //
-            single("➊"), single("➋"), single("➌"), single("➍"),
+            single("⑸"), single("⑹"), single("⑺"), single("⑻"), single("⑼"),
+            //
+            single("⑽"), single("⑾"), single("⑿"), single("⒀"), single("⒁"),
+            //
+            single("⒂"), single("⒃"), single("⒄"), single("⒅"), single("⒆"),
+            //
+            single("⒇"), single("➊"), single("➋"), single("➌"), single("➍"),
             //
             single("➎"), single("➏"), single("➐"), single("➑"), single("➒"),
             //
-            single("➓"), single("⓫"), single("⓬"), single("⓭"), single("⓮"), single("⓯"),
+            single("➓"), single("⓫"), single("⓬"), single("⓭"), single("⓮"),
             //
-            single("⓰"), single("⓱"), single("⓲"), single("⓳"), single("⓴"),
+            single("⓯"), single("⓰"), single("⓱"), single("⓲"), single("⓳"),
             //
-            single("º"), single("¹"), single("²"), single("³"), single("⁴"),
+            single("⓴"), single("⓿"), single("❶"), single("❷"), single("❸"),
             //
-            single("⁵"), single("⁶"), single("⁷"), single("⁸"), single("⁹"),
+            single("❹"), single("❺"), single("❻"), single("❼"), single("❽"),
             //
-            single("₀"), single("₁"), single("₂"), single("₃"), single("₄"),
+            single("❾"), single("❿"), single("⁰"), single("０"), single("１"),
             //
-            single("₅"), single("₆"), single("₇"), single("₈"), single("₉"),
+            single("２"), single("３"), single("４"), single("５"), single("６"),
             //
-            single("⒈"), single("⒉"), single("⒊"), single("⒋"), single("⒌"),
+            single("７"), single("８"), single("９"), single("º"), single("¹"),
             //
-            single("⒍"), single("⒎"), single("⒏"), single("⒐"), single("⒑"),
+            single("²"), single("³"), single("⁴"), single("⁵"), single("⁶"),
             //
-            single("⒒"), single("⒓"), single("⒔"), single("⒕"), single("⒖"),
+            single("⁷"), single("⁸"), single("⁹"), single("₀"), single("₁"),
             //
-            single("⒗"), single("⒘"), single("⒙"), single("⒚"), single("⒛"),
+            single("₂"), single("₃"), single("₄"), single("₅"), single("₆"),
             //
-            single("㊀"), single("㊁"), single("㊂"), single("㊃"), single("㊄"),
+            single("₇"), single("₈"), single("₉"), single("⒈"), single("⒉"),
             //
-            single("㊅"), single("㊆"), single("㊇"), single("㊈"), single("㊉"),
+            single("⒊"), single("⒋"), single("⒌"), single("⒍"), single("⒎"),
             //
-            single("㈠"), single("㈡"), single("㈢"), single("㈣"), single("㈤"),
+            single("⒏"), single("⒐"), single("⒑"), single("⒒"), single("⒓"),
             //
-            single("㈥"), single("㈦"), single("㈧"), single("㈨"), single("㈩"),
+            single("⒔"), single("⒕"), single("⒖"), single("⒗"), single("⒘"),
             //
-            single("Ⅰ"), single("Ⅱ"), single("Ⅲ"), single("Ⅳ"), single("Ⅴ"),
+            single("⒙"), single("⒚"), single("⒛"), single("㊀"), single("㊁"),
             //
-            single("Ⅵ"), single("Ⅶ"), single("Ⅷ"), single("Ⅸ"), single("Ⅹ"),
+            single("㊂"), single("㊃"), single("㊄"), single("㊅"), single("㊆"),
             //
-            single("ⅰ"), single("ⅱ"), single("ⅲ"), single("ⅳ"), single("ⅴ"),
+            single("㊇"), single("㊈"), single("㊉"), single("㈠"), single("㈡"),
             //
-            single("ⅵ"), single("ⅶ"), single("ⅷ"), single("ⅸ"), single("ⅹ"),
+            single("㈢"), single("㈣"), single("㈤"), single("㈥"), single("㈦"),
             //
-            single("ⓐ"), single("ⓑ"), single("ⓒ"), single("ⓓ"), single("ⓔ"),
+            single("㈧"), single("㈨"), single("㈩"), single("Ⅰ"), single("Ⅱ"),
             //
-            single("ⓕ"), single("ⓖ"), single("ⓗ"), single("ⓘ"), single("ⓙ"), single("ⓚ"),
+            single("Ⅲ"), single("Ⅳ"), single("Ⅴ"), single("Ⅵ"), single("Ⅶ"),
             //
-            single("ⓛ"), single("ⓜ"), single("ⓝ"), single("ⓞ"), single("ⓟ"), single("ⓠ"),
+            single("Ⅷ"), single("Ⅸ"), single("Ⅹ"), single("Ⅺ"), single("Ⅻ"),
             //
-            single("ⓡ"), single("ⓢ"), single("ⓣ"), single("ⓤ"), single("ⓥ"), single("ⓦ"),
+            single("Ⅼ"), single("Ⅽ"), single("Ⅾ"), single("Ⅿ"), single("ⅰ"),
             //
-            single("ⓧ"), single("ⓨ"), single("ⓩ"),
+            single("ⅱ"), single("ⅲ"), single("ⅳ"), single("ⅴ"), single("ⅵ"),
             //
-            single("Ⓐ"), single("Ⓑ"), single("Ⓒ"), single("Ⓓ"),
+            single("ⅶ"), single("ⅷ"), single("ⅸ"), single("ⅹ"), single("ⅺ"),
             //
-            single("Ⓔ"), single("Ⓕ"), single("Ⓖ"), single("Ⓗ"), single("Ⓘ"), single("Ⓙ"),
+            single("ⅻ"), single("ⅼ"), single("ⅽ"), single("ⅾ"), single("ⅿ"),
             //
-            single("Ⓚ"), single("Ⓛ"), single("Ⓜ"), single("Ⓝ"), single("Ⓞ"), single("Ⓟ"),
+            single("ↀ"), single("ↁ"), single("ↂ"), single("ⓐ"), single("ⓑ"),
             //
-            single("Ⓠ"), single("Ⓡ"), single("Ⓢ"), single("Ⓣ"), single("Ⓤ"), single("Ⓥ"),
+            single("ⓒ"), single("ⓓ"), single("ⓔ"), single("ⓕ"), single("ⓖ"),
             //
-            single("Ⓦ"), single("Ⓧ"), single("Ⓨ"), single("Ⓩ"),
+            single("ⓗ"), single("ⓘ"), single("ⓙ"), single("ⓚ"), single("ⓛ"),
             //
-            single("⒜"), single("⒝"),
+            single("ⓜ"), single("ⓝ"), single("ⓞ"), single("ⓟ"), single("ⓠ"),
             //
-            single("⒞"), single("⒟"), single("⒠"), single("⒡"), single("⒢"), single("⒣"),
+            single("ⓡ"), single("ⓢ"), single("ⓣ"), single("ⓤ"), single("ⓥ"),
             //
-            single("⒤"), single("⒥"), single("⒦"), single("⒧"), single("⒨"), single("⒩"),
+            single("ⓦ"), single("ⓧ"), single("ⓨ"), single("ⓩ"), single("Ⓐ"),
             //
-            single("⒪"), single("⒫"), single("⒬"), single("⒭"), single("⒮"), single("⒯"),
+            single("Ⓑ"), single("Ⓒ"), single("Ⓓ"), single("Ⓔ"), single("Ⓕ"),
             //
-            single("⒰"), single("⒱"), single("⒲"), single("⒳"), single("⒴"), single("⒵"),
+            single("Ⓖ"), single("Ⓗ"), single("Ⓘ"), single("Ⓙ"), single("Ⓚ"),
+            //
+            single("Ⓛ"), single("Ⓜ"), single("Ⓝ"), single("Ⓞ"), single("Ⓟ"),
+            //
+            single("Ⓠ"), single("Ⓡ"), single("Ⓢ"), single("Ⓣ"), single("Ⓤ"),
+            //
+            single("Ⓥ"), single("Ⓦ"), single("Ⓧ"), single("Ⓨ"), single("Ⓩ"),
+            //
+            single("⒜"), single("⒝"), single("⒞"), single("⒟"), single("⒠"),
+            //
+            single("⒡"), single("⒢"), single("⒣"), single("⒤"), single("⒥"),
+            //
+            single("⒦"), single("⒧"), single("⒨"), single("⒩"), single("⒪"),
+            //
+            single("⒫"), single("⒬"), single("⒭"), single("⒮"), single("⒯"),
+            //
+            single("⒰"), single("⒱"), single("⒲"), single("⒳"), single("⒴"),
+            //
+            single("⒵"),
             }),
     /**
-     * 符号：https://tool.lmeee.com/fuhao/tianqi
-     */
-    weather("天气", new Symbol[] {
-            single("☼"), single("☀"), single("☁"), single("☂"), single("☾"), single("☽"),
-            //
-            single("☃"), single("⊙"), single("☉"), single("↯"), single("★"), single("✰"),
-            //
-            single("☆"), single("✩"), single("✪"), single("✫"), single("✬"), single("✭"),
-            //
-            single("✮"), single("✯"), single("✢"), single("⋆"), single("✢"), single("✣"),
-            //
-            single("✤"), single("✥"), single("❋"), single("✦"), single("✧"), single("❂"),
-            //
-            single("✱"), single("✲"), single("✵"), single("✶"), single("✷"),
-            //
-            single("✸"), single("✹"), single("✺"), single("✻"), single("✼"),
-            //
-            single("❅"), single("❆"), single("❈"), single("❉"), single("❊"),
-            }),
-    /**
-     * 符号：https://tool.lmeee.com/fuhao/sanjiao
+     * 几何符号：
+     * - https://tool.lmeee.com/fuhao/sanjiao
+     * - https://coolsymbol.com/
      */
     geometry("几何", new Symbol[] {
-            single("▪"), single("▫"), single("■"), single("□"), single("▢"),
             //
-            single("⊡"), single("▣"), single("❏"), single("❑"), single("❐"), single("❒"),
+            single("❏"), single("❐"), single("❑"), single("❒"), single("▀"),
             //
-            single("◙"), single("◘"), single("▤"), single("▥"), single("▧"), single("▨"), single("▦"),
+            single("▁"), single("▂"), single("▃"), single("▄"), single("▅"),
             //
-            single("▩"), single("⊟"), single("◫"), single("⊞"), single("⊠"),
+            single("▆"), single("▇"), single("▉"), single("▊"), single("▋"),
             //
-            single("◧"), single("◨"), single("◩"), single("◪"), single("▬"), single("▭"),
+            single("█"), single("▌"), single("▐"), single("▍"), single("▎"),
             //
-            single("▮"), single("▯"), single("░"), single("▒"), single("▓"), single("♦"),
+            single("▏"), single("▕"), single("▛"), single("▜"), single("▝"),
             //
-            single("⋄"), single("▱"), single("▰"), single("◆"), single("◇"), single("◈"),
+            single("▞"), single("▟"), single("▖"), single("▗"), single("▘"),
             //
-            single("۞"), single("▁"), single("▂"), single("▃"), single("▄"), single("▅"),
+            single("▙"), single("▚"), single("░"), single("▒"), single("▓"),
             //
-            single("▆"), single("▇"), single("█"), single("▏"), single("▎"), single("▍"),
+            single("▔"), single("▬"), single("▢"), single("▣"), single("▤"),
             //
-            single("▌"), single("▋"), single("▊"), single("▉"), single("✚"), single("✜"), single("◰"),
+            single("▥"), single("▦"), single("▧"), single("▨"), single("▩"),
             //
-            single("◱"), single("◲"), single("◳"), single("◻"), single("◼"), single("◽"), single("◾"),
+            single("▪"), single("▫"), single("▭"), single("▮"), single("▯"),
             //
-            single("⧈"), single("▛"), single("▜"), single("▝"), single("▞"), single("▟"),
+            single("☰"), single("☲"), single("☱"), single("☴"), single("☵"),
             //
-            single("▖"), single("▗"), single("▘"), single("▙"), single("▚"), single("°"),
+            single("☶"), single("☳"), single("☷"), single("▰"), single("▱"),
             //
-            single("º"), single("o"), single("O"), single("·"), single("•"), single("◎"),
+            single("◧"), single("◨"), single("◩"), single("◪"), single("◫"),
             //
-            single("○"), single("●"), single("❍"), single("◉"), single("◌"), single("◍"),
+            single("∎"), single("■"), single("□"), single("⊞"), single("⊟"),
             //
-            single("⊙"), single("☉"), single("Θ"), single("⊖"), single("⊘"), single("⊕"),
+            single("⊠"), single("⊡"), single("❘"), single("❙"), single("❚"),
             //
-            single("⊗"), single("⊜"), single("◍"), single("◐"), single("◑"), single("◒"),
+            single("〓"), single("♦"), single("⋄"), single("◊"), single("◈"),
             //
-            single("◓"), single("◔"), single("◕"), single("◖"), single("◗"), single("❂"),
+            single("◇"), single("◆"), single("⎔"), single("۞"), single("✚"),
             //
-            single("☼"), single("¤"), single("◘"), single("◙"), single("◤"), single("◥"),
+            single("✜"), single("◰"), single("◱"), single("◲"), single("◳"),
             //
-            single("◄"), single("►"), single("▶"), single("◀"), single("▲"),
+            single("◻"), single("◼"), single("◽"), single("◾"), single("⧈"),
             //
-            single("▼"), single("◣"), single("◢"), single("◥"), single("▸"), single("◂"),
+            single("⎚"), single("☖"), single("¤"), single("⍍"), single("⍔"),
             //
-            single("▴"), single("▾"), single("△"), single("▽"), single("▷"), single("◁"),
+            single("⍙"), single("⋈"), single("☗"), single("◄"), single("▲"),
             //
-            single("▻"), single("◅"), single("▵"), single("▿"), single("▹"), single("◃"),
+            single("▼"), single("►"), single("◀"), single("◣"), single("◥"),
             //
-            single("◩"), single("◪"), single("∆"), single("∇"), single("◬"), single("◭"),
+            single("◤"), single("◢"), single("▶"), single("◂"), single("▴"),
             //
-            single("◮"), single("‣"), single("ㅿ"), single("⊿"), single("⍍"),
+            single("▾"), single("▸"), single("‣"), single("ㅿ"), single("◁"),
             //
-            single("⍔"), single("⍙"), single("≜"), single("⊵"), single("⊴"), single("⋈"),
+            single("△"), single("▽"), single("▷"), single("∆"), single("∇"),
             //
-            single("⑅"), single("⌳"), single("⌲"), single("⋪"), single("⋫"), single("⍢"),
+            single("⊳"), single("⊲"), single("⊴"), single("⊵"), single("◅"),
             //
-            single("⍫"), single("∡"),
+            single("▻"), single("▵"), single("▿"), single("◃"), single("▹"),
+            //
+            single("◭"), single("◮"), single("⫷"), single("⫸"), single("⋖"),
+            //
+            single("⋗"), single("⋪"), single("⋫"), single("⋬"), single("⋭"),
+            //
+            single("⍫"), single("∡"), single("⌳"), single("⌲"), single("⍢"),
+            //
+            single("⊿"), single("◬"), single("≜"), single("⑅"), single("◉"),
+            //
+            single("○"), single("◌"), single("°"), single("º"), single("o"),
+            //
+            single("O"), single("·"), single("•"), single("☉"), single("Θ"),
+            //
+            single("☼"), single("◍"), single("◎"), single("●"), single("◐"),
+            //
+            single("◑"), single("◒"), single("◓"), single("◔"), single("◕"),
+            //
+            single("◖"), single("◗"), single("❂"), single("☢"), single("⊗"),
+            //
+            single("⊙"), single("◘"), single("◙"), single("◚"), single("◛"),
+            //
+            single("◜"), single("◝"), single("◞"), single("◟"), single("◠"),
+            //
+            single("◡"), single("◯"), single("〇"), single("〶"), single("⚫"),
+            //
+            single("⬤"), single("◦"), single("∅"), single("∘"), single("⊕"),
+            //
+            single("⊖"), single("⊘"), single("⊚"), single("⊛"), single("⊜"),
+            //
+            single("⊝"), single("❍"), single("⦿"), single("│"), single("┃"),
+            //
+            single("╽"), single("╿"), single("╏"), single("║"), single("╎"),
+            //
+            single("┇"), single("︱"), single("┊"), single("︳"), single("┋"),
+            //
+            single("┆"), single("╵"), single("〡"), single("〢"), single("╹"),
+            //
+            single("╻"), single("╷"), single("〣"), single("☰"), single("☱"),
+            //
+            single("☲"), single("☳"), single("☴"), single("☵"), single("☶"),
+            //
+            single("☷"), single("≡"), single("✕"), single("═"), single("━"),
+            //
+            single("─"), single("╍"), single("┅"), single("┉"), single("┄"),
+            //
+            single("┈"), single("╌"), single("╴"), single("╶"), single("╸"),
+            //
+            single("╺"), single("╼"), single("╾"), single("﹉"), single("﹍"),
+            //
+            single("﹊"), single("﹎"), single("︲"), single("⑆"), single("⑇"),
+            //
+            single("⑈"), single("⑉"), single("⑊"), single("⑄"), single("⑀"),
+            //
+            single("︴"), single("﹏"), single("﹌"), single("﹋"), single("╳"),
+            //
+            single("╲"), single("╱"), single("︶"), single("︵"), single("〵"),
+            //
+            single("〴"), single("〳"), single("〆"), single("`"), single("ᐟ"),
+            //
+            single("‐"), single("⁃"), single("⎯"), single("〄"), single("﹄"),
+            //
+            single("﹃"), single("﹂"), single("﹁"), single("┕"), single("┓"),
+            //
+            single("└"), single("┐"), single("┖"), single("┒"), single("┗"),
+            //
+            single("┑"), single("┍"), single("┙"), single("┏"), single("┛"),
+            //
+            single("┎"), single("┚"), single("┌"), single("┘"), single("「"),
+            //
+            single("」"), single("『"), single("』"), single("˩"), single("˥"),
+            //
+            single("├"), single("┝"), single("┞"), single("┟"), single("┠"),
+            //
+            single("┡"), single("┢"), single("┣"), single("┤"), single("┥"),
+            //
+            single("┦"), single("┧"), single("┨"), single("┩"), single("┪"),
+            //
+            single("┫"), single("┬"), single("┭"), single("┮"), single("┯"),
+            //
+            single("┰"), single("┱"), single("┲"), single("┳"), single("┴"),
+            //
+            single("┵"), single("┶"), single("┷"), single("┸"), single("┹"),
+            //
+            single("┺"), single("┻"), single("┼"), single("┽"), single("┾"),
+            //
+            single("┿"), single("╀"), single("╁"), single("╂"), single("╃"),
+            //
+            single("╄"), single("╅"), single("╆"), single("╇"), single("╈"),
+            //
+            single("╉"), single("╊"), single("╋"), single("╒"), single("╕"),
+            //
+            single("╓"), single("╖"), single("╔"), single("╗"), single("╘"),
+            //
+            single("╛"), single("╙"), single("╜"), single("╚"), single("╝"),
+            //
+            single("╞"), single("╡"), single("╟"), single("╢"), single("╠"),
+            //
+            single("╣"), single("╥"), single("╨"), single("╧"), single("╤"),
+            //
+            single("╦"), single("╩"), single("╪"), single("╫"), single("╬"),
+            //
+            single("〒"), single("⊢"), single("⊣"), single("⊤"), single("⊥"),
+            //
+            single("╭"), single("╮"), single("╯"), single("╰"), single("⊦"),
+            //
+            single("⊧"), single("⊨"), single("⊩"), single("⊪"), single("⊫"),
+            //
+            single("⊬"), single("⊭"), single("⊮"), single("⊯"), single("⊺"),
+            //
+            single("〦"), single("〧"), single("〨"), single("˦"), single("˧"),
+            //
+            single("˨"), single("⑁"), single("⑂"), single("⑃"), single("∟"),
+            }),
+    /** https://coolsymbol.com/ */
+    misc("杂项", new Symbol[] {
+            //
+            single("★"), single("☆"), single("✡"), single("✦"), single("✧"),
+            //
+            single("✩"), single("✪"), single("✫"), single("✬"), single("✭"),
+            //
+            single("✮"), single("✯"), single("✰"), single("⁂"), single("⁎"),
+            //
+            single("⁑"), single("✢"), single("✣"), single("✤"), single("✥"),
+            //
+            single("✱"), single("✲"), single("✳"), single("✴"), single("✵"),
+            //
+            single("✶"), single("✷"), single("✸"), single("✹"), single("✺"),
+            //
+            single("✻"), single("✼"), single("✽"), single("✾"), single("✿"),
+            //
+            single("❀"), single("❁"), single("❂"), single("❃"), single("❇"),
+            //
+            single("❈"), single("❉"), single("❊"), single("❋"), single("❄"),
+            //
+            single("❆"), single("❅"), single("⋆"), single("≛"), single("ᕯ"),
+            //
+            single("✲"), single("࿏"), single("꙰"), single("۞"), single("⭒"),
+            //
+            single("⍟"), single("⭐"), single("🌠"), single("🌟"), single("💫"),
+            //
+            single("✨"), single("🌃"), single("🔯"), single("©"), single("®"),
+            //
+            single("™"), single("℠"), single("℡"), single("℗"), single("‱"),
+            //
+            single("№"), single("℀"), single("℁"), single("℅"), single("℆"),
+            //
+            single("⅍"), single("☊"), single("☎"), single("☏"), single("⌨"),
+            //
+            single("✁"), single("✂"), single("✃"), single("✄"), single("✆"),
+            //
+            single("✇"), single("✈"), single("✉"), single("✎"), single("✏"),
+            //
+            single("✐"), single("✑"), single("✒"), single("‰"), single("§"),
+            //
+            single("¶"), single("✌️"), single("☝️"), single("☞"), single("☛"),
+            //
+            single("☟"), single("☜"), single("☚"), single("✍️"), single("¢"),
+            //
+            single("$"), single("€"), single("£"), single("¥"), single("₮"),
+            //
+            single("৲"), single("৳"), single("௹"), single("฿"), single("៛"),
+            //
+            single("₠"), single("₡"), single("₢"), single("₣"), single("₤"),
+            //
+            single("₥"), single("₦"), single("₧"), single("₨"), single("₩"),
+            //
+            single("₪"), single("₫"), single("₭"), single("₯"), single("₰"),
+            //
+            single("₱"), single("₲"), single("₳"), single("₴"), single("₵"),
+            //
+            single("￥"), single("﷼"), single("¤"), single("ƒ"), single("♔"),
+            //
+            single("♕"), single("♖"), single("♗"), single("♘"), single("♙"),
+            //
+            single("♚"), single("♛"), single("♜"), single("♝"), single("♞"),
+            //
+            single("♟"), single("♤"), single("♠"), single("♧"), single("♣"),
+            //
+            single("♡"), single("♥"), single("♢"), single("♦"), single("♩"),
+            //
+            single("♪"), single("♫"), single("♬"), single("♭"), single("♮"),
+            //
+            single("♯"), single("°"), single("ø"), single("؂"), single("≠"),
+            //
+            single("≭"), single("°"), single("℃"), single("℉"), single("ϟ"),
+            //
+            single("☀"), single("☁"), single("☂"), single("☃"), single("☉"),
+            //
+            single("☼"), single("☽"), single("☾"), single("♁"), single("♨"),
+            //
+            single("❄"), single("❅"), single("❆"), single("☇"), single("☈"),
+            //
+            single("☄"),
             }),
     /**
-     * 符号：https://tool.lmeee.com/fuhao/teshu
+     * 其他符号：https://tool.lmeee.com/fuhao/teshu
      */
     other("其他", new Symbol[] {
-            single("☯"), single("☭"), single("♥"), single("♡"), single("☜"), single("☞"),
             //
-            single("☎"), single("☏"), single("☻"), single("♧"), single("♂"), single("♀"),
+            single("☯"), single("☭"), single("☻"), single("♂"), single("♀"),
             //
-            single("♠"), single("♣"), single("♨"), single("◊"), single("◦"), single("♬"),
+            single("の"), single("あ"), single("ぃ"), single("￡"), single("Ю"),
             //
-            single("♪"), single("♩"), single("♭"), single("の"), single("あ"), single("ぃ"),
+            single("⊹"), single("⊱"), single("⋛"), single("⋚"), single("⊰"),
             //
-            single("￡"), single("Ю"),
+            single("۩"), single("‿"), single("｡"), single("❥"), single("❦"),
             //
-            single("〓"), single("§"), single("♤"), single("⊹"), single("⊱"), single("⋛"),
+            single("❧"), single("ღ"), single("☋"), single("☌"), single("☍"),
             //
-            single("⋚"), single("⊰"), single("۩"),
+            single("✟"), single("ஐ"), single("㊣"), single("큐"), single("«"),
             //
-            single("‿"), single("｡"), single("┱"), single("┲"), single("❥"), single("❦"),
+            single("»"), single("☨"), single("✞"), single("✛"), single("✙"),
             //
-            single("❧"), single("❃"), single("❁"), single("✿"), single("❀"),
+            single("✠"), single("†"), single("‡"), single("웃"), single("유"),
             //
-            single("✄"), single("ღ"),
+            single("¡"), single("¿"), single("☿"), single("☤"), single("⌘"),
             //
-            single("☈"), single("☊"), single("☋"), single("☌"), single("☍"), single("╬"),
+            single("※"), single("Σ"), single("卐"), single("❖"), single("½"),
             //
-            single("♫"), single("﹌"), single("▀"), single("✎"), single("✟"), single("ஐ"),
+            single("⋌"), single("ン"), single("ッ"), single("ツ"), single("シ"),
             //
-            single("㊣"), single("✐"), single("♯"), single("♮"), single("₪"),
+            single("ヅ"), single("Ü"), single("ϡ"), single("⚘"), single("☐"),
             //
-            single("큐"), single("«"), single("»"), single("™"), single("☨"), single("✞"),
+            single("☥"), single("☩"), single("☧"), single("☬"), single("♆"),
             //
-            single("✛"), single("✙"), single("✠"), single("†"), single("‡"), single("웃"), single("유"),
+            single("༄"), single("இ"), single("ண"), single("Ψ"), single("Ұ"),
             //
-            single("¡"), single("¿"), single("☿"), single("☤"), single("♚"),
+            single("￠"), single("лв"), single("円"), single("र"), single("Kč"),
             //
-            single("♛"), single("⌘"), single("※"),
-            //
-            single("─"), single("━"), single("│"), single("┃"), single("▐"),
-            //
-            single("©"), single("®"), single("Σ"), single("卐"), single("❖"),
-            //
-            single("ϟ"), single("¢"), single("€"), single("£"), single("½"),
-            //
-            single("┅"), single("┄"), single("┈"), single("┉"),
-            //
-            single("┆"), single("┊"), single("┇"), single("┋"),
-            //
-            single("⋌"), single("ン"), single("ッ"), single("ツ"), single("シ"), single("ヅ"),
-            //
-            single("Ü"), single("ϡ"), single("℠"), single("℗"),
-            //
-            single("♢"), single("☚"), single("☛"), single("☟"), single("✽"), single("✾"), single("⚘"),
-            //
-            single("☐"), single("☥"), single("☩"), single("☧"),
-            //
-            single("☬"), single("♁"), single("♆"), single("༄"), single("இ"), single("ண"),
-            //
-            single("৳"), single("¶"), single("$"), single("Ψ"), single("￥"), single("₩"),
-            //
-            single("₫"), single("Ұ"), single("฿"), single("￠"), single("₢"), single("₯"), single("₭"),
-            //
-            single("₣"), single("₤"), single("₦"), single("₰"), single("₧"), single("₱"),
-            //
-            single("៛"), single("₨"), single("₮"), single("₴"), single("₳"), single("₵"),
-            //
-            single("₡"), single("₥"), single("лв"), single("円"), single("र"),
-            //
-            single("₲"), single("Kč"), single("〒"), single("zł"), single("₠"),
+            single("zł"),
             }),
     ;
 

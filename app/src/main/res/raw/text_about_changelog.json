@@ -3,7 +3,7 @@
     "date": "2025-03-11",
     "logs": [
       {
-        "t": "提供输入法切换、隐藏键盘、收藏管理、复制/粘贴/剪切/全选等功能按钮，以方便快速操作&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
+        "t": "提供输入法切换、隐藏键盘、收藏管理、复制/粘贴/剪切/全选等功能按钮，以方便快速操作&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>&nbsp;与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
       },
       {
         "t": "实现收藏管理，支持将已输入、已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除。在激活输入法时，若检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
@@ -22,6 +22,9 @@
       },
       {
         "t": "在主界面点击版本号可查看当前版本的变更日志，以方便查看版本变更情况"
+      },
+      {
+        "t": "将&nbsp;<a href=\"https://coolsymbol.com/\">Cool Symbols & Fonts</a>&nbsp;所整理的符号补充到符号键盘中，以丰富可选符号"
       },
       {
         "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
