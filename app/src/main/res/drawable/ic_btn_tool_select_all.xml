@@ -1,0 +1,74 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/9045085/select_icon -->
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M3.792,0.509l0,3.283l-3.283,0l0,1.642l3.283,0l0,3.283l1.642,0l0,-3.283l3.283,0l0,-1.642l-3.283,0l0,-3.283z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M12,3.792l3.283,0l0,1.642l-3.283,0z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="m18.566,3.792l0,1.642l3.283,0l0,3.283l1.642,0L23.491,5.434A1.642,1.642 0,0 0,21.85 3.792Z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M3.792,12l1.642,0l0,3.283l-1.642,0z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M5.434,21.85L5.434,18.566L3.792,18.566l0,3.283a1.642,1.642 0,0 0,1.642 1.642l3.283,0l0,-1.642z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M21.85,12l1.642,0l0,3.283l-1.642,0z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="M12,21.85l3.283,0l0,1.642l-3.283,0z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="m21.85,18.566l0,3.283l-3.283,0l0,1.642l3.283,0a1.642,1.642 0,0 0,1.642 -1.642l0,-3.283z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.017"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+</vector>

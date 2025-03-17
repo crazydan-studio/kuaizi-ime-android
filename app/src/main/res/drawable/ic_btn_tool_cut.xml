@@ -1,0 +1,33 @@
+<!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="24dp"
+        android:height="24dp"
+        android:viewportWidth="24"
+        android:viewportHeight="24">
+    <!-- https://www.iconfinder.com/icons/9111240/cut_coupon_icon -->
+    <path
+            android:fillColor="?attr/btn_tool_fg_color"
+            android:pathData="m21.521,13.19v-2.38h2.38v2.38zM21.521,16.76v-2.38h2.38v2.38zM21.521,23.901v-2.38h2.38v2.38zM21.521,20.331v-2.38h2.38v2.38zM17.95,23.901v-2.38h2.38v2.38zM14.38,23.901v-2.38h2.38v2.38zM7.24,23.901v-2.38h2.38v2.38zM10.81,23.901v-2.38h2.38v2.38zM3.669,23.901L3.669,21.521L6.05,21.521v2.38zM3.669,20.331L3.669,17.95L6.05,17.95v2.38zM17.95,9.62L17.95,7.24h2.38v2.38zM14.38,9.62L14.38,7.24h2.38v2.38zM21.521,9.62L21.521,7.24h2.38L23.901,9.62ZM5.649,6.641c-0.566,0.378 -1.247,0.598 -1.979,0.598 -1.972,0 -3.57,-1.598 -3.57,-3.57 0,-1.972 1.598,-3.57 3.57,-3.57 1.972,0 3.57,1.598 3.57,3.57 0,0.372 -0.057,0.731 -0.163,1.068L10.017,6.942 17.236,1.527 18.664,3.431 12,8.43 18.664,13.428 17.236,15.332 10.017,9.917 7.077,12.122c0.106,0.337 0.163,0.696 0.163,1.068 0,1.972 -1.598,3.57 -3.57,3.57 -1.972,0 -3.57,-1.598 -3.57,-3.57 0,-1.972 1.598,-3.57 3.57,-3.57 0.732,0 1.413,0.22 1.979,0.598L8.033,8.43ZM3.669,14.38c0.657,0 1.19,-0.533 1.19,-1.19C4.86,12.533 4.327,12 3.669,12 3.012,12 2.479,12.533 2.479,13.19c0,0.657 0.533,1.19 1.19,1.19zM3.669,4.86c0.657,0 1.19,-0.533 1.19,-1.19 0,-0.657 -0.533,-1.19 -1.19,-1.19 -0.657,0 -1.19,0.533 -1.19,1.19 0,0.657 0.533,1.19 1.19,1.19z"
+            android:strokeLineJoin="round"
+            android:strokeWidth="0.198347"
+            android:fillType="evenOdd"
+            android:strokeColor="?attr/btn_tool_fg_color" />
+</vector>

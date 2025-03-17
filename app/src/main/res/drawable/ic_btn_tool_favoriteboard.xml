@@ -18,49 +18,36 @@
   -->
 
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-        android:width="24dp"
+        android:width="18.707dp"
         android:height="24dp"
-        android:viewportWidth="24"
+        android:viewportWidth="18.707"
         android:viewportHeight="24">
-    <!-- https://www.iconfinder.com/icons/1118205/clipboard_notes_pages_icon -->
+    <!-- https://www.iconfinder.com/icons/9042325/bookmark_book_icon -->
     <path
-            android:pathData="M17.225,2.275L16.935,2.275L16.935,1.84C16.935,1.52 16.674,1.404 16.354,1.404L13.161,1.404c0,-0.871 -0.52,-1.161 -1.161,-1.161 -0.641,0 -1.161,0.29 -1.161,1.161L7.646,1.404c-0.319,0 -0.581,0.116 -0.581,0.435L7.065,2.275l-0.29,0c-1.921,0 -3.484,1.418 -3.484,3.338l0,14.515C3.291,22.049 4.854,23.757 6.775,23.757l10.451,0c1.921,0 3.484,-1.708 3.484,-3.629l0,-14.515C20.709,3.693 19.146,2.275 17.225,2.275ZM12,0.678c0.32,0 0.581,0.26 0.581,0.581 0,0.32 -0.26,0.581 -0.581,0.581 -0.32,0 -0.581,-0.26 -0.581,-0.581 0,-0.32 0.26,-0.581 0.581,-0.581zM19.548,20.128C19.548,21.409 18.506,22.596 17.225,22.596L6.775,22.596c-1.28,0 -2.322,-1.187 -2.322,-2.468l0,-14.515C4.452,4.333 5.494,3.436 6.775,3.436l0.29,0l-0.29,1.161c0,0.319 0.261,0.581 0.581,0.581l9.289,0c0.319,0 0.581,-0.261 0.581,-0.581l-0.29,-1.161l0.29,0c1.28,0 2.322,0.897 2.322,2.177z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:pathData="M0.842,20.579L0.842,3.421C0.842,2.068 1.795,0.97 2.97,0.97L17.226,0.97C17.579,0.97 17.865,1.299 17.865,1.706l0,16.072"
+            android:strokeWidth="1.808"
+            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeLineCap="round" />
     <path
-            android:pathData="M9.678,9.242l7.548,0l0,1.161l-7.548,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:pathData="m5.098,0.97l0,9.804L7.758,8.814 10.417,10.775L10.417,0.97"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.808"
+            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeLineCap="round" />
     <path
-            android:pathData="M9.678,13.887l7.548,0l0,1.161l-7.548,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:pathData="M2.97,18.128L17.865,18.128"
+            android:strokeWidth="1.808"
+            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeLineCap="round" />
     <path
-            android:pathData="M9.678,18.532l7.548,0l0,1.161l-7.548,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:pathData="M2.97,23.03L17.865,23.03"
+            android:strokeWidth="1.808"
+            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeLineCap="round" />
     <path
-            android:pathData="M5.904,10.984L8.807,10.984L8.807,8.081L5.904,8.081ZM6.484,8.662l1.742,0l0,1.742l-1.742,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
-    <path
-            android:pathData="M5.904,15.338L8.807,15.338L8.807,12.435L5.904,12.435ZM6.484,13.016l1.742,0l0,1.742l-1.742,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
-    <path
-            android:pathData="M5.904,19.983L8.807,19.983L8.807,17.08L5.904,17.08ZM6.484,17.661l1.742,0l0,1.742l-1.742,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
-    <path
-            android:pathData="M6.775,17.951l1.161,0l0,1.161l-1.161,0z"
-            android:strokeWidth="0.486"
-            android:fillColor="?attr/btn_tool_fg_color"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:pathData="M2.97,23.03C1.795,23.03 0.842,21.933 0.842,20.579 0.842,19.225 1.795,18.128 2.97,18.128"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.808"
+            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeLineCap="round" />
 </vector>

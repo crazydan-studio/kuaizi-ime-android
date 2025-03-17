@@ -3,13 +3,13 @@
     "date": "2025-03-11",
     "logs": [
       {
-        "t": "在输入列表的空闲状态显示工具栏，并内置剪贴板管理、快捷配置、复制/粘贴、输入法切换等功能按键，同时适配左右手模式，自动调整功能按键的布局方向&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
+        "t": "在输入列表的空闲状态显示工具栏，并提供收藏管理、复制/粘贴/剪切/全选、输入法切换等功能按钮&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
       },
       {
-        "t": "实现剪贴板管理，支持收藏剪贴内容、粘贴/删除已收藏内容等，并在检测到最新的复制内容时，以气泡形式提示可粘贴已复制的内容（仅提示可粘贴，但不显示内容，以确保信息安全）&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
+        "t": "实现收藏管理，支持将已输入、已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除。在检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
       },
       {
-        "t": "英文输入补全的气泡提示也按左右手模式排列，以方便左右手快速选中第一个补全内容"
+        "t": "气泡提示、工具栏功能按钮、收藏列表操作按钮等均按左右手模式动态调整布局方向，使其离左右手最近，以便于快速选中目标和按钮"
       },
       {
         "t": "取消拼音键盘中对字符按键的长按手势，以避免与滑行输入发生冲突"
@@ -21,7 +21,7 @@
         "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/39\">#39</a>。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>、<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;与&nbsp;<a href=\"https://github.com/zhangyuyard\">@zhangyuyard</a>&nbsp;的热心反馈与建议"
       },
       {
-        "t": "支持在主界面以点击版本号的方式查看当前版本的变更日志"
+        "t": "在主界面点击版本号可查看当前版本的变更日志，以方便查看版本变更情况"
       },
       {
         "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
