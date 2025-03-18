@@ -31,7 +31,5 @@
             android:paddingHorizontal="12dp"
             android:paddingVertical="0dp"
             android:textSize="@dimen/input_popup_key_text_size"
-            android:textStyle="bold"
-            android:textColor="?attr/key_highlight_fg_color"
-            android:background="@drawable/bg_input_popup_key_view" />
+            android:textStyle="bold" />
 </LinearLayout>

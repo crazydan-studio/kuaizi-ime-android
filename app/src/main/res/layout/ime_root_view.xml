@@ -24,12 +24,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="?attr/keyboard_bg_color">
+        android:background="?attr/board_bg_color">
 
     <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="?attr/keyboard_border_color" />
+            android:background="?attr/board_border_color" />
 
     <!-- Toast 的定位视图 -->
     <View

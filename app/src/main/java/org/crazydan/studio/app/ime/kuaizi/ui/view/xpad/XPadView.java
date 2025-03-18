@@ -112,7 +112,7 @@ public class XPadView extends View {
         this.zone_1_HexagonRadius_input_doing = this.zone_0_HexagonRadius / 0.60f;
 
         this.trailer = new ViewGestureTrailer();
-        this.trailer.setColor(attrColor(R.attr.input_trail_color));
+        this.trailer.setColor(attrColor(R.attr.gesture_trail_color));
     }
 
     public void setReversed(boolean reversed) {
@@ -461,7 +461,7 @@ public class XPadView extends View {
 
             float textSize = dimen(R.dimen.input_popup_key_text_size);
             float textSizeScale = zone_2_active_key.key instanceof CtrlKey ? 0.8f : 1f;
-            int textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+            int textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
             start.offset(0, textSize);
 
             XTextPainter painter = this.active_label_zone.newTextPainter(zone_2_active_key_label);
@@ -481,8 +481,8 @@ public class XPadView extends View {
         for (int i = 0; i < zone_2.blocks.size(); i++) {
             boolean isActiveBlock = isActiveBlock_In_Zone_2(i);
             int defaultTextColor = isActiveBlock && zone_2_active_key == null
-                                   ? attrColor(R.attr.x_keyboard_chars_highlight_fg_color)
-                                   : attrColor(R.attr.x_keyboard_chars_fg_color);
+                                   ? attrColor(R.attr.xpad_key_chars_highlight_fg_color)
+                                   : attrColor(R.attr.xpad_key_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) zone_2.blocks.get(i);
 
             BlockKey[][] blockKeys = getBlockKeys_In_Zone_2(i, isActiveBlock);
@@ -551,10 +551,10 @@ public class XPadView extends View {
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
                     if (Objects.equals(blockKey, zone_2_active_key)) {
-                        textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
                         textSizeScale = 1.25f;
                     } else if (zone_2_active_key != null) {
-                        textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_fg_color);
                     }
                     size = textSize * textSizeScale;
 
@@ -632,10 +632,10 @@ public class XPadView extends View {
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
                     if (Objects.equals(blockKey, zone_2_active_key)) {
-                        textColor = attrColor(R.attr.x_keyboard_chars_highlight_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
                         textSizeScale = 1.25f;
                     } else if (zone_2_active_key != null) {
-                        textColor = attrColor(R.attr.x_keyboard_chars_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_fg_color);
                     }
                     size = textSize * textSizeScale;
 
@@ -751,9 +751,9 @@ public class XPadView extends View {
     ) {
         XZone zone = new XZone();
 
-        int bg_color = attrColor(R.attr.x_keyboard_ctrl_bg_style);
-        String divider_style = attrStr(R.attr.x_keyboard_ctrl_divider_style);
-        String shadow_style = attrStr(R.attr.x_keyboard_shadow_style);
+        int bg_color = attrColor(R.attr.xpad_key_ctrl_bg_style);
+        String divider_style = attrStr(R.attr.xpad_key_ctrl_divider_style);
+        String shadow_style = attrStr(R.attr.xpad_key_shadow_style);
 
         XPathPainter fill_painter = zone.newPathPainter();
         fill_painter.setFillColor(bg_color);
@@ -829,8 +829,8 @@ public class XPadView extends View {
     ) {
         XZone zone = new XZone();
 
-        String divider_style = attrStr(R.attr.x_keyboard_chars_divider_style);
-        String shadow_style = attrStr(R.attr.x_keyboard_chars_divider_shadow_style);
+        String divider_style = attrStr(R.attr.xpad_key_chars_divider_style);
+        String shadow_style = attrStr(R.attr.xpad_key_chars_divider_shadow_style);
 
         XPathPainter stroke_painter = zone.newPathPainter();
         stroke_painter.setStrokeCap(Paint.Cap.ROUND); // 设置端点为圆形

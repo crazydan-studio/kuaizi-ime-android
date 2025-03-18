@@ -18,27 +18,42 @@
   -->
 
 <resources>
-
+    <!-- Start: 输入法主题 -->
     <style name="Theme.Kuaizi.IME.Light" parent="">
-        <!-- 键盘样式 -->
-        <item name="keyboard_bg_color">#ffededed</item>
-        <item name="keyboard_border_color">?attr/board_divider_color</item>
+        <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Light</item>
+        <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
+
+        <item name="board_bg_color">#ffededed</item>
+        <item name="board_border_color">?attr/board_divider_color</item>
         <item name="board_divider_color">#ffdadada</item>
 
-        <item name="input_bg_color">?attr/keyboard_bg_color</item>
-        <item name="input_fg_color">?attr/key_fg_color</item>
-        <item name="input_trail_color">?attr/key_highlight_fg_color</item>
-        <item name="input_selection_bg_color">#ffdadada</item>
-        <item name="input_selection_fg_color">?attr/key_fg_color</item>
-        <item name="input_quick_bg_color">?attr/key_bg_color</item>
-        <item name="input_quick_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="input_quick_border_color">?attr/keyboard_border_color</item>
-        <item name="input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
-        <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
-        <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
+        <!-- Popup 配置 -->
+        <item name="popup_input_quick_bg_color">#ffffffff</item>
+        <item name="popup_input_quick_fg_color">#e600bcd4</item>
+        <item name="popup_input_quick_border_color">?attr/board_border_color</item>
+        <item name="popup_input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
+    </style>
 
-        <item name="btn_tool_fg_color">#ff616161</item>
-        <!-- 键盘按键样式 -->
+    <style name="Theme.Kuaizi.IME.Night" parent="">
+        <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Night</item>
+        <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
+
+        <item name="board_bg_color">#ff272b2c</item>
+        <item name="board_border_color">?attr/board_divider_color</item>
+        <item name="board_divider_color">#93000000</item>
+
+        <!-- Popup 配置 -->
+        <item name="popup_input_quick_bg_color">#ff2f3336</item>
+        <item name="popup_input_quick_fg_color">#e600bcd4</item>
+        <item name="popup_input_quick_border_color">?attr/board_border_color</item>
+        <item name="popup_input_quick_shadow_style">1 1 2 #a3000000</item>
+    </style>
+    <!-- End: 输入法主题 -->
+
+    <!-- Start: 输入法键盘主题 -->
+    <style name="Theme.Kuaizi.IME.Keyboard.Light" parent="">
+        <item name="gesture_trail_color">#e600bcd4</item>
+
         <item name="key_bg_color">#ffffffff</item>
         <item name="key_fg_color">#ff616161</item>
         <item name="key_highlight_fg_color">#e600bcd4</item>
@@ -89,36 +104,18 @@
         <item name="key_char_level_5_bg_color">#a88ba8c8</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
 
-        <item name="x_keyboard_shadow_style">?attr/key_shadow_style</item>
-        <item name="x_keyboard_ctrl_divider_style">0.5 #b3c5c5c5</item>
-        <item name="x_keyboard_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="x_keyboard_chars_fg_color">?attr/key_fg_color</item>
-        <item name="x_keyboard_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="x_keyboard_chars_divider_style">2 #ffffffff</item>
-        <item name="x_keyboard_chars_divider_shadow_style">?attr/x_keyboard_shadow_style</item>
+        <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
+        <item name="xpad_key_ctrl_divider_style">0.5 #b3c5c5c5</item>
+        <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
+        <item name="xpad_key_chars_fg_color">?attr/key_fg_color</item>
+        <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="xpad_key_chars_divider_style">2 #ffffffff</item>
+        <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
     </style>
 
-    <style name="Theme.Kuaizi.IME.Night" parent="">
-        <!-- 配色参考: https://codepen.io/kulpreets/pen/MKgqqB -->
-        <!-- 键盘样式 -->
-        <item name="keyboard_bg_color">#ff272b2c</item>
-        <item name="keyboard_border_color">?attr/board_divider_color</item>
-        <item name="board_divider_color">#93000000</item>
+    <style name="Theme.Kuaizi.IME.Keyboard.Night" parent="">
+        <item name="gesture_trail_color">#e600bcd4</item>
 
-        <item name="input_bg_color">?attr/keyboard_bg_color</item>
-        <item name="input_fg_color">?attr/key_fg_color</item>
-        <item name="input_trail_color">?attr/key_highlight_fg_color</item>
-        <item name="input_selection_bg_color">#ff334155</item>
-        <item name="input_selection_fg_color">?attr/key_fg_color</item>
-        <item name="input_quick_bg_color">?attr/key_bg_color</item>
-        <item name="input_quick_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="input_quick_border_color">?attr/keyboard_border_color</item>
-        <item name="input_quick_shadow_style">1 1 2 #a3000000</item>
-        <item name="input_char_math_expr_border_color">?attr/input_selection_bg_color</item>
-        <item name="input_char_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
-
-        <item name="btn_tool_fg_color">#fffafafa</item>
-        <!-- 键盘按键样式 -->
         <item name="key_bg_color">#ff2f3336</item>
         <item name="key_fg_color">#ff71d4fe</item>
         <item name="key_highlight_fg_color">#e600bcd4</item>
@@ -169,15 +166,45 @@
         <item name="key_char_level_5_bg_color">#688ba8c8</item>
         <item name="key_char_level_5_fg_color">?attr/key_char_level_0_fg_color</item>
 
-        <item name="x_keyboard_shadow_style">?attr/key_shadow_style</item>
-        <item name="x_keyboard_ctrl_divider_style">0.5 #b3000000</item>
-        <item name="x_keyboard_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="x_keyboard_chars_fg_color">#fffafafa</item>
-        <item name="x_keyboard_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
-        <item name="x_keyboard_chars_divider_style">2 #ff2f3336</item>
-        <item name="x_keyboard_chars_divider_shadow_style">?attr/x_keyboard_shadow_style</item>
+        <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
+        <item name="xpad_key_ctrl_divider_style">0.5 #b3000000</item>
+        <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
+        <item name="xpad_key_chars_fg_color">#fffafafa</item>
+        <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="xpad_key_chars_divider_style">2 #ff2f3336</item>
+        <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
+    </style>
+    <!-- End: 输入法键盘主题 -->
+
+    <!-- Start: 输入法输入面板主题 -->
+    <style name="Theme.Kuaizi.IME.Inputboard.Light" parent="">
+        <item name="input_bg_color">?attr/board_bg_color</item>
+        <item name="input_fg_color">#ff616161</item>
+
+        <item name="input_selection_bg_color">#ffdadada</item>
+        <item name="input_selection_fg_color">#ff616161</item>
+
+        <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
+        <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
+
+        <item name="input_tool_fg_color">#ff616161</item>
     </style>
 
+    <style name="Theme.Kuaizi.IME.Inputboard.Night" parent="">
+        <item name="input_bg_color">?attr/board_bg_color</item>
+        <item name="input_fg_color">#ff71d4fe</item>
+
+        <item name="input_selection_bg_color">#ff334155</item>
+        <item name="input_selection_fg_color">#ff71d4fe</item>
+
+        <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
+        <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
+
+        <item name="input_tool_fg_color">#affafafa</item>
+    </style>
+    <!-- End: 输入法输入面板主题 -->
+
+    <!-- Start: 输入法应用界面主题 -->
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />
 
     <style name="Theme.Kuaizi.App.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -244,4 +271,5 @@
         <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
+    <!-- End: 输入法应用界面主题 -->
 </resources>

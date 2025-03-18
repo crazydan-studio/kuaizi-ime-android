@@ -60,8 +60,8 @@ public class MathExprInputViewHolder extends InputViewHolder {
         whenViewReady(this.markerView, (view) -> {
             setBackgroundColorByAttrId(view,
                                        data.selected
-                                       ? R.attr.input_char_math_expr_border_highlight_color
-                                       : R.attr.input_char_math_expr_border_color);
+                                       ? R.attr.input_math_expr_border_highlight_color
+                                       : R.attr.input_math_expr_border_color);
             ViewUtils.visible(view, !inputs.isEmpty());
         });
     }

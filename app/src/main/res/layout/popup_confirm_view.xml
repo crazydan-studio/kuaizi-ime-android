@@ -65,7 +65,7 @@
                     android:textAllCaps="false"
                     android:paddingHorizontal="8dp"
                     android:gravity="center"
-                    android:textColor="?attr/input_quick_fg_color" />
+                    android:textColor="?attr/popup_input_quick_fg_color" />
 
             <TextView
                     android:id="@+id/btn_negative"

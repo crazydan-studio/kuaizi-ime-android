@@ -82,13 +82,11 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
         int columns = keys[0].length;
         int rows = keys.length;
 
-        update(keys, columns, rows, null, isLeftHandMode);
+        update(keys, columns, rows, isLeftHandMode);
     }
 
     /** 更新视图 */
-    protected void update(
-            Key[][] keys, int columns, int rows, Integer themeResId, boolean isLeftHandMode
-    ) {
+    protected void update(Key[][] keys, int columns, int rows, boolean isLeftHandMode) {
         XPadKey oldXPadKey = getAdapter().getXPadKey();
         // Note: 可能会切换到表情、符号等非 XPad 输入面板上，此时，XPad 是不可用的
         XPadKey newXPadKey = getXPadKeyFrom(keys);
@@ -103,7 +101,7 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
 
         // Note: XPadKey 将根据其 #compareTo 接口的返回值确定是否重建视图，
         // 而该值始终返回 0，即，保持其视图不变
-        getAdapter().updateItems(keys, themeResId, orientation);
+        getAdapter().updateItems(keys, orientation);
 
         // Note：若 XPadKey 发生了变化，则手动更新 XPad 视图的内部
         if (xPadEnabled && !Objects.equals(oldXPadKey, newXPadKey)) {

@@ -26,28 +26,28 @@
     <path
             android:pathData="M0.842,20.579L0.842,3.421C0.842,2.068 1.795,0.97 2.97,0.97L17.226,0.97C17.579,0.97 17.865,1.299 17.865,1.706l0,16.072"
             android:strokeWidth="1.808"
-            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeColor="?attr/input_tool_fg_color"
             android:strokeLineCap="round" />
     <path
             android:pathData="m5.098,0.97l0,9.804L7.758,8.814 10.417,10.775L10.417,0.97"
             android:strokeLineJoin="round"
             android:strokeWidth="1.808"
-            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeColor="?attr/input_tool_fg_color"
             android:strokeLineCap="round" />
     <path
             android:pathData="M2.97,18.128L17.865,18.128"
             android:strokeWidth="1.808"
-            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeColor="?attr/input_tool_fg_color"
             android:strokeLineCap="round" />
     <path
             android:pathData="M2.97,23.03L17.865,23.03"
             android:strokeWidth="1.808"
-            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeColor="?attr/input_tool_fg_color"
             android:strokeLineCap="round" />
     <path
             android:pathData="M2.97,23.03C1.795,23.03 0.842,21.933 0.842,20.579 0.842,19.225 1.795,18.128 2.97,18.128"
             android:strokeLineJoin="round"
             android:strokeWidth="1.808"
-            android:strokeColor="?attr/btn_tool_fg_color"
+            android:strokeColor="?attr/input_tool_fg_color"
             android:strokeLineCap="round" />
 </vector>

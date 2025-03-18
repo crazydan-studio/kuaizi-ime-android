@@ -24,38 +24,38 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/211649/clipboard_icon -->
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="m4.334,6.894l10.218,0c-0.09,-1.064 -0.516,-1.873 -1.485,-2.134 -0.021,-0.005 -0.048,-0.016 -0.069,-0.021C12.359,4.557 11.891,4.339 11.891,3.637L11.891,2.541c0,-1.357 -1.091,-2.464 -2.448,-2.464 -1.357,0 -2.448,1.102 -2.448,2.464l0,1.096c0,0.697 -0.468,0.915 -1.107,1.096 -0.021,0.005 -0.048,0.021 -0.075,0.027 -0.969,0.261 -1.378,1.07 -1.479,2.134zM9.443,1.806c0.404,0 0.734,0.33 0.734,0.734 0,0.41 -0.33,0.734 -0.734,0.734 -0.404,0 -0.734,-0.33 -0.734,-0.734 0,-0.404 0.33,-0.734 0.734,-0.734z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M17.351,1.732L13.434,1.732l0,0.772c0,0.564 0.463,0.985 1.011,0.985l1.98,0c0.357,0 0.644,0.303 0.66,0.665l0.005,17.413c-0.016,0.341 -0.282,0.617 -0.612,0.644l-14.071,0.005c-0.33,-0.027 -0.591,-0.303 -0.612,-0.644L1.79,4.153C1.806,3.791 2.104,3.488 2.455,3.488L4.44,3.488c0.548,0 1.011,-0.42 1.011,-0.985L5.452,1.732L1.535,1.732C0.731,1.732 0.077,2.429 0.077,3.254L0.077,22.433c0,0.825 0.655,1.49 1.458,1.49L9.443,23.923 17.351,23.923c0.804,0 1.458,-0.665 1.458,-1.49L18.809,3.254C18.809,2.429 18.155,1.732 17.351,1.732Z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M3.482,8.597l5.96,0l0,0.851l-5.96,0z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M3.482,13.706l8.515,0l0,0.851l-8.515,0z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M3.482,18.815l6.865,0l0,0.851l-6.865,0z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M3.482,16.26l9.366,0l0,0.851l-9.366,0z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M3.482,11.151l11.069,0l0,0.851l-11.069,0z"
             android:strokeWidth="0.153"
-            android:strokeColor="?attr/btn_tool_fg_color" />
+            android:strokeColor="?attr/input_tool_fg_color" />
 </vector>

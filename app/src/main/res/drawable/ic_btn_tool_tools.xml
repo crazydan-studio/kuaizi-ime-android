@@ -24,15 +24,15 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/7548809/user_interface_app_add_menu_ui_circle_icon -->
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="m1.161,10.726l8.403,0c0.642,0 1.161,-0.52 1.161,-1.161L10.726,1.161c0,-0.642 -0.52,-1.161 -1.161,-1.161L1.161,-0C0.52,-0 -0,0.52 -0,1.161l0,8.403c0,0.642 0.52,1.161 1.161,1.161zM2.323,2.323l6.081,0l0,6.081L2.323,8.403Z" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M24,1.161C24,0.52 23.48,-0 22.839,-0L14.435,-0c-0.641,0 -1.161,0.52 -1.161,1.161l0,8.403c0,0.642 0.52,1.161 1.161,1.161L22.839,10.726c0.641,0 1.161,-0.52 1.161,-1.161zM21.677,8.403L15.597,8.403L15.597,2.323L21.677,2.323Z" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="m1.161,24l8.403,0c0.642,0 1.161,-0.52 1.161,-1.161L10.726,14.435c0,-0.642 -0.52,-1.161 -1.161,-1.161L1.161,13.274c-0.642,0 -1.161,0.52 -1.161,1.161L-0,22.839c0,0.642 0.52,1.161 1.161,1.161zM2.323,15.597l6.081,0L8.403,21.677L2.323,21.677Z" />
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="m18.637,13.274c-2.957,0 -5.363,2.406 -5.363,5.363 0,2.957 2.406,5.363 5.363,5.363 2.958,0 5.363,-2.406 5.363,-5.363 0,-2.957 -2.406,-5.363 -5.363,-5.363zM18.637,21.677c-1.676,0 -3.04,-1.364 -3.04,-3.04 0,-1.677 1.364,-3.04 3.04,-3.04 1.677,0 3.041,1.364 3.041,3.04 0,1.677 -1.364,3.04 -3.041,3.04z" />
 </vector>

@@ -24,7 +24,7 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/211651/close_round_icon -->
     <path
-            android:fillColor="?attr/btn_tool_fg_color"
+            android:fillColor="?attr/input_tool_fg_color"
             android:pathData="M23.339,20.159 L15.18,12 23.339,3.841c0.881,-0.881 0.881,-2.299 0,-3.18 -0.881,-0.881 -2.299,-0.881 -3.18,0L12,8.82 3.841,0.661c-0.881,-0.881 -2.299,-0.881 -3.18,0 -0.881,0.881 -0.881,2.299 0,3.18L8.82,12 0.661,20.159c-0.881,0.881 -0.881,2.299 0,3.18 0.881,0.881 2.299,0.881 3.18,0L12,15.18l8.159,8.159c0.881,0.881 2.299,0.881 3.18,0 0.875,-0.881 0.875,-2.305 0,-3.18z"
             android:strokeWidth="0.0624756" />
 </vector>

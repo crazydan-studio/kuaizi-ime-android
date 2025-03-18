@@ -87,7 +87,7 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
             }
         });
 
-        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.input_trail_color);
+        int trailColor = ThemeUtils.getColorByAttrId(context, R.attr.gesture_trail_color);
         this.gestureTrailer = gestureTrailer;
         this.gestureTrailer.setColor(trailColor);
 

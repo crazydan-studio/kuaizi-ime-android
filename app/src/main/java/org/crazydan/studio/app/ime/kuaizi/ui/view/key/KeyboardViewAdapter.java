@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 
 import android.content.Context;
-import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -57,7 +56,6 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     private static final int VIEW_TYPE_MATH_OP_KEY = 7;
     private static final int VIEW_TYPE_XPAD_KEY = 8;
 
-    private Integer themeResId;
     private HexagonOrientation orientation;
 
     public KeyboardViewAdapter() {
@@ -65,10 +63,8 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     }
 
     /** 更新按键表，并对发生变更的按键发送变更消息，以仅对变化的按键做渲染 */
-    public void updateItems(Key[][] keys, Integer themeResId, HexagonOrientation orientation) {
-        Integer oldThemeResId = this.themeResId;
+    public void updateItems(Key[][] keys, HexagonOrientation orientation) {
         HexagonOrientation oldOrientation = this.orientation;
-        this.themeResId = themeResId;
         this.orientation = orientation;
 
         List<Key> newItems = new ArrayList<>();
@@ -78,9 +74,7 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
 
         List<Key> oldItems = super.updateItems(newItems);
 
-        if (!Objects.equals(oldThemeResId, this.themeResId) //
-            || !Objects.equals(oldOrientation, this.orientation) //
-        ) {
+        if (!Objects.equals(oldOrientation, this.orientation)) {
             // Note：若正六边形方向或者主题样式发生了变化，则始终更新视图
             updateItemsByFull(oldItems, newItems);
         } else {
@@ -106,9 +100,6 @@ public class KeyboardViewAdapter extends RecyclerViewAdapter<Key, KeyViewHolder<
     @Override
     public KeyViewHolder<?> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        if (this.themeResId != null) {
-            context = new ContextThemeWrapper(context, this.themeResId);
-        }
 
         return createKeyViewHolder(context, parent, viewType);
     }

@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textSize="@dimen/input_completions_word_spell_text_size"
-            android:textColor="?attr/input_quick_fg_color" />
+            android:textColor="?attr/popup_input_quick_fg_color" />
 
     <!-- 含读音的字和不含读音的拉丁文只出现一个，后者因为不含读音，故而其字体更大 -->
     <LinearLayout
@@ -46,14 +46,14 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="4sp"
                 android:textSize="@dimen/input_completions_word_text_size"
-                android:textColor="?attr/input_quick_fg_color" />
+                android:textColor="?attr/popup_input_quick_fg_color" />
 
         <TextView
                 android:id="@+id/latin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/input_quick_text_size"
-                android:textColor="?attr/input_quick_fg_color" />
+                android:textColor="?attr/popup_input_quick_fg_color" />
     </LinearLayout>
 
 </LinearLayout>

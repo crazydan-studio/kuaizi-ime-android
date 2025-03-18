@@ -36,5 +36,5 @@
             android:id="@+id/marker"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="?attr/input_char_math_expr_border_color" />
+            android:background="?attr/input_math_expr_border_color" />
 </LinearLayout>

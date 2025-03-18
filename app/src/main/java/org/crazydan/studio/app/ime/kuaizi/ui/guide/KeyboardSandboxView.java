@@ -51,9 +51,11 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
     public void update(int themeResId) {
         this.imageCache.clear();
 
+        // TODO 根据主题，重新加载布局，再更新按键，从而避免在键盘内处理主题更新的细节
+
         // Note: 在所要绘制的按键超过矩阵可含按键数量时（8x6），
         // 可适当增加行列数，只要确保与实际按键的相对大小一致且图像不模糊即可
-        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, themeResId, false);
+        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, false);
     }
 
     @Override

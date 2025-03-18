@@ -23,24 +23,43 @@
         <attr name="dot_spacing" format="dimension" />
     </declare-styleable>
 
-    <declare-styleable name="keyboard_style">
-        <attr name="keyboard_bg_color" format="color" />
-        <attr name="keyboard_border_color" format="color" />
+    <declare-styleable name="ImeAppStyle">
+        <attr name="app_white_color" format="color" />
+
+        <attr name="app_bg_color" format="color" />
+        <attr name="app_actionbar_bg_color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="ImeStyle">
+        <attr name="keyboardStyle" format="reference" />
+        <attr name="inputboardStyle" format="reference" />
+
+        <attr name="board_bg_color" format="color" />
+        <attr name="board_border_color" format="color" />
         <attr name="board_divider_color" format="color" />
 
+        <!-- Popup 配置 -->
+        <attr name="popup_input_quick_bg_color" format="color" />
+        <attr name="popup_input_quick_fg_color" format="color" />
+        <attr name="popup_input_quick_border_color" format="color" />
+        <attr name="popup_input_quick_shadow_style" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="ImeInputboardStyle">
         <attr name="input_bg_color" format="color" />
         <attr name="input_fg_color" format="color" />
-        <attr name="input_trail_color" format="color" />
+
         <attr name="input_selection_bg_color" format="color" />
         <attr name="input_selection_fg_color" format="color" />
-        <attr name="input_quick_bg_color" format="color" />
-        <attr name="input_quick_fg_color" format="color" />
-        <attr name="input_quick_border_color" format="color" />
-        <attr name="input_quick_shadow_style" format="string" />
-        <attr name="input_char_math_expr_border_color" format="color" />
-        <attr name="input_char_math_expr_border_highlight_color" format="color" />
 
-        <attr name="btn_tool_fg_color" format="color" />
+        <attr name="input_math_expr_border_color" format="color" />
+        <attr name="input_math_expr_border_highlight_color" format="color" />
+
+        <attr name="input_tool_fg_color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="ImeKeyboardStyle">
+        <attr name="gesture_trail_color" format="color" />
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
@@ -95,20 +114,13 @@
         <attr name="key_char_level_5_fg_color" format="color" />
 
         <!-- format: dx dy radius #AARRGGBB -->
-        <attr name="x_keyboard_shadow_style" format="string" />
+        <attr name="xpad_key_shadow_style" format="string" />
         <!-- format: width #AARRGGBB -->
-        <attr name="x_keyboard_ctrl_divider_style" format="string" />
-        <attr name="x_keyboard_ctrl_bg_style" format="color" />
-        <attr name="x_keyboard_chars_fg_color" format="color" />
-        <attr name="x_keyboard_chars_highlight_fg_color" format="color" />
-        <attr name="x_keyboard_chars_divider_style" format="string" />
-        <attr name="x_keyboard_chars_divider_shadow_style" format="string" />
-    </declare-styleable>
-
-    <declare-styleable name="app_style">
-        <attr name="app_white_color" format="color" />
-
-        <attr name="app_bg_color" format="color" />
-        <attr name="app_actionbar_bg_color" format="color" />
+        <attr name="xpad_key_ctrl_divider_style" format="string" />
+        <attr name="xpad_key_ctrl_bg_style" format="color" />
+        <attr name="xpad_key_chars_fg_color" format="color" />
+        <attr name="xpad_key_chars_highlight_fg_color" format="color" />
+        <attr name="xpad_key_chars_divider_style" format="string" />
+        <attr name="xpad_key_chars_divider_shadow_style" format="string" />
     </declare-styleable>
 </resources>

@@ -18,9 +18,9 @@
   -->
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?attr/input_quick_bg_color" />
+    <solid android:color="?attr/popup_input_quick_bg_color" />
     <stroke
             android:width="0.5dp"
-            android:color="?attr/input_quick_border_color" />
+            android:color="?attr/popup_input_quick_border_color" />
     <corners android:radius="6dp" />
 </shape>
