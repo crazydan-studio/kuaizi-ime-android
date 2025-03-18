@@ -86,7 +86,7 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
     }
 
     /** 更新视图 */
-    protected void update(Key[][] keys, int columns, int rows, boolean isLeftHandMode) {
+    public void update(Key[][] keys, int columns, int rows, boolean isLeftHandMode) {
         XPadKey oldXPadKey = getAdapter().getXPadKey();
         // Note: 可能会切换到表情、符号等非 XPad 输入面板上，此时，XPad 是不可用的
         XPadKey newXPadKey = getXPadKeyFrom(keys);
@@ -146,7 +146,7 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
         return holder != null && !holder.isHidden() ? holder : null;
     }
 
-    protected View getItemViewByKey(Key key) {
+    public View getItemViewByKey(Key key) {
         if (key == null) {
             return null;
         }

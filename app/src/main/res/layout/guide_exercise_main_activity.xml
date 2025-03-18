@@ -47,15 +47,13 @@
                     android:id="@+id/keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
-                    android:visibility="invisible"
-                    android:theme="?attr/keyboardStyle" />
+                    android:visibility="invisible" />
 
             <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
                     android:id="@+id/xpad_keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
-                    android:visibility="invisible"
-                    android:theme="?attr/keyboardStyle" />
+                    android:visibility="invisible" />
 
             <com.google.android.flexbox.FlexboxLayout
                     android:layout_width="match_parent"

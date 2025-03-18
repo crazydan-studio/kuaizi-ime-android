@@ -215,10 +215,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         Keyboard.Theme theme = this.imeConfig.get(ConfigKey.theme);
         int themeResId = theme.getResId(getApplicationContext());
 
-        this.sandboxView.update(themeResId);
-
-        this.xPadSandboxView.setGridItemOrientation(HexagonOrientation.FLAT_TOP);
-        this.xPadSandboxView.update(themeResId);
+        this.sandboxView.update(themeResId, HexagonOrientation.POINTY_TOP);
+        this.xPadSandboxView.update(themeResId, HexagonOrientation.FLAT_TOP);
     }
 
     // ================ End: 视图相关 =================

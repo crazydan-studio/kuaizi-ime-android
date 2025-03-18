@@ -28,9 +28,13 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.FrameLayout;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardView;
+import org.hexworks.mixite.core.api.HexagonOrientation;
 
 /**
  * 键盘的沙盒视图，用于获取与键盘按键相同的图形
@@ -38,24 +42,30 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.KeyboardViewBase;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-22
  */
-public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRender {
+public class KeyboardSandboxView extends FrameLayout implements KeyImageRender {
     private final Map<String, Key> keys = new LinkedHashMap<>();
-
     private final Map<String, Drawable> imageCache = new HashMap<>();
+
+    private KeyboardView keyboardView;
 
     public KeyboardSandboxView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /** 更新视图 */
-    public void update(int themeResId) {
+    public void update(int themeResId, HexagonOrientation gridItemOrientation) {
+        // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
+        removeAllViews();
+
+        ThemeUtils.inflate(this, R.layout.sandbox_keyboard_view, themeResId, true);
+        this.keyboardView = findViewById(R.id.keyboard);
+
         this.imageCache.clear();
 
-        // TODO 根据主题，重新加载布局，再更新按键，从而避免在键盘内处理主题更新的细节
-
+        this.keyboardView.setGridItemOrientation(gridItemOrientation);
         // Note: 在所要绘制的按键超过矩阵可含按键数量时（8x6），
         // 可适当增加行列数，只要确保与实际按键的相对大小一致且图像不模糊即可
-        update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, false);
+        this.keyboardView.update(new Key[][] { this.keys.values().toArray(new Key[0]) }, 8, 6, false);
     }
 
     @Override
@@ -76,7 +86,7 @@ public class KeyboardSandboxView extends KeyboardViewBase implements KeyImageRen
         String key = String.format(Locale.getDefault(), "%s:%d:%d", code, width, height);
 
         return this.imageCache.computeIfAbsent(key, (k) -> {
-            View view = getItemViewByKey(this.keys.get(code));
+            View view = this.keyboardView.getItemViewByKey(this.keys.get(code));
             return ViewUtils.toDrawable(view, width, height);
         });
     }
