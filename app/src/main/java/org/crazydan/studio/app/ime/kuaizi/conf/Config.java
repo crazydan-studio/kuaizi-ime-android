@@ -50,6 +50,11 @@ public interface Config {
             this.source = source;
         }
 
+        /** 创建可变副本，该副本可对配置项进行覆盖更新，但其更新不影响源配置，且未被覆盖的配置项依然可取到源配置的最新数据 */
+        public Mutable mutable() {
+            return new Mutable(this);
+        }
+
         @Override
         public boolean has(ConfigKey key) {
             return this.source != null && this.source.has(key);
@@ -71,6 +76,11 @@ public interface Config {
 
         public Mutable(Config source) {
             super(source);
+        }
+
+        /** 创建不可变副本，该副本始终可取到源配置的最新数据，但不可做配置更新 */
+        public Immutable immutable() {
+            return new Immutable(this);
         }
 
         @Override

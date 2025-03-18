@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorSelection;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -107,13 +108,18 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 输入法视图只创建一次 */
     @Override
     public View onCreateInputView() {
-        this.ime = IMEditor.create(this.imeConfig.mutable());
+        Config.Mutable runtimeConfig = this.imeConfig.mutable();
+
+        this.ime = IMEditor.create(runtimeConfig);
         this.imeView = (IMEditorView) getLayoutInflater().inflate(R.layout.ime_view, null);
 
         // 通过当前层向逻辑层和视图层分别转发用户消息和输入消息
         this.ime.setListener(this);
         this.imeView.setListener(this);
-        this.imeView.setConfig(this.imeConfig.mutable());
+
+        // 视图与逻辑层共享配置，在逻辑层对配置的修改将对视图层可见，
+        // 故而，临时性配置变更全部在逻辑层内处理，视图内部状态的更新，则由视图独自处理
+        this.imeView.setConfig(runtimeConfig.immutable());
 
         return this.imeView;
     }

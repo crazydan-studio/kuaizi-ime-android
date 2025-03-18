@@ -48,7 +48,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
@@ -69,7 +68,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
 
     private final AudioPlayer audioPlayer;
 
-    private Config.Mutable config;
+    private Config config;
     private UserMsgListener listener;
 
     private Animation enterAnim;
@@ -89,7 +88,7 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                               R.raw.tick_ping);
     }
 
-    public void setConfig(Config.Mutable config) {
+    public void setConfig(Config config) {
         this.config = config;
         doLayout();
     }
@@ -206,11 +205,6 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
                 on_Config_Update_Done_Msg(msg.data());
                 break;
             }
-            case Keyboard_HandMode_Switch_Done: {
-                KeyboardHandModeSwitchMsgData data = msg.data();
-                this.config.set(ConfigKey.hand_mode, data.mode);
-                break;
-            }
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg(msg.data());
                 break;
@@ -232,16 +226,14 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private void on_Config_Update_Done_Msg(ConfigUpdateMsgData data) {
         switch (data.configKey) {
             case theme: {
+                // 主题变更，必须重建视图
                 doLayout();
                 break;
             }
-            case hand_mode: {
-                // 若更改系统的左右手模式，则以系统为准
-                this.config.set(ConfigKey.hand_mode, data.newValue);
-            }
+            // 视图相关的配置变更，需要更新视图
+            case hand_mode:
             case enable_x_input_pad:
             case adapt_desktop_swipe_up_gesture: {
-                // 触发面板的更新
                 activeBoard(this.activeBoard);
                 break;
             }

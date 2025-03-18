@@ -65,20 +65,6 @@ public class IMEConfig extends Config.Mutable implements SharedPreferences.OnSha
         this.cleaner = null;
     }
 
-    // ======================= Start: 配置衍生 ======================
-
-    /** 创建可变副本，该副本可对配置项进行覆盖更新，但其更新不影响源配置，且未被覆盖的配置项依然可取到源配置的最新数据 */
-    public Mutable mutable() {
-        return new Mutable(this);
-    }
-
-    /** 创建不可变副本，该副本始终可取到源配置的最新数据，但不可做配置更新 */
-    public Immutable immutable() {
-        return new Immutable(this);
-    }
-
-    // ======================= End: 配置衍生 ======================
-
     // ======================= Start: 消息处理 ======================
 
     public void setListener(ConfigChangeListener listener) {

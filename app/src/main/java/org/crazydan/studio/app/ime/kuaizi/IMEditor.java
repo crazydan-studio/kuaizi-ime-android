@@ -261,7 +261,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
         switch (key) {
             case hand_mode: {
-                // 若更改系统的左右手模式，则以系统为准
+                // 若更改系统的左右手模式，则以系统的为准
                 this.config.set(ConfigKey.hand_mode, newValue);
                 break;
             }

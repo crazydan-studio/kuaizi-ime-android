@@ -28,6 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.IMEditor;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
@@ -80,12 +81,14 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         this.imeConfig.set(ConfigKey.disable_switch_ime_btn, true);
         this.imeConfig.set(ConfigKey.disable_close_keyboard_btn, true);
 
-        this.ime = IMEditor.create(this.imeConfig.mutable());
+        Config.Mutable runtimeConfig = this.imeConfig.mutable();
+
+        this.ime = IMEditor.create(runtimeConfig);
         this.imeView = findViewById(R.id.input_pane);
 
         this.ime.setListener(this);
         this.imeView.setListener(this);
-        this.imeView.setConfig(this.imeConfig.mutable());
+        this.imeView.setConfig(runtimeConfig.immutable());
     }
 
     @Override
