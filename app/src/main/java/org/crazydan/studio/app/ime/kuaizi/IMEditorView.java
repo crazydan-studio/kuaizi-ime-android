@@ -20,20 +20,29 @@
 package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.Toast;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
@@ -46,10 +55,13 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
@@ -72,6 +84,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     private UserMsgListener listener;
 
     private Animation enterAnim;
+    private View popupAnchor;
+    private PopupWindow tipPopupWindow;
+    private PopupWindow inputQuickPopupWindow;
 
     private BoardType activeBoard = BoardType.main;
     private Map<BoardType, View> boards;
@@ -101,6 +116,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     public void close() {
         MainboardView mainboard = getBoard(BoardType.main);
         mainboard.close();
+
+        showInputQuickPopupWindow(null);
+        showTipPopupWindow(null, false);
     }
 
     // =============================== Start: 视图更新 ===================================
@@ -110,8 +128,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         // 必须先清除已有的子视图，否则，重复 inflate 会无法即时生效
         removeAllViews();
 
+        Context context = getContext();
         Keyboard.Theme theme = this.config.get(ConfigKey.theme);
-        int themeResId = theme.getResId(getContext());
+        int themeResId = theme.getResId(context);
 
         // 通过 Context Theme 仅对键盘自身的视图设置主题样式，
         // 以避免通过 AppCompatDelegate.setDefaultNightMode 对配置等视图造成影响
@@ -121,12 +140,10 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         ThemeUtils.inflate(this, R.layout.ime_root_view, themeResId, true);
 
         int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
-        int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
-                                                     R.style.Theme_Kuaizi_PopupWindow_Animation,
-                                                     animAttrs);
+        int[] animResIds = ThemeUtils.getStyledAttrs(context, R.style.Theme_Kuaizi_PopupWindow_Animation, animAttrs);
         int enterAnimResId = animResIds[0];
 
-        this.enterAnim = AnimationUtils.loadAnimation(getContext(), enterAnimResId);
+        this.enterAnim = AnimationUtils.loadAnimation(context, enterAnimResId);
 
         MainboardView mainboardView = findViewById(R.id.mainboard);
         mainboardView.setConfig(this.config);
@@ -145,6 +162,22 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         // 确保按已激活的类型显隐面板，而不是按视图中的设置
         activeBoard(this.activeBoard);
         // >>>>>>>>>>>>
+
+        // <<<<<<<<<< 气泡提示
+        this.popupAnchor = findViewById(R.id.popup_anchor);
+
+        View inputKeyView = inflate(context, R.layout.popup_input_key_view, null);
+        this.tipPopupWindow = preparePopupWindow(this.tipPopupWindow, inputKeyView);
+
+        InputQuickListView inputQuickListView = (InputQuickListView) inflate(context,
+                                                                             R.layout.popup_input_quick_list_view,
+                                                                             null);
+        inputQuickListView.setListener(this);
+
+        this.inputQuickPopupWindow = preparePopupWindow(this.inputQuickPopupWindow, inputQuickListView);
+
+        updateReverseLayoutDirection(this.inputQuickPopupWindow.getContentView());
+        // >>>>>>>>>>>
     }
 
     // =============================== End: 视图更新 ===================================
@@ -194,6 +227,9 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
     }
 
     private void handleMsg(InputMsg msg) {
+        // Note: 快捷输入没有确定的隐藏时机，故而，需针对每个消息做一次处理，在数据为 null 时隐藏，有数据时显示
+        showInputQuickPopupWindow(msg.inputQuickList);
+
         switch (msg.type) {
             case Keyboard_Start_Done: {
                 // 确保键盘启动后，始终在主面板上，
@@ -207,6 +243,33 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
             }
             case InputAudio_Play_Doing: {
                 on_InputAudio_Play_Doing_Msg(msg.data());
+                break;
+            }
+            case Keyboard_HandMode_Switch_Done: {
+                updateReverseLayoutDirection(this.inputQuickPopupWindow.getContentView());
+                break;
+            }
+            case InputChars_Input_Popup_Show_Doing: {
+                InputCharsInputPopupShowMsgData data = msg.data();
+
+                showInputKeyPopupWindow(data.text, data.hideDelayed);
+                break;
+            }
+            case InputChars_Input_Popup_Hide_Doing: {
+                showInputKeyPopupWindow(null, false);
+                break;
+            }
+            case InputFavorite_Save_Done: {
+                showTipPopupWindow(EditorAction.favorite.tipResId);
+                break;
+            }
+            case InputFavorite_Paste_Done: {
+                showTipPopupWindow(EditorAction.paste.tipResId);
+                break;
+            }
+            case Editor_Edit_Doing: {
+                EditorEditMsgData data = msg.data();
+                on_Editor_Edit_Doing_Msg(data.action);
                 break;
             }
             case InputFavorite_Be_Ready: {
@@ -258,6 +321,21 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
              .setDuration(5000)
              .setAction(R.string.btn_save_as_favorite, (v) -> saveClipToFavorite(data.clip))
              .show();
+    }
+
+    private void on_Editor_Edit_Doing_Msg(EditorAction action) {
+        // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
+        // Note: 复制和粘贴可能内容为空，不会提示可收藏，因此，仍需提示
+        switch (action) {
+            case backspace: // 已作气泡提示
+            case favorite: { // 有专门的收藏确认提示
+                break;
+            }
+            default: {
+                showTipPopupWindow(action.tipResId);
+                break;
+            }
+        }
     }
 
     private void saveClipToFavorite(InputClip clip) {
@@ -343,4 +421,109 @@ public class IMEditorView extends FrameLayout implements UserMsgListener, InputM
         favorite,
         ;
     }
+
+    // ==================== Start: 气泡提示 ==================
+
+    /** 若当前为左手模式，则采用从左到右的布局方向，否则，采用从右到左的布局方向 */
+    protected void updateReverseLayoutDirection(View view) {
+        if (view == null) {
+            return;
+        }
+
+        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
+
+        ViewUtils.updateLayoutDirection(view, handMode, true);
+    }
+
+    private void showInputQuickPopupWindow(List<?> dataList) {
+        PopupWindow window = this.inputQuickPopupWindow;
+        if (CollectionUtils.isEmpty(dataList)) {
+            post(window::dismiss);
+            return;
+        }
+
+        InputQuickListView inputQuickListView = (InputQuickListView) window.getContentView();
+        inputQuickListView.update(dataList);
+
+        showPopupWindow(window);
+    }
+
+    private void showInputKeyPopupWindow(String key, boolean hideDelayed) {
+        if (this.config.bool(ConfigKey.disable_input_key_popup_tips)) {
+            showTipPopupWindow(null, false);
+            return;
+        }
+
+        showTipPopupWindow(key, hideDelayed);
+    }
+
+    private void showTipPopupWindow(int resId) {
+        String tips = resId != 0 ? getContext().getString(resId) : null;
+
+        showTipPopupWindow(tips, true);
+    }
+
+    private void showTipPopupWindow(String tip, boolean hideDelayed) {
+        PopupWindow window = this.tipPopupWindow;
+        if (CharUtils.isBlank(tip)) {
+            // Note: 存在因提示频率太高而无法隐藏的问题，故而，延迟隐藏
+            post(window::dismiss);
+            return;
+        }
+
+        View contentView = window.getContentView();
+        TextView textView = contentView.findViewById(R.id.fg);
+        textView.setText(tip);
+
+        showPopupWindow(window);
+
+        if (hideDelayed) {
+            postDelayed(window::dismiss, 600);
+        }
+    }
+
+    private PopupWindow preparePopupWindow(PopupWindow window, View contentView) {
+        // Note: 重建窗口，以便于更新主题样式
+        ObjectUtils.invokeWhenNonNull(window, PopupWindow::dismiss);
+
+        window = new PopupWindow(contentView,
+                                 WindowManager.LayoutParams.MATCH_PARENT,
+                                 WindowManager.LayoutParams.WRAP_CONTENT);
+
+        window.setClippingEnabled(false);
+        window.setBackgroundDrawable(null);
+        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+
+        return window;
+    }
+
+    private void showPopupWindow(PopupWindow window) {
+        // Note: 初始启动时，测量内容尺寸将返回 0，故而，需在视图渲染完毕后，再取值
+        post(() -> {
+            // 测量内容高度
+            View contentView = window.getContentView();
+            contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+
+            int height = contentView.getMeasuredHeight();
+
+            // 放置于被布局的键盘之上
+            View parent = this.popupAnchor;
+            int[] location = new int[2];
+            parent.getLocationInWindow(location);
+
+            int x = location[0];
+            int y = location[1] - height;
+
+            // 设置初始显示位置：其仅在未显示时有效
+            window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y);
+
+            // 确保窗口按照内容高度调整位置：其仅在显示时有效
+            // Note: 需要强制更新，否则，内容布局会出现跳动
+            window.update(x, y, window.getWidth(), window.getHeight(), true);
+        });
+    }
+
+    // ==================== End: 气泡提示 ==================
 }

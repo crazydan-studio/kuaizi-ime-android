@@ -21,4 +21,12 @@
     <!-- color format: #AARRGGBB -->
     <color name="color_black">#ff000000</color>
     <color name="color_white">#ffffffff</color>
+
+    <!-- 明亮主题色 -->
+    <color name="light_bg_primary">#fffaf9f6</color>
+    <color name="light_fg_primary">#ff1a237e</color>
+
+    <!-- 暗黑主题色 -->
+    <color name="night_bg_primary">#ff272b2c</color>
+    <color name="night_fg_primary">#ffe3f2fd</color>
 </resources>

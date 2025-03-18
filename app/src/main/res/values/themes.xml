@@ -20,6 +20,9 @@
 <resources>
     <!-- Start: 输入法主题 -->
     <style name="Theme.Kuaizi.IME.Light" parent="">
+        <item name="android:textColor">#ff616161</item>
+        <item name="android:textSize">18sp</item>
+
         <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Light</item>
         <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
 
@@ -35,6 +38,9 @@
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="">
+        <item name="android:textColor">#ffededed</item>
+        <item name="android:textSize">18sp</item>
+
         <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Night</item>
         <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
 
@@ -128,12 +134,12 @@
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_noop_fg_color">#ffa3a3a3</item>
         <item name="key_ctrl_switcher_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switcher_fg_color">#fffafafa</item>
+        <item name="key_ctrl_switcher_fg_color">?android:attr/textColor</item>
 
         <item name="key_ctrl_backspace_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_backspace_fg_color">#ffed4c67</item>
         <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_space_fg_color">@color/color_white</item>
+        <item name="key_ctrl_space_fg_color">?android:attr/textColor</item>
 
         <item name="key_ctrl_locator_bg_color">#6300bcd4</item>
         <item name="key_ctrl_locator_fg_color">#a3fafafa</item>
@@ -154,7 +160,7 @@
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
 
         <item name="key_char_level_0_bg_color">#68ce4e48</item>
-        <item name="key_char_level_0_fg_color">#ffffffff</item>
+        <item name="key_char_level_0_fg_color">?android:attr/textColor</item>
         <item name="key_char_level_1_bg_color">#68cb6b54</item>
         <item name="key_char_level_1_fg_color">?attr/key_char_level_0_fg_color</item>
         <item name="key_char_level_2_bg_color">#683395d4</item>
@@ -169,7 +175,7 @@
         <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
         <item name="xpad_key_ctrl_divider_style">0.5 #b3000000</item>
         <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="xpad_key_chars_fg_color">#fffafafa</item>
+        <item name="xpad_key_chars_fg_color">?android:attr/textColor</item>
         <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
         <item name="xpad_key_chars_divider_style">2 #ff2f3336</item>
         <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
@@ -187,7 +193,7 @@
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
-        <item name="input_tool_fg_color">#ff616161</item>
+        <item name="input_tool_fg_color">?android:attr/textColor</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Inputboard.Night" parent="">
@@ -200,7 +206,7 @@
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
-        <item name="input_tool_fg_color">#affafafa</item>
+        <item name="input_tool_fg_color">?android:attr/textColor</item>
     </style>
     <!-- End: 输入法输入面板主题 -->
 
@@ -208,6 +214,8 @@
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />
 
     <style name="Theme.Kuaizi.App.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:textSize">14sp</item>
+
         <item name="app_white_color">#ffededed</item>
 
         <item name="app_bg_color">#ffededed</item>
@@ -228,6 +236,8 @@
     </style>
 
     <style name="Theme.Kuaizi.App.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:textSize">14sp</item>
+
         <item name="app_white_color">#ffededed</item>
 
         <item name="app_bg_color">#ff272b2c</item>

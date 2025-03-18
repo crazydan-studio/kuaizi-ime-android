@@ -53,30 +53,11 @@ public abstract class DirectionBoardView extends FrameLayout {
         Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
 
         ViewUtils.updateLayoutDirection(this, handMode, false);
-    }
-
-    /**
-     * 与 {@link #updateLayoutDirection()} 相反：
-     * 若当前为左手模式，则采用从左到右的布局方向，否则，采用从右到左的布局方向
-     */
-    protected void updateReverseLayoutDirection(View view) {
-        if (view == null) {
-            return;
-        }
-
-        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-
-        ViewUtils.updateLayoutDirection(view, handMode, true);
-    }
-
-    @Override
-    public void setLayoutDirection(int layoutDirection) {
-        super.setLayoutDirection(layoutDirection);
 
         // 修改当前视图所布局的子视图的布局方向
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            child.setLayoutDirection(layoutDirection);
+            ViewUtils.updateLayoutDirection(child, handMode, false);
         }
     }
 }

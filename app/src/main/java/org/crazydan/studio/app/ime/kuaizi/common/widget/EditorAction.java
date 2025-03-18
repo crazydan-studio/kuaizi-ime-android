@@ -46,7 +46,7 @@ public enum EditorAction {
      * 收藏
      * <p/>
      * 注意，对选中内容做收藏，需要先复制再监听剪贴板，最后还原剪贴板，过程比较复杂，
-     * 可以通过复制操作触发收藏的方式添加收藏
+     * 不过，可以通过复制操作触发收藏的方式添加收藏
      */
     favorite("收藏", R.string.tip_editor_action_favorite),
     ;

@@ -26,16 +26,21 @@
         android:orientation="vertical"
         android:background="?attr/board_bg_color">
 
+    <!-- 气泡提示的定位视图 -->
     <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/board_border_color" />
-
+            android:id="@+id/popup_anchor"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
     <!-- Toast 的定位视图 -->
     <View
             android:id="@+id/toast_anchor"
             android:layout_width="0dp"
             android:layout_height="0dp" />
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/board_border_color" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

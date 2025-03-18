@@ -36,6 +36,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="?android:attr/textSize"
+                android:textColor="?android:attr/textColor"
                 android:gravity="center" />
 
         <ImageButton
@@ -113,7 +115,8 @@
                 android:gravity="center"
                 android:padding="16dp"
                 android:text="@string/text_empty_favoriteboard_warning"
-                android:textSize="@dimen/char_input_word_text_size"
+                android:textSize="?android:attr/textSize"
+                android:textColor="?android:attr/textColor"
                 android:visibility="gone" />
 
         <View
