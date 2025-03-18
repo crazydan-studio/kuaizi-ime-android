@@ -17,11 +17,14 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
+<!-- 切换到前台的面板采用进场动画，而退出则直接隐藏，
+故而，需在父视图中设置背景色，以避免切换过程出现白闪（切换过程会显示根视图背景所造成） -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="?attr/keyboard_bg_color">
 
     <View
             android:layout_width="match_parent"
@@ -38,14 +41,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        <!-- 各个面板都需单独设置背景，以避免淡出过程中透明背景提前显示底层视图，
-        并且其视图边界以主面板为准 -->
+        <!-- 各个面板的视图边界需以主面板为准，从而确保其内部视图不会超出主面板的边界 -->
         <org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView
                 android:id="@+id/favoriteboard"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:visibility="gone"
-                android:background="?attr/keyboard_bg_color"
                 app:layout_constraintTop_toTopOf="@+id/mainboard"
                 app:layout_constraintStart_toStartOf="@+id/mainboard"
                 app:layout_constraintEnd_toEndOf="@+id/mainboard"
@@ -58,7 +59,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="visible"
-                android:background="?attr/keyboard_bg_color"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
