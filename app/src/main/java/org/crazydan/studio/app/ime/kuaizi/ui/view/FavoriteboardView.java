@@ -30,14 +30,12 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.ConfirmPopup;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.PopupConfirm;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputDeleteMsgData;
 
@@ -53,7 +51,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-13
  */
-public class FavoriteboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener, ViewClosable {
+public class FavoriteboardView extends BaseMsgListenerView implements ViewClosable {
     private final InputFavoriteListView favoriteListView;
     private final TextView titleView;
     private final TextView warningView;
@@ -62,13 +60,13 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
     private final TextView deleteSelectedBtnView;
     private final TextView clearAllBtnView;
 
-    private ConfirmPopup deleteSelectedPopup;
-    private ConfirmPopup clearAllPopup;
-
-    private UserMsgListener listener;
+    private PopupConfirm deleteSelectedPopup;
+    private PopupConfirm clearAllPopup;
 
     public FavoriteboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.layout.ime_board_favorite_view);
+        super(context, attrs);
+        // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
+        inflate(context, R.layout.ime_board_favorite_view, this);
 
         this.titleView = findViewById(R.id.title);
         this.warningView = findViewById(R.id.warning);
@@ -85,25 +83,20 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
 
     @Override
     public void update() {
-        updateLayoutDirection();
     }
 
     @Override
     public void close() {
         this.favoriteListView.clear();
 
-        ObjectUtils.invokeWhenNonNull(this.deleteSelectedPopup, ConfirmPopup::dismiss);
-        ObjectUtils.invokeWhenNonNull(this.clearAllPopup, ConfirmPopup::dismiss);
+        ObjectUtils.invokeWhenNonNull(this.deleteSelectedPopup, PopupConfirm::dismiss);
+        ObjectUtils.invokeWhenNonNull(this.clearAllPopup, PopupConfirm::dismiss);
 
         this.deleteSelectedPopup = null;
         this.clearAllPopup = null;
     }
 
     // =============================== Start: 消息处理 ===================================
-
-    public void setListener(UserMsgListener listener) {
-        this.listener = listener;
-    }
 
     /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
     @Override
@@ -115,7 +108,7 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
                 break;
             }
             default: {
-                this.listener.onMsg(msg);
+                super.onMsg(msg);
             }
         }
     }
@@ -126,10 +119,6 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
     @Override
     public void onMsg(InputMsg msg) {
         switch (msg.type) {
-            case Keyboard_HandMode_Switch_Done: {
-                updateLayoutDirection();
-                break;
-            }
             case InputFavorite_Paste_Done:
             case InputFavorite_Delete_Done:
             case InputFavorite_Save_Done:
@@ -176,7 +165,7 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
         }
 
         this.deleteSelectedPopup = //
-                ConfirmPopup.with(this)
+                PopupConfirm.with(this)
                             .setMessage(R.string.confirm_whether_delete_selected)
                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                 UserInputDeleteMsgData data = new UserInputDeleteMsgData(selected);
@@ -191,7 +180,7 @@ public class FavoriteboardView extends DirectionBoardView implements UserMsgList
 
     private void onClearAll(View v) {
         this.clearAllPopup = //
-                ConfirmPopup.with(this)
+                PopupConfirm.with(this)
                             .setMessage(R.string.confirm_whether_clear_all)
                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                 UserInputMsg msg = UserInputMsg.build((b) -> b.type(

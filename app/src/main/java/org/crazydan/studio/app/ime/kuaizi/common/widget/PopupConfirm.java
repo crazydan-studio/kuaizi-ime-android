@@ -35,8 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-14
  */
-public class ConfirmPopup {
-    private final View root;
+public class PopupConfirm {
+    private final ViewGroup parent;
     private final View anchor;
 
     private CharSequence message;
@@ -46,36 +46,36 @@ public class ConfirmPopup {
 
     private Runnable cancelable;
 
-    public static ConfirmPopup with(View root) {
-        return new ConfirmPopup(root);
+    public static PopupConfirm with(ViewGroup parent) {
+        return new PopupConfirm(parent);
     }
 
-    private ConfirmPopup(View root) {
-        this.root = root;
-        this.anchor = root.findViewById(R.id.popup_confirm_anchor);
+    private PopupConfirm(ViewGroup parent) {
+        this.parent = parent;
+        this.anchor = parent.findViewById(R.id.popup_confirm_anchor);
     }
 
-    public ConfirmPopup setMessage(int resId, Object... args) {
+    public PopupConfirm setMessage(int resId, Object... args) {
         String message = getString(resId, args);
         return setMessage(message);
     }
 
-    public ConfirmPopup setMessage(CharSequence message) {
+    public PopupConfirm setMessage(CharSequence message) {
         this.message = message;
         return this;
     }
 
-    public ConfirmPopup setNegativeButton(int resId, View.OnClickListener listener) {
+    public PopupConfirm setNegativeButton(int resId, View.OnClickListener listener) {
         this.negativeBtn = new Button(getString(resId), listener);
         return this;
     }
 
-    public ConfirmPopup setPositiveButton(int resId, View.OnClickListener listener) {
+    public PopupConfirm setPositiveButton(int resId, View.OnClickListener listener) {
         this.positiveBtn = new Button(getString(resId), listener);
         return this;
     }
 
-    public ConfirmPopup show() {
+    public PopupConfirm show() {
         // 已显示，则不再处理
         if (this.cancelable != null) {
             return this;
@@ -89,7 +89,7 @@ public class ConfirmPopup {
         parent.addView(contentView, contentViewLayout);
 
         // 动画显示与退出
-        Context context = this.root.getContext();
+        Context context = this.parent.getContext();
         int[] attrs = new int[] { android.R.attr.windowEnterAnimation, android.R.attr.windowExitAnimation };
         int[] animResIds = ThemeUtils.getStyledAttrs(context, R.style.Theme_Kuaizi_PopupWindow_Animation, attrs);
         int enterAnimResId = animResIds[0];
@@ -107,7 +107,7 @@ public class ConfirmPopup {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    ConfirmPopup.this.cancelable = null;
+                    PopupConfirm.this.cancelable = null;
 
                     contentView.setVisibility(View.GONE);
                     parent.removeView(contentView);
@@ -130,7 +130,7 @@ public class ConfirmPopup {
     }
 
     private View createContentView() {
-        View contentView = View.inflate(this.root.getContext(), R.layout.popup_confirm_view, null);
+        View contentView = View.inflate(this.parent.getContext(), R.layout.popup_confirm_view, null);
         // 阻止事件向上层视图传播，从而保证窗口的模态特性
         contentView.setOnTouchListener((v, event) -> true);
 
@@ -147,7 +147,7 @@ public class ConfirmPopup {
     }
 
     private String getString(int resId, Object... args) {
-        return this.root.getContext().getString(resId, args);
+        return this.parent.getContext().getString(resId, args);
     }
 
     private void initButtonView(TextView view, Button btn) {

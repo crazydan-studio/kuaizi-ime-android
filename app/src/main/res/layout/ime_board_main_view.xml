@@ -34,10 +34,12 @@
             android:layout_height="1dp"
             android:background="?attr/board_divider_color" />
 
+    <!-- Note: 按键区域的布局方向需固定，不随父视图的变化而变化 -->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layoutDirection="ltr">
 
         <FrameLayout
                 android:layout_width="match_parent"

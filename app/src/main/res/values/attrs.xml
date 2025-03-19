@@ -33,6 +33,7 @@
     <declare-styleable name="ImeStyle">
         <attr name="keyboardStyle" format="reference" />
         <attr name="inputboardStyle" format="reference" />
+        <attr name="candidatesStyle" format="reference" />
 
         <attr name="board_bg_color" format="color" />
         <attr name="board_border_color" format="color" />
@@ -57,6 +58,8 @@
 
         <attr name="input_tool_fg_color" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="ImeCandidatesStyle"></declare-styleable>
 
     <declare-styleable name="ImeKeyboardStyle">
         <attr name="gesture_trail_color" format="color" />

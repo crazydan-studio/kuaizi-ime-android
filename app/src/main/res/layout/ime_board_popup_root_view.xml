@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ 筷字输入法 - 高效编辑需要又好又快的输入法
+  ~ Copyright (C) 2025 Crazydan Studio <https://studio.crazydan.org>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this program.
+  ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:paddingBottom="2dp"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal|bottom"
+        android:clickable="false"
+        android:theme="?attr/candidatesStyle">
+
+    <!-- 快捷输入：输入补全、可粘贴等列表 -->
+    <org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView
+            android:id="@+id/quick_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="2dp"
+            android:clickable="false"
+            android:visibility="gone" />
+
+    <!-- Snackbar 提示：用于交互操作的提示 -->
+    <LinearLayout
+            android:id="@+id/snackbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#323232"
+            android:padding="8dp"
+            android:visibility="gone">
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:layout_gravity="center_vertical|start">
+
+            <TextView
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp" />
+        </LinearLayout>
+
+        <Button
+                android:id="@+id/action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF4081"
+                android:background="?android:attr/selectableItemBackground"
+                android:textAllCaps="true" />
+    </LinearLayout>
+
+    <!-- 提示信息置于最上层：用于显示按键输入和操作提示 -->
+    <TextView
+            android:id="@+id/tooltip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="0dp"
+            android:textSize="@dimen/input_popup_key_text_size"
+            android:textColor="@color/color_black"
+            android:textStyle="bold"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:visibility="gone" />
+</LinearLayout>

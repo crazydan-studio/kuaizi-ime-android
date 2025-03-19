@@ -34,10 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.key.XPadKeyViewHolder;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
@@ -49,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-07-01
  */
-public class MainboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener, ViewClosable {
+public class MainboardView extends BaseMsgListenerView implements ViewClosable {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final TextView warningView;
@@ -58,10 +54,10 @@ public class MainboardView extends DirectionBoardView implements UserMsgListener
 
     private boolean needToAddBottomSpacing;
 
-    private UserMsgListener listener;
-
     public MainboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.layout.ime_board_main_view);
+        super(context, attrs);
+        // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
+        inflate(context, R.layout.ime_board_main_view, this);
 
         this.warningView = findViewById(R.id.warning);
         this.keyboardView = findViewById(R.id.keyboard);
@@ -99,24 +95,6 @@ public class MainboardView extends DirectionBoardView implements UserMsgListener
     }
 
     // =============================== Start: 消息处理 ===================================
-
-    public void setListener(UserMsgListener listener) {
-        this.listener = listener;
-    }
-
-    /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
-    @Override
-    public void onMsg(UserKeyMsg msg) {
-        this.listener.onMsg(msg);
-    }
-
-    /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
-    @Override
-    public void onMsg(UserInputMsg msg) {
-        this.listener.onMsg(msg);
-    }
-
-    // -------------------------------------------
 
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override

@@ -227,8 +227,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** {@link #start} 的异步后处理，避免阻塞主视图的布局更新 */
     private void afterStart() {
         withFavoriteboardContext(this.favoriteboard::start);
-
-        startAutoDiscardClips();
     }
 
     // =============================== End: 生命周期 ===================================
@@ -500,11 +498,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 discardClips();
                 break;
             }
-            case InputClip_Create_Done: {
-                // Note: 对相同的剪贴数据只会提示一次
-                startAutoDiscardClips();
-                break;
-            }
             case InputClip_Apply_Done: {
                 InputClipMsgData data = msg.data();
                 // Note: 在消息发送前，剪贴数据已被废弃，这里无需再做处理
@@ -683,19 +676,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         fire_InputMsg(InputClip_Discard_Done);
     }
 
-    private void startAutoDiscardClips() {
-        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
-            return;
-        }
-
-        this.task.removeMessages(TaskHandler.MSG_CLIPS_DISCARD);
-
-        int clipTipsTimeout = this.config.get(ConfigKey.input_clip_popup_tips_timeout);
-        if (clipTipsTimeout > 0) {
-            this.task.sendEmptyMessageDelayed(TaskHandler.MSG_CLIPS_DISCARD, clipTipsTimeout);
-        }
-    }
-
     private void asyncSaveTextToFavorite(CharSequence text) {
         this.task.removeMessages(TaskHandler.MSG_FAVORITE_TEXT);
 
@@ -752,7 +732,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     private static class TaskHandler extends Handler {
         private static final int MSG_START = 0;
-        private static final int MSG_CLIPS_DISCARD = 1;
         private static final int MSG_FAVORITE_TEXT = 2;
 
         private final IMEditor editor;
@@ -770,7 +749,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
         public void stop() {
             removeMessages(MSG_START);
-            removeMessages(MSG_CLIPS_DISCARD);
             removeMessages(MSG_FAVORITE_TEXT);
         }
 
@@ -779,10 +757,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             switch (msg.what) {
                 case MSG_START: {
                     this.editor.afterStart();
-                    break;
-                }
-                case MSG_CLIPS_DISCARD: {
-                    this.editor.discardClips();
                     break;
                 }
                 case MSG_FAVORITE_TEXT: {

@@ -82,9 +82,9 @@
             </com.google.android.flexbox.FlexboxLayout>
         </FrameLayout>
 
-        <include
-                layout="@layout/ime_view"
-                android:id="@+id/input_pane"
+        <!-- 输入法主视图 -->
+        <org.crazydan.studio.app.ime.kuaizi.IMEditorView
+                android:id="@+id/ime_main"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
     </LinearLayout>

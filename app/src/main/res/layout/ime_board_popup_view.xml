@@ -17,19 +17,6 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.crazydan.studio.app.ime.kuaizi.ui.view.PopupboardView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="2dp"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal">
-
-    <TextView
-            android:id="@+id/fg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="0dp"
-            android:textSize="@dimen/input_popup_key_text_size"
-            android:textStyle="bold" />
-</LinearLayout>
+        android:layout_height="wrap_content" />

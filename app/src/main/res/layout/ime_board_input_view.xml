@@ -21,8 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginHorizontal="@dimen/btn_tool_spacing"
-        android:layoutDirection="ltr">
+        android:layout_marginHorizontal="@dimen/btn_tool_spacing">
 
     <!-- 常用功能按钮 -->
     <FrameLayout

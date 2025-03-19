@@ -59,7 +59,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputListInpu
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-30
  */
-public class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
+public abstract class InputListViewBase extends RecyclerView<InputListViewAdapter, InputViewData>
         implements ViewGestureDetector.Listener, InputMsgListener {
     protected final Logger log = Logger.getLogger(getClass());
 

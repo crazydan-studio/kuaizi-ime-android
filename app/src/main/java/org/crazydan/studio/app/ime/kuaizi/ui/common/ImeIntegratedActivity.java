@@ -84,7 +84,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         Config.Mutable runtimeConfig = this.imeConfig.mutable();
 
         this.ime = IMEditor.create(runtimeConfig);
-        this.imeView = findViewById(R.id.input_pane);
+        this.imeView = findViewById(R.id.ime_main);
 
         this.ime.setListener(this);
         this.imeView.setListener(this);

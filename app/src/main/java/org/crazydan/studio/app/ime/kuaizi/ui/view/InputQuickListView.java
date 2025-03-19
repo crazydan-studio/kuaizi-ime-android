@@ -102,8 +102,7 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
                 break;
             }
             case input_clip: {
-                UserInputClipMsgData msgData = new UserInputClipMsgData(position,
-                                                                        (InputClip) item.data);
+                UserInputClipMsgData msgData = new UserInputClipMsgData(position, (InputClip) item.data);
                 msg = UserInputMsg.build((b) -> b.type(SingleTap_InputClip).data(msgData));
                 break;
             }

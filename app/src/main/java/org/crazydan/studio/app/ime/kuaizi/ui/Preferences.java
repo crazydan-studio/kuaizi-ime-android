@@ -41,7 +41,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.AlertPopup;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.DialogAlert;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 
@@ -80,22 +80,22 @@ public class Preferences extends FollowSystemThemeActivity {
                                           metrics.densityDpi);
         String appInfo = pkgInfo.packageName + ":" + pkgInfo.versionName;
 
-        AlertPopup.with(context)
-                  .setView(R.layout.guide_alert_view)
-                  .setCancelable(true)
-                  .setTitle(R.string.title_tips)
-                  .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
-                  .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
-                      String feedbackUrl = Preferences.createFeedbackUrl(null, null);
+        DialogAlert.with(context)
+                   .setView(R.layout.guide_alert_view)
+                   .setCancelable(true)
+                   .setTitle(R.string.title_tips)
+                   .setRawMessage(R.raw.text_about_suggestion, clientInfo, appInfo)
+                   .setNegativeButton(R.string.btn_feedback_open_link_without_extra_info, (dialog, which) -> {
+                       String feedbackUrl = Preferences.createFeedbackUrl(null, null);
 
-                      SystemUtils.openLink(context, feedbackUrl);
-                  })
-                  .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
-                      String feedbackUrl = Preferences.createFeedbackUrl(clientInfo, appInfo);
+                       SystemUtils.openLink(context, feedbackUrl);
+                   })
+                   .setPositiveButton(R.string.btn_feedback_open_link_with_extra_info, (dialog, which) -> {
+                       String feedbackUrl = Preferences.createFeedbackUrl(clientInfo, appInfo);
 
-                      SystemUtils.openLink(context, feedbackUrl);
-                  })
-                  .show();
+                       SystemUtils.openLink(context, feedbackUrl);
+                   })
+                   .show();
     }
 
     private static String createFeedbackUrl(String clientInfo, String appInfo) {
@@ -116,7 +116,9 @@ public class Preferences extends FollowSystemThemeActivity {
         setContentView(R.layout.app_preferences_activity);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.btn_open_settings, new SettingsFragment()).commit();
+            getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.btn_open_settings, new SettingsFragment())
+                                       .commit();
         }
     }
 

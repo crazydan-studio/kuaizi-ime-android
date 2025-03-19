@@ -37,9 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Inputboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserEditorActionSingleTapMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Cancel_Clean_InputList;
@@ -56,17 +54,17 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-01-06
  */
-public class InputboardView extends DirectionBoardView implements UserMsgListener, InputMsgListener {
+public class InputboardView extends BaseMsgListenerView {
     private final InputListView inputListView;
 
     private final BtnTools tools;
 
-    private UserMsgListener listener;
-
     private State state = new State(State.Type.Init);
 
     public InputboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.layout.ime_board_input_view);
+        super(context, attrs);
+        // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
+        inflate(context, R.layout.ime_board_input_view, this);
 
         int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
         int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
@@ -105,18 +103,6 @@ public class InputboardView extends DirectionBoardView implements UserMsgListene
     }
 
     // =============================== Start: 消息处理 ===================================
-
-    public void setListener(UserMsgListener listener) {
-        this.listener = listener;
-    }
-
-    /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
-    @Override
-    public void onMsg(UserInputMsg msg) {
-        this.listener.onMsg(msg);
-    }
-
-    // -------------------------------------------
 
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
@@ -201,8 +187,6 @@ public class InputboardView extends DirectionBoardView implements UserMsgListene
         }
 
         this.tools.update();
-
-        updateLayoutDirection();
     }
 
     // =============================== End: 消息处理 ===================================

@@ -26,19 +26,18 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
- * 告警弹窗
+ * 告警对话框
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-09-24
  */
-public class AlertPopup {
+public class DialogAlert {
     private final Context context;
 
     private View view;
@@ -48,60 +47,60 @@ public class AlertPopup {
     private Button positiveBtn;
     private boolean cancelable;
 
-    private AlertPopup(Context context) {
+    private DialogAlert(Context context) {
         this.context = context;
     }
 
-    public static AlertPopup with(Activity context) {
-        return new AlertPopup(context);
+    public static DialogAlert with(Activity context) {
+        return new DialogAlert(context);
     }
 
-    public AlertPopup setView(int resId) {
+    public DialogAlert setView(int resId) {
         View view = LayoutInflater.from(this.context).inflate(resId, null);
         return setView(view);
     }
 
-    public AlertPopup setView(View view) {
+    public DialogAlert setView(View view) {
         this.view = view;
         return this;
     }
 
-    public AlertPopup setTitle(int resId, Object... args) {
+    public DialogAlert setTitle(int resId, Object... args) {
         String title = this.context.getString(resId, args);
         return setTitle(title.trim());
     }
 
-    public AlertPopup setTitle(CharSequence title) {
+    public DialogAlert setTitle(CharSequence title) {
         this.title = title;
         return this;
     }
 
-    public AlertPopup setMessage(int resId, Object... args) {
+    public DialogAlert setMessage(int resId, Object... args) {
         String message = this.context.getString(resId, args);
         return setMessage(message.trim());
     }
 
-    public AlertPopup setRawMessage(int rawResId, Object... args) {
+    public DialogAlert setRawMessage(int rawResId, Object... args) {
         String message = ResourceUtils.readString(this.context, rawResId, args);
         return setMessage(message.trim());
     }
 
-    public AlertPopup setMessage(CharSequence message) {
+    public DialogAlert setMessage(CharSequence message) {
         this.message = message;
         return this;
     }
 
-    public AlertPopup setNegativeButton(int resId, DialogInterface.OnClickListener listener) {
+    public DialogAlert setNegativeButton(int resId, DialogInterface.OnClickListener listener) {
         this.negativeBtn = new Button(this.context.getString(resId), listener);
         return this;
     }
 
-    public AlertPopup setPositiveButton(int resId, DialogInterface.OnClickListener listener) {
+    public DialogAlert setPositiveButton(int resId, DialogInterface.OnClickListener listener) {
         this.positiveBtn = new Button(this.context.getString(resId), listener);
         return this;
     }
 
-    public AlertPopup setCancelable(boolean cancelable) {
+    public DialogAlert setCancelable(boolean cancelable) {
         this.cancelable = cancelable;
         return this;
     }
@@ -123,7 +122,7 @@ public class AlertPopup {
         // https://stackoverflow.com/questions/27087983/unable-to-add-window-token-null-is-not-valid-is-your-activity-running#answer-50716727
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this.context);
 
-        AlertDialog alert = builder.setView(this.view).setCancelable(this.cancelable).create();
+        androidx.appcompat.app.AlertDialog alert = builder.setView(this.view).setCancelable(this.cancelable).create();
         alert.show();
 
         if (this.negativeBtn != null) {

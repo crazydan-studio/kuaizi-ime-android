@@ -21,43 +21,51 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
-import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.UserMsgListener;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-17
+ * @date 2025-03-19
  */
-public abstract class DirectionBoardView extends FrameLayout {
+public abstract class BaseMsgListenerView extends FrameLayout implements UserMsgListener, InputMsgListener {
+    protected final Logger log = Logger.getLogger(getClass());
+
     protected Config config;
+    protected UserMsgListener listener;
 
-    public DirectionBoardView(@NonNull Context context, @Nullable AttributeSet attrs, int layoutResId) {
+    public BaseMsgListenerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
-        inflate(context, layoutResId, this);
     }
 
     public void setConfig(Config config) {
         this.config = config;
     }
 
-    /** 若当前为左手模式，则采用从右到左的布局方向，否则，采用从左到右的布局方向 */
-    protected void updateLayoutDirection() {
-        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
+    // =============================== Start: 消息处理 ===================================
 
-        ViewUtils.updateLayoutDirection(this, handMode, false);
-
-        // 修改当前视图所布局的子视图的布局方向
-        for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-            ViewUtils.updateLayoutDirection(child, handMode, false);
-        }
+    public void setListener(UserMsgListener listener) {
+        this.listener = listener;
     }
+
+    /** 响应内部视图的 {@link UserKeyMsg} 消息：从视图向上传递给外部监听者 */
+    @Override
+    public void onMsg(UserKeyMsg msg) {
+        this.listener.onMsg(msg);
+    }
+
+    /** 响应内部视图的 {@link UserInputMsg} 消息：从视图向上传递给外部监听者 */
+    @Override
+    public void onMsg(UserInputMsg msg) {
+        this.listener.onMsg(msg);
+    }
+
+    // =============================== End: 消息处理 ===================================
 }

@@ -322,6 +322,8 @@ public class Favoriteboard {
             return false;
         }
 
+        // TODO 查询数据，检查是否有相同内容的收藏
+
         return true;
     }
 
@@ -331,7 +333,7 @@ public class Favoriteboard {
      * 一般在有新的输入或超过一定的时间后，需废弃剪贴数据
      */
     public String discardClips() {
-        if (this.latestClips == null) {
+        if (!verifyClips()) {
             return null;
         }
         this.log.debug("Discard Clips");
