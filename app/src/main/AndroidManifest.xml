@@ -23,7 +23,6 @@
     <!--<uses-permission
             android:name="android.permission.WRITE_EXTERNAL_STORAGE"
             android:maxSdkVersion="28" />-->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Note：在 application 上设置默认主题，以便于 IDE 识别并处理 drawable 中引用的样式 -->
     <application

@@ -36,7 +36,8 @@ import androidx.annotation.Nullable;
 public class IMEditorViewReadonly extends IMEditorView {
 
     public IMEditorViewReadonly(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        // 只读视图不显示候选窗口
+        super(context, attrs, false);
     }
 
     @Override
