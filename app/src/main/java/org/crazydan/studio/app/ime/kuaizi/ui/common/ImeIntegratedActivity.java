@@ -92,15 +92,9 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     @Override
-    protected void onPause() {
-        // 提前关闭输入视图，以避免其气泡窗口出现闪现问题
+    protected void onDestroy() {
         this.imeView.close();
 
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
         this.ime.destroy();
         this.imeConfig.destroy();
 

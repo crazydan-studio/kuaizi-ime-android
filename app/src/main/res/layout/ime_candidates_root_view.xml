@@ -19,11 +19,10 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="50dp"
         android:paddingBottom="2dp"
         android:orientation="horizontal"
         android:gravity="center_horizontal|bottom"
-        android:clickable="false"
         android:theme="?attr/candidatesStyle">
 
     <!-- 快捷输入：输入补全、可粘贴等列表 -->
@@ -32,7 +31,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="2dp"
-            android:clickable="false"
             android:visibility="gone" />
 
     <!-- Snackbar 提示：用于交互操作的提示 -->

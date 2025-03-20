@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -57,6 +59,12 @@ import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
  * @date 2025-03-13
  */
 public class IMEditorView extends BaseThemedView {
+    private enum BoardType {
+        main,
+        favorite,
+        ;
+    }
+
     private final AudioPlayer audioPlayer;
 
     private final PopupWindow candidatesWindow;
@@ -111,9 +119,7 @@ public class IMEditorView extends BaseThemedView {
     }
 
     public void close() {
-        if (this.candidatesView != null) {
-            closeCandidatesWindow();
-        }
+        closeCandidatesWindow();
 
         MainboardView mainboard = getBoard(BoardType.main);
         mainboard.close();
@@ -180,8 +186,8 @@ public class IMEditorView extends BaseThemedView {
         current.onMsg(msg);
 
         if (this.candidatesView != null) {
+            // TODO 需要特定的显示、关闭消息
             this.candidatesView.onMsg(msg);
-            showCandidatesWindow(this.candidatesView.shouldVisible());
         }
     }
 
@@ -252,12 +258,12 @@ public class IMEditorView extends BaseThemedView {
 
         // Note: 仅视图进场才需要动画，退场视图直接隐藏即可，从而避免二者出现重影
         View currentView = currentType != activeType ? this.boards.get(currentType) : null;
-        hideView(currentType, currentView);
+        hideBoardView(currentType, currentView);
 
-        showView(activeView);
+        showBoardView(activeView);
     }
 
-    private void showView(View view) {
+    private void showBoardView(View view) {
         if (view instanceof ViewClosable) {
             ((ViewClosable) view).update();
         }
@@ -285,7 +291,7 @@ public class IMEditorView extends BaseThemedView {
         ViewUtils.show(view);
     }
 
-    private void hideView(BoardType type, View view) {
+    private void hideBoardView(BoardType type, View view) {
         if (view == null || !ViewUtils.isVisible(view)) {
             return;
         }
@@ -304,22 +310,18 @@ public class IMEditorView extends BaseThemedView {
         post(() -> ViewUtils.hide(view));
     }
 
-    private enum BoardType {
-        main,
-        favorite,
-        ;
-    }
-
     // ==================== Start: 候选视图窗口 ==================
 
     private PopupWindow createCandidatesWindow() {
-        PopupWindow window = new PopupWindow(this.candidatesView,
+        IMEditorCandidatesView contentView = this.candidatesView;
+        PopupWindow window = new PopupWindow(contentView,
                                              WindowManager.LayoutParams.MATCH_PARENT,
                                              WindowManager.LayoutParams.WRAP_CONTENT);
 
+        //window.setTouchable(false); // 内容视图不可点击，整个窗口都是直接穿透的
         window.setClippingEnabled(false);
-        window.setBackgroundDrawable(null);
         window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
 
@@ -328,16 +330,22 @@ public class IMEditorView extends BaseThemedView {
 
     private void closeCandidatesWindow() {
         PopupWindow window = this.candidatesWindow;
+        IMEditorCandidatesView contentView = this.candidatesView;
+
+        if (contentView == null) {
+            return;
+        }
+        contentView.close();
 
         // Note: 先隐藏内容视图，在延迟关闭窗口，以避免其出现跳闪
-        ViewUtils.hide(window.getContentView());
+        ViewUtils.hide(contentView);
         post(window::dismiss);
     }
 
     private void showCandidatesWindow(boolean shown) {
         PopupWindow window = this.candidatesWindow;
         if (!shown) {
-            post(window::dismiss);
+            closeCandidatesWindow();
             return;
         }
 
@@ -351,7 +359,7 @@ public class IMEditorView extends BaseThemedView {
 
             int height = contentView.getMeasuredHeight();
 
-            // 放置于被布局的键盘之上
+            // 放置于被布局的目标之上
             View parent = this;
             int[] location = new int[2];
             parent.getLocationInWindow(location);

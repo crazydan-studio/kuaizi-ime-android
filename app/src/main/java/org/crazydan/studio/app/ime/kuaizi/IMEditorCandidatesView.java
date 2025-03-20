@@ -69,11 +69,6 @@ public class IMEditorCandidatesView extends BaseThemedView {
         showTooltip(null, false);
     }
 
-    public boolean shouldVisible() {
-        return ViewUtils.isVisible(this.tooltipView) || ViewUtils.isVisible(this.snackbarView) || ViewUtils.isVisible(
-                this.quickListView);
-    }
-
     // =============================== Start: 视图更新 ===================================
 
     @Override
