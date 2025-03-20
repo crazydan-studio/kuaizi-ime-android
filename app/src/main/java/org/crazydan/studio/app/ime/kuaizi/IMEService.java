@@ -22,10 +22,17 @@ package org.crazydan.studio.app.ime.kuaizi;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.inputmethodservice.InputMethodService;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
@@ -65,6 +72,10 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     private IMEditor ime;
     private IMEditorView imeView;
 
+    private WindowManager windowManager;
+    private WindowManager.LayoutParams candidatesParams;
+    private IMEditorCandidatesView imeCandidatesView;
+
     private int prevFieldId;
     /** 记录可撤回输入的选区信息 */
     private EditorSelection.ChangeRevertion editorChangeRevertion;
@@ -83,6 +94,10 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     /** 切换到其他系统输入法时调用 */
     @Override
     public void onDestroy() {
+        if (this.imeCandidatesView != null) {
+            this.windowManager.removeView(this.imeCandidatesView);
+        }
+
         ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::destroy);
         ObjectUtils.invokeWhenNonNull(this.imeConfig, IMEConfig::destroy);
 
@@ -121,12 +136,57 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         // 故而，临时性配置变更全部在逻辑层内处理，视图内部状态的更新，则由视图独自处理
         this.imeView.setConfig(runtimeConfig.immutable());
 
+        // 创建候选栏视图
+        this.imeCandidatesView = (IMEditorCandidatesView) getLayoutInflater().inflate(R.layout.ime_candidates_view,
+                                                                                      null);
+        this.imeCandidatesView.setListener(this);
+        this.imeCandidatesView.setConfig(runtimeConfig.immutable());
+        // 传递触摸事件到输入法服务
+        this.imeCandidatesView.setOnTouchListener((v, event) -> {
+            getWindow().getWindow().getDecorView().dispatchTouchEvent(event);
+            return true;
+        });
+
+        this.candidatesParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+                                                               WindowManager.LayoutParams.WRAP_CONTENT,
+                                                               Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                                                               ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                                                               : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                                                               WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                                               | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                                                               PixelFormat.TRANSLUCENT);
+        this.candidatesParams.gravity = Gravity.TOP | Gravity.START;
+
+        this.windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+
         return this.imeView;
+    }
+
+    private void updateCandidatesPosition() {
+        int[] imePos = new int[2];
+        // 获取输入法窗口位置
+        getWindow().getWindow().getDecorView().getLocationOnScreen(imePos);
+
+        int candidatesHeight = this.imeCandidatesView.getHeight();
+
+        // 更新窗口位置
+        this.candidatesParams.y = imePos[1] - candidatesHeight;
+        this.windowManager.updateViewLayout(this.imeCandidatesView, this.candidatesParams);
     }
 
     /** 每次弹出键盘时调用 */
     @Override
     public void onStartInputView(EditorInfo attribute, boolean restarting) {
+        Context context = getApplicationContext();
+        if (!Settings.canDrawOverlays(context)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(Uri.parse("package:" + context.getPackageName()));
+            context.startActivity(intent);
+        } else {
+            this.windowManager.addView(this.imeCandidatesView, this.candidatesParams);
+        }
+
         int oldPrevFieldId = this.prevFieldId;
         // Note: 熄屏前后同一编辑组件的 id 会发生变化，会导致亮屏后输入丢失
         this.prevFieldId = attribute.fieldId;
@@ -189,6 +249,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     public void onFinishInputView(boolean finishingInput) {
         ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::close);
         ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
+
+        this.windowManager.removeView(this.imeCandidatesView);
 
         super.onFinishInputView(finishingInput);
     }
@@ -262,6 +324,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         });
 
         this.imeView.onMsg(msg);
+        this.imeCandidatesView.onMsg(msg);
 
         this.log.endTreeLog();
         /////////////////////////////////////////////////////////////////
@@ -275,6 +338,8 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     }
 
     private void handleMsg(InputMsg msg) {
+        updateCandidatesPosition();
+
         switch (msg.type) {
             case InputList_Commit_Doing: {
                 this.editorChangeRevertion = null;

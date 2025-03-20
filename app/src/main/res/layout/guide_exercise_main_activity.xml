@@ -34,8 +34,8 @@
 
         <include layout="@layout/app_actionbar" />
 
-        <!-- 采用层叠布局 FrameLayout，以确保按键布局沙盒能被后续视图遮盖 -->
-        <FrameLayout
+        <!-- 通过弹性布局以支持子视图覆盖与底部浮动 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1">
@@ -47,12 +47,18 @@
                     android:id="@+id/keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:visibility="invisible" />
 
             <org.crazydan.studio.app.ime.kuaizi.ui.guide.KeyboardSandboxView
                     android:id="@+id/xpad_keyboard_sandbox"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/keyboard_view_height"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:visibility="invisible" />
 
             <com.google.android.flexbox.FlexboxLayout
@@ -80,7 +86,16 @@
                         app:dot_spacing="4dp"
                         app:dot_size="18dp" />
             </com.google.android.flexbox.FlexboxLayout>
-        </FrameLayout>
+
+            <!-- Note: 输入发候选视图必须浮动在其他视图之上 -->
+            <org.crazydan.studio.app.ime.kuaizi.IMEditorCandidatesView
+                    android:id="@+id/ime_candidates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- 输入法主视图 -->
         <org.crazydan.studio.app.ime.kuaizi.IMEditorView

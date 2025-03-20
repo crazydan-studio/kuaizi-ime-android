@@ -24,15 +24,11 @@ import java.util.Map;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.PopupWindow;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
@@ -46,7 +42,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.BaseThemedView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.PopupboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
 
 /**
@@ -61,9 +56,6 @@ public class IMEditorView extends BaseThemedView {
     private final AudioPlayer audioPlayer;
 
     private Animation enterAnim;
-
-    private PopupWindow popupWindow;
-    protected PopupboardView popupView;
 
     private BoardType activeBoard = BoardType.main;
     private Map<BoardType, View> boards;
@@ -86,17 +78,8 @@ public class IMEditorView extends BaseThemedView {
     }
 
     public void close() {
-        this.popupWindow.dismiss();
-
         MainboardView mainboard = getBoard(BoardType.main);
         mainboard.close();
-    }
-
-    @Override
-    protected void updateLayoutDirection() {
-        super.updateLayoutDirection();
-
-        this.popupView.updateLayoutDirection();
     }
 
     // =============================== Start: 视图更新 ===================================
@@ -129,14 +112,6 @@ public class IMEditorView extends BaseThemedView {
         // 确保按已激活的类型显隐面板，而不是按视图中的设置
         activeBoard(this.activeBoard);
         // >>>>>>>>>>>>
-
-        // <<<<<<<<<< 气泡提示
-        this.popupView = (PopupboardView) inflate(context, R.layout.ime_board_popup_view, null);
-        this.popupView.setListener(this);
-        this.popupView.setConfig(this.config);
-
-        this.popupWindow = preparePopupWindow(this.popupWindow, this.popupView);
-        // >>>>>>>>>>>
     }
 
     // =============================== End: 视图更新 ===================================
@@ -166,13 +141,6 @@ public class IMEditorView extends BaseThemedView {
         // Note: 涉及重建视图和视图显隐切换等情况，因此，需在最后转发消息到子视图
         InputMsgListener current = currentBoard();
         current.onMsg(msg);
-
-        this.popupView.onMsg(msg);
-        if (this.popupView.shouldVisible()) {
-            showPopupWindow(this.popupWindow);
-        } else {
-            post(this.popupWindow::dismiss);
-        }
     }
 
     @Override
@@ -299,55 +267,4 @@ public class IMEditorView extends BaseThemedView {
         favorite,
         ;
     }
-
-    // ==================== Start: 气泡提示 ==================
-
-    private PopupWindow preparePopupWindow(PopupWindow window, View contentView) {
-        // Note: 重建窗口，以便于更新主题样式
-        ObjectUtils.invokeWhenNonNull(window, PopupWindow::dismiss);
-
-        window = new PopupWindow(contentView,
-                                 WindowManager.LayoutParams.MATCH_PARENT,
-                                 WindowManager.LayoutParams.WRAP_CONTENT);
-
-        window.setClippingEnabled(false);
-        window.setBackgroundDrawable(null);
-        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
-
-        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
-
-        return window;
-    }
-
-    private void showPopupWindow(PopupWindow window) {
-        if (window.isShowing()) {
-            return;
-        }
-
-        // Note: 初始启动时，测量内容尺寸将返回 0，故而，需在视图渲染完毕后，再取值
-        post(() -> {
-            // 测量内容高度
-            View contentView = window.getContentView();
-            contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-
-            int height = contentView.getMeasuredHeight();
-
-            // 放置于被布局的键盘之上
-            View parent = this;
-            int[] location = new int[2];
-            parent.getLocationInWindow(location);
-
-            int x = location[0];
-            int y = location[1] - height;
-
-            // 设置初始显示位置：其仅在未显示时有效
-            window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y);
-
-            // 确保窗口按照内容高度调整位置：其仅在显示时有效
-            // Note: 需要强制更新，否则，内容布局会出现跳动
-            window.update(x, y, window.getWidth(), window.getHeight(), true);
-        });
-    }
-
-    // ==================== End: 气泡提示 ==================
 }

@@ -17,6 +17,6 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<org.crazydan.studio.app.ime.kuaizi.ui.view.PopupboardView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.crazydan.studio.app.ime.kuaizi.IMEditorCandidatesView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

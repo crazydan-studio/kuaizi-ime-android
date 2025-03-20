@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.view;
+package org.crazydan.studio.app.ime.kuaizi;
 
 import java.util.List;
 
@@ -28,13 +28,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
-import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputClip;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
@@ -42,26 +40,45 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.BaseThemedView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Save_As_Favorite;
 
 /**
- * 提示面板视图
+ * {@link IMEditor} 的输入候选视图
  * <p/>
  * 负责按键提示、快捷输入列表的显示
+ * <p/>
+ * 与 {@link IMEditorView} 分离显示
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-19
  */
-public class PopupboardView extends BaseMsgListenerView {
-    private final InputQuickListView quickListView;
-    private final TextView tooltipView;
-    private final View snackbarView;
+public class IMEditorCandidatesView extends BaseThemedView {
+    private InputQuickListView quickListView;
+    private TextView tooltipView;
+    private View snackbarView;
 
-    public PopupboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
-        inflate(context, R.layout.ime_board_popup_root_view, this);
+    public IMEditorCandidatesView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs, R.layout.ime_candidates_root_view, true);
+    }
+
+    public void close() {
+        showInputQuickPopupWindow(null);
+        showTooltip(null, false);
+    }
+
+    public boolean shouldVisible() {
+        return ViewUtils.isVisible(this.tooltipView) || ViewUtils.isVisible(this.snackbarView) || ViewUtils.isVisible(
+                this.quickListView);
+    }
+
+    // =============================== Start: 视图更新 ===================================
+
+    @Override
+    protected void doLayout() {
+        super.doLayout();
 
         this.quickListView = findViewById(R.id.quick_list);
         this.tooltipView = findViewById(R.id.tooltip);
@@ -70,30 +87,20 @@ public class PopupboardView extends BaseMsgListenerView {
         this.quickListView.setListener(this);
     }
 
-    public boolean shouldVisible() {
-        return ViewUtils.isVisible(this.tooltipView) //
-               || ViewUtils.isVisible(this.snackbarView) //
-               || ViewUtils.isVisible(this.quickListView);
-    }
+    @Override
+    protected void updateLayoutDirection() {
+        super.updateLayoutDirection();
 
-    // =============================== Start: 视图更新 ===================================
-
-    /** 由上层视图调用以更新布局方向 */
-    public void updateLayoutDirection() {
-        Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
-
-        ViewUtils.updateLayoutDirection(this, handMode, true);
         // Note: Snackbar 按普通的方式调整布局方向
-        ViewUtils.updateLayoutDirection(this.snackbarView, handMode, false);
+        updateLayoutDirection(this.snackbarView, false);
     }
 
     // =============================== End: 视图更新 ===================================
 
     // =============================== Start: 消息处理 ===================================
 
-    /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
-    public void onMsg(InputMsg msg) {
+    protected void handleMsg(InputMsg msg) {
         // Note: 快捷输入没有确定的隐藏时机，故而，需针对每个消息做一次处理，在数据为 null 时隐藏，有数据时显示
         showInputQuickPopupWindow(msg.inputQuickList);
 

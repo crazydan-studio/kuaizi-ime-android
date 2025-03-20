@@ -25,9 +25,11 @@ import android.content.Context;
 import android.os.Bundle;
 import org.crazydan.studio.app.ime.kuaizi.IMEConfig;
 import org.crazydan.studio.app.ime.kuaizi.IMEditor;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorCandidatesView;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -59,6 +61,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     protected IMEConfig imeConfig;
     protected IMEditor ime;
     protected IMEditorView imeView;
+    protected IMEditorCandidatesView imeCandidatesView;
 
     public ImeIntegratedActivity(int layoutResId) {
         super();
@@ -89,12 +92,20 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         this.ime.setListener(this);
         this.imeView.setListener(this);
         this.imeView.setConfig(runtimeConfig.immutable());
+
+        this.imeCandidatesView = findViewById(R.id.ime_candidates);
+        if (this.imeCandidatesView != null) {
+            this.imeCandidatesView.setListener(this);
+            this.imeCandidatesView.setConfig(runtimeConfig.immutable());
+        }
     }
 
     @Override
     protected void onPause() {
         // 提前关闭输入视图，以避免其气泡窗口出现闪现问题
         this.imeView.close();
+
+        ObjectUtils.invokeWhenNonNull(this.imeCandidatesView, IMEditorCandidatesView::close);
 
         super.onPause();
     }
@@ -145,6 +156,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
         });
 
         this.imeView.onMsg(msg);
+        this.imeCandidatesView.onMsg(msg);
 
         this.log.endTreeLog();
     }
