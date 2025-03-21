@@ -31,9 +31,17 @@
     </declare-styleable>
 
     <declare-styleable name="ImeStyle">
-        <attr name="keyboardStyle" format="reference" />
-        <attr name="inputboardStyle" format="reference" />
-        <attr name="candidatesStyle" format="reference" />
+        <attr name="bg_primary_color" format="color" />
+        <attr name="bg_secondary_color" format="color" />
+        <attr name="fg_primary_color" format="color" />
+        <attr name="fg_secondary_color" format="color" />
+        <attr name="text_color" format="color" />
+        <attr name="title_text_color" format="color" />
+        <attr name="border_color" format="color" />
+
+        <attr name="keyboard_style" format="reference" />
+        <attr name="inputboard_style" format="reference" />
+        <attr name="candidates_style" format="reference" />
 
         <attr name="board_bg_color" format="color" />
         <attr name="board_border_color" format="color" />
@@ -44,6 +52,12 @@
         <attr name="popup_input_quick_fg_color" format="color" />
         <attr name="popup_input_quick_border_color" format="color" />
         <attr name="popup_input_quick_shadow_style" format="string" />
+
+        <!-- 动画 -->
+        <attr name="anim_slide_in" format="reference" />
+        <attr name="anim_slide_out" format="reference" />
+        <attr name="anim_fade_in" format="reference" />
+        <attr name="anim_fade_out" format="reference" />
     </declare-styleable>
 
     <declare-styleable name="ImeInputboardStyle">
@@ -59,7 +73,14 @@
         <attr name="input_tool_fg_color" format="color" />
     </declare-styleable>
 
-    <declare-styleable name="ImeCandidatesStyle"></declare-styleable>
+    <declare-styleable name="ImeCandidatesStyle">
+        <attr name="snackbar_bg_color" format="color" />
+        <attr name="snackbar_fg_color" format="color" />
+        <attr name="snackbar_btn_color" format="color" />
+
+        <attr name="tooltip_bg" format="reference" />
+        <attr name="tooltip_fg_color" format="color" />
+    </declare-styleable>
 
     <declare-styleable name="ImeKeyboardStyle">
         <attr name="gesture_trail_color" format="color" />

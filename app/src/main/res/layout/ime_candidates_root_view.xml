@@ -17,21 +17,22 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:paddingBottom="2dp"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal|bottom"
-        android:theme="?attr/candidatesStyle">
+        android:theme="?attr/candidates_style">
 
     <!-- 快捷输入：输入补全、可粘贴等列表 -->
     <org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView
             android:id="@+id/quick_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="2dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Snackbar 提示：用于交互操作的提示 -->
     <LinearLayout
@@ -39,9 +40,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="#323232"
-            android:padding="8dp"
-            android:visibility="gone">
+            android:background="?attr/snackbar_bg_color"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
                 android:layout_width="0dp"
@@ -54,7 +57,7 @@
                     android:id="@+id/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
+                    android:textColor="?attr/snackbar_fg_color"
                     android:textSize="14sp" />
         </LinearLayout>
 
@@ -62,9 +65,7 @@
                 android:id="@+id/action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#FF4081"
-                android:background="?android:attr/selectableItemBackground"
-                android:textAllCaps="true" />
+                android:textColor="?attr/snackbar_btn_color" />
     </LinearLayout>
 
     <!-- 提示信息置于最上层：用于显示按键输入和操作提示 -->
@@ -74,10 +75,12 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingHorizontal="12dp"
-            android:paddingVertical="0dp"
-            android:textSize="@dimen/input_popup_key_text_size"
-            android:textColor="@color/color_black"
+            android:paddingVertical="2dp"
+            android:textSize="@dimen/tooltip_text_size"
+            android:textColor="?attr/tooltip_fg_color"
             android:textStyle="bold"
-            android:background="@android:drawable/dialog_holo_light_frame"
-            android:visibility="gone" />
-</LinearLayout>
+            android:background="?attr/tooltip_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

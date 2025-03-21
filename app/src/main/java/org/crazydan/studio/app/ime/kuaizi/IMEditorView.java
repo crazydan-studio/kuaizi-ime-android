@@ -95,6 +95,7 @@ public class IMEditorView extends BaseThemedView {
         if (withCandidates) {
             this.candidatesView = (IMEditorCandidatesView) inflate(context, R.layout.ime_candidates_inflate_view, null);
             this.candidatesView.setListener(this);
+            this.candidatesView.setOnShowListener(this::showCandidatesWindow);
 
             this.candidatesWindow = createCandidatesWindow();
         } else {
@@ -186,8 +187,7 @@ public class IMEditorView extends BaseThemedView {
         current.onMsg(msg);
 
         if (this.candidatesView != null) {
-            // TODO 需要特定的显示、关闭消息
-            this.candidatesView.onMsg(msg);
+            post(() -> this.candidatesView.onMsg(msg));
         }
     }
 
@@ -323,7 +323,8 @@ public class IMEditorView extends BaseThemedView {
         window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        window.setAnimationStyle(R.style.Theme_Kuaizi_PopupWindow_Animation);
+        // Note: 动画由内容视图处理，窗口自身直接隐藏或显示
+        window.setAnimationStyle(0);
 
         return window;
     }
@@ -335,7 +336,7 @@ public class IMEditorView extends BaseThemedView {
         if (contentView == null) {
             return;
         }
-        contentView.close();
+        post(contentView::close);
 
         // Note: 先隐藏内容视图，在延迟关闭窗口，以避免其出现跳闪
         ViewUtils.hide(contentView);
@@ -352,27 +353,26 @@ public class IMEditorView extends BaseThemedView {
         View contentView = window.getContentView();
         ViewUtils.show(contentView);
 
-        // Note: 初始启动时，测量内容尺寸将返回 0，故而，需在视图渲染完毕后，再取值
+        // 放置于被布局的目标之上
+        View target = this;
         post(() -> {
-            // 测量内容高度
+            // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
             contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
 
             int height = contentView.getMeasuredHeight();
+            int[] loc = new int[2];
+            target.getLocationOnScreen(loc);
 
-            // 放置于被布局的目标之上
-            View parent = this;
-            int[] location = new int[2];
-            parent.getLocationInWindow(location);
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
+            boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
-            int x = location[0];
-            int y = location[1] - height;
+            int x = 0;
+            int y = (isInIME ? 0 : loc[1]) - height;
 
             // 设置初始显示位置：其仅在未显示时有效
-            window.showAtLocation(parent, Gravity.START | Gravity.TOP, x, y);
-
-            // 确保窗口按照内容高度调整位置：其仅在显示时有效
-            // Note: 需要强制更新，否则，内容布局会出现跳动
-            window.update(x, y, window.getWidth(), window.getHeight(), true);
+            // 在嵌入应用的模式下，窗口偏移相对于整个屏幕，
+            // 而若是输入法形态，则窗口偏移相对于输入法窗口
+            window.showAtLocation(target, Gravity.TOP, x, y);
         });
     }
 

@@ -17,8 +17,9 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<resources>
-    <!-- color format: #AARRGGBB -->
-    <color name="color_black">#ff000000</color>
-    <color name="color_white">#ffffffff</color>
-</resources>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <translate
+            android:duration="200"
+            android:fromYDelta="0%"
+            android:toYDelta="100%" />
+</set>

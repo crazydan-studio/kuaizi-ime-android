@@ -27,7 +27,7 @@
             android:id="@+id/inputboard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="?attr/inputboardStyle" />
+            android:theme="?attr/inputboard_style" />
 
     <View
             android:layout_width="match_parent"
@@ -60,7 +60,7 @@
                     android:id="@+id/keyboard"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:theme="?attr/keyboardStyle" />
+                    android:theme="?attr/keyboard_style" />
         </FrameLayout>
 
         <View

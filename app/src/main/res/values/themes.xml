@@ -19,40 +19,70 @@
 
 <resources>
     <!-- Start: 输入法主题 -->
-    <style name="Theme.Kuaizi.IME.Light" parent="">
-        <item name="android:textColor">#ff616161</item>
+    <style name="Theme.Kuaizi.IME" parent="">
         <item name="android:textSize">18sp</item>
+        <item name="android:windowTitleSize">20sp</item>
 
-        <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Light</item>
-        <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
-        <item name="candidatesStyle">@style/Theme.Kuaizi.IME.Candidates.Light</item>
+        <!-- 动画 -->
+        <item name="anim_slide_in">@anim/slide_in_bottom</item>
+        <item name="anim_slide_out">@anim/slide_out_bottom</item>
+        <item name="anim_fade_in">@android:anim/fade_in</item>
+        <item name="anim_fade_out">@android:anim/fade_out</item>
 
-        <item name="board_bg_color">#ffededed</item>
-        <item name="board_border_color">?attr/board_divider_color</item>
-        <item name="board_divider_color">#ffdadada</item>
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
+    <style name="Theme.Kuaizi.IME.Light" parent="Theme.Kuaizi.IME">
+        <item name="android:textColor">?attr/text_color</item>
+        <item name="android:titleTextColor">?attr/title_text_color</item>
+
+        <item name="bg_primary_color">#ffededed</item>
+        <item name="bg_secondary_color">#fffaf9f6</item>
+        <item name="fg_primary_color">#ff616161</item>
+        <item name="fg_secondary_color">#e600bcd4</item>
+        <item name="text_color">#ff616161</item>
+        <item name="title_text_color">#e600bcd4</item>
+        <item name="border_color">#ffdadada</item>
+
+        <item name="keyboard_style">@style/Theme.Kuaizi.IME.Keyboard.Light</item>
+        <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
+        <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Light</item>
+
+        <item name="board_bg_color">?attr/bg_primary_color</item>
+        <item name="board_divider_color">?attr/border_color</item>
+        <item name="board_border_color">?attr/border_color</item>
 
         <!-- Popup 配置 -->
-        <item name="popup_input_quick_bg_color">#ffffffff</item>
-        <item name="popup_input_quick_fg_color">#e600bcd4</item>
+        <item name="popup_input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="popup_input_quick_fg_color">?attr/fg_secondary_color</item>
         <item name="popup_input_quick_border_color">?attr/board_border_color</item>
         <item name="popup_input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
     </style>
 
-    <style name="Theme.Kuaizi.IME.Night" parent="">
-        <item name="android:textColor">#ffededed</item>
-        <item name="android:textSize">18sp</item>
+    <style name="Theme.Kuaizi.IME.Night" parent="Theme.Kuaizi.IME">
+        <item name="android:textColor">?attr/text_color</item>
+        <item name="android:titleTextColor">?attr/title_text_color</item>
 
-        <item name="keyboardStyle">@style/Theme.Kuaizi.IME.Keyboard.Night</item>
-        <item name="inputboardStyle">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
-        <item name="candidatesStyle">@style/Theme.Kuaizi.IME.Candidates.Night</item>
+        <item name="bg_primary_color">#ff272b2c</item>
+        <item name="bg_secondary_color">#ff2f3336</item>
+        <item name="fg_primary_color">#ff71d4fe</item>
+        <item name="fg_secondary_color">#e600bcd4</item>
+        <item name="text_color">#ffededed</item>
+        <item name="title_text_color">#e600bcd4</item>
+        <item name="border_color">#93000000</item>
 
-        <item name="board_bg_color">#ff272b2c</item>
-        <item name="board_border_color">?attr/board_divider_color</item>
-        <item name="board_divider_color">#93000000</item>
+        <item name="keyboard_style">@style/Theme.Kuaizi.IME.Keyboard.Night</item>
+        <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
+        <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Night</item>
+
+        <item name="board_bg_color">?attr/bg_primary_color</item>
+        <item name="board_divider_color">?attr/border_color</item>
+        <item name="board_border_color">?attr/border_color</item>
 
         <!-- Popup 配置 -->
-        <item name="popup_input_quick_bg_color">#ff2f3336</item>
-        <item name="popup_input_quick_fg_color">#e600bcd4</item>
+        <item name="popup_input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="popup_input_quick_fg_color">?attr/fg_secondary_color</item>
         <item name="popup_input_quick_border_color">?attr/board_border_color</item>
         <item name="popup_input_quick_shadow_style">1 1 2 #a3000000</item>
     </style>
@@ -60,11 +90,11 @@
 
     <!-- Start: 输入法键盘主题 -->
     <style name="Theme.Kuaizi.IME.Keyboard.Light" parent="">
-        <item name="gesture_trail_color">#e600bcd4</item>
+        <item name="gesture_trail_color">?attr/fg_secondary_color</item>
 
-        <item name="key_bg_color">#ffffffff</item>
-        <item name="key_fg_color">#ff616161</item>
-        <item name="key_highlight_fg_color">#e600bcd4</item>
+        <item name="key_bg_color">?attr/bg_secondary_color</item>
+        <item name="key_fg_color">?attr/fg_primary_color</item>
+        <item name="key_highlight_fg_color">?attr/fg_secondary_color</item>
 
         <item name="key_border_style">0 #ffffffff</item>
         <item name="key_disabled_border_style">1 #b3c5c5c5</item>
@@ -122,11 +152,11 @@
     </style>
 
     <style name="Theme.Kuaizi.IME.Keyboard.Night" parent="">
-        <item name="gesture_trail_color">#e600bcd4</item>
+        <item name="gesture_trail_color">?attr/fg_secondary_color</item>
 
-        <item name="key_bg_color">#ff2f3336</item>
-        <item name="key_fg_color">#ff71d4fe</item>
-        <item name="key_highlight_fg_color">#e600bcd4</item>
+        <item name="key_bg_color">?attr/bg_secondary_color</item>
+        <item name="key_fg_color">?attr/fg_primary_color</item>
+        <item name="key_highlight_fg_color">?attr/fg_secondary_color</item>
 
         <item name="key_border_style">0 #ff2f3336</item>
         <item name="key_disabled_border_style">1 #b3000000</item>
@@ -136,12 +166,12 @@
         <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_noop_fg_color">#ffa3a3a3</item>
         <item name="key_ctrl_switcher_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switcher_fg_color">?android:attr/textColor</item>
+        <item name="key_ctrl_switcher_fg_color">?attr/text_color</item>
 
         <item name="key_ctrl_backspace_bg_color">?attr/key_bg_color</item>
         <item name="key_ctrl_backspace_fg_color">#ffed4c67</item>
         <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_space_fg_color">?android:attr/textColor</item>
+        <item name="key_ctrl_space_fg_color">?attr/text_color</item>
 
         <item name="key_ctrl_locator_bg_color">#6300bcd4</item>
         <item name="key_ctrl_locator_fg_color">#a3fafafa</item>
@@ -162,7 +192,7 @@
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
 
         <item name="key_char_level_0_bg_color">#68ce4e48</item>
-        <item name="key_char_level_0_fg_color">?android:attr/textColor</item>
+        <item name="key_char_level_0_fg_color">?attr/text_color</item>
         <item name="key_char_level_1_bg_color">#68cb6b54</item>
         <item name="key_char_level_1_fg_color">?attr/key_char_level_0_fg_color</item>
         <item name="key_char_level_2_bg_color">#683395d4</item>
@@ -177,7 +207,7 @@
         <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
         <item name="xpad_key_ctrl_divider_style">0.5 #b3000000</item>
         <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
-        <item name="xpad_key_chars_fg_color">?android:attr/textColor</item>
+        <item name="xpad_key_chars_fg_color">?attr/text_color</item>
         <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
         <item name="xpad_key_chars_divider_style">2 #ff2f3336</item>
         <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
@@ -186,39 +216,49 @@
 
     <!-- Start: 输入法输入面板主题 -->
     <style name="Theme.Kuaizi.IME.Inputboard.Light" parent="">
-        <item name="input_bg_color">?attr/board_bg_color</item>
-        <item name="input_fg_color">#ff616161</item>
+        <item name="input_bg_color">?attr/bg_primary_color</item>
+        <item name="input_fg_color">?attr/fg_primary_color</item>
 
         <item name="input_selection_bg_color">#ffdadada</item>
-        <item name="input_selection_fg_color">#ff616161</item>
+        <item name="input_selection_fg_color">?attr/fg_primary_color</item>
 
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
-        <item name="input_tool_fg_color">?android:attr/textColor</item>
+        <item name="input_tool_fg_color">?attr/text_color</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Inputboard.Night" parent="">
-        <item name="input_bg_color">?attr/board_bg_color</item>
-        <item name="input_fg_color">#ff71d4fe</item>
+        <item name="input_bg_color">?attr/bg_primary_color</item>
+        <item name="input_fg_color">?attr/fg_primary_color</item>
 
         <item name="input_selection_bg_color">#ff334155</item>
-        <item name="input_selection_fg_color">#ff71d4fe</item>
+        <item name="input_selection_fg_color">?attr/fg_primary_color</item>
 
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
 
-        <item name="input_tool_fg_color">?android:attr/textColor</item>
+        <item name="input_tool_fg_color">?attr/text_color</item>
     </style>
     <!-- End: 输入法输入面板主题 -->
 
     <!-- Start: 输入法输入候选主题 -->
     <style name="Theme.Kuaizi.IME.Candidates.Light" parent="">
+        <item name="snackbar_bg_color">#ff272b2c</item>
+        <item name="snackbar_fg_color">#ffededed</item>
+        <item name="snackbar_btn_color">?attr/fg_secondary_color</item>
 
+        <item name="tooltip_bg">@drawable/bg_tooltip</item>
+        <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Candidates.Night" parent="">
+        <item name="snackbar_bg_color">#ffededed</item>
+        <item name="snackbar_fg_color">#ff616161</item>
+        <item name="snackbar_btn_color">?attr/fg_secondary_color</item>
 
+        <item name="tooltip_bg">@drawable/bg_tooltip</item>
+        <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
     </style>
     <!-- End: 输入法输入候选主题 -->
 

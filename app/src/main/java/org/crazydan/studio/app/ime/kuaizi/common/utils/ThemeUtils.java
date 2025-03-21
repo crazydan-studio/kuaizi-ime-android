@@ -39,6 +39,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.Shadow;
  */
 public class ThemeUtils {
 
+    /** 通过属性 id 获取资源 id */
+    public static int getResourceByAttrId(Context context, int attrId) {
+        return getValue(context, attrId).resourceId;
+    }
+
     /** 通过属性 id 获取颜色值 */
     public static int getColorByAttrId(Context context, int attrId) {
         // https://stackoverflow.com/questions/17277618/get-color-value-programmatically-when-its-a-reference-theme#answer-17277714
@@ -110,7 +115,7 @@ public class ThemeUtils {
         }
     }
 
-    private static TypedValue getValue(Context context, int attrId) {
+    public static TypedValue getValue(Context context, int attrId) {
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(attrId, typedValue, true);
 

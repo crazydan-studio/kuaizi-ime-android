@@ -19,17 +19,21 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -56,12 +60,25 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @date 2025-03-19
  */
 public class IMEditorCandidatesView extends BaseThemedView {
+    public interface OnShowListener {
+        void onShow(boolean shown);
+    }
+
     private InputQuickListView quickListView;
     private TextView tooltipView;
     private View snackbarView;
 
+    private OnShowListener onShowListener;
+    private final Runnable dismissSnackbarCb;
+
     public IMEditorCandidatesView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs, R.layout.ime_candidates_root_view, true);
+
+        this.dismissSnackbarCb = () -> snackbarDimiss(this.snackbarView);
+    }
+
+    public void setOnShowListener(OnShowListener onShowListener) {
+        this.onShowListener = onShowListener;
     }
 
     public void close() {
@@ -88,6 +105,12 @@ public class IMEditorCandidatesView extends BaseThemedView {
 
         // Note: Snackbar 按普通的方式调整布局方向
         updateLayoutDirection(this.snackbarView, false);
+    }
+
+    public boolean shouldVisible() {
+        return ViewUtils.isVisible(this.tooltipView) //
+               || ViewUtils.isVisible(this.snackbarView) //
+               || ViewUtils.isVisible(this.quickListView);
     }
 
     // =============================== End: 视图更新 ===================================
@@ -130,10 +153,12 @@ public class IMEditorCandidatesView extends BaseThemedView {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
+
+        this.onShowListener.onShow(shouldVisible());
     }
 
     private void on_InputClip_CanBe_Favorite_Msg(InputClipMsgData data) {
-        dismiss(this.snackbarView);
+        removeCallbacks(this.dismissSnackbarCb);
 
         TextView textView = this.snackbarView.findViewById(R.id.text);
         textView.setText(data.source.confirmResId);
@@ -142,7 +167,8 @@ public class IMEditorCandidatesView extends BaseThemedView {
         actionBtn.setText(R.string.btn_save_as_favorite);
         actionBtn.setOnClickListener((v) -> saveClipToFavorite(data.clip));
 
-        show(this.snackbarView, 5000);
+        snackbarShow(this.snackbarView);
+        postDelayed(this.dismissSnackbarCb, 5000);
     }
 
     private void on_Editor_Edit_Doing_Msg(EditorAction action) {
@@ -172,14 +198,13 @@ public class IMEditorCandidatesView extends BaseThemedView {
     // ==================== Start: 气泡提示 ==================
 
     private void showInputQuickPopupWindow(List<?> dataList) {
+        this.quickListView.update(dataList == null ? new ArrayList<>() : dataList);
+
         if (CollectionUtils.isEmpty(dataList)) {
             dismiss(this.quickListView);
-            return;
+        } else {
+            show(this.quickListView, 0);
         }
-
-        this.quickListView.update(dataList);
-
-        show(this.quickListView, 0);
     }
 
     private void showInputKeyTip(String key, boolean hideDelayed) {
@@ -222,5 +247,37 @@ public class IMEditorCandidatesView extends BaseThemedView {
         if (closeDelayMillis > 0) {
             postDelayed(() -> dismiss(view), closeDelayMillis);
         }
+    }
+
+    private void snackbarShow(View view) {
+        Context context = view.getContext();
+        int animResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_slide_in);
+        Animation anim = AnimationUtils.loadAnimation(context, animResId);
+
+        view.startAnimation(anim);
+        ViewUtils.show(view);
+    }
+
+    private void snackbarDimiss(View view) {
+        // Note: 从当前子视图的主题上下文中查找动画资源
+        Context context = view.getContext();
+        int animResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_slide_out);
+        Animation anim = AnimationUtils.loadAnimation(context, animResId);
+
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                anim.setAnimationListener(null);
+                ViewUtils.hide(view);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+
+        view.startAnimation(anim);
     }
 }
