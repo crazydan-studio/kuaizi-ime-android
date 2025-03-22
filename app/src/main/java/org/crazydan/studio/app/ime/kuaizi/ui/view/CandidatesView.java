@@ -20,7 +20,9 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -31,7 +33,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -62,62 +63,70 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.Singl
  * @date 2025-03-19
  */
 public class CandidatesView extends BaseThemedView {
-    public interface OnShowListener {
-        void onShow(boolean shown);
-    }
+    private PopupWindow popupWindow;
 
-    private final PopupWindow popupWindow;
-
-    private InputQuickListView quickListView;
-    private TextView tooltipView;
-    private View snackbarView;
-
-    private OnShowListener onShowListener;
-    private final Runnable dismissSnackbarCb;
+    private Map<PopupType, Popup> popups;
 
     public CandidatesView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.layout.ime_candidates_view, true);
+        // Note: 在当前视图内不嵌入其他视图，相关视图均在浮动窗口中显示
+        super(context, attrs, 0, true);
 
         this.popupWindow = createPopupWindow();
-        this.dismissSnackbarCb = () -> snackbarDimiss(this.snackbarView);
-
-        setOnShowListener(this::showPopupWindow);
     }
 
-    public void setOnShowListener(OnShowListener onShowListener) {
-        this.onShowListener = onShowListener;
+    public void destroy() {
+        closePopupWindow();
+
+        this.popupWindow = null;
+        this.popups = null;
     }
 
     public void close() {
-        showInputQuickPopupWindow(null);
+        showInputQuickList(null);
         showTooltip(null, false);
+
+        closePopupWindow();
     }
 
     // =============================== Start: 视图更新 ===================================
 
     @Override
     protected void doLayout() {
-        super.doLayout();
+        closePopupWindow();
 
-        this.quickListView = findViewById(R.id.quick_list);
-        this.tooltipView = findViewById(R.id.tooltip);
-        this.snackbarView = findViewById(R.id.snackbar);
+        Context context = getContext();
+        // 构造候选视图，并继承上下文中的主题配置
+        View contentView = inflate(context, R.layout.ime_candidates_view, null);
+        this.popupWindow.setContentView(contentView);
 
-        this.quickListView.setListener(this);
+        InputQuickListView quickListView = contentView.findViewById(R.id.quick_list);
+        quickListView.setListener(this);
+
+        View tooltipView = contentView.findViewById(R.id.tooltip);
+        View snackbarView = contentView.findViewById(R.id.snackbar);
+
+        this.popups = new HashMap<PopupType, Popup>() {{
+            put(PopupType.quick_list,
+                new Popup((View) quickListView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
+            put(PopupType.tooltip,
+                new Popup((View) tooltipView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
+
+            put(PopupType.snackbar, new Popup(snackbarView, R.attr.anim_slide_in, R.attr.anim_slide_out));
+        }};
     }
 
     @Override
     protected void updateLayoutDirection() {
-        super.updateLayoutDirection();
+        updateLayoutDirection(popup(PopupType.quick_list).view, true);
 
         // Note: Snackbar 按普通的方式调整布局方向
-        updateLayoutDirection(this.snackbarView, false);
+        updateLayoutDirection(popup(PopupType.snackbar).view, false);
     }
 
-    public boolean shouldVisible() {
-        return ViewUtils.isVisible(this.tooltipView) //
-               || ViewUtils.isVisible(this.snackbarView) //
-               || ViewUtils.isVisible(this.quickListView);
+    private Popup popup(PopupType type) {
+        Popup popup = this.popups.get(type);
+        assert popup != null;
+        return popup;
     }
 
     // =============================== End: 视图更新 ===================================
@@ -127,7 +136,7 @@ public class CandidatesView extends BaseThemedView {
     @Override
     protected void handleMsg(InputMsg msg) {
         // Note: 快捷输入没有确定的隐藏时机，故而，需针对每个消息做一次处理，在数据为 null 时隐藏，有数据时显示
-        showInputQuickPopupWindow(msg.inputQuickList);
+        showInputQuickList(msg.inputQuickList);
 
         switch (msg.type) {
             case InputChars_Input_Popup_Show_Doing: {
@@ -160,22 +169,20 @@ public class CandidatesView extends BaseThemedView {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
             }
         }
-
-        this.onShowListener.onShow(shouldVisible());
     }
 
     private void on_InputClip_CanBe_Favorite_Msg(InputClipMsgData data) {
-        removeCallbacks(this.dismissSnackbarCb);
+        Popup popup = popup(PopupType.snackbar);
+        View view = popup.view;
 
-        TextView textView = this.snackbarView.findViewById(R.id.text);
+        TextView textView = view.findViewById(R.id.snackbar_text);
         textView.setText(data.source.confirmResId);
 
-        Button actionBtn = this.snackbarView.findViewById(R.id.action);
+        TextView actionBtn = view.findViewById(R.id.snackbar_action);
         actionBtn.setText(R.string.btn_save_as_favorite);
         actionBtn.setOnClickListener((v) -> saveClipToFavorite(data.clip));
 
-        snackbarShow(this.snackbarView);
-        postDelayed(this.dismissSnackbarCb, 5000);
+        popup.show(50000000);
     }
 
     private void on_Editor_Edit_Doing_Msg(EditorAction action) {
@@ -204,13 +211,16 @@ public class CandidatesView extends BaseThemedView {
 
     // ==================== Start: 气泡提示 ==================
 
-    private void showInputQuickPopupWindow(List<?> dataList) {
-        this.quickListView.update(dataList == null ? new ArrayList<>() : dataList);
+    private void showInputQuickList(List<?> dataList) {
+        Popup popup = popup(PopupType.quick_list);
+        InputQuickListView view = popup.view.findViewById(R.id.quick_list);
+
+        view.update(dataList == null ? new ArrayList<>() : dataList);
 
         if (CollectionUtils.isEmpty(dataList)) {
-            dismiss(this.quickListView);
+            popup.close();
         } else {
-            show(this.quickListView, 0);
+            popup.show();
         }
     }
 
@@ -230,70 +240,20 @@ public class CandidatesView extends BaseThemedView {
     }
 
     private void showTooltip(String tip, boolean hideDelayed) {
+        Popup popup = popup(PopupType.tooltip);
         if (CharUtils.isBlank(tip)) {
-            dismiss(this.tooltipView);
+            //popup.close();
             return;
         }
 
-        this.tooltipView.setText(tip);
+        TextView textView = popup.view.findViewById(R.id.tooltip);
+        textView.setText(tip);
 
-        show(this.tooltipView, hideDelayed ? 600 : 0);
+        popup.show(hideDelayed ? 8000000 : 0);
     }
-
-    // ==================== End: 气泡提示 ==================
-
-    private void dismiss(View view) {
-        // TODO 动画渐入
-        ViewUtils.hide(view);
-    }
-
-    private void show(View view, long closeDelayMillis) {
-        // TODO 动画渐出
-        ViewUtils.show(view);
-
-        if (closeDelayMillis > 0) {
-            postDelayed(() -> dismiss(view), closeDelayMillis);
-        }
-    }
-
-    private void snackbarShow(View view) {
-        Context context = view.getContext();
-        int animResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_slide_in);
-        Animation anim = AnimationUtils.loadAnimation(context, animResId);
-
-        view.startAnimation(anim);
-        ViewUtils.show(view);
-    }
-
-    private void snackbarDimiss(View view) {
-        // Note: 从当前子视图的主题上下文中查找动画资源
-        Context context = view.getContext();
-        int animResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_slide_out);
-        Animation anim = AnimationUtils.loadAnimation(context, animResId);
-
-        anim.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                anim.setAnimationListener(null);
-                ViewUtils.hide(view);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-
-        view.startAnimation(anim);
-    }
-
-    // ==================== Start: 候选视图窗口 ==================
 
     private PopupWindow createPopupWindow() {
-        CandidatesView contentView = this;
-        PopupWindow window = new PopupWindow(contentView,
-                                             WindowManager.LayoutParams.MATCH_PARENT,
+        PopupWindow window = new PopupWindow(WindowManager.LayoutParams.MATCH_PARENT,
                                              WindowManager.LayoutParams.WRAP_CONTENT);
 
         //window.setTouchable(false); // 内容视图不可点击，整个窗口都是直接穿透的
@@ -307,32 +267,29 @@ public class CandidatesView extends BaseThemedView {
         return window;
     }
 
-    private void closeCandidatesWindow() {
+    private void closePopupWindow() {
         PopupWindow window = this.popupWindow;
-        CandidatesView contentView = this;
-
-        if (contentView == null) {
-            return;
-        }
-        post(contentView::close);
+        View contentView = window.getContentView();
 
         // Note: 先隐藏内容视图，在延迟关闭窗口，以避免其出现跳闪
         ViewUtils.hide(contentView);
         post(window::dismiss);
     }
 
-    private void showPopupWindow(boolean shown) {
+    private void showPopupWindow() {
         PopupWindow window = this.popupWindow;
-        if (!shown) {
-            closeCandidatesWindow();
-            return;
-        }
-
         View contentView = window.getContentView();
         ViewUtils.show(contentView);
 
+        if (window.isShowing()) {
+            return;
+        }
+
         // 放置于被布局的目标之上
         View target = this;
+        WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
+        boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+
         post(() -> {
             // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
             contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
@@ -340,9 +297,6 @@ public class CandidatesView extends BaseThemedView {
             int height = contentView.getMeasuredHeight();
             int[] loc = new int[2];
             target.getLocationOnScreen(loc);
-
-            WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
-            boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
             int x = 0;
             int y = (isInIME ? 0 : loc[1]) - height;
@@ -354,5 +308,162 @@ public class CandidatesView extends BaseThemedView {
         });
     }
 
-    // ==================== End: 候选视图窗口 ==================
+    private void onPopupShow() {
+        showPopupWindow();
+    }
+
+    private void onPopupClose() {
+        for (Popup popup : this.popups.values()) {
+            if (!popup.isClosed()) {
+                return;
+            }
+        }
+
+        closePopupWindow();
+    }
+
+    // ==================== End: 气泡提示 ==================
+
+    private enum PopupType {
+        quick_list,
+        tooltip,
+        snackbar,
+    }
+
+    private enum PopupState {
+        showing,
+        shown,
+        closing,
+        closed,
+    }
+
+    private class Popup {
+        public final View view;
+        private final Runnable closeCallback;
+
+        private final Animation enterAnim;
+        private final Animation exitAnim;
+
+        private PopupState state;
+
+        Popup(View view, int enterAnimAttrId, int exitAnimAttrId) {
+            this.view = view;
+            this.state = PopupState.closed;
+            ViewUtils.hide(view);
+
+            this.closeCallback = this::close;
+
+            Context context = view.getContext();
+            int animResId = ThemeUtils.getResourceByAttrId(context, enterAnimAttrId);
+            this.enterAnim = AnimationUtils.loadAnimation(context, animResId);
+            this.enterAnim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    updateState(PopupState.showing);
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    updateState(PopupState.shown);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+
+            animResId = ThemeUtils.getResourceByAttrId(context, exitAnimAttrId);
+            this.exitAnim = AnimationUtils.loadAnimation(context, animResId);
+            this.exitAnim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    updateState(PopupState.closing);
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    ViewUtils.hide(view);
+                    updateState(PopupState.closed);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+        }
+
+        public boolean isClosed() {
+            return this.state == PopupState.closed;
+        }
+
+        public void show() {
+            show(0);
+        }
+
+        public void show(long closeDelayMillis) {
+            switch (this.state) {
+                case shown:
+                case showing: {
+                    callDelayClose(closeDelayMillis);
+                    return;
+                }
+                case closing: {
+                    this.exitAnim.cancel();
+                    break;
+                }
+            }
+
+            updateState(PopupState.showing);
+            this.view.startAnimation(this.enterAnim);
+            // Note: 只有已显示的视图才能应用动画
+            ViewUtils.show(this.view);
+
+            callDelayClose(closeDelayMillis);
+        }
+
+        public void close() {
+            this.view.removeCallbacks(this.closeCallback);
+
+            switch (this.state) {
+                case closed:
+                case closing: {
+                    return;
+                }
+                case showing: {
+                    this.enterAnim.cancel();
+                    break;
+                }
+            }
+
+            updateState(PopupState.closing);
+            this.view.startAnimation(this.exitAnim);
+            // Note: 只有已显示的视图才能应用动画
+            ViewUtils.show(this.view);
+        }
+
+        private void updateState(PopupState state) {
+            if (this.state == state) {
+                return;
+            }
+
+            this.state = state;
+            switch (this.state) {
+                case showing: {
+                    onPopupShow();
+                    break;
+                }
+                case closed: {
+                    onPopupClose();
+                    break;
+                }
+            }
+        }
+
+        private void callDelayClose(long delayInMillis) {
+            this.view.removeCallbacks(this.closeCallback);
+
+            if (delayInMillis <= 0) {
+                return;
+            }
+            this.view.postDelayed(this.closeCallback, delayInMillis);
+        }
+    }
 }

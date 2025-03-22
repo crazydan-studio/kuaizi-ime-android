@@ -31,7 +31,7 @@
             android:layout_height="1dp"
             android:background="?attr/board_border_color" />
 
-    <!-- 候选视图以浮动窗口形式显示相关内容，其内部没有可见视图，因此，不需要显示其自身 -->
+    <!-- 候选视图以浮动窗口形式显示相关内容，其内部没有可见视图，因此，不需要设置显示空间 -->
     <org.crazydan.studio.app.ime.kuaizi.ui.view.CandidatesView
             android:id="@+id/candidates"
             android:layout_width="0dp"

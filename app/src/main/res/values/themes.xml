@@ -246,16 +246,16 @@
     <style name="Theme.Kuaizi.IME.Candidates.Light" parent="">
         <item name="snackbar_bg_color">#ff272b2c</item>
         <item name="snackbar_fg_color">#ffededed</item>
-        <item name="snackbar_btn_color">?attr/fg_secondary_color</item>
+        <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
         <item name="tooltip_bg">@drawable/bg_tooltip</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Candidates.Night" parent="">
-        <item name="snackbar_bg_color">#ffededed</item>
+        <item name="snackbar_bg_color">?attr/bg_primary_color</item>
         <item name="snackbar_fg_color">#ff616161</item>
-        <item name="snackbar_btn_color">?attr/fg_secondary_color</item>
+        <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
         <item name="tooltip_bg">@drawable/bg_tooltip</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>

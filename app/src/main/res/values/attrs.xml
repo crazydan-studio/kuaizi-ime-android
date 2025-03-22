@@ -76,7 +76,7 @@
     <declare-styleable name="ImeCandidatesStyle">
         <attr name="snackbar_bg_color" format="color" />
         <attr name="snackbar_fg_color" format="color" />
-        <attr name="snackbar_btn_color" format="color" />
+        <attr name="snackbar_action_fg_color" format="color" />
 
         <attr name="tooltip_bg" format="reference" />
         <attr name="tooltip_fg_color" format="color" />

@@ -34,7 +34,6 @@ import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
-import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
@@ -88,13 +87,6 @@ public class IMEditorView extends BaseThemedView {
         return mainboard.getXPadView();
     }
 
-    @Override
-    public void setConfig(Config config) {
-        super.setConfig(config);
-
-        ObjectUtils.invokeWhenNonNull(this.candidatesView, (v) -> v.setConfig(this.config));
-    }
-
     public void close() {
         ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::close);
 
@@ -106,7 +98,7 @@ public class IMEditorView extends BaseThemedView {
 
     @Override
     protected void doLayout() {
-        ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::close);
+        ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::destroy);
 
         super.doLayout();
 
