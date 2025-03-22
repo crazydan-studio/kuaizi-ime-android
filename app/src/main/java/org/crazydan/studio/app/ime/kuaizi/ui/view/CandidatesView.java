@@ -17,20 +17,26 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi;
+package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
@@ -44,25 +50,23 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.BaseThemedView;
-import org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Save_As_Favorite;
 
 /**
- * {@link IMEditor} 的输入候选视图
+ * 输入候选视图
  * <p/>
- * 负责按键提示、快捷输入列表的显示
- * <p/>
- * 与 {@link IMEditorView} 分离显示
+ * 负责按键提示、快捷输入列表的显示（浮动窗口形式）
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-19
  */
-public class IMEditorCandidatesView extends BaseThemedView {
+public class CandidatesView extends BaseThemedView {
     public interface OnShowListener {
         void onShow(boolean shown);
     }
+
+    private final PopupWindow popupWindow;
 
     private InputQuickListView quickListView;
     private TextView tooltipView;
@@ -71,10 +75,13 @@ public class IMEditorCandidatesView extends BaseThemedView {
     private OnShowListener onShowListener;
     private final Runnable dismissSnackbarCb;
 
-    public IMEditorCandidatesView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs, R.layout.ime_candidates_root_view, true);
+    public CandidatesView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs, R.layout.ime_candidates_view, true);
 
+        this.popupWindow = createPopupWindow();
         this.dismissSnackbarCb = () -> snackbarDimiss(this.snackbarView);
+
+        setOnShowListener(this::showPopupWindow);
     }
 
     public void setOnShowListener(OnShowListener onShowListener) {
@@ -280,4 +287,72 @@ public class IMEditorCandidatesView extends BaseThemedView {
 
         view.startAnimation(anim);
     }
+
+    // ==================== Start: 候选视图窗口 ==================
+
+    private PopupWindow createPopupWindow() {
+        CandidatesView contentView = this;
+        PopupWindow window = new PopupWindow(contentView,
+                                             WindowManager.LayoutParams.MATCH_PARENT,
+                                             WindowManager.LayoutParams.WRAP_CONTENT);
+
+        //window.setTouchable(false); // 内容视图不可点击，整个窗口都是直接穿透的
+        window.setClippingEnabled(false);
+        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        // Note: 动画由内容视图处理，窗口自身直接隐藏或显示
+        window.setAnimationStyle(0);
+
+        return window;
+    }
+
+    private void closeCandidatesWindow() {
+        PopupWindow window = this.popupWindow;
+        CandidatesView contentView = this;
+
+        if (contentView == null) {
+            return;
+        }
+        post(contentView::close);
+
+        // Note: 先隐藏内容视图，在延迟关闭窗口，以避免其出现跳闪
+        ViewUtils.hide(contentView);
+        post(window::dismiss);
+    }
+
+    private void showPopupWindow(boolean shown) {
+        PopupWindow window = this.popupWindow;
+        if (!shown) {
+            closeCandidatesWindow();
+            return;
+        }
+
+        View contentView = window.getContentView();
+        ViewUtils.show(contentView);
+
+        // 放置于被布局的目标之上
+        View target = this;
+        post(() -> {
+            // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
+            contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+
+            int height = contentView.getMeasuredHeight();
+            int[] loc = new int[2];
+            target.getLocationOnScreen(loc);
+
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
+            boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+
+            int x = 0;
+            int y = (isInIME ? 0 : loc[1]) - height;
+
+            // 设置初始显示位置：其仅在未显示时有效
+            // 在嵌入应用的模式下，窗口偏移相对于整个屏幕，
+            // 而若是输入法形态，则窗口偏移相对于输入法窗口
+            window.showAtLocation(target, Gravity.TOP, x, y);
+        });
+    }
+
+    // ==================== End: 候选视图窗口 ==================
 }

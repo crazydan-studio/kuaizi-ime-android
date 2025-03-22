@@ -23,17 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.PopupWindow;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.AudioPlayer;
@@ -46,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.BaseThemedView;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.CandidatesView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.FavoriteboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.MainboardView;
 import org.crazydan.studio.app.ime.kuaizi.ui.view.xpad.XPadView;
@@ -67,19 +64,14 @@ public class IMEditorView extends BaseThemedView {
 
     private final AudioPlayer audioPlayer;
 
-    private final PopupWindow candidatesWindow;
-    private final IMEditorCandidatesView candidatesView;
-
+    /** Note: 在子类中，可能不存在输入候选视图 */
+    private CandidatesView candidatesView;
     private Animation enterAnim;
 
     private BoardType activeBoard = BoardType.main;
     private Map<BoardType, View> boards;
 
     public IMEditorView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, true);
-    }
-
-    protected IMEditorView(@NonNull Context context, @Nullable AttributeSet attrs, boolean withCandidates) {
         super(context, attrs, R.layout.ime_root_view, false);
 
         this.audioPlayer = new AudioPlayer();
@@ -89,20 +81,6 @@ public class IMEditorView extends BaseThemedView {
                               R.raw.page_flip,
                               R.raw.tick_clock,
                               R.raw.tick_ping);
-
-        // 候选视图有自身独立的消息处理和主题布局逻辑，因此，只需要创建和初始化一次
-        // <<<<<<<<<<<<< 候选视图窗口
-        if (withCandidates) {
-            this.candidatesView = (IMEditorCandidatesView) inflate(context, R.layout.ime_candidates_inflate_view, null);
-            this.candidatesView.setListener(this);
-            this.candidatesView.setOnShowListener(this::showCandidatesWindow);
-
-            this.candidatesWindow = createCandidatesWindow();
-        } else {
-            this.candidatesView = null;
-            this.candidatesWindow = null;
-        }
-        // >>>>>>>>>>>>>
     }
 
     public XPadView getXPadView() {
@@ -114,13 +92,11 @@ public class IMEditorView extends BaseThemedView {
     public void setConfig(Config config) {
         super.setConfig(config);
 
-        if (this.candidatesView != null) {
-            this.candidatesView.setConfig(this.config);
-        }
+        ObjectUtils.invokeWhenNonNull(this.candidatesView, (v) -> v.setConfig(this.config));
     }
 
     public void close() {
-        closeCandidatesWindow();
+        ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::close);
 
         MainboardView mainboard = getBoard(BoardType.main);
         mainboard.close();
@@ -130,7 +106,12 @@ public class IMEditorView extends BaseThemedView {
 
     @Override
     protected void doLayout() {
+        ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::close);
+
         super.doLayout();
+
+        // //////////////////////////////////////////////////////////
+        this.candidatesView = initCandidatesView();
 
         Context context = getContext();
         int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
@@ -156,6 +137,15 @@ public class IMEditorView extends BaseThemedView {
         // 确保按已激活的类型显隐面板，而不是按视图中的设置
         activeBoard(this.activeBoard);
         // >>>>>>>>>>>>
+    }
+
+    protected CandidatesView initCandidatesView() {
+        CandidatesView view = findViewById(R.id.candidates);
+
+        view.setConfig(this.config);
+        view.setListener(this);
+
+        return view;
     }
 
     // =============================== End: 视图更新 ===================================
@@ -186,9 +176,7 @@ public class IMEditorView extends BaseThemedView {
         InputMsgListener current = currentBoard();
         current.onMsg(msg);
 
-        if (this.candidatesView != null) {
-            post(() -> this.candidatesView.onMsg(msg));
-        }
+        ObjectUtils.invokeWhenNonNull(this.candidatesView, (v) -> post(() -> v.onMsg(msg)));
     }
 
     @Override
@@ -309,72 +297,4 @@ public class IMEditorView extends BaseThemedView {
         // 延迟隐藏，以便于给足视图 close 的时间，避免再次显示时还留有未复位的子视图
         post(() -> ViewUtils.hide(view));
     }
-
-    // ==================== Start: 候选视图窗口 ==================
-
-    private PopupWindow createCandidatesWindow() {
-        IMEditorCandidatesView contentView = this.candidatesView;
-        PopupWindow window = new PopupWindow(contentView,
-                                             WindowManager.LayoutParams.MATCH_PARENT,
-                                             WindowManager.LayoutParams.WRAP_CONTENT);
-
-        //window.setTouchable(false); // 内容视图不可点击，整个窗口都是直接穿透的
-        window.setClippingEnabled(false);
-        window.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Note: 动画由内容视图处理，窗口自身直接隐藏或显示
-        window.setAnimationStyle(0);
-
-        return window;
-    }
-
-    private void closeCandidatesWindow() {
-        PopupWindow window = this.candidatesWindow;
-        IMEditorCandidatesView contentView = this.candidatesView;
-
-        if (contentView == null) {
-            return;
-        }
-        post(contentView::close);
-
-        // Note: 先隐藏内容视图，在延迟关闭窗口，以避免其出现跳闪
-        ViewUtils.hide(contentView);
-        post(window::dismiss);
-    }
-
-    private void showCandidatesWindow(boolean shown) {
-        PopupWindow window = this.candidatesWindow;
-        if (!shown) {
-            closeCandidatesWindow();
-            return;
-        }
-
-        View contentView = window.getContentView();
-        ViewUtils.show(contentView);
-
-        // 放置于被布局的目标之上
-        View target = this;
-        post(() -> {
-            // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
-            contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-
-            int height = contentView.getMeasuredHeight();
-            int[] loc = new int[2];
-            target.getLocationOnScreen(loc);
-
-            WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
-            boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
-
-            int x = 0;
-            int y = (isInIME ? 0 : loc[1]) - height;
-
-            // 设置初始显示位置：其仅在未显示时有效
-            // 在嵌入应用的模式下，窗口偏移相对于整个屏幕，
-            // 而若是输入法形态，则窗口偏移相对于输入法窗口
-            window.showAtLocation(target, Gravity.TOP, x, y);
-        });
-    }
-
-    // ==================== End: 候选视图窗口 ==================
 }

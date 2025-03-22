@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.CandidatesView;
 
 /**
  * 只读的 {@link IMEditorView}
@@ -36,8 +37,13 @@ import androidx.annotation.Nullable;
 public class IMEditorViewReadonly extends IMEditorView {
 
     public IMEditorViewReadonly(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    @Override
+    protected CandidatesView initCandidatesView() {
         // 只读视图不显示候选窗口
-        super(context, attrs, false);
+        return null;
     }
 
     @Override
