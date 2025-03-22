@@ -20,7 +20,7 @@
 <!-- 固定视图高度，以避免气泡提示窗口出现跳闪 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/popup_candidates_height"
         android:theme="?attr/candidates_style">
 
     <!-- 快捷输入：输入补全、可粘贴等列表 -->
@@ -29,7 +29,6 @@
             android:layout_height="match_parent"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp"
             android:visibility="gone">
 
         <org.crazydan.studio.app.ime.kuaizi.ui.view.InputQuickListView
@@ -43,9 +42,9 @@
             android:id="@+id/snackbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:baselineAligned="false"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp"
             android:layout_marginHorizontal="8dp"
             android:paddingHorizontal="8dp"
             android:background="?attr/snackbar_bg_color"
@@ -82,7 +81,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal|bottom"
-            android:layout_marginBottom="4dp"
             android:orientation="horizontal"
             android:visibility="gone">
 
@@ -92,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="2dp"
-                android:textSize="@dimen/tooltip_text_size"
+                android:textSize="@dimen/popup_tooltip_text_size"
                 android:textColor="?attr/tooltip_fg_color"
                 android:textStyle="bold"
                 android:background="?attr/tooltip_bg" />

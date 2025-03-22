@@ -459,7 +459,7 @@ public class XPadView extends View {
 
             PointF start = middle(block.vertexes[0], block.vertexes[1]);
 
-            float textSize = dimen(R.dimen.tooltip_text_size);
+            float textSize = dimen(R.dimen.popup_tooltip_text_size);
             float textSizeScale = zone_2_active_key.key instanceof CtrlKey ? 0.8f : 1f;
             int textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
             start.offset(0, textSize);

@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
@@ -215,11 +215,11 @@ public class CandidatesView extends BaseThemedView {
         Popup popup = popup(PopupType.quick_list);
         InputQuickListView view = popup.view.findViewById(R.id.quick_list);
 
-        view.update(dataList == null ? new ArrayList<>() : dataList);
-
         if (CollectionUtils.isEmpty(dataList)) {
+            // Note: 不置空列表，以确保退场动画效果能完整呈现
             popup.close();
         } else {
+            view.update(dataList);
             popup.show();
         }
     }
@@ -287,19 +287,18 @@ public class CandidatesView extends BaseThemedView {
 
         // 放置于被布局的目标之上
         View target = this;
+
+        // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
+        int contentViewHeight = (int) ScreenUtils.pxFromDimension(target.getContext(), R.dimen.popup_candidates_height);
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
         boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
         post(() -> {
-            // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
-            contentView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-
-            int height = contentView.getMeasuredHeight();
             int[] loc = new int[2];
             target.getLocationOnScreen(loc);
 
             int x = 0;
-            int y = (isInIME ? 0 : loc[1]) - height;
+            int y = (isInIME ? 0 : loc[1]) - contentViewHeight;
 
             // 设置初始显示位置：其仅在未显示时有效
             // 在嵌入应用的模式下，窗口偏移相对于整个屏幕，
