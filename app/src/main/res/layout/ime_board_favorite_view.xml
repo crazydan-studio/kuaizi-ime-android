@@ -27,7 +27,6 @@
             android:layout_height="@dimen/toolbar_view_height"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="@dimen/btn_tool_spacing"
             android:layout_marginVertical="4dp">
 
         <TextView
@@ -35,6 +34,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:paddingStart="@dimen/btn_tool_spacing"
+                android:paddingEnd="0dp"
                 android:textSize="?android:attr/textSize"
                 android:textColor="?android:attr/textColor"
                 android:gravity="center" />
@@ -42,8 +43,9 @@
         <ImageButton
                 android:id="@+id/btn_close"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
+                android:paddingHorizontal="@dimen/btn_tool_spacing"
                 android:src="@drawable/ic_btn_tool_close"
                 android:background="@android:color/transparent" />
     </LinearLayout>

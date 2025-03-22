@@ -31,14 +31,15 @@
     <CheckBox
             android:id="@+id/checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/btn_tool_spacing" />
 
     <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginVertical="4dp"
+            android:paddingVertical="4dp"
             android:layoutDirection="ltr">
 
         <LinearLayout
@@ -100,7 +101,6 @@
     <View
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:layout_marginHorizontal="8dp"
             android:background="?attr/board_divider_color"
             android:alpha=".2" />
 
@@ -108,13 +108,13 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginEnd="8dp">
+            android:gravity="center">
 
         <TextView
                 android:id="@+id/btn_paste"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/btn_tool_spacing"
                 android:text="@string/btn_paste"
                 android:textColor="?attr/popup_input_quick_fg_color" />
     </LinearLayout>
