@@ -20,7 +20,8 @@
 <!-- 固定视图高度，以避免气泡提示窗口出现跳闪 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/popup_candidates_height"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/popup_candidates_height"
         android:theme="?attr/candidates_style">
 
     <!-- 快捷输入：输入补全、可粘贴等列表 -->

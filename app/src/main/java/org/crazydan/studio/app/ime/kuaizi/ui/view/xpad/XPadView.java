@@ -461,7 +461,7 @@ public class XPadView extends View {
 
             float textSize = dimen(R.dimen.popup_tooltip_text_size);
             float textSizeScale = zone_2_active_key.key instanceof CtrlKey ? 0.8f : 1f;
-            int textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
+            int textColor = attrColor(R.attr.xpad_key_chars_special_fg_color);
             start.offset(0, textSize);
 
             XTextPainter painter = this.active_label_zone.newTextPainter(zone_2_active_key_label);
@@ -481,7 +481,7 @@ public class XPadView extends View {
         for (int i = 0; i < zone_2.blocks.size(); i++) {
             boolean isActiveBlock = isActiveBlock_In_Zone_2(i);
             int defaultTextColor = isActiveBlock && zone_2_active_key == null
-                                   ? attrColor(R.attr.xpad_key_chars_highlight_fg_color)
+                                   ? attrColor(R.attr.xpad_key_chars_special_fg_color)
                                    : attrColor(R.attr.xpad_key_chars_fg_color);
             XZone.PolygonBlock block = (XZone.PolygonBlock) zone_2.blocks.get(i);
 
@@ -551,7 +551,7 @@ public class XPadView extends View {
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
                     if (Objects.equals(blockKey, zone_2_active_key)) {
-                        textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_special_fg_color);
                         textSizeScale = 1.25f;
                     } else if (zone_2_active_key != null) {
                         textColor = attrColor(R.attr.xpad_key_chars_fg_color);
@@ -632,7 +632,7 @@ public class XPadView extends View {
                     float textSizeScale = 1f;
                     int textColor = defaultTextColor;
                     if (Objects.equals(blockKey, zone_2_active_key)) {
-                        textColor = attrColor(R.attr.xpad_key_chars_highlight_fg_color);
+                        textColor = attrColor(R.attr.xpad_key_chars_special_fg_color);
                         textSizeScale = 1.25f;
                     } else if (zone_2_active_key != null) {
                         textColor = attrColor(R.attr.xpad_key_chars_fg_color);
@@ -726,7 +726,7 @@ public class XPadView extends View {
     ) {
         XZone zone = new XZone();
 
-        int bg_color = attrColor(R.attr.key_ctrl_locator_bg_color);
+        int bg_color = attrColor(R.attr.key_ctrl_cursor_bg_color);
         String shadow_style = attrStr(R.attr.key_shadow_style);
 
         XPathPainter fill_painter = zone.newPathPainter();
@@ -751,7 +751,7 @@ public class XPadView extends View {
     ) {
         XZone zone = new XZone();
 
-        int bg_color = attrColor(R.attr.xpad_key_ctrl_bg_style);
+        int bg_color = attrColor(R.attr.xpad_key_ctrl_bg_color);
         String divider_style = attrStr(R.attr.xpad_key_ctrl_divider_style);
         String shadow_style = attrStr(R.attr.xpad_key_shadow_style);
 

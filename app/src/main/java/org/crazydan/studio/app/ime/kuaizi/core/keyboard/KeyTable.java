@@ -47,11 +47,11 @@ public abstract class KeyTable {
     /** {@link CharKey} 按键的配色 */
     protected static final Key.Color key_char_color = Key.Color.create(R.attr.key_fg_color, R.attr.key_bg_color);
     /** 特殊的 {@link CharKey} 按键的配色 */
-    protected static final Key.Color key_char_special_color = Key.Color.create(R.attr.key_highlight_fg_color,
+    protected static final Key.Color key_char_special_color = Key.Color.create(R.attr.key_special_fg_color,
                                                                                R.attr.key_bg_color);
     /** {@link CharKey.Type#Symbol} 按键的配色 */
     protected static final Key.Color key_char_symbol_color = Key.Color.create(R.attr.key_char_symbol_fg_color,
-                                                                              R.attr.key_char_symbol_bg_color);
+                                                                              R.attr.key_bg_color);
     /** {@link CharKey.Type#Emoji} 按键的配色 */
     protected static final Key.Color key_char_emoji_color = key_char_symbol_color;
 
@@ -70,12 +70,12 @@ public abstract class KeyTable {
     /** OK 按键的样式 */
     private static final Key.Style key_ctrl_ok_style = Key.Style.withIcon(R.drawable.ic_right_hand_ok,
                                                                           R.drawable.ic_left_hand_ok,
-                                                                          R.attr.key_ctrl_ok_bg_color);
+                                                                          R.attr.key_bg_color);
     /** 文本类控制按键的样式 */
-    private static final Key.Style key_ctrl_label_style = Key.Style.withColor(R.attr.key_ctrl_label_color,
+    private static final Key.Style key_ctrl_label_style = Key.Style.withColor(R.attr.key_ctrl_label_fg_color,
                                                                               R.attr.key_bg_color);
     private static final Key.Style key_ctrl_noop_style = Key.Style.withColor(R.attr.key_ctrl_noop_fg_color,
-                                                                             R.attr.key_ctrl_noop_bg_color);
+                                                                             R.attr.key_bg_color);
 
     /** {@link InputWordKey} 按键的配色 */
     protected static final Key.Color[] key_input_word_level_colors = new Key.Color[] {
@@ -101,53 +101,49 @@ public abstract class KeyTable {
         char_key_color_palette.put(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"),
                                    key_char_special_color);
 
-        ctrl_key_styles.put(CtrlKey.Type.Backspace,
-                            Key.Style.withIcon(R.drawable.ic_backspace, R.attr.key_ctrl_backspace_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Space,
-                            Key.Style.withIcon(R.drawable.ic_space, R.attr.key_ctrl_space_bg_color));
-        ctrl_key_styles.put(CtrlKey.Type.Enter,
-                            Key.Style.withIcon(R.drawable.ic_new_line, R.attr.key_ctrl_enter_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Backspace, Key.Style.withIcon(R.drawable.ic_backspace, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Space, Key.Style.withIcon(R.drawable.ic_space, R.attr.key_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.Enter, Key.Style.withIcon(R.drawable.ic_new_line, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList,
-                            Key.Style.withIcon(R.drawable.ic_commit, R.attr.key_ctrl_commit_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_commit, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Commit_InputList_Option, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.Switch_HandMode,
                             Key.Style.withIcon(R.drawable.ic_switch_to_left_hand,
                                                R.drawable.ic_switch_to_right_hand,
-                                               R.attr.key_ctrl_switcher_bg_color));
+                                               R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Symbol_Group, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Emoji_Group, key_ctrl_label_style);
 
         ctrl_key_styles.put(CtrlKey.Type.Editor_Cursor_Locator,
-                            Key.Style.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_locator_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_input_cursor, R.attr.key_ctrl_cursor_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Editor_Range_Selector,
                             Key.Style.withIcon(R.drawable.ic_right_hand_selection,
                                                R.drawable.ic_left_hand_selection,
-                                               R.attr.key_ctrl_locator_bg_color));
+                                               R.attr.key_ctrl_cursor_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Exit,
                             Key.Style.withIcon(R.drawable.ic_right_hand_exit,
                                                R.drawable.ic_left_hand_exit,
-                                               R.attr.key_ctrl_exit_bg_color));
+                                               R.attr.key_bg_color));
 
-        ctrl_key_styles.put(CtrlKey.Type.DropInput,
-                            Key.Style.withIcon(R.drawable.ic_trash_can, R.attr.key_ctrl_backspace_bg_color));
+        ctrl_key_styles.put(CtrlKey.Type.DropInput, Key.Style.withIcon(R.drawable.ic_trash_can, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.ConfirmInput,
                             Key.Style.withIcon(R.drawable.ic_right_hand_ok,
                                                R.drawable.ic_left_hand_ok,
-                                               R.attr.key_ctrl_confirm_bg_color));
+                                               R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.RevokeInput,
-                            Key.Style.withIcon(R.drawable.ic_revoke_input, R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_revoke_input, R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.Toggle_Pinyin_Spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinCandidate_by_Spell, key_ctrl_label_style);
         ctrl_key_styles.put(CtrlKey.Type.Filter_PinyinCandidate_advance,
-                            Key.Style.withIcon(R.drawable.ic_filter_empty, R.attr.key_ctrl_switcher_bg_color));
+                            Key.Style.withIcon(R.drawable.ic_filter_empty, R.attr.key_bg_color));
         ctrl_key_styles.put(CtrlKey.Type.Confirm_PinyinCandidate_Filter,
                             Key.Style.withIcon(R.drawable.ic_right_hand_ok,
                                                R.drawable.ic_left_hand_ok,
-                                               R.attr.key_ctrl_confirm_bg_color));
+                                               R.attr.key_bg_color));
 
         ctrl_key_styles.put(CtrlKey.Type.NoOp, key_ctrl_noop_style);
         ctrl_key_styles.put(CtrlKey.Type.Edit_Editor, key_ctrl_label_style);
@@ -346,19 +342,19 @@ public abstract class KeyTable {
         Key.Style style = null;
         switch (type) {
             case Math:
-                style = Key.Style.withIcon(R.drawable.ic_calculator, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_calculator, R.attr.key_bg_color);
                 break;
             case Latin:
-                style = Key.Style.withIcon(R.drawable.ic_switch_to_latin, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_switch_to_latin, R.attr.key_bg_color);
                 break;
             case Pinyin:
-                style = Key.Style.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_switch_to_pinyin, R.attr.key_bg_color);
                 break;
             case Emoji:
-                style = Key.Style.withIcon(R.drawable.ic_emoji, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_emoji, R.attr.key_bg_color);
                 break;
             case Symbol:
-                style = Key.Style.withIcon(R.drawable.ic_symbol, R.attr.key_ctrl_switcher_bg_color);
+                style = Key.Style.withIcon(R.drawable.ic_symbol, R.attr.key_bg_color);
                 break;
         }
 

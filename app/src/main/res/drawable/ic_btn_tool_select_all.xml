@@ -24,51 +24,51 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/9045085/select_icon -->
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M3.792,0.509l0,3.283l-3.283,0l0,1.642l3.283,0l0,3.283l1.642,0l0,-3.283l3.283,0l0,-1.642l-3.283,0l0,-3.283z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M12,3.792l3.283,0l0,1.642l-3.283,0z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="m18.566,3.792l0,1.642l3.283,0l0,3.283l1.642,0L23.491,5.434A1.642,1.642 0,0 0,21.85 3.792Z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M3.792,12l1.642,0l0,3.283l-1.642,0z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M5.434,21.85L5.434,18.566L3.792,18.566l0,3.283a1.642,1.642 0,0 0,1.642 1.642l3.283,0l0,-1.642z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M21.85,12l1.642,0l0,3.283l-1.642,0z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="M12,21.85l3.283,0l0,1.642l-3.283,0z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
     <path
-            android:fillColor="?attr/input_tool_fg_color"
+            android:fillColor="?attr/icon_normal_color"
             android:pathData="m21.85,18.566l0,3.283l-3.283,0l0,1.642l3.283,0a1.642,1.642 0,0 0,1.642 -1.642l0,-3.283z"
             android:strokeLineJoin="round"
             android:strokeWidth="1.017"
-            android:strokeColor="?attr/input_tool_fg_color" />
+            android:strokeColor="?attr/icon_normal_color" />
 </vector>

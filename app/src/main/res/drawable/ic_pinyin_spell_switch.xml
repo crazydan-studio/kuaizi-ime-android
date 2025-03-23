@@ -26,14 +26,14 @@
             android:pathData="M8.181,9.818 L2.181,5.455 8.181,1.091M2.183,5.455L21.817,5.455"
             android:strokeLineJoin="round"
             android:strokeWidth="2.182"
-            android:strokeColor="?attr/key_ctrl_label_color"
+            android:strokeColor="?attr/icon_label_color"
             android:fillType="evenOdd"
             android:strokeLineCap="round" />
     <path
             android:pathData="M15.819,14.182 L21.819,18.545 15.819,22.909M21.817,18.545L2.181,18.545"
             android:strokeLineJoin="round"
             android:strokeWidth="2.182"
-            android:strokeColor="?attr/key_ctrl_label_color"
+            android:strokeColor="?attr/icon_label_color"
             android:fillType="evenOdd"
             android:strokeLineCap="round" />
 </vector>

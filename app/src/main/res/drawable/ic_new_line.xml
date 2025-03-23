@@ -27,6 +27,6 @@
             android:pathData="M2.941,4.235H21.059M2.941,10.706H17.176c1.294,0 3.882,0.647 3.882,3.235 0,2.588 -2.157,3.235 -3.235,3.235H12m-9.059,0h5.176m3.882,0 l2.588,-2.588M12,17.176l2.588,2.588"
             android:strokeLineJoin="round"
             android:strokeWidth="2"
-            android:strokeColor="?attr/key_ctrl_enter_fg_color"
+            android:strokeColor="?attr/icon_enter_color"
             android:strokeLineCap="round" />
 </vector>

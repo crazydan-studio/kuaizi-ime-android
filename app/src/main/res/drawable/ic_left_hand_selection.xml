@@ -24,23 +24,23 @@
         android:viewportHeight="24">
     <!-- https://www.iconfinder.com/icons/7968864/adobe_illustrator_tool_direct_selection_selection_icon -->
     <path
-            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:fillColor="?attr/icon_cursor_color"
             android:pathData="M1.705,16.657 L10.929,9.017c0.553,-0.462 1.323,-0.531 1.95,-0.181 0.632,0.351 0.978,1.036 0.882,1.753l-1.562,11.657c-0.096,0.701 -0.6,1.27 -1.28,1.45 -0.143,0.037 -0.292,0.058 -0.441,0.058 -0.547,0 -1.068,-0.255 -1.403,-0.712 -1.477,-1.992 -3.836,-3.225 -6.312,-3.305 -0.728,-0.021 -1.35,-0.483 -1.583,-1.174 -0.244,-0.696 -0.032,-1.44 0.526,-1.907zM10.514,22.151c0.09,-0.021 0.101,-0.09 0.101,-0.117l1.562,-11.657c0.005,-0.027 0.016,-0.101 -0.074,-0.149 -0.027,-0.016 -0.053,-0.021 -0.074,-0.021 -0.043,0 -0.074,0.027 -0.09,0.037l-9.213,7.64c-0.021,0.016 -0.08,0.064 -0.043,0.159 0.032,0.096 0.101,0.096 0.133,0.096 2.959,0.096 5.781,1.573 7.539,3.948 0.037,0.064 0.096,0.085 0.159,0.064z"
             android:strokeWidth="0.49"
-            android:strokeColor="?attr/key_ctrl_locator_fg_color" />
+            android:strokeColor="?attr/icon_cursor_color" />
     <path
-            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:fillColor="?attr/icon_cursor_color"
             android:pathData="M14.164,3.427l-1.594,0l-0,4.139l1.594,0z"
             android:strokeWidth="0.49"
-            android:strokeColor="?attr/key_ctrl_locator_fg_color" />
+            android:strokeColor="?attr/icon_cursor_color" />
     <path
-            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:fillColor="?attr/icon_cursor_color"
             android:pathData="M19.738,8.841l-4.139,0l-0,1.594l4.139,0z"
             android:strokeWidth="0.49"
-            android:strokeColor="?attr/key_ctrl_locator_fg_color" />
+            android:strokeColor="?attr/icon_cursor_color" />
     <path
-            android:fillColor="?attr/key_ctrl_locator_fg_color"
+            android:fillColor="?attr/icon_cursor_color"
             android:pathData="m21.231,14.271c0.053,0 0.101,-0.043 0.101,-0.101L21.332,1.934c-0,-0.053 -0.043,-0.101 -0.101,-0.101l-14.579,0c-0.053,0 -0.101,0.043 -0.101,0.101l-0,8.341l-1.594,1.318L4.957,1.934C4.962,1.005 5.722,0.245 6.652,0.245L21.231,0.245c0.93,0 1.69,0.76 1.69,1.69L22.92,14.176c-0,0.93 -0.76,1.69 -1.69,1.69l-6.434,0l0.213,-1.594z"
             android:strokeWidth="0.49"
-            android:strokeColor="?attr/key_ctrl_locator_fg_color" />
+            android:strokeColor="?attr/icon_cursor_color" />
 </vector>

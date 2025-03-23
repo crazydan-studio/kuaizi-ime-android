@@ -28,6 +28,8 @@
 
         <attr name="app_bg_color" format="color" />
         <attr name="app_actionbar_bg_color" format="color" />
+
+        <attr name="icon_pointer_color" format="color" />
     </declare-styleable>
 
     <declare-styleable name="ImeStyle">
@@ -47,11 +49,14 @@
         <attr name="board_border_color" format="color" />
         <attr name="board_divider_color" format="color" />
 
-        <!-- Popup 配置 -->
-        <attr name="popup_input_quick_bg_color" format="color" />
-        <attr name="popup_input_quick_fg_color" format="color" />
-        <attr name="popup_input_quick_border_color" format="color" />
-        <attr name="popup_input_quick_shadow_style" format="string" />
+        <!-- 图标 -->
+        <attr name="icon_normal_color" format="color" />
+        <attr name="icon_danger_color" format="color" />
+        <attr name="icon_right_color" format="color" />
+        <attr name="icon_confirm_color" format="color" />
+        <attr name="icon_cursor_color" format="color" />
+        <attr name="icon_enter_color" format="color" />
+        <attr name="icon_label_color" format="color" />
 
         <!-- 动画 -->
         <attr name="anim_slide_in" format="reference" />
@@ -69,8 +74,6 @@
 
         <attr name="input_math_expr_border_color" format="color" />
         <attr name="input_math_expr_border_highlight_color" format="color" />
-
-        <attr name="input_tool_fg_color" format="color" />
     </declare-styleable>
 
     <declare-styleable name="ImeCandidatesStyle">
@@ -80,6 +83,11 @@
 
         <attr name="tooltip_bg" format="reference" />
         <attr name="tooltip_fg_color" format="color" />
+
+        <attr name="input_quick_bg_color" format="color" />
+        <attr name="input_quick_fg_color" format="color" />
+        <attr name="input_quick_border_color" format="color" />
+        <attr name="input_quick_shadow_style" format="string" />
     </declare-styleable>
 
     <declare-styleable name="ImeKeyboardStyle">
@@ -87,7 +95,7 @@
 
         <attr name="key_bg_color" format="color" />
         <attr name="key_fg_color" format="color" />
-        <attr name="key_highlight_fg_color" format="color" />
+        <attr name="key_special_fg_color" format="color" />
 
         <!-- format: width #AARRGGBB -->
         <attr name="key_border_style" format="string" />
@@ -95,35 +103,11 @@
         <!-- format: dx dy radius #AARRGGBB -->
         <attr name="key_shadow_style" format="string" />
 
-        <attr name="key_ctrl_label_color" format="color" />
-        <attr name="key_ctrl_noop_bg_color" format="color" />
+        <attr name="key_ctrl_label_fg_color" format="color" />
         <attr name="key_ctrl_noop_fg_color" format="color" />
-        <attr name="key_ctrl_switcher_bg_color" format="color" />
-        <attr name="key_ctrl_switcher_fg_color" format="color" />
+        <attr name="key_ctrl_cursor_bg_color" format="color" />
 
-        <attr name="key_ctrl_backspace_bg_color" format="color" />
-        <attr name="key_ctrl_backspace_fg_color" format="color" />
-        <attr name="key_ctrl_space_bg_color" format="color" />
-        <attr name="key_ctrl_space_fg_color" format="color" />
-
-        <attr name="key_ctrl_exit_bg_color" format="color" />
-        <attr name="key_ctrl_exit_fg_color" format="color" />
-
-        <attr name="key_ctrl_ok_bg_color" format="color" />
-        <attr name="key_ctrl_ok_fg_color" format="color" />
-        <attr name="key_ctrl_commit_bg_color" format="color" />
-        <attr name="key_ctrl_commit_fg_color" format="color" />
-        <attr name="key_ctrl_enter_bg_color" format="color" />
-        <attr name="key_ctrl_enter_fg_color" format="color" />
-
-        <attr name="key_ctrl_confirm_bg_color" format="color" />
-        <attr name="key_ctrl_confirm_fg_color" format="color" />
-        <attr name="key_ctrl_locator_bg_color" format="color" />
-        <attr name="key_ctrl_locator_fg_color" format="color" />
-
-        <attr name="key_char_symbol_bg_color" format="color" />
         <attr name="key_char_symbol_fg_color" format="color" />
-
         <attr name="key_char_level_0_bg_color" format="color" />
         <attr name="key_char_level_0_fg_color" format="color" />
         <attr name="key_char_level_1_bg_color" format="color" />
@@ -141,9 +125,9 @@
         <attr name="xpad_key_shadow_style" format="string" />
         <!-- format: width #AARRGGBB -->
         <attr name="xpad_key_ctrl_divider_style" format="string" />
-        <attr name="xpad_key_ctrl_bg_style" format="color" />
+        <attr name="xpad_key_ctrl_bg_color" format="color" />
         <attr name="xpad_key_chars_fg_color" format="color" />
-        <attr name="xpad_key_chars_highlight_fg_color" format="color" />
+        <attr name="xpad_key_chars_special_fg_color" format="color" />
         <attr name="xpad_key_chars_divider_style" format="string" />
         <attr name="xpad_key_chars_divider_shadow_style" format="string" />
     </declare-styleable>

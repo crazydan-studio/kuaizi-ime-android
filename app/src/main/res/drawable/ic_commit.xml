@@ -26,13 +26,13 @@
     <path
             android:pathData="m6.544,20.403c0.516,0.516 1.352,0.516 1.867,0L23.351,5.464c0.516,-0.516 0.516,-1.352 0,-1.867 -0.516,-0.516 -1.352,-0.516 -1.867,0L6.544,18.536c-0.516,0.516 -0.516,1.352 0,1.867z"
             android:strokeWidth="0.528"
-            android:fillColor="?attr/key_ctrl_ok_fg_color"
+            android:fillColor="?attr/icon_right_color"
             android:fillType="evenOdd"
-            android:strokeColor="?attr/key_ctrl_ok_fg_color" />
+            android:strokeColor="?attr/icon_right_color" />
     <path
             android:pathData="m0.649,12.755c0.516,-0.516 1.352,-0.516 1.867,0L8.119,18.357c0.516,0.516 0.516,1.352 0,1.867 -0.516,0.516 -1.352,0.516 -1.867,0L0.649,14.622c-0.516,-0.516 -0.516,-1.352 0,-1.867z"
             android:strokeWidth="0.528"
-            android:fillColor="?attr/key_ctrl_ok_fg_color"
+            android:fillColor="?attr/icon_right_color"
             android:fillType="evenOdd"
-            android:strokeColor="?attr/key_ctrl_ok_fg_color" />
+            android:strokeColor="?attr/icon_right_color" />
 </vector>

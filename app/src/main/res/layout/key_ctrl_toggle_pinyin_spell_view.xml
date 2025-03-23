@@ -59,7 +59,7 @@ Note：其高宽会动态设置，此处可设置任意值
                         android:layout_height="wrap_content"
                         android:translationY="-1dp"
                         android:textSize="@dimen/input_spell_toggle_key_text_size"
-                        android:textColor="?attr/key_ctrl_label_color"
+                        android:textColor="?attr/key_ctrl_label_fg_color"
                         android:textStyle="bold" />
 
                 <ImageView
@@ -78,7 +78,7 @@ Note：其高宽会动态设置，此处可设置任意值
                     android:translationY="-5dp"
                     app:layout_alignSelf="flex_end"
                     android:textSize="@dimen/input_spell_toggle_key_text_size"
-                    android:textColor="?attr/key_ctrl_label_color"
+                    android:textColor="?attr/key_ctrl_label_fg_color"
                     android:textStyle="bold" />
         </com.google.android.flexbox.FlexboxLayout>
     </RelativeLayout>

@@ -25,5 +25,5 @@
     <!-- https://www.iconfinder.com/icons/8726384/space_key_icon -->
     <path
             android:pathData="m22.8,5.649a1.2,1.2 0,0 0,-1.2 1.2V10.449H2.4V6.849a1.2,1.2 0,0 0,-2.4 0V11.649a1.2,1.2 0,0 0,1.2 1.2h21.6a1.2,1.2 0,0 0,1.2 -1.2V6.849a1.2,1.2 0,0 0,-1.2 -1.2z"
-            android:fillColor="?attr/key_ctrl_space_fg_color" />
+            android:fillColor="?attr/icon_normal_color" />
 </vector>

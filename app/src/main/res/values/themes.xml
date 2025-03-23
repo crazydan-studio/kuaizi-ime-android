@@ -49,15 +49,17 @@
         <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
         <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Light</item>
 
+        <item name="icon_normal_color">?attr/text_color</item>
+        <item name="icon_danger_color">#ffed4c67</item>
+        <item name="icon_right_color">#ff059669</item>
+        <item name="icon_confirm_color">#ffea580c</item>
+        <item name="icon_cursor_color">#fffaf9f6</item>
+        <item name="icon_enter_color">#ff616161</item>
+        <item name="icon_label_color">#ff616161</item>
+
         <item name="board_bg_color">?attr/bg_primary_color</item>
         <item name="board_divider_color">?attr/border_color</item>
         <item name="board_border_color">?attr/border_color</item>
-
-        <!-- Popup 配置 -->
-        <item name="popup_input_quick_bg_color">?attr/bg_secondary_color</item>
-        <item name="popup_input_quick_fg_color">?attr/fg_secondary_color</item>
-        <item name="popup_input_quick_border_color">?attr/board_border_color</item>
-        <item name="popup_input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="Theme.Kuaizi.IME">
@@ -76,15 +78,17 @@
         <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
         <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Night</item>
 
+        <item name="icon_normal_color">?attr/text_color</item>
+        <item name="icon_danger_color">#ffed4c67</item>
+        <item name="icon_right_color">#ff059669</item>
+        <item name="icon_confirm_color">#ffea580c</item>
+        <item name="icon_cursor_color">?attr/text_color</item>
+        <item name="icon_enter_color">#ff71d4fe</item>
+        <item name="icon_label_color">#ff71d4fe</item>
+
         <item name="board_bg_color">?attr/bg_primary_color</item>
         <item name="board_divider_color">?attr/border_color</item>
         <item name="board_border_color">?attr/border_color</item>
-
-        <!-- Popup 配置 -->
-        <item name="popup_input_quick_bg_color">?attr/bg_secondary_color</item>
-        <item name="popup_input_quick_fg_color">?attr/fg_secondary_color</item>
-        <item name="popup_input_quick_border_color">?attr/board_border_color</item>
-        <item name="popup_input_quick_shadow_style">1 1 2 #a3000000</item>
     </style>
     <!-- End: 输入法主题 -->
 
@@ -94,41 +98,17 @@
 
         <item name="key_bg_color">?attr/bg_secondary_color</item>
         <item name="key_fg_color">?attr/fg_primary_color</item>
-        <item name="key_highlight_fg_color">?attr/fg_secondary_color</item>
+        <item name="key_special_fg_color">?attr/fg_secondary_color</item>
 
         <item name="key_border_style">0 #ffffffff</item>
         <item name="key_disabled_border_style">1 #b3c5c5c5</item>
         <item name="key_shadow_style">0 1 2 #b3c5c5c5</item>
 
-        <item name="key_ctrl_label_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_label_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_noop_fg_color">#ffa3a3a3</item>
-        <item name="key_ctrl_switcher_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switcher_fg_color">#ff727272</item>
+        <item name="key_ctrl_cursor_bg_color">?attr/key_special_fg_color</item>
 
-        <item name="key_ctrl_backspace_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_backspace_fg_color">#ffed4c67</item>
-        <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_space_fg_color">?attr/key_fg_color</item>
-
-        <item name="key_ctrl_locator_bg_color">?attr/key_highlight_fg_color</item>
-        <item name="key_ctrl_locator_fg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_ok_bg_color</item>
-        <item name="key_ctrl_confirm_fg_color">?attr/key_ctrl_ok_fg_color</item>
-
-        <item name="key_ctrl_exit_bg_color">?attr/key_ctrl_space_bg_color</item>
-        <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
-
-        <item name="key_ctrl_ok_bg_color">?attr/key_ctrl_switcher_bg_color</item>
-        <item name="key_ctrl_ok_fg_color">#ff059669</item>
-        <item name="key_ctrl_commit_bg_color">?attr/key_ctrl_ok_bg_color</item>
-        <item name="key_ctrl_commit_fg_color">#ffea580c</item>
-        <item name="key_ctrl_enter_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_enter_fg_color">?attr/key_fg_color</item>
-
-        <item name="key_char_symbol_bg_color">?attr/key_bg_color</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
-
         <item name="key_char_level_0_bg_color">#a8ce4e48</item>
         <item name="key_char_level_0_fg_color">#ffffffff</item>
         <item name="key_char_level_1_bg_color">#a8cb6b54</item>
@@ -144,9 +124,9 @@
 
         <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
         <item name="xpad_key_ctrl_divider_style">0.5 #b3c5c5c5</item>
-        <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
+        <item name="xpad_key_ctrl_bg_color">?attr/key_bg_color</item>
         <item name="xpad_key_chars_fg_color">?attr/key_fg_color</item>
-        <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="xpad_key_chars_special_fg_color">?attr/key_special_fg_color</item>
         <item name="xpad_key_chars_divider_style">2 #ffffffff</item>
         <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
     </style>
@@ -156,41 +136,17 @@
 
         <item name="key_bg_color">?attr/bg_secondary_color</item>
         <item name="key_fg_color">?attr/fg_primary_color</item>
-        <item name="key_highlight_fg_color">?attr/fg_secondary_color</item>
+        <item name="key_special_fg_color">?attr/fg_secondary_color</item>
 
         <item name="key_border_style">0 #ff2f3336</item>
         <item name="key_disabled_border_style">1 #b3000000</item>
         <item name="key_shadow_style">0 1 2 #b3000000</item>
 
-        <item name="key_ctrl_label_color">?attr/key_fg_color</item>
-        <item name="key_ctrl_noop_bg_color">?attr/key_bg_color</item>
+        <item name="key_ctrl_label_fg_color">?attr/key_fg_color</item>
         <item name="key_ctrl_noop_fg_color">#ffa3a3a3</item>
-        <item name="key_ctrl_switcher_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_switcher_fg_color">?attr/text_color</item>
+        <item name="key_ctrl_cursor_bg_color">#6300bcd4</item>
 
-        <item name="key_ctrl_backspace_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_backspace_fg_color">#ffed4c67</item>
-        <item name="key_ctrl_space_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_space_fg_color">?attr/text_color</item>
-
-        <item name="key_ctrl_locator_bg_color">#6300bcd4</item>
-        <item name="key_ctrl_locator_fg_color">#a3fafafa</item>
-        <item name="key_ctrl_confirm_bg_color">?attr/key_ctrl_ok_bg_color</item>
-        <item name="key_ctrl_confirm_fg_color">?attr/key_ctrl_ok_fg_color</item>
-
-        <item name="key_ctrl_exit_bg_color">?attr/key_ctrl_space_bg_color</item>
-        <item name="key_ctrl_exit_fg_color">?attr/key_ctrl_ok_fg_color</item>
-
-        <item name="key_ctrl_ok_bg_color">?attr/key_ctrl_switcher_bg_color</item>
-        <item name="key_ctrl_ok_fg_color">#ff059669</item>
-        <item name="key_ctrl_commit_bg_color">?attr/key_ctrl_ok_bg_color</item>
-        <item name="key_ctrl_commit_fg_color">#ffea580c</item>
-        <item name="key_ctrl_enter_bg_color">?attr/key_bg_color</item>
-        <item name="key_ctrl_enter_fg_color">?attr/key_fg_color</item>
-
-        <item name="key_char_symbol_bg_color">?attr/key_bg_color</item>
         <item name="key_char_symbol_fg_color">?attr/key_fg_color</item>
-
         <item name="key_char_level_0_bg_color">#68ce4e48</item>
         <item name="key_char_level_0_fg_color">?attr/text_color</item>
         <item name="key_char_level_1_bg_color">#68cb6b54</item>
@@ -206,9 +162,9 @@
 
         <item name="xpad_key_shadow_style">?attr/key_shadow_style</item>
         <item name="xpad_key_ctrl_divider_style">0.5 #b3000000</item>
-        <item name="xpad_key_ctrl_bg_style">?attr/key_bg_color</item>
+        <item name="xpad_key_ctrl_bg_color">?attr/key_bg_color</item>
         <item name="xpad_key_chars_fg_color">?attr/text_color</item>
-        <item name="xpad_key_chars_highlight_fg_color">?attr/key_highlight_fg_color</item>
+        <item name="xpad_key_chars_special_fg_color">?attr/key_special_fg_color</item>
         <item name="xpad_key_chars_divider_style">2 #ff2f3336</item>
         <item name="xpad_key_chars_divider_shadow_style">?attr/xpad_key_shadow_style</item>
     </style>
@@ -224,8 +180,6 @@
 
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
-
-        <item name="input_tool_fg_color">?attr/text_color</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Inputboard.Night" parent="">
@@ -237,8 +191,6 @@
 
         <item name="input_math_expr_border_color">?attr/input_selection_bg_color</item>
         <item name="input_math_expr_border_highlight_color">?attr/input_selection_fg_color</item>
-
-        <item name="input_tool_fg_color">?attr/text_color</item>
     </style>
     <!-- End: 输入法输入面板主题 -->
 
@@ -250,6 +202,11 @@
 
         <item name="tooltip_bg">@drawable/bg_tooltip</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
+
+        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
+        <item name="input_quick_border_color">?attr/board_border_color</item>
+        <item name="input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Candidates.Night" parent="">
@@ -259,6 +216,11 @@
 
         <item name="tooltip_bg">@drawable/bg_tooltip</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
+
+        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
+        <item name="input_quick_border_color">?attr/board_border_color</item>
+        <item name="input_quick_shadow_style">1 1 2 #a3000000</item>
     </style>
     <!-- End: 输入法输入候选主题 -->
 
@@ -273,6 +235,8 @@
 
         <item name="app_bg_color">#ffededed</item>
         <item name="app_actionbar_bg_color">#ff1976d2</item>
+
+        <item name="icon_pointer_color">#e600bcd4</item>
 
         <!-- 链接等高亮颜色 -->
         <item name="colorAccent">#e600bcd4</item>
@@ -296,6 +260,8 @@
 
         <item name="app_bg_color">#ff272b2c</item>
         <item name="app_actionbar_bg_color">#93000000</item>
+
+        <item name="icon_pointer_color">#e600bcd4</item>
 
         <!-- 链接等高亮颜色 -->
         <item name="colorAccent">#e600bcd4</item>

@@ -77,7 +77,7 @@ Note：其高宽会动态设置，此处可设置任意值
                         android:textSize="6dp"
                         android:textStyle="bold"
                         android:text="@string/label_input_word_key_trad_mark"
-                        android:textColor="?attr/key_highlight_fg_color" />
+                        android:textColor="?attr/key_special_fg_color" />
             </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.flexbox.FlexboxLayout>

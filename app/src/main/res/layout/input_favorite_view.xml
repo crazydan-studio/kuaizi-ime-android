@@ -116,6 +116,6 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/btn_tool_spacing"
                 android:text="@string/btn_paste"
-                android:textColor="?attr/popup_input_quick_fg_color" />
+                android:textColor="?attr/input_quick_fg_color" />
     </LinearLayout>
 </LinearLayout>
