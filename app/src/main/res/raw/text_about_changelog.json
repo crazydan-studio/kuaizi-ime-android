@@ -6,7 +6,7 @@
         "t": "提供输入法切换、隐藏键盘、收藏管理、复制/粘贴/剪切/全选等功能按钮，以方便快速操作&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>&nbsp;与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
       },
       {
-        "t": "实现收藏管理，支持将已输入、已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除。在激活输入法时，若检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
+        "t": "实现收藏管理，支持将已输入、已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除，与传统的剪贴板功能相同。在激活输入法时，若检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
       },
       {
         "t": "气泡提示、工具栏功能按钮、收藏列表操作按钮等均按左右手模式动态调整布局方向，使其离左右手最近，以便于快速选中目标和按钮"

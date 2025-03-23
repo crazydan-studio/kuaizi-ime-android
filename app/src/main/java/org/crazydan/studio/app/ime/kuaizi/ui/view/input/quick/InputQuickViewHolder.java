@@ -22,6 +22,8 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input.quick;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewHolder;
 
 /**
@@ -35,11 +37,7 @@ public abstract class InputQuickViewHolder extends RecyclerViewHolder {
     public InputQuickViewHolder(@NonNull View itemView) {
         super(itemView);
 
-//        ViewUtils.enableHardwareAccelerated(itemView);
-//
-//        String shadow = getStringByAttrId(R.attr.input_quick_shadow_style);
-//        ShadowDrawable bg = new ShadowDrawable(this.itemView.getBackground(), shadow);
-//        this.itemView.setBackground(bg);
+        ViewUtils.addShadow(itemView, R.attr.input_quick_shadow_style);
     }
 
     public abstract void bind(Object data);

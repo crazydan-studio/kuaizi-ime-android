@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.common.utils;
 import java.util.List;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -39,10 +40,12 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.widget.TextView;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.ShadowDrawable;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.hexworks.mixite.core.api.HexagonOrientation;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils.getStringByAttrId;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -295,5 +298,15 @@ public class ViewUtils {
 
     public static void stopAnimation(View view) {
         view.clearAnimation();
+    }
+
+    public static void addShadow(View view, int shadowStyleAttrId) {
+        Context context = view.getContext();
+
+        ViewUtils.enableHardwareAccelerated(view);
+
+        String shadow = getStringByAttrId(context, shadowStyleAttrId);
+        ShadowDrawable bg = new ShadowDrawable(view.getBackground(), shadow);
+        view.setBackground(bg);
     }
 }

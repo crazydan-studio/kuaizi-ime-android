@@ -25,7 +25,8 @@
         android:layout_marginVertical="4dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:background="@drawable/bg_input_popup_quick_view">
+        android:background="@drawable/bg_round_corner"
+        android:backgroundTint="?attr/input_quick_bg_color">
 
     <!-- 选中框放在离手最远端，以避免误选或误删 -->
     <CheckBox

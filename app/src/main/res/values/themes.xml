@@ -24,8 +24,6 @@
         <item name="android:windowTitleSize">20sp</item>
 
         <!-- 动画 -->
-        <item name="anim_slide_in">@anim/slide_in_bottom</item>
-        <item name="anim_slide_out">@anim/slide_out_bottom</item>
         <item name="anim_fade_in">@android:anim/fade_in</item>
         <item name="anim_fade_out">@android:anim/fade_out</item>
 
@@ -60,6 +58,11 @@
         <item name="board_bg_color">?attr/bg_primary_color</item>
         <item name="board_divider_color">?attr/border_color</item>
         <item name="board_border_color">?attr/border_color</item>
+
+        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
+        <item name="input_quick_border_color">?attr/board_border_color</item>
+        <item name="input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="Theme.Kuaizi.IME">
@@ -89,6 +92,11 @@
         <item name="board_bg_color">?attr/bg_primary_color</item>
         <item name="board_divider_color">?attr/border_color</item>
         <item name="board_border_color">?attr/border_color</item>
+
+        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
+        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
+        <item name="input_quick_border_color">?attr/board_border_color</item>
+        <item name="input_quick_shadow_style">1 1 2 #a3000000</item>
     </style>
     <!-- End: 输入法主题 -->
 
@@ -196,31 +204,29 @@
 
     <!-- Start: 输入法输入候选主题 -->
     <style name="Theme.Kuaizi.IME.Candidates.Light" parent="">
-        <item name="snackbar_bg_color">?attr/bg_primary_color</item>
+        <!-- Note: 通过 android:backgroundTint 为背景图着色，
+        使背景图的颜色与 android:backgroundTint 的设置一致 -->
+        <item name="snackbar_bg">@drawable/bg_round_corner</item>
+        <item name="snackbar_bg_color">?attr/input_quick_bg_color</item>
         <item name="snackbar_fg_color">?attr/text_color</item>
         <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
-        <item name="tooltip_bg">@drawable/bg_tooltip</item>
+        <item name="tooltip_bg">@drawable/bg_round_corner</item>
+        <item name="tooltip_bg_color">?attr/text_color</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
-
-        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
-        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
-        <item name="input_quick_border_color">?attr/board_border_color</item>
-        <item name="input_quick_shadow_style">1 1 2 #a3c5c5c5</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Candidates.Night" parent="">
-        <item name="snackbar_bg_color">?attr/bg_primary_color</item>
+        <!-- Note: 通过 android:backgroundTint 为背景图着色，
+        使背景图的颜色与 android:backgroundTint 的设置一致 -->
+        <item name="snackbar_bg">@drawable/bg_round_corner</item>
+        <item name="snackbar_bg_color">?attr/input_quick_bg_color</item>
         <item name="snackbar_fg_color">?attr/text_color</item>
         <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
-        <item name="tooltip_bg">@drawable/bg_tooltip</item>
+        <item name="tooltip_bg">@drawable/bg_round_corner</item>
+        <item name="tooltip_bg_color">?attr/text_color</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
-
-        <item name="input_quick_bg_color">?attr/bg_secondary_color</item>
-        <item name="input_quick_fg_color">?attr/fg_secondary_color</item>
-        <item name="input_quick_border_color">?attr/board_border_color</item>
-        <item name="input_quick_shadow_style">1 1 2 #a3000000</item>
     </style>
     <!-- End: 输入法输入候选主题 -->
 

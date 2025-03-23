@@ -48,8 +48,9 @@
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
             android:layout_marginHorizontal="8dp"
-            android:paddingHorizontal="8dp"
-            android:background="?attr/snackbar_bg_color"
+            android:paddingHorizontal="16dp"
+            android:background="?attr/snackbar_bg"
+            android:backgroundTint="?attr/snackbar_bg_color"
             android:visibility="gone">
 
         <LinearLayout
@@ -91,11 +92,14 @@
                 android:id="@+id/tooltip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:paddingHorizontal="12dp"
-                android:paddingVertical="2dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="4dp"
                 android:textSize="@dimen/popup_tooltip_text_size"
                 android:textColor="?attr/tooltip_fg_color"
                 android:textStyle="bold"
-                android:background="?attr/tooltip_bg" />
+                android:background="?attr/tooltip_bg"
+                android:backgroundTint="?attr/tooltip_bg_color" />
     </LinearLayout>
 </FrameLayout>

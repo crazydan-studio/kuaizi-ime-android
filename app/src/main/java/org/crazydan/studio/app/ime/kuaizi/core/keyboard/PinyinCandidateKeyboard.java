@@ -438,7 +438,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(context.dict,
                                                                                    inputList,
                                                                                    pending,
-                                                                                   1,
+                                                                                   5,
                                                                                    true);
 
         if (beforeCompletions != null) {

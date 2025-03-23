@@ -43,5 +43,6 @@
             android:gravity="top|start"
             android:autofillHints=""
             android:hint="@string/text_exercise_free_mode_edit_text_placeholder"
-            android:background="@drawable/bg_guide_box_border" />
+            android:background="@drawable/bg_round_corner_box"
+            android:backgroundTint="@android:color/holo_blue_dark" />
 </LinearLayout>

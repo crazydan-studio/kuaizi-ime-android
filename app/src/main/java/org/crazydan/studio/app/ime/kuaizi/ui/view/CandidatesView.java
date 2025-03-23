@@ -105,13 +105,16 @@ public class CandidatesView extends BaseThemedView {
         View tooltipView = contentView.findViewById(R.id.tooltip);
         View snackbarView = contentView.findViewById(R.id.snackbar);
 
+        ViewUtils.addShadow(tooltipView, R.attr.input_quick_shadow_style);
+        ViewUtils.addShadow(snackbarView, R.attr.input_quick_shadow_style);
+
         this.popups = new HashMap<PopupType, Popup>() {{
             put(PopupType.quick_list,
                 new Popup((View) quickListView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
             put(PopupType.tooltip,
                 new Popup((View) tooltipView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
 
-            put(PopupType.snackbar, new Popup(snackbarView, R.attr.anim_slide_in, R.attr.anim_slide_out));
+            put(PopupType.snackbar, new Popup(snackbarView, R.attr.anim_fade_in, R.attr.anim_fade_out));
         }};
     }
 
@@ -290,10 +293,11 @@ public class CandidatesView extends BaseThemedView {
 
         // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
         int contentViewHeight = (int) ScreenUtils.pxFromDimension(target.getContext(), R.dimen.popup_candidates_height);
-        int spacing = (int) ScreenUtils.dpToPx(2);
 
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
         boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+
+        int spacing = (int) ScreenUtils.dpToPx(isInIME ? 2 : 4);
 
         post(() -> {
             int[] loc = new int[2];

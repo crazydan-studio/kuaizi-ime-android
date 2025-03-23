@@ -22,7 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="4dp"
-        android:background="@drawable/bg_input_popup_quick_view"
+        android:background="@drawable/bg_round_corner"
+        android:backgroundTint="?attr/input_quick_bg_color"
         android:layoutDirection="ltr">
 
     <LinearLayout
