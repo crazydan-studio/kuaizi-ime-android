@@ -86,6 +86,7 @@
             android:minHeight="@dimen/popup_candidates_height"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
+            android:layoutDirection="ltr"
             android:visibility="gone">
 
         <TextView

@@ -120,7 +120,7 @@ public class CandidatesView extends BaseThemedView {
 
     @Override
     protected void updateLayoutDirection() {
-        updateLayoutDirection(popup(PopupType.quick_list).view, true);
+        updateLayoutDirection(this.popupWindow.getContentView(), true);
 
         // Note: Snackbar 按普通的方式调整布局方向
         updateLayoutDirection(popup(PopupType.snackbar).view, false);
