@@ -17,17 +17,17 @@
   ~ If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
   -->
 
-<!-- 固定视图高度，以避免气泡提示窗口出现跳闪 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/popup_candidates_height"
         android:theme="?attr/candidates_style">
 
+    <!-- Note: 需固定一级子视图的高度，以避免显示时出现视图跳动 -->
     <!-- 快捷输入：输入补全、可粘贴等列表 -->
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="@dimen/popup_candidates_height"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
             android:visibility="gone">
@@ -43,6 +43,7 @@
             android:id="@+id/snackbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="@dimen/popup_candidates_height"
             android:baselineAligned="false"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
@@ -81,6 +82,7 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="@dimen/popup_candidates_height"
             android:gravity="center_horizontal|bottom"
             android:orientation="horizontal"
             android:visibility="gone">

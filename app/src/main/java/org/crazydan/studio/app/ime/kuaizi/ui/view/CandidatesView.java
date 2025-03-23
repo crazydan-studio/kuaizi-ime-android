@@ -290,6 +290,8 @@ public class CandidatesView extends BaseThemedView {
 
         // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
         int contentViewHeight = (int) ScreenUtils.pxFromDimension(target.getContext(), R.dimen.popup_candidates_height);
+        int spacing = (int) ScreenUtils.dpToPx(2);
+
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
         boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
@@ -298,7 +300,7 @@ public class CandidatesView extends BaseThemedView {
             target.getLocationOnScreen(loc);
 
             int x = 0;
-            int y = (isInIME ? 0 : loc[1]) - contentViewHeight;
+            int y = (isInIME ? 0 : loc[1]) - contentViewHeight - spacing;
 
             // 设置初始显示位置：其仅在未显示时有效
             // 在嵌入应用的模式下，窗口偏移相对于整个屏幕，
