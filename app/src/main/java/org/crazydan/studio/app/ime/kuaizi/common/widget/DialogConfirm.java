@@ -24,18 +24,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 
 /**
- * 确认弹窗
+ * 确认对话框
+ * <p/>
+ * 内嵌在 {@link FrameLayout} 类型的布局容器 {@link #parent} 内
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-14
  */
-public class PopupConfirm {
+public class DialogConfirm {
     private final ViewGroup parent;
     private final View anchor;
 
@@ -46,36 +49,36 @@ public class PopupConfirm {
 
     private Runnable cancelable;
 
-    public static PopupConfirm with(ViewGroup parent) {
-        return new PopupConfirm(parent);
+    public static DialogConfirm with(ViewGroup parent) {
+        return new DialogConfirm(parent);
     }
 
-    private PopupConfirm(ViewGroup parent) {
+    private DialogConfirm(ViewGroup parent) {
         this.parent = parent;
         this.anchor = parent.findViewById(R.id.popup_confirm_anchor);
     }
 
-    public PopupConfirm setMessage(int resId, Object... args) {
+    public DialogConfirm setMessage(int resId, Object... args) {
         String message = getString(resId, args);
         return setMessage(message);
     }
 
-    public PopupConfirm setMessage(CharSequence message) {
+    public DialogConfirm setMessage(CharSequence message) {
         this.message = message;
         return this;
     }
 
-    public PopupConfirm setNegativeButton(int resId, View.OnClickListener listener) {
+    public DialogConfirm setNegativeButton(int resId, View.OnClickListener listener) {
         this.negativeBtn = new Button(getString(resId), listener);
         return this;
     }
 
-    public PopupConfirm setPositiveButton(int resId, View.OnClickListener listener) {
+    public DialogConfirm setPositiveButton(int resId, View.OnClickListener listener) {
         this.positiveBtn = new Button(getString(resId), listener);
         return this;
     }
 
-    public PopupConfirm show() {
+    public DialogConfirm show() {
         // 已显示，则不再处理
         if (this.cancelable != null) {
             return this;
@@ -85,15 +88,13 @@ public class PopupConfirm {
         ViewGroup.LayoutParams contentViewLayout = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                                               ViewGroup.LayoutParams.MATCH_PARENT);
         // 锚点视图仅用于定位弹窗所属的父窗口，且该父窗口应该采用 FrameLayout，以便于弹窗始终在最上层显示
-        ViewGroup parent = (ViewGroup) this.anchor.getParent();
+        ViewGroup parent = this.anchor != null ? (ViewGroup) this.anchor.getParent() : this.parent;
         parent.addView(contentView, contentViewLayout);
 
-        // 动画显示与退出
-        Context context = this.parent.getContext();
-        int[] attrs = new int[] { android.R.attr.windowEnterAnimation, android.R.attr.windowExitAnimation };
-        int[] animResIds = ThemeUtils.getStyledAttrs(context, R.style.Theme_Kuaizi_PopupWindow_Animation, attrs);
-        int enterAnimResId = animResIds[0];
-        int exitAnimResId = animResIds[1];
+        // 显示与退出动画
+        Context context = getContext();
+        int enterAnimResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_fade_in);
+        int exitAnimResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_fade_out);
 
         Animation enterAnimation = AnimationUtils.loadAnimation(context, enterAnimResId);
         Animation exitAnimation = AnimationUtils.loadAnimation(context, exitAnimResId);
@@ -107,9 +108,9 @@ public class PopupConfirm {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    PopupConfirm.this.cancelable = null;
+                    DialogConfirm.this.cancelable = null;
 
-                    contentView.setVisibility(View.GONE);
+                    ViewUtils.hide(contentView);
                     parent.removeView(contentView);
                 }
 
@@ -129,25 +130,34 @@ public class PopupConfirm {
         }
     }
 
-    private View createContentView() {
-        View contentView = View.inflate(this.parent.getContext(), R.layout.popup_confirm_view, null);
-        // 阻止事件向上层视图传播，从而保证窗口的模态特性
-        contentView.setOnTouchListener((v, event) -> true);
+    private Context getContext() {
+        return this.parent.getContext();
+    }
 
-        TextView messageView = contentView.findViewById(R.id.message);
+    private View createContentView() {
+        Context context = getContext();
+
+        View rootView = View.inflate(context, R.layout.dialog_confirm_view, null);
+        // 阻止事件向上层视图传播，从而保证窗口的模态特性
+        rootView.setOnTouchListener((v, event) -> true);
+
+        TextView messageView = rootView.findViewById(R.id.message);
         messageView.setText(this.message);
 
-        TextView negativeBtnView = contentView.findViewById(R.id.btn_negative);
+        TextView negativeBtnView = rootView.findViewById(R.id.btn_negative);
         initButtonView(negativeBtnView, this.negativeBtn);
 
-        TextView positiveBtnView = contentView.findViewById(R.id.btn_positive);
+        TextView positiveBtnView = rootView.findViewById(R.id.btn_positive);
         initButtonView(positiveBtnView, this.positiveBtn);
 
-        return contentView;
+        View contentView = rootView.findViewById(R.id.content);
+        ViewUtils.addShadow(contentView, R.attr.dialog_shadow_style);
+
+        return rootView;
     }
 
     private String getString(int resId, Object... args) {
-        return this.parent.getContext().getString(resId, args);
+        return getContext().getString(resId, args);
     }
 
     private void initButtonView(TextView view, Button btn) {

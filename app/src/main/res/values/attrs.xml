@@ -40,10 +40,12 @@
         <attr name="text_color" format="color" />
         <attr name="title_text_color" format="color" />
         <attr name="border_color" format="color" />
+        <attr name="button_text_color" format="color" />
 
         <attr name="keyboard_style" format="reference" />
         <attr name="inputboard_style" format="reference" />
         <attr name="candidates_style" format="reference" />
+        <attr name="confirm_dialog_style" format="reference" />
 
         <attr name="board_bg_color" format="color" />
         <attr name="board_border_color" format="color" />
@@ -83,7 +85,6 @@
         <attr name="snackbar_bg" format="color" />
         <attr name="snackbar_bg_color" format="color" />
         <attr name="snackbar_fg_color" format="color" />
-        <attr name="snackbar_action_fg_color" format="color" />
 
         <attr name="tooltip_bg" format="reference" />
         <attr name="tooltip_bg_color" format="color" />
@@ -130,5 +131,14 @@
         <attr name="xpad_key_chars_special_fg_color" format="color" />
         <attr name="xpad_key_chars_divider_style" format="string" />
         <attr name="xpad_key_chars_divider_shadow_style" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="ImeConfirmDialogStyle">
+        <attr name="dialog_bg" format="reference" />
+        <attr name="dialog_bg_color" format="color" />
+        <attr name="dialog_fg_color" format="color" />
+        <attr name="dialog_shadow_style" format="string" />
+
+        <attr name="dialog_overlay_bg_color" format="color" />
     </declare-styleable>
 </resources>

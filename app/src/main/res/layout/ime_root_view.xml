@@ -21,6 +21,7 @@
 故而，需在父视图中设置背景色，以避免切换过程出现白闪（切换过程会显示根视图背景所造成） -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

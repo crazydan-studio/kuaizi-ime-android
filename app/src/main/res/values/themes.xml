@@ -26,9 +26,6 @@
         <!-- 动画 -->
         <item name="anim_fade_in">@android:anim/fade_in</item>
         <item name="anim_fade_out">@android:anim/fade_out</item>
-
-        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
-        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Light" parent="Theme.Kuaizi.IME">
@@ -42,16 +39,18 @@
         <item name="text_color">#ff616161</item>
         <item name="title_text_color">#e600bcd4</item>
         <item name="border_color">#ffdadada</item>
+        <item name="button_text_color">#e600bcd4</item>
 
         <item name="keyboard_style">@style/Theme.Kuaizi.IME.Keyboard.Light</item>
         <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Light</item>
         <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Light</item>
+        <item name="confirm_dialog_style">@style/Theme.Kuaizi.IME.ConfirmDialog.Light</item>
 
         <item name="icon_normal_color">?attr/text_color</item>
         <item name="icon_danger_color">#ffed4c67</item>
         <item name="icon_right_color">#ff059669</item>
         <item name="icon_confirm_color">#ffea580c</item>
-        <item name="icon_cursor_color">#fffaf9f6</item>
+        <item name="icon_cursor_color">?attr/text_color</item>
         <item name="icon_enter_color">#ff616161</item>
         <item name="icon_label_color">#ff616161</item>
 
@@ -76,10 +75,12 @@
         <item name="text_color">#ffededed</item>
         <item name="title_text_color">#e600bcd4</item>
         <item name="border_color">#93000000</item>
+        <item name="button_text_color">#e600bcd4</item>
 
         <item name="keyboard_style">@style/Theme.Kuaizi.IME.Keyboard.Night</item>
         <item name="inputboard_style">@style/Theme.Kuaizi.IME.Inputboard.Night</item>
         <item name="candidates_style">@style/Theme.Kuaizi.IME.Candidates.Night</item>
+        <item name="confirm_dialog_style">@style/Theme.Kuaizi.IME.ConfirmDialog.Night</item>
 
         <item name="icon_normal_color">?attr/text_color</item>
         <item name="icon_danger_color">#ffed4c67</item>
@@ -209,7 +210,6 @@
         <item name="snackbar_bg">@drawable/bg_round_corner</item>
         <item name="snackbar_bg_color">?attr/input_quick_bg_color</item>
         <item name="snackbar_fg_color">?attr/text_color</item>
-        <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
         <item name="tooltip_bg">@drawable/bg_round_corner</item>
         <item name="tooltip_bg_color">?attr/text_color</item>
@@ -222,13 +222,36 @@
         <item name="snackbar_bg">@drawable/bg_round_corner</item>
         <item name="snackbar_bg_color">?attr/input_quick_bg_color</item>
         <item name="snackbar_fg_color">?attr/text_color</item>
-        <item name="snackbar_action_fg_color">?attr/fg_secondary_color</item>
 
         <item name="tooltip_bg">@drawable/bg_round_corner</item>
         <item name="tooltip_bg_color">?attr/text_color</item>
         <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
     </style>
     <!-- End: 输入法输入候选主题 -->
+
+    <!-- Start: 输入法确认弹窗主题 -->
+    <style name="Theme.Kuaizi.IME.ConfirmDialog.Light" parent="">
+        <!-- Note: 通过 android:backgroundTint 为背景图着色，
+        使背景图的颜色与 android:backgroundTint 的设置一致 -->
+        <item name="dialog_bg">@drawable/bg_round_corner</item>
+        <item name="dialog_bg_color">?attr/input_quick_bg_color</item>
+        <item name="dialog_fg_color">?attr/text_color</item>
+        <item name="dialog_shadow_style">?attr/input_quick_shadow_style</item>
+
+        <item name="dialog_overlay_bg_color">#a3000000</item>
+    </style>
+
+    <style name="Theme.Kuaizi.IME.ConfirmDialog.Night" parent="">
+        <!-- Note: 通过 android:backgroundTint 为背景图着色，
+        使背景图的颜色与 android:backgroundTint 的设置一致 -->
+        <item name="dialog_bg">@drawable/bg_round_corner</item>
+        <item name="dialog_bg_color">?attr/input_quick_bg_color</item>
+        <item name="dialog_fg_color">?attr/text_color</item>
+        <item name="dialog_shadow_style">?attr/input_quick_shadow_style</item>
+
+        <item name="dialog_overlay_bg_color">#a3000000</item>
+    </style>
+    <!-- End: 输入法确认弹窗主题 -->
 
     <!-- Start: 输入法应用界面主题 -->
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />

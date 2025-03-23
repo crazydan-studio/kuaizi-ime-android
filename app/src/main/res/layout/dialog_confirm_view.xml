@@ -20,19 +20,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:background="#53000000">
+        android:gravity="center_horizontal|top"
+        android:theme="?attr/confirm_dialog_style"
+        android:background="?attr/dialog_overlay_bg_color">
 
-    <!-- android:background="@android:drawable/dialog_holo_dark_frame" -->
     <LinearLayout
+            android:id="@+id/content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minWidth="240dp"
             android:orientation="vertical"
-            android:paddingVertical="4dp"
-            android:paddingHorizontal="12dp"
+            android:layout_marginTop="16dp"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
             android:gravity="center"
-            android:background="@android:drawable/dialog_holo_light_frame">
+            android:background="?attr/dialog_bg"
+            android:backgroundTint="?attr/dialog_bg_color">
 
         <ScrollView
                 android:layout_width="wrap_content"
@@ -47,7 +51,8 @@
                     android:id="@+id/message"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/about_activity_text_size" />
+                    android:gravity="start"
+                    android:textColor="?attr/dialog_fg_color" />
         </ScrollView>
 
         <LinearLayout
@@ -61,17 +66,15 @@
                     android:id="@+id/btn_positive"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
                     android:textAllCaps="false"
                     android:paddingHorizontal="8dp"
                     android:gravity="center"
-                    android:textColor="?attr/input_quick_fg_color" />
+                    android:textColor="?attr/button_text_color" />
 
             <TextView
                     android:id="@+id/btn_negative"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
                     android:textAllCaps="false"
                     android:paddingHorizontal="8dp"
                     android:gravity="center"

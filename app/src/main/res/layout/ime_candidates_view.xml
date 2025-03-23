@@ -75,7 +75,7 @@
                     android:id="@+id/snackbar_action"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/snackbar_action_fg_color" />
+                    android:textColor="?attr/button_text_color" />
         </LinearLayout>
     </LinearLayout>
 

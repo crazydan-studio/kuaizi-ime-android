@@ -84,6 +84,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
     @Override
     public void onDestroy() {
         ObjectUtils.invokeWhenNonNull(this.ime, IMEditor::destroy);
+        ObjectUtils.invokeWhenNonNull(this.imeView, IMEditorView::close);
         ObjectUtils.invokeWhenNonNull(this.imeConfig, IMEConfig::destroy);
 
         this.ime = null;

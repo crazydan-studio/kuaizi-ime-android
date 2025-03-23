@@ -30,7 +30,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
-import org.crazydan.studio.app.ime.kuaizi.common.widget.PopupConfirm;
+import org.crazydan.studio.app.ime.kuaizi.common.widget.DialogConfirm;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
@@ -60,8 +60,8 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
     private final TextView deleteSelectedBtnView;
     private final TextView clearAllBtnView;
 
-    private PopupConfirm deleteSelectedPopup;
-    private PopupConfirm clearAllPopup;
+    private DialogConfirm deleteSelectedConfirm;
+    private DialogConfirm clearAllConfirm;
 
     public FavoriteboardView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -89,11 +89,11 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
     public void close() {
         this.favoriteListView.clear();
 
-        ObjectUtils.invokeWhenNonNull(this.deleteSelectedPopup, PopupConfirm::dismiss);
-        ObjectUtils.invokeWhenNonNull(this.clearAllPopup, PopupConfirm::dismiss);
+        ObjectUtils.invokeWhenNonNull(this.deleteSelectedConfirm, DialogConfirm::dismiss);
+        ObjectUtils.invokeWhenNonNull(this.clearAllConfirm, DialogConfirm::dismiss);
 
-        this.deleteSelectedPopup = null;
-        this.clearAllPopup = null;
+        this.deleteSelectedConfirm = null;
+        this.clearAllConfirm = null;
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -164,31 +164,31 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
             return;
         }
 
-        this.deleteSelectedPopup = //
-                PopupConfirm.with(this)
-                            .setMessage(R.string.confirm_whether_delete_selected)
-                            .setPositiveButton(R.string.btn_confirm, (vv) -> {
-                                UserInputDeleteMsgData data = new UserInputDeleteMsgData(selected);
-                                UserInputMsg msg = UserInputMsg.build((b) -> b.type(
-                                        SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
+        this.deleteSelectedConfirm = //
+                DialogConfirm.with(this)
+                             .setMessage(R.string.confirm_whether_delete_selected)
+                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
+                                 UserInputDeleteMsgData data = new UserInputDeleteMsgData(selected);
+                                 UserInputMsg msg = UserInputMsg.build((b) -> b.type(
+                                         SingleTap_Btn_Delete_Selected_InputFavorite).data(data));
 
-                                onMsg(msg);
-                            })
-                            .setNegativeButton(R.string.btn_cancel, null)
-                            .show();
+                                 onMsg(msg);
+                             })
+                             .setNegativeButton(R.string.btn_cancel, null)
+                             .show();
     }
 
     private void onClearAll(View v) {
-        this.clearAllPopup = //
-                PopupConfirm.with(this)
-                            .setMessage(R.string.confirm_whether_clear_all)
-                            .setPositiveButton(R.string.btn_confirm, (vv) -> {
-                                UserInputMsg msg = UserInputMsg.build((b) -> b.type(
-                                        SingleTap_Btn_Clear_All_InputFavorite));
-                                onMsg(msg);
-                            })
-                            .setNegativeButton(R.string.btn_cancel, null)
-                            .show();
+        this.clearAllConfirm = //
+                DialogConfirm.with(this)
+                             .setMessage(R.string.confirm_whether_clear_all)
+                             .setPositiveButton(R.string.btn_confirm, (vv) -> {
+                                 UserInputMsg msg = UserInputMsg.build((b) -> b.type(
+                                         SingleTap_Btn_Clear_All_InputFavorite));
+                                 onMsg(msg);
+                             })
+                             .setNegativeButton(R.string.btn_cancel, null)
+                             .show();
     }
 
     // ==================== End: 按键事件处理 ==================

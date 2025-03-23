@@ -105,11 +105,9 @@ public class IMEditorView extends BaseThemedView {
         // //////////////////////////////////////////////////////////
         this.candidatesView = initCandidatesView();
 
-        Context context = getContext();
-        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
-        int[] animResIds = ThemeUtils.getStyledAttrs(context, R.style.Theme_Kuaizi_PopupWindow_Animation, animAttrs);
-        int enterAnimResId = animResIds[0];
-
+        // Note: 取当前视图主题的配置数据，需通过在主题上下文中布局的视图
+        Context context = findViewById(R.id.root).getContext();
+        int enterAnimResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_fade_in);
         this.enterAnim = AnimationUtils.loadAnimation(context, enterAnimResId);
 
         MainboardView mainboardView = findViewById(R.id.mainboard);

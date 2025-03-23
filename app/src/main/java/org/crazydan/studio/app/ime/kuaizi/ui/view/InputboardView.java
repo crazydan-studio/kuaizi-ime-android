@@ -66,13 +66,8 @@ public class InputboardView extends BaseMsgListenerView {
         // Note: 所布局的视图将作为当前视图的子视图插入，而不会替换当前视图
         inflate(context, R.layout.ime_board_input_view, this);
 
-        int[] animAttrs = new int[] { android.R.attr.windowEnterAnimation };
-        int[] animResIds = ThemeUtils.getStyledAttrs(getContext(),
-                                                     R.style.Theme_Kuaizi_PopupWindow_Animation,
-                                                     animAttrs);
-        int enterAnimResId = animResIds[0];
-
-        Animation enterAnim = AnimationUtils.loadAnimation(getContext(), enterAnimResId);
+        int enterAnimResId = ThemeUtils.getResourceByAttrId(context, R.attr.anim_fade_in);
+        Animation enterAnim = AnimationUtils.loadAnimation(context, enterAnimResId);
         this.tools = new BtnTools(enterAnim);
 
         this.inputListView = findViewById(R.id.input_list);

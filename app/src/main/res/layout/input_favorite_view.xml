@@ -31,9 +31,11 @@
     <!-- 选中框放在离手最远端，以避免误选或误删 -->
     <CheckBox
             android:id="@+id/checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/btn_tool_spacing" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginVertical="0dp"
+            android:layout_marginHorizontal="@dimen/btn_tool_spacing"
+            android:button="@drawable/bg_checkbox" />
 
     <LinearLayout
             android:layout_width="0dp"
@@ -54,7 +56,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_text_type"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:alpha=".3" />
 
             <View
@@ -69,7 +71,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_created_at"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:alpha=".3" />
         </LinearLayout>
 
@@ -94,7 +96,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_used_count"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:alpha=".3" />
         </LinearLayout>
     </LinearLayout>
@@ -117,6 +119,6 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/btn_tool_spacing"
                 android:text="@string/btn_paste"
-                android:textColor="?attr/input_quick_fg_color" />
+                android:textColor="?attr/button_text_color" />
     </LinearLayout>
 </LinearLayout>
