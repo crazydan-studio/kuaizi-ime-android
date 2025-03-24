@@ -264,11 +264,12 @@
 
         <item name="app_bg_color">#ffededed</item>
         <item name="app_actionbar_bg_color">#ff1976d2</item>
+        <item name="app_theme_ime_bg_color">#e600bcd4</item>
 
-        <item name="icon_pointer_color">#e600bcd4</item>
+        <item name="icon_pointer_color">?attr/app_theme_ime_bg_color</item>
 
         <!-- 链接等高亮颜色 -->
-        <item name="colorAccent">#e600bcd4</item>
+        <item name="colorAccent">?attr/app_theme_ime_bg_color</item>
         <!-- ActionBar 中的导航图标颜色 -->
         <item name="colorControlNormal">?attr/app_white_color</item>
 
@@ -289,11 +290,12 @@
 
         <item name="app_bg_color">#ff272b2c</item>
         <item name="app_actionbar_bg_color">#93000000</item>
+        <item name="app_theme_ime_bg_color">#e600bcd4</item>
 
-        <item name="icon_pointer_color">#e600bcd4</item>
+        <item name="icon_pointer_color">?attr/app_theme_ime_bg_color</item>
 
         <!-- 链接等高亮颜色 -->
-        <item name="colorAccent">#e600bcd4</item>
+        <item name="colorAccent">?attr/app_theme_ime_bg_color</item>
         <!-- ActionBar 中的导航图标颜色 -->
         <item name="colorControlNormal">?attr/app_white_color</item>
 

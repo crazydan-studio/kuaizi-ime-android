@@ -39,7 +39,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:paddingVertical="16dp">
+            android:paddingVertical="16dp"
+            android:background="?attr/app_theme_ime_bg_color">
 
         <!-- Note：输入键盘的宽度设置为 match_parent ，且 parent 的左右不设置空白，
         以确保其键盘高度没有过多的空白，在将其等比缩放，从而可以显示出四周的底色

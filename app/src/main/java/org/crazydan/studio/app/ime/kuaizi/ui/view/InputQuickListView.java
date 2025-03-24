@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import java.util.List;
+import java.util.Objects;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -55,9 +56,6 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
 
     public InputQuickListView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        // 去掉动画，以避免闪烁
-        setItemAnimator(null);
 
         RecyclerViewGestureDetector<InputQuickViewData> gesture = new RecyclerViewGestureDetector<>(context, this);
         gesture.addListener(this);
@@ -114,9 +112,12 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
     // =============================== End: 消息处理 ===================================
 
     public void update(List<?> dataList) {
-        getAdapter().updateItems(InputQuickViewData.from(dataList));
+        List<InputQuickViewData> newItems = InputQuickViewData.from(dataList);
+        List<InputQuickViewData> oldItems = getAdapter().updateItems(newItems);
 
-//        // 复位滚动位置
-//        getLayoutManager().scrollToPosition(0);
+        // 在发生变化时复位滚动位置
+        if (!Objects.equals(newItems, oldItems)) {
+            getLayoutManager().scrollToPosition(0);
+        }
     }
 }
