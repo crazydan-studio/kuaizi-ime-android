@@ -26,8 +26,8 @@
         © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
     </string>
 
-    <string name="title_app_preferences">Einstellungen</string>
-    <string name="title_app_guide_exercise">Kuaizi IME-Anleitung</string>
+    <string name="title_app_preferences">Kuaizi IME-Einstellungen</string>
+    <string name="title_app_guide_exercise">Kuaizi IME-Übungen</string>
     <string name="title_about_app">Kuaizi IME</string>
     <string name="title_about_team">Entwickler:innen</string>
     <string name="title_about_feedback">Feedback</string>
