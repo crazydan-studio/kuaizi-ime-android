@@ -30,12 +30,12 @@
     <string name="title_app_guide_exercise">Kuaizi IME-Anleitung</string>
     <string name="title_about_app">Kuaizi IME</string>
     <string name="title_about_team">Entwickler:innen</string>
-    <string name="title_about_suggestion">Feedback geben/Fehler melden</string>
+    <string name="title_about_feedback">Feedback</string>
     <string name="title_about_thanks">Danksagungen</string>
     <string name="title_about_donate">Spende einen Kaffee</string>
     <string name="title_about_donate_for_sharing_qrcode_to_wechat">Bitte wähle [WeChat] aus und teile den QR-Code an [File Transfer]</string>
     <string name="title_about_donate_for_sharing_qrcode_to_alipay">Bitte wähle [Alipay Scanner] aus und scanne den QR-Code</string>
-    <string name="title_about_change_log">Änderungen</string>
+    <string name="title_about_changelog">Änderungen</string>
     <string name="title_about_software_service_agreement">Dienstleistungsbestimmungen</string>
     <string name="title_about_copyright">Copyright</string>
     <string name="title_about_alpha_user_agreement">Alphabenutzer-Vereinbarung</string>
@@ -43,17 +43,21 @@
     <string name="title_user_data_backup">Benutzerdatensicherung</string>
     <string name="title_tips">Tipps</string>
 
+    <string name="title_favorites">Favoriten (%1$s Elemente)</string>
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinesisch (China)</string>
     <string name="label_input_word_key_trad_mark">繁</string>
 
     <string name="btn_enable_right_now">Ja</string>
     <string name="btn_enable_later">Später</string>
+    <string name="btn_confirm">OK</string>
+    <string name="btn_cancel">Stornieren</string>
+    <string name="btn_paste">Paste</string>
     <string name="btn_feedback_open_link_without_extra_info">Fortfahren ohne zusätzliche Informationen</string>
     <string name="btn_feedback_open_link_with_extra_info">Fortfahren mit zusätzlichen Informationen</string>
-    <string name="btn_guide_confirm_alpha_user_agreement">JA, ich stimme der Vereinbarung zu.</string>
-    <string name="btn_guide_reject_alpha_user_agreement">NEIN, ich lehne die Vereinbarung ab.</string>
-    <string name="btn_guide_new_features_confirm">OK, ich verstehe!</string>
+    <string name="btn_guide_confirm_alpha_user_agreement">JA, ich stimme der Vereinbarung zu</string>
+    <string name="btn_guide_reject_alpha_user_agreement">NEIN, ich lehne die Vereinbarung ab</string>
+    <string name="btn_guide_new_features_confirm">OK, ich verstehe</string>
     <string name="btn_guide_try_exercises">Übungen</string>
     <string name="btn_guide_show_preferences">Einstellungen öffnen</string>
     <string name="btn_guide_show_donate">Spende mir einen Kaffee</string>
@@ -62,6 +66,9 @@
     <string name="btn_guide_exercise_try_new_one">Gehe zur nächsten Übung</string>
 
     <!-- Preference Titles -->
+    <string name="btn_save_as_favorite">Speichern</string>
+    <string name="btn_delete_selected">Ausgewählte löschen (%1$s Elemente)</string>
+    <string name="btn_clear_all">Alles löschen</string>
     <string name="title_preference_basic">Grundeinstellungen</string>
     <string name="title_preference_x_input_pad">Kreuzförmige Tastatur-Einstellungen</string>
     <string name="title_preference_privacy">Privatsphäreneinstellungen</string>
@@ -127,7 +134,13 @@
         Gib Text ein, um die Tastatur auszuprobieren.
     </string>
     <string name="text_dict_db_init_warning">
-        Lade die Wörterbuch-Datenbank, einen Moment bitte ...
+        Lade die Wörterbuch-Datenbank, einen Moment bitte …
+    </string>
+    <string name="text_empty_favoriteboard_warning">
+        Es wurde noch kein Inhalt gespeichert.
+        Nachdem Sie Text kopiert oder Eingaben getätigt haben,
+        klicken Sie in der schwebenden Eingabeaufforderung auf die Schaltfläche [Speichern],
+        um den Inhalt zu Ihren Favoriten hinzuzufügen.
     </string>
 
     <string name="value_theme_light">Hell</string>
@@ -135,4 +148,33 @@
     <string name="value_theme_follow_system">System</string>
     <string name="value_hand_mode_left">Linkshänder-Modus</string>
     <string name="value_hand_mode_right">Rechtshänder-Modus</string>
+    <string name="value_text_type_normal">Normaler Text</string>
+    <string name="value_text_type_html">Rich Text</string>
+    <string name="value_text_type_url">URL</string>
+    <string name="value_text_type_captcha">Captcha</string>
+    <string name="value_text_type_phone">Telefonnummer</string>
+    <string name="value_text_type_email">E-Mail</string>
+    <string name="value_text_type_id_card">Ausweis</string>
+    <string name="value_text_type_credit_card">Kreditkarte</string>
+    <string name="value_text_type_address">Adresse</string>
+    <string name="title_clip_paste_url">Kopierte URL einfügen</string>
+    <string name="title_clip_paste_content">Kopierten Inhalt einfügen</string>
+    <string name="title_clip_paste_captcha">Kopiertes Captcha einfügen</string>
+    <string name="title_clip_paste_phone">Kopierte Telefonnummer einfügen</string>
+    <string name="title_clip_paste_email">Kopierte E-Mail einfügen</string>
+    <string name="tip_editor_action_select_all">Alle ausgewählt</string>
+    <string name="tip_editor_action_copy">Kopiert</string>
+    <string name="tip_editor_action_cut">Schneiden</string>
+    <string name="tip_editor_action_undo">Rückgängig machen</string>
+    <string name="tip_editor_action_redo">Wiederholen</string>
+    <string name="tip_editor_action_paste">Eingefügt</string>
+    <string name="tip_editor_action_favorite">Gespeichert</string>
+    <string name="confirm_whether_save_pasted_content">Eingefügten Inhalt speichern?</string>
+    <string name="confirm_whether_save_copied_content">Den kopierten Inhalt speichern?</string>
+    <string name="confirm_whether_save_input_content">Den übermittelten Inhalt speichern?</string>
+    <string name="confirm_whether_delete_selected">Die ausgewählten Elemente löschen?</string>
+    <string name="confirm_whether_clear_all">Alle Elemente löschen?</string>
+    <string name="label_text_type">Texttyp: %1$s</string>
+    <string name="label_created_at">Erstellt am: %1$s</string>
+    <string name="label_used_count">Verwendete Male: %1$s</string>
 </resources>

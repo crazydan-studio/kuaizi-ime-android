@@ -27,6 +27,9 @@
         "t": "将&nbsp;<a href=\"https://coolsymbol.com/\">Cool Symbols & Fonts</a>&nbsp;所整理的符号补充到符号键盘中，以丰富可选符号"
       },
       {
+        "t": "改进应用国际化中的英文文本，并提供德语版本&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime-android/pull/1\">#1</a>。感谢&nbsp;<a href=\"https://github.com/hubortje\">@hubortje</a>&nbsp;的热心贡献"
+      },
+      {
         "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       },
       {

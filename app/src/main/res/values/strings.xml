@@ -28,7 +28,7 @@
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
-    <string name="title_about_app">本应用</string>
+    <string name="title_about_app">筷字输入法</string>
     <string name="title_about_team">开发团队</string>
     <string name="title_about_feedback">使用反馈</string>
     <string name="title_about_thanks">感谢</string>
@@ -128,11 +128,11 @@
         正在加载字典，请稍等一会儿 。。。
     </string>
     <string name="text_empty_favoriteboard_warning">
-        还未收藏任何内容，请在复制或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
+        还未收藏任何内容，请在复制文本或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
     </string>
 
-    <string name="value_theme_light">浅色主题</string>
-    <string name="value_theme_night">深色主题</string>
+    <string name="value_theme_light">明亮</string>
+    <string name="value_theme_night">暗黑</string>
     <string name="value_theme_follow_system">跟随系统</string>
     <string name="value_hand_mode_left">左手模式</string>
     <string name="value_hand_mode_right">右手模式</string>
@@ -148,11 +148,11 @@
     <string name="value_text_type_credit_card">银行卡号</string>
     <string name="value_text_type_address">地址</string>
 
-    <string name="title_clip_past_url">粘贴已复制的链接</string>
-    <string name="title_clip_past_content">粘贴已复制的内容</string>
-    <string name="title_clip_past_captcha">粘贴已复制的验证码</string>
-    <string name="title_clip_past_phone">粘贴已复制的电话号码</string>
-    <string name="title_clip_past_email">粘贴已复制的邮箱</string>
+    <string name="title_clip_paste_url">粘贴已复制的链接</string>
+    <string name="title_clip_paste_content">粘贴已复制的内容</string>
+    <string name="title_clip_paste_captcha">粘贴已复制的验证码</string>
+    <string name="title_clip_paste_phone">粘贴已复制的电话号码</string>
+    <string name="title_clip_paste_email">粘贴已复制的邮箱</string>
 
     <string name="tip_editor_action_select_all">已全选</string>
     <string name="tip_editor_action_copy">已复制</string>
@@ -164,7 +164,7 @@
     <string name="confirm_whether_save_pasted_content">是否收藏已粘贴内容？</string>
     <string name="confirm_whether_save_copied_content">是否收藏已复制内容？</string>
     <string name="confirm_whether_save_input_content">是否收藏已输入内容？</string>
-    <string name="confirm_whether_delete_selected">是否删除已选中项？</string>
+    <string name="confirm_whether_delete_selected">是否删除选中项？</string>
     <string name="confirm_whether_clear_all">是否清空全部数据？</string>
 
     <string name="label_text_type">文本类型：%1$s</string>

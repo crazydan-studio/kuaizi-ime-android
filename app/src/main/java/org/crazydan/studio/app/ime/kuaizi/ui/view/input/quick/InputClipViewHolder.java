@@ -46,22 +46,22 @@ public class InputClipViewHolder extends InputQuickViewHolder {
         InputClip clip = (InputClip) data;
 
         whenViewReady(this.textView, (view) -> {
-            int resId = R.string.title_clip_past_content;
+            int resId = R.string.title_clip_paste_content;
             switch (clip.type) {
                 case url: {
-                    resId = R.string.title_clip_past_url;
+                    resId = R.string.title_clip_paste_url;
                     break;
                 }
                 case captcha: {
-                    resId = R.string.title_clip_past_captcha;
+                    resId = R.string.title_clip_paste_captcha;
                     break;
                 }
                 case phone: {
-                    resId = R.string.title_clip_past_phone;
+                    resId = R.string.title_clip_paste_phone;
                     break;
                 }
                 case email: {
-                    resId = R.string.title_clip_past_email;
+                    resId = R.string.title_clip_paste_email;
                     break;
                 }
             }
