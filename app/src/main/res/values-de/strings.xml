@@ -148,6 +148,7 @@
     <string name="value_theme_follow_system">System</string>
     <string name="value_hand_mode_left">Linkshänder-Modus</string>
     <string name="value_hand_mode_right">Rechtshänder-Modus</string>
+
     <string name="value_text_type_normal">Normaler Text</string>
     <string name="value_text_type_html">Rich Text</string>
     <string name="value_text_type_url">URL</string>
@@ -157,11 +158,14 @@
     <string name="value_text_type_id_card">Ausweis</string>
     <string name="value_text_type_credit_card">Kreditkarte</string>
     <string name="value_text_type_address">Adresse</string>
+
     <string name="title_clip_paste_url">Kopierte URL einfügen</string>
     <string name="title_clip_paste_content">Kopierten Inhalt einfügen</string>
     <string name="title_clip_paste_captcha">Kopiertes Captcha einfügen</string>
     <string name="title_clip_paste_phone">Kopierte Telefonnummer einfügen</string>
     <string name="title_clip_paste_email">Kopierte E-Mail einfügen</string>
+
+    <string name="tip_editor_action_backspace">Rücktaste</string>
     <string name="tip_editor_action_select_all">Alle ausgewählt</string>
     <string name="tip_editor_action_copy">Kopiert</string>
     <string name="tip_editor_action_cut">Schneiden</string>
@@ -169,11 +173,13 @@
     <string name="tip_editor_action_redo">Wiederholen</string>
     <string name="tip_editor_action_paste">Eingefügt</string>
     <string name="tip_editor_action_favorite">Gespeichert</string>
+
     <string name="confirm_whether_save_pasted_content">Eingefügten Inhalt speichern?</string>
     <string name="confirm_whether_save_copied_content">Den kopierten Inhalt speichern?</string>
     <string name="confirm_whether_save_input_content">Den übermittelten Inhalt speichern?</string>
     <string name="confirm_whether_delete_selected">Die ausgewählten Elemente löschen?</string>
     <string name="confirm_whether_clear_all">Alle Elemente löschen?</string>
+
     <string name="label_text_type">Texttyp: %1$s</string>
     <string name="label_created_at">Erstellt am: %1$s</string>
     <string name="label_used_count">Verwendete Male: %1$s</string>

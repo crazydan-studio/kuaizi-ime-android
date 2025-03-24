@@ -166,6 +166,7 @@
     <string name="title_clip_paste_phone">Paste Copied Phone Number</string>
     <string name="title_clip_paste_email">Paste Copied Email</string>
 
+    <string name="tip_editor_action_backspace">Backspace</string>
     <string name="tip_editor_action_select_all">All Selected</string>
     <string name="tip_editor_action_copy">Copied</string>
     <string name="tip_editor_action_cut">Cut</string>

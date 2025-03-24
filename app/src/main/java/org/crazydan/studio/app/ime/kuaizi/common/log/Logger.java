@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.common.log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Supplier;
@@ -135,6 +136,7 @@ public class Logger {
         private final int level;
         private final String tag;
         private final String msg;
+        private final long timestamp;
 
         private final List<TreeLog> children = new ArrayList<>();
 
@@ -142,6 +144,7 @@ public class Logger {
             this.level = level;
             this.tag = tag;
             this.msg = msg;
+            this.timestamp = new Date().getTime();
         }
 
         public static synchronized void begin(String tag, String title) {
@@ -172,8 +175,8 @@ public class Logger {
             }
 
             StringBuffer sb = new StringBuffer();
-            sb.append("↙˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜").append('\n');
-            print(sb, log, 0);
+            sb.append("⤹˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜").append('\n');
+            print(sb, log, 0, false);
 
             String msg = sb.toString();
             cache.cache(msg);
@@ -207,7 +210,7 @@ public class Logger {
             return msg;
         }
 
-        private static void print(StringBuffer sb, TreeLog log, int depth) {
+        private static void print(StringBuffer sb, TreeLog log, int depth, boolean last) {
             String indents = depth > 0 ? String.format("%" + (depth * 2) + "s", "") : "";
 
             String level = null;
@@ -232,13 +235,28 @@ public class Logger {
 
             sb.append(indents);
             if (level == null) {
-                sb.append("+ [").append(log.tag).append("] ");
+                sb.append("+ [").append(log.timestamp).append("][").append(log.tag).append("] ");
             } else {
-                sb.append("|- [").append(level).append("][").append(log.tag).append("] ");
+                if (last) {
+                    sb.append("└──");
+                } else {
+                    sb.append("├──");
+                }
+                sb.append(" [")
+                  .append(log.timestamp)
+                  .append("][")
+                  .append(level)
+                  .append("][")
+                  .append(log.tag)
+                  .append("] ");
             }
             sb.append(log.msg).append('\n');
 
-            log.children.forEach((child) -> print(sb, child, depth + 1));
+            int total = log.children.size();
+            for (int i = 0; i < total; i++) {
+                TreeLog child = log.children.get(i);
+                print(sb, child, depth + 1, i == total - 1);
+            }
         }
     }
 

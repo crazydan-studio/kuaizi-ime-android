@@ -154,6 +154,7 @@
     <string name="title_clip_paste_phone">粘贴已复制的电话号码</string>
     <string name="title_clip_paste_email">粘贴已复制的邮箱</string>
 
+    <string name="tip_editor_action_backspace">已回删</string>
     <string name="tip_editor_action_select_all">已全选</string>
     <string name="tip_editor_action_copy">已复制</string>
     <string name="tip_editor_action_cut">已剪切</string>

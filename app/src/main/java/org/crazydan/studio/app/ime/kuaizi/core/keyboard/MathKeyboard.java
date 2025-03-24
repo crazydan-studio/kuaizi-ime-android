@@ -157,7 +157,6 @@ public class MathKeyboard extends EditorEditKeyboard {
         switch (key.type) {
             case Backspace: {
                 play_SingleTick_InputAudio(context);
-                show_InputChars_Input_Popup(context);
 
                 // Note: 若上层输入列表为空，则会对编辑器做删除，
                 // 不需要处理对待输入的向前删除，而向前删除逻辑详见 #do_InputList_Backspacing

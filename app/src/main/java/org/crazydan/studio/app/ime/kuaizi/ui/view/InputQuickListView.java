@@ -120,4 +120,14 @@ public class InputQuickListView extends RecyclerView<InputQuickListViewAdapter, 
             getLayoutManager().scrollToPosition(0);
         }
     }
+
+    @Override
+    public void setLayoutDirection(int layoutDirection) {
+        super.setLayoutDirection(layoutDirection);
+
+        // Note: 触发布局方向的切换动画
+        if (getAdapter().getItemCount() > 0) {
+            getAdapter().notifyItemChanged(0);
+        }
+    }
 }

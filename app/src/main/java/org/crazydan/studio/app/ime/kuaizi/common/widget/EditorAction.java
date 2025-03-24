@@ -29,7 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  */
 public enum EditorAction {
     /** 回删 */
-    backspace("回删", 0),
+    backspace("回删", R.string.tip_editor_action_backspace),
     /** 全选 */
     select_all("全选", R.string.tip_editor_action_select_all),
     /** 复制 */

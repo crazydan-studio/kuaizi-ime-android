@@ -129,5 +129,7 @@ public abstract class BaseThemedView extends BaseMsgListenerView {
         Keyboard.HandMode handMode = this.config.get(ConfigKey.hand_mode);
 
         ViewUtils.updateLayoutDirection(view, handMode, reverse);
+
+        this.log.debug("Update layout direction: mode=%s, reverse=%s", () -> new Object[] { handMode, reverse });
     }
 }

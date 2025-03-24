@@ -500,7 +500,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             case InputClip_Apply_Done: {
                 InputClipMsgData data = msg.data();
-                // Note: 在消息发送前，剪贴数据已被废弃，这里无需再做处理
+                // Note: 在该消息发送前，剪贴数据已被废弃，故而，这里无需再做处理
                 disableClips(data.clip.code);
                 break;
             }
@@ -666,7 +666,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     private void discardClips() {
-        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips)) {
+        if (this.config.bool(ConfigKey.disable_input_clip_popup_tips) //
+            || !this.favoriteboard.verifyClips() //
+        ) {
             return;
         }
 

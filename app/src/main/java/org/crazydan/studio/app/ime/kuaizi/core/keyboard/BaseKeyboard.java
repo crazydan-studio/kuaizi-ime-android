@@ -51,7 +51,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputAudioPlayMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCompletionMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
@@ -257,7 +256,6 @@ public abstract class BaseKeyboard implements Keyboard {
             }
             case Backspace: {
                 play_SingleTick_InputAudio(context);
-                show_InputChars_Input_Popup(context);
 
                 backspace_InputList_or_Editor(context);
                 return true;
@@ -787,6 +785,8 @@ public abstract class BaseKeyboard implements Keyboard {
         InputList inputList = context.inputList;
 
         if (!inputList.isFrozen() && !inputList.isEmpty()) {
+            show_InputChars_Input_Popup(context);
+
             do_InputList_Backspacing(context);
         } else {
             do_Editor_Backspacing(context);
@@ -890,10 +890,7 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 触发 {@link InputMsgType#InputCompletion_Create_Done} 消息 */
     protected void fire_Input_Completion_Create_Done(KeyboardContext context) {
-        InputList inputList = context.inputList;
-        InputCompletionMsgData data = new InputCompletionMsgData(inputList.getCompletionViewDataList());
-
-        fire_InputMsg(context, InputCompletion_Create_Done, data);
+        fire_Common_InputMsg(context, InputCompletion_Create_Done);
     }
 
     /** 触发 {@link InputMsgType#InputList_Commit_Doing} 消息 */

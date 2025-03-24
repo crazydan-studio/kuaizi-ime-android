@@ -109,21 +109,30 @@ public class CandidatesView extends BaseThemedView {
         ViewUtils.addShadow(snackbarView, R.attr.input_quick_shadow_style);
 
         this.popups = new HashMap<PopupType, Popup>() {{
-            put(PopupType.quick_list,
-                new Popup((View) quickListView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
-            put(PopupType.tooltip,
-                new Popup((View) tooltipView.getParent(), R.attr.anim_fade_in, R.attr.anim_fade_out));
+            View view = (View) quickListView.getParent();
+            Popup popup = new Popup(PopupType.quick_list, view, R.attr.anim_fade_in, R.attr.anim_fade_out);
+            put(popup.type, popup);
 
-            put(PopupType.snackbar, new Popup(snackbarView, R.attr.anim_fade_in, R.attr.anim_fade_out));
+            view = (View) tooltipView.getParent();
+            popup = new Popup(PopupType.tooltip, view, R.attr.anim_fade_in, R.attr.anim_fade_out);
+            put(popup.type, popup);
+
+            view = snackbarView;
+            popup = new Popup(PopupType.snackbar, view, R.attr.anim_fade_in, R.attr.anim_fade_out);
+            put(popup.type, popup);
         }};
     }
 
     @Override
     protected void updateLayoutDirection() {
-        updateLayoutDirection(this.popupWindow.getContentView(), true);
+        Popup popup = popup(PopupType.quick_list);
+        // Note: 更改父视图的布局方向可能不会更新列表视图，故而，需直接作用到列表视图上
+        View quickListView = popup.view.findViewById(R.id.quick_list);
+        updateLayoutDirection(quickListView, true);
 
         // Note: Snackbar 按普通的方式调整布局方向
-        updateLayoutDirection(popup(PopupType.snackbar).view, false);
+        popup = popup(PopupType.snackbar);
+        updateLayoutDirection(popup.view, false);
     }
 
     private Popup popup(PopupType type) {
@@ -183,23 +192,19 @@ public class CandidatesView extends BaseThemedView {
 
         TextView actionBtn = view.findViewById(R.id.snackbar_action);
         actionBtn.setText(R.string.btn_save_as_favorite);
-        actionBtn.setOnClickListener((v) -> saveClipToFavorite(data.clip));
+        actionBtn.setOnClickListener((v) -> {
+            popup.close();
+            saveClipToFavorite(data.clip);
+        });
 
-        popup.show(50000000);
+        popup.show(5000);
     }
 
     private void on_Editor_Edit_Doing_Msg(EditorAction action) {
         // 对编辑内容的操作做气泡提示，以告知用户处理结果，避免静默处理造成的困惑
         // Note: 复制和粘贴可能内容为空，不会提示可收藏，因此，仍需提示
-        switch (action) {
-            case backspace: // 已作气泡提示
-            case favorite: { // 有专门的收藏确认提示
-                break;
-            }
-            default: {
-                showTooltip(action.tipResId);
-                break;
-            }
+        if (action != EditorAction.favorite) {
+            showTooltip(action.tipResId);
         }
     }
 
@@ -207,7 +212,7 @@ public class CandidatesView extends BaseThemedView {
         UserInputClipMsgData data = new UserInputClipMsgData(clip);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
 
-        onMsg(msg);
+        post(() -> onMsg(msg));
     }
 
     // =============================== End: 消息处理 ===================================
@@ -245,14 +250,14 @@ public class CandidatesView extends BaseThemedView {
     private void showTooltip(String tip, boolean hideDelayed) {
         Popup popup = popup(PopupType.tooltip);
         if (CharUtils.isBlank(tip)) {
-            //popup.close();
+            popup.close();
             return;
         }
 
         TextView textView = popup.view.findViewById(R.id.tooltip);
         textView.setText(tip);
 
-        popup.show(hideDelayed ? 8000000 : 0);
+        popup.show(hideDelayed ? 800 : 0);
     }
 
     private PopupWindow createPopupWindow() {
@@ -290,13 +295,11 @@ public class CandidatesView extends BaseThemedView {
 
         // 放置于被布局的目标之上
         View target = this;
-
-        // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
-        int contentViewHeight = (int) ScreenUtils.pxFromDimension(target.getContext(), R.dimen.popup_candidates_height);
-
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) target.getRootView().getLayoutParams();
         boolean isInIME = params != null && params.type == WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
+        // Note: 为避免窗口定位出现频繁变动，需固定内容视图的高度
+        int contentViewHeight = (int) ScreenUtils.pxFromDimension(target.getContext(), R.dimen.popup_candidates_height);
         int spacing = (int) ScreenUtils.dpToPx(isInIME ? 2 : 4);
 
         post(() -> {
@@ -343,6 +346,7 @@ public class CandidatesView extends BaseThemedView {
     }
 
     private class Popup {
+        public final PopupType type;
         public final View view;
         private final Runnable closeCallback;
 
@@ -351,7 +355,8 @@ public class CandidatesView extends BaseThemedView {
 
         private PopupState state;
 
-        Popup(View view, int enterAnimAttrId, int exitAnimAttrId) {
+        Popup(PopupType type, View view, int enterAnimAttrId, int exitAnimAttrId) {
+            this.type = type;
             this.view = view;
             this.state = PopupState.closed;
             ViewUtils.hide(view);
@@ -407,11 +412,13 @@ public class CandidatesView extends BaseThemedView {
             switch (this.state) {
                 case shown:
                 case showing: {
+                    CandidatesView.this.log.debug("Try to show popup but state=%s", () -> new Object[] { this.state });
                     callDelayClose(closeDelayMillis);
                     return;
                 }
                 case closing: {
-                    this.exitAnim.cancel();
+                    // Note: Animation#cancel 会异步调用监听的 #onAnimationEnd 方法，导致原本应该显示的视图被隐藏
+                    this.exitAnim.reset();
                     break;
                 }
             }
@@ -430,10 +437,11 @@ public class CandidatesView extends BaseThemedView {
             switch (this.state) {
                 case closed:
                 case closing: {
+                    CandidatesView.this.log.debug("Try to close popup but state=%s", () -> new Object[] { this.state });
                     return;
                 }
                 case showing: {
-                    this.enterAnim.cancel();
+                    this.enterAnim.reset();
                     break;
                 }
             }
@@ -445,6 +453,8 @@ public class CandidatesView extends BaseThemedView {
         }
 
         private void updateState(PopupState state) {
+            CandidatesView.this.log.debug("Update popup state: type=%s, old=%s, new=%s",
+                                          () -> new Object[] { this.type, this.state, state });
             if (this.state == state) {
                 return;
             }
