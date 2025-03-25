@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-                android:textColor="?attr/app_white_color" />
+                android:textColor="?attr/app_actionbar_fg_color" />
 
         <!-- SnackBar 的定位视图 -->
         <View

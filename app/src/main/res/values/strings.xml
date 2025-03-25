@@ -25,7 +25,7 @@
 
     <!-- Start: 不做国际化 -->
     <string name="app_copyright" translatable="false">
-        © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
+        &lt;a href="https://studio.crazydan.org">© Crazydan Studio&lt;/a>
     </string>
     <string name="label_input_word_key_trad_mark" translatable="false">繁</string>
     <!-- End: 不做国际化 -->
@@ -121,12 +121,6 @@
     </string>
 
     <string name="text_alpha_using_warning">@null</string>
-    <string name="text_exercise_edit_text_placeholder">
-        请跟随上述指导步骤操作键盘以输入练习内容
-    </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
-        请输入任意内容进行自由练习
-    </string>
     <string name="text_dict_db_init_warning">
         正在加载字典，请稍等一会儿 。。。
     </string>
@@ -174,4 +168,12 @@
     <string name="label_text_type">文本类型：%1$s</string>
     <string name="label_created_at">创建日期：%1$s</string>
     <string name="label_used_count">使用次数：%1$s</string>
+
+    <!-- 输入法练习相关的文本 -->
+    <string name="text_exercise_edit_text_placeholder">
+        请跟随上述指导步骤操作键盘以输入练习内容
+    </string>
+    <string name="text_exercise_free_mode_edit_text_placeholder">
+        请输入任意内容进行自由练习
+    </string>
 </resources>

@@ -152,7 +152,6 @@ public class CandidatesView extends BaseThemedView {
         // 不影响视图更新的消息，直接忽略
         switch (msg.type) {
             case InputAudio_Play_Doing:
-            case Keyboard_Start_Done:
             case Keyboard_State_Change_Done:
             case Keyboard_XPad_Simulation_Terminated:
             case Keyboard_Exit_Done:

@@ -48,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
@@ -67,6 +68,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinCandidate
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
@@ -171,19 +173,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
     private void initDrawerView() {
         // 设置侧边栏打开位置
-        int drawerGravity = getDrawerGravity();
-        DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) this.drawerNavView.getLayoutParams();
-        layoutParams.gravity = drawerGravity;
-        this.drawerNavView.setLayoutParams(layoutParams);
+        updateDrawerGravity();
 
         Toolbar toolbar = getToolbar();
-        // 确保侧边栏的唤出按钮的位置与输入法的左右手模式相同
-        if (drawerGravity == GravityCompat.END) {
-            toolbar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        } else {
-            toolbar.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
-        }
-
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, this.drawerLayout, toolbar, 0, 0);
         this.drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
@@ -202,6 +194,17 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
             this.exerciseListView.activatePage(item.getOrder());
             return true;
         });
+    }
+
+    private void updateDrawerGravity() {
+        int drawerGravity = getDrawerGravity();
+        DrawerLayout.LayoutParams layoutParams = (DrawerLayout.LayoutParams) this.drawerNavView.getLayoutParams();
+        layoutParams.gravity = drawerGravity;
+        this.drawerNavView.setLayoutParams(layoutParams);
+
+        Toolbar toolbar = getToolbar();
+        // 确保侧边栏的唤出按钮的位置与输入法的左右手模式相同
+        ViewUtils.updateLayoutDirection(toolbar, this.imeConfig.get(ConfigKey.hand_mode), true);
     }
 
     private void initExerciseListView() {
@@ -227,6 +230,13 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     @Override
     public void onMsg(InputMsg msg) {
         super.onMsg(msg);
+
+        if (msg.type == InputMsgType.Config_Update_Done) {
+            ConfigUpdateMsgData data = msg.data();
+            if (data.configKey == ConfigKey.hand_mode) {
+                updateDrawerGravity();
+            }
+        }
 
         //
         this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
@@ -316,20 +326,11 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         List<Exercise> exerciseList = new ArrayList<>();
 
         Exercise freeMode = Exercise.free("自由练习");
-        freeMode.setSampleText("链接：http://example.com，请注意查收\n"
-                               + "链接：https://www.example.com/path?query=string#fragment 请注意查收\n"
-                               + "链接：ftp://ftp.example.com:21/files，请注意查收\n"
-                               + "验证码：234567，请注意查收\n"
-                               + "验证码：23456789，请注意查收\n"
-                               + "手机号：+86-13812345678，请注意查收\n"
-                               + "手机号：086-13812345678，请注意查收\n"
-                               + "手机号：13812345678，请注意查收\n"
-                               + "电话号：010-12345678，请注意查收\n"
-                               + "电话号：021 12345678，请注意查收\n"
-                               + "电话号：(0755)1234567，请注意查收\n"
-                               + "邮箱：user@example.com，请注意查收\n"
-                               + "邮箱：user.name+tag@mail.co.uk，请注意查收\n"
-                               + "邮箱：john_doe123@sub.domain.org，请注意查收\n");
+        if (BuildConfig.DEBUG) {
+            // Note: 仅调试版本才启用
+            freeMode.setSampleText(getResources().getString(R.string.text_exercise_free_mode_sample)
+                                                 .replaceAll("(?m)^\\s+", ""));
+        }
 
         exerciseList.add(freeMode);
         exerciseList.add(create_Exercise_Basic_Introduce(sandboxView));
@@ -1433,5 +1434,23 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                                       + "生成名为【<span style=\"color:#ed4c67;\">%s</span>】"
                                       + "的本地调试日志文件", fileName));
         });
+    }
+
+    @Override
+    protected int chooseTheme(int lightThemeResId, int nightThemeResId) {
+        // 根据输入法的配色，取与其相反的主题，以避免二者色调一致
+        Keyboard.Theme theme = this.imeConfig.get(ConfigKey.theme);
+        switch (theme) {
+            case light: {
+                return nightThemeResId;
+            }
+            case night: {
+                return lightThemeResId;
+            }
+            case follow_system: {
+                return super.chooseTheme(nightThemeResId, lightThemeResId);
+            }
+        }
+        return super.chooseTheme(lightThemeResId, nightThemeResId);
     }
 }

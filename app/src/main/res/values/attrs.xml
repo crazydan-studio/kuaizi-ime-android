@@ -24,10 +24,9 @@
     </declare-styleable>
 
     <declare-styleable name="ImeAppStyle">
-        <attr name="app_white_color" format="color" />
-
         <attr name="app_bg_color" format="color" />
         <attr name="app_actionbar_bg_color" format="color" />
+        <attr name="app_actionbar_fg_color" format="color" />
         <attr name="app_theme_ime_bg_color" format="color" />
 
         <attr name="icon_pointer_color" format="color" />

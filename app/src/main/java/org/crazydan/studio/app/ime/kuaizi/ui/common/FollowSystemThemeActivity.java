@@ -42,6 +42,7 @@ public abstract class FollowSystemThemeActivity extends ActionBarSupportActivity
 
     protected int getDefaultTheme() {
         return chooseTheme(R.style.Theme_Kuaizi_App_Light, R.style.Theme_Kuaizi_App_Night);
+//        return chooseTheme(R.style.Theme_Kuaizi_App_Night, R.style.Theme_Kuaizi_App_Light);
     }
 
     /** 跟随系统的亮暗主题设置 Activity 的主题，与输入法的主题设置分开 */

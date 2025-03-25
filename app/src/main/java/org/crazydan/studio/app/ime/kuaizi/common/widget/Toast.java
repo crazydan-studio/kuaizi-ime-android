@@ -20,7 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi.common.widget;
 
 import android.text.Spanned;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import com.google.android.material.snackbar.Snackbar;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
@@ -83,9 +86,19 @@ public class Toast {
 
     public void show() {
         // Note: Snackbar 将自动管理多个实例，确保将前一个隐藏后再显示下一个
-        Snackbar.make(this.root, this.text, this.duration)
-                .setAnchorView(this.anchor)
-                .setAction(this.actionText, this.actionListener)
-                .show();
+        Snackbar snackbar = Snackbar.make(this.root, this.text, this.duration)
+                                    .setAnchorView(this.anchor)
+                                    .setAction(this.actionText, this.actionListener);
+        View snackbarView = snackbar.getView();
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+
+        // TODO Snackbar 自适应内容高度无效，暂时不清楚原因
+        ViewGroup.LayoutParams params = snackbarView.getLayoutParams();
+        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        snackbarView.setLayoutParams(params);
+
+        snackbar.show();
     }
 }

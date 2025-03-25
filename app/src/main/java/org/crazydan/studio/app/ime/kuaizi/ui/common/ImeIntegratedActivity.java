@@ -70,11 +70,12 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Context context = getApplicationContext();
+        this.imeConfig = IMEConfig.create(context);
+
         super.onCreate(savedInstanceState);
         setContentView(this.layoutResId);
 
-        Context context = getApplicationContext();
-        this.imeConfig = IMEConfig.create(context);
         this.imeConfig.setListener(this);
 
         this.imeConfig.set(ConfigKey.disable_settings_btn, true);

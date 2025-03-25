@@ -98,6 +98,25 @@ public class Favoriteboard {
      */
     private static final Pattern REGEX_EMAIL = Pattern.compile("^.*?([\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}).*$",
                                                                Pattern.DOTALL | Pattern.MULTILINE);
+    /** 匹配：18位新版（带校验码） */
+    private static final Pattern REGEX_ID_CARD = Pattern.compile(
+            "^.*?([1-9]\\d{5}(18|19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]).*$",
+            Pattern.DOTALL | Pattern.MULTILINE);
+    /**
+     * 匹配：
+     * - Visa（13或16位）
+     * - MasterCard（16位）
+     * - American Express（15位）
+     * - 银联卡（16-19位）
+     * - Discover（16-19位）
+     */
+    private static final Pattern REGEX_CREDIT_CARD = Pattern.compile(
+            "^.*?((4\\d{12,15})|(5[1-5]\\d{14})|(3[47]\\d{13})|(62\\d{14,17})|(6(?:011|5[0-9]{2})\\d{12,15})).*$",
+            Pattern.DOTALL | Pattern.MULTILINE);
+    /** 匹配： */
+    private static final Pattern REGEX_ADDRESS = Pattern.compile(
+            "^.*?([1-9]\\d{5}(18|19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]).*$",
+            Pattern.DOTALL | Pattern.MULTILINE);
 
     protected final Logger log = Logger.getLogger(getClass());
 
@@ -431,7 +450,8 @@ public class Favoriteboard {
                     text = item.getText().toString();
                 }
                 if (item.getHtmlText() != null) {
-                    html = item.getHtmlText();
+                    // TODO 暂时没有好的方法粘贴 html，故而，不做识别
+                    //html = item.getHtmlText();
                 }
             }
 
@@ -455,6 +475,9 @@ public class Favoriteboard {
             put(InputTextType.url, REGEX_URL.matcher(primaryText));
             put(InputTextType.email, REGEX_EMAIL.matcher(primaryText));
             put(InputTextType.phone, REGEX_PHONE.matcher(primaryText));
+            put(InputTextType.id_card, REGEX_ID_CARD.matcher(primaryText));
+            put(InputTextType.credit_card, REGEX_CREDIT_CARD.matcher(primaryText));
+            put(InputTextType.address, REGEX_ADDRESS.matcher(primaryText));
             // >>>>>>>
             // <<<<<<< 不可重复匹配的类型：在有其他类型的匹配数据时，不再匹配这些类型的数据
             put(InputTextType.captcha, REGEX_CAPTCHA.matcher(primaryText));

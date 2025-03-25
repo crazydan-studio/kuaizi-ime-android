@@ -20,4 +20,27 @@
 <resources>
     <string name="app_name_shown">筷字输入法 (调试版)</string>
     <string name="text_alpha_using_warning">感谢使用筷字输入法调试版</string>
+
+    <string name="text_exercise_free_mode_sample" translatable="false">
+        链接：http://example.com\n
+        链接：https://www.example.com/path?query=string#fragment\n
+        链接：ftp://ftp.example.com:21/files\n
+        验证码：234567，请注意查收\n
+        验证码：23456789，请注意查收\n
+        手机号：+86-13812345678，请注意查收\n
+        手机号：086-13812345678，请注意查收\n
+        手机号：13812345678，请注意查收\n
+        电话号：010-12345678，请注意查收\n
+        电话号：021 12345678，请注意查收\n
+        电话号：(0755)1234567，请注意查收\n
+        邮箱：user@example.com，请注意查收\n
+        邮箱：user.name+tag@mail.co.uk，请注意查收\n
+        邮箱：john_doe123@sub.domain.org，请注意查收\n
+        身份证号：102932198610225731，请注意查收\n
+        Visa：4111111111111111，请注意查收\n
+        MasterCard：5500000000000004，请注意查收\n
+        中国银联：6225881234567890，请注意查收\n
+        American Express：378282246310005，请注意查收\n
+        Discover：6011111111111117，请注意查收\n
+    </string>
 </resources>

@@ -29,6 +29,7 @@
     </style>
 
     <style name="Theme.Kuaizi.IME.Light" parent="Theme.Kuaizi.IME">
+        <!-- 配色参考：https://hodgef.com/simple-keyboard/demos/?d=english -->
         <item name="android:textColor">?attr/text_color</item>
         <item name="android:titleTextColor">?attr/title_text_color</item>
 
@@ -65,6 +66,7 @@
     </style>
 
     <style name="Theme.Kuaizi.IME.Night" parent="Theme.Kuaizi.IME">
+        <!-- 配色参考：https://codepen.io/kulpreets/pen/MKgqqB -->
         <item name="android:textColor">?attr/text_color</item>
         <item name="android:titleTextColor">?attr/title_text_color</item>
 
@@ -257,21 +259,21 @@
     <style name="Theme.Kuaizi.App" parent="Theme.MaterialComponents.NoActionBar" />
 
     <style name="Theme.Kuaizi.App.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="android:textColor">@color/color_black</item>
+        <item name="android:textColor">#ff424242</item>
         <item name="android:textSize">18sp</item>
-
-        <item name="app_white_color">#ffededed</item>
+        <item name="android:titleTextColor">#e600bcd4</item>
 
         <item name="app_bg_color">#ffededed</item>
         <item name="app_actionbar_bg_color">#ff1976d2</item>
-        <item name="app_theme_ime_bg_color">#e600bcd4</item>
+        <item name="app_actionbar_fg_color">#ffededed</item>
+        <item name="app_theme_ime_bg_color">?android:attr/titleTextColor</item>
 
-        <item name="icon_pointer_color">?attr/app_theme_ime_bg_color</item>
+        <item name="icon_pointer_color">?android:attr/titleTextColor</item>
 
         <!-- 链接等高亮颜色 -->
-        <item name="colorAccent">?attr/app_theme_ime_bg_color</item>
+        <item name="colorAccent">?android:attr/titleTextColor</item>
         <!-- ActionBar 中的导航图标颜色 -->
-        <item name="colorControlNormal">?attr/app_white_color</item>
+        <item name="colorControlNormal">?attr/app_actionbar_fg_color</item>
 
         <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
@@ -283,26 +285,26 @@
     </style>
 
     <style name="Theme.Kuaizi.App.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:textColor">@color/color_white</item>
+        <item name="android:textColor">#ffededed</item>
         <item name="android:textSize">18sp</item>
-
-        <item name="app_white_color">#ffededed</item>
+        <item name="android:titleTextColor">#e600bcd4</item>
 
         <item name="app_bg_color">#ff272b2c</item>
-        <item name="app_actionbar_bg_color">#93000000</item>
-        <item name="app_theme_ime_bg_color">#e600bcd4</item>
+        <item name="app_actionbar_bg_color">#ff0b4885</item>
+        <item name="app_actionbar_fg_color">#ffededed</item>
+        <item name="app_theme_ime_bg_color">?android:attr/titleTextColor</item>
 
-        <item name="icon_pointer_color">?attr/app_theme_ime_bg_color</item>
+        <item name="icon_pointer_color">?android:attr/titleTextColor</item>
 
         <!-- 链接等高亮颜色 -->
-        <item name="colorAccent">?attr/app_theme_ime_bg_color</item>
+        <item name="colorAccent">?android:attr/titleTextColor</item>
         <!-- ActionBar 中的导航图标颜色 -->
-        <item name="colorControlNormal">?attr/app_white_color</item>
+        <item name="colorControlNormal">?attr/app_actionbar_fg_color</item>
 
         <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
         -->
-        <item name="android:windowBackground">?attr/homeAsUpIndicator</item>
+        <item name="android:windowBackground">?attr/app_bg_color</item>
 
         <!-- 通过 MaterialAlertDialogBuilder 构造的提示窗口全部应用该样式 -->
         <item name="materialAlertDialogTheme">@style/Theme.Kuaizi.AlertDialog.Night</item>
