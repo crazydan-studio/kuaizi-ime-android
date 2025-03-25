@@ -115,7 +115,7 @@ public class Favoriteboard {
             Pattern.DOTALL | Pattern.MULTILINE);
     /** 匹配： */
     private static final Pattern REGEX_ADDRESS = Pattern.compile(
-            "^.*?([1-9]\\d{5}(18|19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]).*$",
+            "^.*?([\\u4e00-\\u9fa5]{2,8}(省|自治区|特别行政区)[\\u4e00-\\u9fa5]{2,8}(市|自治州)[\\u4e00-\\u9fa5]{2,8}([区县市])[\\u4e00-\\u9fa5\\w\\-\\s号路街巷弄]+(号)?[\\u4e00-\\u9fa5\\w\\-\\s栋幢单元楼层室房]*).*$",
             Pattern.DOTALL | Pattern.MULTILINE);
 
     protected final Logger log = Logger.getLogger(getClass());
@@ -474,9 +474,9 @@ public class Favoriteboard {
             // <<<<<<< 可重复匹配的类型，但每种类型仅支持匹配到一条数据
             put(InputTextType.url, REGEX_URL.matcher(primaryText));
             put(InputTextType.email, REGEX_EMAIL.matcher(primaryText));
-            put(InputTextType.phone, REGEX_PHONE.matcher(primaryText));
             put(InputTextType.id_card, REGEX_ID_CARD.matcher(primaryText));
             put(InputTextType.credit_card, REGEX_CREDIT_CARD.matcher(primaryText));
+            put(InputTextType.phone, REGEX_PHONE.matcher(primaryText));
             put(InputTextType.address, REGEX_ADDRESS.matcher(primaryText));
             // >>>>>>>
             // <<<<<<< 不可重复匹配的类型：在有其他类型的匹配数据时，不再匹配这些类型的数据

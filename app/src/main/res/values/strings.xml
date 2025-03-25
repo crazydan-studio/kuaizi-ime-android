@@ -145,11 +145,9 @@
     <string name="value_text_type_credit_card">银行卡号</string>
     <string name="value_text_type_address">地址</string>
 
-    <string name="title_clip_paste_url">粘贴已复制的链接</string>
     <string name="title_clip_paste_content">粘贴已复制的内容</string>
-    <string name="title_clip_paste_captcha">粘贴已复制的验证码</string>
-    <string name="title_clip_paste_phone">粘贴已复制的电话号码</string>
-    <string name="title_clip_paste_email">粘贴已复制的邮箱</string>
+    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
+    <string name="title_clip_paste_placeholder">粘贴已复制的%1$s</string>
 
     <string name="tip_editor_action_backspace">已回删</string>
     <string name="tip_editor_action_select_all">已全选</string>
