@@ -22,9 +22,6 @@
     <string name="app_name_shown">@string/app_name</string>
     <string name="app_name_with_version">Kuaizi IME v%1$s</string>
     <string name="app_slogan">Kuaizi IME: Efficient writing requires a good and fast input method editor</string>
-    <string name="app_copyright">
-        © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
-    </string>
 
     <string name="title_app_preferences">Kuaizi IME Preferences</string>
     <string name="title_app_guide_exercise">Kuaizi IME Exercises</string>
@@ -46,7 +43,6 @@
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
-    <string name="label_input_word_key_trad_mark">繁</string>
 
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>

@@ -22,9 +22,13 @@
     <string name="app_name_shown">@string/app_name</string>
     <string name="app_name_with_version">筷字输入法 v%1$s</string>
     <string name="app_slogan">筷字输入法：高效编辑需要又好又快的输入法</string>
-    <string name="app_copyright">
+
+    <!-- Start: 不做国际化 -->
+    <string name="app_copyright" translatable="false">
         © &lt;a href="https://studio.crazydan.org">Crazydan Studio&lt;/a>
     </string>
+    <string name="label_input_word_key_trad_mark" translatable="false">繁</string>
+    <!-- End: 不做国际化 -->
 
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
@@ -46,7 +50,6 @@
 
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
-    <string name="label_input_word_key_trad_mark">繁</string>
 
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
