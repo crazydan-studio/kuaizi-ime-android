@@ -174,4 +174,7 @@
     <string name="text_exercise_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习
     </string>
+    <string name="text_exercise_free_mode_sample" translatable="false">
+        <!-- 仅用于调试，正式版本保持为空 -->
+    </string>
 </resources>

@@ -326,11 +326,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         List<Exercise> exerciseList = new ArrayList<>();
 
         Exercise freeMode = Exercise.free("自由练习");
-        if (BuildConfig.DEBUG) {
-            // Note: 仅调试版本才启用
-            freeMode.setSampleText(getResources().getString(R.string.text_exercise_free_mode_sample)
-                                                 .replaceAll("(?m)^\\s+", ""));
-        }
+        freeMode.setSampleText(getResources().getString(R.string.text_exercise_free_mode_sample)
+                                             .replaceAll("(?m)^\\s+", ""));
 
         exerciseList.add(freeMode);
         exerciseList.add(create_Exercise_Basic_Introduce(sandboxView));

@@ -122,13 +122,6 @@
     </string>
 
     <string name="text_alpha_using_warning">@null</string>
-    <string name="text_exercise_edit_text_placeholder">
-        Bitte folge den Anweisungen,
-        um die Tastatur auszuwählen.
-    </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
-        Gib Text ein, um die Tastatur auszuprobieren.
-    </string>
     <string name="text_dict_db_init_warning">
         Lade die Wörterbuch-Datenbank, einen Moment bitte …
     </string>
@@ -177,4 +170,12 @@
     <string name="label_text_type">Texttyp: %1$s</string>
     <string name="label_created_at">Erstellt am: %1$s</string>
     <string name="label_used_count">Verwendete Male: %1$s</string>
+
+    <!-- 输入法练习相关的文本 -->
+    <string name="text_exercise_edit_text_placeholder">
+        Bitte folge den Anweisungen, um die Tastatur auszuwählen.
+    </string>
+    <string name="text_exercise_free_mode_edit_text_placeholder">
+        Gib Text ein, um die Tastatur auszuprobieren.
+    </string>
 </resources>

@@ -123,12 +123,6 @@
     </string>
 
     <string name="text_alpha_using_warning">@null</string>
-    <string name="text_exercise_edit_text_placeholder">
-        Please follow the instructions to use the keyboard.
-    </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
-        Input any text to test the keyboard.
-    </string>
     <string name="text_dict_db_init_warning">
         Loading Dict DB, please wait a moment …
     </string>
@@ -177,4 +171,12 @@
     <string name="label_text_type">Text Type: %1$s</string>
     <string name="label_created_at">Created At: %1$s</string>
     <string name="label_used_count">Used Times: %1$s</string>
+
+    <!-- 输入法练习相关的文本 -->
+    <string name="text_exercise_edit_text_placeholder">
+        Please follow the instructions to use the keyboard.
+    </string>
+    <string name="text_exercise_free_mode_edit_text_placeholder">
+        Input any text to test the keyboard.
+    </string>
 </resources>
