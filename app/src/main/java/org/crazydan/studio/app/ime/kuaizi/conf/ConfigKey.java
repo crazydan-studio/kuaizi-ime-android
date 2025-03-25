@@ -70,6 +70,8 @@ public enum ConfigKey {
 
     /** 适配移动端的上滑手势 */
     adapt_desktop_swipe_up_gesture(Boolean.class, false),
+    /** 在触摸屏上移动多少像素会被视为滑动 */
+    scaled_touch_slop(Integer.class, 8),
 
     /** 是否禁用剪贴数据提示 */
     disable_input_clip_popup_tips(Boolean.class, false),

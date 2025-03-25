@@ -21,7 +21,6 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.Point;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.EditorEditStateData;
@@ -36,7 +35,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
  * @date 2025-02-01
  */
 public abstract class EditorEditKeyboard extends BaseKeyboard {
-    private static final float ANCHOR_UNIT_IN_PX = ScreenUtils.dpToPx(8f);
 
     @Override
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
@@ -132,7 +130,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
 
         Motion motion = stateData.getMotion();
         // 根据单位移动距离计算得出光标的移动次数
-        Motion anchor = new Motion(motion, motion.distance >= ANCHOR_UNIT_IN_PX ? 1 : 0);
+        Motion anchor = new Motion(motion, motion.distance >= context.movingThresholdInPx ? 1 : 0);
         if (anchor.distance < 1) {
             return;
         }

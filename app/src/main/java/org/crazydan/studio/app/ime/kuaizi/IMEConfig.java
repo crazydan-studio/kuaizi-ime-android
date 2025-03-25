@@ -23,6 +23,7 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.view.ViewConfiguration;
 import androidx.preference.PreferenceManager;
 import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigChangeListener;
@@ -49,6 +50,9 @@ public class IMEConfig extends Config.Mutable implements SharedPreferences.OnSha
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         config.syncWith(preferences);
+
+        ViewConfiguration viewConfig = ViewConfiguration.get(context);
+        config.set(ConfigKey.scaled_touch_slop, viewConfig.getScaledTouchSlop());
 
         return config;
     }

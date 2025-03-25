@@ -44,6 +44,8 @@ public class KeyboardContext extends BaseInputContext {
     public final Keyboard.Type keyboardPrevType;
     /** 左右手使用模式 */
     public final Keyboard.HandMode keyboardHandMode;
+    /** 可被视为移动的最短像素值距离 */
+    public final int movingThresholdInPx;
     /** 是否采用单行输入模式 */
     public final boolean useSingleLineInputMode;
 
@@ -72,6 +74,7 @@ public class KeyboardContext extends BaseInputContext {
 
         this.keyboardPrevType = builder.keyboardPrevType;
         this.keyboardHandMode = builder.keyboardHandMode;
+        this.movingThresholdInPx = builder.movingThresholdInPx;
         this.useSingleLineInputMode = builder.useSingleLineInputMode;
 
         this.xInputPadEnabled = builder.xInputPadEnabled;
@@ -98,6 +101,7 @@ public class KeyboardContext extends BaseInputContext {
 
         private Keyboard.Type keyboardPrevType;
         private Keyboard.HandMode keyboardHandMode;
+        private int movingThresholdInPx;
         private boolean useSingleLineInputMode;
 
         private boolean xInputPadEnabled;
@@ -126,6 +130,7 @@ public class KeyboardContext extends BaseInputContext {
 
             this.keyboardPrevType = source.keyboardPrevType;
             this.keyboardHandMode = source.keyboardHandMode;
+            this.movingThresholdInPx = source.movingThresholdInPx;
             this.useSingleLineInputMode = source.useSingleLineInputMode;
 
             this.xInputPadEnabled = source.xInputPadEnabled;
@@ -144,6 +149,7 @@ public class KeyboardContext extends BaseInputContext {
 
             this.keyboardPrevType = null;
             this.keyboardHandMode = null;
+            this.movingThresholdInPx = 0;
             this.useSingleLineInputMode = false;
 
             this.xInputPadEnabled = false;
@@ -160,6 +166,7 @@ public class KeyboardContext extends BaseInputContext {
                                 this.key,
                                 this.keyboardPrevType,
                                 this.keyboardHandMode,
+                                this.movingThresholdInPx,
                                 this.useSingleLineInputMode,
                                 this.xInputPadEnabled,
                                 this.latinUsePinyinKeysInXInputPadEnabled,
@@ -177,6 +184,7 @@ public class KeyboardContext extends BaseInputContext {
             this.keyboardPrevType = config.get(ConfigKey.prev_keyboard_type);
 
             this.keyboardHandMode = config.get(ConfigKey.hand_mode);
+            this.movingThresholdInPx = config.get(ConfigKey.scaled_touch_slop);
             this.useSingleLineInputMode = config.bool(ConfigKey.single_line_input);
 
             this.xInputPadEnabled = config.bool(ConfigKey.enable_x_input_pad);
