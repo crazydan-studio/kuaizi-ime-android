@@ -21,7 +21,6 @@ package org.crazydan.studio.app.ime.kuaizi.common.log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Supplier;
@@ -144,7 +143,7 @@ public class Logger {
             this.level = level;
             this.tag = tag;
             this.msg = msg;
-            this.timestamp = new Date().getTime();
+            this.timestamp = System.currentTimeMillis();
         }
 
         public static synchronized void begin(String tag, String title) {

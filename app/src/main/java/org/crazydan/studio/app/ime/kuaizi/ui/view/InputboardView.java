@@ -94,7 +94,7 @@ public class InputboardView extends BaseMsgListenerView {
     }
 
     public void update() {
-        updateToolsByState();
+        updateToolsByState(false);
     }
 
     // =============================== Start: 消息处理 ===================================
@@ -132,11 +132,15 @@ public class InputboardView extends BaseMsgListenerView {
             this.state = new State(State.Type.Init);
         }
 
-        updateToolsByState();
+        updateToolsByState(false);
     }
 
-    /** 根据输入面板状态更新工具状态 */
-    private void updateToolsByState() {
+    /**
+     * 根据输入面板状态更新工具状态
+     * <p/>
+     * 仅显示和隐藏工具栏时，才需要动画效果
+     */
+    private void updateToolsByState(boolean animation) {
         this.tools.reset();
 
         this.tools.favoriteboard.disabled = false;
@@ -181,7 +185,7 @@ public class InputboardView extends BaseMsgListenerView {
             }
         }
 
-        this.tools.update();
+        this.tools.update(animation);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -210,12 +214,12 @@ public class InputboardView extends BaseMsgListenerView {
 
     private void onShowToolbar(View v) {
         this.state = new State(State.Type.Toolbar_Show_Doing, this.state);
-        updateToolsByState();
+        updateToolsByState(true);
     }
 
     private void onHideToolbar(View v) {
         this.state = this.state.prev;
-        updateToolsByState();
+        updateToolsByState(true);
     }
 
     private void onShowPreferences(View v) {
@@ -375,12 +379,13 @@ public class InputboardView extends BaseMsgListenerView {
             }
         }
 
-        public void update() {
+        public void update(boolean animation) {
             View activeGroupView = this.groups.get(this.activeGroup);
             if (activeGroupView == null) {
                 return;
             }
-            showGroupView(activeGroupView);
+
+            showGroupView(activeGroupView, animation);
 
             // /////////////////////////////////////////
             for (Btn btn : getBtnInInputbar()) {
@@ -393,7 +398,7 @@ public class InputboardView extends BaseMsgListenerView {
             }
         }
 
-        private void showGroupView(View groupView) {
+        private void showGroupView(View groupView, boolean animation) {
             for (View view : BtnTools.this.groups.values()) {
                 if (view != groupView) {
                     ViewUtils.hide(view);
@@ -404,20 +409,23 @@ public class InputboardView extends BaseMsgListenerView {
                 return;
             }
 
-            this.enterAnim.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
+            if (animation) {
+                this.enterAnim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
 
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    BtnTools.this.enterAnim.setAnimationListener(null);
-                }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        BtnTools.this.enterAnim.setAnimationListener(null);
+                    }
 
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-            });
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+                });
 
-            groupView.startAnimation(this.enterAnim);
+                groupView.startAnimation(this.enterAnim);
+            }
+
             // Note: 只有已显示的视图才能应用动画
             ViewUtils.show(groupView);
         }

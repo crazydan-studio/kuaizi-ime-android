@@ -318,7 +318,7 @@ public class Favoriteboard {
      * 只有可收藏的 {@link InputClip} 才弹出收藏提示
      */
     public boolean canBeSave(InputClip clip) {
-        if (clip == null || CharUtils.isBlank(clip.text)) {
+        if (clip == null || CharUtils.isBlank(clip.text) || clip.text.length() < 3) {
             return false;
         }
 

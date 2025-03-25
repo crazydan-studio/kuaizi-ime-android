@@ -90,8 +90,13 @@ public class IMEditorView extends BaseThemedView {
     public void close() {
         ObjectUtils.invokeWhenNonNull(this.candidatesView, CandidatesView::close);
 
-        MainboardView mainboard = getBoard(BoardType.main);
-        mainboard.close();
+        ObjectUtils.invokeWhenNonNull(this.boards, (boards) -> {
+            boards.values().forEach((b) -> {
+                if (b instanceof ViewClosable) {
+                    ((ViewClosable) b).close();
+                }
+            });
+        });
     }
 
     // =============================== Start: 视图更新 ===================================

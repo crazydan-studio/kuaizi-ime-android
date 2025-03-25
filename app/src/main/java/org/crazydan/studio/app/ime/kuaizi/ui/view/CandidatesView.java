@@ -39,6 +39,7 @@ import androidx.annotation.Nullable;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ObjectUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ScreenUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
@@ -75,15 +76,16 @@ public class CandidatesView extends BaseThemedView {
     }
 
     public void destroy() {
-        closePopupWindow();
+        close();
 
         this.popupWindow = null;
         this.popups = null;
     }
 
     public void close() {
-        showInputQuickList(null);
-        showTooltip(null, false);
+        ObjectUtils.invokeWhenNonNull(this.popups, (popups) -> {
+            popups.values().forEach((p) -> p.close(true));
+        });
 
         closePopupWindow();
     }
@@ -147,6 +149,20 @@ public class CandidatesView extends BaseThemedView {
 
     @Override
     protected void handleMsg(InputMsg msg) {
+        // 不影响视图更新的消息，直接忽略
+        switch (msg.type) {
+            case InputAudio_Play_Doing:
+            case Keyboard_Start_Done:
+            case Keyboard_State_Change_Done:
+            case Keyboard_XPad_Simulation_Terminated:
+            case Keyboard_Exit_Done:
+            case Keyboard_Close_Done:
+            case Keyboard_Close_Doing: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
+                return;
+            }
+        }
+
         // Note: 快捷输入没有确定的隐藏时机，故而，需针对每个消息做一次处理，在数据为 null 时隐藏，有数据时显示
         showInputQuickList(msg.inputQuickList);
 
@@ -197,7 +213,7 @@ public class CandidatesView extends BaseThemedView {
             saveClipToFavorite(data.clip);
         });
 
-        popup.show(5000);
+        popup.show(3500);
     }
 
     private void on_Editor_Edit_Doing_Msg(EditorAction action) {
@@ -212,7 +228,7 @@ public class CandidatesView extends BaseThemedView {
         UserInputClipMsgData data = new UserInputClipMsgData(clip);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Save_As_Favorite).data(data));
 
-        post(() -> onMsg(msg));
+        onMsg(msg);
     }
 
     // =============================== End: 消息处理 ===================================
@@ -412,7 +428,8 @@ public class CandidatesView extends BaseThemedView {
             switch (this.state) {
                 case shown:
                 case showing: {
-                    CandidatesView.this.log.debug("Try to show popup but state=%s", () -> new Object[] { this.state });
+                    CandidatesView.this.log.debug("Try to show popup %s but state=%s",
+                                                  () -> new Object[] { this.type, this.state });
                     callDelayClose(closeDelayMillis);
                     return;
                 }
@@ -432,12 +449,26 @@ public class CandidatesView extends BaseThemedView {
         }
 
         public void close() {
+            close(false);
+        }
+
+        public void close(boolean immediate) {
             this.view.removeCallbacks(this.closeCallback);
+
+            if (immediate) {
+                this.exitAnim.reset();
+                this.enterAnim.reset();
+
+                ViewUtils.hide(this.view);
+                updateState(PopupState.closed);
+                return;
+            }
 
             switch (this.state) {
                 case closed:
                 case closing: {
-                    CandidatesView.this.log.debug("Try to close popup but state=%s", () -> new Object[] { this.state });
+                    CandidatesView.this.log.debug("Try to close popup %s but state=%s",
+                                                  () -> new Object[] { this.type, this.state });
                     return;
                 }
                 case showing: {
