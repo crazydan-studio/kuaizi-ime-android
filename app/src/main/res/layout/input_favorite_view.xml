@@ -28,11 +28,11 @@
         android:background="@drawable/bg_round_corner"
         android:backgroundTint="?attr/input_quick_bg_color">
 
-    <!-- 选中框放在离手最远端，以避免误选或误删 -->
+    <!-- 选中框放在离手最远端，以避免误选并造成误删 -->
     <CheckBox
             android:id="@+id/checkbox"
             android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_height="match_parent"
             android:layout_marginVertical="0dp"
             android:layout_marginHorizontal="@dimen/btn_tool_spacing"
             android:button="@drawable/bg_checkbox" />
@@ -118,7 +118,7 @@
                 android:id="@+id/btn_paste"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/btn_tool_spacing"
+                android:padding="@dimen/btn_tool_spacing"
                 android:text="@string/btn_paste"
                 android:textColor="?attr/button_text_color" />
     </LinearLayout>

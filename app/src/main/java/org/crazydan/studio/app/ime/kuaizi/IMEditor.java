@@ -488,7 +488,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
                 }
                 // 仅非替换且可撤回的输入才可被收藏
                 if (data.canBeRevoked && CollectionUtils.isEmpty(data.replacements)) {
-                    asyncSaveTextToFavorite(data.text);
+                    // TODO 在输入提交后提示可收藏会遮挡对目标编辑器的操作，故而，暂时不做支持
+                    //asyncSaveTextToFavorite(data.text);
                 }
                 break;
             }
