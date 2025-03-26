@@ -214,8 +214,8 @@
         <item name="snackbar_fg_color">?attr/text_color</item>
 
         <item name="tooltip_bg">@drawable/bg_round_corner</item>
-        <item name="tooltip_bg_color">?attr/text_color</item>
-        <item name="tooltip_fg_color">?attr/fg_secondary_color</item>
+        <item name="tooltip_bg_color">?attr/fg_secondary_color</item>
+        <item name="tooltip_fg_color">?attr/bg_secondary_color</item>
     </style>
 
     <style name="Theme.Kuaizi.IME.Candidates.Night" parent="">
