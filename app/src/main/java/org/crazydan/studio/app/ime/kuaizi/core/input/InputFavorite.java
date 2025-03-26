@@ -39,6 +39,14 @@ public class InputFavorite extends Immutable {
 
     /** 文本类型 */
     public final InputTextType type;
+    /**
+     * 快捷输入的标识
+     * <p/>
+     * 可以采用 <code>/</code> + <code>数字字母组合</code> 的形式，
+     * 具体可通过自定义配置进行指定和调整
+     */
+    public final String shortcut;
+
     /** 文本内容 */
     public final String text;
     /** HTML 内容，用于支持富文本，其与 {@link #text} 必须成对出现 */
@@ -71,6 +79,7 @@ public class InputFavorite extends Immutable {
 
         this.id = builder.id;
         this.type = builder.type;
+        this.shortcut = builder.shortcut;
         this.text = builder.text;
         this.html = builder.html;
 
@@ -84,6 +93,7 @@ public class InputFavorite extends Immutable {
         private Integer id;
 
         private InputTextType type;
+        private String shortcut;
         private String text;
         private String html;
 
@@ -104,6 +114,7 @@ public class InputFavorite extends Immutable {
 
             this.id = source.id;
             this.type = source.type;
+            this.shortcut = source.shortcut;
             this.text = source.text;
             this.html = source.html;
 
@@ -116,6 +127,7 @@ public class InputFavorite extends Immutable {
         protected void reset() {
             this.id = null;
             this.type = InputTextType.text;
+            this.shortcut = null;
             this.text = null;
             this.html = null;
 
@@ -126,7 +138,14 @@ public class InputFavorite extends Immutable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.id, this.type, this.text, this.html, this.createdAt, this.usedAt, this.usedCount);
+            return Objects.hash(this.id,
+                                this.type,
+                                this.shortcut,
+                                this.text,
+                                this.html,
+                                this.createdAt,
+                                this.usedAt,
+                                this.usedCount);
         }
 
         // ===================== End: 构建函数 ===================
@@ -142,6 +161,12 @@ public class InputFavorite extends Immutable {
         /** @see InputFavorite#type */
         public Builder type(InputTextType type) {
             this.type = type;
+            return this;
+        }
+
+        /** @see InputFavorite#shortcut */
+        public Builder shortcut(String shortcut) {
+            this.shortcut = shortcut;
             return this;
         }
 
