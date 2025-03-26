@@ -17,23 +17,27 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data;
+package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.Exercise;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseMsgType;
+import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link ExerciseMsgType#Theme_Update_Done} 消息数据
+ * {@link InputMsgType#Keyboard_Theme_Switch_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-12-21
+ * @date 2025-03-26
  */
-public class ExerciseThemeUpdateDoneMsgData extends ExerciseMsgData {
-    /** 当前的练习 */
-    public final Exercise exercise;
+public class KeyboardThemeSwitchMsgData extends InputMsgData {
+    public final Keyboard.Theme theme;
 
-    public ExerciseThemeUpdateDoneMsgData(Exercise exercise) {
-        this.exercise = exercise;
+    public KeyboardThemeSwitchMsgData(Keyboard.Theme theme) {
+        this.theme = theme;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '{' + "theme=" + this.theme + '}';
     }
 }

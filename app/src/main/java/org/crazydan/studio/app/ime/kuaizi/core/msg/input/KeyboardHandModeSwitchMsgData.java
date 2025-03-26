@@ -34,6 +34,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 public class KeyboardHandModeSwitchMsgData extends InputMsgData {
     public final Keyboard.HandMode mode;
 
+    public KeyboardHandModeSwitchMsgData(Keyboard.HandMode mode) {
+        this(null, mode);
+    }
+
     public KeyboardHandModeSwitchMsgData(Key key, Keyboard.HandMode mode) {
         super(key);
         this.mode = mode;

@@ -176,4 +176,16 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     protected PinyinKeyTable createPinyinKeyTable() {
         return PinyinKeyTable.create(createKeyTableConfig());
     }
+
+    protected Keyboard.HandMode getKeyboardHandMode() {
+        // Note: 左右手模式以 IMEditor 中的设置优先
+        if (this.ime != null) {
+            return this.ime.getConfig().get(ConfigKey.hand_mode);
+        }
+        return this.imeConfig.get(ConfigKey.hand_mode);
+    }
+
+    protected Keyboard.Theme getKeyboardTheme() {
+        return this.imeConfig.get(ConfigKey.theme);
+    }
 }

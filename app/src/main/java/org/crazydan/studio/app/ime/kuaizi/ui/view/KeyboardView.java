@@ -29,7 +29,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorView;
 import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewGestureDetector;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerViewGestureDetector;
@@ -207,17 +206,17 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
         switch (msg.type) {
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
-                // Note: 仅关注与键盘布局相关的配置更新
-                ConfigKey[] effects = new ConfigKey[] {
-                        ConfigKey.theme,
-                        ConfigKey.hand_mode,
-                        ConfigKey.enable_x_input_pad,
-                        ConfigKey.enable_latin_use_pinyin_keys_in_x_input_pad
-                };
-                if (!CollectionUtils.contains(effects, data.configKey)) {
-                    this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
-                            .endTreeLog();
-                    return;
+                switch (data.configKey) {
+                    // Note: 仅关注与键盘布局相关的配置更新
+                    case enable_x_input_pad:
+                    case enable_latin_use_pinyin_keys_in_x_input_pad: {
+                        break;
+                    }
+                    default: {
+                        this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
+                                .endTreeLog();
+                        return;
+                    }
                 }
                 break;
             }

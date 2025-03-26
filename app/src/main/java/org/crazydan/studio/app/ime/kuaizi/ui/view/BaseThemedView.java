@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.conf.Config;
 import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -95,20 +94,10 @@ public abstract class BaseThemedView extends BaseMsgListenerView {
 
     private boolean handleInputMsg(InputMsg msg) {
         switch (msg.type) {
-            case Config_Update_Done: {
-                ConfigUpdateMsgData data = msg.data();
-                switch (data.configKey) {
-                    // 主题变更，必须重建视图
-                    case theme: {
-                        doLayout();
-                        return true;
-                    }
-                    case hand_mode: {
-                        updateLayoutDirection();
-                        return true;
-                    }
-                }
-                break;
+            case Keyboard_Theme_Switch_Done: {
+                // 主题变更，必须重建视图
+                doLayout();
+                return true;
             }
             case Keyboard_HandMode_Switch_Done: {
                 updateLayoutDirection();

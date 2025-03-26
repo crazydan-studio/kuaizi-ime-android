@@ -36,7 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsg;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.ExerciseViewMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseListStartDoneMsgData;
 import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseStepStartDoneMsgData;
-import org.crazydan.studio.app.ime.kuaizi.ui.guide.exercise.msg.data.ExerciseThemeUpdateDoneMsgData;
 
 /**
  * {@link ExerciseList} 视图
@@ -87,13 +86,6 @@ public class ExerciseListView extends RecyclerPageView<ExerciseListViewAdapter, 
             case List_Start_Done: {
                 ExerciseListStartDoneMsgData data = (ExerciseListStartDoneMsgData) msg.data;
                 update(data.exercises);
-                break;
-            }
-            case Theme_Update_Done: {
-                ExerciseThemeUpdateDoneMsgData data = (ExerciseThemeUpdateDoneMsgData) msg.data;
-
-                ExerciseViewHolder holder = getActivePageViewHolder();
-                holder.updateSteps(data.exercise.createViewData());
                 break;
             }
             case Step_Start_Done: {

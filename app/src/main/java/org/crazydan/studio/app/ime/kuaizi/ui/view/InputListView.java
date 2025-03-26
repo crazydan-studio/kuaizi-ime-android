@@ -22,8 +22,6 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
-import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
@@ -58,14 +56,16 @@ public class InputListView extends InputListViewBase implements InputMsgListener
             }
             case Config_Update_Done: {
                 ConfigUpdateMsgData data = msg.data();
-                // Note: 仅关注与输入列表布局和显示相关的配置更新
-                ConfigKey[] effects = new ConfigKey[] {
-                        ConfigKey.theme, ConfigKey.enable_candidate_variant_first
-                };
-                if (!CollectionUtils.contains(effects, data.configKey)) {
-                    this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
-                            .endTreeLog();
-                    return;
+                switch (data.configKey) {
+                    // Note: 仅关注与输入列表布局和显示相关的配置更新
+                    case enable_candidate_variant_first: {
+                        break;
+                    }
+                    default: {
+                        this.log.warn("Ignore configuration %s", () -> new Object[] { data.configKey }) //
+                                .endTreeLog();
+                        return;
+                    }
                 }
                 break;
             }

@@ -72,6 +72,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardThemeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserEditorActionSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
@@ -84,6 +85,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_HandMode_Switch_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Start_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Switch_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_Theme_Switch_Done;
 
 /**
  * Input Method Editor (IME)
@@ -257,18 +259,29 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     /** 响应 {@link Config} 变更消息 */
     @Override
     public void onChanged(ConfigKey key, Object oldValue, Object newValue) {
+        withInputboardContext(this.inputboard::start);
+
         switch (key) {
             case hand_mode: {
                 // 若更改系统的左右手模式，则以系统的为准
-                this.config.set(ConfigKey.hand_mode, newValue);
+                Keyboard.HandMode mode = (Keyboard.HandMode) newValue;
+                KeyboardHandModeSwitchMsgData data = new KeyboardHandModeSwitchMsgData(mode);
+
+                on_Keyboard_HandMode_Switch_Doing_Msg(data);
                 break;
             }
+            case theme: {
+                Keyboard.Theme theme = (Keyboard.Theme) newValue;
+                KeyboardThemeSwitchMsgData data = new KeyboardThemeSwitchMsgData(theme);
+
+                fire_InputMsg(Keyboard_Theme_Switch_Done, data);
+                break;
+            }
+            default: {
+                ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
+                fire_InputMsg(Config_Update_Done, data);
+            }
         }
-
-        withInputboardContext(this.inputboard::start);
-
-        ConfigUpdateMsgData data = new ConfigUpdateMsgData(key, oldValue, newValue);
-        fire_InputMsg(Config_Update_Done, data);
     }
 
     // --------------------------------------
@@ -694,6 +707,10 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     }
 
     // =============================== Start: 自动化，用于模拟输入等 ===================================
+
+    public Config getConfig() {
+        return this.config.immutable();
+    }
 
     /** 更改最后一个输入的候选字 */
     public void changeLastInputWord(InputWord word) {

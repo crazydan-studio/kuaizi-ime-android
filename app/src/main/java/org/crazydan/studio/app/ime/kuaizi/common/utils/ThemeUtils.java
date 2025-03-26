@@ -21,7 +21,9 @@ package org.crazydan.studio.app.ime.kuaizi.common.utils;
 
 import java.util.function.Consumer;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -115,10 +117,21 @@ public class ThemeUtils {
         }
     }
 
+    /** 获取主题中设置的 attrId 的值 */
     public static TypedValue getValue(Context context, int attrId) {
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(attrId, typedValue, true);
 
         return typedValue;
+    }
+
+    /** 更新 {@link Activity} 的主题，并重启 {@link Activity} */
+    public static void changeTheme(Activity activity, int themeResId) {
+        Intent intent = activity.getIntent();
+
+        activity.setTheme(themeResId);
+
+        activity.finish();
+        activity.startActivity(intent);
     }
 }

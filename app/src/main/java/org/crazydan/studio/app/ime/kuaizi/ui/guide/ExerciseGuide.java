@@ -48,6 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
+import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.EditorAction;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.recycler.RecyclerPageIndicatorView;
@@ -68,7 +69,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinCandidate
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.input.ConfigUpdateMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
@@ -153,9 +153,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
     /** 若输入法配置为左手模式，则在左侧打开侧边栏，否则，在右侧打开 */
     private int getDrawerGravity() {
-        return this.imeConfig.get(ConfigKey.hand_mode) == Keyboard.HandMode.left
-               ? GravityCompat.START
-               : GravityCompat.END;
+        return getKeyboardHandMode() == Keyboard.HandMode.left ? GravityCompat.START : GravityCompat.END;
     }
 
     /** @return 若调用前已关闭，则返回 false，否则，执行关闭，并返回 true */
@@ -204,7 +202,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         Toolbar toolbar = getToolbar();
         // 确保侧边栏的唤出按钮的位置与输入法的左右手模式相同
-        ViewUtils.updateLayoutDirection(toolbar, this.imeConfig.get(ConfigKey.hand_mode), true);
+        ViewUtils.updateLayoutDirection(toolbar, getKeyboardHandMode(), true);
     }
 
     private void initExerciseListView() {
@@ -215,7 +213,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     }
 
     private void updateSandboxView() {
-        Keyboard.Theme theme = this.imeConfig.get(ConfigKey.theme);
+        Keyboard.Theme theme = getKeyboardTheme();
         int themeResId = theme.getResId(getApplicationContext());
 
         this.sandboxView.update(themeResId, HexagonOrientation.POINTY_TOP);
@@ -229,14 +227,19 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     /** 响应 {@link Keyboard} 的状态变更消息 */
     @Override
     public void onMsg(InputMsg msg) {
-        super.onMsg(msg);
-
-        if (msg.type == InputMsgType.Config_Update_Done) {
-            ConfigUpdateMsgData data = msg.data();
-            if (data.configKey == ConfigKey.hand_mode) {
+        switch (msg.type) {
+            case Keyboard_HandMode_Switch_Done: {
                 updateDrawerGravity();
+                break;
+            }
+            case Keyboard_Theme_Switch_Done: {
+                ThemeUtils.changeTheme(this, getDefaultTheme());
+                // Note: 更新 Activity 的主题会重启 Activity，故而，不再继续后续处理
+                return;
             }
         }
+
+        super.onMsg(msg);
 
         //
         this.log.beginTreeLog("Dispatch " + msg.getClass().getSimpleName() //
@@ -258,10 +261,6 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     /** 响应 {@link Exercise} 的状态变更消息 */
     @Override
     public void onMsg(ExerciseMsg msg) {
-        if (msg.type == ExerciseMsgType.Theme_Update_Done) {
-            updateSandboxView();
-        }
-
         // Note: 涉及视图初始化，故而，先派发消息给视图
         this.exerciseListView.onMsg(msg);
 
@@ -1436,7 +1435,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     @Override
     protected int chooseTheme(int lightThemeResId, int nightThemeResId) {
         // 根据输入法的配色，取与其相反的主题，以避免二者色调一致
-        Keyboard.Theme theme = this.imeConfig.get(ConfigKey.theme);
+        Keyboard.Theme theme = getKeyboardTheme();
         switch (theme) {
             case light: {
                 return nightThemeResId;

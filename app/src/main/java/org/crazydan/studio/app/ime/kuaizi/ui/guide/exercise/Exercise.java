@@ -140,11 +140,6 @@ public class Exercise implements InputMsgListener {
         this.steps.add(index, step);
     }
 
-    /** 更新步骤样式 */
-    public void updateStepTheme(Object theme) {
-        this.steps.forEach((step) -> step.theme(theme));
-    }
-
     // ================ Start: 驱动练习 ================
 
     public void restart() {

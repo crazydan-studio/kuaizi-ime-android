@@ -33,7 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 public class ExerciseStep implements InputMsgListener {
     private String name;
     private String content;
-    private Object theme;
     private Action action;
 
     private boolean active;
@@ -57,11 +56,6 @@ public class ExerciseStep implements InputMsgListener {
 
     public ExerciseStep content(String content) {
         this.content = content;
-        return this;
-    }
-
-    public ExerciseStep theme(Object theme) {
-        this.theme = theme;
         return this;
     }
 
@@ -122,8 +116,6 @@ public class ExerciseStep implements InputMsgListener {
     public static class ViewData {
         public final String name;
         public final String content;
-        /** 主题样式信息，主要用于触发视图更新 */
-        public final Object theme;
 
         /** 是否已激活 */
         public final boolean active;
@@ -136,7 +128,6 @@ public class ExerciseStep implements InputMsgListener {
         ViewData(ExerciseStep step) {
             this.name = step.name;
             this.content = step.content;
-            this.theme = step.theme;
             this.active = step.active;
 
             this.last = step instanceof Last;
@@ -157,13 +148,12 @@ public class ExerciseStep implements InputMsgListener {
             return this.active == that.active
                    && this.last == that.last
                    && Objects.equals(this.name, that.name)
-                   && Objects.equals(this.content, that.content)
-                   && Objects.equals(this.theme, that.theme);
+                   && Objects.equals(this.content, that.content);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.name, this.content, this.theme, this.active, this.last);
+            return Objects.hash(this.name, this.content, this.active, this.last);
         }
     }
 }

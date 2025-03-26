@@ -78,6 +78,8 @@ public enum InputMsgType {
     Keyboard_HandMode_Switch_Doing,
     /** 键盘左右手模式已切换 */
     Keyboard_HandMode_Switch_Done,
+    /** 键盘主题已切换 */
+    Keyboard_Theme_Switch_Done,
     /** 键盘切换中 */
     Keyboard_Switch_Doing,
     /** 键盘已切换 */
@@ -97,7 +99,14 @@ public enum InputMsgType {
 
     /** 输入法切换中 */
     IME_Switch_Doing,
-    /** （系统）配置已更新 */
+    /**
+     * （系统）配置已更新
+     * <p/>
+     * - 对 {@link org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey#theme theme}
+     * 的变更将转换为消息 {@link #Keyboard_Theme_Switch_Done}；
+     * - 对 {@link org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey#hand_mode hand_mode}
+     * 的变更将转换为消息 {@link #Keyboard_HandMode_Switch_Done}；
+     */
     Config_Update_Done,
 
     /** 剪贴数据已生成 */
