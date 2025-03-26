@@ -47,6 +47,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 import org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0;
 import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v2_to_v3;
+import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v3_to_v4;
+import org.crazydan.studio.app.ime.kuaizi.dict.upgrade.Upgrader;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
@@ -78,10 +80,14 @@ public class PinyinDict {
     public static final String VERSION_V0 = "v0";
     public static final String VERSION_V2 = "v2";
     public static final String VERSION_V3 = "v3";
-    /** 最新版本号 */
-    public static final String LATEST_VERSION = VERSION_V3;
+    public static final String VERSION_V4 = "v4";
+
     /** 首次安装版本号 */
     public static final String FIRST_INSTALL_VERSION = VERSION_V0;
+    /** 连续的版本号，用于递进升级 */
+    public static final String[] CONTINUOUS_VERSIONS = new String[] { VERSION_V2, VERSION_V3, VERSION_V4 };
+    /** 最新版本号 */
+    public static final String LATEST_VERSION = CONTINUOUS_VERSIONS[CONTINUOUS_VERSIONS.length - 1];
 
     private static final String db_version_file = "pinyin_user_dict.version";
 
@@ -381,6 +387,16 @@ public class PinyinDict {
 
     // =================== End: 保存用户输入数据 ==================
 
+    // =================== Start: 衍生字典 ==================
+
+    public UserInputFavoriteDict createUserInputFavoriteDict() {
+        SQLiteDatabase db = getDB();
+
+        return new UserInputFavoriteDict(db, this.executor);
+    }
+
+    // =================== End: 衍生字典 ==================
+
     // =================== Start: 数据库管理 ==================
 
     public SQLiteDatabase getDB() {
@@ -443,15 +459,40 @@ public class PinyinDict {
 
     /** 升级数据版本：已成功升级的，将不会重复处理 */
     private void doUpgrade(Context context) {
-        String version = getVersion(context);
+        String currentVersion = getVersion(context);
 
-        if (FIRST_INSTALL_VERSION.equals(version)) {
-            From_v0.upgrade(context, this);
-        } else if (VERSION_V2.equals(version) && LATEST_VERSION.equals(VERSION_V3)) {
-            From_v2_to_v3.upgrade(context, this);
+        // Note: 没有 v1 版本
+        if (FIRST_INSTALL_VERSION.equals(currentVersion)) {
+            new From_v0().upgrade(context, this);
+        } else {
+            String fromVersion = null;
+            Map<String, Upgrader> upgraders = getUpgraders();
+            // 按照版本号递进升级
+            for (String targetVersion : CONTINUOUS_VERSIONS) {
+                if (targetVersion.equals(currentVersion)) {
+                    fromVersion = targetVersion;
+                    continue;
+                }
+
+                if (fromVersion != null) {
+                    String code = fromVersion + "-" + targetVersion;
+                    Upgrader upgrader = upgraders.get(code);
+                    assert upgrader != null;
+                    upgrader.upgrade(context, this);
+
+                    fromVersion = targetVersion;
+                }
+            }
         }
 
-        updateToLatestVersion(context);
+        updateVersionToLatest(context);
+    }
+
+    private Map<String, Upgrader> getUpgraders() {
+        return new HashMap<String, Upgrader>() {{
+            put(VERSION_V2 + "-" + VERSION_V3, new From_v2_to_v3());
+            put(VERSION_V3 + "-" + VERSION_V4, new From_v3_to_v4());
+        }};
     }
 
     /** 获取应用本地的用户数据的版本 */
@@ -474,7 +515,7 @@ public class PinyinDict {
         return this.version;
     }
 
-    private void updateToLatestVersion(Context context) {
+    private void updateVersionToLatest(Context context) {
         if (LATEST_VERSION.equals(this.version)) {
             return;
         }

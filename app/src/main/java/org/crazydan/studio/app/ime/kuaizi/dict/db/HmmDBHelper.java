@@ -164,13 +164,13 @@ public class HmmDBHelper {
         // @return ['word_id_', 'spell_chars_id_']
         Function<String, String[]> extractWordIds = (s) -> s.split(":");
 
-        Function<Boolean, List<String[]>> phraseWordDataGetter = //
+        Function<Boolean, List<Object[]>> phraseWordDataGetter = //
                 (updated) -> hmm.wordWeight.keySet().stream().map((key) -> {
                     String[] wordIds = extractWordIds.apply(key);
-                    String val = hmm.wordWeight.get(key) + "";
+                    Integer val = hmm.wordWeight.get(key);
 
-                    return updated ? new String[] { val, wordIds[0] } //
-                                   : new String[] { val, wordIds[0], wordIds[1] };
+                    return updated ? new Object[] { val, wordIds[0] } //
+                                   : new Object[] { val, wordIds[0], wordIds[1] };
                 }).collect(Collectors.toList());
 
         if (!reverse) {
@@ -187,13 +187,13 @@ public class HmmDBHelper {
 //                       phraseWordData);
             upsertSQLite(db, new SQLiteRawUpsertParams() {{
                 // Note: 确保更新和新增的参数位置相同
-                this.updateSQL = "update phrase_word" //
-                                 + " set weight_user_ = weight_user_ + ?" //
-                                 + " where word_id_ = ?";
-                this.insertSql = "insert into phrase_word ("
-                                 + "   weight_app_, weight_user_,"
-                                 + "   word_id_, spell_chars_id_"
-                                 + " ) values (0, ?, ?, ?)";
+                this.updateClause = "update phrase_word" //
+                                    + " set weight_user_ = weight_user_ + ?" //
+                                    + " where word_id_ = ?";
+                this.insertClause = "insert into phrase_word ("
+                                    + "   weight_app_, weight_user_,"
+                                    + "   word_id_, spell_chars_id_"
+                                    + " ) values (0, ?, ?, ?)";
 
                 this.insertParamsList = phraseWordDataGetter.apply(false);
                 this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 2);
@@ -218,20 +218,20 @@ public class HmmDBHelper {
             return extractWordIds.apply(s);
         };
 
-        Function<Boolean, List<String[]>> phraseTransProbDataGetter = //
+        Function<Boolean, List<Object[]>> phraseTransProbDataGetter = //
                 (updated) -> {
-                    List<String[]> phraseTransProbData = new ArrayList<>();
+                    List<Object[]> phraseTransProbData = new ArrayList<>();
+
                     hmm.transProb.forEach((curr, prob) -> {
                         String[] currIds = getWordId.apply(curr);
 
                         prob.forEach((prev, value) -> {
                             String[] prevIds = getWordId.apply(prev);
-                            String val = value + "";
 
                             phraseTransProbData.add(updated
-                                                    ? new String[] { val, currIds[0], prevIds[0] }
-                                                    : new String[] {
-                                                            val, currIds[0], prevIds[0], //
+                                                    ? new Object[] { value, currIds[0], prevIds[0] }
+                                                    : new Object[] {
+                                                            value, currIds[0], prevIds[0], //
                                                             currIds[1], prevIds[1]
                                                     });
                         });
@@ -254,14 +254,14 @@ public class HmmDBHelper {
 //                       phraseTransProbData);
             upsertSQLite(db, new SQLiteRawUpsertParams() {{
                 // Note: 确保更新和新增的参数位置相同
-                this.updateSQL = "update phrase_trans_prob"
-                                 + " set value_user_ = value_user_ + ?"
-                                 + " where word_id_ = ? and prev_word_id_ = ?";
-                this.insertSql = "insert into phrase_trans_prob ("
-                                 + "   value_app_, value_user_,"
-                                 + "   word_id_, prev_word_id_,"
-                                 + "   word_spell_chars_id_, prev_word_spell_chars_id_"
-                                 + " ) values (0, ?, ?, ?, ?, ?)";
+                this.updateClause = "update phrase_trans_prob"
+                                    + " set value_user_ = value_user_ + ?"
+                                    + " where word_id_ = ? and prev_word_id_ = ?";
+                this.insertClause = "insert into phrase_trans_prob ("
+                                    + "   value_app_, value_user_,"
+                                    + "   word_id_, prev_word_id_,"
+                                    + "   word_spell_chars_id_, prev_word_spell_chars_id_"
+                                    + " ) values (0, ?, ?, ?, ?, ?)";
 
                 this.insertParamsList = phraseTransProbDataGetter.apply(false);
                 this.updateParamsGetter = (i) -> Arrays.copyOf(this.insertParamsList.get(i), 3);
@@ -305,14 +305,14 @@ public class HmmDBHelper {
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // Note: 直接拼接参数，以避免参数解析
-            this.sql = "select distinct *" //
-                       + " from phrase_trans_prob" //
-                       + " where "
-                       // Note: 低版本不支持 where (a, b) in ((1, 2), (3, 4), ...) 形式，只能采用 or 实现
-                       + charsIdPairList.stream()
-                                        .map(pair -> "(prev_word_spell_chars_id_, word_spell_chars_id_)" //
-                                                     + (" = (" + pair[0] + ", " + pair[1] + ")"))
-                                        .collect(Collectors.joining(" or "));
+            this.clause = "select distinct *" //
+                          + " from phrase_trans_prob" //
+                          + " where "
+                          // Note: 低版本不支持 where (a, b) in ((1, 2), (3, 4), ...) 形式，只能采用 or 实现
+                          + charsIdPairList.stream()
+                                           .map(pair -> "(prev_word_spell_chars_id_, word_spell_chars_id_)" //
+                                                        + (" = (" + pair[0] + ", " + pair[1] + ")"))
+                                           .collect(Collectors.joining(" or "));
 
             this.voidReader = consumer;
         }});

@@ -48,7 +48,7 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
         SQLiteDatabase db = dict.getDB();
 
         List<String> dbVersion = rawQuerySQLite(db, new DBUtils.SQLiteRawQueryParams<String>() {{
-            this.sql = "SELECT sqlite_version() as version";
+            this.clause = "SELECT sqlite_version() as version";
             this.reader = (row) -> row.getString("version");
         }});
         Log.i(LOG_TAG, "SQLite version: " + CollectionUtils.first(dbVersion));

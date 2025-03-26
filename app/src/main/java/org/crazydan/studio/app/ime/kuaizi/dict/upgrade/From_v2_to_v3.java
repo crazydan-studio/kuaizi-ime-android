@@ -35,7 +35,6 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveHmm;
-import static org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0.doWithTransferDB;
 
 /**
  * 从 v2 版本升级到 v3 版本
@@ -43,16 +42,18 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0.doWithTran
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-27
  */
-public class From_v2_to_v3 {
+public class From_v2_to_v3 extends Upgrader {
 
-    public static void upgrade(Context context, PinyinDict dict) {
+    @Override
+    public void upgrade(Context context, PinyinDict dict) {
         doWithTransferDB(context, dict, (dbFiles) -> {
-            try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
+            try (SQLiteDatabase targetDB = openSQLite(dbFiles.dataTransfer, false)) {
                 // 初始化 v0 版本
-                From_v0.doUpgrade(transferDB, dbFiles.appPhrase);
+                From_v0.doUpgrade(targetDB, dbFiles.appPhrase);
 
-                doUpgrade(transferDB, dbFiles.user);
-                vacuumSQLite(transferDB);
+                doUpgrade(targetDB, dbFiles.user);
+
+                vacuumSQLite(targetDB);
 
                 // 清理无用文件
                 for (String name : new String[] { "pinyin_app_dict.db", "pinyin_app_dict.db.hash" }) {
@@ -63,6 +64,11 @@ public class From_v2_to_v3 {
         });
     }
 
+    /**
+     * 将 v2 版本的用户库数据合并到目标库中
+     * <p/>
+     * 涉及根据 v2 的用户数据生成 HMM 数据等操作
+     */
     private static void doUpgrade(SQLiteDatabase targetDB, File v2UserDBFile) {
         // v2 版本内建表结构
         /*
@@ -178,19 +184,19 @@ public class From_v2_to_v3 {
         rawQuerySQLite(targetDB, new SQLiteRawQueryParams<Void>() {{
             // Note: SQLite 3.44.0 版本才支持 concat 函数，低版本需采用 || 替代
             // https://sqlite.org/releaselog/3_44_0.html
-            this.sql = "select distinct"
-                       + "   group_concat("
-                       + "     pw_.id_ || ':' || pw_.spell_chars_id_, ','"
-                       + "   ) as target_ids_,"
-                       + "   ph2_.weight_"
-                       + " from"
-                       + "   v2_user.used_pinyin_phrase as ph2_"
-                       + "   inner join v2_app.pinyin_word as pw2_"
-                       + "     on pw2_.id_ = ph2_.target_id_"
-                       + "   inner join pinyin_word pw_"
-                       + "     on pw_.word_ = pw2_.word_ and pw_.spell_ = pw2_.spell_"
-                       + " group by ph2_.source_id_"
-                       + "   having ph2_.weight_ > 0";
+            this.clause = "select distinct"
+                          + "   group_concat("
+                          + "     pw_.id_ || ':' || pw_.spell_chars_id_, ','"
+                          + "   ) as target_ids_,"
+                          + "   ph2_.weight_"
+                          + " from"
+                          + "   v2_user.used_pinyin_phrase as ph2_"
+                          + "   inner join v2_app.pinyin_word as pw2_"
+                          + "     on pw2_.id_ = ph2_.target_id_"
+                          + "   inner join pinyin_word pw_"
+                          + "     on pw_.word_ = pw2_.word_ and pw_.spell_ = pw2_.spell_"
+                          + " group by ph2_.source_id_"
+                          + "   having ph2_.weight_ > 0";
 
             this.voidReader = (row) -> {
                 String phraseWords = row.getString("target_ids_");

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -100,6 +101,12 @@ public class DBUtils {
         execSQLite(db, "vacuum;");
     }
 
+    /** 根据参数创建参数占位符 */
+    public static String createSQLiteArgHolders(Collection<?> args) {
+        return args.stream().map((a) -> "?").collect(Collectors.joining(", "));
+    }
+
+    /** 执行多条无参 SQL */
     public static void execSQLite(SQLiteDatabase db, String... clauses) {
         for (String clause : clauses) {
             db.execSQL(clause);
@@ -107,36 +114,44 @@ public class DBUtils {
     }
 
     /**
+     * 按参数列表 <code>argsList</code> ，重复执行 <code>clause</code>
+     * <p/>
+     * 在 <code>clause</code> 中的占位符数量需与列表中的参数数组长度相同
+     *
      * @param argsList
      *         参数列表为空时，不执行 <code>clause</code>
      */
-    public static void execSQLite(SQLiteDatabase db, String clause, Collection<String[]> argsList) {
+    public static void execSQLite(SQLiteDatabase db, String clause, Collection<Object[]> argsList) {
         if (CollectionUtils.isEmpty(argsList)) {
             return;
         }
 
         withTransaction(db, () -> {
-            try (SQLiteStatement statement = db.compileStatement(clause);) {
-                for (String[] args : argsList) {
-                    statement.bindAllArgsAsStrings(args);
-                    statement.execute();
+            try (SQLiteStatement sm = db.compileStatement(clause);) {
+                for (Object[] args : argsList) {
+                    bindArgs(sm, args);
+                    sm.execute();
                 }
             }
         });
     }
 
     /**
+     * 执行 <code>clause</code>
+     * <p/>
+     * 在 <code>clause</code> 中的占位符数量需与参数 <code>args</code> 的数组长度相同
+     *
      * @param args
-     *         参数为空时，不执行 <code>clause</code>
+     *         参数为空时，不执行 <code>clause</code>。可包含 <code>null</code>
      */
-    public static void execSQLite(SQLiteDatabase db, String clause, String[] args) {
+    public static void execSQLite(SQLiteDatabase db, String clause, Object[] args) {
         if (CollectionUtils.isEmpty(args)) {
             return;
         }
 
-        try (SQLiteStatement statement = db.compileStatement(clause);) {
-            statement.bindAllArgsAsStrings(args);
-            statement.execute();
+        try (SQLiteStatement sm = db.compileStatement(clause);) {
+            bindArgs(sm, args);
+            sm.execute();
         }
     }
 
@@ -149,21 +164,21 @@ public class DBUtils {
         // https://www.sqlite.org/lang_upsert.html#history
         withTransaction(db, () -> {
             try (
-                    SQLiteStatement update = db.compileStatement(params.updateSQL);
-                    SQLiteStatement insert = db.compileStatement(params.insertSql);
+                    SQLiteStatement update = db.compileStatement(params.updateClause);
+                    SQLiteStatement insert = db.compileStatement(params.insertClause);
             ) {
                 // insert 参数与 update 参数的数量需相同
                 for (int i = 0; i < params.insertParamsList.size(); i++) {
-                    String[] updateParams = params.updateParamsGetter != null
+                    Object[] updateParams = params.updateParamsGetter != null
                                             ? params.updateParamsGetter.apply(i)
                                             : params.updateParamsList.get(i);
 
-                    update.bindAllArgsAsStrings(updateParams);
+                    bindArgs(update, updateParams);
                     if (update.executeUpdateDelete() > 0) {
                         continue;
                     }
 
-                    insert.bindAllArgsAsStrings(params.insertParamsList.get(i));
+                    bindArgs(insert, params.insertParamsList.get(i));
                     insert.executeInsert();
                 }
             }
@@ -187,7 +202,7 @@ public class DBUtils {
 
     public static <T> List<T> rawQuerySQLite(SQLiteDatabase db, SQLiteRawQueryParams<T> params) {
         try (
-                Cursor cursor = db.rawQuery(params.sql, params.params)
+                Cursor cursor = db.rawQuery(params.clause, params.params)
         ) {
             return doQuerySQLite(cursor, params.reader, params.voidReader);
         }
@@ -196,7 +211,7 @@ public class DBUtils {
     private static <T> List<T> doQuerySQLite(
             Cursor cursor, Function<SQLiteRow, T> reader, Consumer<SQLiteRow> voidReader
     ) {
-        // 通过 voidReader 避免无用的空间预设
+        // 通过 voidReader 避免无用的列表空间预设
         List<T> list = voidReader != null ? null : new ArrayList<>(cursor.getCount());
 
         while (cursor.moveToNext()) {
@@ -225,10 +240,24 @@ public class DBUtils {
         }
     }
 
+    private static void bindArgs(SQLiteStatement statement, Object[] args) {
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+
+            if (arg == null) {
+                statement.bindNull(i);
+            } else if (arg instanceof byte[]) {
+                statement.bindBlob(i, (byte[]) arg);
+            } else {
+                statement.bindString(i, arg.toString());
+            }
+        }
+    }
+
     private static class BaseSQLiteQueryParams<T> {
         public String[] params;
 
-        /** 行读取函数：有返回值 */
+        /** 行读取函数：有返回值，且为 null 的值将被忽略 */
         public Function<SQLiteRow, T> reader;
         /** 行读取函数：无返回值，优先于 {@link #reader} */
         public Consumer<SQLiteRow> voidReader;
@@ -249,18 +278,18 @@ public class DBUtils {
     }
 
     public static class SQLiteRawQueryParams<T> extends BaseSQLiteQueryParams<T> {
-        public String sql;
+        public String clause;
     }
 
     public static class SQLiteRawUpsertParams {
-        public String updateSQL;
-        public String insertSql;
+        public String updateClause;
+        public String insertClause;
 
-        public List<String[]> updateParamsList;
-        public List<String[]> insertParamsList;
+        public List<Object[]> updateParamsList;
+        public List<Object[]> insertParamsList;
 
         /** 获取指定序号的更新参数 */
-        public Function<Integer, String[]> updateParamsGetter;
+        public Function<Integer, Object[]> updateParamsGetter;
     }
 
     public static class SQLiteRow {

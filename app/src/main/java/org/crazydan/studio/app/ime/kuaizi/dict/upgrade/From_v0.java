@@ -23,13 +23,9 @@ import java.io.File;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-import org.crazydan.studio.app.ime.kuaizi.R;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictDBType;
 
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.copySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLite;
@@ -40,26 +36,42 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLi
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-27
  */
-public class From_v0 {
+public class From_v0 extends Upgrader {
 
-    public static void upgrade(Context context, PinyinDict dict) {
+    @Override
+    public void upgrade(Context context, PinyinDict dict) {
         doWithTransferDB(context, dict, (dbFiles) -> {
-            try (SQLiteDatabase transferDB = openSQLite(dbFiles.transfer, false)) {
-                doUpgrade(transferDB, dbFiles.appPhrase);
-                vacuumSQLite(transferDB);
+            try (SQLiteDatabase targetDB = openSQLite(dbFiles.dataTransfer, false)) {
+                doUpgrade(targetDB, dbFiles.appPhrase);
+
+                vacuumSQLite(targetDB);
             }
         });
     }
 
+    /** 初始化 v0 版数据库，并{@link #mergePhraseDictData 合并应用的词典数据} */
     protected static void doUpgrade(SQLiteDatabase targetDB, File appPhraseDBFile) {
+        initWordDictTables(targetDB);
+        initPhraseDictTables(targetDB);
+
+        initFavoriteTables(targetDB);
+
+        mergePhraseDictData(targetDB, appPhraseDBFile);
+    }
+
+    /**
+     * 初始化与字典相关的数据表
+     * <p/>
+     * 涉及补充索引、初始化列数据等操作
+     */
+    protected static void initWordDictTables(SQLiteDatabase targetDB) {
         String[] clauses = new String[] {
-                // 连接应用库
-                "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
-                // 为内置表补充索引
+                // <<<<<<<<<<<<< 为内置表补充索引
                 "create index idx_meta_py_chars_val on meta_pinyin_chars(value_)",
                 "create index idx_py_word_word on pinyin_word(word_, word_id_)",
                 "create index idx_py_word_spell on pinyin_word(spell_, spell_id_, spell_chars_id_)",
                 // >>>>>>>>>>>>>>>>>>>>>>
+                //
                 // <<<<<<<<<<<<< 补充或调整用户库表
                 "create table" //
                 + " if not exists meta_latin (" //
@@ -89,6 +101,14 @@ public class From_v0 {
                 + "   meta_emoji emo_"
                 + "   inner join meta_emoji_group grp_ on grp_.id_ = emo_.group_id_",
                 // >>>>>>>>>>>>>>>>>>>>>>>
+        };
+
+        execSQLite(targetDB, clauses);
+    }
+
+    /** 初始化与词典相关的数据表 */
+    protected static void initPhraseDictTables(SQLiteDatabase targetDB) {
+        String[] clauses = new String[] {
                 // <<<<<<<<<<<<<<<<<<< 创建包含用户和应用权重数据的词典表
                 "create table" //
                 + " if not exists phrase_word ("
@@ -99,7 +119,8 @@ public class From_v0 {
                 // -- 应用字典中短语内的字权重：出现次数
                 + "   weight_app_ integer not null,"
                 // -- 用户字典中短语内的字权重：出现次数
-                + "   weight_user_ integer not null," //
+                + "   weight_user_ integer not null,"
+                //
                 + "   primary key (word_id_)" //
                 + " )",
                 //
@@ -125,9 +146,44 @@ public class From_v0 {
                 // -- 应用字典中字出现的次数
                 + "   value_app_ integer not null,"
                 // -- 用户字典中字出现的次数
-                + "   value_user_ integer not null," //
+                + "   value_user_ integer not null,"
+                //
                 + "   primary key (word_id_, prev_word_id_)" //
                 + " )",
+                // >>>>>>>>>>>>>>>>>>>>>>
+        };
+
+        execSQLite(targetDB, clauses);
+    }
+
+    /** 初始化与收藏相关的数据表 */
+    protected static void initFavoriteTables(SQLiteDatabase targetDB) {
+        String[] clauses = new String[] {
+                "create table"
+                //
+                + " if not exists user_favorite ("
+                + "   id_ integer not null,"
+                + "   type_ text not null,"
+                + "   text_ text not null,"
+                + "   html_ text default null,"
+                + "   shortcut_ text default null,"
+                + "   created_at_ integer not null,"
+                + "   used_count_ integer default 0,"
+                + "   used_at_ integer default 0,"
+                //
+                + "   primary key (id_)"
+                + " )",
+                };
+
+        execSQLite(targetDB, clauses);
+    }
+
+    /** 将 {@link PinyinDictDBType#app_phrase} 内的数据合并到目标库中 */
+    protected static void mergePhraseDictData(SQLiteDatabase targetDB, File appPhraseDBFile) {
+        String[] clauses = new String[] {
+                // 连接应用库
+                "attach database '" + appPhraseDBFile.getAbsolutePath() + "' as app",
+                //
                 // 通过 SQL 补齐数据
                 "insert into phrase_word ("
                 + "   word_id_, spell_chars_id_, weight_app_, weight_user_"
@@ -182,49 +238,8 @@ public class From_v0 {
                 "create index idx_ph_wrd_spell_chars on phrase_word(spell_chars_id_)",
                 "create index idx_ph_trp_spell_chars"
                 + " on phrase_trans_prob(word_spell_chars_id_, prev_word_spell_chars_id_);",
-                // >>>>>>>>>>>>>>>>>>>>>>
-        };
+                };
 
         execSQLite(targetDB, clauses);
-    }
-
-    /** 使用应用的字典库作为迁移库，在该库上做数据升级相关的迁移操作 */
-    protected static void doWithTransferDB(Context context, PinyinDict dict, TransferConsumer consumer) {
-        File appPhraseDBFile = dict.getDBFile(context, PinyinDictDBType.app_phrase);
-
-        File userDBFile = dict.getDBFile(context, PinyinDictDBType.user);
-        // 使用应用的字典库作为迁移库
-        File transferDBFile = dict.getDBFile(context, PinyinDictDBType.app_word);
-
-        // Note: SQLite 数据库只有复制到本地才能进行 SQL 操作
-        copySQLite(context, appPhraseDBFile, R.raw.pinyin_phrase_dict);
-        copySQLite(context, transferDBFile, R.raw.pinyin_word_dict);
-
-        try {
-            consumer.transfer(new DBFiles() {{
-                this.user = userDBFile;
-                this.transfer = transferDBFile;
-                this.appPhrase = appPhraseDBFile;
-            }});
-
-            // 迁移库就地转换为用户库
-            FileUtils.moveFile(transferDBFile, userDBFile);
-        } catch (Exception e) {
-            Log.e("DictUpgrade", "Failed to doWithTransferDB", e);
-            throw e;
-        } finally {
-            FileUtils.deleteFile(transferDBFile);
-            FileUtils.deleteFile(appPhraseDBFile);
-        }
-    }
-
-    protected interface TransferConsumer {
-        void transfer(DBFiles dbFiles);
-    }
-
-    protected static class DBFiles {
-        protected File transfer;
-        protected File user;
-        protected File appPhrase;
     }
 }

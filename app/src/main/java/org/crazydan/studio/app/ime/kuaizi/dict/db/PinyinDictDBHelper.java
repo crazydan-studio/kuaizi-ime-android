@@ -44,6 +44,7 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils.su
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRow;
+import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.createSQLiteArgHolders;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
@@ -66,10 +67,10 @@ public class PinyinDictDBHelper {
 
     /** 根据拼音字 id 获取其 {@link PinyinWord 拼音字对象} */
     public static Map<Integer, PinyinWord> getPinyinWordsByWordId(SQLiteDatabase db, Set<Integer> pinyinWordIds) {
-        String placeholder = pinyinWordIds.stream().map((id) -> "?").collect(Collectors.joining(", "));
+        String argHolders = createSQLiteArgHolders(pinyinWordIds);
 
         List<PinyinWord> wordList = queryPinyinWords(db,
-                                                     "py_.id_ in (" + placeholder + ")",
+                                                     "py_.id_ in (" + argHolders + ")",
                                                      pinyinWordIds.stream()
                                                                   .map(Objects::toString)
                                                                   .toArray(String[]::new),
@@ -96,20 +97,20 @@ public class PinyinDictDBHelper {
             SQLiteDatabase db, Integer pinyinCharsId, int userPhraseBaseWeight, int top
     ) {
         return rawQuerySQLite(db, new SQLiteRawQueryParams<Integer>() {{
-            this.sql = "select distinct"
-                       + "   word_id_,"
-                       + "   ( ifnull(weight_app_, 0) +"
-                       + "     ifnull(weight_user_, 0) +"
-                       // 补充用户输入的基础权重
-                       // Note: SQLite 3.32.0 版本才支持 iif
-                       // https://sqlite.org/forum/info/97a66708939d518e
-                       + "     (case when ifnull(weight_user_, 0) > 0 then ? else 0 end)"
-                       // + "     iif(ifnull(weight_user_, 0) > 0, ?, 0)"
-                       + "   ) used_weight_"
-                       + " from phrase_word"
-                       + " where used_weight_ > 0 and spell_chars_id_ = ?"
-                       + " order by used_weight_ desc"
-                       + " limit ?";
+            this.clause = "select distinct"
+                          + "   word_id_,"
+                          + "   ( ifnull(weight_app_, 0) +"
+                          + "     ifnull(weight_user_, 0) +"
+                          // 补充用户输入的基础权重
+                          // Note: SQLite 3.32.0 版本才支持 iif
+                          // https://sqlite.org/forum/info/97a66708939d518e
+                          + "     (case when ifnull(weight_user_, 0) > 0 then ? else 0 end)"
+                          // + "     iif(ifnull(weight_user_, 0) > 0, ?, 0)"
+                          + "   ) used_weight_"
+                          + " from phrase_word"
+                          + " where used_weight_ > 0 and spell_chars_id_ = ?"
+                          + " order by used_weight_ desc"
+                          + " limit ?";
 
             this.params = new String[] { userPhraseBaseWeight + "", pinyinCharsId + "", top + "" };
 
@@ -148,18 +149,18 @@ public class PinyinDictDBHelper {
     ) {
         return rawQuerySQLite(db, new SQLiteRawQueryParams<PinyinWord>() {
             {
-                this.sql = "select distinct"
-                           + "   py_.id_, py_.word_, py_.word_id_,"
-                           + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
-                           + "   py_.traditional_,"
-                           + "   py_.radical_, py_.radical_stroke_count_,"
-                           + "   py_.variant_"
-                           + " from pinyin_word py_"
-                           + (" where " + queryWhere)
-                           + " order by"
-                           // 按拼音字的使用权重（used_weight_）、字形相似性（glyph_weight_）排序
-                           + "   py_.used_weight_ desc, py_.glyph_weight_ desc"
-                           + (limit != null ? " limit " + limit : "");
+                this.clause = "select distinct"
+                              + "   py_.id_, py_.word_, py_.word_id_,"
+                              + "   py_.spell_, py_.spell_id_, py_.spell_chars_id_,"
+                              + "   py_.traditional_,"
+                              + "   py_.radical_, py_.radical_stroke_count_,"
+                              + "   py_.variant_"
+                              + " from pinyin_word py_"
+                              + (" where " + queryWhere)
+                              + " order by"
+                              // 按拼音字的使用权重（used_weight_）、字形相似性（glyph_weight_）排序
+                              + "   py_.used_weight_ desc, py_.glyph_weight_ desc"
+                              + (limit != null ? " limit " + limit : "");
 
                 this.params = queryParams;
 
@@ -197,10 +198,10 @@ public class PinyinDictDBHelper {
 
         rawQuerySQLite(db, new SQLiteRawQueryParams<Void>() {{
             // 非常用分组的表情保持其位置不变，以便于快速翻阅
-            this.sql = "select id_, value_, weight_, group_" //
-                       + " from emoji" //
-                       + " where enabled_ = 1" //
-                       + " order by group_ asc, id_ asc";
+            this.clause = "select id_, value_, weight_, group_" //
+                          + " from emoji" //
+                          + " where enabled_ = 1" //
+                          + " order by group_ asc, id_ asc";
 
             this.voidReader = (row) -> {
                 String group = row.getString("group_");
@@ -262,7 +263,7 @@ public class PinyinDictDBHelper {
      *         是否反向更新，即，减掉对表情的使用权重
      */
     public static void saveUsedEmojis(SQLiteDatabase db, Collection<Integer> emojiIds, boolean reverse) {
-        List<String[]> argsList = statsWeightArgsList(emojiIds);
+        List<Object[]> argsList = statsWeightArgsList(emojiIds);
 
         if (!reverse) {
             execSQLite(db, "update meta_emoji" //
@@ -334,13 +335,13 @@ public class PinyinDictDBHelper {
      *         是否反向更新，即，减掉对拉丁文的使用权重
      */
     public static void saveUsedLatins(SQLiteDatabase db, Collection<String> latins, boolean reverse) {
-        List<String[]> argsList = statsWeightArgsList(latins);
+        List<Object[]> argsList = statsWeightArgsList(latins);
 
         if (!reverse) {
             upsertSQLite(db, new DBUtils.SQLiteRawUpsertParams() {{
                 // Note: 确保更新和新增的参数位置相同
-                this.updateSQL = "update meta_latin set weight_user_ = weight_user_ + ? where value_ = ?";
-                this.insertSql = "insert into meta_latin(weight_user_, value_) values(?, ?)";
+                this.updateClause = "update meta_latin set weight_user_ = weight_user_ + ? where value_ = ?";
+                this.insertClause = "insert into meta_latin(weight_user_, value_) values(?, ?)";
 
                 this.updateParamsList = this.insertParamsList = argsList;
             }});
@@ -413,15 +414,15 @@ public class PinyinDictDBHelper {
     }
 
     /** 统计字符串列表中的字符串权重，并返回 SQLite 参数列表：<code>[[weight, source], [...], ...]</code> */
-    private static List<String[]> statsWeightArgsList(Collection<?> list) {
+    private static List<Object[]> statsWeightArgsList(Collection<?> list) {
         Map<Object, Integer> argsMap = new HashMap<>(list.size());
         list.forEach((source) -> {
             argsMap.compute(source, (k, v) -> (v == null ? 0 : v) + 1);
         });
 
-        List<String[]> argsList = new ArrayList<>(argsMap.size());
+        List<Object[]> argsList = new ArrayList<>(argsMap.size());
         argsMap.forEach((source, weight) -> {
-            argsList.add(new String[] { weight + "", Objects.toString(source) });
+            argsList.add(new Object[] { weight, source });
         });
 
         return argsList;

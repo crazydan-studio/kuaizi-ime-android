@@ -48,4 +48,13 @@ public enum InputTextType {
     InputTextType(int labelResId) {
         this.labelResId = labelResId;
     }
+
+    public static InputTextType valueByName(String name) {
+        for (InputTextType value : values()) {
+            if (value.name().equalsIgnoreCase(name)) {
+                return value;
+            }
+        }
+        return null;
+    }
 }

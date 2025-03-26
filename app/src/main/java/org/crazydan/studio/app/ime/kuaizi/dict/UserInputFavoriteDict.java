@@ -19,22 +19,46 @@
 
 package org.crazydan.studio.app.ime.kuaizi.dict;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+
 /**
+ * {@link InputFavorite} 字典
+ *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-10-27
+ * @date 2025-03-26
  */
-public enum PinyinDictDBType {
-    /** 用户库，即存放用户数据的库，应用运行期的数据均存放在该库中 */
-    user("pinyin_user_dict.db"),
+public class UserInputFavoriteDict {
+    private final SQLiteDatabase db;
+    private final ThreadPoolExecutor executor;
 
-    /** 应用安装包内的字典库 */
-    app_word("pinyin_word_dict.app.db"),
-    /** 应用安装包内的词典库 */
-    app_phrase("pinyin_phrase_dict.app.db");
+    UserInputFavoriteDict(SQLiteDatabase db, ThreadPoolExecutor executor) {
+        this.db = db;
+        this.executor = executor;
+    }
 
-    public final String fileName;
+    public void save(InputFavorite favorite) {
+    }
 
-    PinyinDictDBType(String fileName) {
-        this.fileName = fileName;
+    public void updateUsage(InputFavorite favorite) {
+    }
+
+    public List<InputFavorite> getAll() {
+
+    }
+
+    public void remove(List<Integer> ids) {
+
+    }
+
+    public void clearAll() {
+
+    }
+
+    public boolean exists(String text) {
+
     }
 }
