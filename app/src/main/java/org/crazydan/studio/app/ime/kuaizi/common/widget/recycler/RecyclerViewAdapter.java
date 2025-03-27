@@ -102,8 +102,8 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
 
     /** 删除指定位置的数据项 */
     public void removeItems(List<Integer> positions) {
-        // 从尾部向头部做删除，以确保待删除数据的位置不变
-        positions.stream().sorted(Integer::compareTo).forEach((position) -> {
+        // 从高位向低位做删除，以确保待删除数据的位置不变
+        positions.stream().sorted((a, b) -> b - a).forEach((position) -> {
             this.items.remove((int) position);
             notifyItemRemoved(position);
         });
